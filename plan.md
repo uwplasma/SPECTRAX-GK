@@ -19,7 +19,8 @@ historical logs live outside the release repository so clones stay small.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
 - Release posture: technically shippable after the current patch release lands;
-  broad manuscript-level nonlinear turbulence-optimization claims remain scoped.
+  broad manuscript-level nonlinear turbulence-optimization claims are not
+  promoted.
   The selected QA optimized-equilibrium audit and RBC(0,1) landscape are tracked
   as bounded positive evidence, while weak reduced-margin candidates are blocked
   by the calibrated prelaunch gate before expensive nonlinear campaigns.
@@ -31,14 +32,14 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear turbulent-flux optimization evidence | 92% | Strict top-12 matched audit fails promotion; the RBC(0,1) landscape now passes reduced prelaunch, cross-sample, replicated landscape, and next-campaign admission gates |
+| Strict nonlinear transport and campaign-admission evidence | 92% | Strict top-12 matched audit fails promotion; the RBC(0,1) landscape now passes reduced prelaunch, cross-sample, replicated landscape, and next-campaign admission gates without promoting broad turbulent optimization |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
 | Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
-| Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
+| Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear whole-state/domain sharding remains diagnostic unless identity and profiler gates pass |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
-and production nonlinear domain decomposition claims.
+and promotion of nonlinear domain decomposition beyond diagnostic evidence.
 
 ## Strict QA Baseline Convention
 
@@ -179,8 +180,9 @@ No long nonlinear audit should be launched from these candidates.
    Its matched long-window nonlinear audit passed both ensemble gates but failed
    promotion, so it must not be described as nonlinear turbulent-flux
    optimization.
-2. Use `docs/_static/nonlinear_campaign_admission_report.json` as the launch
-   contract for the next nonlinear optimizer campaign. It admits the selected
+2. Use `docs/_static/nonlinear_campaign_admission_report.json` as the
+   admission-only launch contract for the next nonlinear optimizer campaign. It
+   admits the selected
    ``+3% RBC(0,1)`` direction for a bounded multi-control campaign because the
    reduced prelaunch gate, deterministic cross-sample dispersion gate, and
    replicated nonlinear landscape gate all pass. It remains a campaign
@@ -304,13 +306,14 @@ No long nonlinear audit should be launched from these candidates.
   ensemble JSON sidecars, without manually inspecting office outputs or
   tracking large NetCDF files.
 - Added the nonlinear landscape admission JSON to the release-readiness
-  required-artifact contract, so this positive selected-audit evidence cannot
-  silently disappear from future release candidates.
+  required-artifact contract, so this positive campaign-admission evidence
+  cannot silently disappear from future release candidates or be broadened into
+  a turbulent-optimization claim.
 - Added a reduced nonlinear-audit prelaunch gate. It blocks reduced candidates
   below a calibrated margin before expensive GPU audits; applied to the
-  ``RBC(0,1)`` landscape, ``p0p03`` passes with a ``4.678%`` reduced
-  nonlinear-window margin over a ``4%`` threshold derived from the failed
-  strict top-12 transfer reference.
+  ``RBC(0,1)`` landscape, ``p0p03`` passes for bounded campaign admission with a
+  ``4.678%`` reduced nonlinear-window margin over a ``4%`` threshold derived
+  from the failed strict top-12 transfer reference.
 - Materialized the complementary negative prelaunch artifact
   `docs/_static/strict_qa_top12_edge_prelaunch_gate.json`: the strict top-12
   edge candidate's ``2.2876%`` reduced margin is blocked against the same

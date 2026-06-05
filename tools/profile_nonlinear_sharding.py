@@ -6,15 +6,20 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import platform
+import shlex
+import statistics
+import sys
 import time
 from pathlib import Path
-import statistics
 from typing import Any
 
 import jax
+import jaxlib
 import jax.numpy as jnp
 import numpy as np
 
+from spectraxgk._version import __version__ as spectraxgk_version
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
@@ -27,6 +32,57 @@ from spectraxgk.terms.config import TermConfig
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "nonlinear_sharding_profile.json"
+
+
+def _artifact_path_for_contract(path: Path) -> str:
+    resolved = Path(path).expanduser()
+    if not resolved.is_absolute():
+        resolved = (Path.cwd() / resolved).resolve()
+    else:
+        resolved = resolved.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(resolved)
+
+
+def _profile_command_argv(argv: list[str] | None) -> list[str]:
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    return [sys.executable, str(Path(__file__).resolve()), *[str(item) for item in raw_args]]
+
+
+def _profile_command(argv: list[str] | None) -> str:
+    return shlex.join(_profile_command_argv(argv))
+
+
+def _software_versions() -> dict[str, str]:
+    return {
+        "python": platform.python_version(),
+        "spectraxgk": str(spectraxgk_version),
+        "jax": str(getattr(jax, "__version__", "unknown")),
+        "jaxlib": str(getattr(jaxlib, "__version__", "unknown")),
+        "numpy": str(np.__version__),
+    }
+
+
+def _source_contract(
+    args: argparse.Namespace,
+    argv: list[str] | None,
+    *,
+    backend: str | None = None,
+    device_count: int | None = None,
+) -> dict[str, Any]:
+    timing_warmup_repeat = {"warmups": int(args.warmups), "repeats": int(args.repeats)}
+    return {
+        "backend": str(jax.default_backend() if backend is None else backend),
+        "device_count": int(jax.device_count() if device_count is None else device_count),
+        "sharding_axis": str(args.sharding),
+        "profile_command": _profile_command(argv),
+        "profile_command_argv": _profile_command_argv(argv),
+        "source_artifact": _artifact_path_for_contract(Path(args.out_json)),
+        "software_versions": _software_versions(),
+        "timing_warmup_repeat": timing_warmup_repeat,
+    }
 
 
 def _block_until_ready(value: Any) -> Any:
@@ -345,11 +401,12 @@ def main(argv: list[str] | None = None) -> int:
 
     primary = sharded_results[str(args.sharding)]
     best_candidate = _best_identity_preserving_candidate(sharded_results)
+    source_contract = _source_contract(args, argv)
     payload = {
         "case": "cyclone_nonlinear_fixed_step",
-        "device_count": int(jax.device_count()),
+        **source_contract,
         "devices": [str(device) for device in jax.devices()],
-        "default_backend": str(jax.default_backend()),
+        "default_backend": str(source_contract["backend"]),
         "state_shape": list(map(int, G0.shape)),
         "state_sharding_requested": str(args.sharding),
         "state_sharding_active": bool(primary["state_sharding_active"]),
@@ -358,8 +415,8 @@ def main(argv: list[str] | None = None) -> int:
         "steps": int(args.steps),
         "method": str(args.method),
         "laguerre_mode": str(args.laguerre_mode),
-        "warmups": int(args.warmups),
-        "repeats": int(args.repeats),
+        "warmups": int(source_contract["timing_warmup_repeat"]["warmups"]),
+        "repeats": int(source_contract["timing_warmup_repeat"]["repeats"]),
         "serial_times_s": serial_times,
         "serial_stats_s": serial_stats,
         "sharded_results": sharded_results,

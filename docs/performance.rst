@@ -40,7 +40,8 @@ No speedup claim should be made from a local profile, scaling panel, or
 parallelization artifact unless the matching numerical-identity gate and
 hardware-specific profiler artifact are cited together. Current production
 parallelization claims are limited to independent-work batching; whole-state
-nonlinear sharding remains a diagnostic/profiler path.
+nonlinear sharding and nonlinear domain decomposition remain diagnostic unless
+their workload-specific identity and profiler promotion gates pass.
 
 Nonlinear profiling
 -------------------
@@ -447,7 +448,8 @@ per-row identity results, and any speedup statement must name the artifact that
 supports it. Whole-state nonlinear sharding uses the same large-run artifact
 shape, but its timing ratios remain profiler evidence and not a production
 nonlinear speedup claim unless a future matched workload refresh adds the
-missing full nonlinear communication and transport gates.
+missing identity, full nonlinear communication, transport-window, and profiler
+promotion gates.
 
 The first release-grade gate for this policy is a real Cyclone linear
 ``k_y``-scan comparison:
@@ -594,7 +596,7 @@ with about ``86%`` parallel efficiency. This closes the release engineering
 gate for quasilinear calibration grids, finite-difference checks, sensitivity
 sweeps, and UQ ensembles that can be decomposed into independent solver calls.
 
-The production nonlinear-decomposition plan follows the same conservative
+The future nonlinear-decomposition promotion plan follows the same conservative
 rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
 species-first, Hermite-second velocity-space layout, including which axes need
 Hermite ghost exchange and which axes need field-solve reductions and
@@ -618,9 +620,9 @@ It is regenerated with:
    python tools/generate_hermite_exchange_gate.py --logical-devices 2
 
 The tracked artifact passes with zero reported lower/upper neighbor error. It
-only validates the communication primitive. A production nonlinear
-velocity-space decomposition still needs field-reduction/broadcast gates,
-streaming-operator identity gates, full-RHS identity gates, and profiler
+only validates the communication primitive. Promoting nonlinear velocity-space
+decomposition beyond diagnostic evidence still needs field-reduction/broadcast
+gates, streaming-operator identity gates, full-RHS identity gates, and profiler
 artifacts before any speedup claim.
 
 The matching velocity-space field-reduction gate validates the second required
@@ -952,9 +954,11 @@ devices. The two-RTX-A4000 GPU path is slower than one GPU even for the larger
 ``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured speedup
 of about ``0.63x``. This makes the technical conclusion explicit: the current
 whole-state nonlinear sharding path is useful as a correctness/profiler gate,
-but production parallelization should prioritize independent ``k_y`` scans,
-UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
-decomposition before any nonlinear multi-GPU speedup claim is made.
+but production parallelization should prioritize independent ``k_y`` scans and
+UQ/ensemble batching. Communication-aware nonlinear domain decomposition remains
+diagnostic until the exact workload has identity, communication,
+transport-window, and matched profiler evidence for any nonlinear multi-GPU
+speedup claim.
 The production gate fails closed as ``diagnostic_only`` unless the refreshed
 CPU and GPU rows both pass serial identity, use active state sharding, and meet
 the configured speedup and parallel-efficiency thresholds. The tracked gate

@@ -33,8 +33,9 @@ publication-ready as diagnostics, model-selection evidence, and explicit
 negative promotion gates, but they do not support a calibrated absolute-flux
 predictor. The stellarator optimization figures are publication-ready for
 reduced differentiable optimization/UQ plumbing and gradient validation, but
-not yet for broad production nonlinear heat-flux optimization beyond the
-selected QA optimized-equilibrium audit. Those stronger claims require
+not yet for broad production nonlinear heat-flux optimization; the selected QA
+optimized-equilibrium audit is a bounded positive audit, not a broad turbulent
+optimization result. Those stronger claims require
 converged post-transient nonlinear heat-flux windows, VMEC/Boozer nonlinear
 turbulence-gradient or robust finite-difference gates, local-gradient
 conditioning, and nonlinear audits of additional optimized equilibria. W7-X
@@ -47,9 +48,9 @@ companions states exactly why absolute-flux promotion remains blocked;
 ``docs/_static/stellarator_objective_portfolio_gate.png``
 validates the aggregate reduced-objective reducer used before expensive
 VMEC/Boozer row production; and
-``docs/_static/parallel_decomposition_status.png`` keeps independent-work
-parallelization claims separated from diagnostic nonlinear domain-partition
-metadata. The newer
+``docs/_static/parallel_decomposition_status.png`` keeps production
+independent-work parallelization claims separated from diagnostic nonlinear
+whole-state/domain sharding metadata. The newer
 ``docs/_static/nonlinear_gradient_state_control_runbook.png`` is a claim
 guardrail rather than a physics result: it shows that the QL-seeded
 ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls must be mapped to
@@ -137,8 +138,9 @@ Current Vs Deferred Figure Inventory
      - Runtime/memory figures, independent ``k_y`` scan scaling,
        quasilinear/UQ ensemble scaling, and nonlinear RHS profiler artifacts are
        release-facing engineering evidence.
-     - Whole-state nonlinear sharding is identity/profiler evidence only, not a
-       production nonlinear multi-GPU speedup claim.
+     - Production parallelization is the independent-work path. Whole-state
+       nonlinear sharding and nonlinear domain sharding are identity/profiler
+       evidence only unless the exact workload passes promotion gates.
    * - W7-X zonal and TEM guardrails
      - Open-research and TEM-status panels are useful guardrails for the paper
        plan and release notes.
@@ -362,7 +364,7 @@ Differentiable-Physics Figures
    * - Boundary-coefficient transport landscape
      - ``tools/build_vmec_boundary_transport_landscape.py`` and ``tools/patch_vmec_jax_wout_metadata.py``
      - Closed as one-coefficient landscape/noise diagnostic with replicated nonlinear error bars
-     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions, the policy report ``docs/_static/vmec_boundary_transport_landscape_admission.json``, the prelaunch report ``docs/_static/vmec_boundary_transport_prelaunch_gate.json``, and ensemble sidecars under ``docs/_static/vmec_boundary_transport_landscape_replicates``. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-6%, -3%, 0, +3%, +6%]`` and evaluates the 18-point reduced sample set over three surfaces, two field-line labels, and three ``k_y`` values. The ``+3%`` perturbation is best for all three reduced objectives: growth decreases by about ``51%``, quasilinear flux by about ``49%``, and the reduced nonlinear-window objective by about ``4.7%``. The reduced panels include cross-sample standard-error bars; those are deterministic sample-spread diagnostics, not stochastic nonlinear turbulence uncertainty. The bottom panel overlays three replicated ``t=[350,700]`` nonlinear windows at baseline, ``+3%``, and ``+6%``. The nonlinear ensembles give ``<Q_i>=8.554 +/- 0.120`` at baseline, ``6.275 +/- 0.042`` at ``+3%``, and ``6.427 +/- 0.044`` at ``+6%``. Thus the selected nonlinear audit confirms a ``26.7%`` reduction for ``+3%`` with uncertainty separation ``z=18.0`` and a ``24.9%`` reduction for ``+6%`` with ``z=16.7``. The nonlinear landscape admission report selects ``+3% RBC(0,1)``, and the reduced prelaunch gate records that the selected reduced nonlinear-window margin is ``4.678%`` against a ``4%`` calibrated threshold. This is positive optimizer-noise evidence for this coefficient direction, not a multi-coefficient turbulent-optimization claim.
+     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions, the policy report ``docs/_static/vmec_boundary_transport_landscape_admission.json``, the prelaunch report ``docs/_static/vmec_boundary_transport_prelaunch_gate.json``, and ensemble sidecars under ``docs/_static/vmec_boundary_transport_landscape_replicates``. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-6%, -3%, 0, +3%, +6%]`` and evaluates the 18-point reduced sample set over three surfaces, two field-line labels, and three ``k_y`` values. The ``+3%`` perturbation is best for all three reduced objectives: growth decreases by about ``51%``, quasilinear flux by about ``49%``, and the reduced nonlinear-window objective by about ``4.7%``. The reduced panels include cross-sample standard-error bars; those are deterministic sample-spread diagnostics, not stochastic nonlinear turbulence uncertainty. The bottom panel overlays three replicated ``t=[350,700]`` nonlinear windows at baseline, ``+3%``, and ``+6%``. The nonlinear ensembles give ``<Q_i>=8.554 +/- 0.120`` at baseline, ``6.275 +/- 0.042`` at ``+3%``, and ``6.427 +/- 0.044`` at ``+6%``. Thus the selected nonlinear audit confirms a ``26.7%`` reduction for ``+3%`` with uncertainty separation ``z=18.0`` and a ``24.9%`` reduction for ``+6%`` with ``z=16.7``. The nonlinear landscape admission report selects ``+3% RBC(0,1)``, and the reduced prelaunch gate records that the selected reduced nonlinear-window margin is ``4.678%`` against a ``4%`` calibrated threshold. This is positive optimizer-noise and campaign-admission evidence for this coefficient direction, not a multi-coefficient turbulent-optimization claim.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

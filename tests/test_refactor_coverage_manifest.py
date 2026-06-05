@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
 
 
+ROOT = Path(__file__).resolve().parents[1]
+LARGE_MODULE_DIRECT_ROW_MIN_SOURCE_LINES = 2_000
+PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {"spectraxgk.geometry"}
+
+
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "check_validation_coverage_manifest.py"
+    path = ROOT / "tools" / "check_validation_coverage_manifest.py"
     spec = importlib.util.spec_from_file_location("check_validation_coverage_manifest_refactor", path)
     assert spec is not None
     assert spec.loader is not None
@@ -78,6 +84,96 @@ def _validate_tmp_manifest(tmp_path: Path, manifest_text: str):
         return mod.validate_manifest(mod.load_manifest(manifest))
     finally:
         mod.REPO_ROOT = old_root
+
+
+def _repository_manifest_sets() -> tuple[set[str], set[str], set[str]]:
+    mod = _load_tool_module()
+    data = mod.load_manifest()
+    summary = mod.validate_manifest(data)
+    direct_modules = {row["module"] for row in summary["rows"]}
+    owned_modules = {
+        owned_module
+        for modules in summary["owned_modules_by_owner"].values()
+        for owned_module in modules
+    }
+    excluded_modules = set(data["coverage_inventory"]["excluded_modules"])
+    return direct_modules, owned_modules, excluded_modules
+
+
+def _documented_public_api_modules() -> set[str]:
+    api_reference = (ROOT / "docs" / "api.rst").read_text(encoding="utf-8")
+    return set(
+        re.findall(
+            r"^\.\. automodule:: (spectraxgk(?:\.[A-Za-z_]\w*)*)\s*$",
+            api_reference,
+            flags=re.MULTILINE,
+        )
+    )
+
+
+def _manifest_candidates_for_api_module(module: str) -> set[str]:
+    source_base = ROOT / "src" / Path(*module.split("."))
+    candidates: set[str] = set()
+    if source_base.with_suffix(".py").exists():
+        candidates.add(module)
+    if (source_base / "__init__.py").exists():
+        candidates.add(f"{module}.__init__")
+    return candidates
+
+
+def _source_module_name(path: Path) -> str:
+    return ".".join(path.relative_to(ROOT / "src").with_suffix("").parts)
+
+
+def _source_line_count(path: Path) -> int:
+    return sum(
+        1
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    )
+
+
+def test_documented_public_api_modules_have_manifest_tracking() -> None:
+    direct_modules, owned_modules, excluded_modules = _repository_manifest_sets()
+    tracked_modules = direct_modules | owned_modules | excluded_modules
+    public_modules = _documented_public_api_modules()
+
+    missing_source = sorted(
+        module for module in public_modules if not _manifest_candidates_for_api_module(module)
+    )
+    missing_manifest = {
+        module: sorted(candidates)
+        for module in sorted(public_modules)
+        if (candidates := _manifest_candidates_for_api_module(module))
+        and candidates.isdisjoint(tracked_modules)
+    }
+    excluded_package_api = {
+        module
+        for module in public_modules
+        if f"{module}.__init__" in _manifest_candidates_for_api_module(module)
+        and f"{module}.__init__" in excluded_modules
+    }
+
+    assert not missing_source
+    assert not missing_manifest
+    assert excluded_package_api <= PUBLIC_PACKAGE_API_INIT_EXCEPTIONS
+
+
+def test_large_modules_have_direct_manifest_rows() -> None:
+    direct_modules, _, _ = _repository_manifest_sets()
+    large_modules_without_direct_rows: dict[str, int] = {}
+    for path in (ROOT / "src" / "spectraxgk").rglob("*.py"):
+        if path.name == "__init__.py":
+            continue
+        source_lines = _source_line_count(path)
+        module = _source_module_name(path)
+        if (
+            source_lines >= LARGE_MODULE_DIRECT_ROW_MIN_SOURCE_LINES
+            and module not in direct_modules
+        ):
+            large_modules_without_direct_rows[module] = source_lines
+
+    assert not large_modules_without_direct_rows
 
 
 def test_manifest_accepts_owned_refactor_modules(tmp_path: Path) -> None:

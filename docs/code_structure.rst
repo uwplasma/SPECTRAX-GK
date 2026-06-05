@@ -15,6 +15,8 @@ Public API vs Internal Modules
 Public surfaces that examples, scripts, and external users are expected to rely
 on:
 
+- documented module pages in :doc:`api`
+- ``spectraxgk.geometry``
 - ``spectraxgk.cli``
 - ``spectraxgk.runtime``
 - ``spectraxgk.runtime_config``
@@ -158,6 +160,15 @@ Use this rule of thumb when changing ownership:
   still fully exercised by the owning row's tests;
 - update the owning row's ``next_tests`` when the helper split creates coverage
   debt that is not closed in the same change.
+
+The refactor manifest tests also cross-check public and size-sensitive
+surfaces. Every ``.. automodule:: spectraxgk.*`` entry in :doc:`api` must
+resolve to a source file or package ``__init__`` that is accounted for by the
+manifest, and public package ``__init__`` entries must be explicit exceptions
+rather than generic plumbing. The same test requires any non-``__init__``
+source module with at least 2,000 non-comment source lines to have a direct
+manifest row, so large modules cannot be hidden under another owner's
+``owned_modules`` list.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

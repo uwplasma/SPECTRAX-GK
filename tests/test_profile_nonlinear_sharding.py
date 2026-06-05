@@ -29,6 +29,35 @@ def test_profile_nonlinear_sharding_parser_defaults_to_tracked_artifact() -> Non
     assert args.method == "rk2"
     assert args.warmups == 1
     assert args.repeats == 3
+    assert mod._artifact_path_for_contract(args.out_json) == "docs/_static/nonlinear_sharding_profile.json"
+
+
+def test_profile_nonlinear_sharding_source_contract_is_machine_readable(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    out_json = tmp_path / "profile.json"
+    argv = [
+        "--out-json",
+        str(out_json),
+        "--sharding",
+        "kx",
+        "--warmups",
+        "0",
+        "--repeats",
+        "2",
+    ]
+    args = mod.build_parser().parse_args(argv)
+
+    contract = mod._source_contract(args, argv, backend="gpu", device_count=2)
+
+    assert contract["backend"] == "gpu"
+    assert contract["device_count"] == 2
+    assert contract["sharding_axis"] == "kx"
+    assert contract["source_artifact"] == str(out_json.resolve())
+    assert contract["timing_warmup_repeat"] == {"warmups": 0, "repeats": 2}
+    assert contract["profile_command_argv"][-len(argv) :] == argv
+    assert "tools/profile_nonlinear_sharding.py" in contract["profile_command"]
+    assert {"python", "spectraxgk", "jax", "jaxlib", "numpy"} <= set(contract["software_versions"])
+    assert all(contract["software_versions"].values())
 
 
 def test_profile_nonlinear_sharding_helpers_report_stats_and_unique_specs() -> None:

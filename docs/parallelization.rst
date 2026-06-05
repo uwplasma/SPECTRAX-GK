@@ -8,9 +8,10 @@ in :doc:`examples`.
 
 For release notes and manuscripts, read this page together with
 :doc:`release_scope`. Independent scans and ensembles are the current
-production path. Whole-state nonlinear sharding and velocity-space
-decomposition are correctness/profiler development paths until they pass
-workload-specific identity, conservation, and profiler gates.
+production path. Whole-state nonlinear sharding and nonlinear domain or
+velocity-space decomposition remain diagnostic correctness/profiler paths until
+they pass workload-specific identity, conservation, transport-window, and
+matched profiler gates.
 
 Strategy registry
 -----------------
@@ -170,7 +171,8 @@ the backend/device row that regressed.
 The companion gate
 ``docs/_static/nonlinear_sharding_production_speedup_gate.json`` is the only
 artifact that may promote whole-state nonlinear sharding wording beyond
-diagnostic/profiler evidence. The fast checker
+diagnostic/profiler evidence, and only for the exact workload it gates. The fast
+checker
 ``tools/check_parallel_scaling_artifacts.py`` now validates that gate, its CSV
 sidecar, its CPU/GPU source rows, and its required-backend blockers without
 rerunning long CPU or GPU profilers.
@@ -235,8 +237,8 @@ workload family that appears in the speedup figure:
   stack, grid, warmups/repeats, and identity tolerance being claimed.
 
 Until those gates exist, nonlinear decomposition work can be documented as
-engineering evidence only, even if a new profile shows positive timing on one
-machine.
+diagnostic engineering evidence only, even if a new profile shows positive
+timing on one machine.
 
 Velocity-space communication gates
 ----------------------------------
@@ -272,13 +274,14 @@ Use the following rules when writing docs, release notes, or papers:
 - For runtime scan TOMLs, use ``[parallel] strategy = "batch"`` with
   ``axis = "ky"`` only for independent ``k_y`` scan orchestration.
 - Call whole-state nonlinear sharding a diagnostic correctness/profiler gate,
-  not production nonlinear parallelism.
+  not production nonlinear parallelism unless the exact workload has passed its
+  identity and profiler promotion gates.
 - Call velocity-space ``shard_map`` work communication-gated and opt-in until
   the relevant full-RHS and workload gates are closed.
 - Do not claim nonlinear speedup from sharding, velocity decomposition, spectral
-  toggles, or linear-slice profiles without fresh profiler artifacts for the
-  exact workload, backend, device count, software stack, and identity tolerance
-  being claimed.
+  toggles, or linear-slice profiles without passing identity gates and fresh
+  profiler artifacts for the exact workload, backend, device count, software
+  stack, and identity tolerance being claimed.
 - Keep speedup plots separate from identity gates: identity establishes
   correctness; profiler artifacts establish only the scoped timing claim they
   measure.
