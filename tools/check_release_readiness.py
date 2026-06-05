@@ -57,6 +57,7 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+    "docs/_static/nonlinear_campaign_admission_report.json",
     "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
@@ -68,6 +69,7 @@ REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "simple_quasilinear_absolute_flux_promoted": False,
     "long_window_nonlinear_audit_passed": True,
     "nonlinear_prelaunch_policy_ready": True,
+    "nonlinear_campaign_admission_ready": True,
     "negative_reference_blocks_weak_margin": True,
 }
 REQUIRED_PRELAUNCH_GATE_ROWS = (
@@ -90,6 +92,13 @@ REQUIRED_PRELAUNCH_GATE_ROWS = (
         "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
         "expected_raw_passed": False,
         "required_blocker": "insufficient_reduced_margin_for_nonlinear_audit",
+        "min_sample_count": 18.0,
+    },
+    {
+        "label": "next nonlinear campaign admission",
+        "path": "docs/_static/nonlinear_campaign_admission_report.json",
+        "expected_raw_passed": True,
+        "required_blocker": None,
         "min_sample_count": 18.0,
     },
 )

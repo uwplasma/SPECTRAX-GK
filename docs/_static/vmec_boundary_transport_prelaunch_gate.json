@@ -18,6 +18,15 @@
       "passed": true,
       "threshold": 12,
       "value": 18
+    },
+    {
+      "metric": "reduced_cross_sample_dispersion",
+      "passed": true,
+      "threshold": 0.35,
+      "value": [
+        0.22639802467665912,
+        0.22411503437345373
+      ]
     }
   ],
   "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
@@ -72,9 +81,35 @@
   "passed": true,
   "policy": {
     "failed_reference_safety_factor": 1.5,
+    "maximum_cross_sample_sem_rel": 0.35,
     "metric_key": "nonlinear_window_heat_flux",
     "minimum_relative_reduction": 0.04,
     "require_sample_coverage": true
+  },
+  "reduced_cross_sample_statistics": {
+    "available": true,
+    "claim_scope": "deterministic spread over the reduced surface/field-line/ky objective grid; not stochastic nonlinear heat-flux uncertainty",
+    "passed": true,
+    "rows": [
+      {
+        "available": true,
+        "blockers": [],
+        "cross_sample_sem_rel": 0.22639802467665912,
+        "passed": true,
+        "role": "baseline",
+        "weighted_mean": 0.06777885259618041,
+        "weighted_standard_error": 0.015344998342625694
+      },
+      {
+        "available": true,
+        "blockers": [],
+        "cross_sample_sem_rel": 0.22411503437345373,
+        "passed": true,
+        "role": "candidate",
+        "weighted_mean": 0.06450805792574345,
+        "weighted_standard_error": 0.014457225619392737
+      }
+    ]
   },
   "relative_reduced_reduction": 0.04678021840887033,
   "required_relative_reduced_reduction": 0.04,

@@ -1150,8 +1150,31 @@ threshold and the multi-sample objective-coverage gate::
 
 For the ``RBC(0,1)`` landscape this prelaunch gate passes: the selected
 ``+3%`` row reduces the reduced nonlinear-window metric by ``4.678%``, above
-the ``4%`` calibrated threshold. Passing this gate permits a replicated
-nonlinear audit; it is not itself a turbulent-transport optimization claim.
+the ``4%`` calibrated threshold. The regenerated prelaunch artifact also
+records deterministic cross-sample standard-error ratios of about ``0.226``
+for the baseline and ``0.224`` for the candidate, below the ``0.35`` gate.
+Passing this gate permits a replicated nonlinear audit; it is not itself a
+turbulent-transport optimization claim.
+
+The next-campaign admission gate combines the reduced prelaunch report with
+the replicated nonlinear landscape admission. It is the machine-readable
+answer to whether this one-coefficient diagnostic is strong enough to seed a
+bounded multi-control optimizer campaign::
+
+   python tools/build_nonlinear_campaign_admission_report.py \
+     --prelaunch-report docs/_static/vmec_boundary_transport_prelaunch_gate.json \
+     --landscape-admission docs/_static/vmec_boundary_transport_landscape_admission.json \
+     --out-json docs/_static/nonlinear_campaign_admission_report.json \
+     --fail-on-blocked
+
+The current report passes and selects ``+3% RBC(0,1)``. Its requirements are
+deliberately stricter than a reduced metric: reduced prelaunch must pass,
+multi-sample coverage must pass, reduced cross-sample dispersion must be
+bounded, the replicated landscape must admit a selected candidate, and the
+selected nonlinear landscape point must exceed ``10%`` relative heat-flux
+reduction, ``3``-sigma uncertainty separation, three replicas, and
+``5%`` relative SEM. This admits a next campaign; it still does not promote a
+broad multi-coefficient or multi-flux-tube turbulent-optimization claim.
 
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
@@ -1183,6 +1206,7 @@ Implementation Map
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
 - Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/build_nonlinear_landscape_admission_report.py>`
 - Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/build_reduced_nonlinear_audit_prelaunch_report.py>`
+- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/build_nonlinear_campaign_admission_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
@@ -1191,6 +1215,8 @@ Implementation Map
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
 - Reduced nonlinear-audit prelaunch gate:
   :download:`vmec_boundary_transport_prelaunch_gate.json <_static/vmec_boundary_transport_prelaunch_gate.json>`
+- Next nonlinear optimizer campaign-admission gate:
+  :download:`nonlinear_campaign_admission_report.json <_static/nonlinear_campaign_admission_report.json>`
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
 - Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`

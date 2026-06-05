@@ -59,6 +59,7 @@ DEFAULT_NONLINEAR_AUDIT_JSON = ROOT / "docs" / "_static" / "qa_no_ess_to_optimiz
 DEFAULT_LANDSCAPE_ADMISSION_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_landscape_admission.json"
 DEFAULT_POSITIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_prelaunch_gate.json"
 DEFAULT_NEGATIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "strict_qa_top12_edge_prelaunch_gate.json"
+DEFAULT_CAMPAIGN_ADMISSION_JSON = ROOT / "docs" / "_static" / "nonlinear_campaign_admission_report.json"
 
 
 def _repo_relative(path: Path) -> str:
@@ -300,6 +301,41 @@ def _prelaunch_gate(
     }
 
 
+def _campaign_admission_gate(path: Path) -> dict[str, Any]:
+    data = _read_json(path)
+    selected = data.get("selected_landscape_candidate", {})
+    if not isinstance(selected, dict):
+        selected = {}
+    blockers = data.get("blockers", [])
+    if not isinstance(blockers, list):
+        blockers = []
+    gates = data.get("gates", [])
+    sample_count = math.nan
+    if isinstance(gates, list):
+        for row in gates:
+            if isinstance(row, dict) and row.get("metric") == "reduced_objective_sample_coverage":
+                sample_count = _finite_float(row.get("value"))
+                break
+    return {
+        "label": "next nonlinear campaign admission",
+        "path": _repo_relative(path),
+        "kind": data.get("kind"),
+        "passed": bool(data.get("passed", False)) and not blockers,
+        "raw_passed": bool(data.get("passed", False)),
+        "expected_raw_passed": True,
+        "metric": _finite_float(selected.get("relative_reduction")),
+        "threshold": _finite_float(
+            (data.get("policy") or {}).get("minimum_landscape_relative_reduction")
+            if isinstance(data.get("policy"), dict)
+            else None
+        ),
+        "sample_count": sample_count,
+        "blockers": blockers,
+        "claim_scope": data.get("claim_scope"),
+        "next_action": data.get("next_action"),
+    }
+
+
 def build_payload(
     *,
     constraints_dir: Path = DEFAULT_CONSTRAINTS_DIR,
@@ -313,6 +349,7 @@ def build_payload(
     landscape_admission_json: Path = DEFAULT_LANDSCAPE_ADMISSION_JSON,
     positive_prelaunch_json: Path = DEFAULT_POSITIVE_PRELAUNCH_JSON,
     negative_prelaunch_json: Path = DEFAULT_NEGATIVE_PRELAUNCH_JSON,
+    campaign_admission_json: Path = DEFAULT_CAMPAIGN_ADMISSION_JSON,
 ) -> dict[str, Any]:
     """Return a JSON-ready optimization status report from tracked artifacts."""
 
@@ -354,6 +391,7 @@ def build_payload(
             expected_raw_passed=False,
             required_blocker="insufficient_reduced_margin_for_nonlinear_audit",
         ),
+        _campaign_admission_gate(campaign_admission_json),
     ]
     comparison = nonlinear.get("comparison", {})
     if not isinstance(comparison, dict):
@@ -391,6 +429,7 @@ def build_payload(
             "landscape_admission_json": _repo_relative(landscape_admission_json),
             "positive_prelaunch_json": _repo_relative(positive_prelaunch_json),
             "negative_prelaunch_json": _repo_relative(negative_prelaunch_json),
+            "campaign_admission_json": _repo_relative(campaign_admission_json),
         },
         "projected_baseline": projected_baseline,
         "candidates": candidates,
@@ -422,6 +461,7 @@ def build_payload(
             "landscape_admission_passed": bool(prelaunch_gates[0]["passed"]),
             "positive_prelaunch_gate_passed": bool(prelaunch_gates[1]["passed"]),
             "negative_reference_blocks_weak_margin": bool(prelaunch_gates[2]["passed"]),
+            "nonlinear_campaign_admission_ready": bool(prelaunch_gates[3]["passed"]),
             "nonlinear_prelaunch_policy_ready": all(bool(row["passed"]) for row in prelaunch_gates),
             "blocked_candidates": blocked,
             "next_action": (

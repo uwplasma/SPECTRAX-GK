@@ -76,6 +76,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "vmec_jax_qa_transport_optimization_status.json",
         "vmec_boundary_transport_landscape_admission.json",
         "vmec_boundary_transport_prelaunch_gate.json",
+        "nonlinear_campaign_admission_report.json",
         "strict_qa_top12_edge_prelaunch_gate.json",
     ):
         (root / "docs" / "_static" / artifact).write_text("{}", encoding="utf-8")
@@ -125,6 +126,15 @@ spectrax-gk = "spectraxgk.cli:main"
       "raw_passed": false,
       "sample_count": 18.0,
       "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"]
+    },
+    {
+      "label": "next nonlinear campaign admission",
+      "path": "docs/_static/nonlinear_campaign_admission_report.json",
+      "passed": true,
+      "expected_raw_passed": true,
+      "raw_passed": true,
+      "sample_count": 18.0,
+      "blockers": []
     }
   ],
   "summary": {
@@ -133,6 +143,7 @@ spectrax-gk = "spectraxgk.cli:main"
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
+    "nonlinear_campaign_admission_ready": true,
     "negative_reference_blocks_weak_margin": true
   }
 }
@@ -410,6 +421,15 @@ def test_release_readiness_rejects_stale_prelaunch_gate_rows(
       "raw_passed": true,
       "sample_count": 18.0,
       "blockers": []
+    },
+    {
+      "label": "next nonlinear campaign admission",
+      "path": "docs/_static/nonlinear_campaign_admission_report.json",
+      "passed": true,
+      "expected_raw_passed": true,
+      "raw_passed": true,
+      "sample_count": 18.0,
+      "blockers": []
     }
   ],
   "summary": {
@@ -418,6 +438,7 @@ def test_release_readiness_rejects_stale_prelaunch_gate_rows(
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
+    "nonlinear_campaign_admission_ready": true,
     "negative_reference_blocks_weak_margin": true
   }
 }

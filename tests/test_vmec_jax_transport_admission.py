@@ -5,8 +5,10 @@ import json
 import spectraxgk
 from spectraxgk.vmec_jax_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
+    VMECJAXNonlinearCampaignPolicy,
     VMECJAXReducedPrelaunchPolicy,
     VMECJAXTransportAdmissionPolicy,
+    build_nonlinear_campaign_admission_report,
     build_nonlinear_landscape_admission_report,
     build_nonlinear_audit_redesign_report,
     build_reduced_nonlinear_audit_prelaunch_report,
@@ -232,6 +234,14 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
             "alphas": [0.0, 0.7853981633974483],
             "ky_values": [0.1, 0.3, 0.5],
         },
+        baseline_sample_statistics={
+            "weighted_mean": 0.06777885259618041,
+            "weighted_standard_error": 0.015344998342625694,
+        },
+        candidate_sample_statistics={
+            "weighted_mean": 0.06450805792574345,
+            "weighted_standard_error": 0.014457225619392737,
+        },
         failed_reference_relative_reduction=0.022876,
         policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
     )
@@ -241,6 +251,8 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
     assert report["required_relative_reduced_reduction"] == 0.04
     assert report["blockers"] == []
     assert report["gates"][0]["passed"] is True
+    assert report["reduced_cross_sample_statistics"]["passed"] is True
+    assert report["gates"][2]["metric"] == "reduced_cross_sample_dispersion"
     assert spectraxgk.VMECJAXReducedPrelaunchPolicy is VMECJAXReducedPrelaunchPolicy
     assert (
         spectraxgk.build_reduced_nonlinear_audit_prelaunch_report
@@ -267,6 +279,115 @@ def test_reduced_nonlinear_audit_prelaunch_blocks_weak_failed_transfer_margin() 
     assert report["passed"] is False
     assert "insufficient_reduced_margin_for_nonlinear_audit" in report["blockers"]
     assert report["relative_reduced_reduction"] < report["required_relative_reduced_reduction"]
+
+
+def test_reduced_prelaunch_blocks_excessive_reduced_cross_sample_spread() -> None:
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=0.06558065223919245,
+        candidate_metric=0.06251277500404685,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        baseline_sample_statistics={
+            "weighted_mean": 0.067,
+            "weighted_standard_error": 0.03,
+        },
+        candidate_sample_statistics={
+            "weighted_mean": 0.064,
+            "weighted_standard_error": 0.04,
+        },
+        policy=VMECJAXReducedPrelaunchPolicy(
+            minimum_relative_reduction=0.04,
+            maximum_cross_sample_sem_rel=0.35,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert "candidate_cross_sample_sem_rel_too_large" in report["blockers"]
+    assert report["gates"][2]["passed"] is False
+
+
+def test_campaign_admission_combines_reduced_and_replicated_landscape_gates() -> None:
+    prelaunch = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=0.06558065223919245,
+        candidate_metric=0.06251277500404685,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        baseline_sample_statistics={
+            "weighted_mean": 0.06777885259618041,
+            "weighted_standard_error": 0.015344998342625694,
+        },
+        candidate_sample_statistics={
+            "weighted_mean": 0.06450805792574345,
+            "weighted_standard_error": 0.014457225619392737,
+        },
+        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+    )
+    landscape = build_nonlinear_landscape_admission_report(
+        _ensemble(8.554362366164424, 0.11951503416978174),
+        [_ensemble(6.274543846475065, 0.04213243251063571)],
+        candidate_labels=("+3% RBC(0,1)",),
+        policy=VMECJAXNonlinearAuditPolicy(
+            minimum_relative_reduction=0.02,
+            minimum_uncertainty_z_score=2.0,
+            maximum_combined_sem_rel=0.05,
+            minimum_replicate_count=3,
+        ),
+    )
+
+    report = build_nonlinear_campaign_admission_report(
+        reduced_prelaunch_report=prelaunch,
+        landscape_admission_report=landscape,
+    )
+
+    assert report["campaign_admitted"] is True
+    assert report["blockers"] == []
+    assert report["selected_landscape_candidate"]["label"] == "+3% RBC(0,1)"
+    assert report["claim_scope"].startswith("next nonlinear optimizer-campaign admission")
+    assert spectraxgk.VMECJAXNonlinearCampaignPolicy is VMECJAXNonlinearCampaignPolicy
+    assert (
+        spectraxgk.build_nonlinear_campaign_admission_report
+        is build_nonlinear_campaign_admission_report
+    )
+    json.dumps(report, allow_nan=False)
+
+
+def test_campaign_admission_fails_closed_without_cross_sample_gate_or_landscape_margin() -> None:
+    prelaunch = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=1.0,
+        candidate_metric=0.95,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+    )
+    landscape = build_nonlinear_landscape_admission_report(
+        _ensemble(8.0, 0.3),
+        [_ensemble(7.4, 0.3)],
+        candidate_labels=("weak",),
+        policy=VMECJAXNonlinearAuditPolicy(minimum_relative_reduction=0.02),
+    )
+
+    report = build_nonlinear_campaign_admission_report(
+        reduced_prelaunch_report=prelaunch,
+        landscape_admission_report=landscape,
+        policy=VMECJAXNonlinearCampaignPolicy(
+            minimum_landscape_relative_reduction=0.10,
+            minimum_landscape_uncertainty_z_score=3.0,
+        ),
+    )
+
+    assert report["campaign_admitted"] is False
+    assert "reduced_cross_sample_statistics_missing" in report["blockers"]
+    assert "selected_landscape_reduction_too_small" in report["blockers"]
+    assert "selected_landscape_uncertainty_separation_too_small" in report["blockers"]
 
 
 def test_transport_sample_summary_requires_surface_alpha_and_ky_coverage() -> None:

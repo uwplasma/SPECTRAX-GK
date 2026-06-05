@@ -12,7 +12,8 @@
     "nonlinear_audit_json": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
     "landscape_admission_json": "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "positive_prelaunch_json": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
-    "negative_prelaunch_json": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json"
+    "negative_prelaunch_json": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+    "campaign_admission_json": "docs/_static/nonlinear_campaign_admission_report.json"
   },
   "projected_baseline": {
     "label": "projected baseline metric",
@@ -254,6 +255,20 @@
       ],
       "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
       "next_action": "do not launch an expensive nonlinear audit; increase reduced-objective margin or broaden the objective before spending GPU time"
+    },
+    {
+      "label": "next nonlinear campaign admission",
+      "path": "docs/_static/nonlinear_campaign_admission_report.json",
+      "kind": "vmec_jax_nonlinear_campaign_admission_report",
+      "passed": true,
+      "raw_passed": true,
+      "expected_raw_passed": true,
+      "metric": 0.2665094629036129,
+      "threshold": 0.1,
+      "sample_count": 18.0,
+      "blockers": [],
+      "claim_scope": "next nonlinear optimizer-campaign admission only; not a production multi-coefficient turbulent-flux optimization claim",
+      "next_action": "launch a bounded multi-control optimizer campaign from the admitted landscape direction, with matched baseline/candidate t=[350,700] replicated nonlinear audits before promotion"
     }
   ],
   "summary": {
@@ -269,6 +284,7 @@
     "landscape_admission_passed": true,
     "positive_prelaunch_gate_passed": true,
     "negative_reference_blocks_weak_margin": true,
+    "nonlinear_campaign_admission_ready": true,
     "nonlinear_prelaunch_policy_ready": true,
     "blocked_candidates": [
       "direct scalar transport"

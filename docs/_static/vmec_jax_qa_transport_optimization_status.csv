@@ -12,3 +12,4 @@ long_window_nonlinear_audit,optimized_vs_baseline,True,10.19273263179093,0.18444
 prelaunch_or_admission_gate,replicated landscape admission,True,0.2665094629036129,0.02,nonlinear_landscape_admission_report
 prelaunch_or_admission_gate,selected reduced prelaunch,True,0.04678021840887033,0.04,vmec_jax_reduced_nonlinear_audit_prelaunch_report
 prelaunch_or_admission_gate,weak reduced-margin reference,True,0.022875996934833345,0.04,vmec_jax_reduced_nonlinear_audit_prelaunch_report
+prelaunch_or_admission_gate,next nonlinear campaign admission,True,0.2665094629036129,0.1,vmec_jax_nonlinear_campaign_admission_report

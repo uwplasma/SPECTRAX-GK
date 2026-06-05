@@ -6,8 +6,10 @@ from pathlib import Path
 
 import pytest
 
+import spectraxgk
 from spectraxgk.nonlinear_transport_optimization import (
     ProductionNonlinearOptimizationGuardConfig,
+    matched_optimized_transport_report,
     optimized_equilibrium_transport_report,
     production_nonlinear_optimization_guard_report,
     reduced_artifact_scope_report,
@@ -69,6 +71,46 @@ def _ensemble_payload(*, case: str = "holdout", mean: float = 4.0) -> dict[str, 
             "mean_rel_spread": 0.04,
             "combined_sem_rel": 0.03,
         },
+        "rows": [
+            {
+                "source_artifact": f"{case}_seed31_heat_flux_trace.csv",
+                "summary_artifact": f"{case}_seed31_transport_window.json",
+            },
+            {
+                "source_artifact": f"{case}_seed32_heat_flux_trace.csv",
+                "summary_artifact": f"{case}_seed32_transport_window.json",
+            },
+            {
+                "source_artifact": f"{case}_dt0p04_heat_flux_trace.csv",
+                "summary_artifact": f"{case}_dt0p04_transport_window.json",
+            },
+        ],
+    }
+
+
+def _matched_audit_payload(
+    *,
+    relative_reduction: float = 0.184,
+    sigma: float = 7.8,
+    passed: bool = True,
+) -> dict[str, object]:
+    return {
+        "kind": "baseline_optimized_nonlinear_transport_audit",
+        "case": "matched_baseline_to_optimized",
+        "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit",
+        "passed": passed,
+        "comparison": {
+            "relative_reduction": relative_reduction,
+            "uncertainty_separation_sigma": sigma,
+        },
+        "baseline_ensemble": {"qualifies": True},
+        "optimized_ensemble": {"qualifies": True},
+        "selected_optimized_audit": {"passed": True},
+        "gates": [
+            {"metric": "baseline_replicated_ensemble_qualified", "passed": True},
+            {"metric": "optimized_replicated_ensemble_qualified", "passed": True},
+            {"metric": "selected_optimized_equilibrium_audit", "passed": True},
+        ],
     }
 
 
@@ -87,7 +129,8 @@ def test_production_nonlinear_guard_is_release_safe_but_blocks_optimization_prom
     assert report["safe_to_release"] is True
     assert report["production_nonlinear_optimization_promoted"] is False
     assert report["promotion_gate"]["blockers"] == [
-        "optimized_equilibrium_replicated_transport_window"
+        "optimized_equilibrium_replicated_transport_window",
+        "matched_baseline_to_optimized_transport_reduction",
     ]
     assert report["summary"]["qualifying_replicated_holdout_ensembles"] == 2
 
@@ -111,7 +154,7 @@ def test_production_nonlinear_guard_rejects_reduced_optimizer_overclaim() -> Non
         assert "reduced_optimizer_not_promoted" in report["safety_gate"]["blockers"]
 
 
-def test_production_nonlinear_guard_promotes_only_optimized_equilibrium_replicates() -> None:
+def test_production_nonlinear_guard_blocks_optimized_window_without_matched_reduction() -> None:
     report = production_nonlinear_optimization_guard_report(
         optimization_artifact=_optimization_payload(),
         optimization_artifact_path="optimization.json",
@@ -128,8 +171,35 @@ def test_production_nonlinear_guard_promotes_only_optimized_equilibrium_replicat
     )
 
     assert report["safe_to_release"] is True
+    assert report["production_nonlinear_optimization_promoted"] is False
+    assert report["promotion_gate"]["blockers"] == [
+        "matched_baseline_to_optimized_transport_reduction"
+    ]
+
+
+def test_production_nonlinear_guard_promotes_only_with_matched_optimized_audit() -> None:
+    report = production_nonlinear_optimization_guard_report(
+        optimization_artifact=_optimization_payload(),
+        optimization_artifact_path="optimization.json",
+        reduced_artifacts={"startup.json": _startup_payload()},
+        replicated_ensemble_artifacts={
+            "dshape.json": _ensemble_payload(case="dshape"),
+            "circular.json": _ensemble_payload(case="circular", mean=3.8),
+        },
+        optimized_equilibrium_artifacts={
+            "optimized_equilibrium_final.json": _ensemble_payload(
+                case="optimized_equilibrium_final", mean=2.6
+            )
+        },
+        matched_optimized_transport_artifacts={
+            "matched_optimized_audit.json": _matched_audit_payload()
+        },
+    )
+
+    assert report["safe_to_release"] is True
     assert report["production_nonlinear_optimization_promoted"] is True
     assert report["promotion_gate"]["blockers"] == []
+    assert report["summary"]["qualifying_matched_optimized_transport_audits"] == 1
 
 
 def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> None:
@@ -167,7 +237,25 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
     assert rc == 0
     assert out_png.exists()
     assert payload["safe_to_release"] is True
-    assert payload["production_nonlinear_optimization_promoted"] is False
+    assert payload["production_nonlinear_optimization_promoted"] is True
+    assert payload["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+
+
+def test_matched_optimized_transport_report_requires_reduction_and_uncertainty() -> None:
+    good = matched_optimized_transport_report(
+        "matched.json",
+        _matched_audit_payload(),
+    )
+    weak = matched_optimized_transport_report(
+        "weak.json",
+        _matched_audit_payload(relative_reduction=0.01, sigma=0.2),
+    )
+
+    assert good["qualifies_for_production_optimization"] is True
+    assert weak["qualifies_for_production_optimization"] is False
+    assert "insufficient_matched_optimized_reduction" in weak["blockers"]
+    assert "insufficient_matched_optimized_uncertainty_separation" in weak["blockers"]
+    assert spectraxgk.matched_optimized_transport_report is matched_optimized_transport_report
 
 
 def test_replicated_transport_report_fails_closed_on_unscoped_or_noisy_payloads() -> None:
@@ -196,6 +284,18 @@ def test_replicated_transport_report_fails_closed_on_unscoped_or_noisy_payloads(
     assert report["mean_rel_spread_ok"] is False
     assert report["combined_sem_rel_ok"] is False
     assert report["report_count_ok"] is False
+
+
+def test_replicated_transport_report_requires_seed_and_timestep_provenance() -> None:
+    aggregate_only = _ensemble_payload(case="optimized", mean=2.5)
+    aggregate_only.pop("rows")
+
+    report = replicated_transport_ensemble_report("aggregate.json", aggregate_only)
+
+    assert report["qualifies_as_long_post_transient_replicate"] is False
+    assert report["seed_timestep_provenance_ok"] is False
+    assert report["seed_timestep_provenance"]["seed_values"] == []
+    assert report["seed_timestep_provenance"]["timestep_values"] == []
 
 
 def test_optimized_equilibrium_marker_and_reduced_scope_reports_are_fail_closed() -> None:
@@ -230,6 +330,14 @@ def test_production_nonlinear_guard_config_validation() -> None:
         ProductionNonlinearOptimizationGuardConfig(min_reports_per_ensemble=1),
         ProductionNonlinearOptimizationGuardConfig(max_mean_rel_spread=-1.0),
         ProductionNonlinearOptimizationGuardConfig(max_combined_sem_rel=-1.0),
+        ProductionNonlinearOptimizationGuardConfig(min_seed_variants=0),
+        ProductionNonlinearOptimizationGuardConfig(min_timestep_variants=0),
+        ProductionNonlinearOptimizationGuardConfig(
+            min_matched_optimized_relative_reduction=-1.0
+        ),
+        ProductionNonlinearOptimizationGuardConfig(
+            min_matched_optimized_uncertainty_sigma=-1.0
+        ),
         ProductionNonlinearOptimizationGuardConfig(value_floor=0.0),
     ]
 

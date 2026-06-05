@@ -71,6 +71,20 @@ def _metric(row: dict[str, Any], metric_key: str) -> float:
         raise ValueError(f"landscape row {row.get('label')} missing metric {metric_key!r}") from exc
 
 
+def _sample_statistics(row: dict[str, Any], metric_key: str) -> dict[str, Any] | None:
+    reports = row.get("reduced_metric_reports")
+    if not isinstance(reports, dict):
+        return None
+    report = reports.get(metric_key)
+    if not isinstance(report, dict):
+        return None
+    payload = report.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    statistics = payload.get("sample_statistics")
+    return dict(statistics) if isinstance(statistics, dict) else None
+
+
 def build_report(
     *,
     landscape_json: Path,
@@ -92,6 +106,8 @@ def build_report(
         baseline_metric=_metric(baseline_row, metric_key),
         candidate_metric=_metric(candidate_row, metric_key),
         objective_sample_set=landscape.get("sample_set"),
+        baseline_sample_statistics=_sample_statistics(baseline_row, metric_key),
+        candidate_sample_statistics=_sample_statistics(candidate_row, metric_key),
         failed_reference_relative_reduction=failed_reference_relative_reduction,
         policy=policy,
     )

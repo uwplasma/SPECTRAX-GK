@@ -36,6 +36,13 @@ DEFAULT_REPLICATED_ENSEMBLES = (
     ROOT / "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
     ROOT / "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
 )
+DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
+    ROOT
+    / "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+)
+DEFAULT_MATCHED_OPTIMIZED_AUDITS = (
+    ROOT / "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+)
 DEFAULT_OUT_JSON = ROOT / "docs/_static/production_nonlinear_optimization_guard.json"
 DEFAULT_OUT_PNG = ROOT / "docs/_static/production_nonlinear_optimization_guard.png"
 
@@ -134,6 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reduced-artifact", action="append", type=Path, default=[])
     parser.add_argument("--replicated-ensemble", action="append", type=Path, default=[])
     parser.add_argument("--optimized-equilibrium-ensemble", action="append", type=Path, default=[])
+    parser.add_argument("--matched-optimized-audit", action="append", type=Path, default=[])
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT_JSON)
     parser.add_argument("--out-png", type=Path, default=DEFAULT_OUT_PNG)
     parser.add_argument("--out-pdf", type=Path)
@@ -142,10 +150,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-reports-per-ensemble", type=int, default=2)
     parser.add_argument("--max-mean-rel-spread", type=float, default=0.15)
     parser.add_argument("--max-combined-sem-rel", type=float, default=0.25)
+    parser.add_argument("--min-matched-optimized-relative-reduction", type=float, default=0.05)
+    parser.add_argument("--min-matched-optimized-uncertainty-sigma", type=float, default=1.0)
     parser.add_argument(
         "--allow-missing-optimized-equilibrium-transport",
         action="store_true",
         help="Do not require optimized-equilibrium replicated transport for production promotion.",
+    )
+    parser.add_argument(
+        "--allow-missing-matched-optimized-audit",
+        action="store_true",
+        help="Do not require a matched baseline-to-optimized nonlinear transport audit for production promotion.",
     )
     parser.add_argument(
         "--fail-on-unsafe",
@@ -164,13 +179,19 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     reduced_paths = list(args.reduced_artifact) or list(DEFAULT_REDUCED_ARTIFACTS)
     replicated_paths = list(args.replicated_ensemble) or list(DEFAULT_REPLICATED_ENSEMBLES)
-    optimized_paths = list(args.optimized_equilibrium_ensemble)
+    optimized_paths = list(args.optimized_equilibrium_ensemble) or list(
+        DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES
+    )
+    matched_paths = list(args.matched_optimized_audit) or list(DEFAULT_MATCHED_OPTIMIZED_AUDITS)
     cfg = ProductionNonlinearOptimizationGuardConfig(
         min_replicated_ensembles=args.min_replicated_ensembles,
         min_reports_per_ensemble=args.min_reports_per_ensemble,
         max_mean_rel_spread=args.max_mean_rel_spread,
         max_combined_sem_rel=args.max_combined_sem_rel,
         require_optimized_equilibrium_transport=not args.allow_missing_optimized_equilibrium_transport,
+        require_matched_optimized_transport_audit=not args.allow_missing_matched_optimized_audit,
+        min_matched_optimized_relative_reduction=args.min_matched_optimized_relative_reduction,
+        min_matched_optimized_uncertainty_sigma=args.min_matched_optimized_uncertainty_sigma,
     )
     report = production_nonlinear_optimization_guard_report(
         optimization_artifact=_load_json(args.optimization_artifact),
@@ -178,6 +199,7 @@ def main(argv: list[str] | None = None) -> int:
         reduced_artifacts=_load_mapping(reduced_paths),
         replicated_ensemble_artifacts=_load_mapping(replicated_paths),
         optimized_equilibrium_artifacts=_load_mapping(optimized_paths),
+        matched_optimized_transport_artifacts=_load_mapping(matched_paths),
         config=cfg,
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)

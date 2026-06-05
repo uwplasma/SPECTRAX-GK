@@ -31,7 +31,7 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear turbulent-flux optimization evidence | 88% | Strict top-12 matched audit fails promotion, but the RBC(0,1) landscape gives a positive replicated selected-audit direction with prelaunch/admission gates |
+| Strict nonlinear turbulent-flux optimization evidence | 92% | Strict top-12 matched audit fails promotion; the RBC(0,1) landscape now passes reduced prelaunch, cross-sample, replicated landscape, and next-campaign admission gates |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
 | Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
@@ -179,10 +179,12 @@ No long nonlinear audit should be launched from these candidates.
    Its matched long-window nonlinear audit passed both ensemble gates but failed
    promotion, so it must not be described as nonlinear turbulent-flux
    optimization.
-2. Redesign the nonlinear-transfer objective before spending more long GPU
-   time. The next campaign should use a better-conditioned multi-surface,
-   multi-alpha transport metric, include an uncertainty-aware admission rule,
-   and require a larger reduced-objective margin before launch.
+2. Use `docs/_static/nonlinear_campaign_admission_report.json` as the launch
+   contract for the next nonlinear optimizer campaign. It admits the selected
+   ``+3% RBC(0,1)`` direction for a bounded multi-control campaign because the
+   reduced prelaunch gate, deterministic cross-sample dispersion gate, and
+   replicated nonlinear landscape gate all pass. It remains a campaign
+   admission, not a broad nonlinear turbulent-flux optimization claim.
 3. Keep the tracked failed-promotion artifacts in docs as negative evidence:
    `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json`,
    `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`,
@@ -190,11 +192,11 @@ No long nonlinear audit should be launched from these candidates.
    baseline/candidate ensemble JSON sidecars.
 4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
-5. Use the closed ``RBC(0,1)`` landscape result to design the next optimizer
-   admission rule: require reduced-objective margins large enough to survive
-   deterministic cross-sample spread, then confirm selected directions with
-   three-replicate ``t=[350,700]`` nonlinear SEM bars before launching broader
-   multi-coefficient optimization.
+5. Keep the production nonlinear optimization guard strict:
+   `docs/_static/production_nonlinear_optimization_guard.json` now requires
+   optimized-equilibrium seed/timestep provenance and a matched
+   baseline-to-optimized reduction audit before promotion. New optimized
+   candidates must reproduce that evidence structure before any broader claim.
 
 ## Release Hygiene Rules
 

@@ -12,6 +12,7 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
+    NonlinearSpectralRHSIdentityReport,
     classify_nonlinear_parallel_strategy,
     nonlinear_parallel_strategies,
     nonlinear_parallel_strategy,
@@ -26,6 +27,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearDomainTransportWindowReport",
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
+        "NonlinearSpectralRHSIdentityReport",
         "build_nonlinear_domain_decomposition_plan",
         "classify_nonlinear_parallel_strategy",
         "deterministic_nonlinear_domain_state",
@@ -37,6 +39,8 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "nonlinear_parallel_strategy",
         "nonlinear_spectral_communication_identity_gate",
         "nonlinear_spectral_communication_identity_report",
+        "nonlinear_spectral_rhs_identity_gate",
+        "nonlinear_spectral_rhs_identity_report",
         "prototype_nonlinear_domain_decomposed_step",
         "prototype_nonlinear_domain_serial_step",
         "release_ready_nonlinear_parallel_strategies",
@@ -54,6 +58,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert (
         NonlinearSpectralCommunicationReport
         is nonlinear_parallel.NonlinearSpectralCommunicationReport
+    )
+    assert (
+        NonlinearSpectralRHSIdentityReport
+        is nonlinear_parallel.NonlinearSpectralRHSIdentityReport
     )
     for name in public_names:
         assert getattr(spectraxgk, name) is getattr(nonlinear_parallel, name)
