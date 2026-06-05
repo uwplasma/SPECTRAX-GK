@@ -167,6 +167,15 @@ def _row_from_payload(payload: dict[str, Any], *, requested_devices: int) -> dic
         "max_abs_state_error": result.get("max_abs_state_error"),
         "max_rel_state_error": result.get("max_rel_state_error"),
         "profile_json": str(payload.get("_profile_json", "")),
+        "source_contract_version": payload.get("source_contract_version"),
+        "profile_command": payload.get("profile_command"),
+        "profile_command_argv": payload.get("profile_command_argv"),
+        "source_artifact": payload.get("source_artifact"),
+        "software_versions": payload.get("software_versions"),
+        "timing_warmup_repeat": payload.get("timing_warmup_repeat"),
+        "profile_backend": payload.get("backend", payload.get("default_backend")),
+        "profile_device_count": payload.get("device_count"),
+        "profile_sharding_axis": payload.get("sharding_axis", payload.get("state_sharding_requested")),
         "error": result.get("error"),
     }
 
@@ -375,6 +384,15 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         "max_abs_state_error",
         "max_rel_state_error",
         "profile_json",
+        "source_contract_version",
+        "profile_command",
+        "profile_command_argv",
+        "source_artifact",
+        "software_versions",
+        "timing_warmup_repeat",
+        "profile_backend",
+        "profile_device_count",
+        "profile_sharding_axis",
         "error",
     ]
     with csv_path.open("w", newline="", encoding="utf-8") as fh:

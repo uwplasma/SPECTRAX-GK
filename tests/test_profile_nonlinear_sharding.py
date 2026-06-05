@@ -50,6 +50,7 @@ def test_profile_nonlinear_sharding_source_contract_is_machine_readable(tmp_path
     contract = mod._source_contract(args, argv, backend="gpu", device_count=2)
 
     assert contract["backend"] == "gpu"
+    assert contract["source_contract_version"] == 1
     assert contract["device_count"] == 2
     assert contract["sharding_axis"] == "kx"
     assert contract["source_artifact"] == str(out_json.resolve())

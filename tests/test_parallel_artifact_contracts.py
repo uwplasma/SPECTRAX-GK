@@ -305,6 +305,119 @@ def test_parallel_scaling_artifact_checker_rejects_tiny_problem_metadata(
         mod.validate_family(tmp_path, family, check_sidecars=False)
 
 
+def test_parallel_scaling_artifact_checker_accepts_profile_source_contract(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    family = mod.ArtifactFamily(
+        name="profile_contract",
+        combined="profile_contract.json",
+        split=(),
+        expected_combined_kind="profile_contract",
+        expected_split_kind=None,
+        identity_claim_phrase="identity-only",
+        split_identity_claim_phrase=None,
+        timing_fields=("serial_median_s",),
+        error_fields=("max_abs_error",),
+        row_identity_key="identity_passed",
+        combined_has_inputs=False,
+    )
+    row = {
+        "requested_devices": 1,
+        "actual_devices": 1,
+        "backend": "gpu",
+        "identity_passed": True,
+        "serial_median_s": 1.0,
+        "max_abs_error": 0.0,
+        "source_contract_version": 1,
+        "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
+        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "source_artifact": "docs/_static/profile.json",
+        "software_versions": {
+            "python": "3.11.0",
+            "spectraxgk": "test",
+            "jax": "0.test",
+            "jaxlib": "0.test",
+            "numpy": "2.test",
+        },
+        "timing_warmup_repeat": {"warmups": 0, "repeats": 2},
+        "profile_backend": "gpu",
+        "profile_device_count": 1,
+        "profile_sharding_axis": "kx",
+    }
+    (tmp_path / "profile_contract.json").write_text(
+        json.dumps(
+            {
+                "kind": "profile_contract",
+                "identity_passed": True,
+                "claim_scope": "identity-only local test",
+                "rows": [row],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summary = mod.validate_family(tmp_path, family, check_sidecars=False)
+
+    assert summary["n_combined_rows"] == 1
+
+
+def test_parallel_scaling_artifact_checker_rejects_stale_profile_source_contract(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    family = mod.ArtifactFamily(
+        name="profile_contract",
+        combined="profile_contract.json",
+        split=(),
+        expected_combined_kind="profile_contract",
+        expected_split_kind=None,
+        identity_claim_phrase="identity-only",
+        split_identity_claim_phrase=None,
+        timing_fields=("serial_median_s",),
+        error_fields=("max_abs_error",),
+        row_identity_key="identity_passed",
+        combined_has_inputs=False,
+    )
+    row = {
+        "requested_devices": 1,
+        "actual_devices": 1,
+        "backend": "cpu",
+        "identity_passed": True,
+        "serial_median_s": 1.0,
+        "max_abs_error": 0.0,
+        "source_contract_version": 1,
+        "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
+        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "source_artifact": "docs/_static/profile.json",
+        "software_versions": {
+            "python": "3.11.0",
+            "spectraxgk": "test",
+            "jax": "0.test",
+            "jaxlib": "0.test",
+            "numpy": "2.test",
+        },
+        "timing_warmup_repeat": {"warmups": 0, "repeats": 2},
+        "profile_backend": "gpu",
+        "profile_device_count": 1,
+        "profile_sharding_axis": "kx",
+    }
+    (tmp_path / "profile_contract.json").write_text(
+        json.dumps(
+            {
+                "kind": "profile_contract",
+                "identity_passed": True,
+                "claim_scope": "identity-only local test",
+                "rows": [row],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="profile_backend must match row backend"):
+        mod.validate_family(tmp_path, family, check_sidecars=False)
+
+
 def test_parallel_scaling_artifact_checker_rejects_stale_production_gate(
     tmp_path: Path,
 ) -> None:

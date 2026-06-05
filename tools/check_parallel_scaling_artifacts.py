@@ -55,6 +55,14 @@ PRODUCTION_GATE_CLASSIFICATIONS = {
     "profile_error",
     "diagnostic_only",
 }
+PROFILE_SOURCE_CONTRACT_VERSION = 1
+PROFILE_SOURCE_CONTRACT_VERSION_KEYS = (
+    "python",
+    "spectraxgk",
+    "jax",
+    "jaxlib",
+    "numpy",
+)
 
 
 @dataclass(frozen=True)
@@ -236,6 +244,41 @@ def _assert_claim_scope(payload: dict[str, Any], phrase: str, context: str) -> N
         raise ValueError(f"{context}: claim_scope must include {phrase!r}")
 
 
+def _assert_optional_profile_source_contract(row: dict[str, Any], context: str) -> None:
+    """Validate versioned profiler provenance when a refreshed row carries it."""
+
+    version = row.get("source_contract_version")
+    if version is None:
+        return
+    if int(version) != PROFILE_SOURCE_CONTRACT_VERSION:
+        raise ValueError(
+            f"{context}: source_contract_version must be {PROFILE_SOURCE_CONTRACT_VERSION}"
+        )
+    for field in ("profile_command", "source_artifact", "profile_backend", "profile_sharding_axis"):
+        if not isinstance(row.get(field), str) or not row[field]:
+            raise ValueError(f"{context}: {field} must be a non-empty string")
+    argv = row.get("profile_command_argv")
+    if not isinstance(argv, list) or not argv or not all(isinstance(item, str) and item for item in argv):
+        raise ValueError(f"{context}: profile_command_argv must be a non-empty string list")
+    versions = row.get("software_versions")
+    if not isinstance(versions, dict):
+        raise ValueError(f"{context}: software_versions must be an object")
+    for key in PROFILE_SOURCE_CONTRACT_VERSION_KEYS:
+        if not isinstance(versions.get(key), str) or not versions[key]:
+            raise ValueError(f"{context}: software_versions.{key} must be a non-empty string")
+    timing = row.get("timing_warmup_repeat")
+    if not isinstance(timing, dict):
+        raise ValueError(f"{context}: timing_warmup_repeat must be an object")
+    for field in ("warmups", "repeats"):
+        value = timing.get(field)
+        if not isinstance(value, int) or value < 0:
+            raise ValueError(f"{context}: timing_warmup_repeat.{field} must be a non-negative integer")
+    if str(row.get("profile_backend")).lower() != str(row.get("backend", "")).lower():
+        raise ValueError(f"{context}: profile_backend must match row backend")
+    if int(row.get("profile_device_count") or 0) != int(row.get("actual_devices") or 0):
+        raise ValueError(f"{context}: profile_device_count must match actual_devices")
+
+
 def _grid_value(grid: dict[str, Any], name: str) -> int | None:
     aliases = {
         "Ny": ("Ny", "Ny_requested"),
@@ -320,6 +363,7 @@ def _assert_identity_payload(
             _finite_positive(row.get(field), field, row_context)
         for field in family.error_fields:
             _finite_nonnegative(row.get(field), field, row_context)
+        _assert_optional_profile_source_contract(row, row_context)
     if 1 not in seen_requested:
         raise ValueError(f"{context}: rows must include a one-device/worker baseline")
     return rows
@@ -638,7 +682,8 @@ def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool 
         family.combined,
         expected_kind=family.expected_combined_kind,
     )
-    _assert_csv_matches_json(root, family, family.combined, len(rows))
+    if check_sidecars:
+        _assert_csv_matches_json(root, family, family.combined, len(rows))
 
     if family.combined_has_inputs:
         inputs = combined.get("inputs")
@@ -667,7 +712,8 @@ def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool 
             expected_kind=family.expected_split_kind,
             claim_phrase=family.split_identity_claim_phrase,
         )
-        _assert_csv_matches_json(root, family, split_name, len(rows))
+        if check_sidecars:
+            _assert_csv_matches_json(root, family, split_name, len(rows))
         if family.name in {"independent_ky_scan", "quasilinear_uq_ensemble"}:
             _assert_worker_stats(rows, split_name)
         if family.profile_payloads_required:

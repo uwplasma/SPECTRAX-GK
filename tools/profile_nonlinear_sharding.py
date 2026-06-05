@@ -74,6 +74,7 @@ def _source_contract(
 ) -> dict[str, Any]:
     timing_warmup_repeat = {"warmups": int(args.warmups), "repeats": int(args.repeats)}
     return {
+        "source_contract_version": 1,
         "backend": str(jax.default_backend() if backend is None else backend),
         "device_count": int(jax.device_count() if device_count is None else device_count),
         "sharding_axis": str(args.sharding),

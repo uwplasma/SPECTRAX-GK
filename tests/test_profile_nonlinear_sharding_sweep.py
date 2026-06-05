@@ -59,8 +59,22 @@ def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> No
 def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate() -> None:
     mod = _load_tool_module()
     payload = {
+        "source_contract_version": 1,
+        "backend": "gpu",
         "device_count": 2,
         "default_backend": "gpu",
+        "sharding_axis": "kx",
+        "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
+        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "source_artifact": "/tmp/profile.json",
+        "software_versions": {
+            "python": "3.11.0",
+            "spectraxgk": "test",
+            "jax": "0.test",
+            "jaxlib": "0.test",
+            "numpy": "2.test",
+        },
+        "timing_warmup_repeat": {"warmups": 1, "repeats": 3},
         "state_shape": [4, 8, 17, 32, 64],
         "state_sharding_requested": "auto",
         "serial_stats_s": {"median": 10.0},
@@ -91,6 +105,15 @@ def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate
     assert row["parallel_median_s"] == 5.0
     assert row["same_process_speedup"] == 2.0
     assert row["identity_gate_pass"] is True
+    assert row["source_contract_version"] == 1
+    assert row["profile_command"].startswith("python tools/profile_nonlinear_sharding.py")
+    assert row["profile_command_argv"][-2:] == ["--sharding", "kx"]
+    assert row["source_artifact"] == "/tmp/profile.json"
+    assert row["software_versions"]["spectraxgk"] == "test"
+    assert row["timing_warmup_repeat"] == {"warmups": 1, "repeats": 3}
+    assert row["profile_backend"] == "gpu"
+    assert row["profile_device_count"] == 2
+    assert row["profile_sharding_axis"] == "kx"
 
 
 def test_profile_nonlinear_sharding_sweep_json_clean_replaces_nonfinite() -> None:

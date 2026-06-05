@@ -35,7 +35,7 @@ historical logs live outside the release repository so clones stay small.
 | Strict nonlinear transport and campaign-admission evidence | 92% | Strict top-12 matched audit fails promotion; the RBC(0,1) landscape now passes reduced prelaunch, cross-sample, replicated landscape, and next-campaign admission gates without promoting broad turbulent optimization |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
 | Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
-| Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear whole-state/domain sharding remains diagnostic unless identity and profiler gates pass |
+| Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

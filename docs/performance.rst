@@ -910,7 +910,12 @@ The profiler/identity artifact is generated with:
 The JSON records device count, requested sharding axis, warm serial/sharded
 timings, profiler-trace status, final-state errors, final-field/RHS diagnostic
 errors, and the fastest identity-preserving candidate among the requested
-state-axis options. The
+state-axis options. Refreshed profiler outputs also carry a versioned source
+contract with the exact command, command argv, source artifact, backend, device
+count, sharding axis, warmup/repeat policy, and Python/JAX/NumPy/SPECTRAX-GK
+versions. The fast parallel artifact checker validates that contract whenever
+it is present; older checked-in diagnostic profiles remain scoped until they
+are refreshed with the same metadata. The
 local checked-in artifact is deliberately small and only establishes the
 control-flow and single-device identity gate. The two-GPU office artifact at
 ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` records active
