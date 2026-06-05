@@ -552,6 +552,10 @@ writes transport-window summaries, convergence reports, readiness and ensemble
 JSON gates, and generates the publication-facing two-panel trace/uncertainty
 plot. This is the preferred path for new seed/timestep replicate evidence
 because it removes manual NetCDF-to-CSV and provenance-editing steps.
+The wrapper returns nonzero when readiness or ensemble gates fail.  Diagnostic
+landscape scans may pass ``--allow-failed-gates`` to finish collecting all
+points, but the produced JSON still records the failed gates and those points
+remain excluded from promotion claims.
 
 The first tracked external-VMEC replicate campaign applies that protocol to
 the admitted D-shaped nonlinear holdout. Six office-GPU runs were launched from

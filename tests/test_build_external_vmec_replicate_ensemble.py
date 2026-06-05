@@ -89,6 +89,48 @@ def test_replicate_ensemble_tool_builds_trace_reports_and_plot(tmp_path: Path) -
     )
 
 
+def test_replicate_ensemble_tool_can_collect_failed_diagnostic_points(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    outputs = [
+        tmp_path / "diagnostic_nonlinear_t100_n64_seed31.out.nc",
+        tmp_path / "diagnostic_nonlinear_t100_n64_seed32.out.nc",
+        tmp_path / "diagnostic_nonlinear_t100_n64_dt0p04.out.nc",
+    ]
+    for path, offset in zip(outputs, (-4.0, 0.0, 4.0)):
+        _write_output(path, offset)
+
+    common_args = [
+        *[str(path) for path in outputs],
+        "--case",
+        "diagnostic_landscape_point",
+        "--tmin",
+        "50",
+        "--tmax",
+        "100",
+        "--baseline-seed",
+        "22",
+        "--baseline-dt",
+        "0.05",
+        "--bootstrap-samples",
+        "32",
+        "--max-mean-rel-spread",
+        "0.01",
+    ]
+    strict_dir = tmp_path / "strict"
+    relaxed_dir = tmp_path / "relaxed"
+
+    strict_rc = mod.main([*common_args, "--out-dir", str(strict_dir)])
+    relaxed_rc = mod.main(
+        [*common_args, "--out-dir", str(relaxed_dir), "--allow-failed-gates"]
+    )
+
+    assert strict_rc == 1
+    assert relaxed_rc == 0
+    ensemble = json.loads((relaxed_dir / "replicate_ensemble_gate.json").read_text())
+    assert ensemble["passed"] is False
+    assert (relaxed_dir / "replicate_ensemble_gate.png").exists()
+
+
 def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(tmp_path: Path) -> None:
     mod = _load_tool_module()
     variant = mod._variant_from_path(

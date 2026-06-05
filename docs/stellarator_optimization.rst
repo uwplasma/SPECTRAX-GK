@@ -1108,7 +1108,7 @@ boundary-coefficient landscape diagnostic:
 :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`.
 It perturbs one VMEC input coefficient, writes the corresponding ``input.*``
 decks, evaluates deterministic reduced transport objectives, and optionally
-overlays replicated nonlinear heat-flux ensemble points with error bars. This
+overlays true post-transient nonlinear heat-flux points with uncertainty bars. This
 mirrors the optimization lesson in [Kim24]_: time-averaged nonlinear heat flux
 can be noisy enough that local deterministic descent may fail near a minimum,
 so the optimizer choice should be informed by a pre-optimizer landscape scan.
@@ -1127,8 +1127,9 @@ choices, but they cannot be plotted or cited as turbulent heat-flux
 landscapes.
 
 The reduced scan is intentionally reusable.  The batched evaluator computes
-growth, quasilinear, and nonlinear-window metrics in one VMEC/JAX solve per
-coefficient.  To regenerate the tracked figure without recomputing metrics,
+growth and all explicit quasilinear metrics in one VMEC/JAX solve per
+coefficient; reduced/startup nonlinear-window metrics are excluded from this
+landscape.  To regenerate the tracked figure without recomputing metrics,
 reuse the stored JSON sidecar::
 
    python tools/build_vmec_boundary_transport_landscape.py \
@@ -1143,6 +1144,11 @@ When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
 ``--nonlinear-ensemble coefficient_value:path/to/ensemble.json``.  Only those
 ensemble sidecars should feed uncertainty-aware nonlinear admission reports.
+For diagnostic landscapes that should show failed post-transient points instead
+of aborting the full scan, build each sidecar with
+``tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That
+flag only changes the command exit status; the JSON and plot still mark failed
+readiness or ensemble gates as failed and those points must not be promoted.
 
 When selected landscape points are promoted to expensive turbulence evidence,
 the nonlinear campaign-admission report should be rebuilt from the matching

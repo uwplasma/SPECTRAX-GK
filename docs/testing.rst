@@ -298,6 +298,11 @@ NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
 ``*.out.nc`` files, writes the transport-window summaries and convergence
 reports, runs the readiness and ensemble gates, and produces the documentation
 figure used by the manuscript ledger.
+It fails closed by default when those gates fail.  The explicit
+``--allow-failed-gates`` option is reserved for diagnostic landscapes where
+failed points must remain visible in the final plot rather than terminating a
+multi-point campaign; it must not be used to promote a nonlinear transport
+claim.
 Before those files enter the ensemble builder, run
 ``tools/check_nonlinear_runtime_outputs.py`` on every produced ``*.out.nc``.
 That gate verifies the grouped NetCDF contains ``Grids/time`` and the requested

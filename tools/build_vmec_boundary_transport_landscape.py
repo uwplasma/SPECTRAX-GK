@@ -690,7 +690,10 @@ def _nonlinear_launch_manifest(
         "commands": commands,
         "postprocess_instruction": (
             "After running the generated nonlinear configs, build one ensemble JSON per coefficient "
-            "and rerun this landscape with --nonlinear-ensemble coefficient_value:path."
+            "and rerun this landscape with --nonlinear-ensemble coefficient_value:path. For diagnostic "
+            "landscapes, build those ensemble JSON files with "
+            "tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates so failed "
+            "post-transient convergence points remain visible instead of aborting the full scan."
         ),
     }
 

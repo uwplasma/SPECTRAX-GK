@@ -50,6 +50,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-sem-rel", type=float, default=0.30)
     parser.add_argument("--max-mean-rel-spread", type=float, default=0.15)
     parser.add_argument("--max-combined-sem-rel", type=float, default=0.25)
+    parser.add_argument(
+        "--allow-failed-gates",
+        action="store_true",
+        help=(
+            "Write all readiness/ensemble artifacts and return success even when "
+            "the physics gates fail. Use only for diagnostic landscapes that plot "
+            "failed points explicitly; promotion/release gates should not use this."
+        ),
+    )
     return parser
 
 
@@ -385,12 +394,14 @@ def main(argv: list[str] | None = None) -> int:
         "readiness_json": _artifact_path(readiness_path, out_dir=out_dir, artifact_prefix=args.artifact_prefix),
         "ensemble_json": _artifact_path(ensemble_path, out_dir=out_dir, artifact_prefix=args.artifact_prefix),
         "png": _artifact_path(png_path, out_dir=out_dir, artifact_prefix=args.artifact_prefix),
+        "allow_failed_gates": bool(args.allow_failed_gates),
         "readiness_passed": bool(readiness["passed"]),
         "ensemble_passed": bool(ensemble["passed"]),
         "statistics": ensemble["statistics"],
     }
     print(json.dumps(payload, indent=2, sort_keys=True))
-    return 0 if bool(readiness["passed"]) and bool(ensemble["passed"]) else 1
+    passed = bool(readiness["passed"]) and bool(ensemble["passed"])
+    return 0 if passed or bool(args.allow_failed_gates) else 1
 
 
 if __name__ == "__main__":  # pragma: no cover
