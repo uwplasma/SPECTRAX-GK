@@ -844,6 +844,11 @@ is only ``0.58%`` with uncertainty z-score ``0.20``. Its
 keeps the nonlinear turbulent-flux optimization claim blocked until the
 reduced objective has stronger predictive margin and uncertainty-aware
 admission.
+The companion
+:download:`strict_qa_top12_edge_prelaunch_gate.json <_static/strict_qa_top12_edge_prelaunch_gate.json>`
+records the same lesson as a prelaunch rule: the ``2.2876%`` reduced margin is
+below the ``4%`` calibrated threshold, so a future candidate at this margin
+would be blocked before launching a new expensive nonlinear campaign.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_reduced_nonlinear_audit_prelaunch_report import build_report, main
+from tools.build_reduced_nonlinear_audit_prelaunch_report import (
+    build_metric_report,
+    build_report,
+    main,
+)
 
 from spectraxgk.vmec_jax_transport_admission import VMECJAXReducedPrelaunchPolicy
 
@@ -77,3 +81,24 @@ def test_cli_writes_blocked_report(tmp_path: Path) -> None:
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["passed"] is False
     assert "insufficient_reduced_margin_for_nonlinear_audit" in payload["blockers"]
+
+
+def test_metric_mode_builds_negative_prelaunch_reference() -> None:
+    report = build_metric_report(
+        baseline_metric=0.08010670290,
+        candidate_metric=0.07827418221,
+        sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        metric_key="nonlinear_window_heat_flux",
+        failed_reference_relative_reduction=0.022876,
+        policy=VMECJAXReducedPrelaunchPolicy(
+            minimum_relative_reduction=0.04,
+            failed_reference_safety_factor=1.5,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert report["relative_reduced_reduction"] < report["required_relative_reduced_reduction"]

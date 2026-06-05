@@ -113,11 +113,62 @@ def build_report(
     return report
 
 
+def build_metric_report(
+    *,
+    baseline_metric: float,
+    candidate_metric: float,
+    sample_set: dict[str, list[float]] | None,
+    metric_key: str,
+    failed_reference_relative_reduction: float | None,
+    policy: VMECJAXReducedPrelaunchPolicy,
+) -> dict[str, Any]:
+    """Build a reduced prelaunch report from explicit metrics."""
+
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=baseline_metric,
+        candidate_metric=candidate_metric,
+        objective_sample_set=sample_set,
+        failed_reference_relative_reduction=failed_reference_relative_reduction,
+        policy=policy,
+    )
+    report["artifacts"] = {
+        "landscape_json": None,
+    }
+    report["selected_rows"] = {
+        "baseline": None,
+        "candidate": None,
+    }
+    return report
+
+
+def _sample_set_from_args(args: argparse.Namespace) -> dict[str, list[float]] | None:
+    if args.sample_set_json is not None:
+        payload = _load_json(args.sample_set_json)
+        return {
+            "surfaces": [float(item) for item in payload.get("surfaces", ())],
+            "alphas": [float(item) for item in payload.get("alphas", ())],
+            "ky_values": [float(item) for item in payload.get("ky_values", ())],
+        }
+    if args.surface or args.alpha or args.ky:
+        return {
+            "surfaces": [float(item) for item in args.surface],
+            "alphas": [float(item) for item in args.alpha],
+            "ky_values": [float(item) for item in args.ky],
+        }
+    return None
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--landscape-json", type=Path, required=True)
+    parser.add_argument("--landscape-json", type=Path)
     parser.add_argument("--baseline-row", default="0")
-    parser.add_argument("--candidate-row", required=True)
+    parser.add_argument("--candidate-row")
+    parser.add_argument("--baseline-metric", type=float)
+    parser.add_argument("--candidate-metric", type=float)
+    parser.add_argument("--sample-set-json", type=Path)
+    parser.add_argument("--surface", type=float, action="append", default=[])
+    parser.add_argument("--alpha", type=float, action="append", default=[])
+    parser.add_argument("--ky", type=float, action="append", default=[])
     parser.add_argument("--metric-key", default="nonlinear_window_heat_flux")
     parser.add_argument("--failed-reference-relative-reduction", type=float)
     parser.add_argument("--min-relative-reduction", type=float, default=0.04)
@@ -134,14 +185,30 @@ def main(argv: list[str] | None = None) -> int:
         minimum_relative_reduction=float(args.min_relative_reduction),
         failed_reference_safety_factor=float(args.failed_reference_safety_factor),
     )
-    report = build_report(
-        landscape_json=args.landscape_json,
-        baseline_selector=str(args.baseline_row),
-        candidate_selector=str(args.candidate_row),
-        metric_key=str(args.metric_key),
-        failed_reference_relative_reduction=args.failed_reference_relative_reduction,
-        policy=policy,
-    )
+    if args.landscape_json is not None:
+        if args.candidate_row is None:
+            raise SystemExit("--candidate-row is required when --landscape-json is used")
+        report = build_report(
+            landscape_json=args.landscape_json,
+            baseline_selector=str(args.baseline_row),
+            candidate_selector=str(args.candidate_row),
+            metric_key=str(args.metric_key),
+            failed_reference_relative_reduction=args.failed_reference_relative_reduction,
+            policy=policy,
+        )
+    else:
+        if args.baseline_metric is None or args.candidate_metric is None:
+            raise SystemExit(
+                "either --landscape-json or both --baseline-metric and --candidate-metric are required"
+            )
+        report = build_metric_report(
+            baseline_metric=float(args.baseline_metric),
+            candidate_metric=float(args.candidate_metric),
+            sample_set=_sample_set_from_args(args),
+            metric_key=str(args.metric_key),
+            failed_reference_relative_reduction=args.failed_reference_relative_reduction,
+            policy=policy,
+        )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(

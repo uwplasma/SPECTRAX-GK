@@ -308,3 +308,7 @@ No long nonlinear audit should be launched from these candidates.
   ``RBC(0,1)`` landscape, ``p0p03`` passes with a ``4.678%`` reduced
   nonlinear-window margin over a ``4%`` threshold derived from the failed
   strict top-12 transfer reference.
+- Materialized the complementary negative prelaunch artifact
+  `docs/_static/strict_qa_top12_edge_prelaunch_gate.json`: the strict top-12
+  edge candidate's ``2.2876%`` reduced margin is blocked against the same
+  ``4%`` threshold before any future GPU launch at that margin.
