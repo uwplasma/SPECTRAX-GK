@@ -1116,6 +1116,29 @@ the compact ensemble sidecars only::
      --out-json docs/_static/vmec_boundary_transport_landscape_admission.json \
      --fail-on-no-admission
 
+The reduced-objective prelaunch gate is separate. It prevents weak local
+reduced improvements from automatically triggering expensive long-window GPU
+audits. The current gate uses the failed strict top-12 transfer
+(``2.2876%`` reduced improvement with no nonlinear promotion) as a reference
+and requires the next selected candidate to clear both a ``4%`` reduced-margin
+threshold and the multi-sample objective-coverage gate::
+
+   python tools/build_reduced_nonlinear_audit_prelaunch_report.py \
+     --landscape-json docs/_static/vmec_boundary_transport_landscape_rbc01.json \
+     --baseline-row 0 \
+     --candidate-row p0p03 \
+     --metric-key nonlinear_window_heat_flux \
+     --failed-reference-relative-reduction 0.022876 \
+     --min-relative-reduction 0.04 \
+     --failed-reference-safety-factor 1.5 \
+     --out-json docs/_static/vmec_boundary_transport_prelaunch_gate.json \
+     --fail-on-blocked
+
+For the ``RBC(0,1)`` landscape this prelaunch gate passes: the selected
+``+3%`` row reduces the reduced nonlinear-window metric by ``4.678%``, above
+the ``4%`` calibrated threshold. Passing this gate permits a replicated
+nonlinear audit; it is not itself a turbulent-transport optimization claim.
+
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
    :width: 82%
@@ -1145,12 +1168,15 @@ Implementation Map
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
 - Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/build_nonlinear_landscape_admission_report.py>`
+- Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/build_reduced_nonlinear_audit_prelaunch_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.
 - Nonlinear landscape admission report:
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
+- Reduced nonlinear-audit prelaunch gate:
+  :download:`vmec_boundary_transport_prelaunch_gate.json <_static/vmec_boundary_transport_prelaunch_gate.json>`
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
 - Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`

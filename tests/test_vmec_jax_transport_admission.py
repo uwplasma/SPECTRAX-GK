@@ -5,9 +5,11 @@ import json
 import spectraxgk
 from spectraxgk.vmec_jax_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
+    VMECJAXReducedPrelaunchPolicy,
     VMECJAXTransportAdmissionPolicy,
     build_nonlinear_landscape_admission_report,
     build_nonlinear_audit_redesign_report,
+    build_reduced_nonlinear_audit_prelaunch_report,
     build_transport_admission_report,
     candidate_transport_metric,
     select_admitted_transport_candidate,
@@ -216,6 +218,55 @@ def test_nonlinear_landscape_admission_validates_candidate_labels() -> None:
         assert "same length" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("mismatched candidate labels were accepted")
+
+
+def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() -> None:
+    baseline = 0.06558065223919245
+    candidate = 0.06251277500404685
+
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=baseline,
+        candidate_metric=candidate,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        failed_reference_relative_reduction=0.022876,
+        policy=VMECJAXReducedPrelaunchPolicy(minimum_relative_reduction=0.04),
+    )
+
+    assert report["passed"] is True
+    assert report["relative_reduced_reduction"] > 0.046
+    assert report["required_relative_reduced_reduction"] == 0.04
+    assert report["blockers"] == []
+    assert report["gates"][0]["passed"] is True
+    assert spectraxgk.VMECJAXReducedPrelaunchPolicy is VMECJAXReducedPrelaunchPolicy
+    assert (
+        spectraxgk.build_reduced_nonlinear_audit_prelaunch_report
+        is build_reduced_nonlinear_audit_prelaunch_report
+    )
+
+
+def test_reduced_nonlinear_audit_prelaunch_blocks_weak_failed_transfer_margin() -> None:
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=0.08010670290,
+        candidate_metric=0.07827418221,
+        objective_sample_set={
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.1, 0.3, 0.5],
+        },
+        failed_reference_relative_reduction=0.022876,
+        policy=VMECJAXReducedPrelaunchPolicy(
+            minimum_relative_reduction=0.04,
+            failed_reference_safety_factor=1.5,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert "insufficient_reduced_margin_for_nonlinear_audit" in report["blockers"]
+    assert report["relative_reduced_reduction"] < report["required_relative_reduced_reduction"]
 
 
 def test_transport_sample_summary_requires_surface_alpha_and_ky_coverage() -> None:

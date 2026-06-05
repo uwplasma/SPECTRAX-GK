@@ -30,7 +30,7 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear turbulent-flux optimization evidence | 86% | Strict top-12 matched audit fails promotion, but the RBC(0,1) landscape gives a positive replicated selected-audit direction |
+| Strict nonlinear turbulent-flux optimization evidence | 88% | Strict top-12 matched audit fails promotion, but the RBC(0,1) landscape gives a positive replicated selected-audit direction with prelaunch/admission gates |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
 | Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
@@ -303,3 +303,8 @@ No long nonlinear audit should be launched from these candidates.
 - Added the nonlinear landscape admission JSON to the release-readiness
   required-artifact contract, so this positive selected-audit evidence cannot
   silently disappear from future release candidates.
+- Added a reduced nonlinear-audit prelaunch gate. It blocks reduced candidates
+  below a calibrated margin before expensive GPU audits; applied to the
+  ``RBC(0,1)`` landscape, ``p0p03`` passes with a ``4.678%`` reduced
+  nonlinear-window margin over a ``4%`` threshold derived from the failed
+  strict top-12 transfer reference.

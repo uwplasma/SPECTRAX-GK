@@ -74,6 +74,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "nonlinear_domain_parallel_identity_gate.json",
         "nonlinear_spectral_communication_identity_gate.json",
         "vmec_boundary_transport_landscape_admission.json",
+        "vmec_boundary_transport_prelaunch_gate.json",
     ):
         (root / "docs" / "_static" / artifact).write_text("{}", encoding="utf-8")
     (root / "docs" / "_static" / "technical_release_status.json").write_text(

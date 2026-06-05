@@ -55,6 +55,7 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
+    "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
