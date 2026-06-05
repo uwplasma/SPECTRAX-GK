@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 
 from tools.build_vmec_boundary_transport_landscape import (
     DEFAULT_FRACTIONS,
+    _load_nonlinear_ensemble,
     _parse_float_list,
     _reuse_reduced_metrics_from_report,
     _sample_standard_error,
@@ -186,6 +187,31 @@ def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: P
         assert "sample_set.surfaces" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("mismatched sample set was accepted")
+
+
+def test_load_nonlinear_ensemble_preserves_uncertainty_and_pass_flag(tmp_path: Path) -> None:
+    sidecar = tmp_path / "candidate_ensemble_gate.json"
+    sidecar.write_text(
+        """
+{
+  "case": "landscape_rbc_1_1_m0p5_replicated_nonlinear_window",
+  "passed": false,
+  "statistics": {
+    "ensemble_mean": 14.43919388557596,
+    "combined_sem": 0.5831708511946153
+  }
+}
+""",
+        encoding="utf-8",
+    )
+
+    point = _load_nonlinear_ensemble(f"0.06331225406918571:{sidecar}")
+
+    assert point["coefficient_value"] == 0.06331225406918571
+    assert point["mean"] == 14.43919388557596
+    assert point["sem"] == 0.5831708511946153
+    assert point["passed"] is False
+    assert point["case"] == "landscape_rbc_1_1_m0p5_replicated_nonlinear_window"
 
 
 def test_patch_vmec_jax_wout_metadata_fills_zero_scalars(tmp_path: Path) -> None:

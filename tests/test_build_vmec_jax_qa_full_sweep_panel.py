@@ -327,3 +327,28 @@ def test_plot_payload_handles_missing_wouts_and_writes_panel(tmp_path: Path) -> 
     assert out.stat().st_size > 0
     assert cleaned["cases"][0]["history"]["transport_metric_final"] is None
     json.dumps(cleaned, allow_nan=False)
+
+
+def test_iota_profile_plot_omits_vmec_axis_point() -> None:
+    fig, ax = mod.plt.subplots()
+    try:
+        mod._plot_iota_profiles(
+            ax,
+            [
+                {
+                    "label": "baseline",
+                    "iota_profile": {
+                        "s": [0.0, 0.5, 1.0],
+                        "iotas": [0.0, 0.39, 0.42],
+                    },
+                }
+            ],
+        )
+
+        profile_line = next(line for line in ax.lines if line.get_label() == "baseline")
+
+        assert list(profile_line.get_xdata()) == [0.5, 1.0]
+        assert list(profile_line.get_ydata()) == [0.39, 0.42]
+        assert "axis point omitted" in ax.get_title()
+    finally:
+        mod.plt.close(fig)
