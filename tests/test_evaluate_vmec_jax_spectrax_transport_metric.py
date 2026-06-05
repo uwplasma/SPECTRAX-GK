@@ -116,6 +116,36 @@ def test_sample_statistics_from_state_reports_weighted_reduced_spread(monkeypatc
     assert "not stochastic" in stats["claim_scope"]
 
 
+def test_sample_statistics_from_objective_table_reuses_batched_table() -> None:
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.45, 0.64),
+        alphas=(0.0,),
+        ky_values=(0.1, 0.2),
+    )
+    config = VMECJAXTransportObjectiveConfig(
+        kind="quasilinear_flux",
+        sample_set=samples,
+        ntheta=8,
+        mboz=21,
+        nboz=21,
+        n_laguerre=1,
+        n_hermite=1,
+    )
+    objective_table = np.asarray([[[[0.5], [1.0]]], [[[1.5], [2.0]]]])
+
+    stats = mod.sample_statistics_from_objective_table(
+        objective_table=objective_table,
+        config=config,
+        include_rows=True,
+    )
+
+    assert stats["n_samples"] == 4
+    assert stats["weighted_mean"] == pytest.approx(1.25)
+    assert stats["weighted_std"] == pytest.approx(np.sqrt(0.3125))
+    assert stats["weighted_standard_error"] == pytest.approx(np.sqrt(0.3125) / 2.0)
+    assert [row["value"] for row in stats["rows"]] == [0.5, 1.0, 1.5, 2.0]
+
+
 def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> None:
     args = mod.parse_args(
         [
@@ -133,3 +163,21 @@ def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> Non
     assert args.mboz == 21
     assert args.nboz == 21
     assert args.surface_chunk_size == 0
+
+
+def test_parse_args_accepts_batched_metric_output_dir(tmp_path: Path) -> None:
+    args = mod.parse_args(
+        [
+            "--input",
+            "input.final",
+            "--out-json",
+            str(tmp_path / "batch.json"),
+            "--transport-kind",
+            "all",
+            "--out-json-dir",
+            str(tmp_path / "metrics"),
+        ]
+    )
+
+    assert args.transport_kind == "all"
+    assert args.out_json_dir == tmp_path / "metrics"

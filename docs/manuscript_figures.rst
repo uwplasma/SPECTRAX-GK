@@ -326,45 +326,30 @@ Differentiable-Physics Figures
        conflated with the reduced synthetic max-mode-1 optimization panels.
    * - Full max-mode-5 QA transport optimizer sweep
      - ``tools/build_vmec_jax_qa_full_sweep_panel.py`` from office
-       ``runs_onepoint`` VMEC-JAX outputs
-     - Scoped optimizer-algorithm comparison ready for README/docs; strict
-       constraints-only QA baseline closed; projected-weight ``5e-4``/``1e-3``
-       single-point nonlinear audits remain tied to the earlier sweep baseline
+       ``vmec_jax_qa_full_sweep_20260605`` VMEC-JAX outputs
+     - Strict QA baseline provenance closed; transport rows are scoped
+       optimizer-output diagnostics with nonlinear ``Q(t)`` promotion pending
      - current artifact base:
        ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV
-       companions and
-       ``docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.png``
-       and
-       ``docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png``
-       with JSON companions; a PDF companion is regenerated locally with
-       ``--pdf`` when needed. The strict constraints-only QA baseline sidecar
-       ``docs/_static/vmec_jax_qa_strict_baseline/summary.json`` records the
-       exact SciPy/ESS run with aspect ``5.000154``, mean iota ``0.4101997``,
-       QS residual ``2.60e-4``, ``nfev=39``, and a passed solved-WOUT gate.
-       The sweep compares the earlier SciPy QA baseline, stopped
-       scalar-trust QA baseline, direct growth/QL/L-BFGS transport objectives,
-       a stopped direct nonlinear-window branch, and projected/admission
-       transport weights ``5e-4`` and ``1e-3``. Direct scalar transport
-       branches either degrade aspect ratio, iota, or quasisymmetry, while the
-       projected/admission branches keep the solved-WOUT gate and reduce the
-       reduced nonlinear-window metric from ``0.0644`` to ``0.0612``. The
-       heat-flux subplot now includes matched post-transient SPECTRAX-GK
-       seed/timestep ensembles for the QA baseline and projected weights
-       ``5e-4`` and ``1e-3``. The best audited candidate so far, projected
-       weight ``1e-3``, lowers the late-window mean ion heat flux from
-       ``9.695`` to ``9.370`` over ``t=[350,700]``: a ``3.35%`` reduction with
-       uncertainty separation ``z=1.56``. Projected weight ``5e-4`` also
-       passes with a ``2.68%`` reduction and ``z=1.32``. These matched
-       nonlinear traces are scoped to the earlier sweep baseline; the next
-       promotion step is to rerun baseline/candidate transport audits against
-       the strict exact QA WOUT. This supports single-surface,
-       single-field-line, single-``k_y`` positive audits only; broader
-       nonlinear turbulent-flux optimization still requires multi-surface,
-       multi-alpha, and multi-``k_y`` promotion gates.
+       companions; a PDF companion is regenerated locally with ``--pdf`` when
+       needed. The current campaign uses the upstream-style VMEC-JAX
+       max-mode-5 simple seed and records an admitted constraints-only QA
+       baseline with aspect ``4.999999``, mean iota ``0.410200``, and QS
+       residual ``8.91e-6``. The growth, quasilinear, and nonlinear-window
+       rows restart from that solved QA baseline and use one representative
+       sample, ``s=0.64``, ``alpha=0``, ``k_y rho_i=0.30``, with
+       ``mboz=nboz=21``. They produce real optimizer outputs, not synthetic
+       surfaces, but each stops slightly below the strict ``iota >= 0.41``
+       gate. Consequently the nonlinear heat-flux subplot is intentionally
+       marked pending and no turbulent-flux reduction is claimed from this
+       sweep. The old projected-weight nonlinear audits remain historical
+       single-point evidence tied to an earlier baseline and should not be
+       conflated with this strict-baseline panel.
    * - Boundary-coefficient transport landscape
      - ``tools/build_vmec_boundary_transport_landscape.py`` and ``tools/patch_vmec_jax_wout_metadata.py``
-     - Closed as one-coefficient landscape/noise diagnostic with replicated nonlinear error bars
-     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions, the policy report ``docs/_static/vmec_boundary_transport_landscape_admission.json``, the prelaunch report ``docs/_static/vmec_boundary_transport_prelaunch_gate.json``, and ensemble sidecars under ``docs/_static/vmec_boundary_transport_landscape_replicates``. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-6%, -3%, 0, +3%, +6%]`` and evaluates the 18-point reduced sample set over three surfaces, two field-line labels, and three ``k_y`` values. The ``+3%`` perturbation is best for all three reduced objectives: growth decreases by about ``51%``, quasilinear flux by about ``49%``, and the reduced nonlinear-window objective by about ``4.7%``. The reduced panels include cross-sample standard-error bars; those are deterministic sample-spread diagnostics, not stochastic nonlinear turbulence uncertainty. The bottom panel overlays three replicated ``t=[350,700]`` nonlinear windows at baseline, ``+3%``, and ``+6%``. The nonlinear ensembles give ``<Q_i>=8.554 +/- 0.120`` at baseline, ``6.275 +/- 0.042`` at ``+3%``, and ``6.427 +/- 0.044`` at ``+6%``. Thus the selected nonlinear audit confirms a ``26.7%`` reduction for ``+3%`` with uncertainty separation ``z=18.0`` and a ``24.9%`` reduction for ``+6%`` with ``z=16.7``. The nonlinear landscape admission report selects ``+3% RBC(0,1)``, and the reduced prelaunch gate records that the selected reduced nonlinear-window margin is ``4.678%`` against a ``4%`` calibrated threshold. This is positive optimizer-noise and campaign-admission evidence for this coefficient direction, not a multi-coefficient turbulent-optimization claim.
+     - Closed as a strict-baseline one-coefficient landscape/noise diagnostic;
+       replicated nonlinear error bars are pending for this refreshed scan
+     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-50%, +50%]`` with 21 points and evaluates one representative reduced sample, ``s=0.64``, ``alpha=0``, ``k_y rho_i=0.30``, at ``ntheta=16``, ``mboz=nboz=21``, ``Nl=1``, and ``Nm=2``. The growth and quasilinear baselines are essentially marginal, ``8.05e-15`` and ``9.20e-15``, so the top panel reports absolute log-scale values and should not be read as a robust growth/QL reduction claim. The nonlinear-window baseline is finite at ``2.811e-2`` and the best one-coefficient point is near ``+35%`` with value ``2.485e-2``, about ``11.6%`` lower than baseline. No replicated long-window nonlinear ensembles are attached to this strict-baseline landscape yet, so the figure is a launch/noise diagnostic and optimizer-design input, not a promoted nonlinear turbulent-flux optimization result. Earlier ``+3%`` narrow-scan admission sidecars remain historical development artifacts only.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

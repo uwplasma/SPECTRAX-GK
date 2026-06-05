@@ -229,6 +229,107 @@ def _run_reduced_metric(
     }
 
 
+def _run_reduced_metric_batch(
+    *,
+    row: dict[str, Any],
+    kinds: tuple[str, ...],
+    args: argparse.Namespace,
+    metric_dir: Path,
+) -> dict[str, dict[str, Any]]:
+    """Evaluate all missing reduced metrics for one coefficient in one VMEC solve."""
+
+    out_dir = metric_dir / str(row["label"])
+    out_json = out_dir / "batch.json"
+    cmd = [
+        sys.executable,
+        str(ROOT / "tools/evaluate_vmec_jax_spectrax_transport_metric.py"),
+        "--input",
+        str(row["input_path"]),
+        "--out-json",
+        str(out_json),
+        "--out-json-dir",
+        str(out_dir),
+        "--outdir",
+        str(out_dir / "batch_vmec"),
+        "--transport-kind",
+        "all",
+        "--surfaces",
+        str(args.surfaces),
+        "--alphas",
+        str(args.alphas),
+        "--ky-values",
+        str(args.ky_values),
+        "--ntheta",
+        str(int(args.ntheta)),
+        "--mboz",
+        str(int(args.mboz)),
+        "--nboz",
+        str(int(args.nboz)),
+        "--n-laguerre",
+        str(int(args.n_laguerre)),
+        "--n-hermite",
+        str(int(args.n_hermite)),
+        "--inner-max-iter",
+        str(int(args.inner_max_iter)),
+        "--trial-max-iter",
+        str(int(args.trial_max_iter)),
+        "--inner-ftol",
+        f"{float(args.inner_ftol):.16g}",
+        "--trial-ftol",
+        f"{float(args.trial_ftol):.16g}",
+        "--spectrax-objective-transform",
+        str(args.spectrax_objective_transform),
+        "--spectrax-objective-scale",
+        f"{float(args.spectrax_objective_scale):.16g}",
+    ]
+    if int(args.surface_chunk_size) > 0:
+        cmd.extend(["--surface-chunk-size", str(int(args.surface_chunk_size))])
+    if args.solver_device is not None:
+        cmd.extend(["--solver-device", str(args.solver_device)])
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=ROOT,
+            timeout=float(args.metric_timeout),
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            kind: {
+                "kind": kind,
+                "metric_json": out_dir / f"{kind}.json",
+                "command": cmd,
+                "returncode": 124,
+                "error": f"batched metric eval timed out after {float(args.metric_timeout):.1f}s",
+                "stdout_tail": (exc.stdout or "")[-1200:] if isinstance(exc.stdout, str) else "",
+                "stderr_tail": (exc.stderr or "")[-1200:] if isinstance(exc.stderr, str) else "",
+                "value": None,
+            }
+            for kind in kinds
+        }
+    reports: dict[str, dict[str, Any]] = {}
+    for kind in kinds:
+        kind_json = out_dir / f"{kind}.json"
+        payload = None
+        value = None
+        if result.returncode == 0 and kind_json.exists():
+            payload = json.loads(kind_json.read_text(encoding="utf-8"))
+            value = float(payload["transport_objective_final"])
+        reports[kind] = {
+            "kind": kind,
+            "metric_json": kind_json,
+            "command": cmd,
+            "returncode": int(result.returncode),
+            "stdout_tail": result.stdout[-1200:],
+            "stderr_tail": result.stderr[-1200:],
+            "value": value,
+            "payload": payload,
+        }
+    return reports
+
+
 def _load_nonlinear_ensemble(raw: str) -> dict[str, Any]:
     try:
         value_raw, path_raw = raw.split(":", 1)
@@ -419,7 +520,9 @@ def _write_plot(
     metrics = {kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
     metric_errors = {kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
 
-    fig, axes = plt.subplots(3, 1, figsize=(7.8, 8.2), sharex=True, constrained_layout=True)
+    n_axes = 3 if nonlinear_points else 2
+    fig, axes = plt.subplots(n_axes, 1, figsize=(7.8, 8.2 if nonlinear_points else 6.2), sharex=True, constrained_layout=True)
+    axes = np.atleast_1d(axes)
     colors = {
         "growth": "#0f766e",
         "quasilinear_flux": "#1d4ed8",
@@ -431,15 +534,28 @@ def _write_plot(
         "nonlinear_window_heat_flux": "reduced nonlinear-window objective",
     }
     ax0 = axes[0]
+    top_absolute = any(
+        np.any(np.isfinite(metrics[kind]))
+        and (
+            not np.isfinite(metrics[kind][baseline_index])
+            or abs(float(metrics[kind][baseline_index])) < 1.0e-10
+        )
+        for kind in ("growth", "quasilinear_flux")
+    )
     for kind in ("growth", "quasilinear_flux"):
         y = metrics[kind]
         if np.any(np.isfinite(y)):
             scale = abs(_normalization_scale(y, baseline_index=baseline_index))
-            yerr = metric_errors[kind] / max(scale, 1.0e-30)
+            if top_absolute:
+                y_plot = y
+                yerr = metric_errors[kind]
+            else:
+                y_plot = _normalize(y, baseline_index=baseline_index)
+                yerr = metric_errors[kind] / max(scale, 1.0e-30)
             yerr = yerr if np.any(np.isfinite(yerr)) else None
             ax0.errorbar(
                 x,
-                _normalize(y, baseline_index=baseline_index),
+                y_plot,
                 yerr=yerr,
                 marker="o",
                 lw=1.8,
@@ -447,7 +563,12 @@ def _write_plot(
                 color=colors[kind],
                 label=labels[kind],
             )
-    ax0.set_ylabel("normalized reduced objective")
+    ax0.set_ylabel("absolute reduced objective" if top_absolute else "normalized reduced objective")
+    if top_absolute:
+        positive = np.concatenate([metrics["growth"], metrics["quasilinear_flux"]])
+        positive = positive[np.isfinite(positive) & (positive > 0.0)]
+        if positive.size and float(np.nanmax(positive) / max(np.nanmin(positive), 1.0e-300)) > 100.0:
+            ax0.set_yscale("log")
     ax0.set_title(f"{report['coefficient']} transport-objective landscape")
     ax0.legend(frameon=False, fontsize=8)
     ax0.grid(True, alpha=0.25)
@@ -455,12 +576,11 @@ def _write_plot(
     ax1 = axes[1]
     y = metrics["nonlinear_window_heat_flux"]
     if np.any(np.isfinite(y)):
-        scale = abs(_normalization_scale(y, baseline_index=baseline_index))
-        yerr = metric_errors["nonlinear_window_heat_flux"] / max(scale, 1.0e-30)
+        yerr = metric_errors["nonlinear_window_heat_flux"]
         yerr = yerr if np.any(np.isfinite(yerr)) else None
         ax1.errorbar(
             x,
-            _normalize(y, baseline_index=baseline_index),
+            y,
             yerr=yerr,
             marker="o",
             lw=1.8,
@@ -468,12 +588,12 @@ def _write_plot(
             color=colors["nonlinear_window_heat_flux"],
             label=labels["nonlinear_window_heat_flux"],
         )
-    ax1.set_ylabel("normalized reduced objective")
+    ax1.set_ylabel("absolute reduced objective")
     ax1.legend(frameon=False, fontsize=8)
     ax1.grid(True, alpha=0.25)
 
-    ax2 = axes[2]
     if nonlinear_points:
+        ax2 = axes[2]
         base = float(report["baseline_coefficient_value"])
         xs = np.asarray([(float(point["coefficient_value"]) / base - 1.0) * 100.0 for point in nonlinear_points])
         means = np.asarray([float(point["mean"]) for point in nonlinear_points])
@@ -482,28 +602,25 @@ def _write_plot(
         ax2.errorbar(xs, means, yerr=sem, fmt="none", ecolor="0.25", elinewidth=1.1, capsize=4)
         ax2.scatter(xs, means, c=colors_nl, s=48, edgecolors="0.15", linewidths=0.5, zorder=3)
         ax2.set_ylabel(r"replicated $\langle Q_i\rangle$")
-    else:
-        ax2.text(
-            0.5,
-            0.55,
-            "No replicated nonlinear heat-flux ensembles supplied yet.\n"
-            "Use the launch manifest, then rerun this plot with --nonlinear-ensemble value:path.",
-            transform=ax2.transAxes,
-            ha="center",
-            va="center",
-            fontsize=9,
+        ax2.grid(True, alpha=0.25)
+        ax2.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
+        ax_secondary = ax2.secondary_xaxis(
+            "top",
+            functions=(
+                lambda frac_percent: float(report["baseline_coefficient_value"]) * (1.0 + frac_percent / 100.0),
+                lambda value: (value / float(report["baseline_coefficient_value"]) - 1.0) * 100.0,
+            ),
         )
-        ax2.set_ylabel(r"replicated $\langle Q_i\rangle$")
-    ax2.grid(True, alpha=0.25)
-    ax2.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
-    ax2_secondary = ax2.secondary_xaxis(
-        "top",
-        functions=(
-            lambda frac_percent: float(report["baseline_coefficient_value"]) * (1.0 + frac_percent / 100.0),
-            lambda value: (value / float(report["baseline_coefficient_value"]) - 1.0) * 100.0,
-        ),
-    )
-    ax2_secondary.set_xlabel(f"{report['coefficient']} value")
+    else:
+        ax1.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
+        ax_secondary = ax1.secondary_xaxis(
+            "top",
+            functions=(
+                lambda frac_percent: float(report["baseline_coefficient_value"]) * (1.0 + frac_percent / 100.0),
+                lambda value: (value / float(report["baseline_coefficient_value"]) - 1.0) * 100.0,
+            ),
+        )
+    ax_secondary.set_xlabel(f"{report['coefficient']} value")
     fig.savefig(path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
@@ -625,9 +742,20 @@ def main(argv: list[str] | None = None) -> int:
         )
     for row in rows:
         if bool(args.evaluate_reduced):
-            for kind in kinds:
-                if kind in row["reduced_metrics"]:
-                    continue
+            missing_kinds = tuple(kind for kind in kinds if kind not in row["reduced_metrics"])
+            if len(missing_kinds) > 1:
+                batch_results = _run_reduced_metric_batch(
+                    row=row,
+                    kinds=missing_kinds,
+                    args=args,
+                    metric_dir=metric_dir,
+                )
+                for kind, result in batch_results.items():
+                    row["reduced_metric_reports"][kind] = result
+                    if result.get("value") is not None:
+                        row["reduced_metrics"][kind] = float(result["value"])
+                continue
+            for kind in missing_kinds:
                 result = _run_reduced_metric(row=row, kind=kind, args=args, metric_dir=metric_dir)
                 row["reduced_metric_reports"][kind] = result
                 if result.get("value") is not None:

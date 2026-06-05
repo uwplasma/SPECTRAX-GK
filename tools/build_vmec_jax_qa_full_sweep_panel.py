@@ -44,9 +44,15 @@ CASE_LABELS = {
     "growth_lbfgs_adjoint": "growth\nL-BFGS adjoint",
     "quasilinear_scalar_trust": "QL flux\nscalar trust",
     "nonlinear_window_scalar_trust": "NL-window\nscalar trust",
+    "growth_from_strict_baseline": "growth\nfrom strict QA",
+    "quasilinear_from_strict_baseline": "QL flux\nfrom strict QA",
+    "nonlinear_window_from_strict_baseline": "NL-window\nfrom strict QA",
 }
 PREFERRED_ORDER = (
     "qa_baseline_scipy",
+    "growth_from_strict_baseline",
+    "quasilinear_from_strict_baseline",
+    "nonlinear_window_from_strict_baseline",
     "qa_baseline_scalar_trust",
     "growth_scalar_trust",
     "growth_lbfgs_adjoint",
@@ -55,9 +61,9 @@ PREFERRED_ORDER = (
 )
 PREFERRED_SURFACE_IDS = (
     "qa_baseline_scipy",
-    "growth_scalar_trust",
-    "quasilinear_scalar_trust",
-    "projected_guarded_ladder/transport_weight_0p0005",
+    "growth_from_strict_baseline",
+    "quasilinear_from_strict_baseline",
+    "nonlinear_window_from_strict_baseline",
 )
 
 

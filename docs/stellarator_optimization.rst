@@ -152,20 +152,20 @@ generated ``run_manifest.json`` commands explicitly on the target workstation.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
-Its default mode reuses the tracked reduced-metric JSON and overlays replicated
-``t=[350,700]`` nonlinear ensemble gates. Set ``EVALUATE_REDUCED = True`` to
-rerun the deterministic growth, quasilinear, and nonlinear-window metrics for
-a new coefficient scan.
+Its default mode reuses the tracked strict-baseline ``RBC(0,1)`` reduced-metric
+JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth,
+quasilinear, and nonlinear-window metrics for a new coefficient scan. Replicated
+``t=[350,700]`` nonlinear ensemble gates are intentionally a separate promotion
+step and are not overlaid unless explicit ensemble sidecars are supplied.
 
-.. figure:: _static/qa_itg_optimization_summary_panel.png
-   :alt: QA ITG optimization summary panel
+.. figure:: _static/vmec_jax_qa_full_sweep_panel.png
+   :alt: VMEC-JAX QA max-mode-5 optimizer sweep
    :width: 98%
    :align: center
 
-   Compact README-facing summary built from tracked VMEC-JAX WOUTs,
-   SPECTRAX-GK reduced transport landscapes, and matched long-window nonlinear
-   heat-flux audits. The sidecar
-   :download:`qa_itg_optimization_summary_panel.json <_static/qa_itg_optimization_summary_panel.json>`
+   README-facing strict QA optimizer sweep built from tracked VMEC-JAX WOUTs and
+   SPECTRAX-GK reduced transport residuals. The sidecar
+   :download:`vmec_jax_qa_full_sweep_panel.json <_static/vmec_jax_qa_full_sweep_panel.json>`
    records the exact artifact provenance.
 
 Full Max-Mode-5 Optimizer Sweeps
@@ -187,15 +187,18 @@ then build the comparison panel from the real ``history.json`` and
      --strict-upstream-qa-baseline --solver-device gpu \
      --outdir runs_onepoint/qa_baseline_strict_upstream
 
-   # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone:
+   # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone,
+   # restart transport optimizers from the strict solved QA baseline.  The
+   # representative differentiable residual below is intentionally smaller than
+   # the later validation grid; full multi-surface nonlinear claims require
+   # separate post-optimization audits.
    python tools/vmec_jax_qa_low_turbulence_optimization.py \
-     --use-simple-seed --max-mode 5 --min-vmec-mode 7 \
+     --input runs_onepoint/qa_baseline_strict_upstream/input.final \
+     --disable-mode-continuation --max-mode 5 --min-vmec-mode 7 \
      --target-aspect 5.0 --min-iota 0.41 --disable-iota-profile-floor \
      --mboz 21 --nboz 21 \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.10,0.30,0.50 \
-     --transport-kind growth --method scalar_trust --spectrax-weight 0.01 \
+     --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
+     --transport-kind growth --method scalar_trust --spectrax-weight 0.10 \
      --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
 
    # Locally, after copying the campaign directory back:
@@ -203,13 +206,15 @@ then build the comparison panel from the real ``history.json`` and
      --run-root tools_out/vmec_jax_qa_full_sweep_YYYYMMDD \
      --out docs/_static/vmec_jax_qa_full_sweep_panel.png --pdf
 
-The panel builder compares the upstream-style QA baseline, growth-rate,
-quasilinear-flux, nonlinear-window, and projected/admission variants when their
-run directories are present. It plots objective histories, solved-WOUT
-``iota`` profiles, final aspect/``iota``/QS diagnostics, reduced transport
-metrics, 3-D LCFS surfaces colored by ``|B|``, and LCFS ``|B|`` maps. It only
-plots nonlinear heat-flux traces when matched long-window SPECTRAX-GK audit
-CSV files are present below the corresponding candidate directory.
+The panel builder compares the upstream-style QA baseline plus any completed
+growth-rate, quasilinear-flux, nonlinear-window, and projected/admission
+variants whose run directories are present. The current README-facing sweep
+uses the strict max-mode-5 QA baseline and three transport restarts from that
+baseline. It plots objective histories, solved-WOUT ``iota`` profiles, final
+aspect/``iota``/QS diagnostics, reduced transport metrics, 3-D LCFS surfaces
+colored by ``|B|``, and LCFS ``|B|`` maps. It only plots nonlinear heat-flux
+traces when matched long-window SPECTRAX-GK audit CSV files are present below
+the corresponding candidate directory.
 
 This distinction is deliberate. The optimizer residual named
 ``nonlinear_window_heat_flux`` is a differentiable screening objective based on
@@ -296,15 +301,15 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    :width: 98%
    :align: center
 
-   Full ``max_mode=5`` optimizer sweep from the office GPU node. The direct
-   scalar growth, quasilinear, and L-BFGS growth branches expose the main
-   failure mode: a small improvement or degradation in the reduced transport
-   metric can come with large aspect-ratio, iota-profile, or quasisymmetry
-   damage. The projected/admission branches keep the solved-WOUT gate intact
-   and lower the reduced nonlinear-window metric relative to the QA baseline.
-   The heat-flux subplot now includes matched post-transient SPECTRAX-GK
-   seed/timestep ensembles for the QA baseline and the projected weight
-   ``5e-4`` and ``1e-3`` candidates over ``t=[350,700]``.
+   Full ``max_mode=5`` optimizer-output sweep from the office GPU node. The
+   admitted constraints-only row follows the upstream VMEC-JAX QA simple-seed
+   setup and passes the strict aspect/iota/QS gate. The growth, quasilinear, and
+   nonlinear-window transport rows restart from that solved QA input and expose
+   the current constraint-preservation issue: each lowers the representative
+   reduced residual but stops just below the strict mean-iota admission gate.
+   The nonlinear heat-flux column is therefore marked pending until concrete
+   candidate WOUTs pass admission and receive matched long-window SPECTRAX-GK
+   ``Q(t)`` audits.
 
 .. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate
@@ -548,11 +553,12 @@ status, and the long-window nonlinear audit anchor:
    not a universal absolute-flux predictor. The nonlinear heat-flux bar pair is
    the separate replicated long-window audit anchor used to keep
    optimized-equilibrium transport claims distinct from reduced-objective
-   optimization attempts. The prelaunch-policy row combines the replicated
-   landscape admission, the passing 18-point selected-candidate reduced gate,
-   and the deliberately failing weak-reference gate; the failed weak reference
-   is a pass for the policy because it blocks small reduced margins before
-   spending long nonlinear runtime.
+   optimization attempts. The older prelaunch-policy row is retained as a
+   legacy control: it combines the earlier narrow-scan replicated landscape
+   admission, an 18-point selected-candidate reduced gate, and a deliberately
+   failing weak-reference gate. The refreshed strict-baseline ``RBC(0,1)``
+   landscape is documented separately below and needs new matched nonlinear
+   ensemble sidecars before it can feed the same admission policy.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
@@ -1108,116 +1114,64 @@ mirrors the optimization lesson in [Kim24]_: time-averaged nonlinear heat flux
 can be noisy enough that local deterministic descent may fail near a minimum,
 so the optimizer choice should be informed by a pre-optimizer landscape scan.
 
-The current ``RBC(0,1)`` diagnostic starts from the strict QA baseline and
-uses the same 18-point reduced objective coverage used by the projected
-admission gate: ``s = (0.45, 0.64, 0.78)``,
-``alpha = (0, pi/4)``, and ``k_y rho_i = (0.10, 0.30, 0.50)``. In this reduced
-scan, the ``+3%`` coefficient perturbation lowers the linear growth objective
-by about ``51%``, the quasilinear-flux objective by about ``49%``, and the
-reduced nonlinear-window objective by about ``4.7%``. The last reduction is
-small compared with the deterministic cross-sample spread over the
-surface/field-line/``k_y`` grid, so the diagnostic was followed by replicated
-long-window nonlinear runs at the baseline, ``+3%``, and ``+6%`` points. The
-selected nonlinear audit uses three ``t=[350,700]`` post-transient windows per
-coefficient value: two random seeds at ``dt=0.05`` and one timestep replicate
-at ``dt=0.04``. The resulting ensemble means are
-``8.554 +/- 0.120`` for the baseline, ``6.275 +/- 0.042`` for ``+3%``, and
-``6.427 +/- 0.044`` for ``+6%``. Thus the ``+3%`` point reduces the audited
-nonlinear heat flux by ``26.7%`` with uncertainty separation ``z=18.0``; the
-``+6%`` point reduces it by ``24.9%`` with ``z=16.7``. This closes the
-one-coefficient landscape/noise diagnostic and motivates uncertainty-aware
-optimizer admission, but it remains a selected nonlinear audit rather than a
-multi-coefficient, multi-flux-tube turbulent-optimization claim.
-The machine-readable admission sidecar
-:download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
-applies the nonlinear landscape policy to these ensembles and selects the
-``+3%`` coefficient step.
+The current ``RBC(0,1)`` diagnostic starts from the strict max-mode-5 QA
+baseline used in the optimizer sweep and scans the coefficient over
+``[-50%, +50%]`` with 21 points.  It uses a representative reduced ITG sample
+(``s = 0.64``, ``alpha = 0``, ``k_y rho_i = 0.30``) so the full landscape can be
+recomputed cheaply enough to guide optimizer choices.  At this representative
+sample, the linear-growth and quasilinear baselines are nearly marginal
+(``~1e-14``), so the figure shows absolute values instead of normalized
+growth/QL reductions.  The nonlinear-window screening objective remains finite:
+the baseline value is ``2.81e-2`` and the best point in this one-coefficient
+scan is near ``+35%`` with value ``2.48e-2``.  These are reduced objective
+landscape diagnostics only; no replicated nonlinear heat-flux ensembles are
+attached to the strict-baseline scan yet.
 
-The reduced scan is intentionally reusable. Once the long nonlinear ensembles
-finish, regenerate the same figure without recomputing the 18-point reduced
-sample by passing the stored JSON plus the nonlinear sidecars::
+The reduced scan is intentionally reusable.  The batched evaluator computes
+growth, quasilinear, and nonlinear-window metrics in one VMEC/JAX solve per
+coefficient.  To regenerate the tracked figure without recomputing metrics,
+reuse the stored JSON sidecar::
 
    python tools/build_vmec_boundary_transport_landscape.py \
+     --baseline-input tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final \
      --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc01.json \
-     --surfaces 0.45,0.64,0.78 \
-     --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.1,0.3,0.5 \
-     --nonlinear-ensemble 0.20973126251035024:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json \
-     --nonlinear-ensemble 0.21602320038566075:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json \
-     --nonlinear-ensemble 0.22231513826097127:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json
+     --fractions=-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50 \
+     --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
+     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2
 
-The corresponding uncertainty-aware nonlinear admission report is built from
-the compact ensemble sidecars only::
+When selected landscape points are promoted to expensive turbulence evidence,
+run replicated post-transient nonlinear ensembles and rerun the plot with
+``--nonlinear-ensemble coefficient_value:path/to/ensemble.json``.  Only those
+ensemble sidecars should feed uncertainty-aware nonlinear admission reports.
 
-   python tools/build_nonlinear_landscape_admission_report.py \
-     --baseline-ensemble docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json \
-     --candidate-ensemble "+3% RBC(0,1)" docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json \
-     --candidate-ensemble "+6% RBC(0,1)" docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json \
-     --min-relative-reduction 0.02 \
-     --min-uncertainty-z-score 1.0 \
-     --max-combined-sem-rel 0.25 \
-     --min-replicate-count 3 \
-     --out-json docs/_static/vmec_boundary_transport_landscape_admission.json \
-     --fail-on-no-admission
-
-The reduced-objective prelaunch gate is separate. It prevents weak local
-reduced improvements from automatically triggering expensive long-window GPU
-audits. The current gate uses the failed strict top-12 transfer
-(``2.2876%`` reduced improvement with no nonlinear promotion) as a reference
-and requires the next selected candidate to clear both a ``4%`` reduced-margin
-threshold and the multi-sample objective-coverage gate::
-
-   python tools/build_reduced_nonlinear_audit_prelaunch_report.py \
-     --landscape-json docs/_static/vmec_boundary_transport_landscape_rbc01.json \
-     --baseline-row 0 \
-     --candidate-row p0p03 \
-     --metric-key nonlinear_window_heat_flux \
-     --failed-reference-relative-reduction 0.022876 \
-     --min-relative-reduction 0.04 \
-     --failed-reference-safety-factor 1.5 \
-     --out-json docs/_static/vmec_boundary_transport_prelaunch_gate.json \
-     --fail-on-blocked
-
-For the ``RBC(0,1)`` landscape this prelaunch gate passes: the selected
-``+3%`` row reduces the reduced nonlinear-window metric by ``4.678%``, above
-the ``4%`` calibrated threshold. The regenerated prelaunch artifact also
-records deterministic cross-sample standard-error ratios of about ``0.226``
-for the baseline and ``0.224`` for the candidate, below the ``0.35`` gate.
-Passing this gate permits a replicated nonlinear audit; it is not itself a
-turbulent-transport optimization claim.
-
-The next-campaign admission gate combines the reduced prelaunch report with
-the replicated nonlinear landscape admission. It is the machine-readable
-answer to whether this one-coefficient diagnostic is strong enough to seed a
-bounded multi-control optimizer campaign::
+When selected landscape points are promoted to expensive turbulence evidence,
+the nonlinear campaign-admission report should be rebuilt from the matching
+strict-baseline reduced scan and the new replicated nonlinear landscape
+sidecars::
 
    python tools/build_nonlinear_campaign_admission_report.py \
-     --prelaunch-report docs/_static/vmec_boundary_transport_prelaunch_gate.json \
-     --landscape-admission docs/_static/vmec_boundary_transport_landscape_admission.json \
-     --out-json docs/_static/nonlinear_campaign_admission_report.json \
+     --prelaunch-report path/to/current_prelaunch_gate.json \
+     --landscape-admission path/to/current_landscape_admission.json \
+     --out-json path/to/current_campaign_admission_report.json \
      --fail-on-blocked
 
-The current report passes and selects ``+3% RBC(0,1)``. Its requirements are
-deliberately stricter than a reduced metric: reduced prelaunch must pass,
-multi-sample coverage must pass, reduced cross-sample dispersion must be
-bounded, the replicated landscape must admit a selected candidate, and the
-selected nonlinear landscape point must exceed ``10%`` relative heat-flux
-reduction, ``3``-sigma uncertainty separation, three replicas, and
-``5%`` relative SEM. This admits a next campaign; it still does not promote a
-broad multi-coefficient or multi-flux-tube turbulent-optimization claim.
+Earlier ``+3% RBC(0,1)`` admission sidecars are retained as historical
+development artifacts only. They were generated from the older narrow scan and
+should not be interpreted as admission reports for the current strict-baseline
+``[-50%, +50%]`` figure.
 
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
    :width: 82%
    :align: center
 
-   ``RBC(0,1)`` transport-objective landscape. The top two panels are reduced
-   deterministic diagnostics only; their error bars are cross-sample standard
-   errors over the configured surface/field-line/``k_y`` grid, not stochastic
-   turbulent-flux uncertainty. The bottom panel shows replicated nonlinear
-   heat-flux ensemble means and combined SEM bars from the long-window GPU
-   audit. The reduced proxy is shallow, but the selected nonlinear points are
-   strongly separated from baseline in this one-coefficient scan.
+   ``RBC(0,1)`` transport-objective landscape from the strict max-mode-5 QA
+   baseline. The top panel shows absolute growth-rate and quasilinear reduced
+   objectives because the representative baseline is nearly marginal. The
+   bottom panel shows the finite nonlinear-window screening objective. No
+   replicated turbulent-heat-flux ensemble is attached to this strict-baseline
+   scan yet, so the figure is a launch/noise diagnostic rather than a promoted
+   nonlinear optimization result.
 
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar
@@ -1241,11 +1195,11 @@ Implementation Map
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.
-- Nonlinear landscape admission report:
+- Legacy nonlinear landscape admission report from the earlier narrow scan:
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
-- Reduced nonlinear-audit prelaunch gate:
+- Legacy reduced nonlinear-audit prelaunch gate from the earlier narrow scan:
   :download:`vmec_boundary_transport_prelaunch_gate.json <_static/vmec_boundary_transport_prelaunch_gate.json>`
-- Next nonlinear optimizer campaign-admission gate:
+- Legacy nonlinear optimizer campaign-admission gate from the earlier narrow scan:
   :download:`nonlinear_campaign_admission_report.json <_static/nonlinear_campaign_admission_report.json>`
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`

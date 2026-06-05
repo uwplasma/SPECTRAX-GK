@@ -11,6 +11,7 @@ nonlinear audits.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 from pathlib import Path
 import sys
@@ -31,11 +32,13 @@ from spectraxgk import (  # noqa: E402
 )
 from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES  # noqa: E402
 from spectraxgk.stellarator_objective_portfolio import (  # noqa: E402
+    aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
 )
 from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
 from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
+    _apply_objective_transform,
     _reference_wout_from_context,
     _solver_table_to_nonlinear_window_proxy,
     _static_grid_options_from_ky_values,
@@ -46,6 +49,7 @@ from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
 DEFAULT_SURFACES = (0.45, 0.64, 0.78)
 DEFAULT_ALPHAS = (0.0, 0.7853981633974483)
 DEFAULT_KY_VALUES = (0.10, 0.30, 0.50)
+DEFAULT_TRANSPORT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -140,12 +144,27 @@ def _objective_table_from_feature_table(
     return table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")][..., None]
 
 
-def sample_statistics_from_state(
-    *,
-    ctx: Any,
-    state: Any,
+def _metric_from_objective_table(
+    objective_table: Any,
     config: VMECJAXTransportObjectiveConfig,
-    wout_reference: Any | None = None,
+) -> float:
+    samples = config.sample_set
+    weights = (1.0,) if config.objective_weights is None else config.objective_weights
+    raw = aggregate_objective_portfolio(
+        objective_table,
+        surface_weights=samples.surface_weights,
+        alpha_weights=samples.alpha_weights,
+        ky_weights=samples.ky_weights,
+        objective_weights=weights,
+        reduction=samples.reduction,
+    )
+    return float(np.asarray(_apply_objective_transform(raw, config)))
+
+
+def sample_statistics_from_objective_table(
+    *,
+    objective_table: Any,
+    config: VMECJAXTransportObjectiveConfig,
     include_rows: bool = False,
 ) -> dict[str, Any]:
     """Return deterministic sample-spread diagnostics for the reduced objective.
@@ -156,19 +175,6 @@ def sample_statistics_from_state(
     """
 
     samples = config.sample_set
-    grid_options = _static_grid_options_from_ky_values(
-        samples.ky_values,
-        min_ny=int(config.ny),
-    )
-    table = _transport_feature_table_from_state(
-        state,
-        ctx.static,
-        ctx.indata,
-        wout_reference if wout_reference is not None else _reference_wout_from_context(ctx),
-        config,
-        grid_options,
-    )
-    objective_table = _objective_table_from_feature_table(table, config)
     if samples.reduction not in ("weighted_mean", "mean"):
         return {
             "claim_scope": "sample_spread_not_defined_for_non_mean_reduction",
@@ -234,19 +240,52 @@ def sample_statistics_from_state(
     return payload
 
 
-def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
-    """Evaluate the configured transport metric on the supplied VMEC input."""
+def sample_statistics_from_state(
+    *,
+    ctx: Any,
+    state: Any,
+    config: VMECJAXTransportObjectiveConfig,
+    wout_reference: Any | None = None,
+    include_rows: bool = False,
+) -> dict[str, Any]:
+    """Return deterministic sample-spread diagnostics for the reduced objective."""
 
-    import vmec_jax as vj
-    import vmec_jax.optimization_workflow as workflow
+    samples = config.sample_set
+    grid_options = _static_grid_options_from_ky_values(
+        samples.ky_values,
+        min_ny=int(config.ny),
+    )
+    table = _transport_feature_table_from_state(
+        state,
+        ctx.static,
+        ctx.indata,
+        wout_reference if wout_reference is not None else _reference_wout_from_context(ctx),
+        config,
+        grid_options,
+    )
+    return sample_statistics_from_objective_table(
+        objective_table=_objective_table_from_feature_table(table, config),
+        config=config,
+        include_rows=include_rows,
+    )
 
-    sample_set = StellaratorITGSampleSet(
+
+def _sample_set_from_args(args: argparse.Namespace) -> StellaratorITGSampleSet:
+    return StellaratorITGSampleSet(
         surfaces=tuple(float(x) for x in args.surfaces),
         alphas=tuple(float(x) for x in args.alphas),
         ky_values=tuple(float(x) for x in args.ky_values),
     )
-    config = VMECJAXTransportObjectiveConfig(
-        kind=args.transport_kind,
+
+
+def _config_from_args(
+    args: argparse.Namespace,
+    *,
+    transport_kind: str,
+    sample_set: StellaratorITGSampleSet,
+) -> VMECJAXTransportObjectiveConfig:
+    return VMECJAXTransportObjectiveConfig(
+        kind=transport_kind,
         sample_set=sample_set,
         ntheta=int(args.ntheta),
         mboz=int(args.mboz),
@@ -257,7 +296,18 @@ def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
         objective_scale=float(args.spectrax_objective_scale),
         surface_chunk_size=int(args.surface_chunk_size),
     )
-    objective = VMECJAXSpectraxTransportObjective(config=config)
+
+
+def evaluate_metrics(args: argparse.Namespace, kinds: tuple[str, ...]) -> dict[str, dict[str, Any]]:
+    """Evaluate one VMEC state and return reports for several transport metrics."""
+
+    import vmec_jax as vj
+    import vmec_jax.optimization_workflow as workflow
+
+    sample_set = _sample_set_from_args(args)
+    base_kind = "quasilinear_flux" if any(kind != "growth" for kind in kinds) else "growth"
+    base_config = _config_from_args(args, transport_kind=base_kind, sample_set=sample_set)
+    objective = VMECJAXSpectraxTransportObjective(config=base_config)
     vmec = vj.FixedBoundaryVMEC.from_input(
         args.input,
         max_mode=int(args.max_mode),
@@ -284,31 +334,54 @@ def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
     # boundary once and call the SPECTRAX objective directly; no boundary update
     # or least-squares step is taken.
     state = stage.optimizer._solve_forward(params0, trial=False)  # noqa: SLF001
-    metric = float(np.asarray(objective.J(stage.ctx, state)))
-    if not np.isfinite(metric):
-        raise RuntimeError(f"non-finite SPECTRAX transport metric: {metric!r}")
-    sample_statistics = sample_statistics_from_state(
-        ctx=stage.ctx,
+    grid_options = _static_grid_options_from_ky_values(
+        sample_set.ky_values,
+        min_ny=int(base_config.ny),
+    )
+    table = _transport_feature_table_from_state(
         state=state,
-        config=config,
-        wout_reference=objective.wout_reference,
-        include_rows=bool(args.include_sample_rows),
+        static=stage.ctx.static,
+        indata=stage.ctx.indata,
+        wout_reference=objective.wout_reference
+        if objective.wout_reference is not None
+        else _reference_wout_from_context(stage.ctx),
+        config=base_config,
+        grid_options=grid_options,
     )
-    return build_report(
-        input_path=Path(args.input),
-        max_mode=int(args.max_mode),
-        min_vmec_mode=int(args.min_vmec_mode),
-        transport_kind=str(args.transport_kind),
-        sample_set=sample_set,
-        config=config,
-        metric=metric,
-        solver_device=args.solver_device,
-        inner_max_iter=int(args.inner_max_iter),
-        inner_ftol=float(args.inner_ftol),
-        trial_max_iter=int(args.trial_max_iter),
-        trial_ftol=float(args.trial_ftol),
-        sample_statistics=sample_statistics,
-    )
+    reports: dict[str, dict[str, Any]] = {}
+    for kind in kinds:
+        config = replace(base_config, kind=kind)
+        objective_table = _objective_table_from_feature_table(table, config)
+        metric = _metric_from_objective_table(objective_table, config)
+        if not np.isfinite(metric):
+            raise RuntimeError(f"non-finite SPECTRAX transport metric for {kind}: {metric!r}")
+        sample_statistics = sample_statistics_from_objective_table(
+            objective_table=objective_table,
+            config=config,
+            include_rows=bool(args.include_sample_rows),
+        )
+        reports[kind] = build_report(
+            input_path=Path(args.input),
+            max_mode=int(args.max_mode),
+            min_vmec_mode=int(args.min_vmec_mode),
+            transport_kind=str(kind),
+            sample_set=sample_set,
+            config=config,
+            metric=metric,
+            solver_device=args.solver_device,
+            inner_max_iter=int(args.inner_max_iter),
+            inner_ftol=float(args.inner_ftol),
+            trial_max_iter=int(args.trial_max_iter),
+            trial_ftol=float(args.trial_ftol),
+            sample_statistics=sample_statistics,
+        )
+    return reports
+
+
+def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
+    """Evaluate the configured transport metric on the supplied VMEC input."""
+
+    return evaluate_metrics(args, (str(args.transport_kind),))[str(args.transport_kind)]
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -325,8 +398,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-vmec-mode", type=int, default=7)
     parser.add_argument(
         "--transport-kind",
-        choices=("growth", "quasilinear_flux", "nonlinear_window_heat_flux"),
+        choices=(*DEFAULT_TRANSPORT_KINDS, "all"),
         default="growth",
+    )
+    parser.add_argument(
+        "--out-json-dir",
+        type=Path,
+        default=None,
+        help="When --transport-kind=all, also write one JSON report per metric kind into this directory.",
     )
     parser.add_argument("--surfaces", type=_float_tuple, default=DEFAULT_SURFACES)
     parser.add_argument("--alphas", type=_float_tuple, default=DEFAULT_ALPHAS)
@@ -363,7 +442,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    report = evaluate_metric(args)
+    if args.transport_kind == "all":
+        reports = evaluate_metrics(args, DEFAULT_TRANSPORT_KINDS)
+        if args.out_json_dir is not None:
+            args.out_json_dir.mkdir(parents=True, exist_ok=True)
+            for kind, report in reports.items():
+                (args.out_json_dir / f"{kind}.json").write_text(
+                    json.dumps(_json_safe(report), indent=2, allow_nan=False),
+                    encoding="utf-8",
+                )
+        report = {
+            "kind": "vmec_jax_spectrax_transport_metric_eval_batch",
+            "input": str(args.input),
+            "transport_kinds": list(DEFAULT_TRANSPORT_KINDS),
+            "reports": reports,
+        }
+    else:
+        report = evaluate_metric(args)
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(json.dumps(_json_safe(report), indent=2, allow_nan=False), encoding="utf-8")
     print(json.dumps(_json_safe(report), indent=2, allow_nan=False))
