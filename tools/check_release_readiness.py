@@ -243,12 +243,13 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
 
     failed_flags = []
     for key, expected in REQUIRED_OPTIMIZATION_STATUS_FLAGS.items():
-        if bool(summary.get(key)) is not expected:
+        observed = summary.get(key)
+        if not isinstance(observed, bool) or observed is not expected:
             failed_flags.append(
                 {
                     "key": key,
                     "expected": expected,
-                    "observed": summary.get(key),
+                    "observed": observed,
                 }
             )
     failed_prelaunch_rows = [
