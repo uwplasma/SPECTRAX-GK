@@ -558,10 +558,6 @@ def _write_plot(
         kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float)
         for kind in metric_kinds
     }
-    metric_errors = {
-        kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float)
-        for kind in metric_kinds
-    }
 
     fig, axes = plt.subplots(2, 1, figsize=(7.8, 6.6), sharex=True, constrained_layout=True)
     axes = np.atleast_1d(axes)
@@ -589,12 +585,10 @@ def _write_plot(
         y = metrics[kind]
         if np.any(np.isfinite(y)):
             y_plot = y
-            yerr = metric_errors[kind]
-            yerr = yerr if np.any(np.isfinite(yerr)) else None
             ax0.errorbar(
                 x,
                 y_plot,
-                yerr=yerr,
+                yerr=None,
                 marker="o",
                 lw=1.6,
                 capsize=3,
