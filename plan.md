@@ -21,8 +21,9 @@ historical logs live outside the release repository so clones stay small.
 - Release posture: technically shippable after the current patch release lands;
   broad manuscript-level nonlinear turbulence-optimization claims are not
   promoted. The strict QA baseline and the new RBC(1,1) landscape are tracked
-  as optimization/noise diagnostics while matched long-window nonlinear
-  transport audits finish.
+  as optimization/noise diagnostics; the first matched long-window nonlinear
+  branch audit is closed with one rejected and one accepted single-control
+  direction.
 
 ## Active Lanes
 
@@ -31,9 +32,9 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 92% | Strict top-12 matched audit fails promotion; RBC(1,1) t=[350,700] matched nonlinear audits are running before any new promotion |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 97% | 21-point RBC(1,1) reduced landscape is tracked; baseline and rejected -50% nonlinear SEM overlays are attached; +35% branch is still running |
-| Docs/readme/release hygiene | 96% | Strict QA failed-promotion and RBC(1,1) landscape artifacts are tracked with scoped wording |
+| Strict nonlinear transport and campaign-admission evidence | 94% | Strict top-12 matched audit fails promotion; RBC(1,1) t=[350,700] matched nonlinear audits close one rejected and one accepted single-control direction |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 21-point RBC(1,1) reduced landscape is tracked with baseline, rejected -50%, and accepted +35% nonlinear SEM overlays |
+| Docs/readme/release hygiene | 97% | Strict QA failed-promotion and RBC(1,1) landscape artifacts are tracked with scoped wording |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -232,18 +233,19 @@ No long nonlinear audit should be launched from these candidates.
   misses remain marked ``diag-ok`` when ``|iota| >= 0.39``; strict admission at
   ``|iota| >= 0.41`` remains separate. The solved-WOUT iota profile plot now
   omits the VMEC axis point so zero/convention artifacts do not skew the axis.
-- Launched matched long-window nonlinear audits on office for the strict
+- Closed matched long-window nonlinear audits on office for the strict
   RBC(1,1) baseline, the ``-50%`` candidate, and the ``+35%`` candidate using
   ``n64:64:64:40:40``, ``t_max=700``, window ``t=[350,700]``, seeds 31/32, and
-  a ``dt=0.04`` variant. The baseline ensemble passes with mean ``11.4266`` and
-  combined SEM ``0.2195``. The ``-50%`` candidate fails closed: mean
+  a ``dt=0.04`` variant; the accepted ``+35%`` branch also includes an
+  additional seed33 holdout. The baseline ensemble passes with mean ``11.4266``
+  and combined SEM ``0.2195``. The ``-50%`` candidate fails closed: mean
   ``14.4392``, relative reduction ``-26.36%`` (i.e. increased heat flux), and
-  matched uncertainty score ``z=-4.83``. The ``+35%`` branch has one completed
-  seed at mean ``10.531`` and remains running for seed/timestep replication
-  before any promotion. A controller GPU-placement bug briefly co-located
-  ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was stopped and the
-  ``dt=0.04`` run was relaunched manually on the idle GPU while preserving the
-  seed31 run.
+  matched uncertainty score ``z=-4.83``. The ``+35%`` branch passes with mean
+  ``10.5143``, combined SEM ``0.2462``, relative reduction ``7.98%``, and
+  matched uncertainty score ``z=2.77``. A controller GPU-placement bug briefly
+  co-located ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was
+  stopped, the ``dt=0.04`` run was relaunched manually on the idle GPU, and the
+  seed31 plus seed33 traces completed cleanly.
 
 ### 2026-06-04
 

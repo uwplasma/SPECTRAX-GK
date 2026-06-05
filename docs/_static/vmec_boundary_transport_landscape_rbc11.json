@@ -46,6 +46,14 @@
       "mean": 14.43919388557596,
       "passed": false,
       "sem": 0.5831708511946153
+    },
+    {
+      "case": "landscape_rbc_1_1_p0p35_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.17094308598680144,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/p0p35_ensemble_gate.json",
+      "mean": 10.514333903656304,
+      "passed": true,
+      "sem": 0.2461801545368627
     }
   ],
   "nonlinear_launch_manifest": {

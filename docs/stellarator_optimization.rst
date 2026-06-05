@@ -1126,8 +1126,11 @@ scan is ``-50%`` with value ``2.47e-2``, a ``12.2%`` reduced-metric decrease; a
 secondary basin near ``+35%`` reaches ``2.53e-2``.  The completed replicated
 nonlinear audit rejects the ``-50%`` branch: the long-window heat flux rises
 from ``11.4266 +/- 0.2195`` at baseline to ``14.4392 +/- 0.5832`` at ``-50%``
-(``z=-4.83`` for reduction).  The ``+35%`` branch remains under replicated
-audit and must not be promoted until its seed/timestep ensemble closes.
+(``z=-4.83`` for reduction).  The ``+35%`` branch closes in the opposite
+direction: four seed/timestep traces give ``10.5143 +/- 0.2462``, a
+``7.98%`` reduction from baseline with ``z=2.77``.  This is promoted only as a
+bounded one-control nonlinear landscape result; a full nonlinear stellarator
+optimizer still requires multi-control descent and replicated holdout gates.
 
 The reduced scan is intentionally reusable.  The batched evaluator computes
 growth, quasilinear, and nonlinear-window metrics in one VMEC/JAX solve per
@@ -1142,7 +1145,8 @@ reuse the stored JSON sidecar::
      --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
      --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2 \
      --nonlinear-ensemble 0.12662450813837142:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/0_ensemble_gate.json \
-     --nonlinear-ensemble 0.06331225406918571:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/m0p5_ensemble_gate.json
+     --nonlinear-ensemble 0.06331225406918571:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/m0p5_ensemble_gate.json \
+     --nonlinear-ensemble 0.17094308598680144:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/p0p35_ensemble_gate.json
 
 When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
@@ -1175,8 +1179,10 @@ should not be interpreted as admission reports for the current strict-baseline
    objectives because the representative baseline is nearly marginal. The
    middle panel shows the finite reduced nonlinear-window screening objective.
    The bottom panel overlays replicated long-window nonlinear heat flux for the
-   baseline and the ``-50%`` branch; it shows why the reduced minimum is
-   rejected as a nonlinear transport optimizer rather than promoted.
+   baseline, the rejected ``-50%`` branch, and the accepted ``+35%`` branch. It
+   shows why reduced-window screening needs replicated nonlinear confirmation:
+   the reduced minimum fails, while the secondary basin gives a bounded
+   single-control heat-flux reduction.
 
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar
