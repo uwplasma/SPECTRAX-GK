@@ -127,4 +127,4 @@ audits, not startup windows.
 
 ## Expected Outputs
 
-Solved runs write optimizer history, final VMEC input/WOUT files when available, SPECTRAX-GK transport diagnostics, and `solved_wout_gate.json`. The gate fails closed if the final equilibrium violates the aspect, iota, or quasisymmetry constraints. This is intentional: a transport residual reduction that breaks the QA equilibrium is not an accepted optimized stellarator.
+Solved runs write optimizer history, final VMEC input/WOUT files when available, SPECTRAX-GK transport diagnostics, and `solved_wout_gate.json`. The strict gate fails closed if the final equilibrium violates the aspect, `|iota| >= 0.41`, or quasisymmetry constraints. For exploratory transport rows, a small iota shortfall can still be retained as `diag-ok` evidence when `|iota| >= 0.39`, aspect and QS remain acceptable, and the result is clearly described as a diagnostic candidate rather than an accepted optimized stellarator. A nonlinear turbulent-flux claim still requires matched long post-transient nonlinear audits.

@@ -30,7 +30,24 @@
   "literature_context": {
     "optimization_of_nonlinear_turbulence_in_stellarators": "Published boundary-mode scans show noisy time-averaged nonlinear heat fluxes; this artifact is the analogous pre-optimizer landscape diagnostic."
   },
-  "nonlinear_ensemble_points": [],
+  "nonlinear_ensemble_points": [
+    {
+      "case": "landscape_rbc_1_1_0_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.12662450813837142,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/0_ensemble_gate.json",
+      "mean": 11.426615109159892,
+      "passed": true,
+      "sem": 0.2194718978706719
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p5_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.06331225406918571,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/m0p5_ensemble_gate.json",
+      "mean": 14.43919388557596,
+      "passed": false,
+      "sem": 0.5831708511946153
+    }
+  ],
   "nonlinear_launch_manifest": {
     "claim_level": "launch_plan_for_replicated_nonlinear_heat_flux_error_bars_not_simulation_claim",
     "commands": [
@@ -190,7 +207,7 @@
     "quasilinear_flux",
     "nonlinear_window_heat_flux"
   ],
-  "reused_reduced_metrics_json": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+  "reused_reduced_metrics_json": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
   "rows": [
     {
       "coefficient_value": 0.06331225406918571,
@@ -214,7 +231,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.217248952486341e-15
         },
         "nonlinear_window_heat_flux": {
@@ -233,7 +250,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.024693250468496523
         },
         "quasilinear_flux": {
@@ -252,7 +269,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.333554795236426e-15
         }
       },
@@ -287,7 +304,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.769962604680766e-15
         },
         "nonlinear_window_heat_flux": {
@@ -306,7 +323,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.025423854143044728
         },
         "quasilinear_flux": {
@@ -325,7 +342,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.0050462022671705e-14
         }
       },
@@ -360,7 +377,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.812714359318801e-15
         },
         "nonlinear_window_heat_flux": {
@@ -379,7 +396,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.02667276646481601
         },
         "quasilinear_flux": {
@@ -398,7 +415,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.564141056651396e-15
         }
       },
@@ -433,7 +450,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.0577517052349994e-14
         },
         "nonlinear_window_heat_flux": {
@@ -452,7 +469,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.027952460604008234
         },
         "quasilinear_flux": {
@@ -471,7 +488,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.1912687565939381e-14
         }
       },
@@ -506,7 +523,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.881784220278105e-15
         },
         "nonlinear_window_heat_flux": {
@@ -525,7 +542,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.02642268244005639
         },
         "quasilinear_flux": {
@@ -544,7 +561,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.465697164768855e-15
         }
       },
@@ -579,7 +596,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.87401570058009e-15
         },
         "nonlinear_window_heat_flux": {
@@ -598,7 +615,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028315033655602163
         },
         "quasilinear_flux": {
@@ -617,7 +634,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.0101139471604807e-14
         }
       },
@@ -652,7 +669,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.105427357600977e-15
         },
         "nonlinear_window_heat_flux": {
@@ -671,7 +688,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028723009610072084
         },
         "quasilinear_flux": {
@@ -690,7 +707,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.239600220802927e-15
         }
       },
@@ -725,7 +742,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.552510182894799e-15
         },
         "nonlinear_window_heat_flux": {
@@ -744,7 +761,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028006649880522004
         },
         "quasilinear_flux": {
@@ -763,7 +780,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.65818640809555e-15
         }
       },
@@ -798,7 +815,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.76996261670133e-15
         },
         "nonlinear_window_heat_flux": {
@@ -817,7 +834,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028850281178742748
         },
         "quasilinear_flux": {
@@ -836,7 +853,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.1476793476901907e-14
         }
       },
@@ -871,7 +888,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 5.558428926075767e-15
         },
         "nonlinear_window_heat_flux": {
@@ -890,7 +907,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.029632234245222457
         },
         "quasilinear_flux": {
@@ -909,7 +926,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.660991925388952e-15
         }
       },
@@ -944,7 +961,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.04998429027034e-15
         },
         "nonlinear_window_heat_flux": {
@@ -963,7 +980,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028110310447400207
         },
         "quasilinear_flux": {
@@ -982,7 +999,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.19983671388268e-15
         }
       },
@@ -1017,7 +1034,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.217250547700808e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1036,7 +1053,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.029414304608753047
         },
         "quasilinear_flux": {
@@ -1055,7 +1072,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.414866298175543e-15
         }
       },
@@ -1090,7 +1107,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.2172229756450294e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1109,7 +1126,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.029204260116314634
         },
         "quasilinear_flux": {
@@ -1128,7 +1145,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.364154703072933e-15
         }
       },
@@ -1163,7 +1180,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 5.889635546671537e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1182,7 +1199,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.029681613157760113
         },
         "quasilinear_flux": {
@@ -1201,7 +1218,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.0640881178161304e-15
         }
       },
@@ -1236,7 +1253,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.960989925381928e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1255,7 +1272,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028492316361085897
         },
         "quasilinear_flux": {
@@ -1274,7 +1291,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.172941434905025e-15
         }
       },
@@ -1309,7 +1326,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 6.773165663733244e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1328,7 +1345,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.028702228645578098
         },
         "quasilinear_flux": {
@@ -1347,7 +1364,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.100675532095555e-15
         }
       },
@@ -1382,7 +1399,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.137694040180618e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1401,7 +1418,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.026910464305685278
         },
         "quasilinear_flux": {
@@ -1420,7 +1437,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.271067338106176e-15
         }
       },
@@ -1455,7 +1472,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 9.74678910863075e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1474,7 +1491,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.025341232612887673
         },
         "quasilinear_flux": {
@@ -1493,7 +1510,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.0891989712229314e-14
         }
       },
@@ -1528,7 +1545,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 7.0373872013269045e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1547,7 +1564,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.02543309225027711
         },
         "quasilinear_flux": {
@@ -1566,7 +1583,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.016194178482646e-15
         }
       },
@@ -1601,7 +1618,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 8.881784763279468e-15
         },
         "nonlinear_window_heat_flux": {
@@ -1620,7 +1637,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.027170736306908274
         },
         "quasilinear_flux": {
@@ -1639,7 +1656,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 1.0776887796701532e-14
         }
       },
@@ -1674,7 +1691,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 2.0043415169777665e-14
         },
         "nonlinear_window_heat_flux": {
@@ -1693,7 +1710,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 0.026893532874508953
         },
         "quasilinear_flux": {
@@ -1712,7 +1729,7 @@
             }
           },
           "returncode": 0,
-          "reused_from": "tools_out/vmec_boundary_transport_landscape_rbc11_wide_20260605/landscape.json",
+          "reused_from": "docs/_static/vmec_boundary_transport_landscape_rbc11.json",
           "value": 2.498028213790399e-14
         }
       },

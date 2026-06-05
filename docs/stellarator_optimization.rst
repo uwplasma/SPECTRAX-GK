@@ -1123,9 +1123,11 @@ sample, the linear-growth and quasilinear baselines are nearly marginal
 growth/QL reductions.  The nonlinear-window screening objective remains finite:
 the baseline value is ``2.81e-2`` and the best point in this one-coefficient
 scan is ``-50%`` with value ``2.47e-2``, a ``12.2%`` reduced-metric decrease; a
-secondary basin near ``+35%`` reaches ``2.53e-2``.  These are reduced objective
-landscape diagnostics only; no replicated nonlinear heat-flux ensembles are
-attached to the strict-baseline scan yet.
+secondary basin near ``+35%`` reaches ``2.53e-2``.  The completed replicated
+nonlinear audit rejects the ``-50%`` branch: the long-window heat flux rises
+from ``11.4266 +/- 0.2195`` at baseline to ``14.4392 +/- 0.5832`` at ``-50%``
+(``z=-4.83`` for reduction).  The ``+35%`` branch remains under replicated
+audit and must not be promoted until its seed/timestep ensemble closes.
 
 The reduced scan is intentionally reusable.  The batched evaluator computes
 growth, quasilinear, and nonlinear-window metrics in one VMEC/JAX solve per
@@ -1138,7 +1140,9 @@ reuse the stored JSON sidecar::
      --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11.json \
      --fractions=-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50 \
      --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
-     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2
+     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2 \
+     --nonlinear-ensemble 0.12662450813837142:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/0_ensemble_gate.json \
+     --nonlinear-ensemble 0.06331225406918571:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/m0p5_ensemble_gate.json
 
 When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
@@ -1169,10 +1173,10 @@ should not be interpreted as admission reports for the current strict-baseline
    ``RBC(1,1)`` transport-objective landscape from the strict max-mode-5 QA
    baseline. The top panel shows absolute growth-rate and quasilinear reduced
    objectives because the representative baseline is nearly marginal. The
-   bottom panel shows the finite nonlinear-window screening objective. No
-   replicated turbulent-heat-flux ensemble is attached to this strict-baseline
-   scan yet, so the figure is a launch/noise diagnostic rather than a promoted
-   nonlinear optimization result.
+   middle panel shows the finite reduced nonlinear-window screening objective.
+   The bottom panel overlays replicated long-window nonlinear heat flux for the
+   baseline and the ``-50%`` branch; it shows why the reduced minimum is
+   rejected as a nonlinear transport optimizer rather than promoted.
 
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar

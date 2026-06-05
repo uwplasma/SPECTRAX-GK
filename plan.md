@@ -1,6 +1,6 @@
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-04
+Last updated: 2026-06-05
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
@@ -20,10 +20,9 @@ historical logs live outside the release repository so clones stay small.
   plan replaces the old 531 KB historical log to restore edit headroom.
 - Release posture: technically shippable after the current patch release lands;
   broad manuscript-level nonlinear turbulence-optimization claims are not
-  promoted.
-  The selected QA optimized-equilibrium audit and RBC(0,1) landscape are tracked
-  as bounded positive evidence, while weak reduced-margin candidates are blocked
-  by the calibrated prelaunch gate before expensive nonlinear campaigns.
+  promoted. The strict QA baseline and the new RBC(1,1) landscape are tracked
+  as optimization/noise diagnostics while matched long-window nonlinear
+  transport audits finish.
 
 ## Active Lanes
 
@@ -32,9 +31,9 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 92% | Strict top-12 matched audit fails promotion; the RBC(0,1) landscape now passes reduced prelaunch, cross-sample, replicated landscape, and next-campaign admission gates without promoting broad turbulent optimization |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
-| Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
+| Strict nonlinear transport and campaign-admission evidence | 92% | Strict top-12 matched audit fails promotion; RBC(1,1) t=[350,700] matched nonlinear audits are running before any new promotion |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 97% | 21-point RBC(1,1) reduced landscape is tracked; baseline and rejected -50% nonlinear SEM overlays are attached; +35% branch is still running |
+| Docs/readme/release hygiene | 96% | Strict QA failed-promotion and RBC(1,1) landscape artifacts are tracked with scoped wording |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -215,6 +214,36 @@ No long nonlinear audit should be launched from these candidates.
   file names and user-facing examples should remain SPECTRAX-GK-native.
 
 ## Running Log
+
+### 2026-06-05
+
+- Refreshed the paper-facing boundary landscape from the earlier RBC(0,1)
+  narrow scan to a 21-point ``RBC(1,1)`` scan over ``[-50%, +50%]`` of the
+  strict QA baseline coefficient. If a future scanned coefficient has zero
+  baseline value, the landscape builder now sets the absolute scan amplitude
+  from the largest configured reference coefficient, defaulting to
+  ``RBC(1,0)`` and ``RBC(0,1)``.
+- The reduced RBC(1,1) landscape is a diagnostic, not a nonlinear transport
+  claim. At the representative reduced sample, the deterministic
+  nonlinear-window metric is lowest at ``-50%`` with a ``12.16%`` reduction and
+  has a secondary low basin near ``+35%``. Growth and quasilinear values are
+  near marginal and are plotted as absolute objective values.
+- Updated the QA full-sweep panel so transport rows with only small mean-iota
+  misses remain marked ``diag-ok`` when ``|iota| >= 0.39``; strict admission at
+  ``|iota| >= 0.41`` remains separate. The solved-WOUT iota profile plot now
+  omits the VMEC axis point so zero/convention artifacts do not skew the axis.
+- Launched matched long-window nonlinear audits on office for the strict
+  RBC(1,1) baseline, the ``-50%`` candidate, and the ``+35%`` candidate using
+  ``n64:64:64:40:40``, ``t_max=700``, window ``t=[350,700]``, seeds 31/32, and
+  a ``dt=0.04`` variant. The baseline ensemble passes with mean ``11.4266`` and
+  combined SEM ``0.2195``. The ``-50%`` candidate fails closed: mean
+  ``14.4392``, relative reduction ``-26.36%`` (i.e. increased heat flux), and
+  matched uncertainty score ``z=-4.83``. The ``+35%`` branch has one completed
+  seed at mean ``10.531`` and remains running for seed/timestep replication
+  before any promotion. A controller GPU-placement bug briefly co-located
+  ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was stopped and the
+  ``dt=0.04`` run was relaunched manually on the idle GPU while preserving the
+  seed31 run.
 
 ### 2026-06-04
 
