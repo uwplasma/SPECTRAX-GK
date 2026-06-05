@@ -129,6 +129,9 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
         assert "def main(" not in text
         assert "def _main(" not in text
         assert "if __name__ == \"__main__\"" not in text
+        assert "SPECTRAX_SURFACES = (0.45, 0.64, 0.78)" in text
+        assert "SPECTRAX_ALPHAS = (0.0, np.pi / 4.0)" in text
+        assert "SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)" in text
 
 
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:

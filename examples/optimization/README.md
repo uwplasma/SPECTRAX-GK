@@ -100,12 +100,18 @@ python tools/vmec_jax_qa_low_turbulence_optimization.py \
   --outdir runs/qa_transport_refinement \
   --spectrax-weight 0.005 \
   --transport-kind growth \
-  --surfaces 0.64 \
-  --alphas 0.0 \
-  --ky-values 0.30
+  --surfaces 0.45,0.64,0.78 \
+  --alphas 0.0,0.7853981633974483 \
+  --ky-values 0.10,0.30,0.50
 ```
 
-Use `growth` first because it is the cheapest differentiable transport target. Promote to quasilinear or nonlinear transport only after the geometry gates and finite-difference gradient checks pass. Nonlinear turbulent-flux claims require long post-transient replicated SPECTRAX-GK audits, not startup windows.
+Use `growth` first because it is the cheapest differentiable transport target.
+The sample set above is the admission-grade default used by the public
+VMEC-JAX-style scripts; one-point samples are acceptable only for explicit
+debugging. Promote to quasilinear or nonlinear transport only after the
+geometry gates and finite-difference gradient checks pass. Nonlinear
+turbulent-flux claims require long post-transient replicated SPECTRAX-GK
+audits, not startup windows.
 
 ## Expected Outputs
 

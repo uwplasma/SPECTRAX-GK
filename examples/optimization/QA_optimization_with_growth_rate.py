@@ -123,13 +123,15 @@ QS_WEIGHT = 1.0
 
 # SPECTRAX-GK transport objective. Keep this weight small while tuning so the
 # upstream QA/aspect/iota objective remains the dominant solved-equilibrium gate.
+# The default sample set matches the 18-point nonlinear-audit prelaunch policy:
+# three surfaces, two field-line labels, and three grid-compatible ky values.
 SPECTRAX_KIND = "growth"
 SPECTRAX_WEIGHT = 0.01
 SPECTRAX_OBJECTIVE_TRANSFORM = "log1p"
 SPECTRAX_OBJECTIVE_SCALE = 1.0
-SPECTRAX_SURFACES = (0.64,)
-SPECTRAX_ALPHAS = (0.0,)
-SPECTRAX_KY_VALUES = (0.30,)
+SPECTRAX_SURFACES = (0.45, 0.64, 0.78)
+SPECTRAX_ALPHAS = (0.0, np.pi / 4.0)
+SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)
 SPECTRAX_NTHETA = 24
 SPECTRAX_MBOZ = 21
 SPECTRAX_NBOZ = 21

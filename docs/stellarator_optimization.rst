@@ -107,10 +107,12 @@ The objective block should look familiar to VMEC-JAX users:
 
 The first three tuples are the upstream QA/aspect/iota objective. The final
 SPECTRAX-GK tuple can be changed between ``growth``, ``quasilinear_flux``, and
-``nonlinear_window_heat_flux``. The scripts use ``mboz = nboz = 21`` for the
-transport bridge and a single default sample ``s = 0.64``, ``alpha = 0``,
-``k_y rho_i = 0.30``; broaden that sample set only after the one-point run keeps
-the solved-WOUT QA and iota gates intact.
+``nonlinear_window_heat_flux``. The scripts use ``mboz = nboz = 21`` and the
+admission-grade default sample set ``s=(0.45,0.64,0.78)``,
+``alpha=(0,pi/4)``, and ``k_y rho_i=(0.10,0.30,0.50)``. For exploratory
+debugging, a one-point sample may still be edited into the scripts manually,
+but any paper-facing transport candidate should return to the 18-point default
+before nonlinear audit launch.
 
 The current optimizer gradient scope is explicit. ``growth`` objectives use
 eigenvalue-only AD and avoid nonsymmetric eigenvector differentiation.
@@ -159,7 +161,10 @@ then build the comparison panel from the real ``history.json`` and
    python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --use-simple-seed --max-mode 5 --min-vmec-mode 7 \
      --target-aspect 5.0 --min-iota 0.41 --disable-iota-profile-floor \
-     --mboz 21 --nboz 21 --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
+     --mboz 21 --nboz 21 \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.10,0.30,0.50 \
      --transport-kind growth --method scalar_trust --spectrax-weight 0.01 \
      --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
 
@@ -672,9 +677,9 @@ coefficient before changing the optimizer:
      --step 1e-4 \
      --max-mode 5 --min-vmec-mode 7 \
      --transport-kind nonlinear_window_heat_flux \
-     --surfaces 0.64 \
-     --alphas 0.0 \
-     --ky-values 0.30 \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.10,0.30,0.50 \
      --mboz 21 --nboz 21 \
      --inner-max-iter 500 --inner-ftol 1e-10
 
