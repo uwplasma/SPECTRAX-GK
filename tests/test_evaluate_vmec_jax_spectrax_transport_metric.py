@@ -62,6 +62,7 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
         inner_ftol=1.0e-9,
         trial_max_iter=120,
         trial_ftol=1.0e-9,
+        wout_path=Path("wout.final.nc"),
     )
 
     assert report["kind"] == "vmec_jax_spectrax_transport_metric_eval"
@@ -71,6 +72,7 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
     assert report["sample_set"]["n_samples"] == 18
     assert report["spectrax_config"]["gradient_scope"] == "eigenvalue_growth_ad"
     assert report["spectrax_config"]["surface_chunk_size"] == 0
+    assert report["wout_path"] == "wout.final.nc"
     assert "not an optimization" in report["claim_scope"]
     assert "long-window" in report["next_action"]
     json.dumps(mod._json_safe(report), allow_nan=False)
@@ -237,8 +239,11 @@ def test_parse_args_accepts_batched_metric_output_dir(tmp_path: Path) -> None:
             "all",
             "--out-json-dir",
             str(tmp_path / "metrics"),
+            "--out-wout",
+            str(tmp_path / "wout.nc"),
         ]
     )
 
     assert args.transport_kind == "all"
     assert args.out_json_dir == tmp_path / "metrics"
+    assert args.out_wout == tmp_path / "wout.nc"

@@ -101,6 +101,7 @@ def build_report(
     trial_max_iter: int,
     trial_ftol: float,
     sample_statistics: dict[str, Any] | None = None,
+    wout_path: Path | None = None,
 ) -> dict[str, Any]:
     """Return a JSON-safe metric report."""
 
@@ -119,6 +120,7 @@ def build_report(
         "spectrax_objective_final": float(metric),
         "transport_metric_final": float(metric),
         "transport_objective_source": "vmec_jax_input_final_state_eval_only",
+        "wout_path": None if wout_path is None else str(wout_path),
         "sample_set": sample_set.to_dict(),
         "spectrax_config": {
             "ntheta": int(config.ntheta),
@@ -385,6 +387,8 @@ def evaluate_metrics(args: argparse.Namespace, kinds: tuple[str, ...]) -> dict[s
     # boundary once and call the SPECTRAX objective directly; no boundary update
     # or least-squares step is taken.
     state = stage.optimizer._solve_forward(params0, trial=False)  # noqa: SLF001
+    if args.out_wout is not None:
+        stage.optimizer.save_wout(args.out_wout, params0, state=state)
     grid_options = _static_grid_options_from_ky_values(
         sample_set.ky_values,
         min_ny=int(base_config.ny),
@@ -431,6 +435,7 @@ def evaluate_metrics(args: argparse.Namespace, kinds: tuple[str, ...]) -> dict[s
             trial_max_iter=int(args.trial_max_iter),
             trial_ftol=float(args.trial_ftol),
             sample_statistics=sample_statistics,
+            wout_path=args.out_wout,
         )
     return reports
 
@@ -450,6 +455,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         default=ROOT / "tools_out" / "vmec_jax_transport_metric_eval",
         help="Scratch VMEC-JAX output directory used while building the state",
+    )
+    parser.add_argument(
+        "--out-wout",
+        type=Path,
+        default=None,
+        help=(
+            "Optional VMEC-style WOUT path to write from the same solved VMEC-JAX "
+            "state used for the transport metric."
+        ),
     )
     parser.add_argument("--max-mode", type=int, default=5)
     parser.add_argument("--min-vmec-mode", type=int, default=7)
