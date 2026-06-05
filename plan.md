@@ -31,8 +31,8 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 94% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) 31-point nonlinear ensemble campaign is running |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 95% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; true nonlinear overlay pending long-window ensembles |
+| Strict nonlinear transport and campaign-admission evidence | 95% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) 31-point nonlinear ensemble campaign is running |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 96% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first true nonlinear points completed; full overlay pending long-window campaign completion |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
@@ -249,6 +249,21 @@ No long nonlinear audit should be launched from these candidates.
   handoff does not split a ``t=700`` run into a misleading 10,000-step first
   chunk. The clean office logs now report 14,000 steps for ``dt=0.05`` and
   17,500 steps for the ``dt=0.04`` variants.
+- Clarified the RBC(1,1) landscape plot contract: two panels only, with growth
+  and every explicit quasilinear rule on top and true post-transient nonlinear
+  heat flux on the bottom. The bottom panel no longer uses ``<Q_i>`` shorthand
+  in the label, and reduced/startup nonlinear-window values remain excluded.
+- Added ``tools/build_external_vmec_replicate_ensemble.py
+  --allow-failed-gates`` for diagnostic landscape postprocessing only. The
+  option lets the full landscape collect failed convergence points without
+  aborting, while JSON/PNG sidecars still mark those points failed and prevent
+  promotion. Normal release/physics gates remain fail-closed.
+- First office long-window RBC(1,1) landscape outputs completed: the ``-75%``
+  seed31/seed32 runs reached ``t=699.903`` with 281 samples and late-window
+  heat-flux means about ``17.48`` and ``16.10`` over ``t=[350,700]``. The
+  two-seed diagnostic mean is about ``16.79`` with mean-relative spread about
+  ``8.2%``; it is not promotion-ready until the timestep variant and
+  convergence gates complete.
 
 ### 2026-06-04
 
