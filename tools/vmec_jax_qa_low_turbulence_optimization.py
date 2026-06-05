@@ -431,6 +431,11 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--dry-run", action="store_true", help="Assemble objectives and stop before solving")
     args = parser.parse_args()
+    if args.use_simple_seed and Path(args.input) == _default_input_file():
+        # Mirror vmec_jax/examples/optimization/QA_optimization.py: the simple
+        # seed branch starts from input.minimal_seed_nfp2, not the warm-start
+        # QA input that is used when --use-simple-seed is disabled.
+        args.input = _default_simple_seed_input_file()
     if args.strict_upstream_qa_baseline:
         gate_min_iota = (
             float(args.solved_wout_gate_min_abs_iota)

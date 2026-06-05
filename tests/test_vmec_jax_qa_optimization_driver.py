@@ -187,6 +187,7 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["constraints_only"] is False
     assert summary["transport_kind"] == "growth"
+    assert summary["requested_input"].endswith("input.minimal_seed_nfp2")
     assert summary["objectives"] == [
         "aspect",
         "iota",
