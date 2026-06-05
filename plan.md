@@ -243,6 +243,12 @@ No long nonlinear audit should be launched from these candidates.
   co-located ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was
   stopped, the ``dt=0.04`` run was relaunched manually on the idle GPU, and the
   seed31 plus seed33 traces completed cleanly.
+- Restarted the refreshed 31-point nonlinear landscape campaign after removing
+  a logging ambiguity from generated TOMLs: external/optimized VMEC nonlinear
+  configs now write ``[output].nsave = [run].steps`` so GX-style artifact
+  handoff does not split a ``t=700`` run into a misleading 10,000-step first
+  chunk. The clean office logs now report 14,000 steps for ``dt=0.05`` and
+  17,500 steps for the ``dt=0.04`` variants.
 
 ### 2026-06-04
 
