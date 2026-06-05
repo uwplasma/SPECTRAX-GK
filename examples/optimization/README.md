@@ -45,9 +45,10 @@ default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside the script to
 run them and build the initial-vs-final nonlinear `Q(t)` comparison plot, or
 run the commands from the generated `run_manifest.json` on a GPU node.
 
-`QA_parameter_scan.py` scans `RBC(0,1)` from `-50%` to `+50%` by default and
-regenerates the noisy linear/quasilinear/nonlinear objective landscape with
-replicated nonlinear error bars from tracked ensemble gates.
+`QA_parameter_scan.py` scans `RBC(1,1)` from `-50%` to `+50%` by default and
+regenerates the noisy linear/quasilinear/nonlinear-window objective landscape.
+Replicated nonlinear error bars can be overlaid by adding long-window ensemble
+sidecars after running concrete candidate WOUTs.
 
 ## Campaign Tooling
 

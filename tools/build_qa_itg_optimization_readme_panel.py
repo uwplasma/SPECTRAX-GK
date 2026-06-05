@@ -31,8 +31,8 @@ from spectraxgk.plotting import set_plot_style  # noqa: E402
 
 DEFAULT_GEOMETRY_PNG = ROOT / "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png"
 DEFAULT_SWEEP_JSON = ROOT / "docs/_static/vmec_jax_qa_full_sweep_panel.json"
-DEFAULT_LANDSCAPE_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01.json"
-DEFAULT_LANDSCAPE_CSV = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01.csv"
+DEFAULT_LANDSCAPE_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.json"
+DEFAULT_LANDSCAPE_CSV = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.csv"
 DEFAULT_ADMISSION_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_admission.json"
 DEFAULT_MATCHED_JSON = ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json"
 DEFAULT_OUT = ROOT / "docs/_static/qa_itg_optimization_summary_panel.png"
@@ -226,7 +226,8 @@ def _plot_landscape(ax: plt.Axes, rows: list[dict[str, float | str]], payload: d
         yn, en = _normalize(y, err, baseline_index)
         ax.errorbar(x, yn, yerr=en, marker=marker, color=color, lw=2.0, capsize=3, label=label)
     ax.axhline(1.0, color="0.5", lw=1.0, ls=":")
-    ax.set_xlabel(r"relative $RBC(0,1)$ perturbation [%]")
+    coefficient = str(payload.get("coefficient", "boundary coefficient"))
+    ax.set_xlabel(f"relative {coefficient} perturbation [%]")
     ax.set_ylabel("objective / baseline")
     ax.set_title("Noisy transport-objective landscape", loc="left", fontweight="bold")
     ax.legend(frameon=False, fontsize=8, ncols=1)

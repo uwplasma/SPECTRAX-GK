@@ -126,7 +126,38 @@ def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_pat
     cases = {case["case_id"]: case for case in payload["cases"]}
     assert cases["growth_scalar_trust"]["history"]["transport_metric_final"] == 0.25
     assert "mean_iota" in cases["growth_scalar_trust"]["gate_blockers"]
+    assert cases["growth_scalar_trust"]["diagnostic_gate_passed"] is False
+    assert "quasisymmetry" in cases["growth_scalar_trust"]["diagnostic_gate_blockers"]
     assert cases["growth_scalar_trust"]["q_traces"] == []
+
+
+def test_diagnostic_gate_accepts_only_iota_shortfall_above_floor() -> None:
+    status, blockers = mod._diagnostic_gate_status(
+        gate_passed=False,
+        gate_blockers=["mean_iota"],
+        iota_final=0.395,
+    )
+
+    assert status is True
+    assert blockers == []
+
+    status, blockers = mod._diagnostic_gate_status(
+        gate_passed=False,
+        gate_blockers=["mean_iota"],
+        iota_final=0.37,
+    )
+
+    assert status is False
+    assert blockers == ["mean_iota"]
+
+    status, blockers = mod._diagnostic_gate_status(
+        gate_passed=False,
+        gate_blockers=["quasisymmetry"],
+        iota_final=0.41,
+    )
+
+    assert status is False
+    assert blockers == ["quasisymmetry"]
 
 
 def test_q_trace_csv_is_used_only_when_present(tmp_path: Path) -> None:
@@ -175,6 +206,32 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     assert "write_optimized_equilibrium_transport_configs.py" in command
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--window-tmin 350 --window-tmax 700" in command
+
+
+def test_iota_only_diagnostic_rows_are_audit_command_eligible(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "growth_scalar_trust"
+    _write_case(case, objective_final=0.5, transport_metric=0.12, gate_passed=False)
+    (case / "wout_final.nc").write_bytes(b"diagnostic-wout")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    assert row["gate_passed"] is False
+    assert row["gate_blockers"] == ["mean_iota", "quasisymmetry"]
+    assert row["diagnostic_gate_passed"] is False
+    assert row["recommended_nonlinear_audit_command"] is None
+
+    gate = json.loads((case / "solved_wout_gate.json").read_text(encoding="utf-8"))
+    gate["checks"]["quasisymmetry"]["passed"] = True
+    (case / "solved_wout_gate.json").write_text(json.dumps(gate), encoding="utf-8")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    assert row["gate_passed"] is False
+    assert row["gate_blockers"] == ["mean_iota"]
+    assert row["diagnostic_gate_passed"] is True
+    assert row["recommended_nonlinear_audit_command"] is not None
 
 
 def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(tmp_path: Path) -> None:

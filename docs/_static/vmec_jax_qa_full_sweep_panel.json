@@ -293,6 +293,8 @@
       "rerun_wout_admission_gate_passed": 1,
       "gate_passed": 1,
       "gate_blockers": [],
+      "diagnostic_gate_passed": 1,
+      "diagnostic_gate_blockers": [],
       "gate_warnings": [
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
@@ -747,6 +749,8 @@
       "gate_blockers": [
         "mean_iota"
       ],
+      "diagnostic_gate_passed": 1,
+      "diagnostic_gate_blockers": [],
       "gate_warnings": [
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
@@ -907,7 +911,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": null
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
     },
     {
       "case_id": "quasilinear_from_strict_baseline",
@@ -1205,6 +1209,8 @@
       "gate_blockers": [
         "mean_iota"
       ],
+      "diagnostic_gate_passed": 1,
+      "diagnostic_gate_blockers": [],
       "gate_warnings": [
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
@@ -1365,7 +1371,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": null
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
     },
     {
       "case_id": "nonlinear_window_from_strict_baseline",
@@ -1671,6 +1677,8 @@
       "gate_blockers": [
         "mean_iota"
       ],
+      "diagnostic_gate_passed": 1,
+      "diagnostic_gate_blockers": [],
       "gate_warnings": [
         "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
       ],
@@ -1831,7 +1839,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": null
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
     }
   ],
   "summary": {

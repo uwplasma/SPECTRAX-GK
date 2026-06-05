@@ -41,7 +41,7 @@ def test_landscape_scan_inputs_patch_selected_boundary_coefficient(tmp_path: Pat
         encoding="utf-8",
     )
 
-    base, rows = _write_scan_inputs(
+    base, amplitude, reference, rows = _write_scan_inputs(
         baseline_input=baseline,
         coefficient=_parse_coefficient_spec("RBC(0,1)"),
         fractions=(-0.1, 0.0, 0.1),
@@ -49,12 +49,50 @@ def test_landscape_scan_inputs_patch_selected_boundary_coefficient(tmp_path: Pat
     )
 
     assert base == 0.2
+    assert amplitude == 0.2
+    assert reference == "RBC(0,1)"
     assert [row["relative_fraction"] for row in rows] == [-0.1, 0.0, 0.1]
     patched = [Path(row["input_path"]).read_text(encoding="utf-8") for row in rows]
     assert _coefficient_value(patched[0], "RBC(0,1)") == 0.18000000000000002
     assert _coefficient_value(patched[1], "RBC(0,1)") == 0.2
     assert _coefficient_value(patched[2], "RBC(0,1)") == 0.22000000000000003
     assert all("ZBS(0,1) = 1.0000000000000000E-01" in text for text in patched)
+
+
+def test_landscape_scan_inputs_use_reference_amplitude_for_zero_coefficient(tmp_path: Path) -> None:
+    baseline = tmp_path / "input.final"
+    baseline.write_text(
+        "\n".join(
+            [
+                "&INDATA",
+                "  RBC(0,1) = 2.0000000000000000E-01",
+                "  RBC(1,0) = -1.5000000000000000E-01",
+                "  RBC(1,1) = 0.0000000000000000E+00",
+                "/",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    base, amplitude, reference, rows = _write_scan_inputs(
+        baseline_input=baseline,
+        coefficient=_parse_coefficient_spec("RBC(1,1)"),
+        fractions=(-0.5, 0.0, 0.5),
+        out_dir=tmp_path / "scan",
+        zero_reference_coefficients=(
+            _parse_coefficient_spec("RBC(1,0)"),
+            _parse_coefficient_spec("RBC(0,1)"),
+        ),
+    )
+
+    assert base == 0.0
+    assert amplitude == 0.2
+    assert reference == "RBC(0,1)"
+    patched = [Path(row["input_path"]).read_text(encoding="utf-8") for row in rows]
+    assert _coefficient_value(patched[0], "RBC(1,1)") == -0.1
+    assert _coefficient_value(patched[1], "RBC(1,1)") == 0.0
+    assert _coefficient_value(patched[2], "RBC(1,1)") == 0.1
 
 
 def test_parse_float_list_rejects_empty_lists() -> None:
@@ -88,7 +126,7 @@ def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: P
         + "\n",
         encoding="utf-8",
     )
-    base, rows = _write_scan_inputs(
+    base, _amplitude, _reference, rows = _write_scan_inputs(
         baseline_input=baseline,
         coefficient=_parse_coefficient_spec("RBC(0,1)"),
         fractions=(0.0, 0.1),

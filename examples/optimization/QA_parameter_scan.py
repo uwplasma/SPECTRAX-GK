@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 """VMEC-JAX QA boundary-parameter scan with SPECTRAX-GK ITG objectives.
 
-This example scans one VMEC boundary coefficient, here ``RBC(0,1)``, and plots
-linear growth, quasilinear heat-flux, reduced nonlinear-window, and replicated
-long-window nonlinear heat-flux diagnostics with error bars. It is intentionally
-configured by editing constants below, matching the style of VMEC-JAX example
-scripts instead of using a command-line driver wrapper.
+This example scans one VMEC boundary coefficient, here ``RBC(1,1)``, and plots
+linear growth, quasilinear heat-flux, and reduced nonlinear-window diagnostics.
+Optional replicated long-window nonlinear heat-flux diagnostics can be overlaid
+when ensemble sidecars are available. It is intentionally configured by editing
+constants below, matching the style of VMEC-JAX example scripts instead of using
+a command-line driver wrapper.
 """
 
 from pathlib import Path
@@ -35,22 +36,25 @@ if len(sys.argv) > 1:
 
 SPECTRAX_ROOT = Path(__file__).resolve().parents[2]
 
-# Scan controls. These defaults reproduce the tracked paper-facing RBC(0,1)
+# Scan controls. These defaults reproduce the tracked paper-facing RBC(1,1)
 # diagnostic from the strict QA baseline. Set EVALUATE_REDUCED = True to rerun
 # the deterministic reduced metrics instead of reusing the tracked audit JSON.
-BASELINE_INPUT = SPECTRAX_ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
-COEFFICIENT = "RBC(0,1)"
+BASELINE_INPUT = (
+    SPECTRAX_ROOT
+    / "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final"
+)
+COEFFICIENT = "RBC(1,1)"
 FRACTIONS = "-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50"
 EVALUATE_REDUCED = False
-REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01.json"
-OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc01"
+REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.json"
+OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc11"
 
-# SPECTRAX-GK reduced objective settings. The tracked paper-facing artifact uses this 18-point sample set: three
-# surfaces, two field-line labels, and three ky values. Use smaller sets only
-# for explicitly scoped debugging.
-SURFACES = "0.45,0.64,0.78"
-ALPHAS = "0.0,0.7853981633974483"
-KY_VALUES = "0.10,0.30,0.50"
+# SPECTRAX-GK reduced objective settings. The tracked paper-facing landscape
+# uses one representative sample so the coefficient response can be regenerated
+# quickly before selecting candidates for expensive nonlinear audits.
+SURFACES = "0.64"
+ALPHAS = "0.0"
+KY_VALUES = "0.30"
 NTHETA = 16
 MBOZ = 21
 NBOZ = 21
@@ -58,13 +62,10 @@ N_LAGUERRE = 1
 N_HERMITE = 2
 SOLVER_DEVICE = None  # Set "cpu" or "gpu" to force a backend.
 
-# Optional replicated nonlinear overlays. These are long-window t=[350,700]
-# ensemble gates produced from concrete VMEC WOUTs, not reduced diagnostics.
-NONLINEAR_ENSEMBLES = (
-    "0.20973126251035024:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json",
-    "0.21602320038566075:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json",
-    "0.22231513826097127:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json",
-)
+# Optional replicated nonlinear overlays. These should be long-window
+# t=[350,700] or longer ensemble gates produced from concrete VMEC WOUTs, not
+# reduced diagnostics.
+NONLINEAR_ENSEMBLES: tuple[str, ...] = ()
 
 command = [
     sys.executable,

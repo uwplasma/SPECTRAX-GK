@@ -339,17 +339,18 @@ Differentiable-Physics Figures
        rows restart from that solved QA baseline and use one representative
        sample, ``s=0.64``, ``alpha=0``, ``k_y rho_i=0.30``, with
        ``mboz=nboz=21``. They produce real optimizer outputs, not synthetic
-       surfaces, but each stops slightly below the strict ``iota >= 0.41``
-       gate. Consequently the nonlinear heat-flux subplot is intentionally
-       marked pending and no turbulent-flux reduction is claimed from this
-       sweep. The old projected-weight nonlinear audits remain historical
+       surfaces, and their mean iota remains within the exploratory diagnostic
+       acceptance band ``|iota| >= 0.39`` even though the stricter QA-admission
+       gate records the small shortfall from ``0.41``. Consequently the
+       nonlinear heat-flux subplot is intentionally marked pending and no
+       turbulent-flux reduction is claimed from this sweep. The old projected-weight nonlinear audits remain historical
        single-point evidence tied to an earlier baseline and should not be
        conflated with this strict-baseline panel.
    * - Boundary-coefficient transport landscape
      - ``tools/build_vmec_boundary_transport_landscape.py`` and ``tools/patch_vmec_jax_wout_metadata.py``
      - Closed as a strict-baseline one-coefficient landscape/noise diagnostic;
        replicated nonlinear error bars are pending for this refreshed scan
-     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-50%, +50%]`` with 21 points and evaluates one representative reduced sample, ``s=0.64``, ``alpha=0``, ``k_y rho_i=0.30``, at ``ntheta=16``, ``mboz=nboz=21``, ``Nl=1``, and ``Nm=2``. The growth and quasilinear baselines are essentially marginal, ``8.05e-15`` and ``9.20e-15``, so the top panel reports absolute log-scale values and should not be read as a robust growth/QL reduction claim. The nonlinear-window baseline is finite at ``2.811e-2`` and the best one-coefficient point is near ``+35%`` with value ``2.485e-2``, about ``11.6%`` lower than baseline. No replicated long-window nonlinear ensembles are attached to this strict-baseline landscape yet, so the figure is a launch/noise diagnostic and optimizer-design input, not a promoted nonlinear turbulent-flux optimization result. Earlier ``+3%`` narrow-scan admission sidecars remain historical development artifacts only.
+     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc11.png`` with JSON/CSV companions. The scan perturbs the strict QA ``RBC(1,1)`` coefficient over ``[-50%, +50%]`` with 21 points and evaluates one representative reduced sample, ``s=0.64``, ``alpha=0``, ``k_y rho_i=0.30``, at ``ntheta=16``, ``mboz=nboz=21``, ``Nl=1``, and ``Nm=2``. The growth and quasilinear baselines are essentially marginal, ``8.05e-15`` and ``9.20e-15``, so the top panel reports absolute values and should not be read as a robust growth/QL reduction claim. The nonlinear-window baseline is finite at ``2.811e-2`` and the best one-coefficient point is ``-50%`` with value ``2.469e-2``, about ``12.2%`` lower than baseline; a secondary basin near ``+35%`` reaches ``2.534e-2``. No replicated long-window nonlinear ensembles are attached to this strict-baseline landscape yet, so the figure is a launch/noise diagnostic and optimizer-design input, not a promoted nonlinear turbulent-flux optimization result. Earlier ``+3%`` narrow-scan admission sidecars remain historical development artifacts only.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

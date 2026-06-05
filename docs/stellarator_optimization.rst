@@ -152,7 +152,7 @@ generated ``run_manifest.json`` commands explicitly on the target workstation.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
-Its default mode reuses the tracked strict-baseline ``RBC(0,1)`` reduced-metric
+Its default mode reuses the tracked strict-baseline ``RBC(1,1)`` reduced-metric
 JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth,
 quasilinear, and nonlinear-window metrics for a new coefficient scan. Replicated
 ``t=[350,700]`` nonlinear ensemble gates are intentionally a separate promotion
@@ -304,12 +304,11 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    Full ``max_mode=5`` optimizer-output sweep from the office GPU node. The
    admitted constraints-only row follows the upstream VMEC-JAX QA simple-seed
    setup and passes the strict aspect/iota/QS gate. The growth, quasilinear, and
-   nonlinear-window transport rows restart from that solved QA input and expose
-   the current constraint-preservation issue: each lowers the representative
-   reduced residual but stops just below the strict mean-iota admission gate.
-   The nonlinear heat-flux column is therefore marked pending until concrete
-   candidate WOUTs pass admission and receive matched long-window SPECTRAX-GK
-   ``Q(t)`` audits.
+   nonlinear-window transport rows restart from that solved QA input. Their
+   strict solved-WOUT gate is tripped only by a small mean-iota shortfall, so the
+   figure labels them diagnostic-ok under the exploratory ``|iota| >= 0.39``
+   rule. The nonlinear heat-flux column is still marked pending until concrete
+   candidate WOUTs receive matched long-window SPECTRAX-GK ``Q(t)`` audits.
 
 .. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate
@@ -556,7 +555,7 @@ status, and the long-window nonlinear audit anchor:
    optimization attempts. The older prelaunch-policy row is retained as a
    legacy control: it combines the earlier narrow-scan replicated landscape
    admission, an 18-point selected-candidate reduced gate, and a deliberately
-   failing weak-reference gate. The refreshed strict-baseline ``RBC(0,1)``
+   failing weak-reference gate. The refreshed strict-baseline ``RBC(1,1)``
    landscape is documented separately below and needs new matched nonlinear
    ensemble sidecars before it can feed the same admission policy.
 
@@ -1114,7 +1113,7 @@ mirrors the optimization lesson in [Kim24]_: time-averaged nonlinear heat flux
 can be noisy enough that local deterministic descent may fail near a minimum,
 so the optimizer choice should be informed by a pre-optimizer landscape scan.
 
-The current ``RBC(0,1)`` diagnostic starts from the strict max-mode-5 QA
+The current ``RBC(1,1)`` diagnostic starts from the strict max-mode-5 QA
 baseline used in the optimizer sweep and scans the coefficient over
 ``[-50%, +50%]`` with 21 points.  It uses a representative reduced ITG sample
 (``s = 0.64``, ``alpha = 0``, ``k_y rho_i = 0.30``) so the full landscape can be
@@ -1123,7 +1122,8 @@ sample, the linear-growth and quasilinear baselines are nearly marginal
 (``~1e-14``), so the figure shows absolute values instead of normalized
 growth/QL reductions.  The nonlinear-window screening objective remains finite:
 the baseline value is ``2.81e-2`` and the best point in this one-coefficient
-scan is near ``+35%`` with value ``2.48e-2``.  These are reduced objective
+scan is ``-50%`` with value ``2.47e-2``, a ``12.2%`` reduced-metric decrease; a
+secondary basin near ``+35%`` reaches ``2.53e-2``.  These are reduced objective
 landscape diagnostics only; no replicated nonlinear heat-flux ensembles are
 attached to the strict-baseline scan yet.
 
@@ -1134,7 +1134,8 @@ reuse the stored JSON sidecar::
 
    python tools/build_vmec_boundary_transport_landscape.py \
      --baseline-input tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final \
-     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc01.json \
+     --coefficient "RBC(1,1)" \
+     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11.json \
      --fractions=-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50 \
      --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
      --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2
@@ -1160,12 +1161,12 @@ development artifacts only. They were generated from the older narrow scan and
 should not be interpreted as admission reports for the current strict-baseline
 ``[-50%, +50%]`` figure.
 
-.. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
-   :alt: RBC(0,1) transport-objective landscape
+.. figure:: _static/vmec_boundary_transport_landscape_rbc11.png
+   :alt: RBC(1,1) transport-objective landscape
    :width: 82%
    :align: center
 
-   ``RBC(0,1)`` transport-objective landscape from the strict max-mode-5 QA
+   ``RBC(1,1)`` transport-objective landscape from the strict max-mode-5 QA
    baseline. The top panel shows absolute growth-rate and quasilinear reduced
    objectives because the representative baseline is nearly marginal. The
    bottom panel shows the finite nonlinear-window screening objective. No

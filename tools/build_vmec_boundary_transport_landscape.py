@@ -47,7 +47,7 @@ from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
 
 DEFAULT_BASELINE_INPUT = ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
 DEFAULT_OUT_DIR = ROOT / "tools_out/vmec_boundary_transport_landscape"
-DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01"
+DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11"
 DEFAULT_FRACTIONS = tuple(float(round(value, 2)) for value in np.linspace(-0.50, 0.50, 21))
 DEFAULT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
 DEFAULT_SURFACES = "0.64"
@@ -109,18 +109,40 @@ def _write_scan_inputs(
     coefficient: CoefficientSpec,
     fractions: tuple[float, ...],
     out_dir: Path,
-) -> tuple[float, list[dict[str, Any]]]:
+    zero_reference_coefficients: tuple[CoefficientSpec, ...] = (),
+) -> tuple[float, float, str, list[dict[str, Any]]]:
     text = baseline_input.read_text(encoding="utf-8")
     base_value = _coefficient_value(text, coefficient)
+    scan_amplitude = float(base_value)
+    scan_reference = coefficient.label
     if abs(base_value) <= 0.0:
-        raise ValueError("relative landscape scan requires a nonzero baseline coefficient")
+        reference_values = [
+            (_coefficient_value(text, ref), ref.label)
+            for ref in zero_reference_coefficients
+        ]
+        reference_values = [
+            (float(value), label)
+            for value, label in reference_values
+            if math.isfinite(float(value)) and abs(float(value)) > 0.0
+        ]
+        if not reference_values:
+            raise ValueError(
+                "zero-baseline landscape scan requires at least one nonzero "
+                "--zero-reference-coefficient"
+            )
+        scan_amplitude, scan_reference = max(reference_values, key=lambda item: abs(item[0]))
+        scan_amplitude = abs(float(scan_amplitude))
     rows: list[dict[str, Any]] = []
     input_dir = out_dir / "inputs"
     input_dir.mkdir(parents=True, exist_ok=True)
     seen: set[float] = set()
     for fraction in fractions:
         fraction_f = float(fraction)
-        value = float(base_value * (1.0 + fraction_f))
+        value = (
+            float(base_value * (1.0 + fraction_f))
+            if abs(base_value) > 0.0
+            else float(base_value + scan_amplitude * fraction_f)
+        )
         rounded = round(value, 15)
         if rounded in seen:
             continue
@@ -133,11 +155,13 @@ def _write_scan_inputs(
                 "label": label,
                 "relative_fraction": fraction_f,
                 "coefficient_value": value,
+                "scan_amplitude": scan_amplitude,
+                "scan_reference": scan_reference,
                 "input_path": input_path,
                 "expected_wout": input_dir / f"wout_{_coefficient_slug(coefficient)}_{label}.nc",
             }
         )
-    return float(base_value), rows
+    return float(base_value), float(scan_amplitude), str(scan_reference), rows
 
 
 def _run_reduced_metric(
@@ -517,6 +541,8 @@ def _write_plot(
     set_plot_style()
     x = np.asarray([float(row["relative_fraction"]) for row in rows], dtype=float) * 100.0
     baseline_index = int(np.argmin(np.abs(x)))
+    baseline_value = float(report["baseline_coefficient_value"])
+    scan_amplitude = float(report.get("scan_amplitude", baseline_value))
     metrics = {kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
     metric_errors = {kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
 
@@ -570,7 +596,8 @@ def _write_plot(
         if positive.size and float(np.nanmax(positive) / max(np.nanmin(positive), 1.0e-300)) > 100.0:
             ax0.set_yscale("log")
     ax0.set_title(f"{report['coefficient']} transport-objective landscape")
-    ax0.legend(frameon=False, fontsize=8)
+    if ax0.has_data():
+        ax0.legend(frameon=False, fontsize=8)
     ax0.grid(True, alpha=0.25)
 
     ax1 = axes[1]
@@ -589,13 +616,23 @@ def _write_plot(
             label=labels["nonlinear_window_heat_flux"],
         )
     ax1.set_ylabel("absolute reduced objective")
-    ax1.legend(frameon=False, fontsize=8)
+    if ax1.has_data():
+        ax1.legend(frameon=False, fontsize=8)
     ax1.grid(True, alpha=0.25)
 
     if nonlinear_points:
         ax2 = axes[2]
         base = float(report["baseline_coefficient_value"])
         xs = np.asarray([(float(point["coefficient_value"]) / base - 1.0) * 100.0 for point in nonlinear_points])
+        if abs(base) <= 0.0:
+            xs = np.asarray(
+                [
+                    (float(point["coefficient_value"]) - baseline_value)
+                    / max(abs(scan_amplitude), 1.0e-300)
+                    * 100.0
+                    for point in nonlinear_points
+                ]
+            )
         means = np.asarray([float(point["mean"]) for point in nonlinear_points])
         sem = np.asarray([float(point["sem"]) for point in nonlinear_points])
         colors_nl = ["#0f766e" if bool(point.get("passed", False)) else "#b91c1c" for point in nonlinear_points]
@@ -607,8 +644,8 @@ def _write_plot(
         ax_secondary = ax2.secondary_xaxis(
             "top",
             functions=(
-                lambda frac_percent: float(report["baseline_coefficient_value"]) * (1.0 + frac_percent / 100.0),
-                lambda value: (value / float(report["baseline_coefficient_value"]) - 1.0) * 100.0,
+                lambda frac_percent: baseline_value + scan_amplitude * (frac_percent / 100.0),
+                lambda value: (value - baseline_value) / scan_amplitude * 100.0,
             ),
         )
     else:
@@ -616,8 +653,8 @@ def _write_plot(
         ax_secondary = ax1.secondary_xaxis(
             "top",
             functions=(
-                lambda frac_percent: float(report["baseline_coefficient_value"]) * (1.0 + frac_percent / 100.0),
-                lambda value: (value / float(report["baseline_coefficient_value"]) - 1.0) * 100.0,
+                lambda frac_percent: baseline_value + scan_amplitude * (frac_percent / 100.0),
+                lambda value: (value - baseline_value) / scan_amplitude * 100.0,
             ),
         )
     ax_secondary.set_xlabel(f"{report['coefficient']} value")
@@ -672,7 +709,16 @@ def _nonlinear_launch_manifest(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-input", type=Path, default=DEFAULT_BASELINE_INPUT)
-    parser.add_argument("--coefficient", default="RBC(0,1)")
+    parser.add_argument("--coefficient", default="RBC(1,1)")
+    parser.add_argument(
+        "--zero-reference-coefficient",
+        action="append",
+        default=["RBC(1,0)", "RBC(0,1)"],
+        help=(
+            "Reference coefficient used to set the absolute scan amplitude when "
+            "--coefficient has zero baseline value; may be supplied multiple times."
+        ),
+    )
     parser.add_argument("--fractions", type=_parse_float_list, default=DEFAULT_FRACTIONS)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_DOCS_PREFIX)
@@ -721,11 +767,15 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     spec = _parse_coefficient_spec(str(args.coefficient))
     kinds = tuple(args.transport_kind or DEFAULT_KINDS)
-    base_value, rows = _write_scan_inputs(
+    zero_reference_coefficients = tuple(
+        _parse_coefficient_spec(str(item)) for item in (args.zero_reference_coefficient or [])
+    )
+    base_value, scan_amplitude, scan_reference, rows = _write_scan_inputs(
         baseline_input=args.baseline_input,
         coefficient=spec,
         fractions=tuple(float(value) for value in args.fractions),
         out_dir=args.out_dir,
+        zero_reference_coefficients=zero_reference_coefficients,
     )
     metric_dir = args.out_dir / "reduced_metrics"
     for row in rows:
@@ -771,6 +821,9 @@ def main(argv: list[str] | None = None) -> int:
         "baseline_input": args.baseline_input,
         "coefficient": spec.label,
         "baseline_coefficient_value": base_value,
+        "scan_amplitude": scan_amplitude,
+        "scan_reference": scan_reference,
+        "scan_mode": "relative_to_baseline" if abs(base_value) > 0.0 else "absolute_from_reference",
         "fractions": [float(row["relative_fraction"]) for row in rows],
         "sample_set": {
             "surfaces": list(_parse_float_list(str(args.surfaces))),
