@@ -5,11 +5,12 @@ The first nonlinear turbulence-optimization studies in stellarators show that
 late-time nonlinear heat-flux objectives can be noisy in boundary-parameter
 space. This tool makes that diagnostic explicit for SPECTRAX-GK: perturb one
 VMEC input coefficient, evaluate deterministic reduced linear/quasilinear
-objectives, and optionally overlay replicated nonlinear heat-flux ensemble
-points with error bars when those expensive simulations have finished.
+objectives, and optionally overlay true post-transient nonlinear heat-flux
+points with uncertainty bars when those expensive simulations have finished.
 
 The deterministic reduced curves are not nonlinear turbulent-flux claims. The
-nonlinear points are accepted only from supplied ensemble JSON files.
+nonlinear points are accepted only from supplied post-transient nonlinear-output
+ensemble JSON files.
 """
 
 from __future__ import annotations
@@ -630,12 +631,12 @@ def _write_plot(
             0.5,
             0.5,
             "Long-window nonlinear heat-flux landscape pending.\n"
-            "Generate t=[350,700] or longer simulation ensembles for each coefficient.",
+            "Generate t=[350,700] or longer nonlinear simulations for each coefficient.",
             transform=ax1.transAxes,
             ha="center",
             va="center",
         )
-    ax1.set_ylabel(r"long-window $\langle Q_i\rangle$")
+    ax1.set_ylabel(r"post-transient nonlinear heat flux $Q_i$")
     ax1.grid(True, alpha=0.25)
     ax1.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
     ax_secondary = ax1.secondary_xaxis(
@@ -810,7 +811,7 @@ def main(argv: list[str] | None = None) -> int:
         "claim_level": (
             "coefficient_landscape_diagnostic; top-panel linear/quasilinear metrics are deterministic "
             "linear-state diagnostics, and bottom-panel nonlinear heat-flux points require long-window "
-            "post-transient ensemble JSON"
+            "post-transient nonlinear-output ensemble JSON"
         ),
         "baseline_input": args.baseline_input,
         "coefficient": spec.label,

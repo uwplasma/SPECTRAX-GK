@@ -1,7 +1,7 @@
 {
   "baseline_coefficient_value": 0.12662450813837142,
   "baseline_input": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final",
-  "claim_level": "coefficient_landscape_diagnostic; top-panel linear/quasilinear metrics are deterministic linear-state diagnostics, and bottom-panel nonlinear heat-flux points require long-window post-transient ensemble JSON",
+  "claim_level": "coefficient_landscape_diagnostic; top-panel linear/quasilinear metrics are deterministic linear-state diagnostics, and bottom-panel nonlinear heat-flux points require long-window post-transient nonlinear-output ensemble JSON",
   "coefficient": "RBC(1,1)",
   "fractions": [
     -0.75,
