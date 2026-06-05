@@ -47,7 +47,7 @@ from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
 
 DEFAULT_BASELINE_INPUT = ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
 DEFAULT_OUT_DIR = ROOT / "tools_out/vmec_boundary_transport_landscape"
-DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11"
+DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full"
 DEFAULT_FRACTIONS = tuple(float(round(value, 2)) for value in np.linspace(-0.75, 0.75, 31))
 DEFAULT_KINDS = (
     "growth",

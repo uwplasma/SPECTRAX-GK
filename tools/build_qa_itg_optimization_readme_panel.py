@@ -31,9 +31,9 @@ from spectraxgk.plotting import set_plot_style  # noqa: E402
 
 DEFAULT_GEOMETRY_PNG = ROOT / "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png"
 DEFAULT_SWEEP_JSON = ROOT / "docs/_static/vmec_jax_qa_full_sweep_panel.json"
-DEFAULT_LANDSCAPE_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.json"
-DEFAULT_LANDSCAPE_CSV = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.csv"
-DEFAULT_ADMISSION_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_admission.json"
+DEFAULT_LANDSCAPE_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json"
+DEFAULT_LANDSCAPE_CSV = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full.csv"
+DEFAULT_ADMISSION_JSON = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full_admission.json"
 DEFAULT_MATCHED_JSON = ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json"
 DEFAULT_OUT = ROOT / "docs/_static/qa_itg_optimization_summary_panel.png"
 
@@ -57,16 +57,19 @@ def _read_landscape_rows(path: Path) -> list[dict[str, float | str]]:
     with path.open("r", encoding="utf-8", newline="") as fh:
         reader = csv.DictReader(fh)
         for row in reader:
-            rows.append(
-                {
-                    "label": str(row["label"]),
-                    "relative_fraction": float(row["relative_fraction"]),
-                    "coefficient_value": float(row["coefficient_value"]),
-                    "growth": float(row["growth"]),
-                    "quasilinear_flux": float(row["quasilinear_flux"]),
-                    "nonlinear_window_heat_flux": float(row["nonlinear_window_heat_flux"]),
-                }
-            )
+            parsed: dict[str, float | str] = {
+                "label": str(row["label"]),
+                "relative_fraction": float(row["relative_fraction"]),
+                "coefficient_value": float(row["coefficient_value"]),
+            }
+            for key, value in row.items():
+                if key in parsed or key == "input_path" or value in (None, ""):
+                    continue
+                try:
+                    parsed[key] = float(value)
+                except ValueError:
+                    continue
+            rows.append(parsed)
     return rows
 
 
@@ -214,11 +217,17 @@ def _plot_landscape(ax: plt.Axes, rows: list[dict[str, float | str]], payload: d
     baseline_index = int(np.argmin(np.abs(x)))
     styles = {
         "growth": ("linear growth", "#0f766e", "o"),
-        "quasilinear_flux": ("quasilinear flux", "#1d4ed8", "s"),
-        "nonlinear_window_heat_flux": ("NL-window", "#c2410c", "^"),
+        "quasilinear_flux": ("QL mixing-length", "#1d4ed8", "s"),
+        "quasilinear_flux_linear_weight": ("QL linear weight", "#0891b2", "s"),
+        "quasilinear_flux_mixing_length": ("QL mixing-length", "#2563eb", "D"),
+        "quasilinear_flux_lapillonne_2011": ("QL Lapillonne 2011", "#7c3aed", "^"),
+        "quasilinear_flux_absolute_growth_mixing_length": (r"QL $|\gamma|/k_\perp^2$", "#db2777", "v"),
+        "quasilinear_flux_shape_aware_power_law": ("QL shape-aware", "#ea580c", "P"),
     }
     for kind, (label, color, marker) in styles.items():
-        y = np.asarray([float(row[kind]) for row in rows], dtype=float)
+        if not any(kind in row for row in rows):
+            continue
+        y = np.asarray([float(row.get(kind, float("nan"))) for row in rows], dtype=float)
         err_lookup = _standard_errors_from_landscape(payload, kind)
         err = np.asarray([err_lookup.get(str(row["label"]), np.nan) for row in rows], dtype=float)
         if not np.any(np.isfinite(err)):
@@ -229,11 +238,24 @@ def _plot_landscape(ax: plt.Axes, rows: list[dict[str, float | str]], payload: d
     coefficient = str(payload.get("coefficient", "boundary coefficient"))
     ax.set_xlabel(f"relative {coefficient} perturbation [%]")
     ax.set_ylabel("objective / baseline")
-    ax.set_title("Noisy transport-objective landscape", loc="left", fontweight="bold")
-    ax.legend(frameon=False, fontsize=8, ncols=1)
+    ax.set_title("Linear and quasilinear boundary landscape", loc="left", fontweight="bold")
+    ax.legend(frameon=False, fontsize=7.2, ncols=1)
 
 
-def _plot_replicated_landscape(ax: plt.Axes, admission: dict[str, Any]) -> None:
+def _plot_replicated_landscape(ax: plt.Axes, admission: dict[str, Any] | None) -> None:
+    if not admission:
+        ax.text(
+            0.5,
+            0.5,
+            "Refreshed nonlinear landscape pending\n"
+            "Requires long post-transient heat-flux ensembles.",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+            fontsize=9,
+        )
+        ax.set_axis_off()
+        return
     baseline = admission["baseline"]
     candidates = admission.get("candidates", [])
     labels = ["baseline"] + [str(row["label"]) for row in candidates]
@@ -319,7 +341,7 @@ def build_panel(
 ) -> dict[str, Any]:
     sweep = _read_json(sweep_json)
     landscape = _read_json(landscape_json)
-    admission = _read_json(admission_json)
+    admission = _read_json(admission_json) if admission_json.exists() else None
     matched = _read_json(matched_json)
     rows = _read_landscape_rows(landscape_csv)
 
@@ -389,7 +411,7 @@ def build_panel(
             "landscape_admission_json": _repo_relative(admission_json),
             "matched_nonlinear_json": _repo_relative(matched_json),
         },
-        "selected_landscape_candidate": admission.get("selected_candidate"),
+        "selected_landscape_candidate": admission.get("selected_candidate") if admission else None,
         "matched_projected_candidate": matched.get("statistics"),
         "output": _repo_relative(out),
     }

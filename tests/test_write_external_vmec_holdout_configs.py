@@ -38,11 +38,13 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert "ky = 0.3" in first_config
     assert "steps = 4" in first_config
     assert "restart_if_exists = false" in first_config
+    assert "nsave = 4" in first_config
     assert 'path = "candidate_nonlinear_t1_n8.out.nc"' in first_config
 
     continuation_config = written[2].path.read_text(encoding="utf-8")
     assert "t_max = 1.5" in continuation_config
     assert "steps = 2" in continuation_config
+    assert "nsave = 2" in continuation_config
     assert "restart_if_exists = true" in continuation_config
 
     manifest = write_manifest(tmp_path / "runs", written)
@@ -113,6 +115,7 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
     dt_only_config = written[-3].path.read_text(encoding="utf-8")
     assert 'path = "replicate_nonlinear_t2_n8_dt0p125.out.nc"' in dt_only_config
     assert "dt = 0.125" in dt_only_config
+    assert "nsave = 8" in dt_only_config
     assert "random_seed = 22" in dt_only_config
     assert 'variant_axis = "timestep"' in dt_only_config
     assert "timestep = 0.125" in dt_only_config

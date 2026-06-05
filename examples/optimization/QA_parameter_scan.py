@@ -46,7 +46,7 @@ BASELINE_INPUT = (
 COEFFICIENT = "RBC(1,1)"
 FRACTIONS = "-0.75,-0.70,-0.65,-0.60,-0.55,-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75"
 EVALUATE_REDUCED = False
-REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.json"
+REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json"
 OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc11"
 
 # SPECTRAX-GK linear/quasilinear settings. These match the optimizer examples:

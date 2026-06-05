@@ -1115,22 +1115,16 @@ so the optimizer choice should be informed by a pre-optimizer landscape scan.
 
 The current ``RBC(1,1)`` diagnostic starts from the strict max-mode-5 QA
 baseline used in the optimizer sweep and scans the coefficient over
-``[-50%, +50%]`` with 21 points.  It uses a representative reduced ITG sample
-(``s = 0.64``, ``alpha = 0``, ``k_y rho_i = 0.30``) so the full landscape can be
-recomputed cheaply enough to guide optimizer choices.  At this representative
-sample, the linear-growth and quasilinear baselines are nearly marginal
-(``~1e-14``), so the figure shows absolute values instead of normalized
-growth/QL reductions.  The nonlinear-window screening objective remains finite:
-the baseline value is ``2.81e-2`` and the best point in this one-coefficient
-scan is ``-50%`` with value ``2.47e-2``, a ``12.2%`` reduced-metric decrease; a
-secondary basin near ``+35%`` reaches ``2.53e-2``.  The completed replicated
-nonlinear audit rejects the ``-50%`` branch: the long-window heat flux rises
-from ``11.4266 +/- 0.2195`` at baseline to ``14.4392 +/- 0.5832`` at ``-50%``
-(``z=-4.83`` for reduction).  The ``+35%`` branch closes in the opposite
-direction: four seed/timestep traces give ``10.5143 +/- 0.2462``, a
-``7.98%`` reduction from baseline with ``z=2.77``.  This is promoted only as a
-bounded one-control nonlinear landscape result; a full nonlinear stellarator
-optimizer still requires multi-control descent and replicated holdout gates.
+``[-75%, +75%]`` with 31 points.  The top panel evaluates the linear growth
+rate and every explicit electrostatic quasilinear heat-flux rule on the same
+multi-point optimizer sample set: ``s = (0.45, 0.64, 0.78)``,
+``alpha = (0, pi/4)``, and ``k_y rho_i = (0.10, 0.30, 0.50)``.  The lower
+panel is deliberately not a reduced nonlinear-window objective.  It accepts
+only long-window post-transient nonlinear heat-flux ensemble sidecars produced
+from concrete SPECTRAX-GK nonlinear outputs.  This separation is part of the
+claim boundary: reduced/startup nonlinear-window diagnostics can guide launch
+choices, but they cannot be plotted or cited as turbulent heat-flux
+landscapes.
 
 The reduced scan is intentionally reusable.  The batched evaluator computes
 growth, quasilinear, and nonlinear-window metrics in one VMEC/JAX solve per
@@ -1140,13 +1134,10 @@ reuse the stored JSON sidecar::
    python tools/build_vmec_boundary_transport_landscape.py \
      --baseline-input tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final \
      --coefficient "RBC(1,1)" \
-     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11.json \
-     --fractions=-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50 \
-     --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
-     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2 \
-     --nonlinear-ensemble 0.12662450813837142:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/0_ensemble_gate.json \
-     --nonlinear-ensemble 0.06331225406918571:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/m0p5_ensemble_gate.json \
-     --nonlinear-ensemble 0.17094308598680144:docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/p0p35_ensemble_gate.json
+     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11_full.json \
+     --fractions=-0.75,-0.70,-0.65,-0.60,-0.55,-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75 \
+     --surfaces 0.45,0.64,0.78 --alphas 0.0,0.7853981633974483 --ky-values 0.10,0.30,0.50 \
+     --ntheta 16 --mboz 21 --nboz 21 --n-laguerre 1 --n-hermite 2
 
 When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
@@ -1164,25 +1155,21 @@ sidecars::
      --out-json path/to/current_campaign_admission_report.json \
      --fail-on-blocked
 
-Earlier ``+3% RBC(0,1)`` admission sidecars are retained as historical
-development artifacts only. They were generated from the older narrow scan and
-should not be interpreted as admission reports for the current strict-baseline
-``[-50%, +50%]`` figure.
+Earlier ``+3% RBC(0,1)`` and sparse ``RBC(1,1)`` sidecars are retained as
+historical development artifacts only. They were generated from older narrow
+or reduced screening scans and should not be interpreted as admission reports
+for the current strict-baseline ``[-75%, +75%]`` figure.
 
-.. figure:: _static/vmec_boundary_transport_landscape_rbc11.png
+.. figure:: _static/vmec_boundary_transport_landscape_rbc11_full.png
    :alt: RBC(1,1) transport-objective landscape
    :width: 82%
    :align: center
 
    ``RBC(1,1)`` transport-objective landscape from the strict max-mode-5 QA
-   baseline. The top panel shows absolute growth-rate and quasilinear reduced
-   objectives because the representative baseline is nearly marginal. The
-   middle panel shows the finite reduced nonlinear-window screening objective.
-   The bottom panel overlays replicated long-window nonlinear heat flux for the
-   baseline, the rejected ``-50%`` branch, and the accepted ``+35%`` branch. It
-   shows why reduced-window screening needs replicated nonlinear confirmation:
-   the reduced minimum fails, while the secondary basin gives a bounded
-   single-control heat-flux reduction.
+   baseline. The top panel shows linear growth and the shipped quasilinear
+   rules. The bottom panel is true nonlinear heat flux only when populated by
+   long post-transient ensemble sidecars; reduced nonlinear-window diagnostics
+   are excluded from this figure.
 
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar

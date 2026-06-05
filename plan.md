@@ -20,10 +20,9 @@ historical logs live outside the release repository so clones stay small.
   plan replaces the old 531 KB historical log to restore edit headroom.
 - Release posture: technically shippable after the current patch release lands;
   broad manuscript-level nonlinear turbulence-optimization claims are not
-  promoted. The strict QA baseline and the new RBC(1,1) landscape are tracked
-  as optimization/noise diagnostics; the first matched long-window nonlinear
-  branch audit is closed with one rejected and one accepted single-control
-  direction.
+  promoted. The strict QA baseline and refreshed RBC(1,1) landscape are tracked
+  as optimization/noise diagnostics; the old sparse branch audit is historical
+  evidence only while the full 31-point true nonlinear landscape campaign runs.
 
 ## Active Lanes
 
@@ -32,9 +31,9 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 94% | Strict top-12 matched audit fails promotion; RBC(1,1) t=[350,700] matched nonlinear audits close one rejected and one accepted single-control direction |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 21-point RBC(1,1) reduced landscape is tracked with baseline, rejected -50%, and accepted +35% nonlinear SEM overlays |
-| Docs/readme/release hygiene | 97% | Strict QA failed-promotion and RBC(1,1) landscape artifacts are tracked with scoped wording |
+| Strict nonlinear transport and campaign-admission evidence | 94% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) 31-point nonlinear ensemble campaign is running |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 95% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; true nonlinear overlay pending long-window ensembles |
+| Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -219,30 +218,28 @@ No long nonlinear audit should be launched from these candidates.
 ### 2026-06-05
 
 - Refreshed the paper-facing boundary landscape from the earlier RBC(0,1)
-  narrow scan to a 21-point ``RBC(1,1)`` scan over ``[-50%, +50%]`` of the
-  strict QA baseline coefficient. If a future scanned coefficient has zero
-  baseline value, the landscape builder now sets the absolute scan amplitude
-  from the largest configured reference coefficient, defaulting to
-  ``RBC(1,0)`` and ``RBC(0,1)``.
-- The reduced RBC(1,1) landscape is a diagnostic, not a nonlinear transport
-  claim. At the representative reduced sample, the deterministic
-  nonlinear-window metric is lowest at ``-50%`` with a ``12.16%`` reduction and
-  has a secondary low basin near ``+35%``. Growth and quasilinear values are
-  near marginal and are plotted as absolute objective values.
+  narrow scan and sparse RBC(1,1) follow-up to a 31-point ``RBC(1,1)`` scan
+  over ``[-75%, +75%]`` of the strict QA baseline coefficient. If a future
+  scanned coefficient has zero baseline value, the landscape builder now sets
+  the absolute scan amplitude from the largest configured reference
+  coefficient, defaulting to ``RBC(1,0)`` and ``RBC(0,1)``.
+- The refreshed RBC(1,1) landscape is a diagnostic, not a nonlinear transport
+  claim. The top panel now plots only deterministic linear growth and all
+  explicit quasilinear heat-flux rules on the same three-surface,
+  two-field-line, three-``ky`` sample used by the optimizer examples. The
+  bottom panel accepts only true long-window post-transient nonlinear
+  heat-flux ensembles; reduced/startup nonlinear-window metrics are excluded
+  from the paper-facing landscape.
 - Updated the QA full-sweep panel so transport rows with only small mean-iota
   misses remain marked ``diag-ok`` when ``|iota| >= 0.39``; strict admission at
   ``|iota| >= 0.41`` remains separate. The solved-WOUT iota profile plot now
   omits the VMEC axis point so zero/convention artifacts do not skew the axis.
-- Closed matched long-window nonlinear audits on office for the strict
-  RBC(1,1) baseline, the ``-50%`` candidate, and the ``+35%`` candidate using
-  ``n64:64:64:40:40``, ``t_max=700``, window ``t=[350,700]``, seeds 31/32, and
-  a ``dt=0.04`` variant; the accepted ``+35%`` branch also includes an
-  additional seed33 holdout. The baseline ensemble passes with mean ``11.4266``
-  and combined SEM ``0.2195``. The ``-50%`` candidate fails closed: mean
-  ``14.4392``, relative reduction ``-26.36%`` (i.e. increased heat flux), and
-  matched uncertainty score ``z=-4.83``. The ``+35%`` branch passes with mean
-  ``10.5143``, combined SEM ``0.2462``, relative reduction ``7.98%``, and
-  matched uncertainty score ``z=2.77``. A controller GPU-placement bug briefly
+- Launched the office true nonlinear landscape campaign for all 31 RBC(1,1)
+  coefficients, with seed31, seed32, and ``dt=0.04`` variants at
+  ``n64:64:64:40:40``, ``t_max=700``, and window ``t=[350,700]``. The previous
+  sparse baseline/``-50%``/``+35%`` audit remains useful historical evidence,
+  but it is no longer the paper-facing landscape; promotion now waits for the
+  complete refreshed ensemble overlay. A controller GPU-placement bug briefly
   co-located ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was
   stopped, the ``dt=0.04`` run was relaunched manually on the idle GPU, and the
   seed31 plus seed33 traces completed cleanly.

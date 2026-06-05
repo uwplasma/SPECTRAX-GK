@@ -341,6 +341,7 @@ path = "{output_path}"
 restart_if_exists = {_toml_bool(restart_if_exists)}
 append_on_restart = true
 save_for_restart = true
+nsave = {steps}
 {metadata}"""
 
 

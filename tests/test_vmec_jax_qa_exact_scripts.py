@@ -133,7 +133,7 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     normalized_readme = re.sub(r"\s+", " ", readme)
 
     assert "docs/_static/vmec_jax_qa_full_sweep_panel.png" in readme
-    assert "docs/_static/vmec_boundary_transport_landscape_rbc11.png" in readme
+    assert "docs/_static/vmec_boundary_transport_landscape_rbc11_full.png" in readme
     assert "docs/_static/qa_itg_optimization_summary_panel.png" not in readme
     assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" not in readme
     assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
@@ -142,7 +142,7 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     assert "matched long post-transient nonlinear" in normalized_readme
 
     assert "_static/vmec_jax_qa_full_sweep_panel.png" in docs
-    assert "_static/vmec_boundary_transport_landscape_rbc11.png" in docs
+    assert "_static/vmec_boundary_transport_landscape_rbc11_full.png" in docs
     assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
     assert "Development-Only Reduced Diagnostics" in docs
     assert (
