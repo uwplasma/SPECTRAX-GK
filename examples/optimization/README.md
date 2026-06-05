@@ -45,10 +45,14 @@ default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside the script to
 run them and build the initial-vs-final nonlinear `Q(t)` comparison plot, or
 run the commands from the generated `run_manifest.json` on a GPU node.
 
-`QA_parameter_scan.py` scans `RBC(1,1)` from `-50%` to `+50%` by default and
-regenerates the noisy linear/quasilinear/nonlinear-window objective landscape.
-Replicated nonlinear error bars can be overlaid by adding long-window ensemble
-sidecars after running concrete candidate WOUTs.
+`QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
+regenerates the linear/quasilinear objective landscape. The top panel includes
+linear growth and every shipped electrostatic quasilinear heat-flux rule on the
+same multi-surface, multi-field-line, multi-`k_y` sample set used by the
+optimization scripts. The lower panel is reserved for true post-transient
+nonlinear heat-flux means; add it only through long-window ensemble sidecars
+from concrete nonlinear outputs, not reduced/startup nonlinear-window
+diagnostics.
 
 ## Campaign Tooling
 
