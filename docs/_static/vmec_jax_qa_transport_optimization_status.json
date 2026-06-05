@@ -9,13 +9,23 @@
     "line_search_json": "docs/_static/vmec_boozer_aggregate_line_search_comparison.json",
     "ql_rule_json": "docs/_static/quasilinear_saturation_rule_sweep.json",
     "ql_model_json": "docs/_static/quasilinear_model_selection_status.json",
-    "nonlinear_audit_json": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json"
+    "nonlinear_audit_json": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+    "landscape_admission_json": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+    "positive_prelaunch_json": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+    "negative_prelaunch_json": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json"
   },
   "projected_baseline": {
     "label": "projected baseline metric",
     "root": "tools_out/multisample_projected_line_search_smoke_grid_compatible/baseline_transport_metric_eval",
     "objective_kind": "baseline_nonlinear_window_metric",
     "passed_solved_wout_gate": true,
+    "solved_wout_gate_passed": true,
+    "wout_reproducibility_gate_passed": null,
+    "wout_reproducibility_gate": null,
+    "rerun_wout_admission_gate_passed": null,
+    "rerun_wout_admission_gate": null,
+    "uses_authoritative_rerun_wout": false,
+    "authoritative_wout": "tools_out/multisample_projected_line_search_smoke_grid_compatible/baseline_transport_metric_eval/wout_final.nc",
     "aspect_final": 5.999232723441375,
     "iota_final": 0.4278228599349674,
     "qs_final": 0.0019658697953045196,
@@ -44,6 +54,13 @@
       "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/constraints",
       "objective_kind": "constraints_only",
       "passed_solved_wout_gate": true,
+      "solved_wout_gate_passed": true,
+      "wout_reproducibility_gate_passed": null,
+      "wout_reproducibility_gate": null,
+      "rerun_wout_admission_gate_passed": null,
+      "rerun_wout_admission_gate": null,
+      "uses_authoritative_rerun_wout": false,
+      "authoritative_wout": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/constraints/wout_final.nc",
       "aspect_final": 6.000183609867784,
       "iota_final": 0.4270411353710809,
       "qs_final": 0.0015893993622550827,
@@ -71,6 +88,13 @@
       "root": "tools_out/multisample_projected_line_search_smoke_grid_compatible/step_1p0em04/transport_metric_eval",
       "objective_kind": "constraint_preserving_projected_nonlinear_window_metric",
       "passed_solved_wout_gate": true,
+      "solved_wout_gate_passed": true,
+      "wout_reproducibility_gate_passed": null,
+      "wout_reproducibility_gate": null,
+      "rerun_wout_admission_gate_passed": null,
+      "rerun_wout_admission_gate": null,
+      "uses_authoritative_rerun_wout": false,
+      "authoritative_wout": "tools_out/multisample_projected_line_search_smoke_grid_compatible/step_1p0em04/transport_metric_eval/wout_final.nc",
       "aspect_final": 5.999292560961836,
       "iota_final": 0.42757645206236483,
       "qs_final": 0.0022924259588802095,
@@ -98,6 +122,13 @@
       "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/transport",
       "objective_kind": "scalar_transport_residual",
       "passed_solved_wout_gate": false,
+      "solved_wout_gate_passed": false,
+      "wout_reproducibility_gate_passed": null,
+      "wout_reproducibility_gate": null,
+      "rerun_wout_admission_gate_passed": null,
+      "rerun_wout_admission_gate": null,
+      "uses_authoritative_rerun_wout": false,
+      "authoritative_wout": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/transport/wout_final.nc",
       "aspect_final": 6.101980940984345,
       "iota_final": 0.46367560547498066,
       "qs_final": 9.98760837205291,
@@ -177,6 +208,54 @@
     "uncertainty_separation_sigma": 7.819308425110687,
     "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit"
   },
+  "prelaunch_gates": [
+    {
+      "label": "replicated landscape admission",
+      "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+      "kind": "nonlinear_landscape_admission_report",
+      "passed": true,
+      "raw_passed": true,
+      "expected_raw_passed": true,
+      "metric": 0.2665094629036129,
+      "threshold": 0.02,
+      "sample_count": 12.0,
+      "blockers": [],
+      "claim_scope": "selected replicated nonlinear landscape admission; not a multi-coefficient or multi-flux-tube turbulent-optimization claim",
+      "next_action": "use selected direction for the next uncertainty-aware optimizer admission step"
+    },
+    {
+      "label": "selected reduced prelaunch",
+      "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+      "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+      "passed": true,
+      "raw_passed": true,
+      "expected_raw_passed": true,
+      "required_blocker": null,
+      "metric": 0.04678021840887033,
+      "threshold": 0.04,
+      "sample_count": 18.0,
+      "blockers": [],
+      "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
+      "next_action": "launch replicated long-window nonlinear audit only with baseline/candidate ensembles"
+    },
+    {
+      "label": "weak reduced-margin reference",
+      "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+      "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+      "passed": true,
+      "raw_passed": false,
+      "expected_raw_passed": false,
+      "required_blocker": "insufficient_reduced_margin_for_nonlinear_audit",
+      "metric": 0.022875996934833345,
+      "threshold": 0.04,
+      "sample_count": 18.0,
+      "blockers": [
+        "insufficient_reduced_margin_for_nonlinear_audit"
+      ],
+      "claim_scope": "reduced-objective prelaunch guard only; passing this gate permits a replicated nonlinear audit but does not promote a turbulence claim",
+      "next_action": "do not launch an expensive nonlinear audit; increase reduced-objective margin or broaden the objective before spending GPU time"
+    }
+  ],
   "summary": {
     "qa_baseline_gate_passed": true,
     "direct_scalar_transport_gate_passed": false,
@@ -187,9 +266,13 @@
     "quasilinear_model_selection_passed": true,
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
+    "landscape_admission_passed": true,
+    "positive_prelaunch_gate_passed": true,
+    "negative_reference_blocks_weak_margin": true,
+    "nonlinear_prelaunch_policy_ready": true,
     "blocked_candidates": [
       "direct scalar transport"
     ],
-    "next_action": "Use the passing QA baseline and any constraint-preserving candidates for long-window nonlinear audits; do not promote direct scalar transport branches that fail aspect/iota/QS gates."
+    "next_action": "Use the passing QA baseline and any constraint-preserving candidates that also pass the prelaunch/admission policy for long-window nonlinear audits; do not promote direct scalar transport branches that fail aspect/iota/QS gates or weak reduced-margin candidates that the negative prelaunch reference blocks."
   }
 }

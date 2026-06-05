@@ -56,6 +56,9 @@ DEFAULT_LINE_SEARCH_JSON = ROOT / "docs" / "_static" / "vmec_boozer_aggregate_li
 DEFAULT_QL_RULE_JSON = ROOT / "docs" / "_static" / "quasilinear_saturation_rule_sweep.json"
 DEFAULT_QL_MODEL_JSON = ROOT / "docs" / "_static" / "quasilinear_model_selection_status.json"
 DEFAULT_NONLINEAR_AUDIT_JSON = ROOT / "docs" / "_static" / "qa_no_ess_to_optimized_nonlinear_audit.json"
+DEFAULT_LANDSCAPE_ADMISSION_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_landscape_admission.json"
+DEFAULT_POSITIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_prelaunch_gate.json"
+DEFAULT_NEGATIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "strict_qa_top12_edge_prelaunch_gate.json"
 
 
 def _repo_relative(path: Path) -> str:
@@ -234,6 +237,69 @@ def _quasilinear_model_rows(rule_path: Path, model_path: Path) -> list[dict[str,
     return rows
 
 
+def _landscape_admission_gate(path: Path) -> dict[str, Any]:
+    data = _read_json(path)
+    selected = data.get("selected_candidate", {})
+    if not isinstance(selected, dict):
+        selected = {}
+    policy = data.get("policy", {})
+    if not isinstance(policy, dict):
+        policy = {}
+    blockers = selected.get("admission_blockers", [])
+    if not isinstance(blockers, list):
+        blockers = []
+    passed = bool(data.get("passed", False)) and bool(selected.get("admitted", False)) and not blockers
+    return {
+        "label": "replicated landscape admission",
+        "path": _repo_relative(path),
+        "kind": data.get("kind"),
+        "passed": passed,
+        "raw_passed": bool(data.get("passed", False)),
+        "expected_raw_passed": True,
+        "metric": _finite_float(selected.get("relative_reduction")),
+        "threshold": _finite_float(policy.get("minimum_relative_reduction")),
+        "sample_count": _finite_float(policy.get("minimum_sample_count")),
+        "blockers": blockers,
+        "claim_scope": data.get("claim_scope"),
+        "next_action": data.get("next_action"),
+    }
+
+
+def _prelaunch_gate(
+    label: str,
+    path: Path,
+    *,
+    expected_raw_passed: bool,
+    required_blocker: str | None = None,
+) -> dict[str, Any]:
+    data = _read_json(path)
+    blockers = data.get("blockers", [])
+    if not isinstance(blockers, list):
+        blockers = []
+    raw_passed = bool(data.get("passed", False))
+    expected_outcome = raw_passed is expected_raw_passed and (
+        required_blocker is None or required_blocker in blockers
+    )
+    sample_summary = data.get("objective_sample_summary", {})
+    if not isinstance(sample_summary, dict):
+        sample_summary = {}
+    return {
+        "label": label,
+        "path": _repo_relative(path),
+        "kind": data.get("kind"),
+        "passed": bool(expected_outcome),
+        "raw_passed": raw_passed,
+        "expected_raw_passed": expected_raw_passed,
+        "required_blocker": required_blocker,
+        "metric": _finite_float(data.get("relative_reduced_reduction")),
+        "threshold": _finite_float(data.get("required_relative_reduced_reduction")),
+        "sample_count": _finite_float(sample_summary.get("sample_count")),
+        "blockers": blockers,
+        "claim_scope": data.get("claim_scope"),
+        "next_action": data.get("next_action"),
+    }
+
+
 def build_payload(
     *,
     constraints_dir: Path = DEFAULT_CONSTRAINTS_DIR,
@@ -244,6 +310,9 @@ def build_payload(
     ql_rule_json: Path = DEFAULT_QL_RULE_JSON,
     ql_model_json: Path = DEFAULT_QL_MODEL_JSON,
     nonlinear_audit_json: Path = DEFAULT_NONLINEAR_AUDIT_JSON,
+    landscape_admission_json: Path = DEFAULT_LANDSCAPE_ADMISSION_JSON,
+    positive_prelaunch_json: Path = DEFAULT_POSITIVE_PRELAUNCH_JSON,
+    negative_prelaunch_json: Path = DEFAULT_NEGATIVE_PRELAUNCH_JSON,
 ) -> dict[str, Any]:
     """Return a JSON-ready optimization status report from tracked artifacts."""
 
@@ -272,6 +341,20 @@ def build_payload(
     line_search = _line_search_rows(line_search_json)
     ql_rows = _quasilinear_model_rows(ql_rule_json, ql_model_json)
     nonlinear = _read_json(nonlinear_audit_json)
+    prelaunch_gates = [
+        _landscape_admission_gate(landscape_admission_json),
+        _prelaunch_gate(
+            "selected reduced prelaunch",
+            positive_prelaunch_json,
+            expected_raw_passed=True,
+        ),
+        _prelaunch_gate(
+            "weak reduced-margin reference",
+            negative_prelaunch_json,
+            expected_raw_passed=False,
+            required_blocker="insufficient_reduced_margin_for_nonlinear_audit",
+        ),
+    ]
     comparison = nonlinear.get("comparison", {})
     if not isinstance(comparison, dict):
         comparison = {}
@@ -305,6 +388,9 @@ def build_payload(
             "ql_rule_json": _repo_relative(ql_rule_json),
             "ql_model_json": _repo_relative(ql_model_json),
             "nonlinear_audit_json": _repo_relative(nonlinear_audit_json),
+            "landscape_admission_json": _repo_relative(landscape_admission_json),
+            "positive_prelaunch_json": _repo_relative(positive_prelaunch_json),
+            "negative_prelaunch_json": _repo_relative(negative_prelaunch_json),
         },
         "projected_baseline": projected_baseline,
         "candidates": candidates,
@@ -318,6 +404,7 @@ def build_payload(
             "uncertainty_separation_sigma": _finite_float(comparison.get("uncertainty_separation_sigma")),
             "claim_level": nonlinear.get("claim_level"),
         },
+        "prelaunch_gates": prelaunch_gates,
         "summary": {
             "qa_baseline_gate_passed": bool(candidates[0]["passed_solved_wout_gate"]),
             "direct_scalar_transport_gate_passed": bool(direct_transport_candidate["passed_solved_wout_gate"]),
@@ -332,10 +419,16 @@ def build_payload(
                 row["source"] == "simple_saturation_rule" and bool(row["passed"]) for row in ql_rows
             ),
             "long_window_nonlinear_audit_passed": bool(nonlinear.get("passed", False)),
+            "landscape_admission_passed": bool(prelaunch_gates[0]["passed"]),
+            "positive_prelaunch_gate_passed": bool(prelaunch_gates[1]["passed"]),
+            "negative_reference_blocks_weak_margin": bool(prelaunch_gates[2]["passed"]),
+            "nonlinear_prelaunch_policy_ready": all(bool(row["passed"]) for row in prelaunch_gates),
             "blocked_candidates": blocked,
             "next_action": (
-                "Use the passing QA baseline and any constraint-preserving candidates for long-window nonlinear "
-                "audits; do not promote direct scalar transport branches that fail aspect/iota/QS gates."
+                "Use the passing QA baseline and any constraint-preserving candidates that also pass the "
+                "prelaunch/admission policy for long-window nonlinear audits; do not promote direct scalar "
+                "transport branches that fail aspect/iota/QS gates or weak reduced-margin candidates that the "
+                "negative prelaunch reference blocks."
             ),
         },
     }
@@ -387,6 +480,17 @@ def _write_csv(payload: dict[str, Any], path: Path) -> None:
             "objective_kind": audit["claim_level"],
         }
     )
+    for row in payload["prelaunch_gates"]:
+        rows.append(
+            {
+                "section": "prelaunch_or_admission_gate",
+                "label": row["label"],
+                "passed": row["passed"],
+                "metric": row["metric"],
+                "relative_change": row["threshold"],
+                "objective_kind": row["kind"],
+            }
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
@@ -526,13 +630,14 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         ("QA gate", payload["summary"]["qa_baseline_gate_passed"]),
         ("direct scalar transport", not payload["summary"]["direct_scalar_transport_blocked"]),
         ("projected metric improves", payload["summary"]["projected_transport_improved"]),
+        ("prelaunch policy", payload["summary"]["nonlinear_prelaunch_policy_ready"]),
         ("QL model selection", payload["summary"]["quasilinear_model_selection_passed"]),
         ("simple abs-flux QL", payload["summary"]["simple_quasilinear_absolute_flux_promoted"]),
         ("nonlinear audit", payload["summary"]["long_window_nonlinear_audit_passed"]),
     ]
     ax.set_title("Claim boundary")
     for idx, (label, passed) in enumerate(statuses):
-        y = 0.88 - idx * 0.14
+        y = 0.9 - idx * 0.12
         _annotate_status(ax, 0.32, y, "PASS" if passed else "BLOCKED", passed=passed)
         ax.text(0.48, y, label, ha="left", va="center", fontsize=9.0, color="#111827")
     ax.text(
@@ -566,6 +671,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--ql-rule-json", type=Path, default=DEFAULT_QL_RULE_JSON)
     parser.add_argument("--ql-model-json", type=Path, default=DEFAULT_QL_MODEL_JSON)
     parser.add_argument("--nonlinear-audit-json", type=Path, default=DEFAULT_NONLINEAR_AUDIT_JSON)
+    parser.add_argument("--landscape-admission-json", type=Path, default=DEFAULT_LANDSCAPE_ADMISSION_JSON)
+    parser.add_argument("--positive-prelaunch-json", type=Path, default=DEFAULT_POSITIVE_PRELAUNCH_JSON)
+    parser.add_argument("--negative-prelaunch-json", type=Path, default=DEFAULT_NEGATIVE_PRELAUNCH_JSON)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--pdf", action="store_true", help="also write a PDF companion")
     return parser.parse_args()
@@ -582,6 +690,9 @@ def main() -> int:
         ql_rule_json=args.ql_rule_json,
         ql_model_json=args.ql_model_json,
         nonlinear_audit_json=args.nonlinear_audit_json,
+        landscape_admission_json=args.landscape_admission_json,
+        positive_prelaunch_json=args.positive_prelaunch_json,
+        negative_prelaunch_json=args.negative_prelaunch_json,
     )
     base = args.out.with_suffix("")
     base.with_suffix(".json").write_text(
@@ -602,6 +713,7 @@ def main() -> int:
                 ],
                 "quasilinear_model_selection_passed": payload["summary"]["quasilinear_model_selection_passed"],
                 "long_window_nonlinear_audit_passed": payload["summary"]["long_window_nonlinear_audit_passed"],
+                "nonlinear_prelaunch_policy_ready": payload["summary"]["nonlinear_prelaunch_policy_ready"],
                 "paths": {
                     "png": str(args.out),
                     "json": str(base.with_suffix(".json")),

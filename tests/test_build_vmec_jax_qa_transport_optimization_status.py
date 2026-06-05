@@ -168,11 +168,67 @@ def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
         ),
         encoding="utf-8",
     )
+    landscape_admission = tmp_path / "landscape_admission.json"
+    landscape_admission.write_text(
+        json.dumps(
+            {
+                "kind": "nonlinear_landscape_admission_report",
+                "passed": True,
+                "claim_scope": "selected replicated nonlinear landscape admission",
+                "next_action": "use selected direction",
+                "policy": {
+                    "minimum_relative_reduction": 0.05,
+                    "minimum_sample_count": 18,
+                },
+                "selected_candidate": {
+                    "admitted": True,
+                    "relative_reduction": 0.12,
+                    "admission_blockers": [],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    positive_prelaunch = tmp_path / "positive_prelaunch.json"
+    positive_prelaunch.write_text(
+        json.dumps(
+            {
+                "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+                "passed": True,
+                "claim_scope": "positive reduced prelaunch",
+                "next_action": "launch replicated audit",
+                "relative_reduced_reduction": 0.05,
+                "required_relative_reduced_reduction": 0.04,
+                "blockers": [],
+                "objective_sample_summary": {"sample_count": 18},
+            }
+        ),
+        encoding="utf-8",
+    )
+    negative_prelaunch = tmp_path / "negative_prelaunch.json"
+    negative_prelaunch.write_text(
+        json.dumps(
+            {
+                "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
+                "passed": False,
+                "claim_scope": "negative reduced prelaunch",
+                "next_action": "do not launch expensive audit",
+                "relative_reduced_reduction": 0.02,
+                "required_relative_reduced_reduction": 0.04,
+                "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"],
+                "objective_sample_summary": {"sample_count": 18},
+            }
+        ),
+        encoding="utf-8",
+    )
     return {
         "line_search_json": line_search,
         "ql_rule_json": ql_rule,
         "ql_model_json": ql_model,
         "nonlinear_audit_json": nonlinear,
+        "landscape_admission_json": landscape_admission,
+        "positive_prelaunch_json": positive_prelaunch,
+        "negative_prelaunch_json": negative_prelaunch,
     }
 
 
@@ -201,6 +257,8 @@ def test_build_payload_separates_gate_failures_from_transport_metrics(tmp_path: 
     assert payload["summary"]["quasilinear_model_selection_passed"] is True
     assert payload["summary"]["simple_quasilinear_absolute_flux_promoted"] is False
     assert payload["summary"]["long_window_nonlinear_audit_passed"] is True
+    assert payload["summary"]["nonlinear_prelaunch_policy_ready"] is True
+    assert payload["summary"]["negative_reference_blocks_weak_margin"] is True
     assert "direct scalar transport" in payload["summary"]["blocked_candidates"]
 
 

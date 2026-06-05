@@ -518,7 +518,11 @@ status, and the long-window nonlinear audit anchor:
    not a universal absolute-flux predictor. The nonlinear heat-flux bar pair is
    the separate replicated long-window audit anchor used to keep
    optimized-equilibrium transport claims distinct from reduced-objective
-   optimization attempts.
+   optimization attempts. The prelaunch-policy row combines the replicated
+   landscape admission, the passing 18-point selected-candidate reduced gate,
+   and the deliberately failing weak-reference gate; the failed weak reference
+   is a pass for the policy because it blocks small reduced margins before
+   spending long nonlinear runtime.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
