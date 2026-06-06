@@ -315,6 +315,11 @@ No long nonlinear audit should be launched from these candidates.
   This tests whether the checkpointed horizon strategy can produce salvageable
   NetCDF/restart files before committing to later ``t=1100`` and ``t=1500``
   continuation stages.
+- The bounded ``-65%`` ``t=700`` stage succeeded in about nine minutes: seed31
+  and seed32 each wrote ``281`` samples plus restart files at ``t=699.903``.
+  Their terminal heat fluxes were similar, about ``14.24`` and ``14.34``. The
+  same two outputs are now being continued to ``t=1100`` with restart/append
+  enabled and the same ``2700`` second per-process timeout.
 
 ### 2026-06-04
 
