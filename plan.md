@@ -326,6 +326,10 @@ No long nonlinear audit should be launched from these candidates.
   outputs are now being continued to ``t=1500`` under the staged timeout
   protocol; the timestep variant remains to be run before the coefficient can
   enter the strict ensemble gate.
+- The ``-65%`` seed variants then reached ``t=1499.854`` with ``603`` samples;
+  their ``t=[1100,1500]`` means are close, about ``15.78`` and ``15.30``. The
+  ``dt=0.04`` timestep variant is now running through the same staged protocol,
+  starting with the bounded ``t=700`` stage.
 
 ### 2026-06-04
 
