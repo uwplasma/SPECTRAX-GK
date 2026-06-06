@@ -285,6 +285,13 @@ No long nonlinear audit should be launched from these candidates.
   ``13.81%``, and combined SEM/mean ``4.14%``. The paper-facing 31-point
   landscape launch protocol is therefore ``t_max=1500`` with the
   ``t=[1100,1500]`` transport window.
+- Started a restartable office controller for the full 31-point
+  ``RBC(1,1)`` nonlinear overlay under that final protocol. It skips variants
+  whose NetCDF outputs already reach ``t=1500``, continues partial ``t=1100``
+  outputs when available, runs missing seed/timestep variants on the two office
+  GPUs, and postprocesses each coefficient with diagnostic
+  ``--allow-failed-gates`` sidecars so failed points remain visible without
+  being promotable.
 
 ### 2026-06-04
 
