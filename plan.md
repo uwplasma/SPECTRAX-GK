@@ -393,6 +393,11 @@ No long nonlinear audit should be launched from these candidates.
   and ``14.06``. Both seed outputs are now continuing to ``t=1100`` in
   parallel, one per office GPU, before any ``m0p55`` timestep replicate is
   launched.
+- The ``-55%`` seed continuations reached ``t=1099.879`` with ``442`` samples.
+  Their ``t=[700,1100]`` heat-flux means are about ``13.57`` and ``15.02``.
+  Both seeds are now continuing to ``t=1500`` under the same bounded staged
+  protocol; after that, the ``dt=0.04`` timestep replicate remains to be run
+  before the coefficient can enter the strict ensemble gate.
 
 ### 2026-06-04
 
