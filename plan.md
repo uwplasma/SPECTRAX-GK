@@ -320,6 +320,12 @@ No long nonlinear audit should be launched from these candidates.
   Their terminal heat fluxes were similar, about ``14.24`` and ``14.34``. The
   same two outputs are now being continued to ``t=1100`` with restart/append
   enabled and the same ``2700`` second per-process timeout.
+- The ``-65%`` ``t=1100`` continuation also succeeded, appending both seed
+  outputs to ``442`` samples at ``t=1099.879``. The ``t=[700,1100]`` heat-flux
+  means are already close, about ``15.56`` and ``15.07``. The same two seed
+  outputs are now being continued to ``t=1500`` under the staged timeout
+  protocol; the timestep variant remains to be run before the coefficient can
+  enter the strict ensemble gate.
 
 ### 2026-06-04
 
