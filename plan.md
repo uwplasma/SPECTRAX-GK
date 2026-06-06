@@ -333,6 +333,11 @@ No long nonlinear audit should be launched from these candidates.
 - The ``-65%`` ``dt=0.04`` ``t=700`` stage also completed, writing ``351``
   samples at ``t=699.932`` with terminal heat flux about ``13.44``. It is now
   being continued to ``t=1100`` under the same staged timeout protocol.
+- The ``-65%`` ``dt=0.04`` ``t=1100`` continuation completed, writing ``552``
+  samples at ``t=1099.944`` with a ``t=[700,1100]`` heat-flux mean about
+  ``15.74``. The final ``dt=0.04`` ``t=1500`` continuation is now running; once
+  it finishes, ``-65%`` can be postprocessed with the strict
+  ``t=[1100,1500]`` seed/timestep ensemble gate.
 
 ### 2026-06-04
 
