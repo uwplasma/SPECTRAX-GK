@@ -366,6 +366,11 @@ No long nonlinear audit should be launched from these candidates.
   The independent ``dt=0.04`` timestep variant has been launched through the
   same bounded staged protocol, starting with the ``t=700`` checkpoint stage,
   before ``-60%`` can enter the strict three-member ensemble gate.
+- While the ``-60%`` timestep replicate runs alone on office GPU0, the idle
+  GPU1 is being used for a single non-overlapping ``-55%``/``m0p55`` seed32
+  ``t=700`` pilot. This is intentionally only one variant, launched manually
+  with ``CUDA_VISIBLE_DEVICES=1``, so it cannot collide with the gated
+  ``m0p6`` timestep path.
 
 ### 2026-06-04
 
