@@ -310,6 +310,11 @@ No long nonlinear audit should be launched from these candidates.
   additional landscape coefficients are running on office. The next controller
   must enforce stage-level wall-time caps and visible progress instead of
   single-call direct ``t=1500`` integrations.
+- Relaunched ``-65%`` as a bounded staged pilot only to ``t=700`` for seed31
+  and seed32, one per office GPU, with a ``2700`` second per-process timeout.
+  This tests whether the checkpointed horizon strategy can produce salvageable
+  NetCDF/restart files before committing to later ``t=1100`` and ``t=1500``
+  continuation stages.
 
 ### 2026-06-04
 
