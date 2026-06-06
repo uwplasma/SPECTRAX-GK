@@ -355,6 +355,11 @@ No long nonlinear audit should be launched from these candidates.
   landscape window is ``t=[1100,1500]``, this is only a transient diagnostic;
   both seed outputs are now continuing to ``t=1100`` under the staged timeout
   protocol.
+- The ``-60%`` ``t=1100`` seed continuation completed, appending both outputs
+  to ``442`` samples at ``t=1099.879``. The ``t=[700,1100]`` means remain
+  separated, about ``17.73`` and ``15.95``, so the final
+  ``t=[1100,1500]`` ensemble gate is essential. The two seed outputs are now
+  continuing to ``t=1500`` under the staged timeout protocol.
 
 ### 2026-06-04
 
