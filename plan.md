@@ -305,6 +305,11 @@ No long nonlinear audit should be launched from these candidates.
   time, but the scalable 31-point overlay should be relaunched with staged
   ``t=700 -> 1100 -> 1500`` checkpointed horizons and explicit per-stage
   wall-time/status reporting before committing to the full scan.
+- After a final wait, the same ``-65%`` direct seed variants still had no
+  NetCDF outputs after about ``62`` minutes, so they were terminated. No
+  additional landscape coefficients are running on office. The next controller
+  must enforce stage-level wall-time caps and visible progress instead of
+  single-call direct ``t=1500`` integrations.
 
 ### 2026-06-04
 
