@@ -360,6 +360,12 @@ No long nonlinear audit should be launched from these candidates.
   separated, about ``17.73`` and ``15.95``, so the final
   ``t=[1100,1500]`` ensemble gate is essential. The two seed outputs are now
   continuing to ``t=1500`` under the staged timeout protocol.
+- The ``-60%`` seed variants reached ``t=1499.854`` with ``603`` samples.
+  Their accepted ``t=[1100,1500]`` heat-flux means are now close, about
+  ``17.22`` and ``17.35``, so the final-window seed spread is below ``1%``.
+  The independent ``dt=0.04`` timestep variant has been launched through the
+  same bounded staged protocol, starting with the ``t=700`` checkpoint stage,
+  before ``-60%`` can enter the strict three-member ensemble gate.
 
 ### 2026-06-04
 
