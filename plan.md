@@ -404,6 +404,10 @@ No long nonlinear audit should be launched from these candidates.
   protocol, starting at ``t=700`` on office GPU0. While that gating timestep
   replicate runs, the next adjacent coefficient, ``-50%``/``m0p5``, has a
   single non-overlapping seed32 ``t=700`` pilot running on office GPU1.
+- The ``-55%`` ``dt=0.04`` ``t=700`` checkpoint completed with ``351`` samples
+  at ``t=699.932`` and a transient ``t=[350,700]`` heat-flux mean about
+  ``13.34``. The timestep replicate is now continuing to ``t=1100`` on office
+  GPU0 while the ``m0p5`` seed32 pilot continues on GPU1.
 
 ### 2026-06-04
 
