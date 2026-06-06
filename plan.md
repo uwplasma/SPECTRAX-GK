@@ -388,6 +388,11 @@ No long nonlinear audit should be launched from these candidates.
   coefficient, ``-55%``/``m0p55``, now has seed31 and seed32 ``t=700`` pilots
   running one per office GPU; the timestep replicate should wait until a GPU
   frees.
+- The ``-55%`` seed31 and seed32 ``t=700`` pilots completed and wrote restart
+  files. Their transient ``t=[350,700]`` heat-flux means are about ``13.12``
+  and ``14.06``. Both seed outputs are now continuing to ``t=1100`` in
+  parallel, one per office GPU, before any ``m0p55`` timestep replicate is
+  launched.
 
 ### 2026-06-04
 
