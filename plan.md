@@ -345,6 +345,10 @@ No long nonlinear audit should be launched from these candidates.
   low-end nonlinear overlay point and validates the staged
   ``700 -> 1100 -> 1500`` checkpoint protocol for continued landscape
   production.
+- Installed a reusable staged label runner on office and launched the next
+  adjacent coefficient, ``-60%``/``m0p6``, through the bounded ``t=700`` seed31
+  and seed32 stage. This continues the low-end scan with the validated
+  checkpoint protocol rather than direct ``t=1500`` integrations.
 
 ### 2026-06-04
 
