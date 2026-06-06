@@ -298,6 +298,13 @@ No long nonlinear audit should be launched from these candidates.
   ``1.28%``; ``-70%`` passes with ensemble mean ``15.586``,
   mean-relative spread ``13.81%``, and combined SEM/mean ``4.14%``. It then
   launched the direct ``t=1500`` ``-65%`` seed variants.
+- The blind full-controller path was stopped before it could launch additional
+  coefficients because the direct-from-zero ``-65%`` ``t=1500`` seed variants
+  ran for nearly an hour without producing checkpoint/output files. Those two
+  active seed runs were left running briefly to salvage the already-spent GPU
+  time, but the scalable 31-point overlay should be relaunched with staged
+  ``t=700 -> 1100 -> 1500`` checkpointed horizons and explicit per-stage
+  wall-time/status reporting before committing to the full scan.
 
 ### 2026-06-04
 
