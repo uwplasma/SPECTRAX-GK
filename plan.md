@@ -32,7 +32,7 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 97% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) nonlinear landscape now uses the stricter passing t=[1100,1500] protocol |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first adjacent true nonlinear points identify the required late-window protocol; full overlay pending |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
@@ -338,6 +338,13 @@ No long nonlinear audit should be launched from these candidates.
   ``15.74``. The final ``dt=0.04`` ``t=1500`` continuation is now running; once
   it finishes, ``-65%`` can be postprocessed with the strict
   ``t=[1100,1500]`` seed/timestep ensemble gate.
+- The final ``-65%`` ``dt=0.04`` continuation reached ``t=1500`` and the strict
+  ``t=[1100,1500]`` ensemble gate passed without diagnostic relaxation. The
+  three-member seed/timestep ensemble has mean ``15.227``, mean-relative spread
+  ``7.81%``, and combined SEM/mean ``2.92%``. This closes the third adjacent
+  low-end nonlinear overlay point and validates the staged
+  ``700 -> 1100 -> 1500`` checkpoint protocol for continued landscape
+  production.
 
 ### 2026-06-04
 
