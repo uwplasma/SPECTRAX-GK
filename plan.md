@@ -371,6 +371,10 @@ No long nonlinear audit should be launched from these candidates.
   ``t=700`` pilot. This is intentionally only one variant, launched manually
   with ``CUDA_VISIBLE_DEVICES=1``, so it cannot collide with the gated
   ``m0p6`` timestep path.
+- The ``-60%`` ``dt=0.04`` ``t=700`` stage completed with ``351`` samples at
+  ``t=699.932`` and a ``t=[350,700]`` heat-flux mean about ``14.37``. The
+  same timestep replicate is now continuing to ``t=1100`` on office GPU0,
+  while the independent ``m0p55`` seed32 pilot continues on GPU1.
 
 ### 2026-06-04
 
