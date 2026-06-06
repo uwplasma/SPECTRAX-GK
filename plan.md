@@ -330,6 +330,9 @@ No long nonlinear audit should be launched from these candidates.
   their ``t=[1100,1500]`` means are close, about ``15.78`` and ``15.30``. The
   ``dt=0.04`` timestep variant is now running through the same staged protocol,
   starting with the bounded ``t=700`` stage.
+- The ``-65%`` ``dt=0.04`` ``t=700`` stage also completed, writing ``351``
+  samples at ``t=699.932`` with terminal heat flux about ``13.44``. It is now
+  being continued to ``t=1100`` under the same staged timeout protocol.
 
 ### 2026-06-04
 
