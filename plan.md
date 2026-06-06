@@ -349,6 +349,12 @@ No long nonlinear audit should be launched from these candidates.
   adjacent coefficient, ``-60%``/``m0p6``, through the bounded ``t=700`` seed31
   and seed32 stage. This continues the low-end scan with the validated
   checkpoint protocol rather than direct ``t=1500`` integrations.
+- The ``-60%`` ``t=700`` seed stage completed with restart files. It was slower
+  than ``-65%`` (about ``35`` minutes), and the early ``t=[350,700]`` seed means
+  were more separated, about ``16.58`` and ``14.78``. Because the accepted
+  landscape window is ``t=[1100,1500]``, this is only a transient diagnostic;
+  both seed outputs are now continuing to ``t=1100`` under the staged timeout
+  protocol.
 
 ### 2026-06-04
 
