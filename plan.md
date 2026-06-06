@@ -433,6 +433,11 @@ No long nonlinear audit should be launched from these candidates.
   ``t=[1100,1500]`` heat-flux means, about ``12.44`` and ``12.29``. The
   required ``dt=0.04`` timestep replicate has been launched through the staged
   protocol, starting with the ``t=700`` checkpoint stage on office GPU0.
+- While the ``-50%`` timestep replicate runs on office GPU0, the next adjacent
+  coefficient, ``-45%``/``m0p45``, has a single non-overlapping seed32
+  ``t=700`` pilot running on office GPU1. This is only pipeline fill; ``m0p45``
+  remains open until seed31, seed32, and the timestep replicate pass the final
+  ``t=[1100,1500]`` gate.
 
 ### 2026-06-04
 
