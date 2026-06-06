@@ -31,8 +31,8 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 95% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) 31-point nonlinear ensemble campaign is running |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 96% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first true nonlinear points completed; full overlay pending long-window campaign completion |
+| Strict nonlinear transport and campaign-admission evidence | 97% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) nonlinear landscape now uses the stricter passing t=[1100,1500] protocol |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first adjacent true nonlinear points identify the required late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 
@@ -236,10 +236,15 @@ No long nonlinear audit should be launched from these candidates.
   omits the VMEC axis point so zero/convention artifacts do not skew the axis.
 - Launched the office true nonlinear landscape campaign for all 31 RBC(1,1)
   coefficients, with seed31, seed32, and ``dt=0.04`` variants at
-  ``n64:64:64:40:40``, ``t_max=700``, and window ``t=[350,700]``. The previous
-  sparse baseline/``-50%``/``+35%`` audit remains useful historical evidence,
-  but it is no longer the paper-facing landscape; promotion now waits for the
-  complete refreshed ensemble overlay. A controller GPU-placement bug briefly
+  ``n64:64:64:40:40``. The first ``-75%`` point showed that ``t_max=700`` with
+  window ``t=[350,700]`` was still inside the transient: seed/timestep traces
+  kept drifting upward and failed running-mean convergence. The first
+  continuation therefore tested ``t_max=1100`` with the transport window
+  ``t=[700,1100]`` before the neighboring point below forced the final
+  ``t_max=1500`` protocol. The previous sparse baseline/``-50%``/``+35%`` audit
+  remains useful historical evidence, but it is no longer the paper-facing
+  landscape; promotion now waits for the complete refreshed ensemble overlay.
+  A controller GPU-placement bug briefly
   co-located ``+35%`` seed31 and ``dt=0.04`` on one GPU; the controller was
   stopped, the ``dt=0.04`` run was relaunched manually on the idle GPU, and the
   seed31 plus seed33 traces completed cleanly.
@@ -264,6 +269,22 @@ No long nonlinear audit should be launched from these candidates.
   two-seed diagnostic mean is about ``16.79`` with mean-relative spread about
   ``8.2%``; it is not promotion-ready until the timestep variant and
   convergence gates complete.
+- Continued the ``-75%`` seed31, seed32, and ``dt=0.04`` variants from the
+  existing ``t=700`` restarts to ``t=1100``. The new ``t=[700,1100]`` ensemble
+  passes readiness and ensemble gates with means ``18.489``, ``18.939``, and
+  ``18.545``, ensemble mean ``18.657``, mean-relative spread ``2.41%``, and
+  combined SEM/mean ``1.25%``. This closes the first refreshed RBC(1,1)
+  nonlinear landscape point under the true post-transient protocol and proves
+  that the earlier small-window landscape was not sufficiently converged.
+- Continued the neighboring ``-70%`` point through the same ``t=[700,1100]``
+  window. Readiness passed, but the ensemble failed robustness with mean
+  ``14.581``, mean-relative spread ``19.96%`` against the ``15%`` limit, and
+  combined SEM/mean ``6.44%``; the ``dt=0.04`` trace remained systematically
+  high. Extending the same three variants to ``t=1500`` and accepting only
+  ``t=[1100,1500]`` closed the gate with mean ``15.586``, mean-relative spread
+  ``13.81%``, and combined SEM/mean ``4.14%``. The paper-facing 31-point
+  landscape launch protocol is therefore ``t_max=1500`` with the
+  ``t=[1100,1500]`` transport window.
 
 ### 2026-06-04
 

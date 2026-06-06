@@ -631,7 +631,7 @@ def _write_plot(
             0.5,
             0.5,
             "Long-window nonlinear heat-flux landscape pending.\n"
-            "Generate t=[350,700] or longer nonlinear simulations for each coefficient.",
+            "Generate t=[1100,1500] or longer nonlinear simulations for each coefficient.",
             transform=ax1.transAxes,
             ha="center",
             va="center",
@@ -754,8 +754,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="Optional replicated nonlinear ensemble, formatted as coefficient_value:path/to/ensemble.json",
     )
-    parser.add_argument("--nonlinear-tmax", type=float, default=700.0)
-    parser.add_argument("--nonlinear-window-tmin", type=float, default=350.0)
+    parser.add_argument("--nonlinear-tmax", type=float, default=1500.0)
+    parser.add_argument("--nonlinear-window-tmin", type=float, default=1100.0)
     parser.add_argument("--nonlinear-grid", default="n64:64:64:40:40")
     return parser
 

@@ -1144,6 +1144,14 @@ When selected landscape points are promoted to expensive turbulence evidence,
 run replicated post-transient nonlinear ensembles and rerun the plot with
 ``--nonlinear-ensemble coefficient_value:path/to/ensemble.json``.  Only those
 ensemble sidecars should feed uncertainty-aware nonlinear admission reports.
+For the current strict-baseline ``RBC(1,1)`` scan, the paper-facing nonlinear
+protocol is ``t_max = 1500`` with the accepted transport window
+``t = [1100, 1500]`` on the ``n64:64:64:40:40`` grid.  The earlier
+``t = [350, 700]`` pilot for the ``-75%`` point remained visibly transient and
+failed running-mean convergence.  A neighboring ``-70%`` point passed readiness
+but failed timestep-spread robustness over ``t = [700, 1100]`` and then passed
+over ``t = [1100, 1500]``.  Those shorter windows are retained only as
+negative convergence diagnostics for this landscape protocol.
 For diagnostic landscapes that should show failed post-transient points instead
 of aborting the full scan, build each sidecar with
 ``tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That

@@ -15,6 +15,7 @@ from tools.build_vmec_boundary_transport_landscape import (
     _reuse_reduced_metrics_from_report,
     _sample_standard_error,
     _write_scan_inputs,
+    build_parser,
 )
 from tools.patch_vmec_jax_wout_metadata import patch_wout
 from tools.write_vmec_boundary_perturbation_inputs import _parse_coefficient_spec
@@ -125,6 +126,14 @@ def test_default_landscape_metrics_are_linear_and_quasilinear_only() -> None:
         "quasilinear_flux_absolute_growth_mixing_length",
         "quasilinear_flux_shape_aware_power_law",
     }.issubset(set(DEFAULT_KINDS))
+
+
+def test_default_nonlinear_landscape_launch_uses_post_transient_window() -> None:
+    args = build_parser().parse_args([])
+
+    assert args.nonlinear_tmax == 1500.0
+    assert args.nonlinear_window_tmin == 1100.0
+    assert args.nonlinear_grid == "n64:64:64:40:40"
 
 
 def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: Path) -> None:
