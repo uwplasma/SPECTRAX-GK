@@ -292,6 +292,12 @@ No long nonlinear audit should be launched from these candidates.
   GPUs, and postprocesses each coefficient with diagnostic
   ``--allow-failed-gates`` sidecars so failed points remain visible without
   being promotable.
+- The controller has closed the first two low-end nonlinear overlay points
+  under the final ``t=[1100,1500]`` protocol: ``-75%`` passes with ensemble
+  mean ``18.572``, mean-relative spread ``2.46%``, and combined SEM/mean
+  ``1.28%``; ``-70%`` passes with ensemble mean ``15.586``,
+  mean-relative spread ``13.81%``, and combined SEM/mean ``4.14%``. It then
+  launched the direct ``t=1500`` ``-65%`` seed variants.
 
 ### 2026-06-04
 
