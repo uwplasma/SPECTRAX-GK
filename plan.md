@@ -398,6 +398,12 @@ No long nonlinear audit should be launched from these candidates.
   Both seeds are now continuing to ``t=1500`` under the same bounded staged
   protocol; after that, the ``dt=0.04`` timestep replicate remains to be run
   before the coefficient can enter the strict ensemble gate.
+- The ``-55%`` seed continuations reached ``t=1499.854`` with close accepted
+  ``t=[1100,1500]`` heat-flux means, about ``14.22`` and ``14.55``. The
+  required ``dt=0.04`` timestep replicate has been launched through the staged
+  protocol, starting at ``t=700`` on office GPU0. While that gating timestep
+  replicate runs, the next adjacent coefficient, ``-50%``/``m0p5``, has a
+  single non-overlapping seed32 ``t=700`` pilot running on office GPU1.
 
 ### 2026-06-04
 
