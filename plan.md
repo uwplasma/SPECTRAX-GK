@@ -807,3 +807,7 @@ No long nonlinear audit should be launched from these candidates.
   transient ``t≈350..700`` means are seed31 ``11.248333424`` and seed32
   ``10.815876007`` over 141 samples each; these are checkpoint diagnostics
   only.
+- Completed the ``m0p05`` seed ``t=1100`` continuation and launched the final
+  ``t=1500`` seed continuation. Both seed files reached ``t=1099.87854``; the
+  appended ``t≈702..1100`` means are seed31 ``11.111491352`` and seed32
+  ``10.839283931`` over 160 samples each.
