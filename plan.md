@@ -566,6 +566,11 @@ No long nonlinear audit should be launched from these candidates.
   final timestep continuation to ``t=1500`` is now running on office GPU0;
   after it finishes, ``m0p3`` can be postprocessed with the strict
   ``t=[1100,1500]`` seed/timestep ensemble gate.
+- The final ``-30%`` ``dt=0.04`` continuation reached ``t=1499.956`` and the
+  strict ``t=[1100,1500]`` ensemble gate passed without diagnostic
+  relaxation. The three-member ensemble has mean ``11.530``, mean-relative
+  spread ``5.29%``, and combined SEM/mean ``1.61%``. This closes the tenth
+  adjacent low-end true nonlinear overlay point.
 
 ### 2026-06-04
 
