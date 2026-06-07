@@ -444,6 +444,11 @@ No long nonlinear audit should be launched from these candidates.
   GPU0. The ``-45%`` seed32 pilot also reached ``t=700`` with a transient
   mean about ``7.09``, and the matching seed31 ``t=700`` pilot is running on
   GPU1.
+- The ``-50%`` ``dt=0.04`` ``t=1100`` continuation reached ``t=1099.944`` with
+  ``552`` samples and a ``t=[700,1100]`` heat-flux mean about ``12.43``. The
+  final timestep continuation to ``t=1500`` is now running on office GPU0;
+  after it finishes, ``m0p5`` can be postprocessed with the strict
+  ``t=[1100,1500]`` seed/timestep ensemble gate.
 
 ### 2026-06-04
 
