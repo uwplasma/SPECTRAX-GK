@@ -771,3 +771,7 @@ No long nonlinear audit should be launched from these candidates.
 - Launched the next adjacent strict ``RBC(1,1)`` coefficient, ``-10%``/``m0p1``,
   through the bounded ``t=700`` seed31 and seed32 pilot stage, one run per
   office GPU.
+- Completed the ``m0p1`` seed ``t=700`` pilot stage and launched the ``t=1100``
+  continuation for seed31 and seed32, one run per office GPU. The transient
+  ``t≈350..700`` means are seed31 ``12.593895730`` and seed32 ``12.283921621``
+  over 141 samples each; these are checkpoint diagnostics only.
