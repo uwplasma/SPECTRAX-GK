@@ -573,6 +573,10 @@ No long nonlinear audit should be launched from these candidates.
   adjacent low-end true nonlinear overlay point.
 - Launched the next adjacent coefficient, ``-25%``/``m0p25``, through the
   bounded ``t=700`` seed31 and seed32 pilot stage, one per office GPU.
+- The ``-25%`` seed31 and seed32 ``t=700`` pilots completed and wrote restart
+  files. Their transient ``t=[350,700]`` heat-flux means are about ``10.13``
+  and ``10.59``. Both seed outputs are now continuing to ``t=1100`` under the
+  same staged protocol, one per office GPU.
 
 ### 2026-06-04
 
