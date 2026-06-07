@@ -725,3 +725,7 @@ No long nonlinear audit should be launched from these candidates.
   ``9.969421017`` and seed32 ``9.837136143`` over 160 samples each. The
   point remains open until the timestep replicate reaches ``t=1500`` and the
   strict ensemble gate passes.
+- Completed the ``m0p2`` ``dt=0.04`` timestep replicate to ``t=700`` and
+  launched its ``t=1100`` continuation. The ``t≈350..700`` checkpoint mean is
+  ``9.785573818`` over 176 samples, consistent with the seed transient
+  windows.
