@@ -855,3 +855,8 @@ No long nonlinear audit should be launched from these candidates.
 - Verified the tranche with bounded checks: release readiness regeneration,
   repository-size manifest, release-artifact manifest, performance manifest,
   parallel-scaling artifact inventory, and focused pytest guardrails all pass.
+- Completed the zero-offset strict ``RBC(1,1)`` seed ``t=700`` pilot stage and
+  launched the ``t=1100`` continuation for seed31 and seed32, one run per
+  office GPU. The transient ``t≈350..700`` means are seed31 ``10.896999582``
+  and seed32 ``11.155873752`` over 141 samples each; these are checkpoint
+  diagnostics only.
