@@ -522,6 +522,11 @@ No long nonlinear audit should be launched from these candidates.
   ``10.78``. Both seeds are now continuing to ``t=1500``; the final
   ``t=[1100,1500]`` seed window and later ``dt=0.04`` replicate remain
   required before this coefficient can enter the strict gate.
+- The ``-35%`` seed variants reached ``t=1499.854`` with ``603`` samples.
+  Their accepted ``t=[1100,1500]`` heat-flux means are about ``10.45`` and
+  ``11.01``. The required ``dt=0.04`` timestep replicate has been launched
+  through the staged protocol, starting with the ``t=700`` checkpoint stage on
+  office GPU0.
 
 ### 2026-06-04
 
