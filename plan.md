@@ -775,3 +775,7 @@ No long nonlinear audit should be launched from these candidates.
   continuation for seed31 and seed32, one run per office GPU. The transient
   ``t≈350..700`` means are seed31 ``12.593895730`` and seed32 ``12.283921621``
   over 141 samples each; these are checkpoint diagnostics only.
+- Completed the ``m0p1`` seed ``t=1100`` continuation and launched the final
+  ``t=1500`` seed continuation. Both seed files reached ``t=1099.87854``; the
+  appended ``t≈702..1100`` means are seed31 ``12.043095994`` and seed32
+  ``12.036228555`` over 160 samples each.
