@@ -864,3 +864,9 @@ No long nonlinear audit should be launched from these candidates.
   and launched the final ``t=1500`` seed continuation. Both seed files reached
   ``t=1099.87854``; the appended ``t≈702..1100`` means are seed31
   ``11.119230902`` and seed32 ``11.140138322`` over 160 samples each.
+- Completed the final zero-offset ``RBC(1,1)`` seed continuation to ``t=1500``
+  and launched the ``dt=0.04`` timestep replicate from ``t=700``. Both seed
+  files reached ``t=1499.85437``; the accepted-window ``t≈1102..1500`` means
+  are seed31 ``11.127188009`` and seed32 ``10.994246972`` over 160 samples
+  each. The point remains open until the timestep replicate reaches ``t=1500``
+  and the strict ensemble gate passes.
