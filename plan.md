@@ -750,3 +750,7 @@ No long nonlinear audit should be launched from these candidates.
   ``t=1500`` seed continuation. Both seed files reached ``t=1099.87854``; the
   appended ``t≈702..1100`` means are seed31 ``10.022761494`` and seed32
   ``10.321978360`` over 160 samples each.
+- Completed the final ``m0p15`` seed continuation to ``t=1500`` and launched
+  the ``dt=0.04`` timestep replicate from ``t=700``. Both seed files reached
+  ``t=1499.85437``; the accepted-window ``t≈1102..1500`` means are seed31
+  ``10.398264855`` and seed32 ``10.045676231`` over 160 samples each.
