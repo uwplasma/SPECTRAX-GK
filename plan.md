@@ -501,6 +501,11 @@ No long nonlinear audit should be launched from these candidates.
   at ``t=699.932`` and a transient ``t=[350,700]`` heat-flux mean about
   ``11.95``. The timestep replicate is now continuing to ``t=1100`` on office
   GPU0.
+- The ``-40%`` ``dt=0.04`` ``t=1100`` continuation reached ``t=1099.944`` with
+  ``552`` samples and a ``t=[700,1100]`` heat-flux mean about ``11.51``. The
+  final timestep continuation to ``t=1500`` is now running on office GPU0;
+  after it finishes, ``m0p4`` can be postprocessed with the strict
+  ``t=[1100,1500]`` seed/timestep ensemble gate.
 
 ### 2026-06-04
 
