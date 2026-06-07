@@ -497,6 +497,10 @@ No long nonlinear audit should be launched from these candidates.
   and ``11.76``. The required ``dt=0.04`` timestep replicate has been launched
   through the staged protocol, starting with the ``t=700`` checkpoint stage on
   office GPU0.
+- The ``-40%`` ``dt=0.04`` ``t=700`` checkpoint completed with ``351`` samples
+  at ``t=699.932`` and a transient ``t=[350,700]`` heat-flux mean about
+  ``11.95``. The timestep replicate is now continuing to ``t=1100`` on office
+  GPU0.
 
 ### 2026-06-04
 
