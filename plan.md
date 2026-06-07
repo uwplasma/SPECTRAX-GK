@@ -438,6 +438,12 @@ No long nonlinear audit should be launched from these candidates.
   ``t=700`` pilot running on office GPU1. This is only pipeline fill; ``m0p45``
   remains open until seed31, seed32, and the timestep replicate pass the final
   ``t=[1100,1500]`` gate.
+- The ``-50%`` ``dt=0.04`` ``t=700`` checkpoint completed with ``351`` samples
+  at ``t=699.932`` and a transient ``t=[350,700]`` heat-flux mean about
+  ``11.74``. The timestep replicate is now continuing to ``t=1100`` on office
+  GPU0. The ``-45%`` seed32 pilot also reached ``t=700`` with a transient
+  mean about ``7.09``, and the matching seed31 ``t=700`` pilot is running on
+  GPU1.
 
 ### 2026-06-04
 
