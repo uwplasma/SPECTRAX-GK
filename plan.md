@@ -457,6 +457,11 @@ No long nonlinear audit should be launched from these candidates.
   coefficient, ``-45%``/``m0p45``, now has both seed ``t=700`` pilots complete
   with close transient means, about ``7.03`` and ``7.09``, and both seeds are
   continuing to ``t=1100``.
+- The ``-45%`` seed continuations reached ``t=1099.879`` with ``442`` samples.
+  Their ``t=[700,1100]`` heat-flux means remain close, about ``7.19`` and
+  ``7.38``. Both seeds are now continuing to ``t=1500`` under the staged
+  protocol; the final seed window and ``dt=0.04`` timestep replicate remain
+  required before ``m0p45`` can enter the strict gate.
 
 ### 2026-06-04
 
