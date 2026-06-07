@@ -327,11 +327,10 @@ For the composed electrostatic linear-slices backend, use:
    :width: 100%
 
    Full opt-in electrostatic linear-slices call-graph comparison for
-   streaming, mirror, curvature, grad-B, and diamagnetic drive. This is the
-   current production-parallelization identity artifact for the
-   single-species periodic electrostatic RHS path; collisions, linked
-   boundaries, electromagnetic terms, and nonlinear brackets remain separate
-   gates.
+   streaming, mirror, curvature, grad-B, and diamagnetic drive. This is an
+   opt-in electrostatic linear-RHS identity artifact for the single-species
+   periodic electrostatic RHS path; collisions, linked boundaries,
+   electromagnetic terms, and nonlinear brackets remain separate gates.
 
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:

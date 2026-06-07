@@ -834,3 +834,24 @@ No long nonlinear audit should be launched from these candidates.
 - Launched the zero-offset strict ``RBC(1,1)`` coefficient, ``0``/baseline,
   through the bounded ``t=700`` seed31 and seed32 pilot stage, one run per
   office GPU.
+- Regenerated the README/docs ``RBC(1,1)`` full landscape panel with the 15
+  strict negative-side nonlinear ensemble overlays that have closed under the
+  ``t=[1100,1500]`` seed/timestep protocol. The zero-offset and positive-side
+  coefficients remain pending, so the figure is explicitly scoped as a
+  launch/noise diagnostic and optimizer-design input rather than a promoted
+  nonlinear turbulent-flux optimization result.
+- Promoted the shipped runtime/memory CSV and JSON sidecars into
+  ``docs/_static`` so the public runtime panel is reproducible from a clean
+  checkout instead of depending on ignored ``tools_out`` files.
+- Tightened release hygiene: ``release.yml`` now reruns the fast repository
+  size, release-artifact, performance-manifest, parallel-scaling,
+  quasilinear-guardrail, parallelization-status, technical-status, and release
+  readiness checks before PyPI publishing. The release-readiness checker now
+  requires the tracked runtime/memory sidecars and release workflow guardrails.
+- Tightened README/docs claim scope for parallelization: production speedup is
+  backed for independent ``k_y`` scans and quasilinear/UQ ensembles; sensitivity
+  sweeps use the same deterministic partitioning but do not yet have a
+  standalone speedup artifact. Nonlinear sharding remains diagnostic.
+- Verified the tranche with bounded checks: release readiness regeneration,
+  repository-size manifest, release-artifact manifest, performance manifest,
+  parallel-scaling artifact inventory, and focused pytest guardrails all pass.

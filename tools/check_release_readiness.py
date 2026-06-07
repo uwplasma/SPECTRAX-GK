@@ -34,6 +34,19 @@ REQUIRED_CI_SNIPPETS = (
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
 )
+REQUIRED_RELEASE_SNIPPETS = (
+    "name: Release",
+    "gh-action-pypi-publish",
+    "tools/check_release_version.py",
+    "tools/check_repository_size_manifest.py",
+    "tools/check_release_artifact_manifest.py",
+    "tools/check_performance_optimization_manifest.py",
+    "tools/check_parallel_scaling_artifacts.py",
+    "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/build_parallelization_completion_status.py",
+    "tools/build_technical_release_status.py",
+    "tools/check_release_readiness.py",
+)
 REQUIRED_README_SNIPPETS = (
     "pip install spectraxgk",
     "spectraxgk",
@@ -41,6 +54,8 @@ REQUIRED_README_SNIPPETS = (
 )
 REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/runtime_memory_benchmark.png",
+    "docs/_static/runtime_memory_summary_ship_refresh.json",
+    "docs/_static/runtime_memory_results_ship_refresh.csv",
     "docs/_static/validation_gate_index.json",
     "docs/_static/validation_coverage_manifest_summary.json",
     "docs/_static/quasilinear_promotion_guardrails.json",
@@ -450,10 +465,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         failures.append(f"ci.yml missing release checks: {missing_ci}")
 
     release_text = _read(root / ".github" / "workflows" / "release.yml")
-    missing_release = _missing_snippets(
-        release_text,
-        ("name: Release", "gh-action-pypi-publish", "tools/check_release_version.py"),
-    )
+    missing_release = _missing_snippets(release_text, REQUIRED_RELEASE_SNIPPETS)
     if missing_release:
         failures.append(f"release.yml missing publish/version checks: {missing_release}")
 
@@ -540,6 +552,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         "lane_status": lane_status,
         "optimization_status": optimization_status,
         "required_ci_snippets": list(REQUIRED_CI_SNIPPETS),
+        "required_release_snippets": list(REQUIRED_RELEASE_SNIPPETS),
         "required_readme_snippets": list(REQUIRED_README_SNIPPETS),
         "required_static_artifacts": list(REQUIRED_STATIC_ARTIFACTS),
         "failures": failures,

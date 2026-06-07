@@ -28,6 +28,20 @@ REQUIRED_PHRASES = {
         "scoped manuscript model-selection candidate, not a runtime/TOML absolute-flux predictor",
         "W7-X zonal long-window recurrence/damping and W7-X TEM / kinetic-electron extensions are deferred",
         "converged post-transient heat-flux windows",
+        "Sensitivity sweeps can use the same deterministic independent-work reconstruction, but they need a dedicated",
+    ),
+    "docs/performance.rst": (
+        "Sensitivity sweeps are covered by",
+        "before any speedup claim is promoted",
+        "Communication-aware nonlinear domain decomposition remains",
+    ),
+    "docs/parallelization.rst": (
+        "It is not a production nonlinear domain",
+        "whole-state nonlinear sharding speedup",
+    ),
+    "docs/examples.rst": (
+        "opt-in electrostatic linear-RHS identity artifact",
+        "publication speedup claim",
     ),
 }
 
@@ -41,6 +55,12 @@ FORBIDDEN_PHRASES = (
     "production nonlinear heat-flux stellarator optimization is release-ready",
     "nonlinear production optimization is release-ready",
     "optimized-equilibrium nonlinear heat-flux validation is closed",
+    "production parallelization path for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles",
+    "production parallelization path for linear scans, quasilinear studies, sensitivity sweeps",
+    "current production-parallelization identity artifact",
+    "production nonlinear sharding speedup",
+    "production nonlinear domain-decomposition speedup claim is closed",
+    "broad multi-GPU nonlinear speedup claim",
 )
 
 

@@ -153,10 +153,10 @@ generated ``run_manifest.json`` commands explicitly on the target workstation.
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
 Its default mode reuses the tracked strict-baseline ``RBC(1,1)`` reduced-metric
-JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth,
-quasilinear, and nonlinear-window metrics for a new coefficient scan. Replicated
-``t=[350,700]`` nonlinear ensemble gates are intentionally a separate promotion
-step and are not overlaid unless explicit ensemble sidecars are supplied.
+JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth and
+explicit quasilinear metrics for a new coefficient scan. Replicated nonlinear
+transport-window ensemble gates are intentionally a separate promotion step and
+are not overlaid unless explicit ensemble sidecars are supplied.
 
 .. figure:: _static/vmec_jax_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep
@@ -1150,8 +1150,12 @@ protocol is ``t_max = 1500`` with the accepted transport window
 ``t = [350, 700]`` pilot for the ``-75%`` point remained visibly transient and
 failed running-mean convergence.  A neighboring ``-70%`` point passed readiness
 but failed timestep-spread robustness over ``t = [700, 1100]`` and then passed
-over ``t = [1100, 1500]``.  Those shorter windows are retained only as
-negative convergence diagnostics for this landscape protocol.
+over ``t = [1100, 1500]``.  The tracked public overlay currently includes the
+15 strict negative-side coefficients that have passed the accepted
+``t = [1100, 1500]`` seed/timestep ensemble gate; the zero-offset and positive
+coefficients are pending and should not be inferred from reduced metrics.  The
+shorter windows are retained only as negative convergence diagnostics for this
+landscape protocol.
 For diagnostic landscapes that should show failed post-transient points instead
 of aborting the full scan, build each sidecar with
 ``tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That

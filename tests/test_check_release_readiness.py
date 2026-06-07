@@ -54,6 +54,14 @@ spectrax-gk = "spectraxgk.cli:main"
     (root / ".github" / "workflows" / "release.yml").write_text(
         "name: Release\n"
         "tools/check_release_version.py\n"
+        "tools/check_repository_size_manifest.py\n"
+        "tools/check_release_artifact_manifest.py\n"
+        "tools/check_performance_optimization_manifest.py\n"
+        "tools/check_parallel_scaling_artifacts.py\n"
+        "tools/check_quasilinear_promotion_guardrails.py\n"
+        "tools/build_parallelization_completion_status.py\n"
+        "tools/build_technical_release_status.py\n"
+        "tools/check_release_readiness.py\n"
         "gh-action-pypi-publish\n",
         encoding="utf-8",
     )
@@ -63,6 +71,8 @@ spectrax-gk = "spectraxgk.cli:main"
     )
     for artifact in (
         "runtime_memory_benchmark.png",
+        "runtime_memory_summary_ship_refresh.json",
+        "runtime_memory_results_ship_refresh.csv",
         "validation_gate_index.json",
         "validation_coverage_manifest_summary.json",
         "quasilinear_promotion_guardrails.json",
@@ -255,6 +265,19 @@ def test_release_readiness_rejects_missing_ci_guardrails(tmp_path: Path) -> None
     )
 
     with pytest.raises(ReleaseReadinessError, match="ci.yml missing release checks"):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_missing_release_guardrails(tmp_path: Path) -> None:
+    _write_release_ready_tree(tmp_path)
+    (tmp_path / ".github" / "workflows" / "release.yml").write_text(
+        "name: Release\n"
+        "tools/check_release_version.py\n"
+        "gh-action-pypi-publish\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseReadinessError, match="release.yml missing publish/version checks"):
         check_release_readiness(tmp_path)
 
 

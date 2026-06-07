@@ -434,7 +434,8 @@ overhead rather than near-ideal scaling.
 Production parallelization should start with independent work rather than
 nonlinear domain decomposition. The public helpers
 ``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` split ``k_y``
-scans, sensitivity sweeps, and UQ ensembles while preserving serial ordering.
+scans, quasilinear/UQ ensembles, and sensitivity-sweep workloads while
+preserving serial ordering.
 On one device they reduce to batched ``vmap`` execution; on multiple devices
 they use JAX device batching and trim padded edge samples deterministically.
 Every performance claim from this path should include a numerical-identity
@@ -528,9 +529,11 @@ The May 12, 2026 refresh passes the identity gate with zero reported
 workers, ``3.78x`` on four workers, and ``7.18x`` on eight workers. The
 two-GPU RTX A4000 run reaches ``1.88x`` with about ``94%`` parallel
 efficiency. This is the current recommended production parallelization path
-for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles:
-it has much better scaling behavior than whole-state nonlinear sharding
-because communication is restricted to post-run result aggregation.
+for linear scans, quasilinear studies, and UQ ensembles: it has much better
+scaling behavior than whole-state nonlinear sharding because communication is
+restricted to post-run result aggregation. Sensitivity sweeps are covered by
+the same ordering/provenance utilities, but need their own scaling artifact
+before any speedup claim is promoted.
 
 The release closure status is machine-readable and separates production claims
 from diagnostic decomposition work:
@@ -1123,9 +1126,9 @@ rows:
 .. code-block:: bash
 
    python tools/benchmark_runtime_memory.py \
-     --summary-glob tools_out/runtime_memory_summary_ship_refresh.json \
-     --csv-out tools_out/runtime_memory_results_ship_refresh_regenerated.csv \
-     --summary-out tools_out/runtime_memory_summary_ship_refresh_regenerated.json \
+     --summary-glob docs/_static/runtime_memory_summary_ship_refresh.json \
+     --csv-out docs/_static/runtime_memory_results_ship_refresh.csv \
+     --summary-out docs/_static/runtime_memory_summary_ship_refresh.json \
      --plot-out docs/_static/runtime_memory_benchmark.png
 
 The published runtime figure complements the atlas instead of duplicating it:
