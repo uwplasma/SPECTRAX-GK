@@ -571,6 +571,8 @@ No long nonlinear audit should be launched from these candidates.
   relaxation. The three-member ensemble has mean ``11.530``, mean-relative
   spread ``5.29%``, and combined SEM/mean ``1.61%``. This closes the tenth
   adjacent low-end true nonlinear overlay point.
+- Launched the next adjacent coefficient, ``-25%``/``m0p25``, through the
+  bounded ``t=700`` seed31 and seed32 pilot stage, one per office GPU.
 
 ### 2026-06-04
 
