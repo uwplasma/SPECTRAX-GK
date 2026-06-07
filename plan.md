@@ -462,6 +462,11 @@ No long nonlinear audit should be launched from these candidates.
   ``7.38``. Both seeds are now continuing to ``t=1500`` under the staged
   protocol; the final seed window and ``dt=0.04`` timestep replicate remain
   required before ``m0p45`` can enter the strict gate.
+- The ``-45%`` seed continuations reached ``t=1499.854`` with ``603`` samples.
+  The accepted ``t=[1100,1500]`` seed means are close, about ``7.17`` and
+  ``7.03``. The required ``dt=0.04`` timestep replicate has been launched
+  through the staged protocol, starting with the bounded ``t=700`` checkpoint
+  stage on office GPU0.
 
 ### 2026-06-04
 
