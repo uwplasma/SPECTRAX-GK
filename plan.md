@@ -704,3 +704,7 @@ No long nonlinear audit should be launched from these candidates.
   `docs/_static/strict_qa_top12_edge_prelaunch_gate.json`: the strict top-12
   edge candidate's ``2.2876%`` reduced margin is blocked against the same
   ``4%`` threshold before any future GPU launch at that margin.
+- Launched the next adjacent strict ``RBC(1,1)`` coefficient, ``-20%``/``m0p2``,
+  through the bounded ``t=700`` seed31 and seed32 pilot stage, one run per office
+  GPU, continuing the accepted staged protocol toward the strict ``t=[1100,1500]``
+  nonlinear overlay.
