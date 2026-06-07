@@ -713,3 +713,9 @@ No long nonlinear audit should be launched from these candidates.
   ``t≈350..700`` means are seed31 ``9.799934475`` and seed32 ``9.979881665``
   over 141 samples each; these are checkpoint diagnostics only, not the accepted
   strict ``t=[1100,1500]`` overlay value.
+- Completed the ``m0p2`` seed ``t=1100`` continuation and launched the final
+  ``t=1500`` seed continuation. Both seed files reached ``t=1099.87854``; the
+  appended ``t≈702..1100`` means are seed31 ``9.773082185`` and seed32
+  ``9.821264589`` over 160 samples each. These remain checkpoint diagnostics
+  until the final strict ``t=[1100,1500]`` ensemble is built with the timestep
+  replicate.
