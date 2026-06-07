@@ -708,3 +708,8 @@ No long nonlinear audit should be launched from these candidates.
   through the bounded ``t=700`` seed31 and seed32 pilot stage, one run per office
   GPU, continuing the accepted staged protocol toward the strict ``t=[1100,1500]``
   nonlinear overlay.
+- Completed the ``m0p2`` seed ``t=700`` pilot stage and launched the ``t=1100``
+  continuation for seed31 and seed32, again one run per office GPU. The transient
+  ``t≈350..700`` means are seed31 ``9.799934475`` and seed32 ``9.979881665``
+  over 141 samples each; these are checkpoint diagnostics only, not the accepted
+  strict ``t=[1100,1500]`` overlay value.
