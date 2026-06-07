@@ -719,3 +719,9 @@ No long nonlinear audit should be launched from these candidates.
   ``9.821264589`` over 160 samples each. These remain checkpoint diagnostics
   until the final strict ``t=[1100,1500]`` ensemble is built with the timestep
   replicate.
+- Completed the final ``m0p2`` seed continuation to ``t=1500`` and launched the
+  ``dt=0.04`` timestep replicate from ``t=700``. Both seed files reached
+  ``t=1499.85437``; the accepted-window ``t≈1102..1500`` means are seed31
+  ``9.969421017`` and seed32 ``9.837136143`` over 160 samples each. The
+  point remains open until the timestep replicate reaches ``t=1500`` and the
+  strict ensemble gate passes.
