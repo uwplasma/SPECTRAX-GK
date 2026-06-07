@@ -870,3 +870,18 @@ No long nonlinear audit should be launched from these candidates.
   are seed31 ``11.127188009`` and seed32 ``10.994246972`` over 160 samples
   each. The point remains open until the timestep replicate reaches ``t=1500``
   and the strict ensemble gate passes.
+- Completed the zero-offset ``RBC(1,1)`` ``dt=0.04`` timestep replicate to
+  ``t=700`` and launched its ``t=1100`` continuation. The ``t≈350..700``
+  checkpoint mean is ``11.145515642`` over 176 samples, consistent with the
+  seed transient windows.
+- Completed the zero-offset ``RBC(1,1)`` ``dt=0.04`` timestep continuation to
+  ``t=1100`` and launched the final ``t=1500`` timestep continuation. The file
+  reached ``t=1099.94421``; the ``t≈706..1100`` checkpoint mean is
+  ``11.179217074`` over 198 samples.
+- Closed the zero-offset strict ``RBC(1,1)`` nonlinear overlay. The final
+  ``dt=0.04`` trace reached ``t=1499.95605`` with strict-window mean
+  ``10.905578384`` over 200 samples. The three-member fail-closed ensemble over
+  ``t=[1100,1500]`` passed with mean ``11.009004455``, mean relative spread
+  ``2.01%``, and combined SEM/mean ``1.51%``. This updates the public
+  ``RBC(1,1)`` overlay to 16/31 strict true nonlinear points: all negative-side
+  coefficients plus the zero-offset baseline.
