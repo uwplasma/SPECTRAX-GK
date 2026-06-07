@@ -547,6 +547,11 @@ No long nonlinear audit should be launched from these candidates.
   files. Their transient ``t=[350,700]`` heat-flux means are close, about
   ``11.34`` and ``11.76``. Both seed outputs are now continuing to
   ``t=1100`` under the same staged protocol, one per office GPU.
+- The ``-30%`` seed continuations reached ``t=1099.879`` with ``442`` samples.
+  Their ``t=[700,1100]`` heat-flux means are close, about ``11.40`` and
+  ``11.56``. Both seeds are now continuing to ``t=1500``; the final
+  ``t=[1100,1500]`` seed window and later ``dt=0.04`` replicate remain
+  required before this coefficient can enter the strict gate.
 
 ### 2026-06-04
 
