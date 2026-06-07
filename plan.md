@@ -793,3 +793,12 @@ No long nonlinear audit should be launched from these candidates.
   launched the final ``t=1500`` timestep continuation. The file reached
   ``t=1099.94421``; the ``t≈704..1100`` checkpoint mean is ``11.929200834``
   over 199 samples.
+- Closed the strict ``m0p1`` nonlinear overlay. The final ``dt=0.04`` trace
+  reached ``t=1499.95605`` with strict-window mean ``12.025078411`` over
+  200 samples. The three-member fail-closed ensemble over ``t=[1100,1500]``
+  passed with mean ``12.045025735``, mean relative spread ``0.259%``, and
+  combined SEM/mean ``1.46%``. This closes 14/31 strict ``RBC(1,1)`` true
+  nonlinear overlay points.
+- Launched the next adjacent strict ``RBC(1,1)`` coefficient, ``-5%``/``m0p05``,
+  through the bounded ``t=700`` seed31 and seed32 pilot stage, one run per
+  office GPU.
