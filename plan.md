@@ -754,3 +754,7 @@ No long nonlinear audit should be launched from these candidates.
   the ``dt=0.04`` timestep replicate from ``t=700``. Both seed files reached
   ``t=1499.85437``; the accepted-window ``t≈1102..1500`` means are seed31
   ``10.398264855`` and seed32 ``10.045676231`` over 160 samples each.
+- Completed the ``m0p15`` ``dt=0.04`` timestep replicate to ``t=700`` and
+  launched its ``t=1100`` continuation. The ``t≈350..700`` checkpoint mean is
+  ``9.769640410`` over 176 samples, consistent with the seed transient
+  windows.
