@@ -729,3 +729,7 @@ No long nonlinear audit should be launched from these candidates.
   launched its ``t=1100`` continuation. The ``t≈350..700`` checkpoint mean is
   ``9.785573818`` over 176 samples, consistent with the seed transient
   windows.
+- Completed the ``m0p2`` ``dt=0.04`` timestep continuation to ``t=1100`` and
+  launched the final ``t=1500`` timestep continuation. The file reached
+  ``t=1099.94421``; the ``t≈702..1100`` checkpoint mean is ``9.909606848``
+  over 200 samples.
