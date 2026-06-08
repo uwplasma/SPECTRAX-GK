@@ -901,9 +901,14 @@ No long nonlinear audit should be launched from these candidates.
   ``Q_i=9.6447762903``, mean-relative spread ``2.265%``, and combined SEM/mean
   ``1.840%``. The third positive coefficient, ``+15%``/``p0p15``, now passes
   with mean ``Q_i=10.9084437509``, mean-relative spread ``4.195%``, and
-  combined SEM/mean ``1.572%``. The README/docs ``RBC(1,1)`` panel is
-  refreshed to 19/31 strict true nonlinear points; the remaining higher
-  positive coefficients continue running on office.
+  combined SEM/mean ``1.572%``. The ``+25%``/``p0p25`` coefficient now passes
+  with mean ``Q_i=10.0771448855``, mean-relative spread ``6.267%``, and
+  combined SEM/mean ``2.419%``. The README/docs ``RBC(1,1)`` panel is
+  refreshed to 20/31 strict true nonlinear points. The neighboring
+  ``+20%``/``p0p2`` point narrowly missed the strict ``t=[1100,1500]`` spread
+  gate (``15.48%`` versus ``15%``) and is being continued to a later window
+  instead of relaxing the threshold; the remaining higher positive
+  coefficients continue running on office.
 - Completed the zero-offset strict ``RBC(1,1)`` seed ``t=700`` pilot stage and
   launched the ``t=1100`` continuation for seed31 and seed32, one run per
   office GPU. The transient ``t≈350..700`` means are seed31 ``10.896999582``
