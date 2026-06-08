@@ -67,7 +67,7 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(tmp_path
     for entry in (growth_scipy, growth_scalar):
         command = str(entry["command"])
         parts = shlex.split(command)
-        assert parts[0:2] == ["python", "tools/vmec_jax_qa_low_turbulence_optimization.py"]
+        assert parts[0:2] == ["python3", "tools/vmec_jax_qa_low_turbulence_optimization.py"]
         assert parts[parts.index("--input") + 1].endswith("runs/qa_baseline_scipy/input.final")
         assert parts[parts.index("--transport-kind") + 1] == "growth"
         assert parts[parts.index("--surfaces") + 1] == "0.64"
@@ -80,6 +80,7 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(tmp_path
         assert "--allow-failed-solved-wout-gate" in parts
         assert "--make-plots" in parts
         audit = str(entry["recommended_nonlinear_audit_command"])
+        assert audit.startswith("python3 tools/write_optimized_equilibrium_transport_configs.py")
         assert "--horizons 700,1100,1500" in audit
         assert "--window-tmin 1100 --window-tmax 1500" in audit
         assert "--seed-variant 41 --seed-variant 42" in audit
@@ -123,6 +124,8 @@ def test_optimizer_comparison_manifest_marks_spsa_cma_bo_as_outer_loop_contracts
         assert isinstance(contract, dict)
         metric_command = str(contract["metric_eval_command_template"])
         audit_command = str(contract["nonlinear_audit_command_template"])
+        assert metric_command.startswith("python3 tools/evaluate_vmec_jax_spectrax_transport_metric.py")
+        assert audit_command.startswith("python3 tools/write_optimized_equilibrium_transport_configs.py")
         assert "tools/evaluate_vmec_jax_spectrax_transport_metric.py" in metric_command
         assert "{candidate_input_final}" in metric_command
         assert "{candidate_id}" in metric_command

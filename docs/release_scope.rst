@@ -134,6 +134,9 @@ Do not make these claims from the current artifacts:
 - production nonlinear optimization without converged post-transient audits of
   optimized equilibria; the selected QA optimized-equilibrium audit is the
   current scoped exception;
+- treating the strict QA full-sweep matched audit as a nonlinear holdout or
+  optimized-transport success: the harvested traces end near ``t=400`` and
+  therefore have no finite samples in the required ``t=[1100,1500]`` window;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - launching nonlinear-gradient campaigns directly from admitted VMEC-state

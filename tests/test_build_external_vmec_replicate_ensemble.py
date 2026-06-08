@@ -131,6 +131,48 @@ def test_replicate_ensemble_tool_can_collect_failed_diagnostic_points(tmp_path: 
     assert (relaxed_dir / "replicate_ensemble_gate.png").exists()
 
 
+def test_replicate_ensemble_tool_handles_requested_window_outside_trace(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    outputs = [
+        tmp_path / "short_nonlinear_t100_n64_seed31.out.nc",
+        tmp_path / "short_nonlinear_t100_n64_seed32.out.nc",
+        tmp_path / "short_nonlinear_t100_n64_dt0p04.out.nc",
+    ]
+    for path, offset in zip(outputs, (-0.05, 0.05, 0.0)):
+        _write_output(path, offset)
+    out_dir = tmp_path / "outside_window"
+
+    rc = mod.main(
+        [
+            *[str(path) for path in outputs],
+            "--out-dir",
+            str(out_dir),
+            "--case",
+            "outside_requested_window",
+            "--tmin",
+            "200",
+            "--tmax",
+            "300",
+            "--bootstrap-samples",
+            "16",
+            "--allow-failed-gates",
+        ]
+    )
+
+    assert rc == 0
+    ensemble = json.loads((out_dir / "replicate_ensemble_gate.json").read_text())
+    report = json.loads(
+        next((out_dir / "nonlinear_window_convergence_reports").glob("*seed31*")).read_text()
+    )
+    assert ensemble["passed"] is False
+    assert ensemble["statistics"]["n_finite_means"] == 0
+    assert ensemble["statistics"]["ensemble_mean"] is None
+    assert report["window"]["n_finite_late"] == 0
+    assert (out_dir / "replicate_ensemble_gate.png").exists()
+
+
 def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(tmp_path: Path) -> None:
     mod = _load_tool_module()
     variant = mod._variant_from_path(

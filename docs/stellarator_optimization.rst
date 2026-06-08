@@ -203,7 +203,7 @@ long-window nonlinear-audit commands:
 
 .. code-block:: bash
 
-   python tools/write_vmec_jax_optimizer_comparison_manifest.py \
+   python3 tools/write_vmec_jax_optimizer_comparison_manifest.py \
      --campaign-root tools_out/vmec_jax_qa_optimizer_comparison_campaign \
      --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
 
@@ -257,6 +257,19 @@ generated ``run_manifest.json`` commands explicitly on the target workstation.
 The generated manifests now use the strict staged nonlinear policy described
 above; older ``t=[350,700]`` manifests should be treated as historical
 diagnostics unless rerun through the current policy.
+
+The first full-sweep matched QA audit under this strict policy has been
+harvested from the office workstation, but it is not admitted. All raw
+baseline, growth-optimized, quasilinear-optimized, and nonlinear-window-
+optimized runtime jobs completed, yet the produced traces end near ``t=400``.
+Because the strict postprocess requested ``t=[1100,1500]``, every replicated
+ensemble has ``n_finite_means = 0`` and every matched baseline-vs-candidate
+comparison is ``passed = false`` with no finite relative reduction. The
+diagnostic artifacts are retained as
+``docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_*`` and
+``docs/_static/qa_strict_baseline_to_*_strict_baseline.*``. They are command
+and admission-policy evidence, not nonlinear holdouts or optimization
+successes.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
@@ -415,9 +428,9 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    nonlinear-window transport rows restart from that solved QA input. Their
    strict solved-WOUT gate is tripped by a small mean-iota shortfall, so the
    figure treats them as diagnostic-only non-admitted candidates rather than
-   promoted optimized stellarators. The nonlinear heat-flux column is still
-   marked pending until concrete candidate WOUTs receive matched long-window
-   SPECTRAX-GK ``Q(t)`` audits.
+   promoted optimized stellarators. The subsequent matched office audit is now
+   harvested but still not admitted: its traces stop near ``t=400``, outside
+   the strict ``t=[1100,1500]`` acceptance window.
 
 .. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate

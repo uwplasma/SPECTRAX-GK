@@ -81,7 +81,7 @@ def _promotion_commands(
     readiness_json = f"{case}_readiness.json"
     ensemble_png = f"{case}_ensemble_gate.png"
     build_ensemble = (
-        "python tools/build_external_vmec_replicate_ensemble.py "
+        "python3 tools/build_external_vmec_replicate_ensemble.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --out-dir {_repo_relative(ensemble_dir)}"
         + f" --case {case}_replicated_nonlinear_window"
@@ -94,7 +94,7 @@ def _promotion_commands(
     guard_json = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.json"
     guard_png = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.png"
     run_guard = (
-        "python tools/check_production_nonlinear_optimization_guard.py "
+        "python3 tools/check_production_nonlinear_optimization_guard.py "
         f"--optimized-equilibrium-ensemble {_repo_relative(ensemble_dir / ensemble_json)} "
         f"--out-json {_repo_relative(guard_json)} "
         f"--out-png {_repo_relative(guard_png)} "

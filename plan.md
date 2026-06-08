@@ -1,3 +1,14 @@
+- Harvested the matched strict QA full-sweep nonlinear audit from office and
+  reran postprocessing with the patched fail-closed tools. All 36 raw runtime
+  jobs returned success, but the generated traces only reach `t≈400` while the
+  admission window is `t=[1100,1500]`. The four replicated ensembles therefore
+  have `n_finite_means=0`, and all three matched baseline-vs-growth/QL/
+  nonlinear-window comparisons are non-promoted with no computable transport
+  reduction. These artifacts are retained as negative admission evidence under
+  `docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_*` and
+  `docs/_static/qa_strict_baseline_to_*_strict_baseline.*`; no QA point is
+  added to the quasilinear calibration ledger.
+
 - Tightened the quasilinear screening/correlation artifact to separate full-portfolio
   screening from held-out-only promotion. The refreshed
   `docs/_static/quasilinear_screening_skill.{png,pdf,json,csv}` records
@@ -49,11 +60,11 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 97% | Strict top-12 matched audit fails promotion; refreshed RBC(1,1) nonlinear landscape now uses the stricter passing t=[1100,1500] protocol |
+| Strict nonlinear transport and campaign-admission evidence | 98% | Strict top-12 matched audit fails promotion; full-sweep QA matched audit is harvested but fails admission because the requested t=[1100,1500] window is outside the completed traces |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| QA optimization optimizer-comparison metadata | 95% | Public examples emit strict nonlinear audit manifests; `write_vmec_jax_optimizer_comparison_manifest.py` now generates matched scipy/scalar_trust/lbfgs/SPSA/CMA/BO campaign commands; matched nonlinear Q(t) audits are staged on office after RBC11 releases GPUs |
+| QA optimization optimizer-comparison metadata | 96% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now emit office-compatible `python3` postprocess commands; matched full-sweep QA audits are harvested as non-admitted negative evidence |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
@@ -131,10 +142,13 @@ flux predictor or a converged nonlinear turbulent heat-flux reduction.
   with deterministic metric-evaluation and nonlinear-audit templates. The
   tracked manifest sidecar is
   `docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json`.
-- Staged matched strict nonlinear audits on office under
-  `/home/rjorge/spectrax_qa_matched_strict_20260608/SPECTRAX-GK`. The
-  controller waits for the active positive-side RBC(1,1) strict campaign before
-  launching baseline-vs-growth/QL/nonlinear-window optimized QA audits.
+- Harvested matched strict nonlinear audits on office under
+  `/home/rjorge/spectrax_qa_matched_strict_20260608/SPECTRAX-GK`. All raw
+  baseline-vs-growth/QL/nonlinear-window runtime jobs completed, but the
+  strict admission postprocess fails closed because the traces end near
+  `t=400` while the requested accepted window is `t=[1100,1500]`. The
+  comparison artifacts therefore remain negative admission evidence and cannot
+  be used to refit quasilinear calibration or promote nonlinear optimization.
 - Polled the active positive-side RBC(1,1) campaign; no new gates were
   harvestable at this checkpoint. The tracked landscape remains at 23/31 true
   nonlinear overlays until the running `p0p55`/`p0p6` work completes and passes

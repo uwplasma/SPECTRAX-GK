@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -138,6 +139,19 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _finite_or_nan(value: Any) -> float:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return float("nan")
+    return out if math.isfinite(out) else float("nan")
+
+
+def _format_gate_metric(value: Any) -> str:
+    out = _finite_or_nan(value)
+    return "n/a" if not math.isfinite(out) else f"{out:.3f}"
+
+
 def _netcdf_variable(root: Any, variable_path: str) -> np.ndarray:
     group = root
     parts = variable_path.split("/")
@@ -243,29 +257,45 @@ def _write_png(
     ax0.grid(alpha=0.25)
     ax0.legend(frameon=False, loc="upper left")
 
-    means = np.asarray([row["late_mean"] for row in rows], dtype=float)
-    sems = np.asarray([row["sem"] for row in rows], dtype=float)
+    means = np.asarray([_finite_or_nan(row.get("late_mean")) for row in rows], dtype=float)
+    sems = np.asarray([_finite_or_nan(row.get("sem")) for row in rows], dtype=float)
     x = np.arange(len(means))
-    ax1.bar(
-        x,
-        means,
-        yerr=sems,
-        capsize=4,
-        color=[colors[idx % len(colors)] for idx in range(len(means))],
-        alpha=0.88,
-        edgecolor="0.2",
-        linewidth=0.5,
-    )
-    ensemble_mean = ensemble["statistics"]["ensemble_mean"]
-    ax1.axhline(
-        float(ensemble_mean),
-        ls="--",
-        lw=1.3,
-        color="0.15",
-    )
+    finite_means = np.isfinite(means)
+    if np.any(finite_means):
+        ax1.bar(
+            x,
+            means,
+            yerr=np.where(np.isfinite(sems), sems, 0.0),
+            capsize=4,
+            color=[colors[idx % len(colors)] for idx in range(len(means))],
+            alpha=0.88,
+            edgecolor="0.2",
+            linewidth=0.5,
+        )
+    else:
+        ax1.text(
+            0.5,
+            0.55,
+            "No finite samples in the\nrequested late-time window",
+            transform=ax1.transAxes,
+            ha="center",
+            va="center",
+            fontsize=10,
+            color="#7f1d1d",
+            bbox={"boxstyle": "round,pad=0.35", "fc": "#fff7ed", "ec": "#fed7aa"},
+        )
+    ensemble_mean = _finite_or_nan(ensemble["statistics"].get("ensemble_mean"))
+    if math.isfinite(ensemble_mean):
+        ax1.axhline(
+            ensemble_mean,
+            ls="--",
+            lw=1.3,
+            color="0.15",
+        )
     ax1.set_xticks(x, labels)
     ax1.set_ylabel(r"late-window $\langle Q_i\rangle/Q_{gB}$")
-    ax1.set_title(f"Seed/timestep robustness\nmean = {float(ensemble_mean):.2f}")
+    mean_label = "n/a" if not math.isfinite(ensemble_mean) else f"{ensemble_mean:.2f}"
+    ax1.set_title(f"Seed/timestep robustness\nmean = {mean_label}")
     ax1.grid(axis="y", alpha=0.25)
 
     fig.subplots_adjust(left=0.065, right=0.985, bottom=0.22, top=0.80, wspace=0.16)
@@ -273,9 +303,9 @@ def _write_png(
     stats = ensemble["statistics"]
     caption = (
         f"Gate {'passed' if ensemble['passed'] else 'failed'}: "
-        f"mean relative spread = {stats['mean_rel_spread']:.3f} "
+        f"mean relative spread = {_format_gate_metric(stats.get('mean_rel_spread'))} "
         f"(limit {ensemble['config']['max_mean_rel_spread']}), "
-        f"combined SEM/mean = {stats['combined_sem_rel']:.3f} "
+        f"combined SEM/mean = {_format_gate_metric(stats.get('combined_sem_rel'))} "
         f"(limit {ensemble['config']['max_combined_sem_rel']})."
     )
     fig.text(0.5, 0.055, caption, ha="center", va="center", fontsize=8.8, color="0.25")

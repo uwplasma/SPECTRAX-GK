@@ -78,7 +78,7 @@ def _method_args(args: argparse.Namespace, method: str) -> list[str]:
 
 def _baseline_command(args: argparse.Namespace, outdir: Path) -> str:
     cmd = [
-        "python",
+        "python3",
         _repo_relative(ROOT / DRIVER),
         "--strict-upstream-qa-baseline",
         "--outdir",
@@ -107,7 +107,7 @@ def _transport_command(
     outdir: Path,
 ) -> str:
     cmd = [
-        "python",
+        "python3",
         _repo_relative(ROOT / DRIVER),
         "--input",
         _repo_relative(input_path),
@@ -188,7 +188,7 @@ def _transport_command(
 
 def _audit_command(args: argparse.Namespace, *, case_id: str, wout_path: Path, outdir: Path) -> str:
     cmd = [
-        "python",
+        "python3",
         _repo_relative(ROOT / AUDIT_WRITER),
         "--vmec-file",
         _repo_relative(wout_path),
@@ -214,7 +214,7 @@ def _audit_command(args: argparse.Namespace, *, case_id: str, wout_path: Path, o
 
 def _metric_eval_template(args: argparse.Namespace, *, outdir: Path, transport_kind: str) -> str:
     cmd = [
-        "python",
+        "python3",
         _repo_relative(ROOT / METRIC_EVAL),
         "--input",
         "{candidate_input_final}",

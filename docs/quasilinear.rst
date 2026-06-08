@@ -1234,6 +1234,20 @@ tracked holdout gap is a near-miss in the same family. The new
 classified as reproducibility evidence rather than an independent holdout
 because that family is already consumed by a training reference.
 
+The matched strict QA full-sweep audit is also deliberately excluded from this
+calibration ledger. The office campaign completed the raw baseline, linear-
+growth optimized, quasilinear-optimized, and nonlinear-window-optimized runs,
+but the postprocess requested the strict ``t=[1100,1500]`` admission window
+while every harvested trace ends near ``t=400``. The replicated ensemble
+artifacts
+``docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_*_ensemble_gate.json``
+therefore have ``n_finite_means = 0``, and the matched comparison artifacts
+``docs/_static/qa_strict_baseline_to_*_strict_baseline.json`` are
+``passed = false`` with no computable relative reduction. These outputs are
+useful negative audit evidence and a command-generation regression test; they
+are not nonlinear holdouts, are not used to refit the quasilinear calibration,
+and do not change the screening/absolute-flux promotion status above.
+
 External-VMEC next-holdout runbook
 ----------------------------------
 

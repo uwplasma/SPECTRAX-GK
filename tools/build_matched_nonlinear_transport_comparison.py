@@ -43,24 +43,32 @@ def _repo_relative(path: Path) -> str:
         return path.as_posix()
 
 
-def _ensemble_stats(payload: dict[str, Any], *, label: str) -> dict[str, float | bool]:
+def _optional_float(value: Any) -> float | None:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return None
+    return out if isfinite(out) else None
+
+
+def _ensemble_stats(payload: dict[str, Any], *, label: str) -> dict[str, Any]:
     stats = payload.get("statistics")
     if not isinstance(stats, dict):
         raise ValueError(f"{label} ensemble is missing statistics")
-    mean = float(stats.get("ensemble_mean", float("nan")))
-    sem = float(stats.get("combined_sem", stats.get("sample_sem", float("nan"))))
-    spread = float(stats.get("mean_rel_spread", float("nan")))
-    sem_rel = float(stats.get("combined_sem_rel", float("nan")))
-    if not isfinite(mean):
-        raise ValueError(f"{label} ensemble_mean is not finite")
-    if not isfinite(sem):
-        sem = 0.0
+    mean = _optional_float(stats.get("ensemble_mean"))
+    sem = _optional_float(stats.get("combined_sem", stats.get("sample_sem")))
+    spread = _optional_float(stats.get("mean_rel_spread"))
+    sem_rel = _optional_float(stats.get("combined_sem_rel"))
+    finite_mean = mean is not None
     return {
-        "passed": bool(payload.get("passed", False)),
+        "passed": bool(payload.get("passed", False)) and finite_mean,
+        "raw_passed": bool(payload.get("passed", False)),
+        "finite_mean": bool(finite_mean),
         "ensemble_mean": mean,
-        "combined_sem": max(0.0, sem),
+        "combined_sem": max(0.0, sem) if sem is not None else None,
         "mean_relative_spread": spread,
         "combined_sem_relative": sem_rel,
+        "failure": None if finite_mean else f"{label} ensemble_mean is not finite",
     }
 
 
@@ -77,16 +85,25 @@ def build_comparison(
 
     base = _ensemble_stats(baseline, label="baseline")
     cand = _ensemble_stats(candidate, label="candidate")
-    baseline_mean = float(base["ensemble_mean"])
-    candidate_mean = float(cand["ensemble_mean"])
-    delta = baseline_mean - candidate_mean
-    scale = max(abs(baseline_mean), 1.0e-30)
-    relative_reduction = delta / scale
-    combined_uncertainty = sqrt(float(base["combined_sem"]) ** 2 + float(cand["combined_sem"]) ** 2)
-    z_score = delta / combined_uncertainty if combined_uncertainty > 0.0 else float("inf")
+    if bool(base["finite_mean"]) and bool(cand["finite_mean"]):
+        baseline_mean = float(base["ensemble_mean"])
+        candidate_mean = float(cand["ensemble_mean"])
+        delta = baseline_mean - candidate_mean
+        scale = max(abs(baseline_mean), 1.0e-30)
+        relative_reduction = delta / scale
+        base_sem = float(base["combined_sem"] or 0.0)
+        cand_sem = float(cand["combined_sem"] or 0.0)
+        combined_uncertainty = sqrt(base_sem**2 + cand_sem**2)
+        z_score = delta / combined_uncertainty if combined_uncertainty > 0.0 else float("inf")
+    else:
+        delta = None
+        relative_reduction = None
+        combined_uncertainty = None
+        z_score = None
     passed = (
         bool(base["passed"])
         and bool(cand["passed"])
+        and relative_reduction is not None
         and isfinite(relative_reduction)
         and relative_reduction >= float(min_relative_reduction)
     )
@@ -114,23 +131,31 @@ def build_comparison(
             {
                 "metric": "baseline_ensemble_passed",
                 "passed": bool(base["passed"]),
-                "detail": f"baseline passed={bool(base['passed'])}",
+                "detail": f"baseline passed={bool(base['passed'])}; {base.get('failure') or 'finite mean available'}",
             },
             {
                 "metric": "candidate_ensemble_passed",
                 "passed": bool(cand["passed"]),
-                "detail": f"candidate passed={bool(cand['passed'])}",
+                "detail": f"candidate passed={bool(cand['passed'])}; {cand.get('failure') or 'finite mean available'}",
             },
             {
                 "metric": "relative_transport_reduction",
-                "passed": bool(relative_reduction >= float(min_relative_reduction)),
+                "passed": bool(
+                    relative_reduction is not None
+                    and relative_reduction >= float(min_relative_reduction)
+                ),
                 "detail": (
-                    f"relative reduction {relative_reduction:.6g} >= "
+                    f"relative reduction {_format_optional(relative_reduction)} >= "
                     f"{float(min_relative_reduction):.6g}"
                 ),
             },
         ],
     }
+
+
+def _format_optional(value: Any) -> str:
+    out = _optional_float(value)
+    return "n/a" if out is None else f"{out:.6g}"
 
 
 def _write_plot(report: dict[str, Any], path: Path) -> None:
@@ -147,25 +172,60 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
     base = report["baseline"]
     cand = report["candidate"]
     stats = report["statistics"]
-    means = [float(base["ensemble_mean"]), float(cand["ensemble_mean"])]
-    sems = [float(base["combined_sem"]), float(cand["combined_sem"])]
+    means = [
+        float(base["ensemble_mean"]) if base["ensemble_mean"] is not None else float("nan"),
+        float(cand["ensemble_mean"]) if cand["ensemble_mean"] is not None else float("nan"),
+    ]
+    sems = [
+        float(base["combined_sem"]) if base["combined_sem"] is not None else 0.0,
+        float(cand["combined_sem"]) if cand["combined_sem"] is not None else 0.0,
+    ]
     fig, ax = plt.subplots(figsize=(6.6, 4.8), constrained_layout=True)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
     colors = ["#334155", "#0f766e"]
-    ax.bar([0, 1], means, yerr=sems, capsize=5, color=colors, alpha=0.9, edgecolor="0.15", linewidth=0.6)
+    finite_means = [isfinite(mean) for mean in means]
+    if any(finite_means):
+        ax.bar(
+            [0, 1],
+            means,
+            yerr=sems,
+            capsize=5,
+            color=colors,
+            alpha=0.9,
+            edgecolor="0.15",
+            linewidth=0.6,
+        )
+    else:
+        ax.text(
+            0.5,
+            0.48,
+            "No matched transport reduction can be computed:\n"
+            "baseline/candidate ensembles have no finite\n"
+            "accepted-window means.",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+            fontsize=10,
+            color="#7f1d1d",
+            bbox={"boxstyle": "round,pad=0.45", "fc": "#fff7ed", "ec": "#fed7aa"},
+        )
     ax.set_xticks([0, 1], ["baseline", "transport\ncandidate"])
     ax.set_ylabel(r"late-window $\langle Q_i\rangle/Q_{gB}$")
-    rel = float(stats["relative_reduction"])
-    z_score = float(stats["uncertainty_z_score"])
+    rel = _optional_float(stats.get("relative_reduction"))
+    z_score = _optional_float(stats.get("uncertainty_z_score"))
     status = "passes" if bool(report["passed"]) else "not promoted"
     ax.set_title(f"Matched nonlinear transport comparison: {status}", pad=12)
-    ymax = max(mean + sem for mean, sem in zip(means, sems))
+    finite_y = [mean + sem for mean, sem in zip(means, sems) if isfinite(mean)]
+    ymax = max(finite_y) if finite_y else 1.0
     ax.set_ylim(0.0, ymax * 1.30)
     ax.text(
         0.50,
         0.88,
-        f"relative reduction = {100.0 * rel:.2f}%\nuncertainty z-score = {z_score:.2f}",
+        "relative reduction = {rel}\nuncertainty z-score = {z}".format(
+            rel="n/a" if rel is None else f"{100.0 * rel:.2f}%",
+            z="n/a" if z_score is None else f"{z_score:.2f}",
+        ),
         transform=ax.transAxes,
         ha="center",
         va="top",

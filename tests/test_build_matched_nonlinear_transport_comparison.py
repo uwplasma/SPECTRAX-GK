@@ -53,6 +53,26 @@ def test_build_comparison_fails_when_candidate_not_lower_enough(tmp_path: Path) 
     assert report["gates"][-1]["passed"] is False
 
 
+def test_build_comparison_fails_closed_for_missing_ensemble_mean(tmp_path: Path) -> None:
+    report = build_comparison(
+        baseline={
+            "kind": "nonlinear_window_ensemble_report",
+            "passed": False,
+            "statistics": {"ensemble_mean": None, "combined_sem": None},
+        },
+        candidate=_ensemble(10.5, 0.4),
+        baseline_artifact=tmp_path / "baseline.json",
+        candidate_artifact=tmp_path / "candidate.json",
+        case="qa_outside_window",
+        min_relative_reduction=0.0,
+    )
+
+    assert report["passed"] is False
+    assert report["baseline"]["finite_mean"] is False
+    assert report["statistics"]["relative_reduction"] is None
+    assert "ensemble_mean is not finite" in report["gates"][0]["detail"]
+
+
 def test_cli_writes_json_and_figure(tmp_path: Path) -> None:
     baseline = tmp_path / "baseline.json"
     candidate = tmp_path / "candidate.json"
@@ -85,4 +105,49 @@ def test_cli_writes_json_and_figure(tmp_path: Path) -> None:
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["passed"] is True
     assert payload["claim_level"] == "matched_replicated_late_window_transport_comparison"
+    assert out_svg.exists()
+
+
+def test_cli_writes_failure_json_and_figure_for_empty_window_ensemble(
+    tmp_path: Path,
+) -> None:
+    baseline = tmp_path / "baseline.json"
+    candidate = tmp_path / "candidate.json"
+    out_json = tmp_path / "comparison.json"
+    out_svg = tmp_path / "comparison.svg"
+    baseline.write_text(
+        json.dumps(
+            {
+                "kind": "nonlinear_window_ensemble_report",
+                "passed": False,
+                "statistics": {"ensemble_mean": None, "combined_sem": None},
+            }
+        ),
+        encoding="utf-8",
+    )
+    candidate.write_text(json.dumps(_ensemble(10.8, 0.25)), encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "--baseline-ensemble",
+                str(baseline),
+                "--candidate-ensemble",
+                str(candidate),
+                "--case",
+                "qa_outside_window",
+                "--min-relative-reduction",
+                "0.0",
+                "--out-json",
+                str(out_json),
+                "--out-figure",
+                str(out_svg),
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    assert payload["passed"] is False
+    assert payload["statistics"]["relative_reduction"] is None
     assert out_svg.exists()

@@ -48,8 +48,12 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
     assert contract["claim_level"] == "optimized_equilibrium_replicated_transport_window_launch_contract_not_promotion"
     assert len(contract["expected_outputs"]) == 3
     assert all("optimized_equilibrium_test_nonlinear_t2_n8" in path for path in contract["expected_outputs"])
-    assert "build_external_vmec_replicate_ensemble.py" in contract["build_ensemble_command"]
+    assert contract["build_ensemble_command"].startswith(
+        "python3 tools/build_external_vmec_replicate_ensemble.py"
+    )
     assert "--tmin 1" in contract["build_ensemble_command"]
     assert "--tmax 2" in contract["build_ensemble_command"]
-    assert "check_production_nonlinear_optimization_guard.py" in contract["run_guard_command"]
+    assert contract["run_guard_command"].startswith(
+        "python3 tools/check_production_nonlinear_optimization_guard.py"
+    )
     assert "--optimized-equilibrium-ensemble" in contract["run_guard_command"]

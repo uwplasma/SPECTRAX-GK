@@ -36,6 +36,7 @@ from spectraxgk.plotting import set_plot_style  # noqa: E402
 
 DEFAULT_RUN_ROOT = ROOT / "tools_out" / "vmec_jax_qa_full_sweep_20260605"
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_jax_qa_full_sweep_panel.png"
+DEFAULT_STRICT_AUDIT_ROOT = ROOT / "docs" / "_static" / "optimized_equilibrium_replicates"
 STRICT_NONLINEAR_AUDIT_HORIZONS = "700,1100,1500"
 STRICT_NONLINEAR_AUDIT_WINDOW = (1100.0, 1500.0)
 STRICT_NONLINEAR_AUDIT_SEEDS = (32, 33)
@@ -488,6 +489,55 @@ def _q_traces(root: Path) -> list[dict[str, Any]]:
     return traces
 
 
+def _strict_full_sweep_audit_status(audit_root: Path = DEFAULT_STRICT_AUDIT_ROOT) -> dict[str, Any]:
+    """Summarize harvested strict full-sweep nonlinear audit sidecars."""
+
+    paths = sorted(Path(audit_root).glob("vmec_qa_full_sweep_*_ensemble_gate.json"))
+    rows: list[dict[str, Any]] = []
+    for path in paths:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        stats = payload.get("statistics", {})
+        if not isinstance(stats, dict):
+            stats = {}
+        rows.append(
+            {
+                "artifact": _repo_relative(path),
+                "case": str(payload.get("case", path.stem)),
+                "passed": bool(payload.get("passed", False)),
+                "n_finite_means": int(stats.get("n_finite_means") or 0),
+                "ensemble_mean": _finite_float(stats.get("ensemble_mean")),
+            }
+        )
+    if not rows:
+        status = "not_found"
+    elif any(bool(row["passed"]) for row in rows):
+        status = "available_for_some_candidates"
+    elif all(int(row["n_finite_means"]) == 0 for row in rows):
+        status = "failed_empty_strict_window"
+    else:
+        status = "failed_strict_gate"
+    return {
+        "status": status,
+        "n_ensembles": len(rows),
+        "n_passed_ensembles": sum(1 for row in rows if bool(row["passed"])),
+        "n_empty_window_ensembles": sum(1 for row in rows if int(row["n_finite_means"]) == 0),
+        "rows": rows,
+    }
+
+
+def _empty_strict_audit_status() -> dict[str, Any]:
+    return {
+        "status": "not_found",
+        "n_ensembles": 0,
+        "n_passed_ensembles": 0,
+        "n_empty_window_ensembles": 0,
+        "rows": [],
+    }
+
+
 def _audit_case_token(case_id: str) -> str:
     return (
         "vmec_qa_full_sweep_"
@@ -504,7 +554,7 @@ def _nonlinear_audit_command(wout_path: Path | None, case_id: str, *, run_comple
     token = _audit_case_token(case_id)
     out_dir = ROOT / "tools_out" / "vmec_qa_full_sweep_nonlinear_audits" / token
     return (
-        "python tools/write_optimized_equilibrium_transport_configs.py "
+        "python3 tools/write_optimized_equilibrium_transport_configs.py "
         f"--vmec-file {_repo_relative(wout_path)} "
         f"--case {token} "
         f"--out-dir {_repo_relative(out_dir)} "
@@ -671,6 +721,17 @@ def build_payload(run_root: Path = DEFAULT_RUN_ROOT) -> dict[str, Any]:
         if bool(row["run_completed"]) and bool(row["has_wout_final"])
     ]
     with_q = [row for row in rows if row["q_traces"]]
+    strict_audit = (
+        _strict_full_sweep_audit_status()
+        if run_root.resolve(strict=False) == DEFAULT_RUN_ROOT.resolve(strict=False)
+        else _empty_strict_audit_status()
+    )
+    if with_q:
+        nonlinear_status = "available_for_some_candidates"
+    elif strict_audit["status"] != "not_found":
+        nonlinear_status = str(strict_audit["status"])
+    else:
+        nonlinear_status = "pending_for_this_sweep"
     optimizer_methods = sorted(
         {
             str(row["optimizer_comparison"].get("method"))
@@ -705,9 +766,8 @@ def build_payload(run_root: Path = DEFAULT_RUN_ROOT) -> dict[str, Any]:
             "n_cases_with_nonlinear_q_traces": len(with_q),
             "completed_case_ids": [row["case_id"] for row in completed],
             "cases_with_nonlinear_q_traces": [row["case_id"] for row in with_q],
-            "nonlinear_transport_audit_status": (
-                "available_for_some_candidates" if with_q else "pending_for_this_sweep"
-            ),
+            "nonlinear_transport_audit_status": nonlinear_status,
+            "strict_full_sweep_audit": strict_audit,
             "optimizer_methods": optimizer_methods,
             "optimizer_comparison_groups": comparison_groups,
             "optimizer_comparison_policy": (
@@ -930,7 +990,7 @@ def _plot_transport_bars(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
     ax.grid(axis="y", alpha=0.25, which="both")
 
 
-def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
+def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]], *, audit_status: str) -> None:
     plotted = False
     case_colors = plt.rcParams["axes.prop_cycle"].by_key().get("color", [])
     color_index = 0
@@ -982,11 +1042,26 @@ def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
         ax.clear()
         ax.axis("off")
         ax.set_title("Matched nonlinear heat-flux audits")
+        if audit_status == "failed_empty_strict_window":
+            message = (
+                "Strict audit harvested, not admitted:\n"
+                "traces end near t=400 while the accepted\n"
+                "window is t=[1100,1500]."
+            )
+        elif audit_status.startswith("failed"):
+            message = (
+                "Strict audit harvested, not promoted:\n"
+                f"{audit_status}."
+            )
+        else:
+            message = (
+                "Pending for this sweep:\nrun long post-transient SPECTRAX-GK audits\n"
+                "from each admitted authoritative WOUT before comparing Q(t)."
+            )
         ax.text(
             0.5,
             0.5,
-            "Pending for this sweep:\nrun long post-transient SPECTRAX-GK audits\n"
-            "from each admitted authoritative WOUT before comparing Q(t).",
+            message,
             ha="center",
             va="center",
             fontsize=9,
@@ -1050,7 +1125,11 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
     _plot_metric_bars(fig.add_subplot(gs[0, 3]), rows)
     _plot_iota_profiles(fig.add_subplot(gs[1, 0:2]), rows)
     _plot_transport_bars(fig.add_subplot(gs[1, 2]), rows)
-    _plot_q_traces(fig.add_subplot(gs[1, 3]), rows)
+    _plot_q_traces(
+        fig.add_subplot(gs[1, 3]),
+        rows,
+        audit_status=str(payload["summary"]["nonlinear_transport_audit_status"]),
+    )
 
     selected = _selected_rows(rows, max_count=4)
     for col in range(4):
@@ -1065,9 +1144,13 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
             b_ax.axis("off")
 
     status = payload["summary"]["nonlinear_transport_audit_status"]
+    if str(status).startswith("failed"):
+        status_clause = "reduced objectives remain diagnostics because strict nonlinear audit failed admission"
+    else:
+        status_clause = "reduced objectives are diagnostics until matched nonlinear audits exist"
     fig.suptitle(
         "VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives\n"
-        f"Q(t) status: {status}; reduced objectives are diagnostics until matched nonlinear audits exist",
+        f"Q(t) status: {status}; {status_clause}",
         fontsize=15,
         fontweight="bold",
     )

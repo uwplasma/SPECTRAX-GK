@@ -510,7 +510,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "growth_from_strict_baseline",
@@ -1016,7 +1016,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "quasilinear_from_strict_baseline",
@@ -1526,7 +1526,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "nonlinear_window_from_strict_baseline",
@@ -2044,7 +2044,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
+      "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     }
   ],
   "summary": {
@@ -2058,7 +2058,43 @@
       "nonlinear_window_from_strict_baseline"
     ],
     "cases_with_nonlinear_q_traces": [],
-    "nonlinear_transport_audit_status": "pending_for_this_sweep",
+    "nonlinear_transport_audit_status": "failed_empty_strict_window",
+    "strict_full_sweep_audit": {
+      "status": "failed_empty_strict_window",
+      "n_ensembles": 4,
+      "n_passed_ensembles": 0,
+      "n_empty_window_ensembles": 4,
+      "rows": [
+        {
+          "artifact": "docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_ensemble_gate.json",
+          "case": "vmec_qa_full_sweep_growth_from_strict_baseline_replicated_nonlinear_window_ensemble_gate",
+          "passed": 0,
+          "n_finite_means": 0,
+          "ensemble_mean": null
+        },
+        {
+          "artifact": "docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline_ensemble_gate.json",
+          "case": "vmec_qa_full_sweep_nonlinear_window_from_strict_baseline_replicated_nonlinear_window_ensemble_gate",
+          "passed": 0,
+          "n_finite_means": 0,
+          "ensemble_mean": null
+        },
+        {
+          "artifact": "docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_qa_baseline_scipy_ensemble_gate.json",
+          "case": "vmec_qa_full_sweep_qa_baseline_scipy_replicated_nonlinear_window_ensemble_gate",
+          "passed": 0,
+          "n_finite_means": 0,
+          "ensemble_mean": null
+        },
+        {
+          "artifact": "docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_quasilinear_from_strict_baseline_ensemble_gate.json",
+          "case": "vmec_qa_full_sweep_quasilinear_from_strict_baseline_replicated_nonlinear_window_ensemble_gate",
+          "passed": 0,
+          "n_finite_means": 0,
+          "ensemble_mean": null
+        }
+      ]
+    },
     "optimizer_methods": [
       "scalar_trust",
       "scipy"

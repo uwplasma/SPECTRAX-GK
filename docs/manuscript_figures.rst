@@ -336,7 +336,8 @@ Differentiable-Physics Figures
      - ``tools/build_vmec_jax_qa_full_sweep_panel.py`` from office
        ``vmec_jax_qa_full_sweep_20260605`` VMEC-JAX outputs
      - Strict QA baseline provenance closed; transport rows are scoped
-       optimizer-output diagnostics with nonlinear ``Q(t)`` promotion pending
+       optimizer-output diagnostics with nonlinear ``Q(t)`` promotion failed
+       under the current strict accepted-window audit
      - current artifact base:
        ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV
        companions; a PDF companion is regenerated locally with ``--pdf`` when
@@ -349,9 +350,17 @@ Differentiable-Physics Figures
        ``mboz=nboz=21``. They produce real optimizer outputs, not synthetic
        surfaces, and their mean iota remains within the exploratory diagnostic
        acceptance band ``|iota| >= 0.39`` even though the stricter QA-admission
-       gate records the small shortfall from ``0.41``. Consequently the
-       nonlinear heat-flux subplot is intentionally marked pending and no
-       turbulent-flux reduction is claimed from this sweep. The old projected-weight nonlinear audits remain historical
+       gate records the small shortfall from ``0.41``. The follow-on matched
+       office nonlinear audit completed raw baseline, growth, quasilinear, and
+       nonlinear-window runs, but every trace ends near ``t=400`` while the
+       strict admission window is ``t=[1100,1500]``. The harvested ensemble
+       artifacts under
+       ``docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_*``
+       therefore have ``n_finite_means = 0``, and the matched comparison
+       artifacts under ``docs/_static/qa_strict_baseline_to_*_strict_baseline.*``
+       are failed negative admission evidence. No turbulent-flux reduction,
+       quasilinear holdout, or nonlinear optimization success is claimed from
+       this sweep. The old projected-weight nonlinear audits remain historical
        single-point evidence tied to an earlier baseline and should not be
        conflated with this strict-baseline panel.
    * - Boundary-coefficient transport landscape

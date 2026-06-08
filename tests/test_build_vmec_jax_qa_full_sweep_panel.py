@@ -225,12 +225,37 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     [row] = payload["cases"]
 
     command = row["recommended_nonlinear_audit_command"]
-    assert "write_optimized_equilibrium_transport_configs.py" in command
+    assert command.startswith("python3 tools/write_optimized_equilibrium_transport_configs.py")
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--horizons 700,1100,1500" in command
     assert "--window-tmin 1100 --window-tmax 1500" in command
     assert "--seed-variant 32 --seed-variant 33" in command
     assert "--dt-variant 0.04" in command
+
+
+def test_strict_full_sweep_audit_status_detects_empty_strict_window(tmp_path: Path) -> None:
+    audit_root = tmp_path / "optimized_equilibrium_replicates"
+    audit_root.mkdir()
+    for token in ("qa_baseline_scipy", "growth_from_strict_baseline"):
+        (audit_root / f"vmec_qa_full_sweep_{token}_ensemble_gate.json").write_text(
+            json.dumps(
+                {
+                    "case": token,
+                    "passed": False,
+                    "statistics": {
+                        "n_finite_means": 0,
+                        "ensemble_mean": None,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    status = mod._strict_full_sweep_audit_status(audit_root)
+
+    assert status["status"] == "failed_empty_strict_window"
+    assert status["n_ensembles"] == 2
+    assert status["n_empty_window_ensembles"] == 2
 
 
 def test_iota_only_diagnostic_rows_are_audit_command_eligible(tmp_path: Path) -> None:
