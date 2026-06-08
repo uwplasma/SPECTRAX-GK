@@ -99,6 +99,22 @@ by the strict solved-equilibrium gate. The preset keeps the gate at
 (`target iota = 0.4102`). A baseline that stops just below the gate should be
 refined with this preset, not accepted by loosening the gate.
 
+For optimizer-comparison campaigns, generate commands from one manifest rather
+than by hand-editing launch scripts:
+
+```bash
+python tools/write_vmec_jax_optimizer_comparison_manifest.py \
+  --campaign-root tools_out/vmec_jax_qa_optimizer_comparison_campaign \
+  --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
+```
+
+The manifest emits the strict baseline command, matched `scipy`, `scalar_trust`,
+and `lbfgs_adjoint` transport-refinement commands, plus SPSA/CMA/BO outer-loop
+contracts with deterministic metric-evaluation and nonlinear-audit templates.
+Use the generated `comparison_fingerprint` to keep optimizer comparisons scoped
+to identical sample sets, moment resolution, objective transforms, budgets, and
+strict long-window audit policies.
+
 The current tracked strict-baseline evidence is summarized in
 `docs/_static/vmec_jax_qa_strict_baseline/summary.json`: exact SciPy/ESS,
 `nfev=39`, aspect `5.000154`, mean iota `0.4101997`, QS residual `2.60e-4`,

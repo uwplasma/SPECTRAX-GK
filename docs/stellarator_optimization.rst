@@ -191,6 +191,43 @@ Practical SPECTRAX-GK policy:
    neighboring points, use it as an optimizer-noise diagnostic only. Do not use
    it to claim a reliable gradient or a robust minimum.
 
+Optimizer-Comparison Manifest
+-----------------------------
+
+Optimizer comparisons should be launched from a single manifest, not from
+hand-edited shell history.  The generator
+:download:`write_vmec_jax_optimizer_comparison_manifest.py <../tools/write_vmec_jax_optimizer_comparison_manifest.py>`
+writes a strict QA baseline command, matched deterministic transport optimizer
+commands, derivative-free outer-loop contracts, and the corresponding
+long-window nonlinear-audit commands:
+
+.. code-block:: bash
+
+   python tools/write_vmec_jax_optimizer_comparison_manifest.py \
+     --campaign-root tools_out/vmec_jax_qa_optimizer_comparison_campaign \
+     --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
+
+The tracked manifest sidecar
+:download:`vmec_jax_qa_optimizer_comparison_manifest.json <_static/vmec_jax_qa_optimizer_comparison_manifest.json>`
+currently emits:
+
+- one strict upstream QA baseline using SciPy least squares;
+- matched ``scipy``/``lsmr``, ``scalar_trust``, and ``lbfgs_adjoint`` transport
+  commands for ``growth``, ``quasilinear_flux``, and
+  ``nonlinear_window_heat_flux`` from the admitted baseline ``input.final``;
+- SPSA, CMA-ES, and Bayesian-optimization (``bo``) outer-loop contracts with
+  deterministic metric-evaluation and nonlinear-audit command templates.
+
+The manifest comparison fingerprint is part of the campaign contract.  A
+method comparison is valid only when the sample set, Boozer resolution,
+moment resolution, objective transform, transport weight, optimizer budget, and
+strict nonlinear-audit policy match.  The derivative-free entries are not
+claimed to be implemented VMEC-JAX optimizer methods; they are reproducible
+outer-loop protocols for noisy objective studies.  They become paper evidence
+only after the proposed candidates are evaluated and promoted through the same
+matched long-window nonlinear audit gates as the differentiable optimizer
+outputs.
+
 Key references for this policy are:
 
 - `Optimization of nonlinear turbulence in stellarators

@@ -35,7 +35,7 @@ historical logs live outside the release repository so clones stay small.
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| QA optimization optimizer-comparison metadata | 92% | Public examples now emit strict long-window nonlinear audit manifests; full-sweep panel and driver carry matched optimizer-comparison fingerprints; matched nonlinear Q(t) audits for strict-baseline transport candidates remain pending |
+| QA optimization optimizer-comparison metadata | 95% | Public examples emit strict nonlinear audit manifests; `write_vmec_jax_optimizer_comparison_manifest.py` now generates matched scipy/scalar_trust/lbfgs/SPSA/CMA/BO campaign commands; matched nonlinear Q(t) audits are staged on office after RBC11 releases GPUs |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
@@ -94,6 +94,21 @@ flux predictor or a converged nonlinear turbulent heat-flux reduction.
 
 ## Completed Recent Work
 
+- Added `tools/write_vmec_jax_optimizer_comparison_manifest.py`, a tested
+  manifest generator for strict QA optimizer comparisons. It emits one strict
+  SciPy QA baseline, matched deterministic transport commands for
+  `scipy`/`scalar_trust`/`lbfgs_adjoint`, and SPSA/CMA/BO outer-loop contracts
+  with deterministic metric-evaluation and nonlinear-audit templates. The
+  tracked manifest sidecar is
+  `docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json`.
+- Staged matched strict nonlinear audits on office under
+  `/home/rjorge/spectrax_qa_matched_strict_20260608/SPECTRAX-GK`. The
+  controller waits for the active positive-side RBC(1,1) strict campaign before
+  launching baseline-vs-growth/QL/nonlinear-window optimized QA audits.
+- Polled the active positive-side RBC(1,1) campaign; no new gates were
+  harvestable at this checkpoint. The tracked landscape remains at 23/31 true
+  nonlinear overlays until the running `p0p55`/`p0p6` work completes and passes
+  the strict `t=[1100,1500]` ensemble gate.
 - Added normalized optimizer-comparison metadata to the VMEC-JAX QA
   optimization driver and full-sweep panel. Optimizer methods may now be
   compared only inside identical comparison-fingerprint groups.
