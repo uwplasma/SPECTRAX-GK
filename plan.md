@@ -950,3 +950,10 @@ No long nonlinear audit should be launched from these candidates.
   ``+15%``, ``+25%``, ``+30%``, and ``+35%`` points. The ``+20%`` point remains
   pending after its narrow strict spread miss; higher positive coefficients
   remain pending and are not inferred from reduced metrics.
+- Harvested the next positive strict ``RBC(1,1)`` overlay from office. The
+  ``+40%``/``p0p4`` coefficient passed the ``t=[1100,1500]`` seed/timestep
+  ensemble gate with mean ``Q_i=7.1067187691``, mean-relative spread ``3.502%``,
+  and combined SEM/mean ``2.009%``. The public landscape was regenerated with
+  23/31 strict true nonlinear overlays. ``+45%`` and higher remain incomplete
+  and are not shown in the public nonlinear overlay until their three-member
+  strict ensembles pass.
