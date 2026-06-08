@@ -855,6 +855,35 @@ No long nonlinear audit should be launched from these candidates.
 - Verified the tranche with bounded checks: release readiness regeneration,
   repository-size manifest, release-artifact manifest, performance manifest,
   parallel-scaling artifact inventory, and focused pytest guardrails all pass.
+- Updated GitHub Actions workflow majors to the Node 24-backed action releases
+  (`checkout@v6`, `setup-python@v6`, `cache@v5`, `upload-artifact@v7`, and
+  `download-artifact@v8`) and added the release-workflow Node 24 environment
+  fallback. Focused release-readiness, repository-size, release-artifact, and
+  workflow-reference checks pass locally; GitHub CI for commit `4f3de69` is in
+  progress.
+- Launched the positive-side strict ``RBC(1,1)`` nonlinear overlay campaign on
+  office as a resumable two-GPU queue. The controller generated positive-side
+  ``t=1100`` and ``t=1500`` continuation TOMLs from the existing ``t=700``
+  positive configs, runs seed31, seed32, and ``dt=0.04`` chains per
+  coefficient, validates that each output reaches ``t≈1500``, then builds the
+  strict ``t=[1100,1500]`` replicate ensemble gate. README/docs remain scoped
+  to the 16 completed strict points until the positive gates finish.
+- Staged matched nonlinear transport traces for the four strict QA optimization
+  geometries: baseline, growth-optimized, quasilinear-optimized, and
+  nonlinear-window-optimized. The campaign uses the authoritative
+  ``vmec_jax_qa_full_sweep_20260605`` WOUTs, staged ``t=700,1100,1500`` n64
+  seed/timestep configs, and a queued two-GPU office controller that waits for
+  the positive-side ``RBC(1,1)`` sweep before running. This is the matched
+  post-transient nonlinear evidence lane; no transport-reduction claim is made
+  until the ensembles pass and uncertainty separation is quantified.
+- Strengthened nonlinear parallelization identity gates without adding a
+  speedup claim. The state-domain prototype gate now uses a 24x24 state split
+  across three domains and passes exactly at ``atol=rtol=1e-10``. The velocity
+  field-reduction gate now reports the standard ``atol + rtol ||ref||``
+  criterion so float32 reduction-order differences are accepted only when the
+  full-field relative error is small. The production nonlinear sharding gate
+  remains fail-closed/diagnostic-only because the GPU speedup candidate is not
+  profiler-backed.
 - Completed the zero-offset strict ``RBC(1,1)`` seed ``t=700`` pilot stage and
   launched the ``t=1100`` continuation for seed31 and seed32, one run per
   office GPU. The transient ``t≈350..700`` means are seed31 ``10.896999582``

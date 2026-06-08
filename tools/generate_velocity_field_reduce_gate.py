@@ -61,6 +61,7 @@ def build_velocity_field_reduce_gate(
     shape: tuple[int, int, int, int, int],
     requested_devices: int,
     atol: float,
+    rtol: float,
 ) -> dict[str, object]:
     """Run the Hermite-axis field reduction and compare against reference."""
 
@@ -83,9 +84,13 @@ def build_velocity_field_reduce_gate(
     _block_until_ready(sharded)
 
     err = jnp.max(jnp.abs(sharded - reference))
-    _block_until_ready(err)
+    reference_norm = jnp.max(jnp.abs(reference))
+    _block_until_ready((err, reference_norm))
     max_abs_error = float(np.asarray(err))
-    identity_passed = bool(max_abs_error <= float(atol))
+    max_abs_reference = float(np.asarray(reference_norm))
+    max_allowed_error = float(atol) + float(rtol) * max(max_abs_reference, 1.0)
+    max_rel_error = max_abs_error / max(max_abs_reference, 1.0e-30)
+    identity_passed = bool(max_abs_error <= max_allowed_error)
 
     sharded_trace = np.asarray(sharded[0, :, 0, 0])
     reference_trace = np.asarray(reference[0, :, 0, 0])
@@ -97,6 +102,10 @@ def build_velocity_field_reduce_gate(
                 "reduced_real": float(np.real(sharded_trace[ky_idx])),
                 "reference_real": float(np.real(reference_trace[ky_idx])),
                 "abs_error": float(abs(sharded_trace[ky_idx] - reference_trace[ky_idx])),
+                "rel_error": float(
+                    abs(sharded_trace[ky_idx] - reference_trace[ky_idx])
+                    / max(abs(reference_trace[ky_idx]), 1.0e-30)
+                ),
             }
         )
 
@@ -111,7 +120,11 @@ def build_velocity_field_reduce_gate(
             "actual_devices": len(device_list),
             "plan": plan.to_dict(),
             "max_abs_error": max_abs_error,
+            "max_abs_reference": max_abs_reference,
+            "max_rel_error": max_rel_error,
+            "max_allowed_error": max_allowed_error,
             "atol": float(atol),
+            "rtol": float(rtol),
             "identity_passed": identity_passed,
             "rows": rows,
         }
@@ -154,7 +167,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     axes[0].legend(frameon=False, fontsize=8)
 
     axes[1].semilogy(ky, np.maximum(error, 1.0e-16), "s-", lw=2.0, label="absolute error")
-    axes[1].axhline(float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="gate")
+    axes[1].axhline(float(summary["max_allowed_error"]), ls=":", lw=1.2, color="0.25", label="gate")
     status = "passed" if bool(summary["identity_passed"]) else "failed"
     axes[1].set_xlabel(r"$k_y$ index")
     axes[1].set_ylabel("absolute error")
@@ -184,6 +197,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--nx", type=int, default=1)
     parser.add_argument("--nz", type=int, default=5)
     parser.add_argument("--atol", type=float, default=1.0e-5)
+    parser.add_argument("--rtol", type=float, default=1.0e-7)
     return parser
 
 
@@ -194,6 +208,7 @@ def main() -> None:
         shape=(int(args.nl), int(args.nm), int(args.ny), int(args.nx), int(args.nz)),
         requested_devices=int(args.logical_devices),
         atol=float(args.atol),
+        rtol=float(args.rtol),
     )
     paths = write_artifacts(summary, args.out_prefix)
     print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
