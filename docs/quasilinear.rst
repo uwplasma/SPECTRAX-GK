@@ -1013,6 +1013,48 @@ research posture: accept the smallest candidate that passes held-out skill and
 coverage, while retaining the simpler failed models as reviewer-facing
 negative controls.
 
+Stellarator usefulness summary
+------------------------------
+
+The stellarator-focused summary below is generated from existing validation
+artifacts only; it does not refit a model or add any unvalidated nonlinear
+points. It compares the admitted HSX and W7-X nonlinear windows against the
+current quasilinear candidates, then records the present status of the QA and
+QH optimization families.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_stellarator_usefulness.py \
+     --out docs/_static/quasilinear_stellarator_usefulness.png
+
+.. image:: _static/quasilinear_stellarator_usefulness.png
+   :alt: Stellarator quasilinear usefulness summary
+   :width: 100%
+
+The result is intentionally mixed. For HSX and W7-X, the simple
+positive-growth mixing-length rule predicts zero because the tracked short
+linear branches are stable under ``gamma_floor = 0``, while the admitted
+nonlinear heat-flux windows are finite. That is a direct fail for this simple
+absolute-flux proxy. The raw linear-weight fit is nonzero but overpredicts
+both stellarator holdouts by roughly a factor of four. The reduced
+``spectral_envelope_ridge`` candidate is much closer for HSX and W7-X and
+remains the best current scoped model-development candidate, but it is not a
+runtime saturation law and not a universal stellarator transport model.
+
+This behavior is consistent with the literature rather than surprising. Modern
+tokamak quasilinear transport models separate linear flux weights from an
+empirical or theory-assisted saturation rule [Stephens21]_ [Parker23]_
+[Staebler24]_. Stellarators add additional sensitivity because the nonlinear
+state can involve many subdominant and stable eigenmodes [Pueschel16]_, energy
+transfer to damped modes [Hegna18]_, and zonal-flow dynamics [Tiwari25]_. The
+QHS/QAS comparison in [McKinney19]_ likewise emphasizes that linear growth
+rates alone are a weak proxy for saturated heat flux across quasi-symmetric
+stellarators. The SPECTRAX-GK conclusion is therefore: quasilinear metrics are
+useful for screening, differentiable optimization, and model-development
+figures, but reliable absolute nonlinear heat-flux prediction for QA, QH,
+W7-X, and HSX requires more matched nonlinear holdouts and a richer
+saturation theory calibrated against those holdouts.
+
 All three model-development reports above now carry an ``input_validation``
 block. It is generated from the nonlinear summary gates before model fitting,
 so these figures can only be regenerated from nonlinear windows that already

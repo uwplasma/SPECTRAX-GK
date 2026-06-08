@@ -94,6 +94,13 @@ flux predictor or a converged nonlinear turbulent heat-flux reduction.
 
 ## Completed Recent Work
 
+- Added the stellarator-specific quasilinear usefulness summary
+  `docs/_static/quasilinear_stellarator_usefulness.{png,pdf,json,csv}` and
+  its generator/test. The figure makes the current scientific conclusion
+  explicit: simple one-constant quasilinear rules fail HSX/W7-X absolute-flux
+  transfer, the spectral-envelope ridge candidate is the best scoped
+  model-development result, QA remains matched-nonlinear-audit-only, and QH is
+  excluded until grid/window convergence passes.
 - Added `tools/write_vmec_jax_optimizer_comparison_manifest.py`, a tested
   manifest generator for strict QA optimizer comparisons. It emits one strict
   SciPy QA baseline, matched deterministic transport commands for

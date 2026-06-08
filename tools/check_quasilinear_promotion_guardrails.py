@@ -38,6 +38,7 @@ DEFAULT_MANUSCRIPT_FIGURE_BASES = (
     ROOT / "docs/_static/quasilinear_candidate_uncertainty",
     ROOT / "docs/_static/quasilinear_dataset_sufficiency",
     ROOT / "docs/_static/quasilinear_model_selection_status",
+    ROOT / "docs/_static/quasilinear_stellarator_usefulness",
     ROOT / "docs/_static/quasilinear_holdout_gap_report",
 )
 
@@ -700,6 +701,55 @@ def _audit_failed_baseline_contract(
             (
                 f"accepted={data.get('accepted_candidates')} "
                 f"absolute_flux_not_promoted={_gate_metric_passed(data, 'absolute_flux_not_promoted')}"
+            ),
+        )
+
+    if name == "quasilinear_stellarator_usefulness":
+        models = data.get("models")
+        models = models if isinstance(models, dict) else {}
+        positive_ml = models.get("positive_mixing_length")
+        positive_ml = positive_ml if isinstance(positive_ml, dict) else {}
+        spectral = models.get("spectral_envelope_ridge")
+        spectral = spectral if isinstance(spectral, dict) else {}
+        rows = data.get("rows")
+        rows = rows if isinstance(rows, list) else []
+        by_case = {
+            str(row.get("case")): row
+            for row in rows
+            if isinstance(row, dict) and "case" in row
+        }
+        statuses = data.get("stellarator_status")
+        statuses = statuses if isinstance(statuses, dict) else {}
+        qa = statuses.get("QA")
+        qa = qa if isinstance(qa, dict) else {}
+        qh = statuses.get("QH")
+        qh = qh if isinstance(qh, dict) else {}
+        hsx = by_case.get("hsx_nonlinear_window", {})
+        w7x = by_case.get("w7x_nonlinear_window", {})
+        simple_rule_fails_stellarators = (
+            positive_ml.get("accepted") is False
+            and _finite_number(positive_ml.get("holdout_mean_abs_relative_error"))
+            and float(positive_ml["holdout_mean_abs_relative_error"]) > 1.0
+            and hsx.get("positive_mixing_length_prediction") == 0.0
+            and w7x.get("positive_mixing_length_prediction") == 0.0
+            and _finite_number(hsx.get("observed_heat_flux"))
+            and _finite_number(w7x.get("observed_heat_flux"))
+            and float(hsx["observed_heat_flux"]) > 0.0
+            and float(w7x["observed_heat_flux"]) > 0.0
+        )
+        return (
+            spectral.get("accepted") is True
+            and _finite_number(spectral.get("mean_abs_relative_error"))
+            and float(spectral["mean_abs_relative_error"]) < 0.35
+            and simple_rule_fails_stellarators
+            and "audit only" in str(qa.get("status", "")).lower()
+            and qh.get("high_grid_gate_passed") is False,
+            (
+                f"spectral={spectral.get('mean_abs_relative_error')} "
+                f"positive_ml={positive_ml.get('holdout_mean_abs_relative_error')} "
+                f"hsx_ml={hsx.get('positive_mixing_length_prediction')} "
+                f"w7x_ml={w7x.get('positive_mixing_length_prediction')} "
+                f"qa={qa.get('status')} qh_passed={qh.get('high_grid_gate_passed')}"
             ),
         )
 

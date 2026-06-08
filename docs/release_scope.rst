@@ -432,6 +432,15 @@ Quasilinear model-selection state:
   relative error about ``0.295`` and interval coverage ``7/8`` on the
   current eight-case electrostatic-compatible portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
+- ``docs/_static/quasilinear_stellarator_usefulness.json``:
+  the current stellarator-facing synthesis is scoped as
+  ``scoped_model_skill_summary_not_runtime_absolute_flux_predictor``. It
+  records HSX/W7-X as admitted finite nonlinear holdouts where the simple
+  positive-growth mixing-length rule predicts zero, keeps QA at
+  matched-nonlinear-audit-only scope, and keeps QH excluded until grid/window
+  convergence passes. The accepted model-selection result remains the
+  ``spectral_envelope_ridge`` candidate, not a universal stellarator
+  absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` block quantifies the current gap:

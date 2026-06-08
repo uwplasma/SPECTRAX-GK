@@ -478,6 +478,46 @@
         "passed": true
       },
       {
+        "detail": "docs/_static/quasilinear_stellarator_usefulness.png",
+        "metric": "ql_figure_png_exists:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_stellarator_usefulness.json",
+        "metric": "ql_figure_json_sidecar_exists:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_stellarator_usefulness.png",
+        "metric": "ql_figure_index_mentions_png:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "nearby index text mentions JSON companion",
+        "metric": "ql_figure_index_mentions_json_sidecar:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "kind=quasilinear_stellarator_usefulness",
+        "metric": "ql_figure_sidecar_has_kind:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "claim_level=scoped_model_skill_summary_not_runtime_absolute_flux_predictor passed=None",
+        "metric": "ql_figure_sidecar_claim_scoped:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "no runtime absolute-flux overclaim in JSON sidecar",
+        "metric": "ql_figure_sidecar_no_runtime_absolute_overclaim:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
+        "detail": "spectral=0.29524327596674427 positive_ml=2.114098664675138 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
+        "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_stellarator_usefulness",
+        "passed": true
+      },
+      {
         "detail": "docs/_static/quasilinear_holdout_gap_report.png",
         "metric": "ql_figure_png_exists:docs/_static/quasilinear_holdout_gap_report",
         "passed": true
@@ -647,6 +687,21 @@
       "runtime_absolute_overclaim_lines": []
     },
     {
+      "claim_level": "scoped_model_skill_summary_not_runtime_absolute_flux_predictor",
+      "claim_scoped": true,
+      "failed_baseline_detail": "spectral=0.29524327596674427 positive_ml=2.114098664675138 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
+      "failed_baselines_explicit": true,
+      "figure": "docs/_static/quasilinear_stellarator_usefulness.png",
+      "index_mentions_json_sidecar": true,
+      "index_mentions_png": true,
+      "json_exists": true,
+      "json_sidecar": "docs/_static/quasilinear_stellarator_usefulness.json",
+      "kind": "quasilinear_stellarator_usefulness",
+      "passed": null,
+      "png_exists": true,
+      "runtime_absolute_overclaim_lines": []
+    },
+    {
       "claim_level": "holdout_gap_report_no_absolute_flux_promotion",
       "claim_scoped": true,
       "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'absolute_requirement:minimum_external_vmec_holdout_families', 'absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate'] holdout_mean=2.114098664675138",
@@ -718,7 +773,7 @@
     "n_doc_checks": 4,
     "n_failed_gates": 0,
     "n_input_validation_reports": 4,
-    "n_manuscript_figure_checks": 7,
+    "n_manuscript_figure_checks": 8,
     "n_manuscript_readiness_reports": 1,
     "n_promotion_gate_reports": 4,
     "n_reports_scanned": 10

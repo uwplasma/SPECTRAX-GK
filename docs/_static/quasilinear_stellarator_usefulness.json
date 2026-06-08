@@ -1,0 +1,200 @@
+{
+  "best_current_model": "spectral_envelope_ridge",
+  "claim_level": "scoped_model_skill_summary_not_runtime_absolute_flux_predictor",
+  "kind": "quasilinear_stellarator_usefulness",
+  "models": {
+    "linear_weight": {
+      "accepted": false,
+      "label": "linear-weight fit",
+      "mean_abs_relative_error": 0.9473105820472785,
+      "reason": "beaten by spectral-envelope candidate and fails transport gate"
+    },
+    "positive_mixing_length": {
+      "accepted": false,
+      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "label": "positive-growth ML",
+      "reason": "fails holdout gate and predicts zero for admitted HSX/W7-X finite nonlinear windows"
+    },
+    "spectral_envelope_ridge": {
+      "accepted": true,
+      "label": "spectral-envelope ridge",
+      "mean_abs_relative_error": 0.29524327596674427,
+      "prediction_interval_coverage": 0.875,
+      "reason": "best current scoped candidate; not exposed as a runtime saturation rule"
+    }
+  },
+  "notes": [
+    "The plot uses only tracked JSON artifacts and does not refit any quasilinear model.",
+    "QA and QH are shown as scope/status evidence, not as accepted quasilinear calibration points.",
+    "A universal stellarator absolute-flux proxy needs more converged nonlinear holdouts and richer saturation theory."
+  ],
+  "readme_sentence": "Simple one-constant quasilinear rules do not transfer as absolute stellarator heat-flux predictors on the admitted portfolio. The spectral-envelope ridge candidate is the best current scoped model-selection result, but QA/QH coverage still requires matched, converged nonlinear holdouts before universal stellarator-flux claims.",
+  "rows": [
+    {
+      "case": "cyclone_long_window",
+      "geometry": "cyclone",
+      "label": "Cyclone",
+      "linear_weight_prediction": 1.4235722857694018,
+      "linear_weight_relative_error": 0.786538746256854,
+      "observed_heat_flux": 6.6689961798985795,
+      "observed_heat_flux_std": 0.6486446261822355,
+      "positive_mixing_length_prediction": 0.09860403153852253,
+      "positive_mixing_length_relative_error": 0.9852145617003454,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 16.079897358346027,
+      "spectral_envelope_ridge_interval_low": 5.457438810848046,
+      "spectral_envelope_ridge_prediction": 9.367766858643025,
+      "spectral_envelope_ridge_relative_error": 0.40467419772693397,
+      "split": "train",
+      "stellarator_family": false
+    },
+    {
+      "case": "cyclone_miller_long_window",
+      "geometry": "cyclone_miller",
+      "label": "Cyclone Miller",
+      "linear_weight_prediction": 34.48532754257894,
+      "linear_weight_relative_error": 7.095485447591235,
+      "observed_heat_flux": 4.259822065746515,
+      "observed_heat_flux_std": 4.2116774700305175,
+      "positive_mixing_length_prediction": 38.66542554443455,
+      "positive_mixing_length_relative_error": 8.076770096888685,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 12.206839720690082,
+      "spectral_envelope_ridge_interval_low": 3.6429057199075965,
+      "spectral_envelope_ridge_prediction": 6.6684605600166185,
+      "spectral_envelope_ridge_relative_error": 0.565431714539936,
+      "split": "holdout",
+      "stellarator_family": false
+    },
+    {
+      "case": "hsx_nonlinear_window",
+      "geometry": "hsx",
+      "label": "HSX",
+      "linear_weight_prediction": 22.798593132193474,
+      "linear_weight_relative_error": 3.4794421076237763,
+      "observed_heat_flux": 5.089605487565396,
+      "observed_heat_flux_std": 6.284535110439706,
+      "positive_mixing_length_prediction": 0.0,
+      "positive_mixing_length_relative_error": 1.0,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 9.474375905569229,
+      "spectral_envelope_ridge_interval_low": 3.1920842117559385,
+      "spectral_envelope_ridge_prediction": 5.499364121824304,
+      "spectral_envelope_ridge_relative_error": 0.0805089186696307,
+      "split": "holdout",
+      "stellarator_family": true
+    },
+    {
+      "case": "w7x_nonlinear_window",
+      "geometry": "w7x",
+      "label": "W7-X",
+      "linear_weight_prediction": 22.66604055540981,
+      "linear_weight_relative_error": 3.2141590889876523,
+      "observed_heat_flux": 5.378544112072135,
+      "observed_heat_flux_std": 3.295746205851981,
+      "positive_mixing_length_prediction": 0.0,
+      "positive_mixing_length_relative_error": 1.0,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 9.195526384841706,
+      "spectral_envelope_ridge_interval_low": 3.097681314168245,
+      "spectral_envelope_ridge_prediction": 5.337116286560114,
+      "spectral_envelope_ridge_relative_error": 0.007702423676146183,
+      "split": "holdout",
+      "stellarator_family": true
+    },
+    {
+      "case": "dshape_external_vmec_t250_window",
+      "geometry": "dshape_external_vmec",
+      "label": "D-shaped VMEC",
+      "linear_weight_prediction": 39.39772974947727,
+      "linear_weight_relative_error": 1.1319745272589499,
+      "observed_heat_flux": 18.479456131274883,
+      "observed_heat_flux_std": 2.1065149048808203,
+      "positive_mixing_length_prediction": 51.62028102494143,
+      "positive_mixing_length_relative_error": 1.7933874600118,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 38.08619122795074,
+      "spectral_envelope_ridge_interval_low": 13.315542130317967,
+      "spectral_envelope_ridge_prediction": 22.51973099038096,
+      "spectral_envelope_ridge_relative_error": 0.2186360264287357,
+      "split": "holdout",
+      "stellarator_family": false
+    },
+    {
+      "case": "itermodel_external_vmec_t350_window",
+      "geometry": "itermodel_external_vmec",
+      "label": "ITERModel VMEC",
+      "linear_weight_prediction": 22.38039740781542,
+      "linear_weight_relative_error": 0.015133793802400076,
+      "observed_heat_flux": 22.046746492385864,
+      "observed_heat_flux_std": 3.434397669803179,
+      "positive_mixing_length_prediction": 22.076093494145443,
+      "positive_mixing_length_relative_error": 0.001331126194502853,
+      "spectral_envelope_ridge_interval_contains_observed": false,
+      "spectral_envelope_ridge_interval_high": 18.89487780731504,
+      "spectral_envelope_ridge_interval_low": 7.784858730605864,
+      "spectral_envelope_ridge_prediction": 12.128229650777868,
+      "spectral_envelope_ridge_relative_error": 0.44988573915128416,
+      "split": "train",
+      "stellarator_family": false
+    },
+    {
+      "case": "updown_asym_external_vmec_t450_window",
+      "geometry": "updown_asym_external_vmec",
+      "label": "Up-down VMEC",
+      "linear_weight_prediction": 15.567372457353509,
+      "linear_weight_relative_error": 1.0049879392103855,
+      "observed_heat_flux": 7.76432224499282,
+      "observed_heat_flux_std": 0.6236662752268785,
+      "positive_mixing_length_prediction": 2.5647830621740666,
+      "positive_mixing_length_relative_error": 0.6696707090141597,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 17.318947188507845,
+      "spectral_envelope_ridge_interval_low": 5.703895845007942,
+      "spectral_envelope_ridge_prediction": 9.939088032029995,
+      "spectral_envelope_ridge_relative_error": 0.2800973115766379,
+      "split": "holdout",
+      "stellarator_family": false
+    },
+    {
+      "case": "circular_external_vmec_t450_window",
+      "geometry": "circular_external_vmec",
+      "label": "Circular VMEC",
+      "linear_weight_prediction": 22.437751557737673,
+      "linear_weight_relative_error": 0.15479883386577564,
+      "observed_heat_flux": 19.430008846324878,
+      "observed_heat_flux_std": 2.5120911781559006,
+      "positive_mixing_length_prediction": 22.242769248057787,
+      "positive_mixing_length_relative_error": 0.14476372213618077,
+      "spectral_envelope_ridge_interval_contains_observed": true,
+      "spectral_envelope_ridge_interval_high": 21.06413016717267,
+      "spectral_envelope_ridge_interval_low": 7.4560463052390835,
+      "spectral_envelope_ridge_prediction": 12.532163815799047,
+      "spectral_envelope_ridge_relative_error": 0.35500987596464917,
+      "split": "holdout",
+      "stellarator_family": false
+    }
+  ],
+  "source_artifacts": {
+    "candidate_uncertainty": "docs/_static/quasilinear_candidate_uncertainty.json",
+    "model_selection_status": "docs/_static/quasilinear_model_selection_status.json",
+    "qa_matched_nonlinear_audit": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+    "qh_high_grid_convergence_gate": "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
+    "saturation_rule_sweep": "docs/_static/quasilinear_saturation_rule_sweep.json"
+  },
+  "stellarator_status": {
+    "HSX": "admitted nonlinear holdout; simple positive-growth QL predicts zero while nonlinear Q is finite",
+    "QA": {
+      "baseline_heat_flux": 12.497835857108996,
+      "optimized_heat_flux": 10.19273263179093,
+      "relative_reduction": 0.1844401904195982,
+      "status": "matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged"
+    },
+    "QH": {
+      "high_grid_gate_passed": false,
+      "least_window_pairwise_heat_flux_symmetric_relative_difference": 0.7044243523495739,
+      "status": "excluded from QL calibration until grid/window convergence passes"
+    },
+    "W7-X": "admitted nonlinear holdout; simple positive-growth QL predicts zero while nonlinear Q is finite"
+  }
+}

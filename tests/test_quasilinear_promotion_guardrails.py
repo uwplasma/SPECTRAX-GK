@@ -503,7 +503,9 @@ def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     assert audit["summary"]["n_promotion_gate_reports"] >= 4
     assert audit["summary"]["n_manuscript_readiness_reports"] == 1
     assert audit["summary"]["n_doc_checks"] == 4
-    assert audit["summary"]["n_manuscript_figure_checks"] == 7
+    assert audit["summary"]["n_manuscript_figure_checks"] == len(
+        mod.DEFAULT_MANUSCRIPT_FIGURE_BASES
+    )
 
 
 def test_guardrail_script_runs_before_editable_install(tmp_path: Path) -> None:

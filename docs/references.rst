@@ -92,6 +92,28 @@ References
    `arXiv <https://arxiv.org/abs/2310.18842>`__,
    `DOI <https://doi.org/10.1017/S0022377824000369>`__.
 
+.. [Pueschel16] M. J. Pueschel, B. J. Faber, J. Citrin, C. C. Hegna,
+   P. W. Terry, and D. R. Hatch, "Stellarator Turbulence: Subdominant
+   Eigenmodes and Quasilinear Modeling," Physical Review Letters 116, 085001
+   (2016). `DIFFER record <https://www.differ.nl/bibcite/reference/8145>`__,
+   `DOI <https://doi.org/10.1103/PhysRevLett.116.085001>`__.
+
+.. [Hegna18] C. C. Hegna, P. W. Terry, and B. J. Faber, "Theory of ITG
+   turbulent saturation in stellarators: identifying mechanisms to reduce
+   turbulent transport," Physics of Plasmas 25, 022511 (2018).
+   `OSTI record <https://www.osti.gov/pages/biblio/1418997>`__,
+   `DOI <https://doi.org/10.1063/1.5018198>`__.
+
+.. [McKinney19] I. J. McKinney et al., "A comparison of turbulent transport in
+   a quasi-helical and a quasi-axisymmetric stellarator," Journal of Plasma
+   Physics 85, 905850503 (2019).
+   `OSTI record <https://www.osti.gov/pages/biblio/1656804>`__,
+   `DOI <https://doi.org/10.1017/S0022377819000588>`__.
+
+.. [Tiwari25] A. Tiwari et al., "Zonal flow suppression of turbulent transport
+   in the optimized stellarators W7-X and QSTK," arXiv:2501.12722 (2025).
+   `arXiv <https://arxiv.org/abs/2501.12722>`__.
+
 .. [HirshmanWhitson83] S. P. Hirshman and J. C. Whitson,
    "Steepest-descent moment method for three-dimensional magnetohydrodynamic
    equilibria," Physics of Fluids 26, 3553 (1983).
