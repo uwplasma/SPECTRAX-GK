@@ -640,6 +640,60 @@ def main() -> int:
             + "production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
         ),
     }
+    summary["optimizer_comparison"] = {
+        "schema_version": 1,
+        "method": optimizer_method,
+        "comparison_class": (
+            "constraints_only_qa"
+            if args.constraints_only
+            else f"spectraxgk_transport_{args.transport_kind}"
+        ),
+        "transport_kind": None if args.constraints_only else str(args.transport_kind),
+        "sample_set_fingerprint": {
+            "surfaces": [float(x) for x in sample_set.surfaces],
+            "alphas": [float(x) for x in sample_set.alphas],
+            "ky_values": [float(x) for x in sample_set.ky_values],
+            "n_samples": int(sample_set.n_samples),
+            "ntheta": int(args.ntheta),
+            "mboz": int(args.mboz),
+            "nboz": int(args.nboz),
+            "n_laguerre": int(args.n_laguerre),
+            "n_hermite": int(args.n_hermite),
+            "objective_transform": str(args.spectrax_objective_transform),
+            "objective_scale": float(args.spectrax_objective_scale),
+            "surface_chunk_size": int(args.surface_chunk_size),
+        },
+        "optimizer_budget": {
+            "max_nfev": int(args.max_nfev),
+            "continuation_nfev": int(args.continuation_nfev),
+            "inner_max_iter": int(args.inner_max_iter),
+            "trial_max_iter": int(args.trial_max_iter),
+            "inner_ftol": float(args.inner_ftol),
+            "trial_ftol": float(args.trial_ftol),
+            "ftol": float(args.ftol),
+            "gtol": float(args.gtol),
+            "xtol": float(args.xtol),
+            "use_ess": not bool(args.disable_ess),
+            "ess_alpha": float(args.ess_alpha),
+        },
+        "solved_equilibrium_targets": {
+            "target_aspect": float(args.target_aspect),
+            "min_iota": float(args.min_iota),
+            "iota_objective": str(args.iota_objective),
+            "strict_upstream_qa_baseline": bool(args.strict_upstream_qa_baseline),
+        },
+        "nonlinear_promotion_policy": {
+            "claim_boundary": (
+                "optimizer output is screening evidence until matched long post-transient "
+                "nonlinear audits, seed/timestep ensembles, and grid/window convergence pass"
+            ),
+            "recommended_horizons": "700,1100,1500",
+            "recommended_window_tmin": 1100.0,
+            "recommended_window_tmax": 1500.0,
+            "recommended_seed_variants": [32, 33],
+            "recommended_dt_variant": 0.04,
+        },
+    }
     args.outdir.mkdir(parents=True, exist_ok=True)
     (args.outdir / "setup_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2))

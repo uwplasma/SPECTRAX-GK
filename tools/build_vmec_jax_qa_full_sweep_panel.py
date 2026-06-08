@@ -34,8 +34,12 @@ if str(SRC) not in sys.path:
 from spectraxgk.plotting import set_plot_style  # noqa: E402
 
 
-DEFAULT_RUN_ROOT = ROOT / "tools_out" / "vmec_jax_qa_full_sweep_20260603"
+DEFAULT_RUN_ROOT = ROOT / "tools_out" / "vmec_jax_qa_full_sweep_20260605"
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_jax_qa_full_sweep_panel.png"
+STRICT_NONLINEAR_AUDIT_HORIZONS = "700,1100,1500"
+STRICT_NONLINEAR_AUDIT_WINDOW = (1100.0, 1500.0)
+STRICT_NONLINEAR_AUDIT_SEEDS = (32, 33)
+STRICT_NONLINEAR_AUDIT_DT_VARIANT = 0.04
 
 CASE_LABELS = {
     "qa_baseline_scipy": "QA baseline\nscipy",
@@ -209,6 +213,112 @@ def _objective_series(history: dict[str, Any]) -> list[float]:
     if math.isfinite(initial) and math.isfinite(final):
         return [initial, final]
     return []
+
+
+def _normalized_sequence(value: Any) -> tuple[float, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        raw = [part.strip() for part in value.split(",") if part.strip()]
+    elif isinstance(value, dict):
+        return ()
+    else:
+        try:
+            raw = list(value)
+        except TypeError:
+            raw = [value]
+    out: list[float] = []
+    for item in raw:
+        number = _finite_float(item)
+        if math.isfinite(number):
+            out.append(float(number))
+    return tuple(out)
+
+
+def _sample_set_fingerprint(setup: dict[str, Any]) -> dict[str, Any]:
+    sample = setup.get("sample_set", {})
+    if not isinstance(sample, dict):
+        sample = {}
+    config = setup.get("spectrax_config", {})
+    if not isinstance(config, dict):
+        config = {}
+    return {
+        "surfaces": list(_normalized_sequence(sample.get("surfaces"))),
+        "alphas": list(_normalized_sequence(sample.get("alphas"))),
+        "ky_values": list(_normalized_sequence(sample.get("ky_values"))),
+        "n_samples": int(sample.get("n_samples", 0) or 0),
+        "ntheta": int(config.get("ntheta", 0) or 0),
+        "mboz": int(config.get("mboz", 0) or 0),
+        "nboz": int(config.get("nboz", 0) or 0),
+        "n_laguerre": int(config.get("n_laguerre", 0) or 0),
+        "n_hermite": int(config.get("n_hermite", 0) or 0),
+        "objective_transform": config.get("objective_transform"),
+        "objective_scale": _finite_float(config.get("objective_scale"), default=math.nan),
+        "surface_chunk_size": int(config.get("surface_chunk_size", 0) or 0),
+    }
+
+
+def _comparison_fingerprint(metadata: dict[str, Any]) -> str:
+    payload = {
+        "constraints_only": metadata.get("constraints_only"),
+        "transport_kind": metadata.get("transport_kind"),
+        "sample_set_fingerprint": metadata.get("sample_set_fingerprint"),
+        "target_aspect": metadata.get("target_aspect"),
+        "min_iota": metadata.get("min_iota"),
+        "max_mode": metadata.get("max_mode"),
+        "min_vmec_mode": metadata.get("min_vmec_mode"),
+        "use_simple_seed": metadata.get("use_simple_seed"),
+    }
+    return json.dumps(_json_ready(payload), sort_keys=True, separators=(",", ":"))
+
+
+def _optimizer_comparison_metadata(
+    *,
+    case_id: str,
+    root: Path,
+    setup: dict[str, Any],
+    history: dict[str, Any],
+) -> dict[str, Any]:
+    optimizer = setup.get("optimizer", {})
+    if not isinstance(optimizer, dict):
+        optimizer = {}
+    method = str(optimizer.get("method") or "unknown")
+    constraints_only = bool(setup.get("constraints_only", False))
+    transport_kind = None if constraints_only else setup.get("transport_kind", history.get("transport_metric_kind"))
+    metadata = {
+        "case_id": case_id,
+        "run_dir": _repo_relative(root),
+        "method": method,
+        "scipy_tr_solver": optimizer.get("scipy_tr_solver"),
+        "scipy_lsmr_maxiter": optimizer.get("scipy_lsmr_maxiter"),
+        "solver_device": optimizer.get("solver_device"),
+        "max_nfev": optimizer.get("max_nfev"),
+        "continuation_nfev": optimizer.get("continuation_nfev"),
+        "inner_max_iter": optimizer.get("inner_max_iter"),
+        "inner_ftol": optimizer.get("inner_ftol"),
+        "trial_max_iter": optimizer.get("trial_max_iter"),
+        "trial_ftol": optimizer.get("trial_ftol"),
+        "ftol": optimizer.get("ftol"),
+        "gtol": optimizer.get("gtol"),
+        "xtol": optimizer.get("xtol"),
+        "use_ess": optimizer.get("use_ess"),
+        "ess_alpha": optimizer.get("ess_alpha"),
+        "constraints_only": constraints_only,
+        "transport_kind": transport_kind,
+        "sample_set_fingerprint": _sample_set_fingerprint(setup),
+        "target_aspect": setup.get("target_aspect"),
+        "min_iota": setup.get("min_iota"),
+        "max_mode": setup.get("max_mode"),
+        "min_vmec_mode": setup.get("min_vmec_mode"),
+        "use_simple_seed": setup.get("use_simple_seed"),
+        "objective_final": _finite_float(history.get("objective_final")),
+        "transport_metric_final": _finite_float(
+            history.get("transport_metric_final", history.get("transport_objective_final"))
+        ),
+        "wall_time_s": _finite_float(history.get("total_wall_time_s")),
+    }
+    metadata["comparison_fingerprint"] = _comparison_fingerprint(metadata)
+    return metadata
 
 
 def _load_iota_profile_from_wout(wout_path: Path) -> dict[str, Any] | None:
@@ -398,9 +508,12 @@ def _nonlinear_audit_command(wout_path: Path | None, case_id: str, *, run_comple
         f"--vmec-file {_repo_relative(wout_path)} "
         f"--case {token} "
         f"--out-dir {_repo_relative(out_dir)} "
-        "--horizons 700 "
+        f"--horizons {STRICT_NONLINEAR_AUDIT_HORIZONS} "
         "--grid n64:64:64:40:40 "
-        "--window-tmin 350 --window-tmax 700"
+        f"--window-tmin {STRICT_NONLINEAR_AUDIT_WINDOW[0]:.12g} "
+        f"--window-tmax {STRICT_NONLINEAR_AUDIT_WINDOW[1]:.12g} "
+        f"--dt-variant {STRICT_NONLINEAR_AUDIT_DT_VARIANT:.12g} "
+        + " ".join(f"--seed-variant {seed}" for seed in STRICT_NONLINEAR_AUDIT_SEEDS)
     )
 
 
@@ -431,6 +544,12 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     rerun_wout_admission_gate = _load_rerun_wout_admission_gate(root)
     wout_path = root / "wout_final.nc"
     transport_kind = history.get("transport_metric_kind", setup.get("transport_kind"))
+    optimizer_comparison = _optimizer_comparison_metadata(
+        case_id=case_id,
+        root=root,
+        setup=setup,
+        history=history,
+    )
     status = _status_text(campaign_root, case_id.split("/")[-1])
     artifact_completed = (
         status == "unknown"
@@ -486,6 +605,7 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         "status": status,
         "run_completed": run_completed,
         "setup": setup,
+        "optimizer_comparison": optimizer_comparison,
         "has_wout_final": wout_path.exists(),
         "wout_final": _repo_relative(wout_path) if wout_path.exists() else None,
         "has_authoritative_wout": authoritative_wout.exists(),
@@ -551,6 +671,22 @@ def build_payload(run_root: Path = DEFAULT_RUN_ROOT) -> dict[str, Any]:
         if bool(row["run_completed"]) and bool(row["has_wout_final"])
     ]
     with_q = [row for row in rows if row["q_traces"]]
+    optimizer_methods = sorted(
+        {
+            str(row["optimizer_comparison"].get("method"))
+            for row in rows
+            if isinstance(row.get("optimizer_comparison"), dict)
+            and row["optimizer_comparison"].get("method") not in {None, "unknown"}
+        }
+    )
+    comparison_groups: dict[str, list[str]] = {}
+    for row in rows:
+        metadata = row.get("optimizer_comparison", {})
+        if not isinstance(metadata, dict):
+            continue
+        fingerprint = str(metadata.get("comparison_fingerprint", ""))
+        if fingerprint:
+            comparison_groups.setdefault(fingerprint, []).append(str(row["case_id"]))
     return {
         "kind": "vmec_jax_qa_full_max_mode5_sweep",
         "claim_scope": (
@@ -572,6 +708,19 @@ def build_payload(run_root: Path = DEFAULT_RUN_ROOT) -> dict[str, Any]:
             "nonlinear_transport_audit_status": (
                 "available_for_some_candidates" if with_q else "pending_for_this_sweep"
             ),
+            "optimizer_methods": optimizer_methods,
+            "optimizer_comparison_groups": comparison_groups,
+            "optimizer_comparison_policy": (
+                "methods can be compared directly only within identical comparison_fingerprint groups; "
+                "cross-objective rows are manuscript diagnostics, not optimizer-ranking evidence"
+            ),
+            "strict_nonlinear_audit_policy": {
+                "horizons": STRICT_NONLINEAR_AUDIT_HORIZONS,
+                "window_tmin": STRICT_NONLINEAR_AUDIT_WINDOW[0],
+                "window_tmax": STRICT_NONLINEAR_AUDIT_WINDOW[1],
+                "seed_variants": list(STRICT_NONLINEAR_AUDIT_SEEDS),
+                "dt_variant": STRICT_NONLINEAR_AUDIT_DT_VARIANT,
+            },
         },
     }
 

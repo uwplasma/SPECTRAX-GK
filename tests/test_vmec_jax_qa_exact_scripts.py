@@ -41,6 +41,10 @@ def test_vmec_jax_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport
         assert "SPECTRAX_MBOZ = 21" in text
         assert "SPECTRAX_NBOZ = 21" in text
         assert f'SPECTRAX_KIND = "{kind}"' in text
+        assert 'NONLINEAR_AUDIT_HORIZONS = "700,1100,1500"' in text
+        assert "NONLINEAR_AUDIT_WINDOW_TMIN = 1100.0" in text
+        assert "NONLINEAR_AUDIT_WINDOW_TMAX = 1500.0" in text
+        assert "NONLINEAR_AUDIT_SEED_VARIANTS = (32, 33)" in text
 
         assert "aspect = vj.AspectRatio()" in text
         assert "iota = vj.MeanIota()" in text

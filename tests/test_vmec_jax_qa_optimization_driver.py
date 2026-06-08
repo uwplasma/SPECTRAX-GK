@@ -200,6 +200,20 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
     assert summary["spectrax_config"]["nboz"] == 21
     assert summary["spectrax_config"]["surface_chunk_size"] == 1
     assert summary["optimizer"]["method"] == "scalar_trust"
+    assert summary["optimizer_comparison"]["schema_version"] == 1
+    assert summary["optimizer_comparison"]["method"] == "scalar_trust"
+    assert summary["optimizer_comparison"]["comparison_class"] == "spectraxgk_transport_growth"
+    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["mboz"] == 21
+    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["nboz"] == 21
+    assert summary["optimizer_comparison"]["sample_set_fingerprint"]["n_samples"] == 1
+    assert (
+        summary["optimizer_comparison"]["nonlinear_promotion_policy"]["recommended_horizons"]
+        == "700,1100,1500"
+    )
+    assert (
+        summary["optimizer_comparison"]["nonlinear_promotion_policy"]["recommended_window_tmin"]
+        == 1100.0
+    )
     assert "production nonlinear flux claims require matched long-window" in summary["claim_scope"]
     assert "spectraxgk_transport" in completed.stdout
     assert not (outdir / "history.json").exists()
@@ -242,6 +256,9 @@ def test_driver_strict_upstream_qa_baseline_preset_is_admission_grade(tmp_path: 
     assert summary["iota_profile_floor"] is None
     assert summary["objectives"] == ["aspect", "iota", "qs"]
     assert summary["optimizer"]["method"] == "scipy"
+    assert summary["optimizer_comparison"]["method"] == "scipy"
+    assert summary["optimizer_comparison"]["comparison_class"] == "constraints_only_qa"
+    assert summary["optimizer_comparison"]["transport_kind"] is None
     assert summary["optimizer"]["scipy_tr_solver"] == "exact"
     assert summary["optimizer"]["max_nfev"] >= 80
     assert summary["optimizer"]["inner_max_iter"] >= 180

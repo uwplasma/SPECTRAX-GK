@@ -101,6 +101,61 @@
         ],
         "claim_scope": "vmec_jax fixed-boundary QA optimization without SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
       },
+      "optimizer_comparison": {
+        "case_id": "qa_baseline_scipy",
+        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy",
+        "method": "scipy",
+        "scipy_tr_solver": "exact",
+        "scipy_lsmr_maxiter": null,
+        "solver_device": "gpu",
+        "max_nfev": 140,
+        "continuation_nfev": 25,
+        "inner_max_iter": 220,
+        "inner_ftol": 1e-10,
+        "trial_max_iter": 220,
+        "trial_ftol": 1e-10,
+        "ftol": 1e-05,
+        "gtol": 1e-05,
+        "xtol": 1e-09,
+        "use_ess": 1,
+        "ess_alpha": 1.2,
+        "constraints_only": 1,
+        "transport_kind": null,
+        "sample_set_fingerprint": {
+          "surfaces": [
+            0.45,
+            0.64,
+            0.78
+          ],
+          "alphas": [
+            0.0,
+            0.7853981633974483
+          ],
+          "ky_values": [
+            0.1,
+            0.3,
+            0.5
+          ],
+          "n_samples": 18,
+          "ntheta": 24,
+          "mboz": 21,
+          "nboz": 21,
+          "n_laguerre": 2,
+          "n_hermite": 3,
+          "objective_transform": "log1p",
+          "objective_scale": 1.0,
+          "surface_chunk_size": 0
+        },
+        "target_aspect": 5.0,
+        "min_iota": 0.41019999999999995,
+        "max_mode": 5,
+        "min_vmec_mode": 7,
+        "use_simple_seed": 1,
+        "objective_final": 8.911810817152997e-06,
+        "transport_metric_final": null,
+        "wall_time_s": 957.1193381184712,
+        "comparison_fingerprint": "{\"constraints_only\":1,\"max_mode\":5,\"min_iota\":0.41019999999999995,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0,0.7853981633974483],\"ky_values\":[0.1,0.3,0.5],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":18,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":0,\"surfaces\":[0.45,0.64,0.78]},\"target_aspect\":5.0,\"transport_kind\":null,\"use_simple_seed\":1}"
+      },
       "has_wout_final": 1,
       "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final.nc",
       "has_authoritative_wout": 1,
@@ -455,7 +510,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/wout_final_rerun.nc --case vmec_qa_full_sweep_qa_baseline_scipy --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_qa_baseline_scipy --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "growth_from_strict_baseline",
@@ -548,6 +603,56 @@
           "spectraxgk_transport"
         ],
         "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+      },
+      "optimizer_comparison": {
+        "case_id": "growth_from_strict_baseline",
+        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline",
+        "method": "scalar_trust",
+        "scipy_tr_solver": "exact",
+        "scipy_lsmr_maxiter": null,
+        "solver_device": "gpu",
+        "max_nfev": 60,
+        "continuation_nfev": 25,
+        "inner_max_iter": 140,
+        "inner_ftol": 1e-09,
+        "trial_max_iter": 140,
+        "trial_ftol": 1e-09,
+        "ftol": 1e-07,
+        "gtol": 1e-07,
+        "xtol": 1e-08,
+        "use_ess": 1,
+        "ess_alpha": 1.2,
+        "constraints_only": 0,
+        "transport_kind": "growth",
+        "sample_set_fingerprint": {
+          "surfaces": [
+            0.64
+          ],
+          "alphas": [
+            0.0
+          ],
+          "ky_values": [
+            0.3
+          ],
+          "n_samples": 1,
+          "ntheta": 24,
+          "mboz": 21,
+          "nboz": 21,
+          "n_laguerre": 2,
+          "n_hermite": 3,
+          "objective_transform": "log1p",
+          "objective_scale": 1.0,
+          "surface_chunk_size": 1
+        },
+        "target_aspect": 5.0,
+        "min_iota": 0.41,
+        "max_mode": 5,
+        "min_vmec_mode": 7,
+        "use_simple_seed": 0,
+        "objective_final": 0.0005337804397439096,
+        "transport_metric_final": 0.06974835426425598,
+        "wall_time_s": 221.87807350046933,
+        "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"growth\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
       "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final.nc",
@@ -911,7 +1016,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/growth_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_growth_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "quasilinear_from_strict_baseline",
@@ -1004,6 +1109,56 @@
           "spectraxgk_transport"
         ],
         "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+      },
+      "optimizer_comparison": {
+        "case_id": "quasilinear_from_strict_baseline",
+        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline",
+        "method": "scalar_trust",
+        "scipy_tr_solver": "exact",
+        "scipy_lsmr_maxiter": null,
+        "solver_device": "gpu",
+        "max_nfev": 60,
+        "continuation_nfev": 25,
+        "inner_max_iter": 140,
+        "inner_ftol": 1e-09,
+        "trial_max_iter": 140,
+        "trial_ftol": 1e-09,
+        "ftol": 1e-07,
+        "gtol": 1e-07,
+        "xtol": 1e-08,
+        "use_ess": 1,
+        "ess_alpha": 1.2,
+        "constraints_only": 0,
+        "transport_kind": "quasilinear_flux",
+        "sample_set_fingerprint": {
+          "surfaces": [
+            0.64
+          ],
+          "alphas": [
+            0.0
+          ],
+          "ky_values": [
+            0.3
+          ],
+          "n_samples": 1,
+          "ntheta": 24,
+          "mboz": 21,
+          "nboz": 21,
+          "n_laguerre": 2,
+          "n_hermite": 3,
+          "objective_transform": "log1p",
+          "objective_scale": 1.0,
+          "surface_chunk_size": 1
+        },
+        "target_aspect": 5.0,
+        "min_iota": 0.41,
+        "max_mode": 5,
+        "min_vmec_mode": 7,
+        "use_simple_seed": 0,
+        "objective_final": 0.0007155621870566978,
+        "transport_metric_final": 0.081787646664499,
+        "wall_time_s": 266.4950315095484,
+        "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"quasilinear_flux\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
       "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final.nc",
@@ -1371,7 +1526,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/quasilinear_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_quasilinear_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_quasilinear_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     },
     {
       "case_id": "nonlinear_window_from_strict_baseline",
@@ -1464,6 +1619,56 @@
           "spectraxgk_transport"
         ],
         "claim_scope": "vmec_jax fixed-boundary QA optimization with SPECTRAX-GK transport residual; production nonlinear flux claims require matched long-window SPECTRAX-GK audits"
+      },
+      "optimizer_comparison": {
+        "case_id": "nonlinear_window_from_strict_baseline",
+        "run_dir": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline",
+        "method": "scalar_trust",
+        "scipy_tr_solver": "exact",
+        "scipy_lsmr_maxiter": null,
+        "solver_device": "gpu",
+        "max_nfev": 60,
+        "continuation_nfev": 25,
+        "inner_max_iter": 140,
+        "inner_ftol": 1e-09,
+        "trial_max_iter": 140,
+        "trial_ftol": 1e-09,
+        "ftol": 1e-07,
+        "gtol": 1e-07,
+        "xtol": 1e-08,
+        "use_ess": 1,
+        "ess_alpha": 1.2,
+        "constraints_only": 0,
+        "transport_kind": "nonlinear_window_heat_flux",
+        "sample_set_fingerprint": {
+          "surfaces": [
+            0.64
+          ],
+          "alphas": [
+            0.0
+          ],
+          "ky_values": [
+            0.3
+          ],
+          "n_samples": 1,
+          "ntheta": 24,
+          "mboz": 21,
+          "nboz": 21,
+          "n_laguerre": 2,
+          "n_hermite": 3,
+          "objective_transform": "log1p",
+          "objective_scale": 1.0,
+          "surface_chunk_size": 1
+        },
+        "target_aspect": 5.0,
+        "min_iota": 0.41,
+        "max_mode": 5,
+        "min_vmec_mode": 7,
+        "use_simple_seed": 0,
+        "objective_final": 0.0004615233544219823,
+        "transport_metric_final": 0.06364721463489577,
+        "wall_time_s": 364.24462608620524,
+        "comparison_fingerprint": "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"nonlinear_window_heat_flux\",\"use_simple_seed\":0}"
       },
       "has_wout_final": 1,
       "wout_final": "tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final.nc",
@@ -1839,7 +2044,7 @@
         "ns": 35
       },
       "q_traces": [],
-      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
+      "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_20260605/runs/nonlinear_window_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_nonlinear_window_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33"
     }
   ],
   "summary": {
@@ -1853,6 +2058,35 @@
       "nonlinear_window_from_strict_baseline"
     ],
     "cases_with_nonlinear_q_traces": [],
-    "nonlinear_transport_audit_status": "pending_for_this_sweep"
+    "nonlinear_transport_audit_status": "pending_for_this_sweep",
+    "optimizer_methods": [
+      "scalar_trust",
+      "scipy"
+    ],
+    "optimizer_comparison_groups": {
+      "{\"constraints_only\":1,\"max_mode\":5,\"min_iota\":0.41019999999999995,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0,0.7853981633974483],\"ky_values\":[0.1,0.3,0.5],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":18,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":0,\"surfaces\":[0.45,0.64,0.78]},\"target_aspect\":5.0,\"transport_kind\":null,\"use_simple_seed\":1}": [
+        "qa_baseline_scipy"
+      ],
+      "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"growth\",\"use_simple_seed\":0}": [
+        "growth_from_strict_baseline"
+      ],
+      "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"quasilinear_flux\",\"use_simple_seed\":0}": [
+        "quasilinear_from_strict_baseline"
+      ],
+      "{\"constraints_only\":0,\"max_mode\":5,\"min_iota\":0.41,\"min_vmec_mode\":7,\"sample_set_fingerprint\":{\"alphas\":[0.0],\"ky_values\":[0.3],\"mboz\":21,\"n_hermite\":3,\"n_laguerre\":2,\"n_samples\":1,\"nboz\":21,\"ntheta\":24,\"objective_scale\":1.0,\"objective_transform\":\"log1p\",\"surface_chunk_size\":1,\"surfaces\":[0.64]},\"target_aspect\":5.0,\"transport_kind\":\"nonlinear_window_heat_flux\",\"use_simple_seed\":0}": [
+        "nonlinear_window_from_strict_baseline"
+      ]
+    },
+    "optimizer_comparison_policy": "methods can be compared directly only within identical comparison_fingerprint groups; cross-objective rows are manuscript diagnostics, not optimizer-ranking evidence",
+    "strict_nonlinear_audit_policy": {
+      "horizons": "700,1100,1500",
+      "window_tmin": 1100.0,
+      "window_tmax": 1500.0,
+      "seed_variants": [
+        32,
+        33
+      ],
+      "dt_variant": 0.04
+    }
   }
 }

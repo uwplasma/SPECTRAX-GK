@@ -1,6 +1,6 @@
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-05
+Last updated: 2026-06-08
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
@@ -35,6 +35,7 @@ historical logs live outside the release repository so clones stay small.
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
+| QA optimization optimizer-comparison metadata | 92% | Public examples now emit strict long-window nonlinear audit manifests; full-sweep panel and driver carry matched optimizer-comparison fingerprints; matched nonlinear Q(t) audits for strict-baseline transport candidates remain pending |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
@@ -92,6 +93,17 @@ These are admission metrics only. They do not claim an absolute quasilinear
 flux predictor or a converged nonlinear turbulent heat-flux reduction.
 
 ## Completed Recent Work
+
+- Added normalized optimizer-comparison metadata to the VMEC-JAX QA
+  optimization driver and full-sweep panel. Optimizer methods may now be
+  compared only inside identical comparison-fingerprint groups.
+- Updated public QA optimization examples to write strict staged nonlinear ITG
+  audit manifests: horizons `700,1100,1500`, accepted window `t=[1100,1500]`,
+  seed variants `32,33`, and timestep variant `dt=0.04`.
+- Documented the optimizer strategy: least-squares for smooth QA constraints,
+  scalar-adjoint methods for differentiable linear/quasilinear residuals, and
+  stochastic/derivative-free outer-loop comparators only for noisy long
+  nonlinear heat-flux objectives after matched audit gates pass.
 
 - Added and tested `build_wout_reproducibility_gate` and
   `build_authoritative_wout_candidate_gate`.

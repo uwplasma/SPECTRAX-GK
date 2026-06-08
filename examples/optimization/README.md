@@ -39,11 +39,14 @@ The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transpor
 Running one script is not a transport-optimization success claim, and is not,
 by itself, a nonlinear turbulent-flux optimization success claim.
 
-The optimization scripts write long-window initial/final nonlinear ITG audit
-config manifests after the VMEC-JAX solve. These audits are not launched by
-default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside the script to
-run them and build the initial-vs-final nonlinear `Q(t)` comparison plot, or
-run the commands from the generated `run_manifest.json` on a GPU node.
+The optimization scripts write strict long-window initial/final nonlinear ITG
+audit config manifests after the VMEC-JAX solve. The current promotion policy
+uses staged horizons `700,1100,1500`, averages only over `t=[1100,1500]`, and
+replicates the final window with seed and timestep variants. These audits are
+not launched by default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside
+the script to run them and build the initial-vs-final nonlinear `Q(t)`
+comparison plot, or run the commands from the generated `run_manifest.json` on
+a GPU node.
 
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
@@ -127,7 +130,8 @@ VMEC-JAX-style scripts; one-point samples are acceptable only for explicit
 debugging. Promote to quasilinear or nonlinear transport only after the
 geometry gates and finite-difference gradient checks pass. Nonlinear
 turbulent-flux claims require long post-transient replicated SPECTRAX-GK
-audits, not startup windows.
+audits, grid/window convergence, and matched baseline-vs-optimized reductions,
+not startup or reduced-window objectives.
 
 ## Expected Outputs
 

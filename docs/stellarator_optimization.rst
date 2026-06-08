@@ -141,6 +141,74 @@ Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
 transport objective to VMEC-JAX QA optimization; by themselves they are not a
 transport-optimization success claim.
 
+Optimizer Strategy and Literature Anchor
+----------------------------------------
+
+The optimizer choice depends on the observable being optimized:
+
+- **Constraints-only QA baseline.** Use the upstream VMEC-JAX/SIMSOPT-style
+  nonlinear least-squares structure for aspect ratio, mean iota, and
+  quasisymmetry. This is the smoothest part of the workflow and is closest to
+  the standard stellarator-optimization pattern used in
+  `SIMSOPT <https://joss.theoj.org/papers/10.21105/joss.03525>`_ and its
+  quasisymmetry examples. Bound-aware trust-region reflective least squares is
+  also the relevant SciPy baseline because it is designed for nonlinear
+  least-squares problems with bounds.
+- **Linear-growth and quasilinear objectives.** Use scalar-adjoint VMEC-JAX
+  methods such as ``scalar_trust`` or ``lbfgs_adjoint`` and require
+  AD-vs-finite-difference gates on the selected sample set. This follows the
+  premise of direct microstability optimization: a linear gyrokinetic or
+  quasilinear proxy can be evaluated inside the optimizer, but it remains a
+  proxy until nonlinear validation is complete.
+- **Long nonlinear heat flux.** Do not treat the long-time post-transient heat
+  flux as a smooth least-squares residual. The nonlinear turbulence
+  optimization literature reports noisy heat-flux traces and noisy parameter
+  landscapes; smooth optimizers can stagnate on local minima. The direct
+  nonlinear stellarator-optimization study by Kim et al. therefore used SPSA,
+  because it estimates a stochastic gradient with only two objective
+  evaluations and can tolerate noisy heat-flux averages. CMA-ES or Bayesian
+  optimization are reasonable outer-loop comparators for low-dimensional,
+  expensive, rugged scans, but they must be judged by matched nonlinear audits,
+  not by reduced startup-window residuals.
+
+Practical SPECTRAX-GK policy:
+
+1. Use ``scipy``/exact least squares for the strict constraints-only QA
+   baseline, and keep the admitted rerun WOUT as the common starting point.
+2. Compare ``scalar_trust`` and ``lbfgs_adjoint`` only within identical
+   ``optimizer_comparison.comparison_fingerprint`` groups in
+   ``setup_summary.json``. Different sample sets, moment resolution, or
+   objective transforms are separate campaigns, not optimizer comparisons.
+3. Use ``growth`` first, then explicit quasilinear rules, then nonlinear-window
+   screening. These runs choose candidates; they do not prove turbulent-flux
+   reduction.
+4. Promote a candidate only after matched initial/final nonlinear
+   SPECTRAX-GK audits pass the strict long-window policy: staged horizons
+   ``700,1100,1500``, accepted average over ``t=[1100,1500]``, seed/timestep
+   replication, and follow-up grid/window convergence for both baseline and
+   optimized states.
+5. If a nonlinear objective landscape is jagged, incomplete, or has failed
+   neighboring points, use it as an optimizer-noise diagnostic only. Do not use
+   it to claim a reliable gradient or a robust minimum.
+
+Key references for this policy are:
+
+- `Optimization of nonlinear turbulence in stellarators
+  <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/optimization-of-nonlinear-turbulence-in-stellarators/916FCC56452B5B166C14868F56D99AF5>`_:
+  direct nonlinear heat-flux optimization, SPSA for noisy heat-flux objectives,
+  Boozer ``|B|`` panels, field-line/radius scans, and matched heat-flux traces.
+- `Direct Microstability Optimization of Stellarator Devices
+  <https://arxiv.org/abs/2301.09356>`_: linear gyrokinetic/quasilinear
+  transport-proxy optimization balanced against quasisymmetry.
+- `SciPy least_squares
+  <https://docs.scipy.org/doc/scipy-1.13.0/reference/generated/scipy.optimize.least_squares.html>`_:
+  trust-region reflective least-squares reference behavior.
+- `JAXopt LBFGSB <https://jaxopt.github.io/stable/_autosummary/jaxopt.LBFGSB.html>`_,
+  `Optax Adam <https://optax.readthedocs.io/en/stable/api/optimizers.html>`_,
+  and `CMA-ES <https://cma-es.github.io/>`_: implementation references for
+  gradient-based, adaptive first-order, and derivative-free noisy/rugged
+  optimization comparators.
+
 Each optimization script also writes long-window initial/final nonlinear ITG
 audit manifests after saving the VMEC-JAX result. Those manifests use the same
 ``write_optimized_equilibrium_transport_configs.py`` path as the production
@@ -149,6 +217,9 @@ multi-hour GPU jobs; set ``RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True`` inside
 the script to launch them, build replicated initial/final ensemble gates, and
 write the initial-vs-final nonlinear ``Q(t)`` comparison plot, or launch the
 generated ``run_manifest.json`` commands explicitly on the target workstation.
+The generated manifests now use the strict staged nonlinear policy described
+above; older ``t=[350,700]`` manifests should be treated as historical
+diagnostics unless rerun through the current policy.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.

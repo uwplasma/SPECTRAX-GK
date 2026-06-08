@@ -43,7 +43,29 @@ def _write_case(
         history["transport_metric_kind"] = "growth"
     (root / "history.json").write_text(json.dumps(history), encoding="utf-8")
     (root / "setup_summary.json").write_text(
-        json.dumps({"transport_kind": "growth", "optimizer": {"method": "scalar_trust"}}),
+        json.dumps(
+            {
+                "transport_kind": "growth",
+                "constraints_only": False,
+                "sample_set": {"surfaces": [0.64], "alphas": [0.0], "ky_values": [0.3], "n_samples": 1},
+                "spectrax_config": {
+                    "ntheta": 8,
+                    "mboz": 21,
+                    "nboz": 21,
+                    "n_laguerre": 2,
+                    "n_hermite": 3,
+                    "objective_transform": "log1p",
+                    "objective_scale": 1.0,
+                    "surface_chunk_size": 0,
+                },
+                "optimizer": {
+                    "method": "scalar_trust",
+                    "max_nfev": 70,
+                    "inner_max_iter": 120,
+                    "trial_max_iter": 120,
+                },
+            }
+        ),
         encoding="utf-8",
     )
     (root / "solved_wout_gate.json").write_text(
@@ -205,7 +227,10 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     command = row["recommended_nonlinear_audit_command"]
     assert "write_optimized_equilibrium_transport_configs.py" in command
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
-    assert "--window-tmin 350 --window-tmax 700" in command
+    assert "--horizons 700,1100,1500" in command
+    assert "--window-tmin 1100 --window-tmax 1500" in command
+    assert "--seed-variant 32 --seed-variant 33" in command
+    assert "--dt-variant 0.04" in command
 
 
 def test_iota_only_diagnostic_rows_are_audit_command_eligible(tmp_path: Path) -> None:
@@ -352,3 +377,28 @@ def test_iota_profile_plot_omits_vmec_axis_point() -> None:
         assert "axis point omitted" in ax.get_title()
     finally:
         mod.plt.close(fig)
+
+
+def test_payload_records_normalized_optimizer_comparison_metadata(tmp_path: Path) -> None:
+    root = tmp_path / "campaign"
+    _write_case(root / "runs" / "growth_scalar_trust", objective_final=0.8, transport_metric=0.25)
+    _write_case(root / "runs" / "growth_lbfgs_adjoint", objective_final=0.7, transport_metric=0.21)
+    setup = json.loads((root / "runs" / "growth_lbfgs_adjoint" / "setup_summary.json").read_text())
+    setup["optimizer"]["method"] = "lbfgs_adjoint"
+    (root / "runs" / "growth_lbfgs_adjoint" / "setup_summary.json").write_text(
+        json.dumps(setup),
+        encoding="utf-8",
+    )
+
+    payload = mod.build_payload(root)
+    rows = {row["case_id"]: row for row in payload["cases"]}
+
+    assert payload["summary"]["optimizer_methods"] == ["lbfgs_adjoint", "scalar_trust"]
+    assert rows["growth_scalar_trust"]["optimizer_comparison"]["method"] == "scalar_trust"
+    assert rows["growth_lbfgs_adjoint"]["optimizer_comparison"]["method"] == "lbfgs_adjoint"
+    assert (
+        rows["growth_scalar_trust"]["optimizer_comparison"]["comparison_fingerprint"]
+        == rows["growth_lbfgs_adjoint"]["optimizer_comparison"]["comparison_fingerprint"]
+    )
+    assert "methods can be compared directly" in payload["summary"]["optimizer_comparison_policy"]
+    assert payload["summary"]["strict_nonlinear_audit_policy"]["window_tmin"] == 1100.0
