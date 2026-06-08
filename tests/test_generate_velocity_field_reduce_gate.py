@@ -36,10 +36,18 @@ def test_velocity_field_reduce_gate_builds_identity_summary(monkeypatch) -> None
     monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_reference", fake_reduce)
     monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_shard_map", fake_reduce)
 
-    summary = gate.build_velocity_field_reduce_gate(shape=(1, 4, 2, 1, 1), requested_devices=2, atol=1.0e-12)
+    summary = gate.build_velocity_field_reduce_gate(
+        shape=(1, 4, 2, 1, 1),
+        requested_devices=2,
+        atol=1.0e-12,
+        rtol=1.0e-10,
+    )
 
     assert summary["identity_passed"] is True
     assert summary["max_abs_error"] == 0.0
+    assert summary["rtol"] == 1.0e-10
+    assert summary["max_allowed_error"] > summary["atol"]
+    assert summary["max_rel_error"] == 0.0
     assert len(summary["rows"]) == 2
 
 
@@ -54,6 +62,8 @@ def test_velocity_field_reduce_gate_writes_artifacts(tmp_path: Path) -> None:
             }
         ],
         "atol": 1.0e-8,
+        "rtol": 1.0e-7,
+        "max_allowed_error": 1.0e-8,
         "identity_passed": True,
     }
     out = tmp_path / "velocity_field_reduce_gate"
