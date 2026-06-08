@@ -1208,17 +1208,20 @@ about ``0.295``, but that number is not a saturated absolute-flux promotion
 because it comes from the candidate-selection uncertainty report rather than a
 passed absolute train/holdout calibration artifact.
 
-The JSON sidecar now carries an explicit
-``absolute_flux_promotion_requirements`` block. For the current frozen
-artifacts it records an error factor of about ``6.04`` over the absolute-flux
-gate, with Cyclone Miller as the worst admitted holdout
-(``Q_i = 4.26`` observed versus ``38.7`` predicted). Before absolute-flux
-promotion can even be reconsidered, the report requires at least three
-additional independent passed holdouts, at least one additional external-VMEC
-holdout family, and at least one non-axisymmetric external-VMEC holdout family.
-These are evidence requirements, not automatic promotion criteria; any future
-absolute model must still pass the held-out transport-error gate, prediction
-interval/skill gates, and provenance checks on the same frozen case ledger.
+The JSON sidecar now carries explicit
+``absolute_flux_promotion_requirements`` and
+``screening_promotion_requirements`` blocks. For the current frozen artifacts
+it records an error factor of about ``6.04`` over the absolute-flux gate, with
+Cyclone Miller as the worst admitted holdout (``Q_i = 4.26`` observed versus
+``38.7`` predicted). It also records that the full-portfolio screening gate
+passes for ``spectral_envelope_ridge`` while the held-out-only screening gate
+remains below threshold. Before absolute-flux or held-out screening promotion
+can even be reconsidered, the report requires at least three additional
+independent passed holdouts, at least one additional external-VMEC holdout
+family, and at least one non-axisymmetric external-VMEC holdout family. These
+are evidence requirements, not automatic promotion criteria; any future model
+must still pass the held-out transport-error gate, prediction interval/skill
+gates, and provenance checks on the same frozen case ledger.
 
 The report tracks ``13`` excluded candidates. The shaped-tokamak pressure
 candidate is one of those exclusions: it is finite and late-window stable at

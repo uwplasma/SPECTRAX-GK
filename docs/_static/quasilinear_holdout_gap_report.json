@@ -708,6 +708,7 @@
     ],
     "model_selection": "docs/_static/quasilinear_model_selection_status.json",
     "nonlinear_window_statistics": "docs/_static/nonlinear_window_statistics.json",
+    "screening_skill": "docs/_static/quasilinear_screening_skill.json",
     "train_holdout": "docs/_static/quasilinear_stellarator_train_holdout_report.json"
   },
   "kind": "quasilinear_holdout_gap_report",
@@ -863,14 +864,92 @@
       "absolute_requirement:minimum_external_vmec_holdout_families",
       "absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families",
       "stellarator_train_holdout_report_failed",
-      "holdout_mean_error_exceeds_gate"
+      "holdout_mean_error_exceeds_gate",
+      "screening_requirement:heldout_screening_correlation_passed",
+      "screening_requirement:additional_independent_holdouts_needed"
     ],
     "passed": false,
     "reason": "This artifact reports holdout readiness gaps only. The scoped model-selection gate may pass, but no runtime/TOML absolute-flux predictor is promoted."
   },
+  "screening_promotion_requirements": {
+    "blockers": [
+      "heldout_screening_correlation_passed",
+      "additional_independent_holdouts_needed"
+    ],
+    "claim_boundary": "This section defines what is missing before correlation-screening promotion; it does not promote absolute nonlinear heat-flux prediction.",
+    "current_best_heldout_model": "spectral_envelope_ridge",
+    "current_best_holdout_metrics": {
+      "mean_abs_relative_error": 0.2512310451426226,
+      "pairwise_order_accuracy": 0.7333333333333333,
+      "spearman": 0.7142857142857143
+    },
+    "current_best_model": "spectral_envelope_ridge",
+    "gates": [
+      {
+        "current": [
+          "spectral_envelope_ridge"
+        ],
+        "detail": "useful model-development signal on the admitted portfolio",
+        "metric": "full_portfolio_screening_correlation_passed",
+        "passed": true,
+        "required": "at least one scoped screening model"
+      },
+      {
+        "current": [],
+        "detail": "held-out-only rank/correlation gate must pass before screening promotion",
+        "metric": "heldout_screening_correlation_passed",
+        "passed": false,
+        "required": "at least one held-out screening model"
+      },
+      {
+        "current": [],
+        "detail": "absolute-flux promotion remains a separate stricter target",
+        "metric": "absolute_flux_promotion_passed",
+        "passed": false,
+        "required": "not required for screening, required for absolute-flux claims"
+      },
+      {
+        "current": 3,
+        "detail": "more independent nonlinear holdouts reduce rank/correlation fragility",
+        "metric": "additional_independent_holdouts_needed",
+        "passed": false,
+        "required": 0
+      }
+    ],
+    "kind": "quasilinear_screening_promotion_requirements",
+    "reconsideration_ready": false,
+    "screening_promoted": false
+  },
+  "screening_skill_status": {
+    "absolute_flux_promotion_passed": false,
+    "accepted_absolute_flux_models": [],
+    "accepted_holdout_screening_models": [],
+    "accepted_screening_models": [
+      "spectral_envelope_ridge"
+    ],
+    "artifact": "docs/_static/quasilinear_screening_skill.json",
+    "best_holdout_mean_abs_relative_error": 0.2512310451426226,
+    "best_holdout_pairwise_order_accuracy": 0.7333333333333333,
+    "best_holdout_screening_model": "spectral_envelope_ridge",
+    "best_holdout_spearman": 0.7142857142857143,
+    "best_screening_mean_abs_relative_error": 0.29524327596674427,
+    "best_screening_model": "spectral_envelope_ridge",
+    "best_screening_pairwise_order_accuracy": 0.7857142857142857,
+    "best_screening_spearman": 0.8095238095238096,
+    "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
+    "holdout_screening_correlation_passed": false,
+    "kind": "quasilinear_screening_skill",
+    "pairwise_order_gate": 0.75,
+    "reason": "full-portfolio screening can pass while held-out-only screening and absolute-flux promotion remain blocked",
+    "screening_correlation_passed": true,
+    "spearman_gate": 0.75
+  },
   "summary": {
+    "best_holdout_screening_pairwise_order_accuracy": 0.7333333333333333,
+    "best_holdout_screening_spearman": 0.7142857142857143,
     "holdout_mean_abs_relative_error": 2.114098664675138,
     "holdout_mean_rel_gate": 0.35,
+    "holdout_screening_correlation_passed": false,
     "model_selection_candidate_mean_abs_relative_error": 0.29524327596674427,
     "model_selection_interval_coverage": 0.875,
     "n_admitted_holdouts": 6,
@@ -881,7 +960,8 @@
     "n_next_best_candidates": 4,
     "n_nonlinear_window_cases": 5,
     "n_nonlinear_window_cases_passed": 5,
-    "n_training_references": 2
+    "n_training_references": 2,
+    "screening_correlation_passed": true
   },
   "training_references": [
     {

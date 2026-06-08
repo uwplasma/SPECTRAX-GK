@@ -8,6 +8,14 @@
   while universal absolute-flux or held-out screening promotion still requires
   additional independent, replicated, post-transient nonlinear holdouts.
 
+- Extended the quasilinear holdout-gap report to ingest the screening-skill
+  sidecar. The refreshed `docs/_static/quasilinear_holdout_gap_report.*` now
+  carries both `absolute_flux_promotion_requirements` and
+  `screening_promotion_requirements`: full-portfolio screening passes for
+  `spectral_envelope_ridge`, held-out-only screening remains below gate, and
+  the same next evidence item is required for both claim classes: additional
+  independent, replicated, post-transient nonlinear holdouts.
+
 # SPECTRAX-GK Active Plan and Running Log
 
 Last updated: 2026-06-08

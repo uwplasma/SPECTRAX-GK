@@ -32,6 +32,7 @@ DEFAULT_MODEL_SELECTION = STATIC / "quasilinear_model_selection_status.json"
 DEFAULT_TRAIN_HOLDOUT = STATIC / "quasilinear_stellarator_train_holdout_report.json"
 DEFAULT_WINDOW_STATS = STATIC / "nonlinear_window_statistics.json"
 DEFAULT_DATASET_SUFFICIENCY = STATIC / "quasilinear_dataset_sufficiency.json"
+DEFAULT_SCREENING_SKILL = STATIC / "quasilinear_screening_skill.json"
 DEFAULT_EXTERNAL_GLOB = str(STATIC / "external_vmec_*_convergence_gate.json")
 DEFAULT_NEXT_CANDIDATES = 4
 DEFAULT_MIN_ABSOLUTE_PROMOTION_HOLDOUTS = 9
@@ -955,6 +956,129 @@ def _calibration_summary(train_holdout: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _screening_skill_summary(screening_skill: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Summarize rank/correlation readiness without promoting absolute flux."""
+
+    if not isinstance(screening_skill, dict):
+        return None
+    gates = screening_skill.get("gates", {})
+    gates = gates if isinstance(gates, dict) else {}
+    models = screening_skill.get("models", [])
+    models = models if isinstance(models, list) else []
+    by_model = {
+        str(row.get("model")): row
+        for row in models
+        if isinstance(row, dict) and row.get("model")
+    }
+    best = str(gates.get("best_screening_model") or "")
+    best_holdout = str(gates.get("best_holdout_screening_model") or best)
+    best_row = by_model.get(best, {})
+    best_holdout_row = by_model.get(best_holdout, {})
+    return {
+        "artifact": _repo_relative_path(DEFAULT_SCREENING_SKILL),
+        "kind": str(screening_skill.get("kind", "")),
+        "claim_level": str(screening_skill.get("claim_level", "")),
+        "accepted_screening_models": list(gates.get("accepted_screening_models", []) or []),
+        "accepted_holdout_screening_models": list(gates.get("accepted_holdout_screening_models", []) or []),
+        "accepted_absolute_flux_models": list(gates.get("accepted_absolute_flux_models", []) or []),
+        "screening_correlation_passed": bool(gates.get("screening_correlation_passed", False)),
+        "holdout_screening_correlation_passed": bool(
+            gates.get("holdout_screening_correlation_passed", False)
+        ),
+        "absolute_flux_promotion_passed": bool(gates.get("absolute_flux_promotion_passed", False)),
+        "best_screening_model": best or None,
+        "best_screening_spearman": _finite_float(best_row.get("spearman")),
+        "best_screening_pairwise_order_accuracy": _finite_float(
+            best_row.get("pairwise_order_accuracy")
+        ),
+        "best_screening_mean_abs_relative_error": _finite_float(
+            best_row.get("mean_abs_relative_error")
+        ),
+        "best_holdout_screening_model": best_holdout or None,
+        "best_holdout_spearman": _finite_float(best_holdout_row.get("holdout_spearman")),
+        "best_holdout_pairwise_order_accuracy": _finite_float(
+            best_holdout_row.get("holdout_pairwise_order_accuracy")
+        ),
+        "best_holdout_mean_abs_relative_error": _finite_float(
+            best_holdout_row.get("holdout_mean_abs_relative_error")
+        ),
+        "spearman_gate": _finite_float(gates.get("spearman_gate")),
+        "pairwise_order_gate": _finite_float(gates.get("pairwise_order_gate")),
+        "reason": (
+            "full-portfolio screening can pass while held-out-only screening and "
+            "absolute-flux promotion remain blocked"
+        ),
+    }
+
+
+def _screening_promotion_requirements(
+    screening: dict[str, Any] | None,
+    *,
+    absolute_requirements: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Return evidence requirements for correlation-screening promotion."""
+
+    if not isinstance(screening, dict):
+        return None
+    coverage_gap = absolute_requirements.get("coverage_gap", {})
+    if not isinstance(coverage_gap, dict):
+        coverage_gap = {}
+    additional_holdouts = coverage_gap.get("additional_total_independent_holdouts_needed")
+    gates = [
+        {
+            "metric": "full_portfolio_screening_correlation_passed",
+            "passed": bool(screening.get("screening_correlation_passed", False)),
+            "current": screening.get("accepted_screening_models", []),
+            "required": "at least one scoped screening model",
+            "detail": "useful model-development signal on the admitted portfolio",
+        },
+        {
+            "metric": "heldout_screening_correlation_passed",
+            "passed": bool(screening.get("holdout_screening_correlation_passed", False)),
+            "current": screening.get("accepted_holdout_screening_models", []),
+            "required": "at least one held-out screening model",
+            "detail": "held-out-only rank/correlation gate must pass before screening promotion",
+        },
+        {
+            "metric": "absolute_flux_promotion_passed",
+            "passed": bool(screening.get("absolute_flux_promotion_passed", False)),
+            "current": screening.get("accepted_absolute_flux_models", []),
+            "required": "not required for screening, required for absolute-flux claims",
+            "detail": "absolute-flux promotion remains a separate stricter target",
+        },
+        {
+            "metric": "additional_independent_holdouts_needed",
+            "passed": additional_holdouts == 0,
+            "current": additional_holdouts,
+            "required": 0,
+            "detail": "more independent nonlinear holdouts reduce rank/correlation fragility",
+        },
+    ]
+    blockers = [
+        str(gate["metric"])
+        for gate in gates
+        if gate["metric"] != "absolute_flux_promotion_passed" and not bool(gate["passed"])
+    ]
+    return {
+        "kind": "quasilinear_screening_promotion_requirements",
+        "claim_boundary": (
+            "This section defines what is missing before correlation-screening "
+            "promotion; it does not promote absolute nonlinear heat-flux prediction."
+        ),
+        "screening_promoted": False,
+        "reconsideration_ready": not blockers,
+        "blockers": blockers,
+        "gates": gates,
+        "current_best_model": screening.get("best_screening_model"),
+        "current_best_heldout_model": screening.get("best_holdout_screening_model"),
+        "current_best_holdout_metrics": {
+            "spearman": screening.get("best_holdout_spearman"),
+            "pairwise_order_accuracy": screening.get("best_holdout_pairwise_order_accuracy"),
+            "mean_abs_relative_error": screening.get("best_holdout_mean_abs_relative_error"),
+        },
+    }
+
+
 def build_holdout_gap_report(
     *,
     model_selection: dict[str, Any],
@@ -962,6 +1086,7 @@ def build_holdout_gap_report(
     window_stats: dict[str, Any],
     external_gates: list[dict[str, Any]],
     dataset: dict[str, Any] | None = None,
+    screening_skill: dict[str, Any] | None = None,
     external_patterns: list[str] | None = None,
     max_next_candidates: int = DEFAULT_NEXT_CANDIDATES,
 ) -> dict[str, Any]:
@@ -1027,6 +1152,11 @@ def build_holdout_gap_report(
         calibration=calibration,
         model=model,
     )
+    screening = _screening_skill_summary(screening_skill)
+    screening_requirements = _screening_promotion_requirements(
+        screening,
+        absolute_requirements=absolute_requirements,
+    )
     external_passed = sum(1 for gate in external_gates if bool(gate.get("passed", False)))
     external_failed = len(external_gates) - external_passed
     window_passed = _window_case_passes(window_stats)
@@ -1041,6 +1171,11 @@ def build_holdout_gap_report(
     if calibration.get("holdout_mean_abs_relative_error") is not None and calibration.get("holdout_mean_rel_gate") is not None:
         if float(calibration["holdout_mean_abs_relative_error"]) > float(calibration["holdout_mean_rel_gate"]):
             blockers.append("holdout_mean_error_exceeds_gate")
+    if screening_requirements is not None:
+        blockers.extend(
+            f"screening_requirement:{item}"
+            for item in screening_requirements.get("blockers", [])
+        )
     payload = {
         "kind": "quasilinear_holdout_gap_report",
         "claim_level": CLAIM_LEVEL,
@@ -1058,10 +1193,12 @@ def build_holdout_gap_report(
             "train_holdout": calibration["artifact"],
             "nonlinear_window_statistics": _repo_relative_path(DEFAULT_WINDOW_STATS),
             "dataset_sufficiency": _repo_relative_path(DEFAULT_DATASET_SUFFICIENCY) if dataset else None,
+            "screening_skill": _repo_relative_path(DEFAULT_SCREENING_SKILL) if screening else None,
             "external_gate_patterns": [_repo_relative_pattern(pattern) for pattern in external_patterns or []],
         },
         "model_selection_status": model,
         "calibration_status": calibration,
+        "screening_skill_status": screening,
         "summary": {
             "n_admitted_holdouts": len(admitted),
             "n_training_references": len(training),
@@ -1076,6 +1213,16 @@ def build_holdout_gap_report(
             "holdout_mean_rel_gate": calibration.get("holdout_mean_rel_gate"),
             "model_selection_candidate_mean_abs_relative_error": model.get("candidate_mean_abs_relative_error"),
             "model_selection_interval_coverage": model.get("candidate_prediction_interval_coverage"),
+            "screening_correlation_passed": None if screening is None else screening.get("screening_correlation_passed"),
+            "holdout_screening_correlation_passed": None
+            if screening is None
+            else screening.get("holdout_screening_correlation_passed"),
+            "best_holdout_screening_spearman": None
+            if screening is None
+            else screening.get("best_holdout_spearman"),
+            "best_holdout_screening_pairwise_order_accuracy": None
+            if screening is None
+            else screening.get("best_holdout_pairwise_order_accuracy"),
         },
         "admitted_holdouts": admitted,
         "training_references": training,
@@ -1083,6 +1230,7 @@ def build_holdout_gap_report(
         "next_best_candidates": next_candidates,
         "next_actual_nonlinear_holdout_needed": _next_actual_need(next_candidates),
         "absolute_flux_promotion_requirements": absolute_requirements,
+        "screening_promotion_requirements": screening_requirements,
         "notes": (
             "Admitted means the nonlinear window is already present in the current train/holdout metadata with a "
             "passed input/convergence gate. Excluded means the tracked nonlinear artifact is outside the current "
@@ -1232,6 +1380,8 @@ def holdout_gap_figure(report: dict[str, Any], *, title: str) -> plt.Figure:
 
     ax_text.set_axis_off()
     model = report.get("model_selection_status", {}) if isinstance(report.get("model_selection_status", {}), dict) else {}
+    screening = report.get("screening_skill_status", {})
+    screening = screening if isinstance(screening, dict) else {}
     calibration = report.get("calibration_status", {}) if isinstance(report.get("calibration_status", {}), dict) else {}
     need = report.get("next_actual_nonlinear_holdout_needed", {})
     if not isinstance(need, dict):
@@ -1263,6 +1413,13 @@ def holdout_gap_figure(report: dict[str, Any], *, title: str) -> plt.Figure:
         f"{coverage_gap.get('additional_external_vmec_holdout_families_needed', 'n/a')}; "
         "nonaxisym external: "
         f"{coverage_gap.get('additional_nonaxisymmetric_external_vmec_holdout_families_needed', 'n/a')}",
+        "",
+        "Screening/correlation status",
+        f"Full-portfolio screening passed: {bool(screening.get('screening_correlation_passed', False))}",
+        f"Held-out screening passed: {bool(screening.get('holdout_screening_correlation_passed', False))}",
+        "Best held-out Spearman/pairwise: "
+        f"{_format_gate_value(screening.get('best_holdout_spearman'))} / "
+        f"{_format_gate_value(screening.get('best_holdout_pairwise_order_accuracy'))}",
         "",
         "Next actual nonlinear holdout needed",
         str(need.get("needed", "new independent passed-gate holdout")),
@@ -1337,6 +1494,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-selection", type=Path, default=DEFAULT_MODEL_SELECTION)
     parser.add_argument("--train-holdout", type=Path, default=DEFAULT_TRAIN_HOLDOUT)
     parser.add_argument("--nonlinear-window-statistics", type=Path, default=DEFAULT_WINDOW_STATS)
+    parser.add_argument("--screening-skill", type=Path, default=DEFAULT_SCREENING_SKILL)
     parser.add_argument(
         "--dataset-sufficiency",
         type=Path,
@@ -1369,6 +1527,7 @@ def main(argv: list[str] | None = None) -> int:
         window_stats=_load_json(args.nonlinear_window_statistics),
         external_gates=[_load_external_gate(path) for path in external_paths],
         dataset=dataset,
+        screening_skill=_load_json(args.screening_skill) if args.screening_skill.exists() else None,
         external_patterns=patterns,
         max_next_candidates=args.max_next_candidates,
     )

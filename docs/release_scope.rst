@@ -452,13 +452,15 @@ Quasilinear model-selection state:
   or universal absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
-  ``absolute_flux_promotion_requirements`` block quantifies the current gap:
-  the absolute train/holdout mean relative error is about ``6.04`` times the
-  ``0.35`` gate, three additional independent passed holdouts are still
-  required, one additional external-VMEC holdout family is required, and one
-  non-axisymmetric external-VMEC holdout family is required before promotion
-  can be reconsidered. These are evidence prerequisites, not a promoted
-  runtime absolute-flux option.
+  ``absolute_flux_promotion_requirements`` and
+  ``screening_promotion_requirements`` blocks quantify the current gaps: the
+  absolute train/holdout mean relative error is about ``6.04`` times the
+  ``0.35`` gate, the full-portfolio screening gate passes but the held-out-only
+  screening gate remains below threshold, three additional independent passed
+  holdouts are still required, one additional external-VMEC holdout family is
+  required, and one non-axisymmetric external-VMEC holdout family is required
+  before promotion can be reconsidered. These are evidence prerequisites, not a
+  promoted runtime absolute-flux option.
 - ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
   finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
   excluded from calibration because the ``n48``/``n64`` heat-flux windows

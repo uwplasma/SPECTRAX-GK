@@ -73,6 +73,36 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
             "required_candidate": "spectral_envelope_ridge",
         },
     )
+    screening_skill = _write_json(
+        tmp_path / "screening_skill.json",
+        {
+            "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
+            "gates": {
+                "absolute_flux_promotion_passed": False,
+                "accepted_absolute_flux_models": [],
+                "accepted_holdout_screening_models": [],
+                "accepted_screening_models": ["spectral_envelope_ridge"],
+                "best_holdout_screening_model": "spectral_envelope_ridge",
+                "best_screening_model": "spectral_envelope_ridge",
+                "holdout_screening_correlation_passed": False,
+                "screening_correlation_passed": True,
+                "pairwise_order_gate": 0.75,
+                "spearman_gate": 0.75,
+            },
+            "kind": "quasilinear_screening_skill",
+            "models": [
+                {
+                    "holdout_mean_abs_relative_error": 0.25,
+                    "holdout_pairwise_order_accuracy": 0.73,
+                    "holdout_spearman": 0.71,
+                    "mean_abs_relative_error": 0.29,
+                    "model": "spectral_envelope_ridge",
+                    "pairwise_order_accuracy": 0.79,
+                    "spearman": 0.81,
+                }
+            ],
+        },
+    )
     train_holdout = _write_json(
         tmp_path / "train_holdout.json",
         {
@@ -215,6 +245,7 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
     return {
         "dataset": dataset,
         "model_selection": model_selection,
+        "screening_skill": screening_skill,
         "train_holdout": train_holdout,
         "window_stats": window_stats,
     }
@@ -233,6 +264,7 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
         window_stats=json.loads(paths["window_stats"].read_text(encoding="utf-8")),
         external_gates=external_gates,
         dataset=json.loads(paths["dataset"].read_text(encoding="utf-8")),
+        screening_skill=json.loads(paths["screening_skill"].read_text(encoding="utf-8")),
     )
 
     assert report["claim_level"] == "holdout_gap_report_no_absolute_flux_promotion"
@@ -261,6 +293,17 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
     assert audit["eligible_for_next_candidate"] is False
     assert report["next_best_candidates"][0]["status"] == "training_reference_not_independent_holdout"
     assert report["next_actual_nonlinear_holdout_needed"]["preferred_family"] == "itermodel_external_vmec"
+    screening = report["screening_skill_status"]
+    assert screening["screening_correlation_passed"] is True
+    assert screening["holdout_screening_correlation_passed"] is False
+    assert screening["best_holdout_spearman"] == 0.71
+    screening_requirements = report["screening_promotion_requirements"]
+    assert screening_requirements["screening_promoted"] is False
+    assert "heldout_screening_correlation_passed" in screening_requirements["blockers"]
+    assert (
+        "screening_requirement:heldout_screening_correlation_passed"
+        in report["promotion_gate"]["blockers"]
+    )
     nearest = report["next_actual_nonlinear_holdout_needed"]["nearest_tracked_gap"]
     assert nearest["case"] == "ITERModel external VMEC nonlinear t250 high-grid convergence"
     assert nearest["next_best_score"] == 1.1
@@ -313,6 +356,8 @@ def test_gap_report_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
                 str(paths["train_holdout"]),
                 "--nonlinear-window-statistics",
                 str(paths["window_stats"]),
+                "--screening-skill",
+                str(paths["screening_skill"]),
                 "--dataset-sufficiency",
                 str(paths["dataset"]),
                 "--external-gate-glob",
@@ -331,6 +376,7 @@ def test_gap_report_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert not out.with_suffix(".pdf").exists()
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["absolute_flux_promoted"] is False
+    assert payload["screening_skill_status"]["holdout_screening_correlation_passed"] is False
     assert (
         payload["absolute_flux_promotion_requirements"]["claim_boundary"]
         .lower()

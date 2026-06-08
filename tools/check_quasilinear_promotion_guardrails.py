@@ -794,16 +794,26 @@ def _audit_failed_baseline_contract(
     if name == "quasilinear_holdout_gap_report":
         status = data.get("calibration_status")
         status = status if isinstance(status, dict) else {}
+        screening = data.get("screening_skill_status")
+        screening = screening if isinstance(screening, dict) else {}
+        screening_reqs = data.get("screening_promotion_requirements")
+        screening_reqs = screening_reqs if isinstance(screening_reqs, dict) else {}
         blockers = promotion.get("blockers", [])
         return (
             promotion.get("passed") is False
             and "absolute_flux_predictor_not_promoted" in blockers
+            and "screening_requirement:heldout_screening_correlation_passed" in blockers
             and status.get("absolute_flux_promoted") is False
             and status.get("passed") is False
+            and screening.get("screening_correlation_passed") is True
+            and screening.get("holdout_screening_correlation_passed") is False
+            and screening_reqs.get("screening_promoted") is False
             and _finite_number(status.get("holdout_mean_abs_relative_error")),
             (
                 f"blockers={blockers} "
-                f"holdout_mean={status.get('holdout_mean_abs_relative_error')}"
+                f"holdout_mean={status.get('holdout_mean_abs_relative_error')} "
+                f"screening={screening.get('screening_correlation_passed')} "
+                f"holdout_screening={screening.get('holdout_screening_correlation_passed')}"
             ),
         )
 
