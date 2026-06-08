@@ -1152,12 +1152,14 @@ protocol is ``t_max = 1500`` with the accepted transport window
 failed running-mean convergence.  A neighboring ``-70%`` point passed readiness
 but failed timestep-spread robustness over ``t = [700, 1100]`` and then passed
 over ``t = [1100, 1500]``.  The tracked public overlay currently includes the
-19 strict coefficients that have passed the accepted ``t = [1100, 1500]``
+22 strict coefficients that have passed the accepted ``t = [1100, 1500]``
 seed/timestep ensemble gate: the negative side, the zero-offset baseline, and
-the first three positive coefficients, ``+5%``, ``+10%``, and ``+15%``.  The remaining higher
-positive coefficients are pending and should not be inferred from reduced
-metrics.  The shorter windows are retained only as negative convergence
-diagnostics for this landscape protocol.
+six positive coefficients, ``+5%``, ``+10%``, ``+15%``, ``+25%``, ``+30%``, and
+``+35%``.  The ``+20%`` coefficient narrowly failed the same strict gate on
+mean-relative seed/timestep spread and remains pending rather than promoted by
+threshold relaxation.  The remaining higher positive coefficients are pending
+and should not be inferred from reduced metrics.  The shorter windows are
+retained only as negative convergence diagnostics for this landscape protocol.
 For diagnostic landscapes that should show failed post-transient points instead
 of aborting the full scan, build each sidecar with
 ``tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That

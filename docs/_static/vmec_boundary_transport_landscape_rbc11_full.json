@@ -200,6 +200,22 @@
       "mean": 10.0771448854589,
       "passed": true,
       "sem": 0.24372929254990924
+    },
+    {
+      "case": "landscape_rbc_1_1_p0p3_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.16461186057988286,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/p0p3/replicate_ensemble_gate.json",
+      "mean": 9.648222098749015,
+      "passed": true,
+      "sem": 0.20161203831546382
+    },
+    {
+      "case": "landscape_rbc_1_1_p0p35_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.17094308598680144,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/p0p35/replicate_ensemble_gate.json",
+      "mean": 8.586609942714288,
+      "passed": true,
+      "sem": 0.17884367077336255
     }
   ],
   "nonlinear_launch_manifest": {

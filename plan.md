@@ -939,3 +939,14 @@ No long nonlinear audit should be launched from these candidates.
   ``2.01%``, and combined SEM/mean ``1.51%``. This updates the public
   ``RBC(1,1)`` overlay to 16/31 strict true nonlinear points: all negative-side
   coefficients plus the zero-offset baseline.
+- Closed two additional positive-side strict ``RBC(1,1)`` nonlinear overlays from
+  the office two-GPU controller. The ``+30%``/``p0p3`` coefficient passed the
+  ``t=[1100,1500]`` seed/timestep ensemble gate with mean ``Q_i=9.6482220987``,
+  mean-relative spread ``0.669%``, and combined SEM/mean ``2.090%``. The
+  ``+35%``/``p0p35`` coefficient passed with mean ``Q_i=8.5866099427``,
+  mean-relative spread ``2.957%``, and combined SEM/mean ``2.083%``. The public
+  ``RBC(1,1)`` landscape was regenerated with 22/31 strict true nonlinear
+  overlays: the negative side, zero offset, and positive ``+5%``, ``+10%``,
+  ``+15%``, ``+25%``, ``+30%``, and ``+35%`` points. The ``+20%`` point remains
+  pending after its narrow strict spread miss; higher positive coefficients
+  remain pending and are not inferred from reduced metrics.
