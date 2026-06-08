@@ -42,116 +42,12 @@
   },
   "nonlinear_ensemble_points": [
     {
-      "case": "landscape_rbc_1_1_m0p75_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.031656127034592856,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p75/replicate_ensemble_gate.json",
-      "mean": 18.571735657056582,
+      "case": "landscape_rbc_1_1_0_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.12662450813837142,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/0/replicate_ensemble_gate.json",
+      "mean": 11.009004455010071,
       "passed": true,
-      "sem": 0.237515147475319
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p7_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.037987352441511434,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p7/replicate_ensemble_gate.json",
-      "mean": 15.585753262044335,
-      "passed": true,
-      "sem": 0.645342891826938
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p65_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.04431857784843,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p65/replicate_ensemble_gate.json",
-      "mean": 15.227092487811793,
-      "passed": true,
-      "sem": 0.4440268731604115
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p6_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.05064980325534857,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p6/replicate_ensemble_gate.json",
-      "mean": 16.900027563967665,
-      "passed": true,
-      "sem": 0.38710505576725995
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p55_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.05698102866226713,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p55/replicate_ensemble_gate.json",
-      "mean": 14.69577073335671,
-      "passed": true,
-      "sem": 0.3262986745162938
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p5_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.06331225406918571,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p5/replicate_ensemble_gate.json",
-      "mean": 12.515966314870541,
-      "passed": true,
-      "sem": 0.24250864687970408
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p45_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.06964347947610429,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p45/replicate_ensemble_gate.json",
-      "mean": 7.2053161970772335,
-      "passed": true,
-      "sem": 0.11280897495543846
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p4_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.07597470488302285,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p4/replicate_ensemble_gate.json",
-      "mean": 11.721893398366376,
-      "passed": true,
-      "sem": 0.2301553680852536
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p35_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.08230593028994143,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p35/replicate_ensemble_gate.json",
-      "mean": 10.77958378473808,
-      "passed": true,
-      "sem": 0.17065470471898825
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p3_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.08863715569686,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p3/replicate_ensemble_gate.json",
-      "mean": 11.529562663236282,
-      "passed": true,
-      "sem": 0.18601815043882974
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p25_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.09496838110377856,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p25/replicate_ensemble_gate.json",
-      "mean": 10.50694545388174,
-      "passed": true,
-      "sem": 0.15191536506516262
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p2_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.10129960651069714,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p2/replicate_ensemble_gate.json",
-      "mean": 9.996700754563774,
-      "passed": true,
-      "sem": 0.17028963055879517
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p15_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.1076308319176157,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p15/replicate_ensemble_gate.json",
-      "mean": 10.150795456172139,
-      "passed": true,
-      "sem": 0.1393522479360177
-    },
-    {
-      "case": "landscape_rbc_1_1_m0p1_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.11396205732453428,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p1/replicate_ensemble_gate.json",
-      "mean": 12.04502573450325,
-      "passed": true,
-      "sem": 0.17592842769884576
+      "sem": 0.16644554696572134
     },
     {
       "case": "landscape_rbc_1_1_m0p05_replicated_nonlinear_window_t1100_1500_ensemble_gate",
@@ -162,12 +58,124 @@
       "sem": 0.18257469699392806
     },
     {
-      "case": "landscape_rbc_1_1_0_replicated_nonlinear_window_t1100_1500_ensemble_gate",
-      "coefficient_value": 0.12662450813837142,
-      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/0/replicate_ensemble_gate.json",
-      "mean": 11.009004455010071,
+      "case": "landscape_rbc_1_1_m0p1_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.11396205732453428,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p1/replicate_ensemble_gate.json",
+      "mean": 12.04502573450325,
       "passed": true,
-      "sem": 0.16644554696572134
+      "sem": 0.17592842769884576
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p15_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.1076308319176157,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p15/replicate_ensemble_gate.json",
+      "mean": 10.150795456172139,
+      "passed": true,
+      "sem": 0.1393522479360177
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p2_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.10129960651069714,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p2/replicate_ensemble_gate.json",
+      "mean": 9.996700754563774,
+      "passed": true,
+      "sem": 0.17028963055879517
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p25_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.09496838110377856,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p25/replicate_ensemble_gate.json",
+      "mean": 10.50694545388174,
+      "passed": true,
+      "sem": 0.15191536506516262
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p3_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.08863715569686,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p3/replicate_ensemble_gate.json",
+      "mean": 11.529562663236282,
+      "passed": true,
+      "sem": 0.18601815043882974
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p35_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.08230593028994143,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p35/replicate_ensemble_gate.json",
+      "mean": 10.77958378473808,
+      "passed": true,
+      "sem": 0.17065470471898825
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p4_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.07597470488302285,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p4/replicate_ensemble_gate.json",
+      "mean": 11.721893398366376,
+      "passed": true,
+      "sem": 0.2301553680852536
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p45_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.06964347947610429,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p45/replicate_ensemble_gate.json",
+      "mean": 7.2053161970772335,
+      "passed": true,
+      "sem": 0.11280897495543846
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p5_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.06331225406918571,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p5/replicate_ensemble_gate.json",
+      "mean": 12.515966314870541,
+      "passed": true,
+      "sem": 0.24250864687970408
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p55_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.05698102866226713,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p55/replicate_ensemble_gate.json",
+      "mean": 14.69577073335671,
+      "passed": true,
+      "sem": 0.3262986745162938
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p6_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.05064980325534857,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p6/replicate_ensemble_gate.json",
+      "mean": 16.900027563967665,
+      "passed": true,
+      "sem": 0.38710505576725995
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p65_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.04431857784843,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p65/replicate_ensemble_gate.json",
+      "mean": 15.227092487811793,
+      "passed": true,
+      "sem": 0.4440268731604115
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p7_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.037987352441511434,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p7/replicate_ensemble_gate.json",
+      "mean": 15.585753262044335,
+      "passed": true,
+      "sem": 0.645342891826938
+    },
+    {
+      "case": "landscape_rbc_1_1_m0p75_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.031656127034592856,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/m0p75/replicate_ensemble_gate.json",
+      "mean": 18.571735657056582,
+      "passed": true,
+      "sem": 0.237515147475319
+    },
+    {
+      "case": "landscape_rbc_1_1_p0p05_replicated_nonlinear_window_t1100_1500_ensemble_gate",
+      "coefficient_value": 0.13295573354529,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_rbc11_replicates/strict_t1100_1500/p0p05/replicate_ensemble_gate.json",
+      "mean": 10.843325046699418,
+      "passed": true,
+      "sem": 0.20685460756513127
     }
   ],
   "nonlinear_launch_manifest": {

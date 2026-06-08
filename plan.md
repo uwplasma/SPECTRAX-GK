@@ -864,10 +864,12 @@ No long nonlinear audit should be launched from these candidates.
 - Launched the positive-side strict ``RBC(1,1)`` nonlinear overlay campaign on
   office as a resumable two-GPU queue. The controller generated positive-side
   ``t=1100`` and ``t=1500`` continuation TOMLs from the existing ``t=700``
-  positive configs, runs seed31, seed32, and ``dt=0.04`` chains per
+  positive configs, originally ran seed31, seed32, and ``dt=0.04`` chains per
   coefficient, validates that each output reaches ``t≈1500``, then builds the
-  strict ``t=[1100,1500]`` replicate ensemble gate. README/docs remain scoped
-  to the 16 completed strict points until the positive gates finish.
+  strict ``t=[1100,1500]`` replicate ensemble gate. The seed31 positive-side
+  base stages were later replaced by seed33 after repeated stalls; README/docs
+  are now scoped to the 17 completed strict points until more positive gates
+  finish.
 - Staged matched nonlinear transport traces for the four strict QA optimization
   geometries: baseline, growth-optimized, quasilinear-optimized, and
   nonlinear-window-optimized. The campaign uses the authoritative
@@ -884,6 +886,19 @@ No long nonlinear audit should be launched from these candidates.
   full-field relative error is small. The production nonlinear sharding gate
   remains fail-closed/diagnostic-only because the GPU speedup candidate is not
   profiler-backed.
+- Fixed the wide-coverage shard-42 CI failure introduced by the velocity
+  field-reduction relative-tolerance gate by updating the gate unit test to
+  pass and assert ``rtol`` and ``max_allowed_error``. The fresh GitHub CI run
+  for commit ``d1dfbbb`` completed successfully.
+- Replaced the positive-side strict ``RBC(1,1)`` seed31 replicate with seed33
+  on office after two seed31 base-stage runs stalled without output despite
+  active GPU kernels. The corrected positive-side replicate policy remains two
+  independent seeds plus a timestep replicate: seed32, seed33, and ``dt=0.04``.
+  The first positive coefficient, ``+5%``/``p0p05``, now passes the
+  ``t=[1100,1500]`` strict ensemble gate with mean ``Q_i=10.8433250467``,
+  mean-relative spread ``1.699%``, and combined SEM/mean ``1.908%``. The
+  README/docs ``RBC(1,1)`` panel is refreshed to 17/31 strict true nonlinear
+  points; the remaining positive coefficients continue running on office.
 - Completed the zero-offset strict ``RBC(1,1)`` seed ``t=700`` pilot stage and
   launched the ``t=1100`` continuation for seed31 and seed32, one run per
   office GPU. The transient ``t≈350..700`` means are seed31 ``10.896999582``
