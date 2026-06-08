@@ -1080,12 +1080,17 @@ properly scoped. ``spectral_envelope_ridge`` is the only candidate that passes
 the screening gate on the present eight-case electrostatic portfolio, with
 Spearman rank correlation about ``0.81`` and pairwise order accuracy about
 ``0.79``. It also passes the mean-error gate with mean relative error about
-``0.295``. The simple positive-growth mixing-length rule, raw linear-weight
-fit, absolute-growth diagnostic, and broader linear-state ridge do not pass
-the screening gate. This supports using the spectral-envelope candidate as a
+``0.295``. The held-out-only rank gate is shown separately because that is the
+honest promotion boundary: the same candidate is currently just below the
+strict held-out screening thresholds, with held-out Spearman correlation about
+``0.71`` and held-out pairwise order accuracy about ``0.73``. The simple
+positive-growth mixing-length rule, raw linear-weight fit, absolute-growth
+diagnostic, and broader linear-state ridge do not pass the screening gate.
+This supports using the spectral-envelope candidate as a
 screening/model-development proxy in constrained studies, but it still does
 not promote a runtime/TOML absolute-flux predictor or a universal stellarator
-saturation law.
+saturation law. The next calibration step is not a looser threshold; it is
+additional independent, replicated, post-transient nonlinear holdouts.
 
 All three model-development reports above now carry an ``input_validation``
 block. It is generated from the nonlinear summary gates before model fitting,

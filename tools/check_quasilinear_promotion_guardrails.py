@@ -768,18 +768,25 @@ def _audit_failed_baseline_contract(
         simple = by_model.get("positive_mixing_length", {})
         return (
             gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
+            and gates.get("accepted_holdout_screening_models") == []
             and gates.get("mean_error_gate_models") == ["spectral_envelope_ridge"]
             and gates.get("accepted_absolute_flux_models") == []
             and gates.get("absolute_flux_promotion_passed") is False
+            and gates.get("holdout_screening_correlation_passed") is False
             and spectral.get("screening_gate_passed") is True
+            and spectral.get("holdout_screening_gate_passed") is False
             and _finite_number(spectral.get("spearman"))
             and float(spectral["spearman"]) >= 0.75
+            and _finite_number(spectral.get("holdout_spearman"))
+            and float(spectral["holdout_spearman"]) < 0.75
             and simple.get("screening_gate_passed") is False,
             (
                 f"screening={gates.get('accepted_screening_models')} "
+                f"holdout_screening={gates.get('accepted_holdout_screening_models')} "
                 f"mean_error={gates.get('mean_error_gate_models')} "
                 f"absolute={gates.get('accepted_absolute_flux_models')} "
                 f"spectral_spearman={spectral.get('spearman')} "
+                f"spectral_holdout_spearman={spectral.get('holdout_spearman')} "
                 f"simple_screening={simple.get('screening_gate_passed')}"
             ),
         )

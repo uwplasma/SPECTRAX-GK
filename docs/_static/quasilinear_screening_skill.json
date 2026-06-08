@@ -102,10 +102,13 @@
     "absolute_error_gate": 0.35,
     "absolute_flux_promotion_passed": false,
     "accepted_absolute_flux_models": [],
+    "accepted_holdout_screening_models": [],
     "accepted_screening_models": [
       "spectral_envelope_ridge"
     ],
+    "best_holdout_screening_model": "spectral_envelope_ridge",
     "best_screening_model": "spectral_envelope_ridge",
+    "holdout_screening_correlation_passed": false,
     "mean_error_gate_models": [
       "spectral_envelope_ridge"
     ],
@@ -122,6 +125,7 @@
       "holdout_pairwise_order_accuracy": 0.6428571428571429,
       "holdout_pairwise_order_correct": 9,
       "holdout_pairwise_order_total": 14,
+      "holdout_screening_gate_passed": false,
       "holdout_spearman": 0.2898855178262242,
       "label": "positive-growth ML",
       "log_pearson": 0.6120107119722696,
@@ -140,6 +144,7 @@
       "holdout_pairwise_order_accuracy": 0.26666666666666666,
       "holdout_pairwise_order_correct": 4,
       "holdout_pairwise_order_total": 15,
+      "holdout_screening_gate_passed": false,
       "holdout_spearman": -0.5428571428571429,
       "label": "linear-weight fit",
       "log_pearson": 0.10287265109459305,
@@ -158,6 +163,7 @@
       "holdout_pairwise_order_accuracy": 0.4666666666666667,
       "holdout_pairwise_order_correct": 7,
       "holdout_pairwise_order_total": 15,
+      "holdout_screening_gate_passed": false,
       "holdout_spearman": -0.028571428571428574,
       "label": "absolute-growth ML",
       "log_pearson": 0.21103311100990343,
@@ -176,6 +182,7 @@
       "holdout_pairwise_order_accuracy": 0.7333333333333333,
       "holdout_pairwise_order_correct": 11,
       "holdout_pairwise_order_total": 15,
+      "holdout_screening_gate_passed": false,
       "holdout_spearman": 0.7142857142857143,
       "label": "spectral-envelope ridge",
       "log_pearson": 0.8438098205643185,
@@ -194,6 +201,7 @@
       "holdout_pairwise_order_accuracy": 0.6,
       "holdout_pairwise_order_correct": 9,
       "holdout_pairwise_order_total": 15,
+      "holdout_screening_gate_passed": false,
       "holdout_spearman": 0.08571428571428573,
       "label": "linear-state ridge",
       "log_pearson": 0.09577220779027779,
@@ -208,6 +216,7 @@
   ],
   "notes": [
     "Screening gates are ranking/correlation diagnostics, not absolute heat-flux promotion gates.",
+    "Held-out-only screening is reported separately and remains below gate until more independent nonlinear holdouts are admitted.",
     "All metrics are computed from tracked nonlinear-window and quasilinear model-selection artifacts.",
     "A model may pass screening or mean-error gates while still failing universal absolute-flux promotion requirements."
   ],

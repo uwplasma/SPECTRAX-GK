@@ -444,10 +444,12 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_screening_skill.json``:
   the current correlation/ranking synthesis is scoped as
   ``screening_correlation_model_development_not_absolute_flux_promotion``. It
-  records ``spectral_envelope_ridge`` as the only model that passes both the
-  screening gate and mean-error gate on the current eight-case portfolio, while
+  records ``spectral_envelope_ridge`` as the only model that passes the
+  full-portfolio screening gate and mean-error gate on the current eight-case
+  portfolio. The held-out-only screening gate remains empty, and
   ``accepted_absolute_flux_models`` remains empty. Screening skill is therefore
-  claimable only as a model-development proxy, not as a runtime saturation law.
+  claimable only as a model-development proxy, not as a runtime saturation law
+  or universal absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` block quantifies the current gap:

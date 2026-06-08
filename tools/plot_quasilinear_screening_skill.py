@@ -183,6 +183,12 @@ def build_report(
             and math.isfinite(pairwise_accuracy)
             and pairwise_accuracy >= pairwise_order_gate
         )
+        holdout_screening_gate_passed = bool(
+            math.isfinite(holdout_spearman)
+            and holdout_spearman >= spearman_gate
+            and math.isfinite(holdout_pairwise_accuracy)
+            and holdout_pairwise_accuracy >= pairwise_order_gate
+        )
         model_rows.append(
             {
                 "model": model,
@@ -201,10 +207,14 @@ def build_report(
                 "holdout_pairwise_order_total": holdout_total,
                 "absolute_flux_gate_passed": absolute_gate_passed,
                 "screening_gate_passed": screening_gate_passed,
+                "holdout_screening_gate_passed": holdout_screening_gate_passed,
             }
         )
 
     accepted_screening = [row["model"] for row in model_rows if bool(row["screening_gate_passed"])]
+    accepted_holdout_screening = [
+        row["model"] for row in model_rows if bool(row["holdout_screening_gate_passed"])
+    ]
     mean_error_gate_models = [row["model"] for row in model_rows if bool(row["absolute_flux_gate_passed"])]
     best_screening = max(
         model_rows,
@@ -212,6 +222,16 @@ def build_report(
             float("-inf") if row["spearman"] is None else float(row["spearman"]),
             float("-inf") if row["pairwise_order_accuracy"] is None else float(row["pairwise_order_accuracy"]),
             -float(row["mean_abs_relative_error"]),
+        ),
+    )
+    best_holdout_screening = max(
+        model_rows,
+        key=lambda row: (
+            float("-inf") if row["holdout_spearman"] is None else float(row["holdout_spearman"]),
+            float("-inf")
+            if row["holdout_pairwise_order_accuracy"] is None
+            else float(row["holdout_pairwise_order_accuracy"]),
+            -float(row["holdout_mean_abs_relative_error"]),
         ),
     )
     case_rows = []
@@ -241,14 +261,18 @@ def build_report(
             "mean_error_gate_models": mean_error_gate_models,
             "accepted_absolute_flux_models": [],
             "accepted_screening_models": accepted_screening,
+            "accepted_holdout_screening_models": accepted_holdout_screening,
             "absolute_flux_promotion_passed": False,
             "screening_correlation_passed": bool(accepted_screening),
+            "holdout_screening_correlation_passed": bool(accepted_holdout_screening),
             "best_screening_model": best_screening["model"],
+            "best_holdout_screening_model": best_holdout_screening["model"],
         },
         "models": model_rows,
         "cases": case_rows,
         "notes": [
             "Screening gates are ranking/correlation diagnostics, not absolute heat-flux promotion gates.",
+            "Held-out-only screening is reported separately and remains below gate until more independent nonlinear holdouts are admitted.",
             "All metrics are computed from tracked nonlinear-window and quasilinear model-selection artifacts.",
             "A model may pass screening or mean-error gates while still failing universal absolute-flux promotion requirements.",
         ],
@@ -259,7 +283,7 @@ def write_csv(report: dict[str, Any], path: Path) -> None:
     fields = list(report["models"][0].keys())
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(report["models"])
 
@@ -275,8 +299,8 @@ def write_figure(report: dict[str, Any], *, out: Path, title: str, dpi: int = 22
     linear_pred = np.asarray([row["linear_weight_prediction"] for row in case_rows], dtype=float)
     simple_pred = np.asarray([row["positive_mixing_length_prediction"] for row in case_rows], dtype=float)
 
-    fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.1), constrained_layout=True)
-    ax0, ax1 = axes
+    fig, axes = plt.subplots(1, 3, figsize=(16.2, 5.0), constrained_layout=True)
+    ax0, ax1, ax2 = axes
     floor = 1.0e-3
     positive = np.concatenate([observed[observed > 0.0], best_pred[best_pred > 0.0], linear_pred[linear_pred > 0.0], simple_pred[simple_pred > 0.0]])
     lo = max(float(np.min(positive)) * 0.35, floor)
@@ -321,7 +345,7 @@ def write_figure(report: dict[str, Any], *, out: Path, title: str, dpi: int = 22
     ax1.set_xticklabels(labels, rotation=25, ha="right")
     ax1.set_ylim(-0.55, 1.05)
     ax1.set_ylabel("Screening metric")
-    ax1.set_title("Correlation/ranking skill, not absolute promotion")
+    ax1.set_title("Full-portfolio screening")
     ax1.legend(loc="lower right", fontsize=8.0, frameon=True)
     ax1.text(
         0.02,
@@ -330,6 +354,31 @@ def write_figure(report: dict[str, Any], *, out: Path, title: str, dpi: int = 22
         f"mean-error gate: {', '.join(report['gates']['mean_error_gate_models']) or 'none'}\n"
         "absolute promotion: none",
         transform=ax1.transAxes,
+        fontsize=8.4,
+        bbox={"boxstyle": "round,pad=0.28", "facecolor": "white", "edgecolor": "0.8", "alpha": 0.92},
+    )
+
+    holdout_spearman = np.asarray([row["holdout_spearman"] for row in model_rows], dtype=float)
+    holdout_pairwise = np.asarray([row["holdout_pairwise_order_accuracy"] for row in model_rows], dtype=float)
+    holdout_mare = np.asarray([row["holdout_mean_abs_relative_error"] for row in model_rows], dtype=float)
+    holdout_absolute_skill = 1.0 - np.minimum(holdout_mare, 1.5) / 1.5
+    ax2.axhline(report["gates"]["spearman_gate"], color="#0f766e", linestyle="--", linewidth=1.1, label="rank gate")
+    ax2.bar(x - width, holdout_spearman, width, color="#0f766e", label="holdout Spearman")
+    ax2.bar(x, holdout_pairwise, width, color="#2563eb", label="holdout pairwise")
+    ax2.bar(x + width, holdout_absolute_skill, width, color="#9ca3af", label="holdout abs. skill")
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(labels, rotation=25, ha="right")
+    ax2.set_ylim(-0.65, 1.05)
+    ax2.set_ylabel("Held-out metric")
+    ax2.set_title("Held-out-only promotion check")
+    ax2.legend(loc="lower right", fontsize=8.0, frameon=True)
+    ax2.text(
+        0.02,
+        0.05,
+        f"heldout screening gate: {', '.join(report['gates']['accepted_holdout_screening_models']) or 'none'}\n"
+        f"best heldout model: {MODEL_LABELS[report['gates']['best_holdout_screening_model']]}\n"
+        "needs more nonlinear holdouts",
+        transform=ax2.transAxes,
         fontsize=8.4,
         bbox={"boxstyle": "round,pad=0.28", "facecolor": "white", "edgecolor": "0.8", "alpha": 0.92},
     )

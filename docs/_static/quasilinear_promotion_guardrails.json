@@ -553,7 +553,7 @@
         "passed": true
       },
       {
-        "detail": "screening=['spectral_envelope_ridge'] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 simple_screening=False",
+        "detail": "screening=['spectral_envelope_ridge'] holdout_screening=[] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 spectral_holdout_spearman=0.7142857142857143 simple_screening=False",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_screening_skill",
         "passed": true
       },
@@ -744,7 +744,7 @@
     {
       "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
       "claim_scoped": true,
-      "failed_baseline_detail": "screening=['spectral_envelope_ridge'] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 simple_screening=False",
+      "failed_baseline_detail": "screening=['spectral_envelope_ridge'] holdout_screening=[] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 spectral_holdout_spearman=0.7142857142857143 simple_screening=False",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_screening_skill.png",
       "index_mentions_json_sidecar": true,

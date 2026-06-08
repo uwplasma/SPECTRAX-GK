@@ -1,3 +1,13 @@
+- Tightened the quasilinear screening/correlation artifact to separate full-portfolio
+  screening from held-out-only promotion. The refreshed
+  `docs/_static/quasilinear_screening_skill.{png,pdf,json,csv}` records
+  `spectral_envelope_ridge` as the only full-portfolio screening and mean-error
+  pass, but `accepted_holdout_screening_models` remains empty (`holdout`
+  Spearman about `0.71`, pairwise order about `0.73`). This strengthens the
+  claim boundary: useful screening/model-development evidence is claimable now,
+  while universal absolute-flux or held-out screening promotion still requires
+  additional independent, replicated, post-transient nonlinear holdouts.
+
 # SPECTRAX-GK Active Plan and Running Log
 
 Last updated: 2026-06-08
