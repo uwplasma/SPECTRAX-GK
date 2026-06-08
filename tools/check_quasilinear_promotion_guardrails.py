@@ -39,6 +39,7 @@ DEFAULT_MANUSCRIPT_FIGURE_BASES = (
     ROOT / "docs/_static/quasilinear_dataset_sufficiency",
     ROOT / "docs/_static/quasilinear_model_selection_status",
     ROOT / "docs/_static/quasilinear_stellarator_usefulness",
+    ROOT / "docs/_static/quasilinear_screening_skill",
     ROOT / "docs/_static/quasilinear_holdout_gap_report",
 )
 
@@ -750,6 +751,36 @@ def _audit_failed_baseline_contract(
                 f"hsx_ml={hsx.get('positive_mixing_length_prediction')} "
                 f"w7x_ml={w7x.get('positive_mixing_length_prediction')} "
                 f"qa={qa.get('status')} qh_passed={qh.get('high_grid_gate_passed')}"
+            ),
+        )
+
+    if name == "quasilinear_screening_skill":
+        gates = data.get("gates")
+        gates = gates if isinstance(gates, dict) else {}
+        models = data.get("models")
+        models = models if isinstance(models, list) else []
+        by_model = {
+            str(row.get("model")): row
+            for row in models
+            if isinstance(row, dict) and "model" in row
+        }
+        spectral = by_model.get("spectral_envelope_ridge", {})
+        simple = by_model.get("positive_mixing_length", {})
+        return (
+            gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
+            and gates.get("mean_error_gate_models") == ["spectral_envelope_ridge"]
+            and gates.get("accepted_absolute_flux_models") == []
+            and gates.get("absolute_flux_promotion_passed") is False
+            and spectral.get("screening_gate_passed") is True
+            and _finite_number(spectral.get("spearman"))
+            and float(spectral["spearman"]) >= 0.75
+            and simple.get("screening_gate_passed") is False,
+            (
+                f"screening={gates.get('accepted_screening_models')} "
+                f"mean_error={gates.get('mean_error_gate_models')} "
+                f"absolute={gates.get('accepted_absolute_flux_models')} "
+                f"spectral_spearman={spectral.get('spearman')} "
+                f"simple_screening={simple.get('screening_gate_passed')}"
             ),
         )
 

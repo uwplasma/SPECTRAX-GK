@@ -101,6 +101,11 @@ flux predictor or a converged nonlinear turbulent heat-flux reduction.
   transfer, the spectral-envelope ridge candidate is the best scoped
   model-development result, QA remains matched-nonlinear-audit-only, and QH is
   excluded until grid/window convergence passes.
+- Added the quasilinear screening/correlation summary
+  `docs/_static/quasilinear_screening_skill.{png,pdf,json,csv}` and its
+  generator/test. It separates useful screening claims from absolute-flux
+  promotion: `spectral_envelope_ridge` passes the current rank/correlation and
+  mean-error gates, while `accepted_absolute_flux_models` remains empty.
 - Added `tools/write_vmec_jax_optimizer_comparison_manifest.py`, a tested
   manifest generator for strict QA optimizer comparisons. It emits one strict
   SciPy QA baseline, matched deterministic transport commands for

@@ -518,6 +518,46 @@
         "passed": true
       },
       {
+        "detail": "docs/_static/quasilinear_screening_skill.png",
+        "metric": "ql_figure_png_exists:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_screening_skill.json",
+        "metric": "ql_figure_json_sidecar_exists:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_screening_skill.png",
+        "metric": "ql_figure_index_mentions_png:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "nearby index text mentions JSON companion",
+        "metric": "ql_figure_index_mentions_json_sidecar:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "kind=quasilinear_screening_skill",
+        "metric": "ql_figure_sidecar_has_kind:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "claim_level=screening_correlation_model_development_not_absolute_flux_promotion passed=None",
+        "metric": "ql_figure_sidecar_claim_scoped:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "no runtime absolute-flux overclaim in JSON sidecar",
+        "metric": "ql_figure_sidecar_no_runtime_absolute_overclaim:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
+        "detail": "screening=['spectral_envelope_ridge'] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 simple_screening=False",
+        "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_screening_skill",
+        "passed": true
+      },
+      {
         "detail": "docs/_static/quasilinear_holdout_gap_report.png",
         "metric": "ql_figure_png_exists:docs/_static/quasilinear_holdout_gap_report",
         "passed": true
@@ -702,6 +742,21 @@
       "runtime_absolute_overclaim_lines": []
     },
     {
+      "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
+      "claim_scoped": true,
+      "failed_baseline_detail": "screening=['spectral_envelope_ridge'] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 simple_screening=False",
+      "failed_baselines_explicit": true,
+      "figure": "docs/_static/quasilinear_screening_skill.png",
+      "index_mentions_json_sidecar": true,
+      "index_mentions_png": true,
+      "json_exists": true,
+      "json_sidecar": "docs/_static/quasilinear_screening_skill.json",
+      "kind": "quasilinear_screening_skill",
+      "passed": null,
+      "png_exists": true,
+      "runtime_absolute_overclaim_lines": []
+    },
+    {
       "claim_level": "holdout_gap_report_no_absolute_flux_promotion",
       "claim_scoped": true,
       "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'absolute_requirement:minimum_external_vmec_holdout_families', 'absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate'] holdout_mean=2.114098664675138",
@@ -773,7 +828,7 @@
     "n_doc_checks": 4,
     "n_failed_gates": 0,
     "n_input_validation_reports": 4,
-    "n_manuscript_figure_checks": 8,
+    "n_manuscript_figure_checks": 9,
     "n_manuscript_readiness_reports": 1,
     "n_promotion_gate_reports": 4,
     "n_reports_scanned": 10

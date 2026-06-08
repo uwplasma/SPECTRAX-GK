@@ -441,6 +441,13 @@ Quasilinear model-selection state:
   convergence passes. The accepted model-selection result remains the
   ``spectral_envelope_ridge`` candidate, not a universal stellarator
   absolute-flux predictor.
+- ``docs/_static/quasilinear_screening_skill.json``:
+  the current correlation/ranking synthesis is scoped as
+  ``screening_correlation_model_development_not_absolute_flux_promotion``. It
+  records ``spectral_envelope_ridge`` as the only model that passes both the
+  screening gate and mean-error gate on the current eight-case portfolio, while
+  ``accepted_absolute_flux_models`` remains empty. Screening skill is therefore
+  claimable only as a model-development proxy, not as a runtime saturation law.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` block quantifies the current gap:

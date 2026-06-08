@@ -238,6 +238,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_stellarator_usefulness.py``
      - Stellarator-facing model-skill and scope summary closed as a scoped model-development figure
      - current artifact base: ``docs/_static/quasilinear_stellarator_usefulness.png`` with CSV/JSON/PDF companions. It compares admitted HSX and W7-X nonlinear heat-flux windows with the simple positive-growth mixing-length rule, the calibrated linear-weight rule, and the accepted ``spectral_envelope_ridge`` candidate. The simple rule predicts zero for HSX and W7-X while the nonlinear windows are finite, so it is explicitly rejected as a stellarator absolute-flux proxy. The spectral-envelope candidate is much closer on those two admitted stellarator holdouts and remains the best scoped model-selection result, but the figure also records that QA is matched-nonlinear-audit-only and QH is excluded until grid/window convergence passes. This figure is a manuscript-facing usefulness/limitation summary, not a runtime/TOML absolute-flux predictor.
+   * - Quasilinear screening and rank-correlation skill
+     - ``tools/plot_quasilinear_screening_skill.py``
+     - Screening/correlation gate closed for the scoped spectral-envelope candidate; absolute-flux promotion remains blocked
+     - current artifact base: ``docs/_static/quasilinear_screening_skill.png`` with CSV/JSON/PDF companions. It scores the current simple rules and candidate models by Spearman rank correlation, pairwise order accuracy, and mean relative error on the eight-case electrostatic portfolio. Only ``spectral_envelope_ridge`` passes both the screening gate and the mean-error gate, with Spearman correlation about ``0.81`` and pairwise order accuracy about ``0.79``. The figure deliberately reports ``absolute promotion: none`` because screening skill is not equivalent to a universal absolute-flux predictor.
    * - Quasilinear dataset-sufficiency gate
      - ``tools/plot_quasilinear_dataset_sufficiency.py``
      - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked

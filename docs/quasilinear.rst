@@ -1055,6 +1055,38 @@ figures, but reliable absolute nonlinear heat-flux prediction for QA, QH,
 W7-X, and HSX requires more matched nonlinear holdouts and a richer
 saturation theory calibrated against those holdouts.
 
+Screening and rank-correlation gate
+-----------------------------------
+
+Absolute flux is not the only useful model-development target. For optimization
+and early design screening, a calibrated quasilinear candidate can still be
+useful if it ranks geometries in approximately the same order as the nonlinear
+late-window heat flux. The screening gate below therefore scores each candidate
+with both absolute-error and rank/correlation metrics, while keeping absolute
+flux promotion disabled unless the stricter holdout-promotion requirements
+also pass.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_screening_skill.py \
+     --out docs/_static/quasilinear_screening_skill.png
+
+.. image:: _static/quasilinear_screening_skill.png
+   :alt: Quasilinear screening and rank-correlation skill
+   :width: 100%
+
+The current result is stronger than the simple one-constant story but still
+properly scoped. ``spectral_envelope_ridge`` is the only candidate that passes
+the screening gate on the present eight-case electrostatic portfolio, with
+Spearman rank correlation about ``0.81`` and pairwise order accuracy about
+``0.79``. It also passes the mean-error gate with mean relative error about
+``0.295``. The simple positive-growth mixing-length rule, raw linear-weight
+fit, absolute-growth diagnostic, and broader linear-state ridge do not pass
+the screening gate. This supports using the spectral-envelope candidate as a
+screening/model-development proxy in constrained studies, but it still does
+not promote a runtime/TOML absolute-flux predictor or a universal stellarator
+saturation law.
+
 All three model-development reports above now carry an ``input_validation``
 block. It is generated from the nonlinear summary gates before model fitting,
 so these figures can only be regenerated from nonlinear windows that already

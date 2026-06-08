@@ -1,0 +1,218 @@
+{
+  "cases": [
+    {
+      "absolute_growth_mixing_length_prediction": 0.0862246965631407,
+      "case": "cyclone_long_window",
+      "geometry": "cyclone",
+      "label": "Cyclone",
+      "linear_state_ridge_prediction": 31.6678660397473,
+      "linear_weight_prediction": 0.6132273318011527,
+      "observed_heat_flux": 6.6689961798985795,
+      "positive_mixing_length_prediction": 0.09860403153852253,
+      "spectral_envelope_ridge_prediction": 9.367766858643025,
+      "split": "train"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 38.24319016872339,
+      "case": "cyclone_miller_long_window",
+      "geometry": "cyclone_miller",
+      "label": "Cyclone Miller",
+      "linear_state_ridge_prediction": 16.382878604602272,
+      "linear_weight_prediction": 18.21877885044232,
+      "observed_heat_flux": 4.259822065746515,
+      "positive_mixing_length_prediction": 38.66542554443455,
+      "spectral_envelope_ridge_prediction": 6.6684605600166185,
+      "split": "holdout"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 21.385004539369067,
+      "case": "hsx_nonlinear_window",
+      "geometry": "hsx",
+      "label": "HSX",
+      "linear_state_ridge_prediction": 4.930371380735042,
+      "linear_weight_prediction": 10.410528531145104,
+      "observed_heat_flux": 5.089605487565396,
+      "positive_mixing_length_prediction": 0.0,
+      "spectral_envelope_ridge_prediction": 5.499364121824304,
+      "split": "holdout"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 35.65224693096294,
+      "case": "w7x_nonlinear_window",
+      "geometry": "w7x",
+      "label": "W7-X",
+      "linear_state_ridge_prediction": 5.317999864107325,
+      "linear_weight_prediction": 10.3066465080865,
+      "observed_heat_flux": 5.378544112072135,
+      "positive_mixing_length_prediction": 0.0,
+      "spectral_envelope_ridge_prediction": 5.337116286560114,
+      "split": "holdout"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 60.694121271495284,
+      "case": "dshape_external_vmec_t250_window",
+      "geometry": "dshape_external_vmec",
+      "label": "D-shaped VMEC",
+      "linear_state_ridge_prediction": 12.120668280445672,
+      "linear_weight_prediction": 16.3946936115563,
+      "observed_heat_flux": 18.479456131274883,
+      "positive_mixing_length_prediction": 51.62028102494143,
+      "spectral_envelope_ridge_prediction": 22.51973099038096,
+      "split": "holdout"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 22.07246167911703,
+      "case": "itermodel_external_vmec_t350_window",
+      "geometry": "itermodel_external_vmec",
+      "label": "ITERModel VMEC",
+      "linear_state_ridge_prediction": 10.653806865890086,
+      "linear_weight_prediction": 8.309458172453867,
+      "observed_heat_flux": 22.046746492385864,
+      "positive_mixing_length_prediction": 22.076093494145443,
+      "spectral_envelope_ridge_prediction": 12.128229650777868,
+      "split": "train"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 2.2427849838963634,
+      "case": "updown_asym_external_vmec_t450_window",
+      "geometry": "updown_asym_external_vmec",
+      "label": "Up-down VMEC",
+      "linear_state_ridge_prediction": 10.41976175200703,
+      "linear_weight_prediction": 6.680325293423149,
+      "observed_heat_flux": 7.76432224499282,
+      "positive_mixing_length_prediction": 2.5647830621740666,
+      "spectral_envelope_ridge_prediction": 9.939088032029995,
+      "split": "holdout"
+    },
+    {
+      "absolute_growth_mixing_length_prediction": 22.227858699522255,
+      "case": "circular_external_vmec_t450_window",
+      "geometry": "circular_external_vmec",
+      "label": "Circular VMEC",
+      "linear_state_ridge_prediction": 11.014613770192446,
+      "linear_weight_prediction": 8.620661886956661,
+      "observed_heat_flux": 19.430008846324878,
+      "positive_mixing_length_prediction": 22.242769248057787,
+      "spectral_envelope_ridge_prediction": 12.532163815799047,
+      "split": "holdout"
+    }
+  ],
+  "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
+  "gates": {
+    "absolute_error_gate": 0.35,
+    "absolute_flux_promotion_passed": false,
+    "accepted_absolute_flux_models": [],
+    "accepted_screening_models": [
+      "spectral_envelope_ridge"
+    ],
+    "best_screening_model": "spectral_envelope_ridge",
+    "mean_error_gate_models": [
+      "spectral_envelope_ridge"
+    ],
+    "pairwise_order_gate": 0.75,
+    "screening_correlation_passed": true,
+    "spearman_gate": 0.75
+  },
+  "kind": "quasilinear_screening_skill",
+  "models": [
+    {
+      "absolute_flux_gate_passed": false,
+      "holdout_log_pearson": 0.5577486518561133,
+      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_pairwise_order_accuracy": 0.6428571428571429,
+      "holdout_pairwise_order_correct": 9,
+      "holdout_pairwise_order_total": 14,
+      "holdout_spearman": 0.2898855178262242,
+      "label": "positive-growth ML",
+      "log_pearson": 0.6120107119722696,
+      "mean_abs_relative_error": 1.7088922094932093,
+      "model": "positive_mixing_length",
+      "pairwise_order_accuracy": 0.6666666666666666,
+      "pairwise_order_correct": 18,
+      "pairwise_order_total": 27,
+      "screening_gate_passed": false,
+      "spearman": 0.34731161595484505
+    },
+    {
+      "absolute_flux_gate_passed": false,
+      "holdout_log_pearson": -0.10637794190251892,
+      "holdout_mean_abs_relative_error": 1.0078897356073473,
+      "holdout_pairwise_order_accuracy": 0.26666666666666666,
+      "holdout_pairwise_order_correct": 4,
+      "holdout_pairwise_order_total": 15,
+      "holdout_spearman": -0.5428571428571429,
+      "label": "linear-weight fit",
+      "log_pearson": 0.10287265109459305,
+      "mean_abs_relative_error": 0.9473105820472785,
+      "model": "linear_weight",
+      "pairwise_order_accuracy": 0.32142857142857145,
+      "pairwise_order_correct": 9,
+      "pairwise_order_total": 28,
+      "screening_gate_passed": false,
+      "spearman": -0.4523809523809524
+    },
+    {
+      "absolute_flux_gate_passed": false,
+      "holdout_log_pearson": 0.10491624893788477,
+      "holdout_mean_abs_relative_error": 3.3245843428684867,
+      "holdout_pairwise_order_accuracy": 0.4666666666666667,
+      "holdout_pairwise_order_correct": 7,
+      "holdout_pairwise_order_total": 15,
+      "holdout_spearman": -0.028571428571428574,
+      "label": "absolute-growth ML",
+      "log_pearson": 0.21103311100990343,
+      "mean_abs_relative_error": 2.616967908032077,
+      "model": "absolute_growth_mixing_length",
+      "pairwise_order_accuracy": 0.4642857142857143,
+      "pairwise_order_correct": 13,
+      "pairwise_order_total": 28,
+      "screening_gate_passed": false,
+      "spearman": -0.04761904761904763
+    },
+    {
+      "absolute_flux_gate_passed": true,
+      "holdout_log_pearson": 0.8950441658327988,
+      "holdout_mean_abs_relative_error": 0.2512310451426226,
+      "holdout_pairwise_order_accuracy": 0.7333333333333333,
+      "holdout_pairwise_order_correct": 11,
+      "holdout_pairwise_order_total": 15,
+      "holdout_spearman": 0.7142857142857143,
+      "label": "spectral-envelope ridge",
+      "log_pearson": 0.8438098205643185,
+      "mean_abs_relative_error": 0.29524327596674427,
+      "model": "spectral_envelope_ridge",
+      "pairwise_order_accuracy": 0.7857142857142857,
+      "pairwise_order_correct": 22,
+      "pairwise_order_total": 28,
+      "screening_gate_passed": true,
+      "spearman": 0.8095238095238096
+    },
+    {
+      "absolute_flux_gate_passed": false,
+      "holdout_log_pearson": 0.32657967213089945,
+      "holdout_mean_abs_relative_error": 0.6679447569094448,
+      "holdout_pairwise_order_accuracy": 0.6,
+      "holdout_pairwise_order_correct": 9,
+      "holdout_pairwise_order_total": 15,
+      "holdout_spearman": 0.08571428571428573,
+      "label": "linear-state ridge",
+      "log_pearson": 0.09577220779027779,
+      "mean_abs_relative_error": 1.034119004951086,
+      "model": "linear_state_ridge",
+      "pairwise_order_accuracy": 0.5357142857142857,
+      "pairwise_order_correct": 15,
+      "pairwise_order_total": 28,
+      "screening_gate_passed": false,
+      "spearman": 0.07142857142857144
+    }
+  ],
+  "notes": [
+    "Screening gates are ranking/correlation diagnostics, not absolute heat-flux promotion gates.",
+    "All metrics are computed from tracked nonlinear-window and quasilinear model-selection artifacts.",
+    "A model may pass screening or mean-error gates while still failing universal absolute-flux promotion requirements."
+  ],
+  "source_artifacts": {
+    "candidate_uncertainty": "docs/_static/quasilinear_candidate_uncertainty.json",
+    "saturation_rule_sweep": "docs/_static/quasilinear_saturation_rule_sweep.json"
+  }
+}
