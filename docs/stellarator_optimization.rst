@@ -305,10 +305,11 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    admitted constraints-only row follows the upstream VMEC-JAX QA simple-seed
    setup and passes the strict aspect/iota/QS gate. The growth, quasilinear, and
    nonlinear-window transport rows restart from that solved QA input. Their
-   strict solved-WOUT gate is tripped only by a small mean-iota shortfall, so the
-   figure labels them diagnostic-ok under the exploratory ``|iota| >= 0.39``
-   rule. The nonlinear heat-flux column is still marked pending until concrete
-   candidate WOUTs receive matched long-window SPECTRAX-GK ``Q(t)`` audits.
+   strict solved-WOUT gate is tripped by a small mean-iota shortfall, so the
+   figure treats them as diagnostic-only non-admitted candidates rather than
+   promoted optimized stellarators. The nonlinear heat-flux column is still
+   marked pending until concrete candidate WOUTs receive matched long-window
+   SPECTRAX-GK ``Q(t)`` audits.
 
 .. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate

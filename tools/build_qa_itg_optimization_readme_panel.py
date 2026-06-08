@@ -288,14 +288,19 @@ def _plot_q_traces(ax: plt.Axes, sweep: dict[str, Any], matched: dict[str, Any])
         ("qa_baseline_scipy", "QA baseline", "#64748b"),
         ("projected_guarded_ladder/transport_weight_0p001", "projected opt.", "#0f766e"),
     ]
+    plotted = False
     for case_id, label, color in cases:
-        case = _case_by_id(sweep, case_id)
+        try:
+            case = _case_by_id(sweep, case_id)
+        except KeyError:
+            continue
         for idx, trace in enumerate(case.get("q_traces", [])):
             path = ROOT / trace["path"]
             if not path.exists():
                 continue
             t, q = _read_trace(path)
             ax.plot(t, q, color=color, lw=1.0, alpha=0.35 if idx else 0.85, label=label if idx == 0 else None)
+            plotted = True
     ax.axvspan(350.0, 700.0, color="#e0f2fe", alpha=0.35, lw=0.0)
     stats = matched.get("statistics", {})
     rel = 100.0 * float(stats.get("relative_reduction", float("nan")))
@@ -303,7 +308,18 @@ def _plot_q_traces(ax: plt.Axes, sweep: dict[str, Any], matched: dict[str, Any])
     ax.set_xlabel(r"$t v_{ti}/a$")
     ax.set_ylabel(r"$Q_i/Q_{gB}$")
     ax.set_title("Matched long-window nonlinear audit", loc="left", fontweight="bold")
-    ax.legend(frameon=False, fontsize=8)
+    if plotted:
+        ax.legend(frameon=False, fontsize=8)
+    else:
+        ax.text(
+            0.5,
+            0.5,
+            "Matched nonlinear traces pending\nfor this sweep.",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+            fontsize=9,
+        )
     if math.isfinite(rel):
         ax.text(
             0.98,
@@ -342,7 +358,7 @@ def build_panel(
     sweep = _read_json(sweep_json)
     landscape = _read_json(landscape_json)
     admission = _read_json(admission_json) if admission_json.exists() else None
-    matched = _read_json(matched_json)
+    matched = _read_json(matched_json) if matched_json.exists() else {}
     rows = _read_landscape_rows(landscape_csv)
 
     set_plot_style()
@@ -410,9 +426,11 @@ def build_panel(
             "landscape_csv": _repo_relative(landscape_csv),
             "landscape_admission_json": _repo_relative(admission_json),
             "matched_nonlinear_json": _repo_relative(matched_json),
+            "landscape_admission_present": admission is not None,
+            "matched_nonlinear_present": bool(matched),
         },
         "selected_landscape_candidate": admission.get("selected_candidate") if admission else None,
-        "matched_projected_candidate": matched.get("statistics"),
+        "matched_projected_candidate": matched.get("statistics") if matched else None,
         "output": _repo_relative(out),
     }
     sidecar_path = out.with_suffix(".json")

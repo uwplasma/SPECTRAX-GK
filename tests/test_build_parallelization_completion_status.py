@@ -104,6 +104,14 @@ def _write_minimal_status_inputs(root: Path, *, cpu_speedup: float, gpu_speedup:
 
 def test_parallelization_completion_status_closes_production_lanes() -> None:
     status = build_status(ROOT)
+    production_gate = json.loads(
+        (
+            ROOT
+            / "docs"
+            / "_static"
+            / "nonlinear_sharding_production_speedup_gate.json"
+        ).read_text(encoding="utf-8")
+    )
 
     assert status["passed"] is True
     assert status["production_completion_percent"] == 100.0
@@ -131,6 +139,13 @@ def test_parallelization_completion_status_closes_production_lanes() -> None:
     assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
     assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
     assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
+    assert production_gate["production_speedup_claim_allowed"] is False
+    assert production_gate["status"] == "diagnostic_only"
+    assert "gpu_production_speedup_candidate_missing" in production_gate["blockers"]
+    assert (
+        lanes["whole_state_nonlinear_sharding"]["status"]
+        == "diagnostic_closed_not_production"
+    )
     assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
     assert "Whole-state nonlinear sharding" in status["claim_scope"]
     assert "exception metadata" in status["claim_scope"]

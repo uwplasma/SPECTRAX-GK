@@ -49,8 +49,8 @@ EVALUATE_REDUCED = False
 REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json"
 OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc11"
 
-# SPECTRAX-GK linear/quasilinear settings. These match the optimizer examples:
-# three surfaces, two field-line labels, and three grid-compatible ky values.
+# SPECTRAX-GK linear/quasilinear settings. The sample set matches the optimizer
+# examples; the velocity resolution is reduced so the pedagogical scan is cheap.
 SURFACES = "0.45,0.64,0.78"
 ALPHAS = "0.0,0.7853981633974483"
 KY_VALUES = "0.10,0.30,0.50"
