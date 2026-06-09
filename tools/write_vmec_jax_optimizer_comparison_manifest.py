@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DRIVER = Path("tools/vmec_jax_qa_low_turbulence_optimization.py")
 METRIC_EVAL = Path("tools/evaluate_vmec_jax_spectrax_transport_metric.py")
 AUDIT_WRITER = Path("tools/write_optimized_equilibrium_transport_configs.py")
+SPSA_WRITER = Path("tools/write_vmec_jax_spsa_candidate_campaign.py")
 
 TRANSPORT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
 RUNNABLE_METHODS = ("scipy", "scalar_trust", "lbfgs_adjoint")
@@ -260,6 +261,76 @@ def _metric_eval_template(args: argparse.Namespace, *, outdir: Path, transport_k
     return shlex.join(cmd)
 
 
+def _spsa_candidate_command(
+    args: argparse.Namespace,
+    *,
+    baseline_input: Path,
+    outdir: Path,
+    transport_kind: str,
+) -> str:
+    cmd = [
+        "python3",
+        _repo_relative(ROOT / SPSA_WRITER),
+        "--baseline-input",
+        _repo_relative(baseline_input),
+        "--out-dir",
+        _repo_relative(outdir),
+        "--case-prefix",
+        f"vmec_qa_optimizer_comparison_spsa_{transport_kind}",
+        "--controls",
+        str(args.spsa_controls),
+        "--iterations",
+        str(args.spsa_iterations),
+        "--seed",
+        str(args.spsa_seed),
+        "--relative-delta",
+        f"{args.spsa_relative_delta:.16g}",
+        "--max-mode",
+        str(args.max_mode),
+        "--min-vmec-mode",
+        str(args.min_vmec_mode),
+        "--transport-kind",
+        transport_kind,
+        "--surfaces",
+        _csv(args.surfaces),
+        "--alphas",
+        _csv(args.alphas),
+        "--ky-values",
+        _csv(args.ky_values),
+        "--ntheta",
+        str(args.ntheta),
+        "--mboz",
+        str(args.mboz),
+        "--nboz",
+        str(args.nboz),
+        "--n-laguerre",
+        str(args.n_laguerre),
+        "--n-hermite",
+        str(args.n_hermite),
+        "--surface-chunk-size",
+        str(args.surface_chunk_size),
+        "--spectrax-objective-transform",
+        str(args.spectrax_objective_transform),
+        "--spectrax-objective-scale",
+        f"{args.spectrax_objective_scale:.16g}",
+        "--solver-device",
+        str(args.solver_device),
+        "--audit-horizons",
+        str(args.audit_horizons),
+        "--audit-grid",
+        str(args.audit_grid),
+        "--audit-window-tmin",
+        f"{args.audit_window_tmin:.16g}",
+        "--audit-window-tmax",
+        f"{args.audit_window_tmax:.16g}",
+        "--audit-dt-variant",
+        f"{args.audit_dt_variant:.16g}",
+    ]
+    for seed in args.audit_seed_variants:
+        cmd += ["--audit-seed-variant", str(seed)]
+    return shlex.join(cmd)
+
+
 def _case_id(transport_kind: str, method: str) -> str:
     return f"{transport_kind}_{method}_from_strict_baseline".replace("quasilinear_flux", "quasilinear").replace(
         "nonlinear_window_heat_flux", "nonlinear_window"
@@ -445,6 +516,14 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
                     "candidate_contract": {
                         "candidate_input_placeholder": "{candidate_input_final}",
                         "candidate_id_placeholder": "{candidate_id}",
+                        "spsa_candidate_campaign_command": _spsa_candidate_command(
+                            args,
+                            baseline_input=baseline_input,
+                            outdir=derivative_free_root / "spsa_candidates",
+                            transport_kind=transport_kind,
+                        )
+                        if method == "spsa"
+                        else None,
                         "metric_eval_command_template": _metric_eval_template(
                             args,
                             outdir=derivative_free_root,
@@ -471,6 +550,7 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
         "driver": DRIVER,
         "metric_eval_tool": METRIC_EVAL,
         "audit_writer": AUDIT_WRITER,
+        "spsa_candidate_writer": SPSA_WRITER,
         "comparison_policy": comparison_policy,
         "comparison_fingerprint": _fingerprint(comparison_policy),
         "entries": entries,
@@ -540,6 +620,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--audit-window-tmax", type=float, default=1500.0)
     parser.add_argument("--audit-dt-variant", type=float, default=0.04)
     parser.add_argument("--audit-seed-variant", dest="audit_seed_variants", type=int, action="append")
+    parser.add_argument("--spsa-controls", default="ZBS(1,0);ZBS(1,1);RBC(1,1)")
+    parser.add_argument("--spsa-iterations", type=int, default=4)
+    parser.add_argument("--spsa-seed", type=int, default=20260609)
+    parser.add_argument("--spsa-relative-delta", type=float, default=0.03)
     args = parser.parse_args(argv)
     args.transport_kinds = tuple(part.strip() for part in args.transport_kinds.split(",") if part.strip())
     args.runnable_methods = tuple(part.strip() for part in args.runnable_methods.split(",") if part.strip())
@@ -555,6 +639,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error(f"unknown outer-loop methods: {sorted(unknown_outer)}")
     if args.audit_seed_variants is None:
         args.audit_seed_variants = [32, 33]
+    if int(args.spsa_iterations) <= 0:
+        parser.error("--spsa-iterations must be positive")
+    if float(args.spsa_relative_delta) <= 0.0:
+        parser.error("--spsa-relative-delta must be positive")
     return args
 
 

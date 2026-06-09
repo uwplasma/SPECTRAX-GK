@@ -138,6 +138,14 @@ def test_optimizer_comparison_manifest_marks_spsa_cma_bo_as_outer_loop_contracts
         assert strategy["rbc_landscape_role"] == "conditioning_and_noise_diagnostic_only"
         metric_command = str(contract["metric_eval_command_template"])
         audit_command = str(contract["nonlinear_audit_command_template"])
+        spsa_command = contract["spsa_candidate_campaign_command"]
+        if method == "spsa":
+            assert isinstance(spsa_command, str)
+            assert spsa_command.startswith("python3 tools/write_vmec_jax_spsa_candidate_campaign.py")
+            assert "--transport-kind nonlinear_window_heat_flux" in spsa_command
+            assert "--audit-seed-variant 32 --audit-seed-variant 33" in spsa_command
+        else:
+            assert spsa_command is None
         assert metric_command.startswith("python3 tools/evaluate_vmec_jax_spectrax_transport_metric.py")
         assert audit_command.startswith("python3 tools/write_optimized_equilibrium_transport_configs.py")
         assert "tools/evaluate_vmec_jax_spectrax_transport_metric.py" in metric_command
