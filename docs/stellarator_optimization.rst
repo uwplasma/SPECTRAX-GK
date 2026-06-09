@@ -325,16 +325,31 @@ successes. A true relaunch must either follow the staged ``700 -> 1100 -> 1500``
 restart ladder or use the manifest ``direct_full_horizon_launch_commands``.
 
 The corrected true-full-horizon relaunch is now being harvested incrementally.
-The first two completed strict triplets, the growth-objective candidate and the
-nonlinear-window-objective candidate, both pass the fail-closed runtime-output
-gate and replicated seed/timestep ensemble gate over ``t=[1100,1500]``.  The
-growth candidate has ensemble mean ``<Q_i> = 11.510``, mean relative spread
-``0.0427``, and combined SEM/mean ``0.0124``.  The nonlinear-window candidate
-has ensemble mean ``<Q_i> = 11.609``, mean relative spread ``0.0366``, and
-combined SEM/mean ``0.0177``.  These artifacts close the question of whether
-the candidate traces are real saturated long-window signals, but they do not
-yet show transport reduction because the matched strict QA baseline and
-quasilinear-objective triplets are still running on the office GPUs.
+The strict QA baseline, growth-objective candidate, and nonlinear-window-
+objective candidate all pass the fail-closed runtime-output gate and replicated
+seed/timestep ensemble gate over ``t=[1100,1500]``.  The baseline has ensemble
+mean ``<Q_i> = 11.580``, mean relative spread ``0.0381``, and combined
+SEM/mean ``0.0195``.  The growth candidate has ensemble mean
+``<Q_i> = 11.510``, mean relative spread ``0.0427``, and combined SEM/mean
+``0.0124``.  The nonlinear-window candidate has ensemble mean
+``<Q_i> = 11.609``, mean relative spread ``0.0366``, and combined SEM/mean
+``0.0177``.  These artifacts close the question of whether the completed
+candidate traces are real saturated long-window signals, but they do not
+promote the candidates as transport optimizations: the matched growth
+comparison gives only ``0.60%`` relative reduction with uncertainty
+``z = 0.26`` against the ``4%`` promotion gate, while the nonlinear-window
+comparison is slightly worse than baseline (``-0.25%``, ``z = -0.09``).  The
+quasilinear-objective triplet is still running on the office GPU and remains
+the only unharvested row in this strict ``t=1500`` matched set.
+
+.. figure:: _static/vmec_qa_t1500_replicates/qa_baseline_scipy_t1500_ensemble_gate.png
+   :alt: True t=1500 strict QA baseline nonlinear heat-flux audit
+   :width: 98%
+   :align: center
+
+   True full-horizon strict QA baseline audit. The late window
+   ``t=[1100,1500]`` passes the seed/timestep robustness gate and provides the
+   matched reference for the candidate comparisons below.
 
 .. figure:: _static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.png
    :alt: True t=1500 growth-objective QA nonlinear heat-flux audit
@@ -352,7 +367,25 @@ quasilinear-objective triplets are still running on the office GPUs.
 
    True full-horizon nonlinear-window-objective QA audit. The late-window
    ensemble is statistically robust across two seeds and one timestep variant;
-   matched baseline/QL comparisons are still required before promotion.
+   the matched baseline comparison below does not promote it as a reduction.
+
+.. figure:: _static/vmec_qa_t1500_baseline_to_growth_comparison.png
+   :alt: Matched strict QA baseline to growth-objective nonlinear comparison
+   :width: 72%
+   :align: center
+
+   Matched baseline-to-growth nonlinear transport comparison. The growth
+   objective produces only a ``0.60%`` reduction with ``z = 0.26``, so it does
+   not pass the ``4%`` promotion gate.
+
+.. figure:: _static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.png
+   :alt: Matched strict QA baseline to nonlinear-window-objective comparison
+   :width: 72%
+   :align: center
+
+   Matched baseline-to-nonlinear-window transport comparison. The candidate is
+   slightly worse than the strict QA baseline in the long post-transient window
+   and is not promoted.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
