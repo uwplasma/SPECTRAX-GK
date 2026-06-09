@@ -55,6 +55,11 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(tmp_path
     assert payload["comparison_policy"]["sample_policy"]["mboz"] == 21
     assert payload["comparison_policy"]["sample_policy"]["nboz"] == 21
     assert payload["comparison_policy"]["sample_policy"]["surfaces"] == [0.64]
+    assert payload["comparison_policy"]["landscape_policy"]["rbc11_points_admit_optimized_candidates"] is False
+    assert "simple seed" in payload["comparison_policy"]["landscape_policy"]["optimization_seed_policy"]
+    ladder = payload["comparison_policy"]["optimizer_ladder_policy"]
+    assert ladder[1]["stage"] == "linear_quasilinear_transport"
+    assert ladder[3]["stage"] == "quasilinear_screening_refit"
     assert len(payload["runnable_commands"]) == 5
 
     baseline = _entry(payload, "qa_baseline_scipy")
@@ -85,6 +90,11 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(tmp_path
         assert "--window-tmin 1100 --window-tmax 1500" in audit
         assert "--seed-variant 41 --seed-variant 42" in audit
         assert "--dt-variant 0.04" in audit
+        strategy = entry["optimizer_strategy"]
+        assert strategy["stage"] == "linear_quasilinear_continuation_multistart"
+        assert strategy["uses_transport_weight_continuation"] is True
+        assert strategy["uses_multistart_from_simple_seed_qa_solves"] is True
+        assert strategy["rbc_landscape_role"] == "conditioning_and_noise_diagnostic_only"
 
     scipy_parts = shlex.split(str(growth_scipy["command"]))
     assert scipy_parts[scipy_parts.index("--method") + 1] == "scipy"
@@ -121,7 +131,11 @@ def test_optimizer_comparison_manifest_marks_spsa_cma_bo_as_outer_loop_contracts
         assert entry["status"] == "planned_outer_loop"
         assert entry["candidate_generator_required"] is True
         contract = entry["candidate_contract"]
+        strategy = entry["optimizer_strategy"]
         assert isinstance(contract, dict)
+        assert strategy["requires_common_random_numbers"] is True
+        assert strategy["requires_matched_t1500_replicated_audit"] is True
+        assert strategy["rbc_landscape_role"] == "conditioning_and_noise_diagnostic_only"
         metric_command = str(contract["metric_eval_command_template"])
         audit_command = str(contract["nonlinear_audit_command_template"])
         assert metric_command.startswith("python3 tools/evaluate_vmec_jax_spectrax_transport_metric.py")

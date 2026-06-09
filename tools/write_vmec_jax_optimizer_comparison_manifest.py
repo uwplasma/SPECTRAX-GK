@@ -28,6 +28,7 @@ AUDIT_WRITER = Path("tools/write_optimized_equilibrium_transport_configs.py")
 TRANSPORT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
 RUNNABLE_METHODS = ("scipy", "scalar_trust", "lbfgs_adjoint")
 OUTER_LOOP_METHODS = ("spsa", "cma_es", "bo")
+LINEAR_QL_KINDS = ("growth", "quasilinear_flux")
 
 
 def _csv(values: tuple[float, ...]) -> str:
@@ -265,6 +266,50 @@ def _case_id(transport_kind: str, method: str) -> str:
     )
 
 
+def _deterministic_strategy(transport_kind: str, method: str) -> dict[str, Any]:
+    if transport_kind in LINEAR_QL_KINDS:
+        return {
+            "stage": "linear_quasilinear_continuation_multistart",
+            "recommended_role": "candidate_generation",
+            "method_family": "constraint_aware_adjoint",
+            "uses_transport_weight_continuation": True,
+            "uses_multistart_from_simple_seed_qa_solves": True,
+            "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+            "notes": (
+                f"{method} entries are deterministic optimizer comparisons for smooth linear/QL residuals; "
+                "they are not nonlinear turbulent-flux promotion evidence."
+            ),
+        }
+    return {
+        "stage": "reduced_nonlinear_window_screen",
+        "recommended_role": "diagnostic_screening_only",
+        "method_family": "differentiable_reduced_window",
+        "uses_transport_weight_continuation": False,
+        "uses_multistart_from_simple_seed_qa_solves": True,
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "notes": (
+            "The differentiable nonlinear-window residual is a startup/reduced-window screen. "
+            "No noisy nonlinear-Q claim is promoted without matched t=1500 replicated audits."
+        ),
+    }
+
+
+def _outer_loop_strategy(method: str, transport_kind: str) -> dict[str, Any]:
+    first_pass = method == "spsa"
+    return {
+        "stage": "noisy_long_window_nonlinear_q" if transport_kind == "nonlinear_window_heat_flux" else "noisy_proxy_screen",
+        "recommended_role": "first_noisy_outer_loop" if first_pass else "projected_low_dimensional_comparator",
+        "method_family": "stochastic_common_random_numbers" if first_pass else "derivative_free_projected_search",
+        "requires_common_random_numbers": True,
+        "requires_matched_t1500_replicated_audit": True,
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "notes": (
+            "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected "
+            "controls after each proposed state is evaluated with the same metric and audit policy."
+        ),
+    }
+
+
 def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
     campaign_root = args.campaign_root
     runs_root = campaign_root / "runs"
@@ -305,6 +350,36 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
         "sample_policy": sample_policy,
         "optimizer_budget": optimizer_budget,
         "transport_weight": args.spectrax_weight,
+        "landscape_policy": {
+            "rbc11_landscape_role": "diagnose objective roughness, metric disagreement, and nonlinear convergence windows",
+            "rbc11_points_admit_optimized_candidates": False,
+            "optimization_seed_policy": (
+                "start from the VMEC-JAX QA_optimization.py simple seed, solve QA/aspect/iota constraints, "
+                "then append one SPECTRAX-GK transport residual"
+            ),
+        },
+        "optimizer_ladder_policy": [
+            {
+                "stage": "strict_qa_baseline",
+                "preferred_methods": ["scipy"],
+                "role": "solve smooth aspect/iota/QS constraints from the simple seed",
+            },
+            {
+                "stage": "linear_quasilinear_transport",
+                "preferred_methods": ["scalar_trust", "lbfgs_adjoint"],
+                "role": "continuation and multistart candidate generation for smooth growth/QL residuals",
+            },
+            {
+                "stage": "long_window_nonlinear_heat_flux",
+                "preferred_methods": ["spsa", "cma_es", "bo"],
+                "role": "noisy outer-loop comparison with common-random-number audits",
+            },
+            {
+                "stage": "quasilinear_screening_refit",
+                "preferred_methods": [],
+                "role": "refit/re-score only after new independent matched nonlinear holdouts pass gates",
+            },
+        ],
         "claim_boundary": (
             "optimizer outputs are candidate-generation evidence only; promote turbulent-flux "
             "reduction only after matched long post-transient nonlinear audits and convergence gates"
@@ -337,6 +412,7 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
                     "transport_kind": transport_kind,
                     "status": "runnable",
                     "depends_on": "qa_baseline_scipy",
+                    "optimizer_strategy": _deterministic_strategy(transport_kind, method),
                     "command": _transport_command(
                         args,
                         method=method,
@@ -365,6 +441,7 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
                     "status": "planned_outer_loop",
                     "depends_on": "qa_baseline_scipy",
                     "candidate_generator_required": True,
+                    "optimizer_strategy": _outer_loop_strategy(method, transport_kind),
                     "candidate_contract": {
                         "candidate_input_placeholder": "{candidate_input_final}",
                         "candidate_id_placeholder": "{candidate_id}",

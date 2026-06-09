@@ -251,19 +251,27 @@ currently emits:
 - one strict upstream QA baseline using SciPy least squares;
 - matched ``scipy``/``lsmr``, ``scalar_trust``, and ``lbfgs_adjoint`` transport
   commands for ``growth``, ``quasilinear_flux``, and
-  ``nonlinear_window_heat_flux`` from the admitted baseline ``input.final``;
+  ``nonlinear_window_heat_flux`` from the strict simple-seed QA baseline
+  ``input.final``;
 - SPSA, CMA-ES, and Bayesian-optimization (``bo``) outer-loop contracts with
   deterministic metric-evaluation and nonlinear-audit command templates.
 
 The manifest comparison fingerprint is part of the campaign contract.  A
 method comparison is valid only when the sample set, Boozer resolution,
 moment resolution, objective transform, transport weight, optimizer budget, and
-strict nonlinear-audit policy match.  The derivative-free entries are not
-claimed to be implemented VMEC-JAX optimizer methods; they are reproducible
-outer-loop protocols for noisy objective studies.  They become paper evidence
-only after the proposed candidates are evaluated and promoted through the same
-matched long-window nonlinear audit gates as the differentiable optimizer
-outputs.
+strict nonlinear-audit policy match. The machine-readable
+``landscape_policy`` keeps the ``RBC(1,1)`` scan diagnostic-only: it diagnoses
+objective roughness, metric disagreement, and required nonlinear averaging
+windows, but it does not admit optimized candidates or replace the VMEC-JAX
+simple-seed QA baseline. The ``optimizer_ladder_policy`` then fixes the
+campaign order: continuation/multistart for deterministic linear/QL residuals,
+SPSA first for noisy long-window nonlinear ``Q``, and CMA-ES/Bayesian
+optimization only as low-dimensional projected comparators. The derivative-free
+entries are not claimed to be implemented VMEC-JAX optimizer methods; they are
+reproducible outer-loop protocols for noisy objective studies. They become
+paper evidence only after the proposed candidates are evaluated and promoted
+through the same matched long-window nonlinear audit gates as the
+differentiable optimizer outputs.
 
 Key references for this policy are:
 

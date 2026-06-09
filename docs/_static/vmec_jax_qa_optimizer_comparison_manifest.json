@@ -1,9 +1,14 @@
 {
   "audit_writer": "tools/write_optimized_equilibrium_transport_configs.py",
   "campaign_root": "tools_out/vmec_jax_qa_optimizer_comparison_campaign",
-  "comparison_fingerprint": "88bb301831f45959",
+  "comparison_fingerprint": "89a6a650ff905b6d",
   "comparison_policy": {
     "claim_boundary": "optimizer outputs are candidate-generation evidence only; promote turbulent-flux reduction only after matched long post-transient nonlinear audits and convergence gates",
+    "landscape_policy": {
+      "optimization_seed_policy": "start from the VMEC-JAX QA_optimization.py simple seed, solve QA/aspect/iota constraints, then append one SPECTRAX-GK transport residual",
+      "rbc11_landscape_role": "diagnose objective roughness, metric disagreement, and nonlinear convergence windows",
+      "rbc11_points_admit_optimized_candidates": false
+    },
     "optimizer_budget": {
       "baseline_max_nfev": 80,
       "continuation_nfev": 25,
@@ -17,6 +22,37 @@
       "trial_max_iter": 140,
       "xtol": 1e-08
     },
+    "optimizer_ladder_policy": [
+      {
+        "preferred_methods": [
+          "scipy"
+        ],
+        "role": "solve smooth aspect/iota/QS constraints from the simple seed",
+        "stage": "strict_qa_baseline"
+      },
+      {
+        "preferred_methods": [
+          "scalar_trust",
+          "lbfgs_adjoint"
+        ],
+        "role": "continuation and multistart candidate generation for smooth growth/QL residuals",
+        "stage": "linear_quasilinear_transport"
+      },
+      {
+        "preferred_methods": [
+          "spsa",
+          "cma_es",
+          "bo"
+        ],
+        "role": "noisy outer-loop comparison with common-random-number audits",
+        "stage": "long_window_nonlinear_heat_flux"
+      },
+      {
+        "preferred_methods": [],
+        "role": "refit/re-score only after new independent matched nonlinear holdouts pass gates",
+        "stage": "quasilinear_screening_refit"
+      }
+    ],
     "sample_policy": {
       "alphas": [
         0.0
@@ -62,6 +98,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scipy_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scipy",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "scipy entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scipy_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scipy_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_growth_scipy_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/growth_scipy_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -74,6 +119,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scalar_trust",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "scalar_trust entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scalar_trust_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_growth_scalar_trust_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/growth_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -86,6 +140,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "lbfgs_adjoint",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "lbfgs_adjoint entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_lbfgs_adjoint_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_growth_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -104,6 +167,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "spsa",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "stochastic_common_random_numbers",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "first_noisy_outer_loop",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "growth"
     },
@@ -120,6 +192,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "cma_es",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "growth"
     },
@@ -136,6 +217,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "bo",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "growth"
     },
@@ -146,6 +236,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scipy_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scipy",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "scipy entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scipy_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scipy_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_quasilinear_scipy_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/quasilinear_scipy_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -158,6 +257,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scalar_trust",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "scalar_trust entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scalar_trust_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_quasilinear_scalar_trust_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -170,6 +278,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "lbfgs_adjoint",
+      "optimizer_strategy": {
+        "method_family": "constraint_aware_adjoint",
+        "notes": "lbfgs_adjoint entries are deterministic optimizer comparisons for smooth linear/QL residuals; they are not nonlinear turbulent-flux promotion evidence.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "candidate_generation",
+        "stage": "linear_quasilinear_continuation_multistart",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": true
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_lbfgs_adjoint_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/quasilinear_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_quasilinear_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/quasilinear_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -188,6 +305,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "spsa",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "stochastic_common_random_numbers",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "first_noisy_outer_loop",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "quasilinear_flux"
     },
@@ -204,6 +330,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "cma_es",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "quasilinear_flux"
     },
@@ -220,6 +355,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "bo",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_proxy_screen"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "quasilinear_flux"
     },
@@ -230,6 +374,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scipy_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scipy",
+      "optimizer_strategy": {
+        "method_family": "differentiable_reduced_window",
+        "notes": "The differentiable nonlinear-window residual is a startup/reduced-window screen. No noisy nonlinear-Q claim is promoted without matched t=1500 replicated audits.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "diagnostic_screening_only",
+        "stage": "reduced_nonlinear_window_screen",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": false
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scipy_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scipy_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_nonlinear_window_scipy_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/nonlinear_window_scipy_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -242,6 +395,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scalar_trust_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "scalar_trust",
+      "optimizer_strategy": {
+        "method_family": "differentiable_reduced_window",
+        "notes": "The differentiable nonlinear-window residual is a startup/reduced-window screen. No noisy nonlinear-Q claim is promoted without matched t=1500 replicated audits.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "diagnostic_screening_only",
+        "stage": "reduced_nonlinear_window_screen",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": false
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scalar_trust_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_nonlinear_window_scalar_trust_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/nonlinear_window_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -254,6 +416,15 @@
       "expected_authoritative_wout": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc",
       "kind": "deterministic_transport_optimizer",
       "method": "lbfgs_adjoint",
+      "optimizer_strategy": {
+        "method_family": "differentiable_reduced_window",
+        "notes": "The differentiable nonlinear-window residual is a startup/reduced-window screen. No noisy nonlinear-Q claim is promoted without matched t=1500 replicated audits.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "diagnostic_screening_only",
+        "stage": "reduced_nonlinear_window_screen",
+        "uses_multistart_from_simple_seed_qa_solves": true,
+        "uses_transport_weight_continuation": false
+      },
       "outdir": "tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_lbfgs_adjoint_from_strict_baseline",
       "recommended_nonlinear_audit_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_comparison_campaign/runs/nonlinear_window_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case vmec_qa_optimizer_comparison_nonlinear_window_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/vmec_jax_qa_optimizer_comparison_campaign/nonlinear_audits/nonlinear_window_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
       "status": "runnable",
@@ -272,6 +443,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "spsa",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "stochastic_common_random_numbers",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "first_noisy_outer_loop",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_long_window_nonlinear_q"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "nonlinear_window_heat_flux"
     },
@@ -288,6 +468,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "cma_es",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_long_window_nonlinear_q"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "nonlinear_window_heat_flux"
     },
@@ -304,6 +493,15 @@
       "kind": "derivative_free_outer_loop_contract",
       "method": "bo",
       "notes": "Use this entry for SPSA/CMA/BO candidate proposal loops. Each proposed input.final must be evaluated with the metric command, then admitted candidates receive the same strict nonlinear audit command.",
+      "optimizer_strategy": {
+        "method_family": "derivative_free_projected_search",
+        "notes": "Use SPSA first for noisy long-window Q; compare CMA-ES/BO only in low-dimensional projected controls after each proposed state is evaluated with the same metric and audit policy.",
+        "rbc_landscape_role": "conditioning_and_noise_diagnostic_only",
+        "recommended_role": "projected_low_dimensional_comparator",
+        "requires_common_random_numbers": true,
+        "requires_matched_t1500_replicated_audit": true,
+        "stage": "noisy_long_window_nonlinear_q"
+      },
       "status": "planned_outer_loop",
       "transport_kind": "nonlinear_window_heat_flux"
     }
