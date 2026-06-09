@@ -37,6 +37,25 @@ DEFAULT_OUT_PREFIX = ROOT / "docs" / "_static" / "vmec_jax_qa_optimizer_strategy
 MIN_IOTA = 0.41
 
 
+def _optimize_png_if_possible(path: Path) -> None:
+    """Quantize report PNGs so docs artifacts stay below the repo-size gate."""
+
+    if path.suffix.lower() != ".png" or not path.exists():
+        return
+    try:
+        from PIL import Image
+    except Exception:
+        return
+    try:
+        with Image.open(path) as image:
+            image.convert("P", palette=Image.Palette.ADAPTIVE, colors=192).save(
+                path,
+                optimize=True,
+            )
+    except Exception:
+        return
+
+
 def _repo_relative(path: Path | str) -> str:
     raw = Path(path)
     try:
@@ -374,8 +393,9 @@ def _plot(report: dict[str, Any], path: Path) -> None:
 
     fig.suptitle("QA transport optimization strategy from current evidence", fontsize=15)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=190)
+    fig.savefig(path, dpi=165)
     plt.close(fig)
+    _optimize_png_if_possible(path)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
