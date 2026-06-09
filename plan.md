@@ -21,17 +21,19 @@
   target.
 
 - 2026-06-09: Harvested the true `t=1500` strict QA baseline, growth-objective,
-  and nonlinear-window-objective audit triplets from office. All three pass
-  the runtime-output and replicated seed/timestep gates over `t=[1100,1500]`.
+  quasilinear-objective, and nonlinear-window-objective audit triplets from
+  office. All four pass the runtime-output and replicated seed/timestep gates
+  over `t=[1100,1500]`.
   The strict QA baseline has mean `<Q_i>=11.580`, mean relative spread
   `3.81%`, and combined SEM/mean `1.95%`; growth has mean `<Q_i>=11.510`,
-  spread `4.27%`, and SEM/mean `1.24%`; nonlinear-window has mean
-  `<Q_i>=11.609`, spread `3.66%`, and SEM/mean `1.77%`. Matched comparisons
-  do not promote the completed transport candidates: growth gives only
+  spread `4.27%`, and SEM/mean `1.24%`; quasilinear has mean
+  `<Q_i>=11.636`, spread `2.34%`, and SEM/mean `1.64%`; nonlinear-window has
+  mean `<Q_i>=11.609`, spread `3.66%`, and SEM/mean `1.77%`. Matched
+  comparisons do not promote any transport candidate: growth gives only
   `0.60%` relative reduction (`z=0.26`, below the `4%` gate), while the
-  nonlinear-window row is slightly worse (`-0.25%`, `z=-0.09`). The
-  quasilinear-objective triplet is still running, so QL calibration admission
-  remains blocked.
+  quasilinear and nonlinear-window rows are slightly worse (`-0.49%`,
+  `z=-0.19`; `-0.25%`, `z=-0.09`). The strict-QA `t=1500` candidate set is
+  closed as robust negative optimization-transfer evidence.
 
 - 2026-06-09: Added reproducible strict-QA `t=1500` postprocess tooling while
   the final QL timestep variant continues on office. The new
@@ -122,11 +124,11 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 99% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/nonlinear-window triplets pass, but matched growth/nonlinear-window comparisons fail the 4% reduction gate while QL is still running |
+| Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
-| Docs/readme/release hygiene | 98.5% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest is tracked |
+| Docs/readme/release hygiene | 99% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest and final QL harvest are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| QA optimization optimizer-comparison metadata | 99% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; QL matched comparison remains pending |
+| QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

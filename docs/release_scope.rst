@@ -137,13 +137,13 @@ Do not make these claims from the current artifacts:
 - treating the historical strict QA full-sweep matched audit that stopped near
   ``t=400`` as a nonlinear holdout or optimized-transport success; it remains
   launch-contract evidence only;
-- treating the newly admitted true ``t=1500`` growth-objective or nonlinear-
-  window-objective QA candidate triplets as an optimization-success or
-  quasilinear-calibration claim. The matched strict QA baseline now passes the
-  same ``t=[1100,1500]`` postprocess, and both completed candidate comparisons
-  fail the ``4%`` reduction gate: growth gives only ``0.60%`` reduction
-  (``z=0.26``), while nonlinear-window gives ``-0.25%`` (``z=-0.09``). The
-  quasilinear-objective triplet is still pending.
+- treating the newly admitted true ``t=1500`` growth-objective,
+  quasilinear-objective, or nonlinear-window-objective QA candidate triplets as
+  an optimization-success or quasilinear-calibration claim. The matched strict
+  QA baseline now passes the same ``t=[1100,1500]`` postprocess, and all three
+  candidate comparisons fail the ``4%`` reduction gate: growth gives only
+  ``0.60%`` reduction (``z=0.26``), while quasilinear and nonlinear-window give
+  ``-0.49%`` (``z=-0.19``) and ``-0.25%`` (``z=-0.09``), respectively.
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - launching nonlinear-gradient campaigns directly from admitted VMEC-state
