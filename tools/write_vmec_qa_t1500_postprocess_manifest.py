@@ -25,7 +25,7 @@ class QAAuditCase:
 
     @property
     def output_gate_json(self) -> Path:
-        return Path("docs/_static") / f"vmec_qa_t1500_{self.ensemble_stem}_output_gate.json"
+        return Path("docs/_static") / f"vmec_qa_t1500_{self.key}_output_gate.json"
 
     @property
     def ensemble_json(self) -> Path:
