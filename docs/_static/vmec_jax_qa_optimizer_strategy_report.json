@@ -87,10 +87,11 @@
       "transport_metric_final": 0.06364721463489577
     }
   ],
-  "claim_scope": "Optimizer-strategy evidence and campaign design; not a promoted nonlinear turbulent-flux optimization claim.",
+  "claim_scope": "Optimizer-strategy evidence and campaign design. The RBC(1,1) sweep is a landscape/noise/convergence diagnostic, not an admission source for optimized QA stellarators and not a promoted nonlinear turbulent-flux optimization claim.",
   "gates": {
     "deterministic_transport_rows_all_strict_gates_pass": false,
-    "has_admitted_long_window_landscape": true,
+    "has_admitted_long_window_landscape": false,
+    "has_converged_long_window_landscape": true,
     "has_material_landscape_reduction_direction": true,
     "nonlinear_absolute_optimization_promoted": false
   },
@@ -160,6 +161,7 @@
       }
     ],
     "n_admitted_nonlinear_points": 23,
+    "n_converged_nonlinear_points": 23,
     "nonlinear_points": [
       {
         "coefficient_value": 0.031656127034592856,
@@ -506,7 +508,8 @@
         "relative_fraction": 0.4,
         "sem": 0.14279109245892385
       }
-    ]
+    ],
+    "nonlinear_points_semantics": "RBC(1,1) landscape points that passed the long-window convergence/window gates; these are diagnostics, not admitted optimized-QA candidates."
   },
   "landscape_json": "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
   "literature_context": [
@@ -529,25 +532,25 @@
   "optimizer_recommendations": [
     {
       "method": "vmec_jax_exact_discrete_adjoint_least_squares",
-      "reason": "The admitted max-mode-5 baseline reaches the target aspect, iota, and QS gate; keep this as the reference seed.",
+      "reason": "Start from the same simple-seed max-mode-5 path as VMEC-JAX QA_optimization.py, solve the aspect, iota, and QS residuals, then append one SPECTRAX-GK transport residual.",
       "stage": "strict_qa_baseline",
       "status": "preferred_for_smooth_aspect_iota_qs_constraints"
     },
     {
       "method": "constraint_aware_adjoint_trust_or_lbfgs_with_weight_continuation",
-      "reason": "The current scalar-trust rows move the internal objective but remain just below the strict iota gate. Use transport-weight continuation, active iota/aspect admission filters, multistarts, and RBC(1,1)-informed warm starts.",
+      "reason": "The current scalar-trust rows move the internal objective but remain just below the strict iota gate. Use transport-weight continuation, active iota/aspect filters, and multistarts from simple-seed QA solves; use the RBC(1,1) landscape only to diagnose conditioning and metric noise.",
       "stage": "linear_and_quasilinear_transport",
       "status": "next_deterministic_campaign"
     },
     {
       "method": "spsa_common_random_numbers_then_cma_es_or_bo_for_low_dimensional_projected_controls",
-      "reason": "Long-window Q has seed/timestep variability and cannot be promoted from reduced-window gradients. Use two-sided noisy objectives with common random numbers, then admit only matched t=1500 replicated audits.",
+      "reason": "Long-window Q has seed/timestep variability and cannot be promoted from reduced-window gradients. Use two-sided noisy objectives with common random numbers, then promote only matched t=1500 replicated audits.",
       "stage": "long_window_nonlinear_heat_flux",
       "status": "preferred_noisy_outer_loop"
     },
     {
       "method": "screening_and_model_development_only",
-      "reason": "On the admitted RBC(1,1) landscape, simple linear/QL metrics are not reliable absolute nonlinear-Q predictors; promote correlation/screening only when held-out gates pass.",
+      "reason": "On the converged RBC(1,1) landscape, simple linear/QL metrics are not reliable absolute nonlinear-Q predictors; promote correlation/screening only when held-out gates pass.",
       "stage": "quasilinear_claims",
       "status": "absolute_flux_promotion_blocked"
     }

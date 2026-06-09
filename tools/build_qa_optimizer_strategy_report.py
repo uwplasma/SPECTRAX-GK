@@ -2,9 +2,11 @@
 """Build the QA transport-optimizer strategy report from tracked evidence.
 
 The report is intentionally evidence-driven: it combines the solved QA
-optimizer rows with the admitted long-window RBC(1,1) nonlinear landscape.
-It should be regenerated whenever either input artifact changes before making
-claims about which optimizer family is appropriate for the next campaign.
+optimizer rows with the converged long-window RBC(1,1) nonlinear landscape.
+That landscape is a noise/convergence diagnostic, not an admission source for
+optimized stellarator candidates. It should be regenerated whenever either
+input artifact changes before making claims about which optimizer family is
+appropriate for the next campaign.
 """
 
 from __future__ import annotations
@@ -155,14 +157,14 @@ def _landscape_summary(landscape: dict[str, Any]) -> dict[str, Any]:
         if isinstance(row, dict):
             row_by_coef[round(_finite(row.get("coefficient_value")), 12)] = row
 
-    nonlinear_points: list[dict[str, Any]] = []
+    converged_nonlinear_points: list[dict[str, Any]] = []
     for point in landscape.get("nonlinear_ensemble_points", []):
         if not isinstance(point, dict) or not point.get("passed"):
             continue
         coef = round(_finite(point.get("coefficient_value")), 12)
         row = row_by_coef.get(coef, {})
         metrics = row.get("reduced_metrics") if isinstance(row.get("reduced_metrics"), dict) else {}
-        nonlinear_points.append(
+        converged_nonlinear_points.append(
             {
                 "label": row.get("label", point.get("case", "")),
                 "relative_fraction": _finite(row.get("relative_fraction")),
@@ -172,10 +174,10 @@ def _landscape_summary(landscape: dict[str, Any]) -> dict[str, Any]:
                 "metrics": {str(key): _finite(value) for key, value in metrics.items()},
             }
         )
-    nonlinear_points.sort(key=lambda item: item["relative_fraction"])
+    converged_nonlinear_points.sort(key=lambda item: item["relative_fraction"])
 
-    baseline = next((item for item in nonlinear_points if abs(item["relative_fraction"]) < 1e-12), None)
-    best = min(nonlinear_points, key=lambda item: item["mean"]) if nonlinear_points else None
+    baseline = next((item for item in converged_nonlinear_points if abs(item["relative_fraction"]) < 1e-12), None)
+    best = min(converged_nonlinear_points, key=lambda item: item["mean"]) if converged_nonlinear_points else None
     baseline_mean = _finite(baseline.get("mean") if baseline else None)
     best_mean = _finite(best.get("mean") if best else None)
     best_reduction = (
@@ -184,11 +186,11 @@ def _landscape_summary(landscape: dict[str, Any]) -> dict[str, Any]:
         else math.nan
     )
 
-    metric_names = sorted({key for item in nonlinear_points for key in item["metrics"]})
+    metric_names = sorted({key for item in converged_nonlinear_points for key in item["metrics"]})
     correlations: list[dict[str, Any]] = []
-    y = [item["mean"] for item in nonlinear_points]
+    y = [item["mean"] for item in converged_nonlinear_points]
     for metric in metric_names:
-        x = [item["metrics"].get(metric, math.nan) for item in nonlinear_points]
+        x = [item["metrics"].get(metric, math.nan) for item in converged_nonlinear_points]
         correlations.append(
             {
                 "metric": metric,
@@ -198,11 +200,19 @@ def _landscape_summary(landscape: dict[str, Any]) -> dict[str, Any]:
         )
 
     return {
-        "n_admitted_nonlinear_points": len(nonlinear_points),
+        "n_converged_nonlinear_points": len(converged_nonlinear_points),
+        # Backward-compatible alias for older artifact consumers. New code
+        # should use n_converged_nonlinear_points because the RBC landscape is
+        # diagnostic and does not admit optimized QA candidates.
+        "n_admitted_nonlinear_points": len(converged_nonlinear_points),
+        "nonlinear_points_semantics": (
+            "RBC(1,1) landscape points that passed the long-window convergence/window gates; "
+            "these are diagnostics, not admitted optimized-QA candidates."
+        ),
         "baseline_point": baseline,
         "best_point": best,
         "best_reduction_fraction_vs_baseline": best_reduction,
-        "nonlinear_points": nonlinear_points,
+        "nonlinear_points": converged_nonlinear_points,
         "metric_correlations": correlations,
     }
 
@@ -215,7 +225,7 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
 
     deterministic_cases = [row for row in cases if row["case_id"] != "qa_baseline_scipy"]
     all_transport_gates_pass = all(row["gate_passed"] for row in deterministic_cases) if deterministic_cases else False
-    nonlinear_points = int(landscape_summary["n_admitted_nonlinear_points"])
+    nonlinear_points = int(landscape_summary["n_converged_nonlinear_points"])
     best_reduction = _finite(landscape_summary["best_reduction_fraction_vs_baseline"])
 
     recommendations = [
@@ -223,7 +233,10 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
             "stage": "strict_qa_baseline",
             "method": "vmec_jax_exact_discrete_adjoint_least_squares",
             "status": "preferred_for_smooth_aspect_iota_qs_constraints",
-            "reason": "The admitted max-mode-5 baseline reaches the target aspect, iota, and QS gate; keep this as the reference seed.",
+            "reason": (
+                "Start from the same simple-seed max-mode-5 path as VMEC-JAX QA_optimization.py, "
+                "solve the aspect, iota, and QS residuals, then append one SPECTRAX-GK transport residual."
+            ),
         },
         {
             "stage": "linear_and_quasilinear_transport",
@@ -231,7 +244,8 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
             "status": "next_deterministic_campaign",
             "reason": (
                 "The current scalar-trust rows move the internal objective but remain just below the strict iota gate. "
-                "Use transport-weight continuation, active iota/aspect admission filters, multistarts, and RBC(1,1)-informed warm starts."
+                "Use transport-weight continuation, active iota/aspect filters, and multistarts from simple-seed QA solves; "
+                "use the RBC(1,1) landscape only to diagnose conditioning and metric noise."
             ),
         },
         {
@@ -240,7 +254,7 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
             "status": "preferred_noisy_outer_loop",
             "reason": (
                 "Long-window Q has seed/timestep variability and cannot be promoted from reduced-window gradients. "
-                "Use two-sided noisy objectives with common random numbers, then admit only matched t=1500 replicated audits."
+                "Use two-sided noisy objectives with common random numbers, then promote only matched t=1500 replicated audits."
             ),
         },
         {
@@ -248,7 +262,7 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
             "method": "screening_and_model_development_only",
             "status": "absolute_flux_promotion_blocked",
             "reason": (
-                "On the admitted RBC(1,1) landscape, simple linear/QL metrics are not reliable absolute nonlinear-Q predictors; "
+                "On the converged RBC(1,1) landscape, simple linear/QL metrics are not reliable absolute nonlinear-Q predictors; "
                 "promote correlation/screening only when held-out gates pass."
             ),
         },
@@ -260,13 +274,16 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
         "panel_json": _repo_relative(panel_json),
         "landscape_json": _repo_relative(landscape_json),
         "claim_scope": (
-            "Optimizer-strategy evidence and campaign design; not a promoted nonlinear turbulent-flux optimization claim."
+            "Optimizer-strategy evidence and campaign design. The RBC(1,1) sweep is a landscape/noise/convergence "
+            "diagnostic, not an admission source for optimized QA stellarators and not a promoted nonlinear "
+            "turbulent-flux optimization claim."
         ),
         "cases": cases,
         "landscape": landscape_summary,
         "gates": {
             "deterministic_transport_rows_all_strict_gates_pass": all_transport_gates_pass,
-            "has_admitted_long_window_landscape": nonlinear_points >= 3,
+            "has_converged_long_window_landscape": nonlinear_points >= 3,
+            "has_admitted_long_window_landscape": False,
             "has_material_landscape_reduction_direction": bool(math.isfinite(best_reduction) and best_reduction > 0.10),
             "nonlinear_absolute_optimization_promoted": False,
         },
@@ -344,7 +361,7 @@ def _plot(report: dict[str, Any], path: Path) -> None:
 
     ax1 = fig.add_subplot(gs[0, 1])
     landscape = report["landscape"]
-    points = landscape["nonlinear_points"]
+    points = landscape.get("converged_nonlinear_points") or landscape["nonlinear_points"]
     frac = np.asarray([point["relative_fraction"] for point in points], dtype=float)
     q = np.asarray([point["mean"] for point in points], dtype=float)
     sem = np.asarray([point["sem"] for point in points], dtype=float)
@@ -354,10 +371,17 @@ def _plot(report: dict[str, Any], path: Path) -> None:
     if baseline:
         ax1.axhline(baseline["mean"], color="#5b6770", ls="--", lw=1.0, label="baseline Q")
     if best:
-        ax1.scatter([best["relative_fraction"]], [best["mean"]], s=70, color="#c84630", zorder=4, label="best admitted")
+        ax1.scatter(
+            [best["relative_fraction"]],
+            [best["mean"]],
+            s=70,
+            color="#c84630",
+            zorder=4,
+            label="lowest converged",
+        )
     ax1.set_xlabel("RBC(1,1) relative perturbation")
     ax1.set_ylabel("late-window nonlinear <Q_i>")
-    ax1.set_title("A real lower-Q direction exists in the long-window landscape")
+    ax1.set_title("A lower-Q direction exists in the converged landscape")
     ax1.legend(frameon=False, fontsize=8)
 
     ax2 = fig.add_subplot(gs[1, 0])
@@ -381,14 +405,15 @@ def _plot(report: dict[str, Any], path: Path) -> None:
         "",
         "1. Smooth QA constraints: VMEC-JAX exact-adjoint least squares.",
         "2. Linear/QL: adjoint trust/L-BFGS with transport-weight continuation,",
-        "   multistarts, and active iota/aspect admission filters.",
+        "   multistarts, and active iota/aspect filters.",
         "3. Nonlinear Q: SPSA with common random numbers; compare CMA-ES/BO",
         "   only in a low-dimensional projected subspace.",
         "4. Promotion: matched t=1500 replicated nonlinear audits only.",
+        "5. RBC(1,1): landscape/noise diagnostic, not an optimizer seed gate.",
     ]
     reduction = _finite(landscape.get("best_reduction_fraction_vs_baseline"))
     if math.isfinite(reduction):
-        lines += ["", f"Best admitted RBC(1,1) Q reduction: {100.0 * reduction:.1f}%"]
+        lines += ["", f"Lowest converged RBC(1,1) Q reduction: {100.0 * reduction:.1f}%"]
     ax3.text(0.0, 1.0, "\n".join(lines), ha="left", va="top", fontsize=10)
 
     fig.suptitle("QA transport optimization strategy from current evidence", fontsize=15)

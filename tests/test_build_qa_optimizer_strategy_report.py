@@ -116,10 +116,14 @@ def test_strategy_report_keeps_nonlinear_optimization_fail_closed(tmp_path: Path
 
     assert report["kind"] == "vmec_jax_qa_optimizer_strategy_report"
     assert report["gates"]["deterministic_transport_rows_all_strict_gates_pass"] is False
+    assert report["gates"]["has_converged_long_window_landscape"] is True
+    assert report["gates"]["has_admitted_long_window_landscape"] is False
     assert report["gates"]["has_material_landscape_reduction_direction"] is True
     assert report["gates"]["nonlinear_absolute_optimization_promoted"] is False
     assert report["cases"][1]["iota_shortfall"] > 0.0
+    assert report["landscape"]["n_converged_nonlinear_points"] == 3
     assert report["landscape"]["best_point"]["label"] == "p0p1"
+    assert "noise/convergence diagnostic" in report["claim_scope"]
 
     methods = {item["method"] for item in report["optimizer_recommendations"]}
     assert "vmec_jax_exact_discrete_adjoint_least_squares" in methods

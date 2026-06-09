@@ -23,12 +23,14 @@
 - 2026-06-09: Added `tools/build_qa_optimizer_strategy_report.py` plus focused
   tests and regenerated
   `docs/_static/vmec_jax_qa_optimizer_strategy_report.{png,json,csv}`. The
-  report combines the strict QA optimizer panel with the admitted `RBC(1,1)`
+  report combines the strict QA optimizer panel with the converged `RBC(1,1)`
   long-window landscape. It shows a real lower-Q direction (`+40% RBC(1,1)`,
-  about 35% below the zero-offset late-window mean), but keeps nonlinear
-  optimization promotion blocked because current transport optimizer rows are
-  still diagnostic-only and true matched `t=1500` audits are pending. The
-  recommended campaign ladder is now explicit: exact-adjoint least squares for
+  about 35% below the zero-offset late-window mean), but treats that landscape
+  as a noise/convergence diagnostic rather than an admission source for
+  optimized QA stellarators. Nonlinear optimization promotion remains blocked
+  because current transport optimizer rows are still diagnostic-only and true
+  matched `t=1500` audits are pending. The recommended campaign ladder is now
+  explicit: exact-adjoint least squares from the VMEC-JAX simple seed for
   smooth QA constraints, constraint-aware adjoint trust/L-BFGS with
   transport-weight continuation for linear/QL residuals, and SPSA/CMA-ES/
   Bayesian outer-loop comparators only for noisy long-window nonlinear
@@ -97,7 +99,7 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 98% | Strict top-12 matched audit fails promotion; full-sweep QA matched audit is harvested as historical negative evidence; generator mismatch is fixed, but true t=1500 matched outputs are pending |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays are admitted; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 98% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and keep matched full-sweep QA audits non-admitted until the running true t=1500 office campaign finishes |

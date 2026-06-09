@@ -207,9 +207,12 @@ It encodes the present state of the optimizer lane:
   reduce their internal objectives but remain diagnostic-only because the
   strict solved-WOUT gate and true matched ``t=1500`` nonlinear audits are not
   yet both closed;
-- the admitted ``RBC(1,1)`` long-window landscape has a material lower-Q
-  direction, with the best admitted point near ``+40%`` reducing the
+- the converged ``RBC(1,1)`` long-window landscape has a material lower-Q
+  direction, with the lowest converged point near ``+40%`` reducing the
   post-transient ``<Q_i>`` by about 35% relative to the zero-offset baseline;
+- the ``RBC(1,1)`` landscape is a noise/convergence diagnostic and must not be
+  treated as an admission source or warm-start requirement for optimized QA
+  stellarators;
 - the current one-DOF landscape does not support an absolute-flux quasilinear
   promotion claim, so linear/QL metrics are used for screening and candidate
   generation until held-out nonlinear gates pass.
