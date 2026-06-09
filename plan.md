@@ -7,8 +7,32 @@
   `dt=0.04`), and include a runtime-output gate over `t=[1100,1500]`.
   Focused tests cover the exact strict-policy numbers. The QA `|B|`
   manuscript/readme panels now use unfilled Boozer-LCFS contours instead of
-  filled density maps. Office SSH timed out during this pass, so the true
-  `t=1500` matched QA relaunch is still pending.
+  filled density maps.
+
+- 2026-06-09: Relaunched the corrected strict QA full-horizon audit on
+  `office` from a clean shallow clone at commit `9e50d59`. The clean-clone
+  `src/` path is forced ahead of the stale editable install, and
+  `/home/rjorge/booz_xform_jax` is injected so the internal VMEC/Boozer backend
+  is available. The controller queued all twelve true `t=1500` nonlinear jobs
+  with direct 30000/37500-step commands and is running two jobs concurrently on
+  the two A4000 GPUs. The runtime log line `running ... over 8000 steps` is the
+  first restart/checkpoint chunk (`output.nsave`), not the total horizon; the
+  controller-level command and executable header show the full 30000/37500-step
+  target.
+
+- 2026-06-09: Added `tools/build_qa_optimizer_strategy_report.py` plus focused
+  tests and regenerated
+  `docs/_static/vmec_jax_qa_optimizer_strategy_report.{png,json,csv}`. The
+  report combines the strict QA optimizer panel with the admitted `RBC(1,1)`
+  long-window landscape. It shows a real lower-Q direction (`+40% RBC(1,1)`,
+  about 35% below the zero-offset late-window mean), but keeps nonlinear
+  optimization promotion blocked because current transport optimizer rows are
+  still diagnostic-only and true matched `t=1500` audits are pending. The
+  recommended campaign ladder is now explicit: exact-adjoint least squares for
+  smooth QA constraints, constraint-aware adjoint trust/L-BFGS with
+  transport-weight continuation for linear/QL residuals, and SPSA/CMA-ES/
+  Bayesian outer-loop comparators only for noisy long-window nonlinear
+  heat-flux objectives.
 
 - Harvested the matched strict QA full-sweep nonlinear audit from office and
   reran postprocessing with the patched fail-closed tools. All 36 raw runtime
@@ -73,10 +97,10 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 98% | Strict top-12 matched audit fails promotion; full-sweep QA matched audit is harvested as historical negative evidence; generator mismatch is fixed, but true t=1500 matched outputs are pending |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays are admitted; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| QA optimization optimizer-comparison metadata | 97% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and keep matched full-sweep QA audits non-admitted until true t=1500 outputs exist |
+| QA optimization optimizer-comparison metadata | 98% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and keep matched full-sweep QA audits non-admitted until the running true t=1500 office campaign finishes |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

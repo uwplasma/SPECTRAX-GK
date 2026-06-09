@@ -59,6 +59,8 @@ Source Map
   :download:`vmec_jax_qa_low_turbulence_optimization.py <../tools/vmec_jax_qa_low_turbulence_optimization.py>`
 - Eval-only reduced transport-admission metric tool:
   :download:`evaluate_vmec_jax_spectrax_transport_metric.py <../tools/evaluate_vmec_jax_spectrax_transport_metric.py>`
+- Optimizer evidence/strategy report builder:
+  :download:`build_qa_optimizer_strategy_report.py <../tools/build_qa_optimizer_strategy_report.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
 
@@ -190,6 +192,38 @@ Practical SPECTRAX-GK policy:
 5. If a nonlinear objective landscape is jagged, incomplete, or has failed
    neighboring points, use it as an optimizer-noise diagnostic only. Do not use
    it to claim a reliable gradient or a robust minimum.
+
+Current optimizer evidence
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The strategy artifact below is regenerated from
+:download:`vmec_jax_qa_full_sweep_panel.json <_static/vmec_jax_qa_full_sweep_panel.json>`
+and
+:download:`vmec_boundary_transport_landscape_rbc11_full.json <_static/vmec_boundary_transport_landscape_rbc11_full.json>`.
+It encodes the present state of the optimizer lane:
+
+- the strict max-mode-5 QA baseline is admitted;
+- the linear-growth, quasilinear-flux, and nonlinear-window transport restarts
+  reduce their internal objectives but remain diagnostic-only because the
+  strict solved-WOUT gate and true matched ``t=1500`` nonlinear audits are not
+  yet both closed;
+- the admitted ``RBC(1,1)`` long-window landscape has a material lower-Q
+  direction, with the best admitted point near ``+40%`` reducing the
+  post-transient ``<Q_i>`` by about 35% relative to the zero-offset baseline;
+- the current one-DOF landscape does not support an absolute-flux quasilinear
+  promotion claim, so linear/QL metrics are used for screening and candidate
+  generation until held-out nonlinear gates pass.
+
+.. image:: _static/vmec_jax_qa_optimizer_strategy_report.png
+   :alt: QA optimizer strategy report from current artifacts
+   :width: 100%
+
+The report sidecars
+:download:`vmec_jax_qa_optimizer_strategy_report.json <_static/vmec_jax_qa_optimizer_strategy_report.json>`
+and
+:download:`vmec_jax_qa_optimizer_strategy_report.csv <_static/vmec_jax_qa_optimizer_strategy_report.csv>`
+are the machine-readable claim boundary. In particular,
+``nonlinear_absolute_optimization_promoted`` is intentionally false.
 
 Optimizer-Comparison Manifest
 -----------------------------
