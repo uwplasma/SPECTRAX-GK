@@ -33,6 +33,17 @@
   quasilinear-objective triplet is still running, so QL calibration admission
   remains blocked.
 
+- 2026-06-09: Added reproducible strict-QA `t=1500` postprocess tooling while
+  the final QL timestep variant continues on office. The new
+  `tools/compact_replicate_ensemble_bundle.py` rewrites compact tracked
+  ensemble provenance from regenerable trace CSVs to authoritative NetCDF
+  outputs, and `tools/write_vmec_qa_t1500_postprocess_manifest.py` writes the
+  exact runtime-output, ensemble, compact-provenance, and matched-comparison
+  commands for baseline, growth, quasilinear, and nonlinear-window rows. The
+  tracked `docs/_static/vmec_qa_t1500_postprocess_manifest.json` is a command
+  manifest, not a simulation claim, and keeps the remaining QL harvest
+  deterministic once its `dt=0.04` run reaches `t=1500`.
+
 - 2026-06-09: Added `tools/build_qa_optimizer_strategy_report.py` plus focused
   tests and regenerated
   `docs/_static/vmec_jax_qa_optimizer_strategy_report.{png,json,csv}`. The
@@ -113,7 +124,7 @@ historical logs live outside the release repository so clones stay small.
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 99% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/nonlinear-window triplets pass, but matched growth/nonlinear-window comparisons fail the 4% reduction gate while QL is still running |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
-| Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
+| Docs/readme/release hygiene | 98.5% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest is tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 99% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; QL matched comparison remains pending |
 
