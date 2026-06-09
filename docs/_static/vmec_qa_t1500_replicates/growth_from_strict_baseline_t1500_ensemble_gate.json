@@ -1,6 +1,12 @@
 {
   "case": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window_ensemble_gate",
   "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+  "compact_bundle_policy": {
+    "output_gate_json": "docs/_static/vmec_qa_t1500_growth_output_gate.json",
+    "reason": "avoid committing regenerable per-trace CSV and convergence intermediates under repository-size policy",
+    "regeneration": "run tools/build_external_vmec_replicate_ensemble.py against the office NetCDF outputs listed in rows[].source_artifact",
+    "tracked_bundle": "ensemble JSON, output-gate JSON, and PNG only"
+  },
   "comparison": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window_seed_timestep_replicates",
   "config": {
     "max_combined_sem_rel": 0.25,
@@ -76,35 +82,38 @@
     {
       "case": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window",
       "failures": [],
+      "generated_trace_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed32_heat_flux_trace.csv",
       "index": 0,
       "late_mean": 11.74395520009753,
       "passed": true,
       "promotion_ready": true,
       "sem": 0.13796392394017915,
-      "source_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed32_heat_flux_trace.csv",
-      "summary_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed32_transport_window.json"
+      "source_artifact": "office:/home/rjorge/spectrax_strict_qa_t1500_20260609/SPECTRAX-GK/tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed32.out.nc",
+      "summary_artifact": "docs/_static/vmec_qa_t1500_growth_output_gate.json#rows[0]"
     },
     {
       "case": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window",
       "failures": [],
+      "generated_trace_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33_heat_flux_trace.csv",
       "index": 1,
       "late_mean": 11.252279193311852,
       "passed": true,
       "promotion_ready": true,
       "sem": 0.13429047391688387,
-      "source_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33_heat_flux_trace.csv",
-      "summary_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33_transport_window.json"
+      "source_artifact": "office:/home/rjorge/spectrax_strict_qa_t1500_20260609/SPECTRAX-GK/tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_seed33.out.nc",
+      "summary_artifact": "docs/_static/vmec_qa_t1500_growth_output_gate.json#rows[1]"
     },
     {
       "case": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window",
       "failures": [],
+      "generated_trace_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_dt0p04_heat_flux_trace.csv",
       "index": 2,
       "late_mean": 11.534283955890547,
       "passed": true,
       "promotion_ready": true,
       "sem": 0.13257296156558712,
-      "source_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_dt0p04_heat_flux_trace.csv",
-      "summary_artifact": "docs/_static/vmec_qa_t1500_replicates/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_dt0p04_transport_window.json"
+      "source_artifact": "office:/home/rjorge/spectrax_strict_qa_t1500_20260609/SPECTRAX-GK/tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_growth_from_strict_baseline/vmec_qa_full_sweep_growth_from_strict_baseline_nonlinear_t1500_n64_dt0p04.out.nc",
+      "summary_artifact": "docs/_static/vmec_qa_t1500_growth_output_gate.json#rows[2]"
     }
   ],
   "statistics": {
