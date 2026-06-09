@@ -205,8 +205,8 @@ It encodes the present state of the optimizer lane:
 - the strict max-mode-5 QA baseline is admitted;
 - the linear-growth, quasilinear-flux, and nonlinear-window transport restarts
   reduce their internal objectives but remain diagnostic-only because the
-  strict solved-WOUT gate and true matched ``t=1500`` nonlinear audits are not
-  yet both closed;
+  strict solved-WOUT gate is not met and the true matched ``t=1500`` nonlinear
+  audits fail the heat-flux-reduction promotion gate;
 - the converged ``RBC(1,1)`` long-window landscape has a material lower-Q
   direction, with the lowest converged point near ``+40%`` reducing the
   post-transient ``<Q_i>`` by about 35% relative to the zero-offset baseline;

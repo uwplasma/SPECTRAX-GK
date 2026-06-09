@@ -35,16 +35,17 @@
   `z=-0.19`; `-0.25%`, `z=-0.09`). The strict-QA `t=1500` candidate set is
   closed as robust negative optimization-transfer evidence.
 
-- 2026-06-09: Added reproducible strict-QA `t=1500` postprocess tooling while
-  the final QL timestep variant continues on office. The new
+- 2026-06-09: Added reproducible strict-QA `t=1500` postprocess tooling and
+  fixed its output-gate artifact names after the final QL harvest. The new
   `tools/compact_replicate_ensemble_bundle.py` rewrites compact tracked
   ensemble provenance from regenerable trace CSVs to authoritative NetCDF
   outputs, and `tools/write_vmec_qa_t1500_postprocess_manifest.py` writes the
   exact runtime-output, ensemble, compact-provenance, and matched-comparison
   commands for baseline, growth, quasilinear, and nonlinear-window rows. The
   tracked `docs/_static/vmec_qa_t1500_postprocess_manifest.json` is a command
-  manifest, not a simulation claim, and keeps the remaining QL harvest
-  deterministic once its `dt=0.04` run reaches `t=1500`.
+  manifest, not a simulation claim, and now resolves to the tracked
+  `baseline`, `growth`, `quasilinear`, and `nonlinear_window` output-gate
+  JSONs.
 
 - 2026-06-09: Added `tools/build_qa_optimizer_strategy_report.py` plus focused
   tests and regenerated
@@ -54,8 +55,9 @@
   about 35% below the zero-offset late-window mean), but treats that landscape
   as a noise/convergence diagnostic rather than an admission source for
   optimized QA stellarators. Nonlinear optimization promotion remains blocked
-  because current transport optimizer rows are still diagnostic-only and true
-  matched `t=1500` audits are pending. The recommended campaign ladder is now
+  because current transport optimizer rows are still diagnostic-only and the
+  true matched `t=1500` audits fail the `4%` reduction gate. The recommended
+  campaign ladder is now
   explicit: exact-adjoint least squares from the VMEC-JAX simple seed for
   smooth QA constraints, constraint-aware adjoint trust/L-BFGS with
   transport-weight continuation for linear/QL residuals, and SPSA/CMA-ES/
