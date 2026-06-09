@@ -169,8 +169,13 @@ def _plot_wout_boozer(ax: plt.Axes, wout_path: Path, title: str) -> None:
         zeta_max=2.0 * np.pi / float(wout.nfp),
     )
     zeta_grid, theta_grid = np.meshgrid(zeta, theta, indexing="ij")
-    contour = ax.contourf(zeta_grid, theta_grid, bmag, levels=34, cmap="jet")
-    ax.contour(zeta_grid, theta_grid, bmag, levels=14, colors="k", alpha=0.22, linewidths=0.35)
+    bmin = float(np.nanmin(bmag))
+    bmax = float(np.nanmax(bmag))
+    if np.isclose(bmin, bmax, rtol=1.0e-12, atol=1.0e-12):
+        levels = np.linspace(bmin - 1.0e-9, bmax + 1.0e-9, 3)
+    else:
+        levels = np.linspace(bmin, bmax, 20)
+    contour = ax.contour(zeta_grid, theta_grid, bmag, levels=levels, cmap="jet", linewidths=0.75)
     ax.set_title(title, fontsize=9.2, pad=2)
     ax.set_xlabel(r"$\phi_B$", fontsize=8)
     ax.set_ylabel(r"$\theta_B$", fontsize=8)

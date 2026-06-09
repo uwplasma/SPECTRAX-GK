@@ -360,9 +360,15 @@ Differentiable-Physics Figures
        artifacts under ``docs/_static/qa_strict_baseline_to_*_strict_baseline.*``
        are failed negative admission evidence. No turbulent-flux reduction,
        quasilinear holdout, or nonlinear optimization success is claimed from
-       this sweep. The old projected-weight nonlinear audits remain historical
-       single-point evidence tied to an earlier baseline and should not be
-       conflated with this strict-baseline panel.
+       this sweep. The rerun manifest generator now emits both staged
+       restart-ladder commands and direct full-horizon ``t=1500`` commands,
+       plus a runtime-output gate over ``t=[1100,1500]``; the figure remains
+       blocked until true long-window outputs are available. The Boozer-LCFS
+       ``|B|`` row is drawn with unfilled contours rather than a filled density
+       map to expose quasisymmetry deterioration. The old projected-weight
+       nonlinear audits remain historical single-point evidence tied to an
+       earlier baseline and should not be conflated with this strict-baseline
+       panel.
    * - Boundary-coefficient transport landscape
      - ``tools/build_vmec_boundary_transport_landscape.py`` and ``tools/patch_vmec_jax_wout_metadata.py``
      - Partial overlay complete; full 31-point nonlinear side remains open

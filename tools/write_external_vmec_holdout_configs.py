@@ -57,6 +57,7 @@ class WrittenConfig:
     case: str
     grid: GridSpec
     horizon: float
+    dt: float
     steps: int
     restart_if_exists: bool
     variant: VariantSpec | None = None
@@ -443,6 +444,7 @@ def write_configs(
                         case=case,
                         grid=grid,
                         horizon=horizon,
+                        dt=variant_dt,
                         steps=steps,
                         restart_if_exists=restart_if_exists,
                         variant=variant,
@@ -467,11 +469,22 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
     configs: list[dict[str, Any]] = []
     launch_commands: list[str] = []
     restart_seed_commands: list[str] = []
+    staged_ladder_commands: list[str] = []
+    direct_full_horizon_launch_commands: list[str] = []
     manifest: dict[str, Any] = {
         "kind": "external_vmec_holdout_config_manifest",
         "configs": configs,
         "launch_commands": launch_commands,
         "restart_seed_commands": restart_seed_commands,
+        "staged_ladder_commands": staged_ladder_commands,
+        "direct_full_horizon_launch_commands": direct_full_horizon_launch_commands,
+        "restart_ladder_note": (
+            "launch_commands are restart-ladder segments. For continuation "
+            "horizons, run the corresponding restart_seed_command first, or run "
+            "the direct_full_horizon_launch_command when starting from t=0. "
+            "Running a final segment command from t=0 intentionally reaches only "
+            "the segment duration, not the horizon encoded in the file name."
+        ),
     }
     for item in written:
         variant_payload = None
@@ -489,26 +502,37 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
                 "case": item.case,
                 "grid": item.grid.label,
                 "horizon": item.horizon,
+                "dt": item.dt,
                 "steps": item.steps,
                 "restart_if_exists": item.restart_if_exists,
                 "variant": variant_payload,
             }
         )
-        launch_commands.append(
+        segment_command = (
             "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {int(item.steps)} --no-progress"
         )
+        direct_steps = int(round(float(item.horizon) / float(item.dt)))
+        direct_command = (
+            "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"--config {item.path.as_posix()} --steps {int(direct_steps)} --no-progress"
+        )
+        launch_commands.append(segment_command)
+        direct_full_horizon_launch_commands.append(direct_command)
         variant_key = "" if item.variant is None else item.variant.label
         previous_key = (item.grid.label, variant_key)
         if item.restart_if_exists:
             previous = previous_by_grid[previous_key]
             src_base = _bundle_base(previous.output_path)
             dst_base = _bundle_base(item.output_path)
-            restart_seed_commands.append(
+            restart_command = (
                 "for ext in out.nc restart.nc big.nc; do "
                 f"cp {src_base.as_posix()}.$ext {dst_base.as_posix()}.$ext; "
                 "done"
             )
+            restart_seed_commands.append(restart_command)
+            staged_ladder_commands.append(restart_command)
+        staged_ladder_commands.append(segment_command)
         previous_by_grid[previous_key] = item
     path = out_dir / "run_manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")

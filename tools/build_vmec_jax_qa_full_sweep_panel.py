@@ -1104,7 +1104,13 @@ def _plot_bmag(ax: plt.Axes, row: dict[str, Any]) -> None:
         ax.text(0.5, 0.5, "LCFS |B|\npending", ha="center", va="center")
         return
     theta, zeta, b_grid = arrays
-    mesh = ax.contourf(zeta, theta, b_grid, levels=32, cmap="jet")
+    bmin = float(np.nanmin(b_grid))
+    bmax = float(np.nanmax(b_grid))
+    if math.isclose(bmin, bmax, rel_tol=1.0e-12, abs_tol=1.0e-12):
+        levels = np.linspace(bmin - 1.0e-9, bmax + 1.0e-9, 3)
+    else:
+        levels = np.linspace(bmin, bmax, 18)
+    mesh = ax.contour(zeta, theta, b_grid, levels=levels, cmap="jet", linewidths=0.8)
     ax.set_title(row["label"], fontsize=9)
     ax.set_xlabel(r"$\phi$ over one field period")
     ax.set_ylabel(r"$\theta$")

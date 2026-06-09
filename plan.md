@@ -1,3 +1,15 @@
+- 2026-06-09: Diagnosed the strict QA `t1500` mismatch as a launch-contract
+  issue, not a physics result. Final-horizon TOMLs are restart-ladder segments:
+  launching a `t1500` segment command from `t=0` integrates only the
+  `(1500-1100)` segment and stops near `t=400`. The generators now record
+  per-config `dt`, emit explicit staged-ladder commands, emit direct
+  full-horizon commands (`t1500/dt`: 30000 steps for `dt=0.05`, 37500 for
+  `dt=0.04`), and include a runtime-output gate over `t=[1100,1500]`.
+  Focused tests cover the exact strict-policy numbers. The QA `|B|`
+  manuscript/readme panels now use unfilled Boozer-LCFS contours instead of
+  filled density maps. Office SSH timed out during this pass, so the true
+  `t=1500` matched QA relaunch is still pending.
+
 - Harvested the matched strict QA full-sweep nonlinear audit from office and
   reran postprocessing with the patched fail-closed tools. All 36 raw runtime
   jobs returned success, but the generated traces only reach `t≈400` while the
@@ -29,7 +41,7 @@
 
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-08
+Last updated: 2026-06-09
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
@@ -60,11 +72,11 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear transport and campaign-admission evidence | 98% | Strict top-12 matched audit fails promotion; full-sweep QA matched audit is harvested but fails admission because the requested t=[1100,1500] window is outside the completed traces |
+| Strict nonlinear transport and campaign-admission evidence | 98% | Strict top-12 matched audit fails promotion; full-sweep QA matched audit is harvested as historical negative evidence; generator mismatch is fixed, but true t=1500 matched outputs are pending |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; first three adjacent true nonlinear points validate the staged late-window protocol; full overlay pending |
 | Docs/readme/release hygiene | 98% | Public wording now separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| QA optimization optimizer-comparison metadata | 96% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now emit office-compatible `python3` postprocess commands; matched full-sweep QA audits are harvested as non-admitted negative evidence |
+| QA optimization optimizer-comparison metadata | 97% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and keep matched full-sweep QA audits non-admitted until true t=1500 outputs exist |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

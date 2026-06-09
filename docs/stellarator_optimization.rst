@@ -256,7 +256,10 @@ write the initial-vs-final nonlinear ``Q(t)`` comparison plot, or launch the
 generated ``run_manifest.json`` commands explicitly on the target workstation.
 The generated manifests now use the strict staged nonlinear policy described
 above; older ``t=[350,700]`` manifests should be treated as historical
-diagnostics unless rerun through the current policy.
+diagnostics unless rerun through the current policy. The manifest separates
+restart-ladder segment commands from direct full-horizon commands and adds a
+runtime-output gate over the accepted window, so a final ``t=1500`` segment run
+from ``t=0`` cannot be mistaken for a true ``t=1500`` nonlinear audit.
 
 The first full-sweep matched QA audit under this strict policy has been
 harvested from the office workstation, but it is not admitted. All raw
@@ -269,7 +272,8 @@ diagnostic artifacts are retained as
 ``docs/_static/optimized_equilibrium_replicates/vmec_qa_full_sweep_*`` and
 ``docs/_static/qa_strict_baseline_to_*_strict_baseline.*``. They are command
 and admission-policy evidence, not nonlinear holdouts or optimization
-successes.
+successes. A true relaunch must either follow the staged ``700 -> 1100 -> 1500``
+restart ladder or use the manifest ``direct_full_horizon_launch_commands``.
 
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
@@ -430,7 +434,9 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    figure treats them as diagnostic-only non-admitted candidates rather than
    promoted optimized stellarators. The subsequent matched office audit is now
    harvested but still not admitted: its traces stop near ``t=400``, outside
-   the strict ``t=[1100,1500]`` acceptance window.
+   the strict ``t=[1100,1500]`` acceptance window. The Boozer-LCFS ``|B|``
+   panels use unfilled contours so departures from quasisymmetry remain visible
+   without a filled density map.
 
 .. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate

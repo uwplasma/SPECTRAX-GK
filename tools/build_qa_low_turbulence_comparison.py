@@ -260,18 +260,17 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         bmag = np.asarray(bmap["bmag"], dtype=float)
         zpad = 0.08 * max(bmax - bmin, 1.0e-6)
         ax.plot_surface(zz, tt, bmag, cmap=bcmap, norm=bnorm, linewidth=0, antialiased=True, alpha=0.96)
-        ax.contourf(
+        ax.contour(
             zz,
             tt,
             bmag,
             zdir="z",
             offset=bmin - zpad,
             levels=18,
-            cmap=bcmap,
-            norm=bnorm,
-            alpha=0.78,
+            cmap="jet",
+            linewidths=0.55,
         )
-        ax.contour(zz, tt, bmag, levels=9, colors="white", linewidths=0.35, alpha=0.72)
+        ax.contour(zz, tt, bmag, levels=9, colors="black", linewidths=0.35, alpha=0.55)
         ax.set_xlabel(r"$\phi_B/\pi$")
         ax.set_ylabel(r"$\theta_B/\pi$")
         ax.set_zlabel("")

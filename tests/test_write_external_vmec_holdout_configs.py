@@ -52,14 +52,21 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert payload["kind"] == "external_vmec_holdout_config_manifest"
     assert len(payload["configs"]) == 6
     assert len(payload["launch_commands"]) == 6
+    assert len(payload["direct_full_horizon_launch_commands"]) == 6
+    assert len(payload["staged_ladder_commands"]) == 10
     assert len(payload["restart_seed_commands"]) == 4
+    assert payload["configs"][0]["dt"] == 0.25
     assert "python3 -m spectraxgk.cli run-runtime-nonlinear" in payload["launch_commands"][0]
     assert "--steps 4" in payload["launch_commands"][0]
     assert "--steps 2" in payload["launch_commands"][2]
+    assert "--steps 6" in payload["direct_full_horizon_launch_commands"][2]
     assert "restart.nc" in payload["restart_seed_commands"][0]
+    assert "restart-ladder segments" in payload["restart_ladder_note"]
     assert "candidate_nonlinear_t1p5_n8" in payload["restart_seed_commands"][0]
     assert "candidate_nonlinear_t1p5_n8" in payload["restart_seed_commands"][2]
     assert "candidate_nonlinear_t2_n8" in payload["restart_seed_commands"][2]
+    assert payload["staged_ladder_commands"][2] == payload["restart_seed_commands"][0]
+    assert payload["staged_ladder_commands"][3] == payload["launch_commands"][2]
 
 
 def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) -> None:
@@ -124,6 +131,9 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
     payload = json.loads(manifest.read_text(encoding="utf-8"))
     assert all("run-runtime-nonlinear" in command for command in payload["launch_commands"])
     assert all("--steps" in command for command in payload["launch_commands"])
+    assert all("run-runtime-nonlinear" in command for command in payload["direct_full_horizon_launch_commands"])
+    assert "--steps 8" in payload["direct_full_horizon_launch_commands"][1]
+    assert any("--steps 16" in command for command in payload["direct_full_horizon_launch_commands"])
     assert len(payload["restart_seed_commands"]) == 5
     assert "replicate_nonlinear_t1_n8_seed31" in payload["restart_seed_commands"][0]
     assert "replicate_nonlinear_t2_n8_seed31" in payload["restart_seed_commands"][0]

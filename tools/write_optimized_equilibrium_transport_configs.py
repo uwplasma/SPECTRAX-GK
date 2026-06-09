@@ -68,7 +68,9 @@ def _promotion_commands(
     grid_label: str,
     tmin: float,
     tmax: float,
+    baseline_dt: float,
     seed_variants: tuple[int, ...],
+    dt_variant: float,
     dt_variant_label: str,
 ) -> dict[str, Any]:
     ensemble_dir = ROOT / "docs" / "_static" / "optimized_equilibrium_replicates"
@@ -77,6 +79,19 @@ def _promotion_commands(
         for seed in seed_variants
     ]
     inputs.append(_expected_output(out_dir, case, tmax, grid_label, dt_variant_label))
+    variants = [(f"seed{seed}", float(baseline_dt)) for seed in seed_variants]
+    variants.append((dt_variant_label, float(dt_variant)))
+    direct_full_horizon_step_counts = {
+        label: int(round(float(tmax) / dt)) for label, dt in variants
+    }
+    direct_full_horizon_launch_commands = [
+        (
+            "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"--config {_repo_relative(_expected_output(out_dir, case, tmax, grid_label, label).with_suffix('').with_suffix('.toml'))} "
+            f"--steps {steps} --no-progress"
+        )
+        for label, steps in direct_full_horizon_step_counts.items()
+    ]
     ensemble_json = f"{case}_ensemble_gate.json"
     readiness_json = f"{case}_readiness.json"
     ensemble_png = f"{case}_ensemble_gate.png"
@@ -90,6 +105,14 @@ def _promotion_commands(
         + f" --readiness-json {readiness_json}"
         + f" --ensemble-json {ensemble_json}"
         + f" --out-png {ensemble_png}"
+    )
+    output_gate_json = f"{case}_output_gate.json"
+    output_gate_command = (
+        "python3 tools/check_nonlinear_runtime_outputs.py "
+        + " ".join(_repo_relative(path) for path in inputs)
+        + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
+        + " --min-window-samples 80 --min-abs-window-mean 0.0001"
+        + f" --json-out {_repo_relative(ensemble_dir / output_gate_json)}"
     )
     guard_json = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.json"
     guard_png = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.png"
@@ -107,7 +130,17 @@ def _promotion_commands(
         "readiness_json": _repo_relative(ensemble_dir / readiness_json),
         "ensemble_png": _repo_relative(ensemble_dir / ensemble_png),
         "build_ensemble_command": build_ensemble,
+        "output_gate_json": _repo_relative(ensemble_dir / output_gate_json),
+        "output_gate_command": output_gate_command,
         "run_guard_command": run_guard,
+        "direct_full_horizon_step_counts": direct_full_horizon_step_counts,
+        "direct_full_horizon_launch_commands": direct_full_horizon_launch_commands,
+        "restart_ladder_note": (
+            "The generated TOMLs are restart-ladder segments. If launching only "
+            "the final tmax TOMLs from t=0, use direct_full_horizon_launch_commands "
+            "so --steps equals tmax/dt. Otherwise run the staged ladder commands "
+            "from run_manifest.json in order and seed restart bundles between horizons."
+        ),
     }
 
 
@@ -161,7 +194,9 @@ def main(argv: list[str] | None = None) -> int:
         grid_label=grids[0].label,
         tmin=float(args.window_tmin),
         tmax=float(args.window_tmax),
+        baseline_dt=float(args.dt),
         seed_variants=seed_variants,
+        dt_variant=float(args.dt_variant),
         dt_variant_label=dt_variant_label,
     )
     manifest_path.write_text(json.dumps(_json_clean(manifest), indent=2, sort_keys=True) + "\n", encoding="utf-8")
