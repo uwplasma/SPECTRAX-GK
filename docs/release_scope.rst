@@ -134,9 +134,14 @@ Do not make these claims from the current artifacts:
 - production nonlinear optimization without converged post-transient audits of
   optimized equilibria; the selected QA optimized-equilibrium audit is the
   current scoped exception;
-- treating the strict QA full-sweep matched audit as a nonlinear holdout or
-  optimized-transport success: the harvested traces end near ``t=400`` and
-  therefore have no finite samples in the required ``t=[1100,1500]`` window;
+- treating the historical strict QA full-sweep matched audit that stopped near
+  ``t=400`` as a nonlinear holdout or optimized-transport success; it remains
+  launch-contract evidence only;
+- treating the newly admitted true ``t=1500`` growth-objective and nonlinear-
+  window-objective QA candidate triplets as an optimization-success or
+  quasilinear-calibration claim before the matched strict QA baseline and
+  quasilinear-objective triplets finish and pass the same ``t=[1100,1500]``
+  postprocess;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - launching nonlinear-gradient campaigns directly from admitted VMEC-state

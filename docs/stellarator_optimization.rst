@@ -324,6 +324,36 @@ and admission-policy evidence, not nonlinear holdouts or optimization
 successes. A true relaunch must either follow the staged ``700 -> 1100 -> 1500``
 restart ladder or use the manifest ``direct_full_horizon_launch_commands``.
 
+The corrected true-full-horizon relaunch is now being harvested incrementally.
+The first two completed strict triplets, the growth-objective candidate and the
+nonlinear-window-objective candidate, both pass the fail-closed runtime-output
+gate and replicated seed/timestep ensemble gate over ``t=[1100,1500]``.  The
+growth candidate has ensemble mean ``<Q_i> = 11.510``, mean relative spread
+``0.0427``, and combined SEM/mean ``0.0124``.  The nonlinear-window candidate
+has ensemble mean ``<Q_i> = 11.609``, mean relative spread ``0.0366``, and
+combined SEM/mean ``0.0177``.  These artifacts close the question of whether
+the candidate traces are real saturated long-window signals, but they do not
+yet show transport reduction because the matched strict QA baseline and
+quasilinear-objective triplets are still running on the office GPUs.
+
+.. figure:: _static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.png
+   :alt: True t=1500 growth-objective QA nonlinear heat-flux audit
+   :width: 98%
+   :align: center
+
+   True full-horizon growth-objective QA audit. The late window
+   ``t=[1100,1500]`` passes the seed/timestep robustness gate, but the panel is
+   a candidate-audit artifact rather than a matched optimization-success claim.
+
+.. figure:: _static/vmec_qa_t1500_replicates/nonlinear_window_from_strict_baseline_t1500_ensemble_gate.png
+   :alt: True t=1500 nonlinear-window-objective QA nonlinear heat-flux audit
+   :width: 98%
+   :align: center
+
+   True full-horizon nonlinear-window-objective QA audit. The late-window
+   ensemble is statistically robust across two seeds and one timestep variant;
+   matched baseline/QL comparisons are still required before promotion.
+
 The parameter-scan example calls
 ``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
 Its default mode reuses the tracked strict-baseline ``RBC(1,1)`` reduced-metric
