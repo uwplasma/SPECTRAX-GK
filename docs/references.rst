@@ -30,6 +30,13 @@ References
    tokamak and stellarator design," Journal of Plasma Physics (2022).
    `DOI <https://doi.org/10.1017/S0022377822000617>`__.
 
+.. [GonzalezJerez22] A. González-Jerez et al., "Electrostatic gyrokinetic
+   simulations in Wendelstein 7-X geometry: benchmark between the codes stella
+   and GENE," Journal of Plasma Physics 88, 905880310 (2022).
+   `Cambridge Core <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/electrostatic-gyrokinetic-simulations-in-wendelstein-7x-geometry-benchmark-between-the-codes-stella-and-gene/434DAA225FC5340D6E2C929C773644E3>`__,
+   `arXiv <https://arxiv.org/abs/2107.06060>`__,
+   `DOI <https://doi.org/10.1017/S0022377822000393>`__.
+
 .. [Sanchez21] E. Sánchez et al., "Gyrokinetic simulations in stellarators
    using different computational domains," Nuclear Fusion 61, 116074 (2021).
    `arXiv <https://arxiv.org/abs/2106.02828>`__,
@@ -40,6 +47,17 @@ References
    Gyrokinetic Simulations of Stellarator Turbulence," Entropy 25, 942 (2023).
    `article <https://www.mdpi.com/1099-4300/25/6/942>`__,
    `DOI <https://doi.org/10.3390/e25060942>`__.
+
+.. [Hoffmann23] A. C. D. Hoffmann, B. J. Frei, and P. Ricci,
+   "Gyrokinetic moment-based simulations of the Dimits shift," Journal of
+   Plasma Physics 89, 905890616 (2023).
+   `arXiv <https://arxiv.org/abs/2308.01016>`__,
+   `Cambridge Core <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/gyrokinetic-momentbased-simulations-of-the-dimits-shift/8413B588DBE2DAAF5C8AD9D6EE1A1FB1>`__.
+
+.. [Oberparleiter16] M. Oberparleiter, H. Nordman, G. Verdoolaege, and
+   F. Jenko, "Uncertainty estimation and a stopping rule in nonlinear
+   gyrokinetic simulations," Journal of Physics: Conference Series 775,
+   012009 (2016). `DOI <https://doi.org/10.1088/1742-6596/775/1/012009>`__.
 
 .. [GENE] F. Jenko et al., "The GENE code," Journal of Computational Physics
    230, 6979 (2011). `DOI <https://doi.org/10.1016/j.jcp.2011.05.034>`__.

@@ -26,6 +26,25 @@ DEFAULT_JSON = REPO_ROOT / "docs" / "_static" / "validation_gate_index.json"
 DEFAULT_CSV = REPO_ROOT / "docs" / "_static" / "validation_gate_index.csv"
 DEFAULT_PNG = REPO_ROOT / "docs" / "_static" / "validation_gate_index.png"
 
+CURATED_RELEASE_GATE_ARTIFACTS = {
+    "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+    "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+    "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+    "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+    "docs/_static/nonlinear_cyclone_gate_summary.json",
+    "docs/_static/cyclone_resolution_observed_order.json",
+    "docs/_static/nonlinear_hsx_gate_summary.json",
+    "docs/_static/kbm_branch_gate_summary.json",
+    "docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json",
+    "docs/_static/nonlinear_kbm_gate_summary.json",
+    "docs/_static/miller_zonal_response_pilot.json",
+    "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/quasilinear_model_selection_status.json",
+    "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+    "docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json",
+    "docs/_static/nonlinear_w7x_gate_summary.json",
+}
+
 
 def _repo_relative_path(path: Path) -> str:
     """Return a stable repo-relative path when ``path`` is inside the checkout."""
@@ -66,6 +85,13 @@ def _load_json(path: Path) -> dict[str, object]:
 def _report_entries(path: Path, data: dict[str, object]) -> list[dict[str, object]]:
     if data.get("gate_index_include") is False:
         return []
+    artifact = _repo_relative_path(path)
+    if (
+        artifact.startswith("docs/_static/")
+        and data.get("gate_index_include") is not True
+        and artifact not in CURATED_RELEASE_GATE_ARTIFACTS
+    ):
+        return []
 
     reports: list[dict[str, object]] = []
     report = data.get("gate_report")
@@ -74,6 +100,18 @@ def _report_entries(path: Path, data: dict[str, object]) -> list[dict[str, objec
     extra = data.get("gate_reports")
     if isinstance(extra, list):
         reports.extend(item for item in extra if isinstance(item, dict))
+    promotion_gate = data.get("promotion_gate")
+    if data.get("gate_index_include") is True and not reports and isinstance(promotion_gate, dict):
+        reports.append(
+            {
+                "case": data.get("case", path.stem),
+                "source": data.get("source", data.get("kind", "")),
+                "passed": bool(promotion_gate.get("passed", False)),
+                "gates": promotion_gate.get("gates", []),
+                "max_abs_error": promotion_gate.get("max_abs_error"),
+                "max_rel_error": promotion_gate.get("max_rel_error"),
+            }
+        )
 
     entries: list[dict[str, object]] = []
     for report in reports:
@@ -136,21 +174,22 @@ def write_index_plot(rows: list[dict[str, object]], out_png: Path) -> None:
     y = np.arange(len(rows))
     colors = ["#2a9d55" if bool(row["passed"]) else "#c2410c" for row in rows]
     fig_height = max(2.6, 0.45 * len(rows) + 1.2)
-    fig, ax = plt.subplots(figsize=(7.0, fig_height), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(9.5, fig_height))
     ax.barh(y, np.ones(len(rows)), color=colors, alpha=0.88)
-    ax.set_yticks(y, labels)
+    ax.set_yticks(y, labels, fontsize=8.8)
     ax.set_xticks([])
     ax.set_xlim(0.0, 1.0)
     ax.invert_yaxis()
-    ax.set_title("Validation Gate Index", fontsize=13, fontweight="bold")
+    fig.suptitle("Validation Gate Index", fontsize=13, fontweight="bold")
     for idx, row in enumerate(rows):
         failed = str(row["failed_metrics"]).replace("_", " ")
         status = "passed" if bool(row["passed"]) else f"open: {failed}"
         status = textwrap.shorten(status, width=64, placeholder="...")
-        ax.text(0.02, idx, status, va="center", ha="left", color="white", fontsize=9)
+        ax.text(0.02, idx, status, va="center", ha="left", color="white", fontsize=8.5)
     for spine in ax.spines.values():
         spine.set_visible(False)
     out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.subplots_adjust(left=0.55, right=0.97, top=0.94, bottom=0.03)
     fig.savefig(out_png, dpi=220)
     fig.savefig(out_png.with_suffix(".pdf"))
     plt.close(fig)

@@ -93,6 +93,14 @@ def _artifact_keys_from_gate(data: dict[str, Any]) -> set[str]:
         key = _canonical_artifact_key(data.get(field))
         if key:
             keys.add(key)
+    inputs = data.get("inputs")
+    if isinstance(inputs, dict):
+        for value in inputs.values():
+            values = value if isinstance(value, list) else [value]
+            for item in values:
+                key = _canonical_artifact_key(item)
+                if key:
+                    keys.add(key)
     for run in data.get("runs", []):
         if isinstance(run, dict):
             for field in ("csv", "json", "source", "nonlinear_artifact"):

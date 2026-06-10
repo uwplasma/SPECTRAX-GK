@@ -47,6 +47,19 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     _write_gate(nested / "nested_pass.json", case="nested_passed_case", passed=True)
     _write_gate(tmp_path / "open.json", case="open_case", passed=False)
     (tmp_path / "ignored.json").write_text(json.dumps({"case": "no_gate"}))
+    (tmp_path / "promotion.json").write_text(
+        json.dumps(
+            {
+                "case": "promotion_case",
+                "kind": "synthetic_promotion_gate",
+                "gate_index_include": True,
+                "promotion_gate": {
+                    "passed": True,
+                    "gates": [{"metric": "admission", "passed": True}],
+                },
+            }
+        )
+    )
     (tmp_path / "exploratory.json").write_text(
         json.dumps(
             {
@@ -66,8 +79,8 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     finally:
         mod.REPO_ROOT = old_root
 
-    assert index["n_reports"] == 3
-    assert index["n_passed"] == 2
+    assert index["n_reports"] == 4
+    assert index["n_passed"] == 3
     assert index["n_open"] == 1
     assert index["patterns"] == ["**/*.json"]
     rows = {row["case"]: row for row in index["reports"]}
@@ -75,6 +88,8 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     assert rows["open_case"]["artifact"] == "open.json"
     assert rows["passed_case"]["n_failed"] == 0
     assert rows["passed_case"]["artifact"] == "pass.json"
+    assert rows["promotion_case"]["n_failed"] == 0
+    assert rows["promotion_case"]["artifact"] == "promotion.json"
     assert rows["nested_passed_case"]["n_failed"] == 0
     assert rows["nested_passed_case"]["artifact"] == "nested/nested_pass.json"
     assert "exploratory_case" not in rows

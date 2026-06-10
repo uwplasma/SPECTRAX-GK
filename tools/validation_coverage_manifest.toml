@@ -616,6 +616,7 @@ fast_tests = [
   "tests/test_quasilinear_window.py",
   "tests/test_quasilinear_promotion_guardrails.py",
   "tests/test_check_quasilinear_calibration_inputs.py",
+  "tests/test_check_external_vmec_high_grid_admission.py",
   "tests/test_plot_quasilinear_calibration.py",
   "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
   "tests/test_write_external_vmec_holdout_configs.py",
@@ -648,6 +649,12 @@ artifact_paths = [
   "docs/_static/external_vmec_qh_grid_convergence_gate.json",
   "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
   "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_t250_high_grid_convergence_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_t350_high_grid_convergence_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_late_high_grid_time_horizon_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
+  "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
 ]
 next_tests = [
   "add per-species ion/electron calibration points once kinetic-electron nonlinear holdouts are validated",

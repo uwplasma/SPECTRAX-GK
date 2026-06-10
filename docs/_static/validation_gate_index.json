@@ -1,11 +1,22 @@
 {
   "n_open": 0,
-  "n_passed": 16,
-  "n_reports": 16,
+  "n_passed": 17,
+  "n_reports": 17,
   "patterns": [
     "docs/_static/**/*.json"
   ],
   "reports": [
+    {
+      "artifact": "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
+      "case": "CTH-like external VMEC modified-protocol high-grid admission",
+      "failed_metrics": "",
+      "max_abs_error": 0.10908478493456078,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 17,
+      "passed": true,
+      "source": "external_vmec_high_grid_admission_policy"
+    },
     {
       "artifact": "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
       "case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
@@ -134,7 +145,7 @@
       "max_abs_error": 0.0,
       "max_rel_error": 0.0,
       "n_failed": 0,
-      "n_gates": 31,
+      "n_gates": 107,
       "passed": true,
       "source": "tracked quasilinear JSON artifacts and documentation scope checks"
     },
@@ -145,7 +156,7 @@
       "max_abs_error": 0.0,
       "max_rel_error": 0.0,
       "n_failed": 0,
-      "n_gates": 10,
+      "n_gates": 13,
       "passed": true,
       "source": ""
     },

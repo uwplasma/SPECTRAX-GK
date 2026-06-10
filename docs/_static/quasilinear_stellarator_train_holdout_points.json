@@ -108,7 +108,8 @@
         "sample_sem": 0.03751208728608468,
         "second_half_mean": 7.056597248713175,
         "sem": 0.1574501348609603,
-        "sem_rel": 0.02360927051293569
+        "sem_rel": 0.02360927051293569,
+        "terminal_mean_rel_delta": 0.11623970335532266
       },
       "window": {
         "input_tmax": 400.0,
@@ -243,7 +244,8 @@
         "sample_sem": 0.2082540478334779,
         "second_half_mean": 5.98719269124473,
         "sem": 0.9390149828542379,
-        "sem_rel": 0.22043525958628973
+        "sem_rel": 0.22043525958628973,
+        "terminal_mean_rel_delta": 0.811005999235558
       },
       "window": {
         "input_tmax": 121.9,
@@ -378,7 +380,8 @@
         "sample_sem": 1.4052647713927333,
         "second_half_mean": 9.014506513422186,
         "sem": 2.935323569895001,
-        "sem_rel": 0.5767290956178036
+        "sem_rel": 0.5767290956178036,
+        "terminal_mean_rel_delta": 1.619436354042825
       },
       "window": {
         "input_tmax": 49.2,
@@ -513,7 +516,8 @@
         "sample_sem": 0.38055999182586575,
         "second_half_mean": 5.824451546919973,
         "sem": 0.9414970015013299,
-        "sem_rel": 0.1750468122754894
+        "sem_rel": 0.1750468122754894,
+        "terminal_mean_rel_delta": 0.16580971562434493
       },
       "window": {
         "input_tmax": 197.77346801757812,
@@ -648,7 +652,8 @@
         "sample_sem": 0.2949710868012771,
         "second_half_mean": 17.351835030775803,
         "sem": 0.8004205717723741,
-        "sem_rel": 0.04331407624154758
+        "sem_rel": 0.04331407624154758,
+        "terminal_mean_rel_delta": 0.12204050730591354
       },
       "window": {
         "input_tmax": 250.00604248046875,
@@ -783,7 +788,8 @@
         "sample_sem": 0.4075880161466123,
         "second_half_mean": 23.00031116273668,
         "sem": 1.0362095051029065,
-        "sem_rel": 0.04700056334664959
+        "sem_rel": 0.04700056334664959,
+        "terminal_mean_rel_delta": 0.08650389032959045
       },
       "window": {
         "input_tmax": 350.0075378417969,
@@ -918,7 +924,8 @@
         "sample_sem": 0.06502170397304545,
         "second_half_mean": 8.011193031960346,
         "sem": 0.185710991468661,
-        "sem_rel": 0.023918506420624836
+        "sem_rel": 0.023918506420624836,
+        "terminal_mean_rel_delta": 0.06428227917708448
       },
       "window": {
         "input_tmax": 450.009033203125,
@@ -1053,7 +1060,8 @@
         "sample_sem": 0.26479766043294894,
         "second_half_mean": 19.214349933292556,
         "sem": 0.6748125773694964,
-        "sem_rel": 0.03473043078398469
+        "sem_rel": 0.03473043078398469,
+        "terminal_mean_rel_delta": 0.022445190313783232
       },
       "window": {
         "input_tmax": 449.9636535644531,
@@ -1075,6 +1083,479 @@
     "observed_heat_flux_std": 2.5120911781559006,
     "predicted_heat_flux": 0.39176646407336235,
     "quasilinear_artifact": "docs/_static/quasilinear_vmec_circular_linear_spectrum_scan.quasilinear_spectrum.csv",
+    "raw_predicted_heat_flux": null,
+    "saturation_rule": "mixing_length",
+    "split": "holdout"
+  },
+  {
+    "calibration_scale": null,
+    "case": "cth_like_external_vmec_t700_high_grid_window",
+    "electron_model": "adiabatic",
+    "geometry": "cth_like_external_vmec",
+    "ky": null,
+    "nonlinear_artifact": "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
+    "nonlinear_window_stats": {
+      "case": "cth_like_external_vmec_t700_high_grid_window",
+      "claim_level": "replicated_high_grid_transport_window_metadata_not_full_ladder_claim",
+      "gate_report": {
+        "case": "CTH-like external VMEC modified-protocol high-grid admission",
+        "gates": [
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "full_grid_gate_failed_before_coarse_exclusion",
+            "notes": "High-grid admission is only meaningful as an exception to a failed full-grid ladder.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "full_grid_failure_limited_to_grid_difference",
+            "notes": "The full-grid gate may fail only grid-difference metrics, not stationarity/sample gates.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "metrics"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "excluded_coarse_grid_labels_present",
+            "notes": "Every excluded grid must be present in the failed full-grid ladder.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "labels"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "retained_high_grid_labels_present",
+            "notes": "The retained high grids must also be present in the failed full-grid ladder.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "labels"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "high_grid_gate_failure_count",
+            "notes": "Every retained high-grid convergence gate used for admission must pass.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "gates"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "high_grid_label_mismatch_count",
+            "notes": "Every high-grid gate must use exactly the retained-grid labels.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "gates"
+          },
+          {
+            "abs_error": 0.10908478493456078,
+            "atol": 0.15,
+            "metric": "high_grid_common_window_pairwise_difference",
+            "notes": "Highest-grid common-window heat-flux means must agree under the production threshold.",
+            "observed": 0.10908478493456078,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.09884915130545661,
+            "atol": 0.15,
+            "metric": "high_grid_least_window_pairwise_difference",
+            "notes": "Highest-grid least-trending-window heat-flux means must agree under the production threshold.",
+            "observed": 0.09884915130545661,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "time_horizon_gate_failure_count",
+            "notes": "Late high-grid horizons must be stable before coarse-grid exclusion can be considered.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "gates"
+          },
+          {
+            "abs_error": 0.01848306666994318,
+            "atol": 0.15,
+            "metric": "time_horizon_common_window_change",
+            "notes": "High-grid averaged common-window means must be stable across late final times.",
+            "observed": 0.01848306666994318,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.019058319416559152,
+            "atol": 0.15,
+            "metric": "time_horizon_least_window_change",
+            "notes": "High-grid averaged least-window means must be stable across late final times.",
+            "observed": 0.019058319416559152,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "replicate_ensemble_gate_failure_count",
+            "notes": "A seed/timestep replicated late transport window must pass.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "gates"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "replicate_count_shortfall",
+            "notes": "At least three replicated reports are required for this scoped exception.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "replicates"
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "finite_replicate_count_shortfall",
+            "notes": "Replicate means must be finite.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": "replicates"
+          },
+          {
+            "abs_error": 0.04060794558595875,
+            "atol": 0.15,
+            "metric": "replicate_mean_relative_spread",
+            "notes": "Seed/timestep spread of late-window means.",
+            "observed": 0.04060794558595875,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.0516682261040402,
+            "atol": 0.25,
+            "metric": "replicate_combined_sem_relative",
+            "notes": "Combined uncertainty estimate normalized by the ensemble mean.",
+            "observed": 0.0516682261040402,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": null,
+            "rtol": 0.0,
+            "units": ""
+          },
+          {
+            "abs_error": 0.0,
+            "atol": 0.0,
+            "metric": "nonzero_transport_mean_floor",
+            "notes": "Admission must not be based on startup/noise-floor heat flux.",
+            "observed": 0.0,
+            "passed": true,
+            "reference": 0.0,
+            "rel_error": 0.0,
+            "rtol": 0.0,
+            "units": ""
+          }
+        ],
+        "max_abs_error": 0.10908478493456078,
+        "max_rel_error": 0.0,
+        "passed": true,
+        "source": "external_vmec_high_grid_admission_policy"
+      },
+      "gates": [
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "full_grid_gate_failed_before_coarse_exclusion",
+          "notes": "High-grid admission is only meaningful as an exception to a failed full-grid ladder.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "full_grid_failure_limited_to_grid_difference",
+          "notes": "The full-grid gate may fail only grid-difference metrics, not stationarity/sample gates.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "metrics"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "excluded_coarse_grid_labels_present",
+          "notes": "Every excluded grid must be present in the failed full-grid ladder.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "labels"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "retained_high_grid_labels_present",
+          "notes": "The retained high grids must also be present in the failed full-grid ladder.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "labels"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "high_grid_gate_failure_count",
+          "notes": "Every retained high-grid convergence gate used for admission must pass.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "gates"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "high_grid_label_mismatch_count",
+          "notes": "Every high-grid gate must use exactly the retained-grid labels.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "gates"
+        },
+        {
+          "abs_error": 0.10908478493456078,
+          "atol": 0.15,
+          "metric": "high_grid_common_window_pairwise_difference",
+          "notes": "Highest-grid common-window heat-flux means must agree under the production threshold.",
+          "observed": 0.10908478493456078,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.09884915130545661,
+          "atol": 0.15,
+          "metric": "high_grid_least_window_pairwise_difference",
+          "notes": "Highest-grid least-trending-window heat-flux means must agree under the production threshold.",
+          "observed": 0.09884915130545661,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "time_horizon_gate_failure_count",
+          "notes": "Late high-grid horizons must be stable before coarse-grid exclusion can be considered.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "gates"
+        },
+        {
+          "abs_error": 0.01848306666994318,
+          "atol": 0.15,
+          "metric": "time_horizon_common_window_change",
+          "notes": "High-grid averaged common-window means must be stable across late final times.",
+          "observed": 0.01848306666994318,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.019058319416559152,
+          "atol": 0.15,
+          "metric": "time_horizon_least_window_change",
+          "notes": "High-grid averaged least-window means must be stable across late final times.",
+          "observed": 0.019058319416559152,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "replicate_ensemble_gate_failure_count",
+          "notes": "A seed/timestep replicated late transport window must pass.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "gates"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "replicate_count_shortfall",
+          "notes": "At least three replicated reports are required for this scoped exception.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "replicates"
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "finite_replicate_count_shortfall",
+          "notes": "Replicate means must be finite.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": "replicates"
+        },
+        {
+          "abs_error": 0.04060794558595875,
+          "atol": 0.15,
+          "metric": "replicate_mean_relative_spread",
+          "notes": "Seed/timestep spread of late-window means.",
+          "observed": 0.04060794558595875,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.0516682261040402,
+          "atol": 0.25,
+          "metric": "replicate_combined_sem_relative",
+          "notes": "Combined uncertainty estimate normalized by the ensemble mean.",
+          "observed": 0.0516682261040402,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": null,
+          "rtol": 0.0,
+          "units": ""
+        },
+        {
+          "abs_error": 0.0,
+          "atol": 0.0,
+          "metric": "nonzero_transport_mean_floor",
+          "notes": "Admission must not be based on startup/noise-floor heat flux.",
+          "observed": 0.0,
+          "passed": true,
+          "reference": 0.0,
+          "rel_error": 0.0,
+          "rtol": 0.0,
+          "units": ""
+        }
+      ],
+      "kind": "nonlinear_window_convergence_report",
+      "observable": "ensemble_ion_heat_flux",
+      "passed": true,
+      "provenance": {
+        "admission_artifact": "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
+        "source_artifact": "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
+        "summary_artifact": "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json"
+      },
+      "statistics": {
+        "block_bootstrap_sem": 0.4961796804978094,
+        "combined_sem_rel": 0.0516682261040402,
+        "late_mean": 9.603187837312081,
+        "late_std": 0.38996572914930994,
+        "mean_rel_spread": 0.04060794558595875,
+        "n_finite_means": 4,
+        "n_reports": 4,
+        "running_mean_rel_drift": 0.04060794558595875,
+        "sem": 0.4961796804978094,
+        "terminal_mean_rel_delta": 0.01848306666994318
+      },
+      "window": {
+        "input_tmax": 700.0,
+        "input_tmin": 350.0,
+        "late_tmax": 700.0,
+        "late_tmin": 350.0,
+        "n_finite_late": 4,
+        "n_late": 4,
+        "n_nonfinite_late": 0,
+        "n_total": 4,
+        "selected_tmax": 700.0,
+        "selected_tmin": 350.0,
+        "transient_cutoff": 350.0,
+        "transient_fraction": 0.0
+      }
+    },
+    "notes": "generated from passed high-grid admission policy; nonlinear_window=[350,700]; observed_heat_flux is the n80 seed/timestep ensemble mean; full n48/n64/n80 gate fails only because n48 is excluded by policy; not a normal full-ladder claim; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total",
+    "observed_heat_flux": 9.603187837312081,
+    "observed_heat_flux_std": 0.4961796804978094,
+    "predicted_heat_flux": 0.2816170154580676,
+    "quasilinear_artifact": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
     "raw_predicted_heat_flux": null,
     "saturation_rule": "mixing_length",
     "split": "holdout"

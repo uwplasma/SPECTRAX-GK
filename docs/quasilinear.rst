@@ -68,9 +68,12 @@ instead of a single uncalibrated mixing-length constant.
 For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
 research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
-validated absolute nonlinear flux predictor. The current eight-case
-electrostatic-compatible portfolio validates the input plumbing and rejects the
-legacy one-constant and simple saturation-rule families. The richer
+validated absolute nonlinear flux predictor. The current nine-case
+train/holdout calibration portfolio validates the input plumbing and rejects
+the legacy one-constant family, with CTH-like external VMEC admitted only
+through the explicit high-grid policy. The older simple-rule and candidate
+model sweeps remain scoped to their pre-CTH eight-case ledgers until
+regenerated. The richer
 ``spectral_envelope_ridge`` candidate is accepted only as a scoped
 model-development result with uncertainty metadata; it is not exposed as a
 runtime saturation law or universal transport model.
@@ -605,11 +608,13 @@ Train and holdout points must also be tied to a passed nonlinear validation
 gate before they can be used in calibration. The audit tool
 ``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
 each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
-passes for the current Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped
-external-VMEC calibration inputs, and now includes the ITERModel, up-down
-asymmetric, and circular external-VMEC windows in the eight-case portfolio. It
-would fail if an exploratory or non-converged pilot such as the CTH-like
-external-VMEC feasibility trace were inserted as a train/holdout point.
+passes for the current Cyclone, Cyclone Miller, HSX, W7-X, D-shaped
+external-VMEC, ITERModel, up-down asymmetric, circular, and high-grid-admitted
+CTH-like external-VMEC calibration inputs in the nine-case portfolio. The
+CTH-like row is matched through the explicit high-grid admission gate rather
+than through the failed coarse-grid pilot. The same audit would still fail if
+an exploratory or non-converged pilot such as the older CTH-like feasibility
+trace were inserted directly as a train/holdout point.
 The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
 metadata promotion guard: it requires finite nonlinear window means and
 standard deviations, train/holdout artifact provenance, passed held-out gates
@@ -700,16 +705,18 @@ demonstrates that the implemented linear weights and nonlinear-window ingestion
 are working, while a transferable saturation model remains an open research
 task.
 
-The manuscript-facing combined report broadens this test to eight
+The manuscript-facing combined report broadens this test to nine
 electrostatic-compatible nonlinear windows. It fits Cyclone and external-VMEC
 ITERModel, then holds out Cyclone Miller, HSX, W7-X, D-shaped external VMEC,
-up-down asymmetric external VMEC, and circular external VMEC. The nonlinear
-input validation passes, but the one-constant model still fails with held-out
-mean relative error about ``2.11``. The simple saturation-rule sweep also
-fails: positive-growth mixing length is the least-bad simple rule at about
-``2.11`` mean held-out relative error, while the training-mean null baseline is
-about ``1.20``. The accepted ``spectral_envelope_ridge`` candidate reaches
-about ``0.295`` mean relative error with interval coverage ``7/8``; keep it labeled as
+up-down asymmetric external VMEC, circular external VMEC, and CTH-like
+external VMEC admitted under the high-grid policy. The nonlinear input
+validation passes, but the one-constant model still fails with held-out mean
+relative error about ``1.91``. The older simple saturation-rule sweep also
+fails on the pre-CTH ledger: positive-growth mixing length is the least-bad
+simple rule at about ``2.11`` mean held-out relative error, while the
+training-mean null baseline is about ``1.20``. The accepted
+``spectral_envelope_ridge`` candidate reaches about ``0.295`` mean relative
+error with interval coverage ``7/8`` on its pre-CTH candidate ledger; keep it labeled as
 ``candidate_model_development_not_runtime_option`` until additional
 electrostatic holdouts, electromagnetic channels, and optimized-equilibrium
 audits close.
@@ -854,10 +861,11 @@ is retained as a negative absolute-flux result and should not be presented as a
 validated W7-X transport model.
 
 The manuscript-facing combined holdout panel now puts two training geometries
-(Cyclone and the admitted external-VMEC ITERModel case) together with six
+(Cyclone and the admitted external-VMEC ITERModel case) together with seven
 held-out nonlinear windows: Cyclone Miller, HSX, W7-X, the admitted D-shaped
-external-VMEC case, the admitted up-down asymmetric external-VMEC case, and the
-admitted circular external-VMEC case.
+external-VMEC case, the admitted up-down asymmetric external-VMEC case, the
+admitted circular external-VMEC case, and the CTH-like external-VMEC case
+admitted only by the high-grid policy.
 
 .. image:: _static/quasilinear_stellarator_train_holdout.png
    :alt: Combined quasilinear train/holdout calibration including stellarator and external VMEC holdouts
@@ -867,11 +875,13 @@ This combined report is also ``calibration_dataset`` and ``passed = false``.
 It is the clearest current figure for the absolute-flux story: one-constant
 mixing length does not transfer across the present tokamak, stellarator, and
 external-VMEC nonlinear windows. The fitted heat-flux scale uses only the two
-training points and still leaves the six holdouts at mean absolute relative
-error about ``2.11``, with the worst held-out error about ``8.08``. The
+training points and still leaves the seven holdouts at mean absolute relative
+error about ``1.91``, with the worst held-out error about ``8.08``. The
 external-VMEC points are included only after their high-grid convergence gates
-passed: D-shaped tokamak at ``t = 250``, ITERModel at ``t = 350``, up-down
-asymmetric tokamak at ``t = 450``, and circular tokamak at ``t = 450``. The
+passed or after a scoped high-grid admission gate passed: D-shaped tokamak at
+``t = 250``, ITERModel at ``t = 350``, up-down asymmetric tokamak at
+``t = 450``, circular tokamak at ``t = 450``, and CTH-like external VMEC on
+the ``t=[350,700]`` high-grid replicate window. The
 result is useful precisely because it blocks premature absolute quasilinear
 transport claims and motivates the next saturation-model sweep.
 
@@ -879,8 +889,8 @@ Saturation-rule sweep
 ---------------------
 
 The first saturation-rule sweep compares three one-scalar intensity rules using
-the same train/holdout split: fit one multiplicative scale on the two training
-geometries and score all six holdouts. The tested rules are the current
+the pre-CTH train/holdout split: fit one multiplicative scale on the two
+training geometries and score the holdouts then present. The tested rules are the current
 positive-growth mixing-length rule, the raw linear heat-flux weight, and an
 absolute-growth mixing-length diagnostic that gives stable branches nonzero
 intensity. The last rule is included only as a diagnostic stress test; it is
@@ -900,7 +910,8 @@ quasilinear spectra, nonlinear window summaries, or validation gates.
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
    :width: 100%
 
-All tested one-scalar rules fail the held-out absolute-flux gate. The current
+All tested one-scalar rules fail the held-out absolute-flux gate. On that
+pre-CTH sweep, the current
 positive-growth mixing-length rule is still the best of the three, but its
 holdout mean absolute relative error is about ``2.11``. The raw linear-weight
 rule is worse at about ``2.68``, and the absolute-growth diagnostic is worse
@@ -1125,7 +1136,7 @@ model fit is attempted. It requires:
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
 
-The tracked gate now passes for the current eight-case electrostatic dataset.
+The tracked gate now passes for the pre-CTH eight-case candidate-model dataset.
 There are eight admitted cases, two explicit training geometries, and six
 held-out geometries. That is enough data volume for the one-parameter
 linear-weight candidate, the two-parameter shape-power-law candidate, and the
@@ -1199,9 +1210,9 @@ data product is needed before absolute-flux promotion can be reconsidered?
    :alt: Quasilinear holdout gap report and absolute-flux promotion blocker
    :width: 100%
 
-The current report admits six holdouts and two training references, but it
+The current report admits seven holdouts and two training references, but it
 keeps ``absolute_flux_promoted = false`` because the aggregate held-out
-absolute-flux error remains about ``2.11`` against the ``0.35`` gate. The
+absolute-flux error remains about ``1.91`` against the ``0.35`` gate. The
 accepted ``spectral_envelope_ridge`` candidate remains a scoped
 model-selection result. Its mean leave-one-geometry-out relative error is
 about ``0.295``, but that number is not a saturated absolute-flux promotion
@@ -1211,16 +1222,17 @@ passed absolute train/holdout calibration artifact.
 The JSON sidecar now carries explicit
 ``absolute_flux_promotion_requirements`` and
 ``screening_promotion_requirements`` blocks. For the current frozen artifacts
-it records an error factor of about ``6.04`` over the absolute-flux gate, with
+it records an error factor of about ``5.45`` over the absolute-flux gate, with
 Cyclone Miller as the worst admitted holdout (``Q_i = 4.26`` observed versus
 ``38.7`` predicted). It also records that the full-portfolio screening gate
 passes for ``spectral_envelope_ridge`` while the held-out-only screening gate
 remains below threshold. Before absolute-flux or held-out screening promotion
-can even be reconsidered, the report requires at least three additional
-independent passed holdouts, at least one additional external-VMEC holdout
-family, and at least one non-axisymmetric external-VMEC holdout family. These
-are evidence requirements, not automatic promotion criteria; any future model
-must still pass the held-out transport-error gate, prediction interval/skill
+can even be reconsidered, the report requires at least two additional
+independent passed holdouts; the external-VMEC-family and non-axisymmetric
+external-VMEC-family coverage gates are already satisfied by the CTH-like
+high-grid admission. These are evidence requirements, not automatic promotion
+criteria; any future model must still pass the held-out transport-error gate,
+prediction interval/skill
 gates, and provenance checks on the same frozen case ledger.
 
 The report tracks ``13`` excluded candidates. The shaped-tokamak pressure
@@ -1630,10 +1642,9 @@ The first bounded grid check repeats the same run at ``Nx = Ny = 48`` and
 the transport level changes materially: the common ``t = 75.05`` to ``150.00``
 window has mean heat flux about ``12.8`` rather than ``23.1``, and the
 least-trending ``t = 120.05`` to ``150.00`` window has mean heat flux about
-``14.5``. This is a useful negative convergence result. CTH-like should not be
-used as a quasilinear calibration holdout until the grid, hypercollision, and
-window-selection protocol are frozen and the production-resolution comparison
-passes a case-specific tolerance.
+``14.5``. This is a useful negative convergence result. It is retained as
+evidence that the original reduced-grid protocol was not sufficient for
+calibration.
 
 .. image:: _static/external_vmec_cth_like_nonlinear_t150_n48_pilot.png
    :alt: Higher-grid external CTH-like VMEC nonlinear feasibility pilot
@@ -1643,30 +1654,46 @@ The explicit convergence gate follows the same evidence chain used in
 nonlinear gyrokinetic benchmark papers: time traces and saturated heat-flux
 windows are compared, and the candidate is not promoted unless the heat flux is
 robust to resolution and window choice. This mirrors the Cyclone and W7-X
-time-trace/convergence practice in [Dimits00]_ and [GX]_, while the
-stellarator-domain sensitivity documented by [Sanchez21]_ motivates keeping
-external-VMEC cases behind a conservative gate until flux-tube and resolution
-choices are fixed. The current CTH-like pair fails the common-window stationarity
+time-trace/convergence practice in [Dimits00]_, [GX]_, and
+[GonzalezJerez22]_, while the stellarator-domain sensitivity documented by
+[Sanchez21]_ motivates keeping external-VMEC cases behind a conservative gate
+until flux-tube and resolution choices are fixed. The first CTH-like pair fails
+the common-window stationarity
 and grid-refinement requirements: the common-window symmetric relative
 heat-flux difference is about ``0.571`` and the least-trending-window
 difference is about ``0.453``, both above the ``0.15`` production threshold.
 That threshold is intentionally strict enough to match the order of
 nonlinear heat-flux convergence tolerances reported for Laguerre-Hermite
-gyrokinetic calculations in [GX]_. Long turbulent time series can still be
-physically informative, as emphasized by W7-X heat-flux time-series analyses
-[Papadopoulos23]_, but they are not calibration data until this gate passes.
+gyrokinetic calculations in [GX]_. Long turbulent time series need uncertainty
+and stopping checks because turbulent flux traces are autocorrelated
+[Oberparleiter16]_, and low-resolution velocity/moment choices can move the
+saturated heat flux or even crash [Hoffmann23]_. W7-X heat-flux time-series
+analyses [Papadopoulos23]_ are therefore useful context, but the admission
+decision still has to be made by explicit gates.
 
-The next-holdout runbook now records this distinction explicitly.  It adds the
-tracked CTH-like linear spectrum point (``gamma = 0.0488`` at
+The modified-protocol CTH-like runbook records this distinction explicitly. It
+adds the tracked CTH-like linear spectrum point (``gamma = 0.0488`` at
 ``ky = 0.2857``) to the external-VMEC candidate screen and emits a launch
 contract only when the failed-family replay is marked as a modified protocol:
 ``n48/n64/n80`` grids and ``t = 150,250,350`` horizons after the earlier
-``32->48`` failure.  This is still a launch plan, not an admitted nonlinear
-holdout; CTH-like can enter quasilinear calibration only after the new traces
-pass the grid/window convergence and post-transient-window gates.
+``32->48`` failure. The full modified ``n48/n64/n80`` t=350 sidecar still
+fails only the common/least grid-difference metrics: the coarse ``n48`` point
+has heat-flux means around ``13.4`` while the retained ``n64/n80`` means are
+around ``10.5``/``9.9``. The retained high-grid pair passes at ``t=250`` and
+``t=350``; the late high-grid horizon gate passes with common/least changes
+``0.018``/``0.019``; and the restart-continued ``n80`` seed/timestep ensemble
+passes on ``t=[350,700]`` with mean heat flux ``9.60``, mean-relative spread
+``0.041``, and combined SEM/mean ``0.052``. The dedicated
+``tools/check_external_vmec_high_grid_admission.py`` gate therefore admits
+CTH-like as a scoped high-grid holdout while explicitly excluding any full
+``n48/n64/n80`` convergence claim.
 
 .. image:: _static/external_vmec_cth_like_grid_convergence_gate.png
    :alt: External CTH-like VMEC nonlinear grid convergence gate
+   :width: 100%
+
+.. image:: _static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.png
+   :alt: CTH-like external VMEC high-grid replicate ensemble gate
    :width: 100%
 
 The nonlinear time-horizon audit below is a guardrail for the manuscript and
@@ -1676,11 +1703,12 @@ Cyclone Miller, KBM, W7-X, and HSX pass the current release comparison
 envelopes. D-shaped tokamak passes the external-VMEC ``t = 250`` high-grid
 convergence and replicated seed/timestep gates, while circular tokamak passes
 the external-VMEC ``t = 450`` high-grid gate and the longer ``t = 700``
-replicated seed/timestep gate. The QH and CTH-like external-VMEC traces are
-long feasibility pilots that still need convergence gates. The compact finite-difference audits
+replicated seed/timestep gate. CTH-like now enters only through the scoped
+high-grid admission policy described above; QH remains a long feasibility
+pilot that still needs convergence gates. The compact finite-difference audits
 remain startup plumbing checks, and the differentiable nonlinear-window
-optimization examples remain reduced-envelope estimators rather than production
-nonlinear transport averages.
+optimization examples remain reduced-envelope estimators rather than
+production nonlinear transport averages.
 
 .. image:: _static/nonlinear_transport_time_horizon_audit.png
    :alt: Nonlinear transport time-horizon audit

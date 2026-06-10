@@ -5,17 +5,16 @@
     "blockers": [
       "absolute_train_holdout_report_passed",
       "holdout_mean_abs_relative_error",
-      "minimum_total_independent_holdouts",
-      "minimum_external_vmec_holdout_families",
-      "minimum_nonaxisymmetric_external_vmec_holdout_families"
+      "minimum_total_independent_holdouts"
     ],
     "claim_boundary": "This section defines the evidence needed to reopen absolute-flux promotion; it is not a promoted runtime/TOML predictor.",
     "coverage_gap": {
-      "additional_external_vmec_holdout_families_needed": 1,
-      "additional_nonaxisymmetric_external_vmec_holdout_families_needed": 1,
-      "additional_total_independent_holdouts_needed": 3,
+      "additional_external_vmec_holdout_families_needed": 0,
+      "additional_nonaxisymmetric_external_vmec_holdout_families_needed": 0,
+      "additional_total_independent_holdouts_needed": 2,
       "admitted_holdout_families": [
         "circular_external_vmec",
+        "cth_like_external_vmec",
         "cyclone_miller",
         "dshape_external_vmec",
         "hsx",
@@ -24,10 +23,13 @@
       ],
       "external_vmec_holdout_families": [
         "circular_external_vmec",
+        "cth_like_external_vmec",
         "dshape_external_vmec",
         "updown_asym_external_vmec"
       ],
-      "nonaxisymmetric_external_vmec_holdout_families": [],
+      "nonaxisymmetric_external_vmec_holdout_families": [
+        "cth_like_external_vmec"
+      ],
       "training_families": [
         "cyclone",
         "itermodel_external_vmec"
@@ -42,34 +44,34 @@
         "required": true
       },
       {
-        "current": 2.114098664675138,
+        "current": 1.907079547263154,
         "detail": "absolute-flux promotion needs a calibrated report that passes the held-out transport gate",
         "metric": "holdout_mean_abs_relative_error",
         "passed": false,
         "required": "<= 0.35"
       },
       {
-        "additional_needed": 3,
-        "current": 6,
+        "additional_needed": 2,
+        "current": 7,
         "detail": "holdouts must be passed, post-transient nonlinear transport windows outside the training split",
         "metric": "minimum_total_independent_holdouts",
         "passed": false,
         "required": 9
       },
       {
-        "additional_needed": 1,
-        "current": 3,
+        "additional_needed": 0,
+        "current": 4,
         "detail": "external-VMEC holdout families test transfer beyond built-in local cases",
         "metric": "minimum_external_vmec_holdout_families",
-        "passed": false,
+        "passed": true,
         "required": 4
       },
       {
-        "additional_needed": 1,
-        "current": 0,
+        "additional_needed": 0,
+        "current": 1,
         "detail": "at least one external stellarator-like VMEC holdout is required before broad stellarator absolute-flux claims",
         "metric": "minimum_nonaxisymmetric_external_vmec_holdout_families",
-        "passed": false,
+        "passed": true,
         "required": 1
       },
       {
@@ -82,9 +84,9 @@
     ],
     "kind": "quasilinear_absolute_flux_promotion_requirements",
     "numeric_gap": {
-      "error_excess_over_gate": 1.7640986646751378,
-      "error_factor_to_gate": 6.040281899071823,
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "error_excess_over_gate": 1.5570795472631542,
+      "error_factor_to_gate": 5.448798706466155,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "scoped_model_selection_interval_coverage": 0.875,
       "scoped_model_selection_mean_abs_relative_error": 0.29524327596674427,
@@ -152,21 +154,6 @@
         "source_artifact": "docs/_static/external_vmec_itermodel_t150_high_grid_convergence_gate.json"
       },
       {
-        "case": "CTH-like external VMEC nonlinear grid convergence",
-        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
-        "failed_gates": [
-          "common slope: 0.005418 > 0.002",
-          "common grid shift: 0.5709 > 0.15",
-          "least-window grid shift: 0.4531 > 0.15"
-        ],
-        "family": "cth_like_external_vmec",
-        "gate_passed": false,
-        "next_best_score": 3.8057848574436037,
-        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
-        "role": "missing_nonaxisymmetric_external_vmec_holdout",
-        "source_artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
-      },
-      {
         "case": "nfp4 QH external VMEC nonlinear grid convergence",
         "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
         "failed_gates": [
@@ -180,6 +167,21 @@
         "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
         "role": "missing_nonaxisymmetric_external_vmec_holdout",
         "source_artifact": "docs/_static/external_vmec_qh_grid_convergence_gate.json"
+      },
+      {
+        "case": "nfp4 QH external VMEC nonlinear high-grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common slope: 0.003473 > 0.002",
+          "common grid shift: 0.6304 > 0.15",
+          "least-window grid shift: 0.7044 > 0.15"
+        ],
+        "family": "qh_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 4.696162348997159,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "missing_nonaxisymmetric_external_vmec_holdout",
+        "source_artifact": "docs/_static/external_vmec_qh_high_grid_convergence_gate.json"
       }
     ]
   },
@@ -193,7 +195,7 @@
       "gate_case": "cyclone_miller_nonlinear_window",
       "gate_passed": true,
       "geometry": "cyclone_miller",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "tools_out/office_refresh_cyclone_miller_t122.csv",
@@ -216,7 +218,7 @@
       "gate_case": "hsx_nonlinear_window",
       "gate_passed": true,
       "geometry": "hsx",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "tools_out/final_nonlinear_audit/hsx_spectrax_true_t50.csv",
@@ -239,7 +241,7 @@
       "gate_case": "w7x_nonlinear_window",
       "gate_passed": true,
       "geometry": "w7x",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
@@ -262,7 +264,7 @@
       "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
       "gate_passed": true,
       "geometry": "dshape_external_vmec",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "docs/_static/external_vmec_dshape_nonlinear_t250_n64_pilot.traces.csv",
@@ -285,7 +287,7 @@
       "gate_case": "updown_asym_external_vmec_t450",
       "gate_passed": true,
       "geometry": "updown_asym_external_vmec",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "docs/_static/external_vmec_updown_asym_nonlinear_t450_n64_pilot.traces.csv",
@@ -308,7 +310,7 @@
       "gate_case": "circular_external_vmec_t450",
       "gate_passed": true,
       "geometry": "circular_external_vmec",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "next_best_score": null,
       "nonlinear_artifact": "docs/_static/external_vmec_circular_holdout_nonlinear_t450_n64_pilot.traces.csv",
@@ -321,6 +323,29 @@
       "source_artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
       "split": "holdout",
       "status": "admitted_holdout"
+    },
+    {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": 0.6649648427912522,
+      "case": "cth_like_external_vmec_t700_high_grid_window",
+      "case_label": "Cth Like VMEC T700 High Grid",
+      "failed_gates": [],
+      "gate_case": "",
+      "gate_passed": null,
+      "geometry": "cth_like_external_vmec",
+      "holdout_mean_abs_relative_error": 1.907079547263154,
+      "holdout_mean_rel_gate": 0.35,
+      "next_best_score": null,
+      "nonlinear_artifact": "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
+      "observed_heat_flux": 9.603187837312081,
+      "predicted_heat_flux": 15.988970127845175,
+      "quasilinear_artifact": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "rank": null,
+      "reason": "admitted nonlinear holdout with passed input gate; current absolute-flux calibration remains blocked by the aggregate holdout error gate",
+      "section": "admitted_holdouts",
+      "source_artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+      "split": "holdout",
+      "status": "admitted_holdout"
     }
   ],
   "calibration_status": {
@@ -328,10 +353,10 @@
     "artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
     "claim_level": "calibration_dataset",
     "holdout_max_abs_relative_error": 8.076770096888685,
-    "holdout_mean_abs_relative_error": 2.114098664675138,
+    "holdout_mean_abs_relative_error": 1.907079547263154,
     "holdout_mean_rel_gate": 0.35,
     "kind": "quasilinear_calibration_report",
-    "n_holdout": 6,
+    "n_holdout": 7,
     "n_train": 2,
     "passed": false,
     "reason": "train/holdout calibration report remains a calibration dataset, not a promoted absolute-flux model"
@@ -450,7 +475,7 @@
       "absolute_relative_error": null,
       "case": "CTH-like external VMEC nonlinear grid convergence",
       "case_label": "CTH-like external VMEC nonlinear grid convergence",
-      "eligible_for_next_candidate": true,
+      "eligible_for_next_candidate": false,
       "failed_gate_details": [
         "common slope: 0.005418 > 0.002",
         "common grid shift: 0.5709 > 0.15",
@@ -475,6 +500,108 @@
       "source_artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
       "split": "excluded",
       "status": "excluded_failed_external_gate"
+    },
+    {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": null,
+      "case": "CTH-like external VMEC modified-protocol t=150 high-grid convergence",
+      "case_label": "CTH-like external VMEC modified-protocol t=150 high-grid convergence",
+      "eligible_for_next_candidate": false,
+      "failed_gate_details": [
+        "common slope: 0.002924 > 0.002"
+      ],
+      "failed_gates": [
+        "common_window_max_relative_slope_per_time"
+      ],
+      "gate_case": "CTH-like external VMEC modified-protocol t=150 high-grid convergence",
+      "gate_passed": false,
+      "geometry": "cth_like_external_vmec",
+      "holdout_mean_abs_relative_error": null,
+      "holdout_mean_rel_gate": null,
+      "next_best_score": 1.4618342158060103,
+      "observed_heat_flux": null,
+      "predicted_heat_flux": null,
+      "rank": null,
+      "reason": "not admitted because external-VMEC convergence gate failed: common slope: 0.002924 > 0.002",
+      "section": "excluded_candidates",
+      "source_artifact": "docs/_static/external_vmec_cth_like_modified_t150_high_grid_convergence_gate.json",
+      "split": "excluded",
+      "status": "excluded_failed_external_gate"
+    },
+    {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": null,
+      "case": "CTH-like external VMEC modified-protocol t=250 high-grid convergence",
+      "case_label": "CTH-like external VMEC modified-protocol t=250 high-grid convergence",
+      "eligible_for_next_candidate": false,
+      "failed_gate_details": [],
+      "failed_gates": [],
+      "gate_case": "CTH-like external VMEC modified-protocol t=250 high-grid convergence",
+      "gate_passed": true,
+      "geometry": "cth_like_external_vmec",
+      "holdout_mean_abs_relative_error": null,
+      "holdout_mean_rel_gate": null,
+      "next_best_score": 0.0,
+      "observed_heat_flux": null,
+      "predicted_heat_flux": null,
+      "rank": null,
+      "reason": "passed external-VMEC gate, but this family is already represented by a current admitted holdout",
+      "section": "excluded_candidates",
+      "source_artifact": "docs/_static/external_vmec_cth_like_modified_t250_high_grid_convergence_gate.json",
+      "split": "excluded",
+      "status": "excluded_superseded_by_current_holdout_family"
+    },
+    {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": null,
+      "case": "CTH-like external VMEC modified-protocol t=350 full-grid convergence",
+      "case_label": "CTH-like external VMEC modified-protocol t=350 full-grid convergence",
+      "eligible_for_next_candidate": false,
+      "failed_gate_details": [
+        "common grid shift: 0.2957 > 0.15",
+        "least-window grid shift: 0.2725 > 0.15"
+      ],
+      "failed_gates": [
+        "common_window_pairwise_heat_flux_symmetric_relative_difference",
+        "least_window_pairwise_heat_flux_symmetric_relative_difference"
+      ],
+      "gate_case": "CTH-like external VMEC modified-protocol t=350 full-grid convergence",
+      "gate_passed": false,
+      "geometry": "cth_like_external_vmec",
+      "holdout_mean_abs_relative_error": null,
+      "holdout_mean_rel_gate": null,
+      "next_best_score": 1.9714575319231296,
+      "observed_heat_flux": null,
+      "predicted_heat_flux": null,
+      "rank": null,
+      "reason": "not admitted because external-VMEC convergence gate failed: common grid shift: 0.2957 > 0.15; least-window grid shift: 0.2725 > 0.15",
+      "section": "excluded_candidates",
+      "source_artifact": "docs/_static/external_vmec_cth_like_modified_t350_full_grid_convergence_gate.json",
+      "split": "excluded",
+      "status": "excluded_failed_external_gate"
+    },
+    {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": null,
+      "case": "CTH-like external VMEC modified-protocol t=350 high-grid convergence",
+      "case_label": "CTH-like external VMEC modified-protocol t=350 high-grid convergence",
+      "eligible_for_next_candidate": false,
+      "failed_gate_details": [],
+      "failed_gates": [],
+      "gate_case": "CTH-like external VMEC modified-protocol t=350 high-grid convergence",
+      "gate_passed": true,
+      "geometry": "cth_like_external_vmec",
+      "holdout_mean_abs_relative_error": null,
+      "holdout_mean_rel_gate": null,
+      "next_best_score": 0.0,
+      "observed_heat_flux": null,
+      "predicted_heat_flux": null,
+      "rank": null,
+      "reason": "passed external-VMEC gate, but this family is already represented by a current admitted holdout",
+      "section": "excluded_candidates",
+      "source_artifact": "docs/_static/external_vmec_cth_like_modified_t350_high_grid_convergence_gate.json",
+      "split": "excluded",
+      "status": "excluded_superseded_by_current_holdout_family"
     },
     {
       "absolute_flux_promoted": false,
@@ -861,8 +988,6 @@
       "absolute_requirement:absolute_train_holdout_report_passed",
       "absolute_requirement:holdout_mean_abs_relative_error",
       "absolute_requirement:minimum_total_independent_holdouts",
-      "absolute_requirement:minimum_external_vmec_holdout_families",
-      "absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families",
       "stellarator_train_holdout_report_failed",
       "holdout_mean_error_exceeds_gate",
       "screening_requirement:heldout_screening_correlation_passed",
@@ -909,7 +1034,7 @@
         "required": "not required for screening, required for absolute-flux claims"
       },
       {
-        "current": 3,
+        "current": 2,
         "detail": "more independent nonlinear holdouts reduce rank/correlation fragility",
         "metric": "additional_independent_holdouts_needed",
         "passed": false,
@@ -947,16 +1072,16 @@
   "summary": {
     "best_holdout_screening_pairwise_order_accuracy": 0.7333333333333333,
     "best_holdout_screening_spearman": 0.7142857142857143,
-    "holdout_mean_abs_relative_error": 2.114098664675138,
+    "holdout_mean_abs_relative_error": 1.907079547263154,
     "holdout_mean_rel_gate": 0.35,
     "holdout_screening_correlation_passed": false,
     "model_selection_candidate_mean_abs_relative_error": 0.29524327596674427,
     "model_selection_interval_coverage": 0.875,
-    "n_admitted_holdouts": 6,
-    "n_excluded_candidates": 13,
-    "n_external_gates": 15,
-    "n_external_gates_failed": 9,
-    "n_external_gates_passed": 6,
+    "n_admitted_holdouts": 7,
+    "n_excluded_candidates": 17,
+    "n_external_gates": 19,
+    "n_external_gates_failed": 11,
+    "n_external_gates_passed": 8,
     "n_next_best_candidates": 4,
     "n_nonlinear_window_cases": 5,
     "n_nonlinear_window_cases_passed": 5,

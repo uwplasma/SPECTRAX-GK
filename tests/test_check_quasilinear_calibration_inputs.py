@@ -119,6 +119,33 @@ def test_audit_fails_when_required_point_has_no_gate(tmp_path: Path) -> None:
     assert payload["reports"][0]["points"][0]["reason"] == "no matching nonlinear validation/convergence gate"
 
 
+def test_audit_accepts_nested_high_grid_admission_input_artifact(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "high_grid_admission.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "kind": "external_vmec_high_grid_admission_gate",
+                "case": "synthetic high-grid admission",
+                "inputs": {
+                    "replicate_ensemble_gate": "docs/_static/replicate/ensemble_gate.json",
+                },
+                "promotion_gate": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, "docs/_static/replicate/ensemble_gate.json")
+
+    paths = mod.write_audit([report], gate_patterns=[str(gate)], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is True
+    assert point["matched_gate"]["case"] == "synthetic high-grid admission"
+
+
 def test_audit_ignores_non_required_audit_split_without_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     report = tmp_path / "report.json"
@@ -150,7 +177,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         for point in report["points"]
         if point["required"]
     ]
-    assert len(required_rows) == 16
+    assert len(required_rows) == 17
     assert all(point["matched_gate"] is not None for point in required_rows)
     matched_cases = {point["matched_gate"]["case"] for point in required_rows}
     assert matched_cases == {
@@ -162,6 +189,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "ITERModel external VMEC nonlinear t350 high-grid convergence",
         "updown_asym_external_vmec_t450",
         "circular_external_vmec_t450",
+        "CTH-like external VMEC modified-protocol high-grid admission",
     }
     external_rows = [
         point for point in required_rows if "external_vmec" in str(point["matched_gate"]["artifact"])
@@ -171,4 +199,5 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "itermodel_external_vmec_t350_window",
         "updown_asym_external_vmec_t450_window",
         "circular_external_vmec_t450_window",
+        "cth_like_external_vmec_t700_high_grid_window",
     ]

@@ -43,10 +43,12 @@ score.
    * - Quasilinear diagnostics
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
-       artifacts are reproducible. Simple one-scalar saturation rules are
-       rejected on the eight-case train/holdout portfolio. The
-       ``spectral_envelope_ridge`` candidate is accepted only as a scoped
-       manuscript model-selection result. The passed
+       artifacts are reproducible. The refreshed nine-case train/holdout
+       calibration report rejects the one-constant absolute-flux family, with
+       CTH-like external VMEC admitted only through the explicit high-grid
+       policy. Simple one-scalar saturation rules are rejected on the pre-CTH
+       sweep. The ``spectral_envelope_ridge`` candidate is accepted only as a
+       scoped manuscript model-selection result. The passed
        ``quasilinear_model_selection_status.json`` gate does not promote a
        runtime/TOML absolute-flux predictor, universal nonlinear transport
        model, or user-facing saturation law. Any future absolute-flux
@@ -281,7 +283,7 @@ Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
-  ``passed = false`` with held-out mean relative error about ``2.11``.
+  ``passed = false`` with held-out mean relative error about ``1.91``.
 - ``tools/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.quasilinear_window`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
@@ -434,13 +436,14 @@ Quasilinear model-selection state:
   that must be run before the resulting ``wout`` files can enter the
   nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
-  no simple saturation rule is accepted. Positive-growth mixing length is the
-  least-bad simple rule with mean held-out relative error about ``2.11``;
-  the training-mean null is about ``1.20``.
+  no simple saturation rule is accepted. On the pre-CTH saturation sweep,
+  positive-growth mixing length is the least-bad simple rule with mean
+  held-out relative error about ``2.11``; the training-mean null is about
+  ``1.20``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
   ``spectral_envelope_ridge`` is the accepted scoped candidate with mean
   relative error about ``0.295`` and interval coverage ``7/8`` on the
-  current eight-case electrostatic-compatible portfolio. Its claim level is
+  pre-CTH eight-case electrostatic-compatible candidate portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
 - ``docs/_static/quasilinear_stellarator_usefulness.json``:
   the current stellarator-facing synthesis is scoped as
@@ -455,8 +458,8 @@ Quasilinear model-selection state:
   the current correlation/ranking synthesis is scoped as
   ``screening_correlation_model_development_not_absolute_flux_promotion``. It
   records ``spectral_envelope_ridge`` as the only model that passes the
-  full-portfolio screening gate and mean-error gate on the current eight-case
-  portfolio. The held-out-only screening gate remains empty, and
+  full-portfolio screening gate and mean-error gate on the pre-CTH eight-case
+  candidate portfolio. The held-out-only screening gate remains empty, and
   ``accepted_absolute_flux_models`` remains empty. Screening skill is therefore
   claimable only as a model-development proxy, not as a runtime saturation law
   or universal absolute-flux predictor.
@@ -464,13 +467,13 @@ Quasilinear model-selection state:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` and
   ``screening_promotion_requirements`` blocks quantify the current gaps: the
-  absolute train/holdout mean relative error is about ``6.04`` times the
+  absolute train/holdout mean relative error is about ``5.45`` times the
   ``0.35`` gate, the full-portfolio screening gate passes but the held-out-only
-  screening gate remains below threshold, three additional independent passed
-  holdouts are still required, one additional external-VMEC holdout family is
-  required, and one non-axisymmetric external-VMEC holdout family is required
-  before promotion can be reconsidered. These are evidence prerequisites, not a
-  promoted runtime absolute-flux option.
+  screening gate remains below threshold, and two additional independent passed
+  holdouts are still required. The external-VMEC-family and
+  non-axisymmetric external-VMEC-family coverage requirements are already
+  satisfied by the scoped CTH-like high-grid admission. These are evidence
+  prerequisites, not a promoted runtime absolute-flux option.
 - ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
   finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
   excluded from calibration because the ``n48``/``n64`` heat-flux windows
@@ -483,7 +486,7 @@ Nonlinear benchmark state:
   release-window cases. KBM and HSX use tightened gates, Cyclone Miller is
   tighter than the broad release envelope, while Cyclone and W7-X remain at the
   ``0.10`` release envelope pending paper-level retuning.
-- ``docs/_static/validation_gate_index.json`` currently records ``16`` passed
+- ``docs/_static/validation_gate_index.json`` currently records ``17`` passed
   gate-indexed reports and ``0`` open reports. It is a gate index, not a
   blanket promotion of every figure under ``docs/_static``.
 - ``docs/_static/nonlinear_transport_time_horizon_audit.json`` separates

@@ -146,7 +146,7 @@ The current materialized gate reports are indexed by
 ``docs/_static/validation_gate_index.json`` and
 ``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
 ``gate_index_include=false`` so they remain documented but do not count as
-release blockers. The current release-gate index has ``16/16`` tracked reports
+release blockers. The current release-gate index has ``17/17`` tracked reports
 passing.
 
 Stellarator Linear

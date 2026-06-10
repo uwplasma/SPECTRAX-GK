@@ -156,6 +156,11 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
+        {"promotion_gate": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         {
             "passed": True,
@@ -315,6 +320,12 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         ]["cth_like_external_vmec_converged"]
         is False
     )
+    assert (
+        lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+            "key_metrics"
+        ]["cth_like_external_vmec_high_grid_admitted"]
+        is False
+    )
     holdout_metrics = lanes[
         "Nonlinear holdouts for quasilinear absolute-flux promotion"
     ]["key_metrics"]
@@ -351,6 +362,36 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert profiler["key_metrics"]["rhs_gpu_bracket_grid_over_spectral"] == 2.20
     assert profiler["key_metrics"]["miller_gpu_grid_full_rhs"] == 0.013
     assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
+
+
+def test_build_status_payload_accepts_cth_like_high_grid_admission(tmp_path: Path) -> None:
+    """CTH-like can be admitted through the scoped high-grid gate without full-grid convergence."""
+
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        {"passed": False, "points": []},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
+        {"gate_report": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
+        {"promotion_gate": {"passed": True}},
+    )
+
+    payload = mod.build_status_payload(tmp_path)
+    lanes = {row["lane"]: row for row in payload["lanes"]}
+    metrics = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+        "key_metrics"
+    ]
+
+    assert metrics["cth_like_external_vmec_full_grid_converged"] is False
+    assert metrics["cth_like_external_vmec_high_grid_admitted"] is True
+    assert metrics["cth_like_external_vmec_converged"] is True
 
 
 def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> None:

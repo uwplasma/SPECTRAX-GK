@@ -92,7 +92,9 @@
         "circular_external_vmec_t700_replicate_mean_rel_spread": 0.035473869975602645,
         "circular_external_vmec_t700_replicate_sem_rel": 0.04283952221624353,
         "circular_external_vmec_t700_replicated": true,
-        "cth_like_external_vmec_converged": false,
+        "cth_like_external_vmec_converged": true,
+        "cth_like_external_vmec_full_grid_converged": false,
+        "cth_like_external_vmec_high_grid_admitted": true,
         "dataset_sufficiency_promotion_passed": true,
         "dshape_external_vmec_t250_converged": true,
         "dshape_external_vmec_t250_replicate_mean_rel_spread": 0.14102885109482344,
@@ -104,9 +106,10 @@
           "w7x_nonlinear_window",
           "dshape_external_vmec_t250_window",
           "updown_asym_external_vmec_t450_window",
-          "circular_external_vmec_t450_window"
+          "circular_external_vmec_t450_window",
+          "cth_like_external_vmec_t700_high_grid_window"
         ],
-        "holdout_points": 6,
+        "holdout_points": 7,
         "itermodel_external_vmec_t350_converged": true,
         "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
         "matched_qa_no_ess_to_optimized_audit_passed": true,
@@ -132,7 +135,7 @@
         "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.31148835872140096
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
+      "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep QH excluded until its common-window and grid-refinement gates pass, and keep CTH-like scoped to high-grid admission rather than full n48/n64/n80 convergence.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -152,7 +155,8 @@
         "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
-        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
+        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
+        "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json"
       ],
       "status": "closed"
     },

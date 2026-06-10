@@ -287,6 +287,21 @@ horizons. The gate is deliberately necessary-only: even a passing
 time-horizon figure writes ``promotion_gate.passed = false`` until independent
 replicate, seed, timestep, and admission-policy evidence exists.
 
+``tools/check_external_vmec_high_grid_admission.py`` is the final scoped
+exception gate for the rare case where the full grid ladder fails only because
+the lowest grid is not converged. It requires the failed full-grid JSON sidecar
+to contain only common/least grid-difference failures, requires the retained
+high-grid labels to match the passing high-grid convergence gates, requires a
+passed late time-horizon gate, and requires a passed seed/timestep replicated
+nonlinear-window ensemble with finite nonzero transport. This policy follows
+the literature practice of using saturated time traces, resolution ladders, and
+uncertainty estimates for nonlinear turbulent fluxes rather than relying on a
+single startup window or a single seed [Dimits00]_ [GX]_ [GonzalezJerez22]_
+[Hoffmann23]_ [Oberparleiter16]_. A passing high-grid admission JSON makes a
+case eligible for a scoped high-grid holdout role only; it explicitly does not
+claim full ``n48/n64/n80`` convergence or promote an absolute quasilinear
+transport model.
+
 ``tools/write_external_vmec_holdout_configs.py`` is the reproducibility
 companion for that lane. It writes the fixed-step nonlinear TOMLs and restart
 copy commands for the standard two-grid external-VMEC holdout ladder, e.g.

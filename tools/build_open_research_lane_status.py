@@ -213,6 +213,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
     qh_high_gate = _read_json(root, "docs/_static/external_vmec_qh_high_grid_convergence_gate.json")
     cth_gate = _read_json(root, "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
+    cth_high_grid_admission = _read_json(
+        root,
+        "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
+    )
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
@@ -280,7 +284,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     updown_passed = bool((updown_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
     qh_high_passed = bool((qh_high_gate or {}).get("gate_report", {}).get("passed", False))
-    cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
+    cth_full_grid_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
+    cth_high_grid_admitted = bool(
+        (cth_high_grid_admission or {}).get("promotion_gate", {}).get("passed", False)
+    )
+    cth_passed = cth_full_grid_passed or cth_high_grid_admitted
 
     geom_sensitivity = (geom or {}).get("sensitivity", {}) if isinstance((geom or {}).get("sensitivity", {}), dict) else {}
     geom_vmec_metric = (
@@ -487,6 +495,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
+                "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
             ],
             "key_metrics": {
                 "validated_inputs_passed": bool((ql_inputs or {}).get("passed", False)),
@@ -574,16 +583,18 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "updown_asym_external_vmec_t450_converged": updown_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
                 "qh_external_vmec_mid_to_high_grid_converged": qh_high_passed,
+                "cth_like_external_vmec_full_grid_converged": cth_full_grid_passed,
+                "cth_like_external_vmec_high_grid_admitted": cth_high_grid_admitted,
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
                 "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped "
-                "wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement "
-                "gates pass."
+                "wording; keep QH excluded until its common-window and grid-refinement gates pass, and keep "
+                "CTH-like scoped to high-grid admission rather than full n48/n64/n80 convergence."
                 if ql_passed
-                else "Use the admitted D-shaped, circular, ITERModel, and up-down asymmetric external-VMEC holdouts as "
-                "negative transfer constraints while developing richer saturation models; keep QH and CTH-like excluded "
-                "until their common-window and grid-refinement gates pass."
+                else "Use the admitted D-shaped, circular, ITERModel, up-down asymmetric, and high-grid CTH-like "
+                "external-VMEC holdouts as negative transfer constraints while developing richer saturation models; "
+                "keep QH excluded until its common-window and grid-refinement gates pass."
             ),
         },
         {
