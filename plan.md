@@ -1,3 +1,17 @@
+- 2026-06-10: Closed the next CTH-like high-grid robustness step with true
+  office GPU continuations rather than a proxy. The `n80`, `t=[250,350]`
+  seed/timestep extraction passed individual readiness gates but failed the
+  strict ensemble spread gate (`0.1819 > 0.15`), so the window was too short
+  for admission. The same four variants were restart-continued from `t=350`
+  to `t=700` and re-extracted on `t=[350,700]`; readiness and ensemble gates
+  both pass with mean heat flux `9.603`, mean-relative spread `0.0406`, and
+  combined SEM/mean `0.0517`. CTH-like is therefore a replicated high-grid
+  candidate, not a calibration holdout yet: full `n48/n64/n80` convergence
+  still fails and admission now depends on an explicit high-grid policy. The
+  release repository tracks only
+  `docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.*`;
+  raw NetCDFs and trace byproducts remain on office.
+
 - 2026-06-09: Completed the CTH-like modified-protocol horizon harvest and
   added a high-grid time-horizon gate. All nine direct office jobs returned
   `0`. The `t=150` high-grid `n64/n80` gate has close heat-flux means
@@ -188,7 +202,7 @@ historical logs live outside the release repository so clones stay small.
 | Docs/readme/release hygiene | 99% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest and final QL harvest are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
-| External-VMEC holdout runbook contract | 96% | CTH-like modified-protocol launch and all `t=150,250,350` horizons are reproducible; full `n48/n64/n80` gates fail, `t=150` high-grid is transient, and the late `t=250/350` high-grid horizon gate passes as necessary-only evidence, so admission remains pending explicit high-grid/replicate gates |
+| External-VMEC holdout runbook contract | 98% | CTH-like modified-protocol launch, horizon gates, and `n80` seed/timestep long-window replicate gate are reproducible; full `n48/n64/n80` gates still fail, so admission remains pending an explicit high-grid policy rather than more launch mechanics |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
