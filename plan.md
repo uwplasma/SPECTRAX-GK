@@ -1,3 +1,14 @@
+- 2026-06-09: Added an explicit modified-protocol external-VMEC holdout
+  contract for failed-family repairs. The default runbook still fail-closes
+  unchanged failed families, but `tools/build_external_vmec_holdout_runbook.py`
+  can now require `--allow-modified-protocol-family` plus a
+  `--modified-protocol-note` and optional horizon override. The tracked
+  external-VMEC linear screen now includes the existing CTH-like spectrum point
+  (`gamma = 0.0488013` at `ky = 0.285714`), and the refreshed runbook selects a
+  CTH-like `n48/n64/n80`, `t = 150,250,350` repair campaign. This is a launch
+  contract only; CTH-like remains outside quasilinear calibration until the new
+  traces pass grid/window and post-transient holdout gates.
+
 - 2026-06-09: Diagnosed the strict QA `t1500` mismatch as a launch-contract
   issue, not a physics result. Final-horizon TOMLs are restart-ladder segments:
   launching a `t1500` segment command from `t=0` integrates only the
@@ -131,6 +142,7 @@ historical logs live outside the release repository so clones stay small.
 | Docs/readme/release hygiene | 99% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest and final QL harvest are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
+| External-VMEC holdout runbook contract | 92% | CTH-like modified-protocol launch plan is now reproducible and fail-closed by default; admission remains pending the office `n48/n64/n80`, `t=150,250,350` convergence/replicate gates |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

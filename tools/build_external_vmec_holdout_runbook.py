@@ -56,6 +56,20 @@ def _short_label(value: object, *, width: int = 34) -> str:
     return text[: max(1, width - 3)].rstrip("_-. ") + "..."
 
 
+def _parse_horizons(value: str) -> tuple[float, ...]:
+    try:
+        horizons = tuple(float(chunk) for chunk in value.split(",") if chunk.strip())
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("horizons must be a comma-separated list of numbers") from exc
+    if not horizons:
+        raise argparse.ArgumentTypeError("at least one horizon is required")
+    if any(horizon <= 0.0 for horizon in horizons):
+        raise argparse.ArgumentTypeError("horizons must be positive")
+    if horizons != tuple(sorted(horizons)):
+        raise argparse.ArgumentTypeError("horizons must be sorted increasingly")
+    return horizons
+
+
 def _write_csv(path: Path, runbook: dict[str, Any]) -> None:
     fields = [
         "rank",
@@ -87,6 +101,8 @@ def _write_panel(path: Path, runbook: dict[str, Any], *, dpi: int = 220, write_p
         status = str(row.get("status", ""))
         if status in {"preferred_family_new_holdout", "new_family_holdout_candidate"}:
             colors.append("#2f7f5f")
+        elif status == "modified_protocol_failed_family_candidate":
+            colors.append("#3b6ea8")
         elif status in {"preferred_family_already_represented", "preferred_family_audit_already_passed"}:
             colors.append("#d89c32")
         elif status == "represented_family_audit_candidate":
@@ -150,6 +166,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument(
+        "--horizons",
+        type=_parse_horizons,
+        default=None,
+        help="Optional comma-separated nonlinear horizons overriding the gap-derived recommendation.",
+    )
+    parser.add_argument(
+        "--allow-modified-protocol-family",
+        action="append",
+        default=None,
+        help=(
+            "External-VMEC family with a tracked failed gate that may be relaunched only because the protocol "
+            "is materially changed. Requires --modified-protocol-note."
+        ),
+    )
+    parser.add_argument(
+        "--modified-protocol-note",
+        default="",
+        help="Required note explaining the grid/window/horizon/protocol change for any failed-family rerun.",
+    )
+    parser.add_argument(
         "--min-launch-gamma",
         type=float,
         default=0.02,
@@ -162,7 +198,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.allow_modified_protocol_family and not str(args.modified_protocol_note).strip():
+        parser.error("--modified-protocol-note is required with --allow-modified-protocol-family")
     gap_report = json.loads(args.gap_report.read_text(encoding="utf-8"))
     screen_rows = read_external_holdout_screen(args.screen)
     runbook = build_external_holdout_runbook(
@@ -171,6 +210,9 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=str(args.out_dir),
         grids=tuple(args.grid or ("n48:48:48:32:32", "n64:64:64:40:40")),
         dt=float(args.dt),
+        horizons=args.horizons,
+        allow_modified_protocol_families=tuple(args.allow_modified_protocol_family or ()),
+        modified_protocol_note=str(args.modified_protocol_note).strip(),
         min_launch_gamma=float(args.min_launch_gamma),
         max_candidates=int(args.max_candidates),
     )

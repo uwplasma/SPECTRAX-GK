@@ -4,20 +4,35 @@
     "minimum_screen_growth_rate_for_launch": 0.02,
     "required_claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
     "required_split": "holdout",
+    "requires_explicit_modified_protocol_note_for_failed_families": true,
     "requires_grid_window_convergence": true,
     "requires_independent_from_training_reference": true,
     "requires_post_transient_window": true
   },
+  "allow_modified_protocol_families": [
+    "cth_like_external_vmec"
+  ],
   "claim_level": "nonlinear_holdout_launch_plan_not_transport_validation",
   "csv": "docs/_static/external_vmec_next_holdout_runbook.csv",
   "dt": 0.05,
+  "failed_external_families": [
+    "circular_external_vmec",
+    "cth_like_external_vmec",
+    "dshape_external_vmec",
+    "itermodel_external_vmec",
+    "qh_external_vmec",
+    "shaped_tokamak_external_vmec"
+  ],
   "inputs": {
     "gap_report": "docs/_static/quasilinear_holdout_gap_report.json",
     "screen": "docs/_static/external_vmec_candidate_linear_screen.csv"
   },
   "kind": "external_vmec_holdout_runbook",
-  "launch_commands": [],
+  "launch_commands": [
+    "python tools/write_external_vmec_holdout_configs.py --case cth_like_fixed_bdy_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc --out-dir tools_out/external_vmec_holdouts/cth_like_fixed_bdy --ky 0.285714285714 --dt 0.05 --horizons 150,250,350 --grid n48:48:48:32:32 --grid n64:64:64:40:40 --grid n80:80:80:48:48"
+  ],
   "min_launch_gamma": 0.02,
+  "modified_protocol_note": "restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
   "nearest_tracked_gap": {
     "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
     "failed_gates": [
@@ -28,11 +43,26 @@
     "source_artifact": "docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.json"
   },
   "notes": "Run the selected configurations on the large-run host, build a convergence gate with tools/plot_external_vmec_nonlinear_convergence_gate.py, and admit the resulting transport window to quasilinear calibration only if the gate passes and the split is holdout.",
-  "passed": false,
+  "passed": true,
   "pdf": "docs/_static/external_vmec_next_holdout_runbook.pdf",
   "png": "docs/_static/external_vmec_next_holdout_runbook.png",
   "preferred_family": "itermodel_external_vmec",
   "ranked_candidates": [
+    {
+      "best_gamma": 0.04880132171848534,
+      "best_ky": 0.2857142857142857,
+      "best_omega": 0.0592529538169946,
+      "case": "cth_like_fixed_bdy_nc",
+      "family": "cth_like_external_vmec",
+      "log": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.csv",
+      "priority": 1.5,
+      "rank": 1,
+      "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
+      "returncode": 0,
+      "status": "modified_protocol_failed_family_candidate",
+      "unstable": true,
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc"
+    },
     {
       "best_gamma": 0.088737,
       "best_ky": 0.4762,
@@ -41,7 +71,7 @@
       "family": "itermodel_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/ITERModel_reference_nc.log",
       "priority": 5.0,
-      "rank": 1,
+      "rank": 2,
       "reason": "same-family audit already passed; relaunch only with a different independent geometry or a materially changed protocol",
       "returncode": 0,
       "status": "preferred_family_audit_already_passed",
@@ -56,7 +86,7 @@
       "family": "dshape_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/DSHAPE_nc.log",
       "priority": 6.0,
-      "rank": 2,
+      "rank": 3,
       "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
       "returncode": 0,
       "status": "recent_family_failed_external_gate",
@@ -71,7 +101,7 @@
       "family": "circular_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_nc.log",
       "priority": 6.0,
-      "rank": 3,
+      "rank": 4,
       "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
       "returncode": 0,
       "status": "recent_family_failed_external_gate",
@@ -86,7 +116,7 @@
       "family": "circular_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_reference_nc.log",
       "priority": 6.0,
-      "rank": 4,
+      "rank": 5,
       "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
       "returncode": 0,
       "status": "recent_family_failed_external_gate",
@@ -101,7 +131,7 @@
       "family": "shaped_tokamak_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
       "priority": 6.0,
-      "rank": 5,
+      "rank": 6,
       "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
       "returncode": 0,
       "status": "recent_family_failed_external_gate",
@@ -116,7 +146,7 @@
       "family": "qi_external_vmec",
       "log": "tools_out/candidate_screen_qi_seed/qi_seed_lowky_scan.log",
       "priority": 7.0,
-      "rank": 6,
+      "rank": 7,
       "reason": "positive growth is below the nonlinear-launch threshold; refine the linear branch before launching a transport holdout",
       "returncode": 0,
       "status": "screen_marginal_needs_linear_refinement",
@@ -131,7 +161,7 @@
       "family": "external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanSengupta2019_section5_4_B2_A80_reference_nc.log",
       "priority": 9.0,
-      "rank": 7,
+      "rank": 8,
       "reason": "screen row did not finish with positive growth",
       "returncode": 0,
       "status": "screen_rejected_stable_or_failed",
@@ -146,7 +176,7 @@
       "family": "qh_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanPaul2021_QH_reactorScale_lowres_reference_nc.log",
       "priority": 9.0,
-      "rank": 8,
+      "rank": 9,
       "reason": "screen row did not finish with positive growth",
       "returncode": 0,
       "status": "screen_rejected_stable_or_failed",
@@ -161,7 +191,7 @@
       "family": "li383_external_vmec",
       "log": "tools_out/candidate_screen_li383/li383_linear_scan.log",
       "priority": 9.0,
-      "rank": 9,
+      "rank": 10,
       "reason": "screen row did not finish with positive growth",
       "returncode": 0,
       "status": "screen_rejected_stable_or_failed",
@@ -171,12 +201,13 @@
   ],
   "recommended_grids": [
     "n48:48:48:32:32",
-    "n64:64:64:40:40"
+    "n64:64:64:40:40",
+    "n80:80:80:48:48"
   ],
   "recommended_horizons": [
+    150.0,
     250.0,
-    350.0,
-    450.0
+    350.0
   ],
   "represented_families": [
     "circular_external_vmec",
@@ -184,6 +215,20 @@
     "itermodel_external_vmec",
     "updown_asym_external_vmec"
   ],
-  "selected_new_family_candidate": null,
+  "selected_new_family_candidate": {
+    "best_gamma": 0.04880132171848534,
+    "best_ky": 0.2857142857142857,
+    "best_omega": 0.0592529538169946,
+    "case": "cth_like_fixed_bdy_nc",
+    "family": "cth_like_external_vmec",
+    "log": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.csv",
+    "priority": 1.5,
+    "rank": 1,
+    "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
+    "returncode": 0,
+    "status": "modified_protocol_failed_family_candidate",
+    "unstable": true,
+    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc"
+  },
   "selected_preferred_family_audit": null
 }

@@ -48,6 +48,19 @@ def _gap_report_with_failed_shaped_family() -> dict:
     return report
 
 
+def _gap_report_with_failed_cth_like_family() -> dict:
+    report = _gap_report()
+    report["excluded_candidates"] = [
+        {
+            "case": "CTH-like external VMEC nonlinear grid convergence",
+            "geometry": "cth_like_external_vmec",
+            "gate_passed": False,
+            "status": "excluded_failed_external_gate",
+        }
+    ]
+    return report
+
+
 def _gap_report_with_passed_preferred_audit() -> dict:
     report = _gap_report()
     report["excluded_candidates"] = [
@@ -69,6 +82,7 @@ def test_family_detection_covers_screen_names() -> None:
     assert external_vmec_family("QI_stel_seed_3127_nc", "/vmec/wout_QI_stel_seed_3127.nc") == "qi_external_vmec"
     assert external_vmec_family("li383_low_res_nc", "/vmec/wout_li383_low_res.nc") == "li383_external_vmec"
     assert external_vmec_family("basic_non_stellsym_nc") == "non_stellsym_external_vmec"
+    assert external_vmec_family("cth_like_reference_nc", "/vmec/wout_cth_like.nc") == "cth_like_external_vmec"
 
 
 def test_read_external_holdout_screen_and_rank_runbook(tmp_path: Path) -> None:
@@ -132,6 +146,75 @@ def test_runbook_demotes_recent_failed_external_family() -> None:
     assert shaped["status"] == "recent_family_failed_external_gate"
     assert runbook["selected_new_family_candidate"] is None
     assert runbook["selected_preferred_family_audit"]["case"] == "ITERModel_reference_nc"
+
+
+def test_runbook_allows_failed_family_only_with_explicit_modified_protocol() -> None:
+    rows = [
+        ExternalHoldoutScreenRow(
+            case="cth_like_reference_nc",
+            vmec_file="/vmec/wout_cth_like.nc",
+            returncode=0,
+            best_ky=0.3,
+            best_gamma=0.071,
+            best_omega=0.22,
+        ),
+        ExternalHoldoutScreenRow(
+            case="ITERModel_reference_nc",
+            vmec_file="/vmec/wout_ITER.nc",
+            returncode=0,
+            best_ky=0.47,
+            best_gamma=0.089,
+            best_omega=0.40,
+        ),
+    ]
+
+    default = build_external_holdout_runbook(
+        gap_report=_gap_report_with_failed_cth_like_family(),
+        screen_rows=rows,
+    )
+    cth_default = next(row for row in default["ranked_candidates"] if row["family"] == "cth_like_external_vmec")
+    assert cth_default["status"] == "recent_family_failed_external_gate"
+    assert default["selected_new_family_candidate"] is None
+
+    modified = build_external_holdout_runbook(
+        gap_report=_gap_report_with_failed_cth_like_family(),
+        screen_rows=rows,
+        horizons=(150.0, 250.0, 350.0),
+        grids=("n48:48:48:32:32", "n64:64:64:40:40", "n80:80:80:48:48"),
+        allow_modified_protocol_families=("cth_like_external_vmec",),
+        modified_protocol_note="restart ladder with an added n80 grid and longer post-transient windows",
+    )
+
+    selected = modified["selected_new_family_candidate"]
+    assert selected["case"] == "cth_like_reference_nc"
+    assert selected["status"] == "modified_protocol_failed_family_candidate"
+    assert modified["recommended_horizons"] == [150.0, 250.0, 350.0]
+    assert modified["allow_modified_protocol_families"] == ["cth_like_external_vmec"]
+    assert "n80:80:80:48:48" in modified["launch_commands"][0]
+    assert "--horizons 150,250,350" in modified["launch_commands"][0]
+
+
+def test_runbook_requires_note_for_modified_failed_family() -> None:
+    rows = [
+        ExternalHoldoutScreenRow(
+            case="cth_like_reference_nc",
+            vmec_file="/vmec/wout_cth_like.nc",
+            returncode=0,
+            best_ky=0.3,
+            best_gamma=0.071,
+            best_omega=0.22,
+        )
+    ]
+    try:
+        build_external_holdout_runbook(
+            gap_report=_gap_report_with_failed_cth_like_family(),
+            screen_rows=rows,
+            allow_modified_protocol_families=("cth_like_external_vmec",),
+        )
+    except ValueError as exc:
+        assert "modified_protocol_note" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("modified failed-family reruns must require a protocol note")
 
 
 def test_runbook_does_not_relaunch_passed_same_family_audit() -> None:
@@ -224,3 +307,50 @@ def test_runbook_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert payload["passed"] is True
     assert payload["png"].endswith("runbook.png")
     assert out.with_suffix(".csv").exists()
+
+
+def test_runbook_tool_writes_modified_protocol_contract(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    gap = tmp_path / "gap.json"
+    gap.write_text(json.dumps(_gap_report_with_failed_cth_like_family()), encoding="utf-8")
+    screen = tmp_path / "screen.csv"
+    screen.write_text(
+        "\n".join(
+            [
+                "case,vmec_file,returncode,best_ky,best_gamma,best_omega,log",
+                "cth_like_reference_nc,/vmec/wout_cth_like.nc,0,0.3,0.071,0.22,cth.log",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "runbook.png"
+    rc = mod.main(
+        [
+            "--gap-report",
+            str(gap),
+            "--screen",
+            str(screen),
+            "--out",
+            str(out),
+            "--no-pdf",
+            "--dpi",
+            "80",
+            "--horizons",
+            "150,250,350",
+            "--grid",
+            "n48:48:48:32:32",
+            "--grid",
+            "n80:80:80:48:48",
+            "--allow-modified-protocol-family",
+            "cth_like_external_vmec",
+            "--modified-protocol-note",
+            "n80 grid and longer post-transient window repair",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert payload["passed"] is True
+    assert payload["selected_new_family_candidate"]["family"] == "cth_like_external_vmec"
+    assert payload["selected_new_family_candidate"]["status"] == "modified_protocol_failed_family_candidate"
+    assert payload["modified_protocol_note"] == "n80 grid and longer post-transient window repair"

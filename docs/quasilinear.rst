@@ -1656,6 +1656,15 @@ gyrokinetic calculations in [GX]_. Long turbulent time series can still be
 physically informative, as emphasized by W7-X heat-flux time-series analyses
 [Papadopoulos23]_, but they are not calibration data until this gate passes.
 
+The next-holdout runbook now records this distinction explicitly.  It adds the
+tracked CTH-like linear spectrum point (``gamma = 0.0488`` at
+``ky = 0.2857``) to the external-VMEC candidate screen and emits a launch
+contract only when the failed-family replay is marked as a modified protocol:
+``n48/n64/n80`` grids and ``t = 150,250,350`` horizons after the earlier
+``32->48`` failure.  This is still a launch plan, not an admitted nonlinear
+holdout; CTH-like can enter quasilinear calibration only after the new traces
+pass the grid/window convergence and post-transient-window gates.
+
 .. image:: _static/external_vmec_cth_like_grid_convergence_gate.png
    :alt: External CTH-like VMEC nonlinear grid convergence gate
    :width: 100%
