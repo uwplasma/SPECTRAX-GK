@@ -61,7 +61,11 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert payload["segment_step_counts"]["candidate_nonlinear_t1p5_n8"] == 2
     assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t1p5_n8"] == 6
     assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t2_n10"] == 8
+    assert payload["launch_commands"][0].startswith("PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0}")
     assert "python3 -m spectraxgk.cli run-runtime-nonlinear" in payload["launch_commands"][0]
+    assert payload["direct_full_horizon_launch_commands"][0].startswith(
+        "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0}"
+    )
     assert "--steps 4" in payload["launch_commands"][0]
     assert "--steps 2" in payload["launch_commands"][2]
     assert "--steps 6" in payload["direct_full_horizon_launch_commands"][2]

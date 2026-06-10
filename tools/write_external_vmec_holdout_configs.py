@@ -516,11 +516,11 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             }
         )
         segment_command = (
-            "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
+            "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {int(item.steps)} --no-progress"
         )
         direct_command = (
-            "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
+            "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {int(direct_steps)} --no-progress"
         )
         launch_commands.append(segment_command)
