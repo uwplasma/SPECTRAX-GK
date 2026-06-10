@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run direct full-horizon nonlinear-gradient commands from a manifest."""
+"""Run direct full-horizon nonlinear commands from a launch manifest."""
 
 from __future__ import annotations
 
@@ -19,6 +19,10 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_ORDER = ("baseline", "plus_delta", "minus_delta")
+SUPPORTED_MANIFEST_KINDS = {
+    "nonlinear_turbulence_gradient_campaign_manifest",
+    "external_vmec_holdout_config_manifest",
+}
 
 
 @dataclass(frozen=True)
@@ -46,26 +50,78 @@ def _ordered_states(state_commands: dict[str, Any]) -> list[str]:
 
 
 def load_manifest(path: Path) -> dict[str, Any]:
-    """Load and minimally validate a nonlinear-gradient campaign manifest."""
+    """Load and minimally validate a direct nonlinear campaign manifest."""
 
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    if manifest.get("kind") != "nonlinear_turbulence_gradient_campaign_manifest":
-        raise ValueError(
-            "expected kind='nonlinear_turbulence_gradient_campaign_manifest', "
-            f"got {manifest.get('kind')!r}"
-        )
-    if not isinstance(manifest.get("state_ensemble_commands"), dict):
+    kind = manifest.get("kind")
+    if kind not in SUPPORTED_MANIFEST_KINDS:
+        supported = ", ".join(sorted(SUPPORTED_MANIFEST_KINDS))
+        raise ValueError(f"expected manifest kind in {{{supported}}}, got {kind!r}")
+    if kind == "nonlinear_turbulence_gradient_campaign_manifest" and not isinstance(
+        manifest.get("state_ensemble_commands"),
+        dict,
+    ):
         raise ValueError("manifest is missing state_ensemble_commands")
+    if kind == "external_vmec_holdout_config_manifest" and not isinstance(
+        manifest.get("direct_full_horizon_launch_commands"),
+        list,
+    ):
+        raise ValueError("manifest is missing direct_full_horizon_launch_commands")
     return manifest
 
 
-def _config_from_command(command: str) -> Path:
+def _split_command_env(command: str) -> tuple[list[str], dict[str, str]]:
+    """Split a manifest command into argv and leading environment overrides."""
+
     parts = shlex.split(command)
+    env: dict[str, str] = {}
+    index = 0
+    while index < len(parts):
+        part = parts[index]
+        if "=" not in part or part.startswith("-"):
+            break
+        key, value = part.split("=", maxsplit=1)
+        if not key.isidentifier():
+            break
+        env[key] = value
+        index += 1
+    argv = parts[index:]
+    if not argv:
+        raise ValueError(f"direct command does not contain an executable: {command}")
+    return argv, env
+
+
+def _config_from_command(command: str) -> Path:
+    parts, _ = _split_command_env(command)
     try:
         raw = parts[parts.index("--config") + 1]
     except (ValueError, IndexError) as exc:
         raise ValueError(f"direct command is missing '--config': {command}") from exc
     return ROOT / raw
+
+
+def _task_from_command(
+    *,
+    state: str,
+    command: str,
+    labels: set[str] | None = None,
+    output_override: Path | None = None,
+) -> DirectTask | None:
+    config = _config_from_command(command)
+    output = config.with_suffix(".out.nc") if output_override is None else output_override
+    label = output.name
+    variant_label = label.removesuffix(".out.nc")
+    config_label = config.name
+    config_stem = config.stem
+    if labels is not None and labels.isdisjoint({label, variant_label, config_label, config_stem}):
+        return None
+    return DirectTask(
+        state=state,
+        label=label,
+        command=command,
+        config=config,
+        output=output,
+    )
 
 
 def collect_direct_tasks(
@@ -76,6 +132,30 @@ def collect_direct_tasks(
 ) -> list[DirectTask]:
     """Collect direct full-horizon tasks in deterministic state order."""
 
+    if manifest.get("kind") == "external_vmec_holdout_config_manifest":
+        state = "external_vmec"
+        if states is not None and state not in states:
+            return []
+        output_by_config = {
+            str(row.get("path")): ROOT / str(row["output_path"])
+            for row in manifest.get("configs", [])
+            if isinstance(row, dict) and row.get("path") and row.get("output_path")
+        }
+        tasks = []
+        for command in manifest.get("direct_full_horizon_launch_commands", []):
+            command_str = str(command)
+            config = _config_from_command(command_str)
+            output_override = output_by_config.get(_repo_path(config))
+            task = _task_from_command(
+                state=state,
+                command=command_str,
+                labels=labels,
+                output_override=output_override,
+            )
+            if task is not None:
+                tasks.append(task)
+        return tasks
+
     state_commands = manifest["state_ensemble_commands"]
     tasks: list[DirectTask] = []
     for state in _ordered_states(state_commands):
@@ -83,21 +163,9 @@ def collect_direct_tasks(
             continue
         row = state_commands[state]
         for command in row.get("direct_full_horizon_launch_commands", []):
-            config = _config_from_command(command)
-            output = config.with_suffix(".out.nc")
-            label = output.name
-            variant_label = label.removesuffix(".out.nc")
-            if labels is not None and label not in labels and variant_label not in labels:
-                continue
-            tasks.append(
-                DirectTask(
-                    state=state,
-                    label=label,
-                    command=command,
-                    config=config,
-                    output=output,
-                )
-            )
+            task = _task_from_command(state=state, command=str(command), labels=labels)
+            if task is not None:
+                tasks.append(task)
     return tasks
 
 
@@ -160,10 +228,11 @@ def _run_one(
     with log_path.open("w", encoding="utf-8") as log:
         log.write(f"task={task.label} gpu={gpu}\ncommand={task.command}\n\n")
         log.flush()
+        argv, command_env = _split_command_env(task.command)
         completed = subprocess.run(
-            shlex.split(task.command),
+            argv,
             cwd=ROOT,
-            env=_task_env(gpu),
+            env=_task_env(gpu, extra_env=command_env),
             stdout=log,
             stderr=subprocess.STDOUT,
             timeout=timeout_s,

@@ -278,13 +278,29 @@ tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
 ``gate_index_include=false`` because it is a research-planning negative result,
 not a release-blocking validation gate.
 
+``tools/plot_external_vmec_time_horizon_gate.py`` is the companion
+time-horizon stability gate for modified-protocol holdout repairs. It consumes
+the JSON outputs from the high-grid convergence gate at several final times,
+requires every input grid gate to pass, and then checks that the high-grid
+averaged common-window and least-trending heat-flux means are stable across
+horizons. The gate is deliberately necessary-only: even a passing
+time-horizon figure writes ``promotion_gate.passed = false`` until independent
+replicate, seed, timestep, and admission-policy evidence exists.
+
 ``tools/write_external_vmec_holdout_configs.py`` is the reproducibility
 companion for that lane. It writes the fixed-step nonlinear TOMLs and restart
 copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
 ``t = 150`` initial runs followed by ``t = 250`` restart continuations at
 ``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
 the resulting traces must still pass the convergence gate above before they can
-enter quasilinear calibration reports or optimization studies. For the
+enter quasilinear calibration reports or optimization studies. Its
+``direct_full_horizon_launch_commands`` can be launched with
+``tools/run_nonlinear_gradient_direct_campaign.py`` even though the manifest is
+an external-VMEC holdout manifest rather than a nonlinear-gradient manifest.
+That launcher now preserves manifest command provenance, honors leading
+``PYTHONPATH=...``/``CUDA_VISIBLE_DEVICES=...`` assignments, and uses one
+work-conserving worker per listed GPU so a shorter grid does not leave a GPU
+idle while a larger grid continues running. For the
 production nonlinear optimization evidence lane the same generator also accepts
 ``--seed-variant`` and ``--dt-variant`` entries. Those options write explicit
 ``[metadata]`` blocks and variant-specific filenames so seed and timestep

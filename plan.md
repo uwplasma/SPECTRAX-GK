@@ -1,3 +1,27 @@
+- 2026-06-09: Completed the CTH-like modified-protocol horizon harvest and
+  added a high-grid time-horizon gate. All nine direct office jobs returned
+  `0`. The `t=150` high-grid `n64/n80` gate has close heat-flux means
+  (`0.026` common-window and `0.009` least-window relative differences) but
+  fails the common-window trend gate (`0.00292 > 0.002`), so it is still a
+  transient window. The late `t=250`/`t=350` high-grid horizon gate passes with
+  common/least horizon changes `0.018`/`0.019`, but its promotion gate remains
+  false because replicate/seed/timestep evidence and an explicit high-grid
+  admission policy are still required. The release repository tracks compact
+  JSON gate sidecars plus the paper-facing `t=350` and late-horizon PNGs; the
+  larger pilot byproducts remain reproducible from the office run directory.
+
+- 2026-06-09: Harvested the first CTH-like modified-protocol nonlinear
+  outputs at `t=350` from office. All three direct full-horizon jobs returned
+  `0`. The formal `n48/n64/n80` grid gate fails closed with common/least
+  heat-flux differences `0.296`/`0.272`, dominated by the coarse `n48` trace.
+  The high-grid `n64/n80` diagnostic gate passes with common/least differences
+  `0.058`/`0.013`, so the case is now a high-grid candidate only. It remains
+  outside quasilinear calibration until the remaining horizons and any
+  replicate/window gates close under an explicit high-grid admission policy.
+  The release repository tracks the compact JSON gate sidecar and high-grid
+  PNG needed for the README/docs; the remaining pilot byproducts stay outside
+  git to preserve the repository-size policy.
+
 - 2026-06-09: Added an explicit modified-protocol external-VMEC holdout
   contract for failed-family repairs. The default runbook still fail-closes
   unchanged failed families, but `tools/build_external_vmec_holdout_runbook.py`
@@ -164,7 +188,7 @@ historical logs live outside the release repository so clones stay small.
 | Docs/readme/release hygiene | 99% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest and final QL harvest are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
-| External-VMEC holdout runbook contract | 92% | CTH-like modified-protocol launch plan is now reproducible and fail-closed by default; admission remains pending the office `n48/n64/n80`, `t=150,250,350` convergence/replicate gates |
+| External-VMEC holdout runbook contract | 96% | CTH-like modified-protocol launch and all `t=150,250,350` horizons are reproducible; full `n48/n64/n80` gates fail, `t=150` high-grid is transient, and the late `t=250/350` high-grid horizon gate passes as necessary-only evidence, so admission remains pending explicit high-grid/replicate gates |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
