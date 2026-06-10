@@ -64,7 +64,10 @@ def test_optimizer_comparison_manifest_builds_matched_runnable_commands(tmp_path
 
     baseline = _entry(payload, "qa_baseline_scipy")
     assert baseline["status"] == "runnable"
-    assert "--strict-upstream-qa-baseline" in baseline["command"]
+    baseline_parts = shlex.split(str(baseline["command"]))
+    assert "--strict-upstream-qa-baseline" in baseline_parts
+    assert "--admit-authoritative-rerun-wout" in baseline_parts
+    assert "--allow-failed-solved-wout-gate" not in baseline_parts
     assert baseline["expected_authoritative_wout"].endswith("runs/qa_baseline_scipy/wout_final_rerun.nc")
 
     growth_scipy = _entry(payload, "growth_scipy_from_strict_baseline")

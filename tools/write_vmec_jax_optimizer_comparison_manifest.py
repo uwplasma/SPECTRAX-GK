@@ -95,6 +95,7 @@ def _baseline_command(args: argparse.Namespace, outdir: Path) -> str:
         str(args.inner_max_iter),
         "--trial-max-iter",
         str(args.trial_max_iter),
+        "--admit-authoritative-rerun-wout",
         "--make-plots",
     ]
     return shlex.join(cmd)
