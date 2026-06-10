@@ -277,6 +277,17 @@ paper evidence only after the proposed candidates are evaluated and promoted
 through the same matched long-window nonlinear audit gates as the
 differentiable optimizer outputs.
 
+The first office execution of this ladder is tracked as reduced-metric
+strategy evidence:
+:download:`vmec_jax_qa_optimizer_ladder_resume_status.json <_static/vmec_jax_qa_optimizer_ladder_resume_status.json>`
+and
+:download:`vmec_jax_qa_optimizer_ladder_spsa_metric_summary.json <_static/vmec_jax_qa_optimizer_ladder_spsa_metric_summary.json>`.
+The scalar-trust and LBFGS-adjoint deterministic runs completed and passed the
+authoritative rerun-WOUT admission gate, but their solved-candidate gates
+remained false. The four SPSA plus/minus reduced nonlinear-window pairs also
+completed; the best reduced metrics are useful for optimizer-design triage,
+not for claiming a reduced long-window turbulent heat flux.
+
 Key references for this policy are:
 
 - `Optimization of nonlinear turbulence in stellarators

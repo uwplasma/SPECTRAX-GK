@@ -9,6 +9,17 @@
   contract only; CTH-like remains outside quasilinear calibration until the new
   traces pass grid/window and post-transient holdout gates.
 
+- 2026-06-09: Completed the resumed office QA optimizer ladder. Scalar-trust
+  and LBFGS-adjoint growth/QL runs all returned `0` and passed the
+  authoritative rerun-WOUT admission gate, but the solved-candidate gate stayed
+  false. The SPSA nonlinear-window metric sweep completed four plus/minus
+  pairs; the best reduced metrics were about `0.06144` and `0.06174` versus
+  the nearby `0.063` level. Tracked summaries:
+  `docs/_static/vmec_jax_qa_optimizer_ladder_resume_status.json` and
+  `docs/_static/vmec_jax_qa_optimizer_ladder_spsa_metric_summary.json`. These
+  artifacts support optimizer-strategy design only; they do not promote a
+  long-window nonlinear turbulent-flux reduction.
+
 - 2026-06-09: Diagnosed the strict QA `t1500` mismatch as a launch-contract
   issue, not a physics result. Final-horizon TOMLs are restart-ladder segments:
   launching a `t1500` segment command from `t=0` integrates only the
