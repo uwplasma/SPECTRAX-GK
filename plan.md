@@ -20,6 +20,17 @@
   artifacts support optimizer-strategy design only; they do not promote a
   long-window nonlinear turbulent-flux reduction.
 
+- 2026-06-09: Fixed an office launch mismatch in the external-VMEC holdout
+  config manifest: direct nonlinear commands now prefix `PYTHONPATH=src` so
+  `python -m spectraxgk.cli` resolves the checkout source instead of a stale
+  venv-installed package. Focused tests enforce the prefix and the structured
+  direct-full-horizon step counts. After fast-forwarding office to `8ef0931`,
+  the CTH-like modified-protocol campaign was regenerated and launched with
+  the direct full-horizon commands. The first active pair is the most
+  informative final-window batch, `t=350` at `n80` and `n64`, both running on
+  the two office GPUs; no holdout admission claim exists until the resulting
+  traces pass the grid/window gate.
+
 - 2026-06-09: Diagnosed the strict QA `t1500` mismatch as a launch-contract
   issue, not a physics result. Final-horizon TOMLs are restart-ladder segments:
   launching a `t1500` segment command from `t=0` integrates only the
