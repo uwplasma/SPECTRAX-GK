@@ -471,6 +471,8 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
     restart_seed_commands: list[str] = []
     staged_ladder_commands: list[str] = []
     direct_full_horizon_launch_commands: list[str] = []
+    segment_step_counts: dict[str, int] = {}
+    direct_full_horizon_step_counts: dict[str, int] = {}
     manifest: dict[str, Any] = {
         "kind": "external_vmec_holdout_config_manifest",
         "configs": configs,
@@ -478,6 +480,8 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
         "restart_seed_commands": restart_seed_commands,
         "staged_ladder_commands": staged_ladder_commands,
         "direct_full_horizon_launch_commands": direct_full_horizon_launch_commands,
+        "segment_step_counts": segment_step_counts,
+        "direct_full_horizon_step_counts": direct_full_horizon_step_counts,
         "restart_ladder_note": (
             "launch_commands are restart-ladder segments. For continuation "
             "horizons, run the corresponding restart_seed_command first, or run "
@@ -487,6 +491,8 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
         ),
     }
     for item in written:
+        direct_steps = int(round(float(item.horizon) / float(item.dt)))
+        config_key = item.path.stem
         variant_payload = None
         if item.variant is not None:
             variant_payload = {
@@ -504,6 +510,7 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
                 "horizon": item.horizon,
                 "dt": item.dt,
                 "steps": item.steps,
+                "direct_full_horizon_steps": direct_steps,
                 "restart_if_exists": item.restart_if_exists,
                 "variant": variant_payload,
             }
@@ -512,13 +519,14 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {int(item.steps)} --no-progress"
         )
-        direct_steps = int(round(float(item.horizon) / float(item.dt)))
         direct_command = (
             "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {int(direct_steps)} --no-progress"
         )
         launch_commands.append(segment_command)
         direct_full_horizon_launch_commands.append(direct_command)
+        segment_step_counts[config_key] = int(item.steps)
+        direct_full_horizon_step_counts[config_key] = int(direct_steps)
         variant_key = "" if item.variant is None else item.variant.label
         previous_key = (item.grid.label, variant_key)
         if item.restart_if_exists:

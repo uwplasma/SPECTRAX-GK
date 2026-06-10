@@ -56,6 +56,11 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert len(payload["staged_ladder_commands"]) == 10
     assert len(payload["restart_seed_commands"]) == 4
     assert payload["configs"][0]["dt"] == 0.25
+    assert payload["configs"][2]["steps"] == 2
+    assert payload["configs"][2]["direct_full_horizon_steps"] == 6
+    assert payload["segment_step_counts"]["candidate_nonlinear_t1p5_n8"] == 2
+    assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t1p5_n8"] == 6
+    assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t2_n10"] == 8
     assert "python3 -m spectraxgk.cli run-runtime-nonlinear" in payload["launch_commands"][0]
     assert "--steps 4" in payload["launch_commands"][0]
     assert "--steps 2" in payload["launch_commands"][2]
@@ -134,6 +139,8 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
     assert all("run-runtime-nonlinear" in command for command in payload["direct_full_horizon_launch_commands"])
     assert "--steps 8" in payload["direct_full_horizon_launch_commands"][1]
     assert any("--steps 16" in command for command in payload["direct_full_horizon_launch_commands"])
+    assert payload["direct_full_horizon_step_counts"]["replicate_nonlinear_t2_n8_dt0p125"] == 16
+    assert payload["segment_step_counts"]["replicate_nonlinear_t2_n8_dt0p125"] == 8
     assert len(payload["restart_seed_commands"]) == 5
     assert "replicate_nonlinear_t1_n8_seed31" in payload["restart_seed_commands"][0]
     assert "replicate_nonlinear_t2_n8_seed31" in payload["restart_seed_commands"][0]
