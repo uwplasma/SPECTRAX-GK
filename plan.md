@@ -1,3 +1,14 @@
+- 2026-06-10: Added and passed the explicit CTH-like high-grid admission
+  policy. The case is now admitted to the quasilinear model-development ledger
+  as a scoped high-grid nonlinear transport holdout, with `n48` explicitly
+  excluded and `n64/n80` plus late-horizon and seed/timestep replicate evidence
+  retained. This is not a full `n48/n64/n80` convergence claim and not an
+  absolute-flux promotion: the one-constant train/holdout calibration still
+  fails with mean held-out relative error `1.91 > 0.35`, and the holdout-gap
+  report still requires two additional independent post-transient nonlinear
+  holdouts plus a better saturation model. Commit `a2e1072` passed CI run
+  `27288648364` with 59 successful jobs and 1 skipped nightly job.
+
 - 2026-06-10: Closed the next CTH-like high-grid robustness step with true
   office GPU continuations rather than a proxy. The `n80`, `t=[250,350]`
   seed/timestep extraction passed individual readiness gates but failed the
@@ -6,8 +17,9 @@
   to `t=700` and re-extracted on `t=[350,700]`; readiness and ensemble gates
   both pass with mean heat flux `9.603`, mean-relative spread `0.0406`, and
   combined SEM/mean `0.0517`. CTH-like is therefore a replicated high-grid
-  candidate, not a calibration holdout yet: full `n48/n64/n80` convergence
-  still fails and admission now depends on an explicit high-grid policy. The
+  candidate under the later explicit admission policy: full `n48/n64/n80`
+  convergence still fails, but `n64/n80` plus late-window replicate evidence
+  are sufficient for scoped high-grid calibration-ledger use. The
   release repository tracks only
   `docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.*`;
   raw NetCDFs and trace byproducts remain on office.
@@ -166,7 +178,7 @@
 
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-09
+Last updated: 2026-06-10
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
@@ -178,31 +190,38 @@ historical logs live outside the release repository so clones stay small.
 
 ## Current Release Status
 
-- CI/CD: release-readiness, package build, docs build, and local focused
-  release checks are green for the current working baseline. The GitHub Actions
-  head run is the source of truth for the latest full shard matrix.
+- CI/CD: release-readiness, package build, docs build, quick numerical shards,
+  and wide package coverage are green on commit `a2e1072`.
+  - GitHub Actions run `27288648364`: 59 successful jobs, 1 skipped nightly job.
   - Wide package coverage gate remains required at `>=95%`.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
-- Release posture: technically shippable after the current patch release lands;
-  broad manuscript-level nonlinear turbulence-optimization claims are not
-  promoted. The strict QA baseline and refreshed RBC(1,1) landscape are tracked
-  as optimization/noise diagnostics; the old sparse branch audit is historical
-  evidence only while the full 31-point true nonlinear landscape campaign runs.
+- Release posture: technically shippable for scoped claims. Broad
+  manuscript-level absolute quasilinear-flux and nonlinear
+  turbulence-optimization claims are not promoted. The strict QA baseline,
+  true `t=1500` matched audits, and refreshed RBC(1,1) landscape are tracked as
+  optimization/noise diagnostics and negative-transfer evidence, not as solved
+  nonlinear turbulent-flux optimization.
 
 ## Active Lanes
 
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
+| Quasilinear screening/model-development | 99% | Scoped full-portfolio screening/model-development is claimable; held-out-only screening and absolute flux remain gated |
+| Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`) and two additional independent post-transient nonlinear holdouts are required |
+| Nonlinear holdout expansion/audits | 88% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; two more independent holdouts are needed for absolute-flux reconsideration |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; strategy report quantifies a 35% lower-Q direction while keeping absolute claims blocked |
-| Docs/readme/release hygiene | 99% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500 postprocess manifest and final QL harvest are tracked |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; `+20%` and remaining higher positive-side coefficients remain pending/repair |
+| Differentiable QA optimization evidence | 92.5% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; successful broad nonlinear turbulent-flux optimization is still not promoted |
+| Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
-| External-VMEC holdout runbook contract | 98% | CTH-like modified-protocol launch, horizon gates, and `n80` seed/timestep long-window replicate gate are reproducible; full `n48/n64/n80` gates still fail, so admission remains pending an explicit high-grid policy rather than more launch mechanics |
+| External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
+| Optimizer comparison campaign execution | 75% | Metadata/generators and strategy report are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
+| Production nonlinear turbulent-flux optimization evidence | 78% | Current true long-window matched QA audits are robust negative evidence; no successful broad nonlinear turbulent-flux optimization is promoted |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
