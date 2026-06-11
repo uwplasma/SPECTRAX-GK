@@ -36,6 +36,15 @@
   campaign remains unchanged; the completed `n64/t450` segment passed the basic
   runtime output gate with late-window mean heat flux about `8.39`.
 
+- 2026-06-11: Added a local-CPU quasilinear regularization sensitivity audit
+  for the `spectral_envelope_ridge` candidate. The tracked
+  `docs/_static/quasilinear_candidate_regularization_sweep.{png,json,csv}`
+  artifact sweeps the ridge penalty and confirms that the near miss is not
+  fixed by retuning regularization: the best setting remains `lambda = 0.3`
+  with full-ledger mean relative error `0.377 > 0.35`, held-out mean `0.355`,
+  and interval coverage `8/9`. The artifact is documented as a fail-closed
+  model-development guardrail, not as an absolute-flux predictor.
+
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
   as a scoped high-grid nonlinear transport holdout, with `n48` explicitly
@@ -247,7 +256,7 @@ historical logs live outside the release repository so clones stay small.
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
-| Quasilinear screening/model-development | 99.5% | Rank/correlation screening passes on the expanded ledger; strict candidate uncertainty/model-selection remains a near miss (`0.377 > 0.35`) |
+| Quasilinear screening/model-development | 99.7% | Rank/correlation screening passes on the expanded ledger; strict candidate uncertainty/model-selection remains a near miss (`0.377 > 0.35`), and the ridge-regularization audit confirms the near miss is not a penalty-tuning artifact |
 | Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`), model-selection is failed, and two additional independent post-transient nonlinear holdouts are required |
 | Nonlinear holdout expansion/audits | 89% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; shaped-tokamak-pressure high-resolution `t=650` repair campaign is running; two more independent holdouts are needed for absolute-flux reconsideration |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |

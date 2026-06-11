@@ -1022,6 +1022,35 @@ research posture after admitting CTH-like evidence: keep the small
 spectrum-aware candidate as a useful rank-screening model, but not as an
 uncertainty-validated flux predictor.
 
+Regularization sensitivity audit
+--------------------------------
+
+The near miss above is small enough that reviewer-facing documentation needs to
+show it is not an artifact of one arbitrary ridge penalty. The regularization
+audit below reruns the same leave-one-geometry-out ``spectral_envelope_ridge``
+fit across a ridge-penalty sweep and records the best admissible setting.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_candidate_regularization_sweep.py \
+     --no-pdf \
+     --out docs/_static/quasilinear_candidate_regularization_sweep.png || true
+
+The command exits nonzero when the promotion gate remains failed. That behavior
+is intentional: the artifact is a guardrail, not a promoted runtime model.
+
+.. image:: _static/quasilinear_candidate_regularization_sweep.png
+   :alt: Quasilinear candidate regularization audit
+   :width: 100%
+
+The best tracked penalty is ``lambda = 0.3``. It gives full-ledger mean
+relative error about ``0.377``, held-out mean relative error about ``0.355``,
+and prediction-interval coverage ``8/9``. No tested penalty passes the
+``0.35`` transport gate. The conclusion is therefore stable under this
+regularization sweep: the spectral-envelope candidate is useful as a
+rank-screening/model-development diagnostic, but not as an absolute heat-flux
+predictor.
+
 Stellarator usefulness summary
 ------------------------------
 

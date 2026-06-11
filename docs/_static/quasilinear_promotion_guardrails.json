@@ -93,6 +93,11 @@
         "passed": true
       },
       {
+        "detail": "claim_level=spectral_envelope_regularization_audit_not_runtime_flux_predictor",
+        "metric": "non_absolute_promotion_scope",
+        "passed": true
+      },
+      {
         "detail": "9 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
@@ -398,6 +403,46 @@
         "passed": true
       },
       {
+        "detail": "docs/_static/quasilinear_candidate_regularization_sweep.png",
+        "metric": "ql_figure_png_exists:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_candidate_regularization_sweep.json",
+        "metric": "ql_figure_json_sidecar_exists:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "docs/_static/quasilinear_candidate_regularization_sweep.png",
+        "metric": "ql_figure_index_mentions_png:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "nearby index text mentions JSON companion",
+        "metric": "ql_figure_index_mentions_json_sidecar:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "kind=quasilinear_candidate_regularization_sweep",
+        "metric": "ql_figure_sidecar_has_kind:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "claim_level=spectral_envelope_regularization_audit_not_runtime_flux_predictor passed=None",
+        "metric": "ql_figure_sidecar_claim_scoped:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "no runtime absolute-flux overclaim in JSON sidecar",
+        "metric": "ql_figure_sidecar_no_runtime_absolute_overclaim:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
+        "detail": "accepted_lambdas=[] best_lambda=0.3 best_error=0.37738980527841215 coverage=0.8888888888888888 blockers=['best_regularization_transport_error_above_gate']",
+        "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_candidate_regularization_sweep",
+        "passed": true
+      },
+      {
         "detail": "docs/_static/quasilinear_dataset_sufficiency.png",
         "metric": "ql_figure_png_exists:docs/_static/quasilinear_dataset_sufficiency",
         "passed": true
@@ -697,6 +742,21 @@
       "runtime_absolute_overclaim_lines": []
     },
     {
+      "claim_level": "spectral_envelope_regularization_audit_not_runtime_flux_predictor",
+      "claim_scoped": true,
+      "failed_baseline_detail": "accepted_lambdas=[] best_lambda=0.3 best_error=0.37738980527841215 coverage=0.8888888888888888 blockers=['best_regularization_transport_error_above_gate']",
+      "failed_baselines_explicit": true,
+      "figure": "docs/_static/quasilinear_candidate_regularization_sweep.png",
+      "index_mentions_json_sidecar": true,
+      "index_mentions_png": true,
+      "json_exists": true,
+      "json_sidecar": "docs/_static/quasilinear_candidate_regularization_sweep.json",
+      "kind": "quasilinear_candidate_regularization_sweep",
+      "passed": null,
+      "png_exists": true,
+      "runtime_absolute_overclaim_lines": []
+    },
+    {
       "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
       "claim_scoped": true,
       "failed_baseline_detail": "linear_state_data_volume_passed=False saturation_rule_accepted=[]",
@@ -790,6 +850,16 @@
   "promotion_gate_reports": [
     {
       "accepted": [],
+      "artifact": "docs/_static/quasilinear_candidate_regularization_sweep.json",
+      "blockers": [
+        "best_regularization_transport_error_above_gate"
+      ],
+      "claim_level": "spectral_envelope_regularization_audit_not_runtime_flux_predictor",
+      "kind": "quasilinear_candidate_regularization_sweep",
+      "promotion_gate_passed": false
+    },
+    {
+      "accepted": [],
       "artifact": "docs/_static/quasilinear_candidate_uncertainty.json",
       "blockers": [],
       "claim_level": "candidate_model_development_not_runtime_option",
@@ -828,9 +898,9 @@
     "n_doc_checks": 4,
     "n_failed_gates": 0,
     "n_input_validation_reports": 4,
-    "n_manuscript_figure_checks": 9,
+    "n_manuscript_figure_checks": 10,
     "n_manuscript_readiness_reports": 1,
-    "n_promotion_gate_reports": 4,
-    "n_reports_scanned": 10
+    "n_promotion_gate_reports": 5,
+    "n_reports_scanned": 11
   }
 }

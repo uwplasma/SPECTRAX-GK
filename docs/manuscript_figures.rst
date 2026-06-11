@@ -234,6 +234,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_candidate_uncertainty.py``
      - Expanded uncertainty-aware candidate gate retained as a negative/near-miss model-development result
      - current artifact base: ``docs/_static/quasilinear_candidate_uncertainty.png`` with JSON companion. It adds training-residual ``95%`` prediction intervals to leave-one-geometry-out candidate scoring on the expanded nine-case electrostatic-compatible candidate dataset, now including the high-grid CTH-like external-VMEC ensemble. The best research candidate remains ``spectral_envelope_ridge``: it uses the positive-growth ``k_y`` centroid and heat-flux-weighted ``k_y`` width in a three-parameter log-linear ridge model, reaches leave-one-geometry-out mean relative error about ``0.377``, and has interval coverage ``8/9``. It is close to but above the ``0.35`` transport gate, so the JSON ``promotion_gate`` is false and no candidate is accepted as an uncertainty-validated absolute-flux model.
+   * - Quasilinear candidate regularization audit
+     - ``tools/plot_quasilinear_candidate_regularization_sweep.py``
+     - Regularization sensitivity checked; absolute-flux promotion remains blocked
+     - current artifact base: ``docs/_static/quasilinear_candidate_regularization_sweep.png`` with CSV/JSON companions. It sweeps the ridge penalty for the same ``spectral_envelope_ridge`` leave-one-geometry-out candidate and verifies that no tested penalty passes the ``0.35`` transport gate. The best tracked setting is ``lambda = 0.3`` with full-ledger mean relative error about ``0.377``, held-out mean relative error about ``0.355``, and interval coverage ``8/9``. This closes a reviewer-facing tuning ambiguity while preserving the claim boundary: the model is a scoped rank-screening/model-development diagnostic, not a runtime/TOML absolute-flux predictor.
    * - Stellarator quasilinear usefulness summary
      - ``tools/plot_quasilinear_stellarator_usefulness.py``
      - Stellarator-facing model-skill and scope summary closed as a scoped model-development figure

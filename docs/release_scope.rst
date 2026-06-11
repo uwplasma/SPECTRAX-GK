@@ -446,6 +446,11 @@ Quasilinear model-selection state:
   electrostatic-compatible candidate portfolio. ``spectral_envelope_ridge`` is
   the best near miss with mean relative error about ``0.377`` and interval
   coverage ``8/9``, but it remains above the ``0.35`` transport gate.
+- ``docs/_static/quasilinear_candidate_regularization_sweep.json``:
+  the ridge-penalty sensitivity audit does not rescue that near miss. The best
+  tested setting remains ``lambda = 0.3`` with mean relative error about
+  ``0.377`` and held-out mean about ``0.355``; no tested penalty is accepted as
+  an absolute-flux predictor.
 - ``docs/_static/quasilinear_stellarator_usefulness.json``:
   the current stellarator-facing synthesis is scoped as
   ``scoped_model_skill_summary_not_runtime_absolute_flux_predictor``. It

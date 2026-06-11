@@ -19,6 +19,7 @@ DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"),
     str(ROOT / "docs/_static/quasilinear_shape_aware_saturation.json"),
     str(ROOT / "docs/_static/quasilinear_candidate_uncertainty.json"),
+    str(ROOT / "docs/_static/quasilinear_candidate_regularization_sweep.json"),
     str(ROOT / "docs/_static/quasilinear_dataset_sufficiency.json"),
     str(ROOT / "docs/_static/quasilinear_validated_calibration_inputs.json"),
     str(ROOT / "docs/_static/manuscript_readiness_status.json"),
@@ -36,6 +37,7 @@ DEFAULT_MANUSCRIPT_FIGURE_BASES = (
     ROOT / "docs/_static/quasilinear_saturation_rule_sweep",
     ROOT / "docs/_static/quasilinear_shape_aware_saturation",
     ROOT / "docs/_static/quasilinear_candidate_uncertainty",
+    ROOT / "docs/_static/quasilinear_candidate_regularization_sweep",
     ROOT / "docs/_static/quasilinear_dataset_sufficiency",
     ROOT / "docs/_static/quasilinear_model_selection_status",
     ROOT / "docs/_static/quasilinear_stellarator_usefulness",
@@ -655,6 +657,38 @@ def _audit_failed_baseline_contract(
                 f"spectral_error={spectral.get('mean_abs_relative_error')} "
                 f"linear_weight_error={linear_weight.get('mean_abs_relative_error')} "
                 f"linear_state_failures={linear_state.get('eligibility_failures')}"
+            ),
+        )
+
+    if name == "quasilinear_candidate_regularization_sweep":
+        rows = data.get("rows")
+        rows = rows if isinstance(rows, list) else []
+        accepted = promotion.get("accepted_lambdas", [])
+        gate = float(promotion.get("transport_mean_relative_error_gate", 0.35))
+        best_error = _float_or_none(data.get("best_mean_abs_relative_error"))
+        best_coverage = _float_or_none(data.get("best_prediction_interval_coverage"))
+        return (
+            data.get("kind") == "quasilinear_candidate_regularization_sweep"
+            and "not_runtime_flux_predictor" in str(data.get("claim_level", ""))
+            and promotion.get("passed") is False
+            and accepted == []
+            and "best_regularization_transport_error_above_gate"
+            in promotion.get("blockers", [])
+            and best_error is not None
+            and best_error > gate
+            and best_coverage is not None
+            and best_coverage >= float(data.get("interval_coverage_gate", 0.0))
+            and any(
+                isinstance(row, dict)
+                and row.get("lambda") == data.get("best_lambda")
+                and row.get("transport_gate_passed") is False
+                for row in rows
+            ),
+            (
+                f"accepted_lambdas={accepted} best_lambda={data.get('best_lambda')} "
+                f"best_error={data.get('best_mean_abs_relative_error')} "
+                f"coverage={data.get('best_prediction_interval_coverage')} "
+                f"blockers={promotion.get('blockers')}"
             ),
         )
 

@@ -345,6 +345,7 @@ as a promoted runtime predictor.
    * - ``spectral_envelope_ridge`` model selection
      - leave-one-geometry-out error and interval coverage
      - ``docs/_static/quasilinear_candidate_uncertainty.json`` and
+       ``docs/_static/quasilinear_candidate_regularization_sweep.json`` and
        ``docs/_static/quasilinear_model_selection_status.json``
      - Open / near miss
      - rank/correlation screening passes, but the expanded nine-case
