@@ -118,6 +118,23 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
     assert payload["claim_level"] == "leave_one_geometry_out_model_development"
 
 
+def test_observed_flux_falls_back_to_tracked_calibration_points(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    case = mod.SaturationCase(
+        "cyclone_long_window",
+        "train",
+        "cyclone",
+        tmp_path / "unused_spectrum.csv",
+        tmp_path / "missing_summary.json",
+        None,
+    )
+
+    observed, observed_std = mod._observed_flux(case)
+
+    assert observed == pytest.approx(6.6689961798985795)
+    assert observed_std == pytest.approx(0.6486446261822355)
+
+
 def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     spectrum, summary, _shape = _write_case(tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5))

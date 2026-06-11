@@ -29,6 +29,7 @@ from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
     require_validated_nonlinear_inputs,
 )
 
+ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SHAPE_CASES = tuple(case for case in DEFAULT_CASES if case.shape_gate is not None)
 
 
@@ -152,16 +153,61 @@ def shape_aware_raw_estimate(spectrum_csv: str | Path, *, exponent: float) -> fl
     return float(np.sum(np.asarray(shape_aware_power_law_objective(features, ky, exponent=exponent))))
 
 
-def _observed_flux(case: SaturationCase) -> tuple[float, float | None]:
-    point = calibration_point_from_nonlinear_window_summary(
-        case.nonlinear_summary,
-        predicted_heat_flux=1.0,
-        split=case.split,
-        saturation_rule="shape_aware_power_law",
-        geometry=case.geometry,
-        electron_model="adiabatic",
-        quasilinear_artifact=str(case.spectrum),
+def _tracked_observed_flux(case: SaturationCase) -> tuple[float, float | None] | None:
+    """Return observed flux from tracked calibration sidecars when raw traces are absent.
+
+    Several long nonlinear diagnostics live under ignored ``tools_out`` paths to
+    keep the repository small.  CI and source distributions still need to
+    replay candidate-model audits from tracked evidence, so the plotting tools
+    fall back to the compact calibration-point sidecar instead of requiring the
+    raw trace to be present.
+    """
+
+    candidates = (
+        ROOT / "docs/_static/quasilinear_stellarator_train_holdout_points.json",
+        ROOT / "docs/_static/quasilinear_stellarator_train_holdout_report.json",
     )
+    aliases = {
+        "cth_like_external_vmec_t700_high_grid_ensemble": "cth_like_external_vmec_t700_high_grid_window",
+    }
+    wanted = {case.case, aliases.get(case.case, case.case)}
+    for path in candidates:
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        points = payload if isinstance(payload, list) else payload.get("points", [])
+        if not isinstance(points, list):
+            continue
+        for point in points:
+            if not isinstance(point, dict) or point.get("case") not in wanted:
+                continue
+            observed = point.get("observed_heat_flux")
+            if observed is None:
+                continue
+            observed_std = point.get("observed_heat_flux_std")
+            return (
+                float(observed),
+                None if observed_std is None else float(observed_std),
+            )
+    return None
+
+
+def _observed_flux(case: SaturationCase) -> tuple[float, float | None]:
+    try:
+        point = calibration_point_from_nonlinear_window_summary(
+            case.nonlinear_summary,
+            predicted_heat_flux=1.0,
+            split=case.split,
+            saturation_rule="shape_aware_power_law",
+            geometry=case.geometry,
+            electron_model="adiabatic",
+            quasilinear_artifact=str(case.spectrum),
+        )
+    except FileNotFoundError:
+        tracked = _tracked_observed_flux(case)
+        if tracked is None:
+            raise
+        return tracked
     return point.observed_heat_flux, point.observed_heat_flux_std
 
 
