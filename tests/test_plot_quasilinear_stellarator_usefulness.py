@@ -22,11 +22,12 @@ def test_stellarator_usefulness_report_keeps_claim_scoped() -> None:
 
     assert report["kind"] == "quasilinear_stellarator_usefulness"
     assert "not_runtime_absolute_flux_predictor" in report["claim_level"]
-    assert report["models"]["spectral_envelope_ridge"]["accepted"] is True
-    assert report["models"]["spectral_envelope_ridge"]["mean_abs_relative_error"] < 0.35
+    assert report["models"]["spectral_envelope_ridge"]["accepted"] is False
+    assert report["models"]["spectral_envelope_ridge"]["mean_abs_relative_error"] > 0.35
     assert report["models"]["positive_mixing_length"]["accepted"] is False
     assert report["models"]["positive_mixing_length"]["holdout_mean_abs_relative_error"] > 1.0
     assert "universal" in report["readme_sentence"]
+    assert "rank-screening" in report["readme_sentence"]
 
 
 def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:
@@ -39,7 +40,7 @@ def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:
         assert row["observed_heat_flux"] > 0.0
         assert row["positive_mixing_length_prediction"] == 0.0
         assert row["positive_mixing_length_relative_error"] == 1.0
-        assert row["spectral_envelope_ridge_relative_error"] < 0.1
+        assert row["spectral_envelope_ridge_relative_error"] < 0.2
         assert row["stellarator_family"] is True
 
     qa = report["stellarator_status"]["QA"]

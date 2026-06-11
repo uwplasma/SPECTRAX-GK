@@ -635,18 +635,24 @@ def _audit_failed_baseline_contract(
         candidates = candidates if isinstance(candidates, dict) else {}
         linear_weight = candidates.get("linear_weight", {})
         linear_state = candidates.get("linear_state_ridge", {})
+        spectral = candidates.get("spectral_envelope_ridge", {})
         accepted = promotion.get("accepted_candidates", [])
         return (
-            promotion.get("passed") is True
-            and "spectral_envelope_ridge" in accepted
+            promotion.get("passed") is False
+            and accepted == []
             and "linear_weight" not in accepted
             and bool(promotion.get("requires_beating_linear_weight_baseline", False))
             and bool(promotion.get("requires_beating_training_mean_null", False))
             and isinstance(data.get("null_training_mean_baseline"), dict)
             and _finite_number(linear_weight.get("mean_abs_relative_error"))
+            and _finite_number(spectral.get("mean_abs_relative_error"))
+            and float(spectral["mean_abs_relative_error"]) > float(
+                promotion.get("transport_mean_relative_error_gate", 0.35)
+            )
             and bool(linear_state.get("eligibility_failures")),
             (
                 f"accepted={accepted} "
+                f"spectral_error={spectral.get('mean_abs_relative_error')} "
                 f"linear_weight_error={linear_weight.get('mean_abs_relative_error')} "
                 f"linear_state_failures={linear_state.get('eligibility_failures')}"
             ),
@@ -668,7 +674,9 @@ def _audit_failed_baseline_contract(
             bool(linear_state_rows)
             and linear_state_rows[0].get("data_volume_passed") is False
             and simple_sweep.get("accepted") == []
-            and promotion.get("passed") is True
+            and promotion.get("passed") is False
+            and "downstream_candidate_skill_gates_not_passed"
+            in promotion.get("blockers", [])
             and bool(promotion.get("requires_downstream_candidate_skill_gates", False)),
             (
                 f"linear_state_data_volume_passed="
@@ -680,9 +688,12 @@ def _audit_failed_baseline_contract(
     if name == "quasilinear_model_selection_status":
         reports = data.get("calibration_reports")
         reports = reports if isinstance(reports, list) else []
+        promotion_gate = data.get("promotion_gate")
+        promotion_gate = promotion_gate if isinstance(promotion_gate, dict) else {}
         return (
-            data.get("passed") is True
-            and "spectral_envelope_ridge" in data.get("accepted_candidates", [])
+            data.get("passed") is False
+            and data.get("accepted_candidates", []) == []
+            and "required_candidate_transport_error" in promotion_gate.get("blockers", [])
             and _finite_number(
                 data.get("metrics", {}).get("linear_weight_mean_abs_relative_error")
                 if isinstance(data.get("metrics"), dict)
@@ -701,6 +712,7 @@ def _audit_failed_baseline_contract(
             ),
             (
                 f"accepted={data.get('accepted_candidates')} "
+                f"blockers={promotion_gate.get('blockers')} "
                 f"absolute_flux_not_promoted={_gate_metric_passed(data, 'absolute_flux_not_promoted')}"
             ),
         )
@@ -739,9 +751,9 @@ def _audit_failed_baseline_contract(
             and float(w7x["observed_heat_flux"]) > 0.0
         )
         return (
-            spectral.get("accepted") is True
+            spectral.get("accepted") is False
             and _finite_number(spectral.get("mean_abs_relative_error"))
-            and float(spectral["mean_abs_relative_error"]) < 0.35
+            and float(spectral["mean_abs_relative_error"]) > 0.35
             and simple_rule_fails_stellarators
             and "audit only" in str(qa.get("status", "")).lower()
             and qh.get("high_grid_gate_passed") is False,
@@ -768,17 +780,17 @@ def _audit_failed_baseline_contract(
         simple = by_model.get("positive_mixing_length", {})
         return (
             gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
-            and gates.get("accepted_holdout_screening_models") == []
-            and gates.get("mean_error_gate_models") == ["spectral_envelope_ridge"]
+            and gates.get("accepted_holdout_screening_models") == ["spectral_envelope_ridge"]
+            and gates.get("mean_error_gate_models") == []
             and gates.get("accepted_absolute_flux_models") == []
             and gates.get("absolute_flux_promotion_passed") is False
-            and gates.get("holdout_screening_correlation_passed") is False
+            and gates.get("holdout_screening_correlation_passed") is True
             and spectral.get("screening_gate_passed") is True
-            and spectral.get("holdout_screening_gate_passed") is False
+            and spectral.get("holdout_screening_gate_passed") is True
             and _finite_number(spectral.get("spearman"))
             and float(spectral["spearman"]) >= 0.75
             and _finite_number(spectral.get("holdout_spearman"))
-            and float(spectral["holdout_spearman"]) < 0.75
+            and float(spectral["holdout_spearman"]) >= 0.75
             and simple.get("screening_gate_passed") is False,
             (
                 f"screening={gates.get('accepted_screening_models')} "
@@ -802,12 +814,13 @@ def _audit_failed_baseline_contract(
         return (
             promotion.get("passed") is False
             and "absolute_flux_predictor_not_promoted" in blockers
-            and "screening_requirement:heldout_screening_correlation_passed" in blockers
+            and "screening_requirement:additional_independent_holdouts_needed" in blockers
             and status.get("absolute_flux_promoted") is False
             and status.get("passed") is False
             and screening.get("screening_correlation_passed") is True
-            and screening.get("holdout_screening_correlation_passed") is False
+            and screening.get("holdout_screening_correlation_passed") is True
             and screening_reqs.get("screening_promoted") is False
+            and "additional_independent_holdouts_needed" in screening_reqs.get("blockers", [])
             and _finite_number(status.get("holdout_mean_abs_relative_error")),
             (
                 f"blockers={blockers} "

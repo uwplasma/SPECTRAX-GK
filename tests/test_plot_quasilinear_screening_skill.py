@@ -24,20 +24,22 @@ def test_screening_skill_accepts_only_scoped_spectral_envelope() -> None:
     assert report["kind"] == "quasilinear_screening_skill"
     assert report["claim_level"] == "screening_correlation_model_development_not_absolute_flux_promotion"
     assert report["gates"]["accepted_screening_models"] == ["spectral_envelope_ridge"]
-    assert report["gates"]["accepted_holdout_screening_models"] == []
-    assert report["gates"]["mean_error_gate_models"] == ["spectral_envelope_ridge"]
+    assert report["gates"]["accepted_holdout_screening_models"] == [
+        "spectral_envelope_ridge"
+    ]
+    assert report["gates"]["mean_error_gate_models"] == []
     assert report["gates"]["accepted_absolute_flux_models"] == []
     assert report["gates"]["absolute_flux_promotion_passed"] is False
-    assert report["gates"]["holdout_screening_correlation_passed"] is False
+    assert report["gates"]["holdout_screening_correlation_passed"] is True
 
     spectral = models["spectral_envelope_ridge"]
     assert spectral["screening_gate_passed"] is True
-    assert spectral["holdout_screening_gate_passed"] is False
+    assert spectral["holdout_screening_gate_passed"] is True
     assert spectral["spearman"] > 0.75
     assert spectral["pairwise_order_accuracy"] > 0.75
-    assert spectral["holdout_spearman"] < 0.75
-    assert spectral["holdout_pairwise_order_accuracy"] < 0.75
-    assert spectral["mean_abs_relative_error"] < 0.35
+    assert spectral["holdout_spearman"] >= 0.75
+    assert spectral["holdout_pairwise_order_accuracy"] >= 0.75
+    assert spectral["holdout_mean_abs_relative_error"] > 0.35
 
     assert models["positive_mixing_length"]["screening_gate_passed"] is False
     assert models["linear_weight"]["screening_gate_passed"] is False

@@ -93,7 +93,7 @@
         "passed": true
       },
       {
-        "detail": "8 required nonlinear summaries passed",
+        "detail": "9 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -118,7 +118,7 @@
         "passed": true
       },
       {
-        "detail": "8 required nonlinear summaries passed",
+        "detail": "9 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -143,7 +143,7 @@
         "passed": true
       },
       {
-        "detail": "8 required nonlinear summaries passed",
+        "detail": "9 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -313,7 +313,7 @@
         "passed": true
       },
       {
-        "detail": "accepted_rules=[] best=2.114098664675138 null=1.1990528554615338",
+        "detail": "accepted_rules=[] best=1.907079547263154 null=1.0984903218297775",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_saturation_rule_sweep",
         "passed": true
       },
@@ -393,7 +393,7 @@
         "passed": true
       },
       {
-        "detail": "accepted=['spectral_envelope_ridge'] linear_weight_error=0.9473105820472785 linear_state_failures=['insufficient_train_to_parameter_ratio']",
+        "detail": "accepted=[] spectral_error=0.37738980527841215 linear_weight_error=0.853638219650207 linear_state_failures=['insufficient_train_to_parameter_ratio']",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_candidate_uncertainty",
         "passed": true
       },
@@ -463,7 +463,7 @@
         "passed": true
       },
       {
-        "detail": "claim_level=scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux passed=True",
+        "detail": "claim_level=model_selection_or_scope_incomplete passed=False",
         "metric": "ql_figure_sidecar_claim_scoped:docs/_static/quasilinear_model_selection_status",
         "passed": true
       },
@@ -473,7 +473,7 @@
         "passed": true
       },
       {
-        "detail": "accepted=['spectral_envelope_ridge'] absolute_flux_not_promoted=True",
+        "detail": "accepted=[] blockers=['dataset_sufficiency_passed', 'candidate_uncertainty_passed', 'required_candidate_accepted', 'required_candidate_transport_error'] absolute_flux_not_promoted=True",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_model_selection_status",
         "passed": true
       },
@@ -513,7 +513,7 @@
         "passed": true
       },
       {
-        "detail": "spectral=0.29524327596674427 positive_ml=2.114098664675138 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
+        "detail": "spectral=0.37738980527841215 positive_ml=1.907079547263154 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_stellarator_usefulness",
         "passed": true
       },
@@ -553,7 +553,7 @@
         "passed": true
       },
       {
-        "detail": "screening=['spectral_envelope_ridge'] holdout_screening=[] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 spectral_holdout_spearman=0.7142857142857143 simple_screening=False",
+        "detail": "screening=['spectral_envelope_ridge'] holdout_screening=['spectral_envelope_ridge'] mean_error=[] absolute=[] spectral_spearman=0.7833333333333333 spectral_holdout_spearman=0.7500000000000002 simple_screening=False",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_screening_skill",
         "passed": true
       },
@@ -593,7 +593,7 @@
         "passed": true
       },
       {
-        "detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=False",
+        "detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=True",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_holdout_gap_report",
         "passed": true
       },
@@ -613,19 +613,19 @@
       "artifact": "docs/_static/quasilinear_candidate_uncertainty.json",
       "failed_required_cases": [],
       "kind": "quasilinear_candidate_uncertainty_report",
-      "required_cases": 8
+      "required_cases": 9
     },
     {
       "artifact": "docs/_static/quasilinear_dataset_sufficiency.json",
       "failed_required_cases": [],
       "kind": "quasilinear_dataset_sufficiency",
-      "required_cases": 8
+      "required_cases": 9
     },
     {
       "artifact": "docs/_static/quasilinear_saturation_rule_sweep.json",
       "failed_required_cases": [],
       "kind": "quasilinear_saturation_rule_sweep",
-      "required_cases": 8
+      "required_cases": 9
     },
     {
       "artifact": "docs/_static/quasilinear_shape_aware_saturation.json",
@@ -654,7 +654,7 @@
     {
       "claim_level": "model_comparison_not_validated_transport",
       "claim_scoped": true,
-      "failed_baseline_detail": "accepted_rules=[] best=2.114098664675138 null=1.1990528554615338",
+      "failed_baseline_detail": "accepted_rules=[] best=1.907079547263154 null=1.0984903218297775",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_saturation_rule_sweep.png",
       "index_mentions_json_sidecar": true,
@@ -684,7 +684,7 @@
     {
       "claim_level": "candidate_model_development_not_runtime_option",
       "claim_scoped": true,
-      "failed_baseline_detail": "accepted=['spectral_envelope_ridge'] linear_weight_error=0.9473105820472785 linear_state_failures=['insufficient_train_to_parameter_ratio']",
+      "failed_baseline_detail": "accepted=[] spectral_error=0.37738980527841215 linear_weight_error=0.853638219650207 linear_state_failures=['insufficient_train_to_parameter_ratio']",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_candidate_uncertainty.png",
       "index_mentions_json_sidecar": true,
@@ -712,9 +712,9 @@
       "runtime_absolute_overclaim_lines": []
     },
     {
-      "claim_level": "scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux",
+      "claim_level": "model_selection_or_scope_incomplete",
       "claim_scoped": true,
-      "failed_baseline_detail": "accepted=['spectral_envelope_ridge'] absolute_flux_not_promoted=True",
+      "failed_baseline_detail": "accepted=[] blockers=['dataset_sufficiency_passed', 'candidate_uncertainty_passed', 'required_candidate_accepted', 'required_candidate_transport_error'] absolute_flux_not_promoted=True",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_model_selection_status.png",
       "index_mentions_json_sidecar": true,
@@ -722,14 +722,14 @@
       "json_exists": true,
       "json_sidecar": "docs/_static/quasilinear_model_selection_status.json",
       "kind": "quasilinear_model_selection_status",
-      "passed": true,
+      "passed": false,
       "png_exists": true,
       "runtime_absolute_overclaim_lines": []
     },
     {
       "claim_level": "scoped_model_skill_summary_not_runtime_absolute_flux_predictor",
       "claim_scoped": true,
-      "failed_baseline_detail": "spectral=0.29524327596674427 positive_ml=2.114098664675138 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
+      "failed_baseline_detail": "spectral=0.37738980527841215 positive_ml=1.907079547263154 hsx_ml=0.0 w7x_ml=0.0 qa=matched nonlinear audit only; strict QL-vs-nonlinear optimization comparison still staged qh_passed=False",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_stellarator_usefulness.png",
       "index_mentions_json_sidecar": true,
@@ -744,7 +744,7 @@
     {
       "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
       "claim_scoped": true,
-      "failed_baseline_detail": "screening=['spectral_envelope_ridge'] holdout_screening=[] mean_error=['spectral_envelope_ridge'] absolute=[] spectral_spearman=0.8095238095238096 spectral_holdout_spearman=0.7142857142857143 simple_screening=False",
+      "failed_baseline_detail": "screening=['spectral_envelope_ridge'] holdout_screening=['spectral_envelope_ridge'] mean_error=[] absolute=[] spectral_spearman=0.7833333333333333 spectral_holdout_spearman=0.7500000000000002 simple_screening=False",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_screening_skill.png",
       "index_mentions_json_sidecar": true,
@@ -759,7 +759,7 @@
     {
       "claim_level": "holdout_gap_report_no_absolute_flux_promotion",
       "claim_scoped": true,
-      "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=False",
+      "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=True",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_holdout_gap_report.png",
       "index_mentions_json_sidecar": true,
@@ -789,22 +789,22 @@
   "passed": true,
   "promotion_gate_reports": [
     {
-      "accepted": [
-        "spectral_envelope_ridge"
-      ],
+      "accepted": [],
       "artifact": "docs/_static/quasilinear_candidate_uncertainty.json",
       "blockers": [],
       "claim_level": "candidate_model_development_not_runtime_option",
       "kind": "quasilinear_candidate_uncertainty_report",
-      "promotion_gate_passed": true
+      "promotion_gate_passed": false
     },
     {
       "accepted": [],
       "artifact": "docs/_static/quasilinear_dataset_sufficiency.json",
-      "blockers": [],
+      "blockers": [
+        "downstream_candidate_skill_gates_not_passed"
+      ],
       "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
       "kind": "quasilinear_dataset_sufficiency",
-      "promotion_gate_passed": true
+      "promotion_gate_passed": false
     },
     {
       "accepted": [],

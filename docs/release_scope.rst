@@ -46,9 +46,10 @@ score.
        artifacts are reproducible. The refreshed nine-case train/holdout
        calibration report rejects the one-constant absolute-flux family, with
        CTH-like external VMEC admitted only through the explicit high-grid
-       policy. Simple one-scalar saturation rules are rejected on the pre-CTH
-       sweep. The ``spectral_envelope_ridge`` candidate is accepted only as a
-       scoped manuscript model-selection result. The passed
+       policy. Simple one-scalar saturation rules are rejected on the expanded
+       sweep. The ``spectral_envelope_ridge`` candidate passes
+       rank/correlation screening but misses the strict uncertainty/model-
+       selection transport gate. The failed
        ``quasilinear_model_selection_status.json`` gate does not promote a
        runtime/TOML absolute-flux predictor, universal nonlinear transport
        model, or user-facing saturation law. Any future absolute-flux
@@ -436,15 +437,15 @@ Quasilinear model-selection state:
   that must be run before the resulting ``wout`` files can enter the
   nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
-  no simple saturation rule is accepted. On the pre-CTH saturation sweep,
+  no simple saturation rule is accepted. On the expanded saturation sweep,
   positive-growth mixing length is the least-bad simple rule with mean
-  held-out relative error about ``2.11``; the training-mean null is about
-  ``1.20``.
+  held-out relative error about ``1.91``; the training-mean null is about
+  ``1.10``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
-  ``spectral_envelope_ridge`` is the accepted scoped candidate with mean
-  relative error about ``0.295`` and interval coverage ``7/8`` on the
-  pre-CTH eight-case electrostatic-compatible candidate portfolio. Its claim level is
-  ``candidate_model_development_not_runtime_option``.
+  no candidate is accepted by the uncertainty gate on the expanded nine-case
+  electrostatic-compatible candidate portfolio. ``spectral_envelope_ridge`` is
+  the best near miss with mean relative error about ``0.377`` and interval
+  coverage ``8/9``, but it remains above the ``0.35`` transport gate.
 - ``docs/_static/quasilinear_stellarator_usefulness.json``:
   the current stellarator-facing synthesis is scoped as
   ``scoped_model_skill_summary_not_runtime_absolute_flux_predictor``. It
@@ -458,9 +459,9 @@ Quasilinear model-selection state:
   the current correlation/ranking synthesis is scoped as
   ``screening_correlation_model_development_not_absolute_flux_promotion``. It
   records ``spectral_envelope_ridge`` as the only model that passes the
-  full-portfolio screening gate and mean-error gate on the pre-CTH eight-case
-  candidate portfolio. The held-out-only screening gate remains empty, and
-  ``accepted_absolute_flux_models`` remains empty. Screening skill is therefore
+  full-portfolio and held-out-only rank/correlation screening gates on the
+  expanded nine-case candidate portfolio. The mean-error gate and
+  ``accepted_absolute_flux_models`` remain empty. Screening skill is therefore
   claimable only as a model-development proxy, not as a runtime saturation law
   or universal absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
@@ -468,9 +469,10 @@ Quasilinear model-selection state:
   ``absolute_flux_promotion_requirements`` and
   ``screening_promotion_requirements`` blocks quantify the current gaps: the
   absolute train/holdout mean relative error is about ``5.45`` times the
-  ``0.35`` gate, the full-portfolio screening gate passes but the held-out-only
-  screening gate remains below threshold, and two additional independent passed
-  holdouts are still required. The external-VMEC-family and
+  ``0.35`` gate, the full-portfolio and held-out-only rank/correlation
+  screening gates pass, and two additional independent passed holdouts are
+  still required before screening promotion can be reconsidered. The
+  external-VMEC-family and
   non-axisymmetric external-VMEC-family coverage requirements are already
   satisfied by the scoped CTH-like high-grid admission. These are evidence
   prerequisites, not a promoted runtime absolute-flux option.

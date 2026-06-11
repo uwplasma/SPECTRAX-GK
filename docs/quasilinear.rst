@@ -71,12 +71,12 @@ optimization motivation in [Jorge24]_. The present release does **not** claim a
 validated absolute nonlinear flux predictor. The current nine-case
 train/holdout calibration portfolio validates the input plumbing and rejects
 the legacy one-constant family, with CTH-like external VMEC admitted only
-through the explicit high-grid policy. The older simple-rule and candidate
-model sweeps remain scoped to their pre-CTH eight-case ledgers until
-regenerated. The richer
-``spectral_envelope_ridge`` candidate is accepted only as a scoped
-model-development result with uncertainty metadata; it is not exposed as a
-runtime saturation law or universal transport model.
+through the explicit high-grid policy. The simple-rule and candidate-model
+sweeps have been regenerated on that expanded ledger. The richer
+``spectral_envelope_ridge`` candidate passes rank/correlation screening, but
+its uncertainty/model-selection gate is a near miss rather than an accepted
+absolute-flux model; it is not exposed as a runtime saturation law or universal
+transport model.
 
 Executable usage
 ----------------
@@ -1009,20 +1009,18 @@ acceptance remains the same as the serial report.
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
 
-The richer ``spectral_envelope_ridge`` candidate is now accepted on the current
-eight-case electrostatic portfolio. It uses only two linear-spectrum envelope
-features, the positive-growth ``k_y`` centroid and the heat-flux-weighted
-``k_y`` width, in a three-parameter log-linear ridge fit (intercept plus two
-features). On leave-one-geometry-out scoring it reaches mean relative error
-about ``0.295`` with interval coverage ``7/8``. That beats both the
-training-mean null baseline (about ``0.900`` on this eight-case leave-one-out
-metric) and the calibrated linear-weight baseline (about ``0.947``). The
-legacy one-scalar rules remain rejected, and the broader four-feature
+The stricter expanded ledger now includes the high-grid CTH-like external-VMEC
+ensemble as a held-out nonlinear point. On that nine-case ledger, the reduced
+``spectral_envelope_ridge`` candidate is the best candidate but is not
+accepted by the uncertainty gate: it reaches mean relative error about
+``0.377`` with interval coverage ``8/9``, just above the ``0.35`` transport
+gate. The calibrated linear-weight baseline is worse (about ``0.854``), the
+training-mean null is about ``0.789``, and the broader four-feature
 ``linear_state_ridge`` candidate remains ineligible because its five fitted
-parameters still exceed the current training-volume gate. This is the intended
-research posture: accept the smallest candidate that passes held-out skill and
-coverage, while retaining the simpler failed models as reviewer-facing
-negative controls.
+parameters still exceed the training-volume gate. This is the intended
+research posture after admitting CTH-like evidence: keep the small
+spectrum-aware candidate as a useful rank-screening model, but not as an
+uncertainty-validated flux predictor.
 
 Stellarator usefulness summary
 ------------------------------
@@ -1087,21 +1085,20 @@ also pass.
    :width: 100%
 
 The current result is stronger than the simple one-constant story but still
-properly scoped. ``spectral_envelope_ridge`` is the only candidate that passes
-the screening gate on the present eight-case electrostatic portfolio, with
-Spearman rank correlation about ``0.81`` and pairwise order accuracy about
-``0.79``. It also passes the mean-error gate with mean relative error about
-``0.295``. The held-out-only rank gate is shown separately because that is the
-honest promotion boundary: the same candidate is currently just below the
-strict held-out screening thresholds, with held-out Spearman correlation about
-``0.71`` and held-out pairwise order accuracy about ``0.73``. The simple
+properly scoped. On the expanded nine-case electrostatic portfolio,
+``spectral_envelope_ridge`` is the only candidate that passes the full and
+held-out rank/correlation gates. Its full-portfolio Spearman correlation is
+about ``0.78`` with pairwise order accuracy about ``0.78``; held-out-only
+Spearman is about ``0.75`` with pairwise order accuracy about ``0.76``. The
+mean-error gate remains empty because the best held-out mean relative error is
+about ``0.355``, just above the ``0.35`` absolute-error gate. The simple
 positive-growth mixing-length rule, raw linear-weight fit, absolute-growth
 diagnostic, and broader linear-state ridge do not pass the screening gate.
-This supports using the spectral-envelope candidate as a
-screening/model-development proxy in constrained studies, but it still does
-not promote a runtime/TOML absolute-flux predictor or a universal stellarator
-saturation law. The next calibration step is not a looser threshold; it is
-additional independent, replicated, post-transient nonlinear holdouts.
+This supports using the spectral-envelope candidate as a rank-screening and
+model-development proxy in constrained studies, but not as a runtime/TOML
+absolute-flux predictor or universal stellarator saturation law.
+The next calibration step is not a looser threshold; it is additional
+independent, replicated, post-transient nonlinear holdouts.
 
 All three model-development reports above now carry an ``input_validation``
 block. It is generated from the nonlinear summary gates before model fitting,
@@ -1136,18 +1133,18 @@ model fit is attempted. It requires:
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
 
-The tracked gate now passes for the pre-CTH eight-case candidate-model dataset.
-There are eight admitted cases, two explicit training geometries, and six
-held-out geometries. That is enough data volume for the one-parameter
-linear-weight candidate, the two-parameter shape-power-law candidate, and the
-three-parameter ``spectral_envelope_ridge`` candidate, though not yet for the
-five-parameter ``linear_state_ridge`` model. Promotion is therefore scoped:
-the accepted candidate is the reduced spectral-envelope model documented above,
-while higher-parameter candidates remain blocked by the train-to-parameter
-ratio gate. KBM is still listed as a validated but excluded nonlinear case
-because the present quasilinear diagnostics are electrostatic; electromagnetic
-quasilinear field-channel normalization and calibration remain separate future
-work.
+The tracked gate now fails closed on downstream candidate skill for the
+expanded candidate-model dataset.
+There are now nine admitted electrostatic-compatible cases, two explicit
+training geometries, and seven held-out geometries. That is enough data volume
+for the one-parameter linear-weight candidate, the two-parameter
+shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge``
+candidate, though not yet for the five-parameter ``linear_state_ridge`` model.
+However, the sufficiency artifact now fails closed because the downstream
+candidate-skill gate is not passed on the expanded ledger. KBM is still listed
+as a validated but excluded nonlinear case because the present quasilinear
+diagnostics are electrostatic; electromagnetic quasilinear field-channel
+normalization and calibration remain separate future work.
 
 Model-selection status
 ----------------------
@@ -1169,16 +1166,17 @@ and are we still avoiding an absolute-flux overclaim?
    :alt: Quasilinear model-selection status and claim-boundary guardrails
    :width: 100%
 
-The current status passes. The accepted ``spectral_envelope_ridge`` candidate
-has leave-one-geometry-out mean relative error about ``0.295`` and interval
-coverage ``7/8``. It beats both the training-mean null baseline
-(``0.900``) and the calibrated linear-weight baseline (``0.947``), while every
-tracked one-constant train/holdout calibration report remains demoted to
-``calibration_dataset``. The status also consumes the selected optimized-QA
-nonlinear audit, but only as scoped transport evidence for that audited
-equilibrium. This closes a scoped model-selection lane for the manuscript. It
-does **not** promote a runtime/TOML absolute-flux predictor, a universal
-saturation rule, or a nonlinear turbulence-gradient optimization claim.
+The current status does not pass after the CTH-like holdout is admitted. The
+``spectral_envelope_ridge`` candidate has leave-one-geometry-out mean relative
+error about ``0.377`` and interval coverage ``8/9``. It beats the calibrated
+linear-weight baseline (``0.854``) but is above the ``0.35`` transport gate and
+does not pass the downstream candidate-skill gate. The model-selection status
+therefore records blockers ``dataset_sufficiency_passed``,
+``candidate_uncertainty_passed``, ``required_candidate_accepted``, and
+``required_candidate_transport_error``. This is a useful negative update for
+the manuscript: it preserves the rank-screening result while keeping this result fail-closed: not as a runtime/TOML
+absolute-flux predictor, universal saturation rule, or nonlinear turbulence-gradient
+optimization claim.
 
 The companion claim-boundary artifact
 ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` is
@@ -1213,27 +1211,29 @@ data product is needed before absolute-flux promotion can be reconsidered?
 The current report admits seven holdouts and two training references, but it
 keeps ``absolute_flux_promoted = false`` because the aggregate held-out
 absolute-flux error remains about ``1.91`` against the ``0.35`` gate. The
-accepted ``spectral_envelope_ridge`` candidate remains a scoped
-model-selection result. Its mean leave-one-geometry-out relative error is
-about ``0.295``, but that number is not a saturated absolute-flux promotion
-because it comes from the candidate-selection uncertainty report rather than a
-passed absolute train/holdout calibration artifact.
+``spectral_envelope_ridge`` candidate remains the best rank-screening result,
+but its uncertainty/model-selection gate is not accepted. Its mean
+leave-one-geometry-out relative error is about ``0.377`` on the expanded
+ledger, above the ``0.35`` gate, and that number is not a saturated
+absolute-flux promotion because it comes from the candidate-selection
+uncertainty report rather than a passed absolute train/holdout calibration
+artifact.
 
 The JSON sidecar now carries explicit
 ``absolute_flux_promotion_requirements`` and
 ``screening_promotion_requirements`` blocks. For the current frozen artifacts
 it records an error factor of about ``5.45`` over the absolute-flux gate, with
 Cyclone Miller as the worst admitted holdout (``Q_i = 4.26`` observed versus
-``38.7`` predicted). It also records that the full-portfolio screening gate
-passes for ``spectral_envelope_ridge`` while the held-out-only screening gate
-remains below threshold. Before absolute-flux or held-out screening promotion
-can even be reconsidered, the report requires at least two additional
-independent passed holdouts; the external-VMEC-family and non-axisymmetric
+``38.7`` predicted). It also records that both the full-portfolio and
+held-out-only rank/correlation screening gates pass for
+``spectral_envelope_ridge``. Screening is still not promoted because the report
+requires at least two additional independent passed holdouts to reduce
+rank-correlation fragility; the external-VMEC-family and non-axisymmetric
 external-VMEC-family coverage gates are already satisfied by the CTH-like
 high-grid admission. These are evidence requirements, not automatic promotion
 criteria; any future model must still pass the held-out transport-error gate,
-prediction interval/skill
-gates, and provenance checks on the same frozen case ledger.
+prediction interval/skill gates, and provenance checks on the same frozen case
+ledger.
 
 The report tracks ``13`` excluded candidates. The shaped-tokamak pressure
 candidate is one of those exclusions: it is finite and late-window stable at

@@ -4,37 +4,37 @@
       "candidate": "linear_weight",
       "data_volume_passed": true,
       "label": "linear weight",
-      "leave_one_out_train_cases_per_fold": 7,
+      "leave_one_out_train_cases_per_fold": 8,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 1,
-      "train_to_parameter_ratio": 7.0
+      "train_to_parameter_ratio": 8.0
     },
     {
       "candidate": "shape_power_law",
       "data_volume_passed": true,
       "label": "shape power law",
-      "leave_one_out_train_cases_per_fold": 7,
+      "leave_one_out_train_cases_per_fold": 8,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 2,
-      "train_to_parameter_ratio": 3.5
+      "train_to_parameter_ratio": 4.0
     },
     {
       "candidate": "spectral_envelope_ridge",
       "data_volume_passed": true,
       "label": "spectral-envelope ridge",
-      "leave_one_out_train_cases_per_fold": 7,
+      "leave_one_out_train_cases_per_fold": 8,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 3,
-      "train_to_parameter_ratio": 2.3333333333333335
+      "train_to_parameter_ratio": 2.6666666666666665
     },
     {
       "candidate": "linear_state_ridge",
       "data_volume_passed": false,
       "label": "linear-state ridge",
-      "leave_one_out_train_cases_per_fold": 7,
+      "leave_one_out_train_cases_per_fold": 8,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 5,
-      "train_to_parameter_ratio": 1.4
+      "train_to_parameter_ratio": 1.6
     }
   ],
   "cases": [
@@ -117,16 +117,24 @@
       "shape_gate_passed": null,
       "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_circular_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "cth_like_external_vmec_t700_high_grid_ensemble",
+      "gate_case": "cth_like_modified_n80_t700_seed_timestep_ensemble_gate",
+      "geometry": "cth_like_external_vmec",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
+      "shape_gate": null,
+      "shape_gate_passed": null,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
     }
   ],
   "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
   "downstream_gates": {
     "candidate_uncertainty": {
-      "accepted": [
-        "spectral_envelope_ridge"
-      ],
+      "accepted": [],
       "kind": "quasilinear_candidate_uncertainty_report",
-      "passed": true,
+      "passed": false,
       "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_candidate_uncertainty.json"
     },
     "saturation_rule_sweep": {
@@ -146,6 +154,7 @@
   ],
   "geometries": [
     "circular_external_vmec",
+    "cth_like_external_vmec",
     "cyclone",
     "cyclone_miller",
     "dshape_external_vmec",
@@ -156,6 +165,7 @@
   ],
   "holdout_geometries": [
     "circular_external_vmec",
+    "cth_like_external_vmec",
     "cyclone_miller",
     "dshape_external_vmec",
     "hsx",
@@ -168,7 +178,7 @@
         "case": "cyclone_long_window",
         "gate_case": "cyclone_nonlinear_long_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_cyclone_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -178,7 +188,7 @@
         "case": "cyclone_miller_long_window",
         "gate_case": "cyclone_miller_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -188,7 +198,7 @@
         "case": "hsx_nonlinear_window",
         "gate_case": "hsx_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_hsx_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -198,7 +208,7 @@
         "case": "w7x_nonlinear_window",
         "gate_case": "w7x_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_w7x_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -208,7 +218,7 @@
         "case": "dshape_external_vmec_t250_window",
         "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -218,7 +228,7 @@
         "case": "itermodel_external_vmec_t350_window",
         "gate_case": "ITERModel external VMEC nonlinear t350 high-grid convergence",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -228,7 +238,7 @@
         "case": "updown_asym_external_vmec_t450_window",
         "gate_case": "updown_asym_external_vmec_t450",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -238,7 +248,17 @@
         "case": "circular_external_vmec_t450_window",
         "gate_case": "circular_external_vmec_t450",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
+      },
+      {
+        "case": "cth_like_external_vmec_t700_high_grid_ensemble",
+        "gate_case": "cth_like_modified_n80_t700_seed_timestep_ensemble_gate",
+        "gate_passed": true,
+        "nonlinear_summary": "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -255,8 +275,10 @@
   "kind": "quasilinear_dataset_sufficiency",
   "notes": "This report is a promotion guard, not a transport model. It prevents candidate saturation rules from being documented as absolute-flux predictors until the nonlinear calibration portfolio is large enough, electrostatic-compatible, and at least one downstream held-out skill gate passes.",
   "promotion_gate": {
-    "blockers": [],
-    "passed": true,
+    "blockers": [
+      "downstream_candidate_skill_gates_not_passed"
+    ],
+    "passed": false,
     "requires_downstream_candidate_skill_gates": true,
     "requires_passed_nonlinear_input_gates": true
   },
@@ -269,9 +291,9 @@
       "validated_input_gates": true
     },
     "current_explicit_train_geometries": 2,
-    "current_holdout_geometries": 6,
-    "current_leave_one_out_train_cases_per_fold": 7,
-    "current_total_cases": 8,
+    "current_holdout_geometries": 7,
+    "current_leave_one_out_train_cases_per_fold": 8,
+    "current_total_cases": 9,
     "min_explicit_train_geometries": 2,
     "min_holdout_geometries": 3,
     "min_leave_one_out_train_to_parameter_ratio": 2.0,

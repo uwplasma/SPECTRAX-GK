@@ -130,9 +130,9 @@ def _manuscript_readiness_report(
                 "primary_artifacts": artifacts,
                 "key_metrics": {
                     "absolute_flux_promoted": absolute_flux_promoted,
-                    "uq_candidate_promotion_passed": True,
-                    "dataset_sufficiency_promotion_passed": True,
-                    "accepted_uq_candidates": ["spectral_envelope_ridge"],
+                    "uq_candidate_promotion_passed": False,
+                    "dataset_sufficiency_promotion_passed": False,
+                    "accepted_uq_candidates": [],
                 },
             }
         ],
@@ -143,15 +143,15 @@ def _candidate_uncertainty_sidecar() -> dict:
     return {
         "kind": "quasilinear_candidate_uncertainty_report",
         "claim_level": "candidate_model_development_not_runtime_option",
-        "passed": True,
+        "passed": False,
         "notes": (
-            "Candidate accepted only as a scoped model-development result, "
+            "Candidate retained only as a scoped rank-screening near miss, "
             "not a runtime/TOML absolute-flux predictor."
         ),
-        "null_training_mean_baseline": {"mean_abs_relative_error": 0.9},
+        "null_training_mean_baseline": {"mean_abs_relative_error": 0.79},
         "candidates": {
             "linear_weight": {
-                "mean_abs_relative_error": 0.95,
+                "mean_abs_relative_error": 0.85,
                 "promotion_eligible": True,
             },
             "linear_state_ridge": {
@@ -160,15 +160,16 @@ def _candidate_uncertainty_sidecar() -> dict:
                 "eligibility_failures": ["insufficient_train_to_parameter_ratio"],
             },
             "spectral_envelope_ridge": {
-                "mean_abs_relative_error": 0.29,
+                "mean_abs_relative_error": 0.377,
                 "promotion_eligible": True,
             },
         },
         "promotion_gate": {
-            "passed": True,
-            "accepted_candidates": ["spectral_envelope_ridge"],
+            "passed": False,
+            "accepted_candidates": [],
             "requires_beating_linear_weight_baseline": True,
             "requires_beating_training_mean_null": True,
+            "transport_mean_relative_error_gate": 0.35,
         },
     }
 
@@ -282,15 +283,15 @@ def test_manuscript_readiness_ql_lane_requires_scoped_nonabsolute_candidate(
 ) -> None:
     mod = _load_tool_module()
     report = tmp_path / "manuscript_readiness_status.json"
-    report.write_text(
-        json.dumps(
-            _manuscript_readiness_report(
-                claim_level="calibrated_absolute_flux",
-                absolute_flux_promoted=True,
-            )
-        ),
-        encoding="utf-8",
+    payload = _manuscript_readiness_report(
+        claim_level="calibrated_absolute_flux",
+        absolute_flux_promoted=True,
     )
+    payload["lanes"][0]["key_metrics"]["uq_candidate_promotion_passed"] = True
+    payload["lanes"][0]["key_metrics"]["accepted_uq_candidates"] = [
+        "spectral_envelope_ridge"
+    ]
+    report.write_text(json.dumps(payload), encoding="utf-8")
     doc = tmp_path / "doc.rst"
     _write_doc(doc)
 

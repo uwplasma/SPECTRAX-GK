@@ -402,6 +402,102 @@ def test_calibration_point_from_nonlinear_window_summary(tmp_path: Path) -> None
     assert point.nonlinear_artifact == str(diag)
 
 
+def test_calibration_point_from_replicated_ensemble_gate(tmp_path: Path) -> None:
+    summary = tmp_path / "ensemble.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "kind": "nonlinear_window_ensemble_report",
+                "case": "cth_like_replicated",
+                "passed": True,
+                "statistics": {
+                    "ensemble_mean": 9.5,
+                    "combined_sem": 0.4,
+                    "combined_sem_rel": 0.042105263157894736,
+                    "n_reports": 3,
+                },
+                "rows": [
+                    {
+                        "promotion_ready": True,
+                        "source_artifact": "replicate_a.csv",
+                    },
+                    {
+                        "promotion_ready": True,
+                        "source_artifact": "replicate_b.csv",
+                    },
+                    {
+                        "promotion_ready": True,
+                        "source_artifact": "replicate_c.csv",
+                    },
+                ],
+                "gate_report": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    point = calibration_point_from_nonlinear_window_summary(
+        summary,
+        predicted_heat_flux=7.5,
+        split="holdout",
+        saturation_rule="spectral_envelope_ridge",
+        geometry="cth_like_external_vmec",
+        electron_model="adiabatic",
+    )
+
+    assert point.case == "cth_like_replicated"
+    assert point.observed_heat_flux == pytest.approx(9.5)
+    assert point.observed_heat_flux_std == pytest.approx(0.4)
+    assert point.nonlinear_artifact == str(summary)
+    assert point.nonlinear_window_stats is not None
+    assert point.nonlinear_window_stats["kind"] == "nonlinear_window_ensemble_report"
+    assert "nonlinear_source=replicated_ensemble_gate" in str(point.notes)
+
+    report = quasilinear_calibration_report(
+        [
+            QuasilinearCalibrationPoint(
+                case="train",
+                split="train",
+                predicted_heat_flux=1.0,
+                observed_heat_flux=1.0,
+                saturation_rule="spectral_envelope_ridge",
+                nonlinear_window_stats=_valid_window_stats("train"),
+            ),
+            point,
+        ],
+        saturation_rule="spectral_envelope_ridge",
+        holdout_mean_rel_gate=0.5,
+    )
+    assert report["metadata"]["holdout_window_convergence"]["passed"] is True
+
+
+def test_calibration_point_from_replicated_ensemble_gate_is_fail_closed(
+    tmp_path: Path,
+) -> None:
+    summary = tmp_path / "bad_ensemble.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "kind": "nonlinear_window_ensemble_report",
+                "case": "bad",
+                "passed": True,
+                "statistics": {"ensemble_mean": 9.5, "combined_sem": 0.4},
+                "rows": [{"promotion_ready": False, "source_artifact": "a.csv"}],
+                "gate_report": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="promotion-ready"):
+        calibration_point_from_nonlinear_window_summary(
+            summary,
+            predicted_heat_flux=1.0,
+            split="holdout",
+            saturation_rule="linear_weight",
+        )
+
+
 def test_calibration_point_from_nonlinear_netcdf_window_summary(tmp_path: Path) -> None:
     netCDF4 = pytest.importorskip("netCDF4")
     diag = tmp_path / "run.out.nc"

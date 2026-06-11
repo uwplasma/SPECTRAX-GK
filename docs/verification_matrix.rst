@@ -346,10 +346,12 @@ as a promoted runtime predictor.
      - leave-one-geometry-out error and interval coverage
      - ``docs/_static/quasilinear_candidate_uncertainty.json`` and
        ``docs/_static/quasilinear_model_selection_status.json``
-     - Closed as scoped model-selection result
-     - the accepted candidate is a manuscript model-selection result only; the
-       status gate does not promote a runtime/TOML absolute-flux predictor,
-       universal nonlinear transport model, or shipped saturation option
+     - Open / near miss
+     - rank/correlation screening passes, but the expanded nine-case
+       uncertainty/model-selection gate is failed because the best candidate
+       has mean relative error about ``0.377 > 0.35``; no runtime/TOML
+       absolute-flux predictor, universal nonlinear transport model, or
+       shipped saturation option is promoted
    * - Future absolute-flux promotion
      - calibrated heat-flux prediction on nonlinear holdouts
      - future late-window convergence metadata and promotion JSON

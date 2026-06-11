@@ -5,7 +5,8 @@
     "blockers": [
       "absolute_train_holdout_report_passed",
       "holdout_mean_abs_relative_error",
-      "minimum_total_independent_holdouts"
+      "minimum_total_independent_holdouts",
+      "scoped_model_selection_gate_passed"
     ],
     "claim_boundary": "This section defines the evidence needed to reopen absolute-flux promotion; it is not a promoted runtime/TOML predictor.",
     "coverage_gap": {
@@ -75,10 +76,10 @@
         "required": 1
       },
       {
-        "current": true,
+        "current": false,
         "detail": "model-selection skill can pass while absolute-flux promotion remains blocked",
         "metric": "scoped_model_selection_gate_passed",
-        "passed": true,
+        "passed": false,
         "required": true
       }
     ],
@@ -88,8 +89,8 @@
       "error_factor_to_gate": 5.448798706466155,
       "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
-      "scoped_model_selection_interval_coverage": 0.875,
-      "scoped_model_selection_mean_abs_relative_error": 0.29524327596674427,
+      "scoped_model_selection_interval_coverage": 0.8888888888888888,
+      "scoped_model_selection_mean_abs_relative_error": 0.37738980527841215,
       "worst_admitted_holdout": {
         "absolute_relative_error": 8.076770096888685,
         "case": "cyclone_miller_long_window",
@@ -841,15 +842,13 @@
   "kind": "quasilinear_holdout_gap_report",
   "model_selection_status": {
     "absolute_flux_promoted": false,
-    "accepted_candidates": [
-      "spectral_envelope_ridge"
-    ],
+    "accepted_candidates": [],
     "artifact": "docs/_static/quasilinear_model_selection_status.json",
-    "candidate_mean_abs_relative_error": 0.29524327596674427,
-    "candidate_prediction_interval_coverage": 0.875,
-    "claim_level": "scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux",
+    "candidate_mean_abs_relative_error": 0.37738980527841215,
+    "candidate_prediction_interval_coverage": 0.8888888888888888,
+    "claim_level": "model_selection_or_scope_incomplete",
     "kind": "quasilinear_model_selection_status",
-    "passed": true,
+    "passed": false,
     "reason": "scoped model-selection result only; not a runtime/TOML absolute-flux predictor",
     "required_candidate": "spectral_envelope_ridge",
     "transport_mean_relative_error_gate": 0.35
@@ -990,7 +989,6 @@
       "absolute_requirement:minimum_total_independent_holdouts",
       "stellarator_train_holdout_report_failed",
       "holdout_mean_error_exceeds_gate",
-      "screening_requirement:heldout_screening_correlation_passed",
       "screening_requirement:additional_independent_holdouts_needed"
     ],
     "passed": false,
@@ -998,15 +996,14 @@
   },
   "screening_promotion_requirements": {
     "blockers": [
-      "heldout_screening_correlation_passed",
       "additional_independent_holdouts_needed"
     ],
     "claim_boundary": "This section defines what is missing before correlation-screening promotion; it does not promote absolute nonlinear heat-flux prediction.",
     "current_best_heldout_model": "spectral_envelope_ridge",
     "current_best_holdout_metrics": {
-      "mean_abs_relative_error": 0.2512310451426226,
-      "pairwise_order_accuracy": 0.7333333333333333,
-      "spearman": 0.7142857142857143
+      "mean_abs_relative_error": 0.35549557791109654,
+      "pairwise_order_accuracy": 0.7619047619047619,
+      "spearman": 0.7500000000000002
     },
     "current_best_model": "spectral_envelope_ridge",
     "gates": [
@@ -1020,10 +1017,12 @@
         "required": "at least one scoped screening model"
       },
       {
-        "current": [],
+        "current": [
+          "spectral_envelope_ridge"
+        ],
         "detail": "held-out-only rank/correlation gate must pass before screening promotion",
         "metric": "heldout_screening_correlation_passed",
-        "passed": false,
+        "passed": true,
         "required": "at least one held-out screening model"
       },
       {
@@ -1048,21 +1047,23 @@
   "screening_skill_status": {
     "absolute_flux_promotion_passed": false,
     "accepted_absolute_flux_models": [],
-    "accepted_holdout_screening_models": [],
+    "accepted_holdout_screening_models": [
+      "spectral_envelope_ridge"
+    ],
     "accepted_screening_models": [
       "spectral_envelope_ridge"
     ],
     "artifact": "docs/_static/quasilinear_screening_skill.json",
-    "best_holdout_mean_abs_relative_error": 0.2512310451426226,
-    "best_holdout_pairwise_order_accuracy": 0.7333333333333333,
+    "best_holdout_mean_abs_relative_error": 0.35549557791109654,
+    "best_holdout_pairwise_order_accuracy": 0.7619047619047619,
     "best_holdout_screening_model": "spectral_envelope_ridge",
-    "best_holdout_spearman": 0.7142857142857143,
-    "best_screening_mean_abs_relative_error": 0.29524327596674427,
+    "best_holdout_spearman": 0.7500000000000002,
+    "best_screening_mean_abs_relative_error": 0.37738980527841215,
     "best_screening_model": "spectral_envelope_ridge",
-    "best_screening_pairwise_order_accuracy": 0.7857142857142857,
-    "best_screening_spearman": 0.8095238095238096,
+    "best_screening_pairwise_order_accuracy": 0.7777777777777778,
+    "best_screening_spearman": 0.7833333333333333,
     "claim_level": "screening_correlation_model_development_not_absolute_flux_promotion",
-    "holdout_screening_correlation_passed": false,
+    "holdout_screening_correlation_passed": true,
     "kind": "quasilinear_screening_skill",
     "pairwise_order_gate": 0.75,
     "reason": "full-portfolio screening can pass while held-out-only screening and absolute-flux promotion remain blocked",
@@ -1070,13 +1071,13 @@
     "spearman_gate": 0.75
   },
   "summary": {
-    "best_holdout_screening_pairwise_order_accuracy": 0.7333333333333333,
-    "best_holdout_screening_spearman": 0.7142857142857143,
+    "best_holdout_screening_pairwise_order_accuracy": 0.7619047619047619,
+    "best_holdout_screening_spearman": 0.7500000000000002,
     "holdout_mean_abs_relative_error": 1.907079547263154,
     "holdout_mean_rel_gate": 0.35,
-    "holdout_screening_correlation_passed": false,
-    "model_selection_candidate_mean_abs_relative_error": 0.29524327596674427,
-    "model_selection_interval_coverage": 0.875,
+    "holdout_screening_correlation_passed": true,
+    "model_selection_candidate_mean_abs_relative_error": 0.37738980527841215,
+    "model_selection_interval_coverage": 0.8888888888888888,
     "n_admitted_holdouts": 7,
     "n_excluded_candidates": 17,
     "n_external_gates": 19,

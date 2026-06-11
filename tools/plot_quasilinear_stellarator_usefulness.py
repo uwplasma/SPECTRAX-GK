@@ -161,11 +161,14 @@ def build_report(
         for rule in ("positive_mixing_length", "linear_weight", "absolute_growth_mixing_length")
     }
     best_model = "spectral_envelope_ridge"
+    accepted_candidates = set(cand.get("promotion_gate", {}).get("accepted_candidates", []))
+    candidate_accepted = best_model in accepted_candidates and bool(status.get("passed", False))
     claim = (
         "Simple one-constant quasilinear rules do not transfer as absolute stellarator heat-flux "
-        "predictors on the admitted portfolio. The spectral-envelope ridge candidate is the best "
-        "current scoped model-selection result, but QA/QH coverage still requires matched, converged "
-        "nonlinear holdouts before universal stellarator-flux claims."
+        "predictors on the admitted portfolio. The spectral-envelope ridge model is the best current "
+        "rank-screening candidate, but the expanded uncertainty/model-selection gate is not accepted; "
+        "QA/QH coverage still requires matched, converged nonlinear holdouts before universal "
+        "stellarator-flux claims."
     )
 
     return {
@@ -195,8 +198,8 @@ def build_report(
                 "label": MODEL_LABELS["spectral_envelope_ridge"],
                 "mean_abs_relative_error": metrics["candidate_mean_abs_relative_error"],
                 "prediction_interval_coverage": metrics["candidate_prediction_interval_coverage"],
-                "accepted": True,
-                "reason": "best current scoped candidate; not exposed as a runtime saturation rule",
+                "accepted": candidate_accepted,
+                "reason": "best current rank-screening candidate; uncertainty/model-selection gate is not accepted",
             },
         },
         "rows": rows,

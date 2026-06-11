@@ -14,6 +14,18 @@
   separation, while broader nonlinear turbulence-gradient optimization and
   universal absolute QL-flux prediction remain open.
 
+- 2026-06-11: Expanded the quasilinear model-development ledger to consume the
+  admitted CTH-like high-grid replicated nonlinear ensemble as a first-class
+  nonlinear calibration input. Added fail-closed ensemble-gate ingestion in
+  `spectraxgk.quasilinear_calibration` and promotion-ready checks in
+  `spectraxgk.quasilinear_window`, with regression tests. Regenerated the QL
+  saturation, candidate uncertainty, dataset-sufficiency, screening-skill,
+  usefulness, model-selection, and holdout-gap artifacts. Result: rank/correlation
+  screening is stronger (`spectral_envelope_ridge` passes full and held-out
+  rank gates), but strict candidate uncertainty/model-selection is demoted
+  (`0.377 > 0.35`) and universal absolute-flux promotion remains blocked
+  (`1.91 > 0.35`, two more independent holdouts required).
+
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
   as a scoped high-grid nonlinear transport holdout, with `n48` explicitly
@@ -177,20 +189,21 @@
 - Tightened the quasilinear screening/correlation artifact to separate full-portfolio
   screening from held-out-only promotion. The refreshed
   `docs/_static/quasilinear_screening_skill.{png,pdf,json,csv}` records
-  `spectral_envelope_ridge` as the only full-portfolio screening and mean-error
-  pass, but `accepted_holdout_screening_models` remains empty (`holdout`
-  Spearman about `0.71`, pairwise order about `0.73`). This strengthens the
-  claim boundary: useful screening/model-development evidence is claimable now,
-  while universal absolute-flux or held-out screening promotion still requires
-  additional independent, replicated, post-transient nonlinear holdouts.
+  `spectral_envelope_ridge` as the only full-portfolio and held-out
+  rank/correlation pass on the expanded ledger, but the mean-error gate remains
+  empty. This strengthens the claim boundary: useful rank-screening evidence
+  is claimable now, while universal absolute-flux or screening promotion still
+  requires additional independent, replicated, post-transient nonlinear
+  holdouts.
 
 - Extended the quasilinear holdout-gap report to ingest the screening-skill
   sidecar. The refreshed `docs/_static/quasilinear_holdout_gap_report.*` now
   carries both `absolute_flux_promotion_requirements` and
-  `screening_promotion_requirements`: full-portfolio screening passes for
-  `spectral_envelope_ridge`, held-out-only screening remains below gate, and
-  the same next evidence item is required for both claim classes: additional
-  independent, replicated, post-transient nonlinear holdouts.
+  `screening_promotion_requirements`: full-portfolio and held-out-only
+  rank/correlation screening pass for `spectral_envelope_ridge`, but the same
+  next evidence item is required before either screening or absolute-flux
+  promotion can be reconsidered: additional independent, replicated,
+  post-transient nonlinear holdouts.
 
 # SPECTRAX-GK Active Plan and Running Log
 
@@ -224,8 +237,8 @@ historical logs live outside the release repository so clones stay small.
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
-| Quasilinear screening/model-development | 99% | Scoped full-portfolio screening/model-development is claimable; held-out-only screening and absolute flux remain gated |
-| Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`) and two additional independent post-transient nonlinear holdouts are required |
+| Quasilinear screening/model-development | 99.5% | Rank/correlation screening passes on the expanded ledger; strict candidate uncertainty/model-selection remains a near miss (`0.377 > 0.35`) |
+| Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`), model-selection is failed, and two additional independent post-transient nonlinear holdouts are required |
 | Nonlinear holdout expansion/audits | 89% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; shaped-tokamak-pressure high-resolution `t=650` repair campaign is running; two more independent holdouts are needed for absolute-flux reconsideration |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
