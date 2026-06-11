@@ -1,3 +1,15 @@
+- 2026-06-11: Repaired the shaped-tokamak-pressure external-VMEC nonlinear
+  holdout after the `dt=0.05` `n80` instability. The office `n64/n80`,
+  `dt=0.04`, `t=450` reruns completed with finite diagnostics and passed the
+  high-grid convergence gate: late-window heat-flux means `7.422` and `6.859`,
+  symmetric relative difference `0.0789 < 0.15`, and no stationarity/CV/sample
+  failures. The `t=650` restart continuations for the same two grids are now
+  running on office to test time-horizon stability before any admission or
+  quasilinear calibration update. CI shard 24 exposed a documentation
+  guardrail drift; README, release scope, and verification matrix now again
+  state that `spectral_envelope_ridge` is only a scoped manuscript
+  model-selection candidate and not a runtime/TOML absolute-flux predictor.
+
 - 2026-06-11: Returned to the larger science gates after the RBC(1,1)
   diagnostic refresh. CI for commit `20e22a9` passed, including wide coverage.
   The quasilinear holdout-gap report was regenerated and still blocks

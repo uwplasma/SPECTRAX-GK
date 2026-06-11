@@ -49,7 +49,8 @@ score.
        policy. Simple one-scalar saturation rules are rejected on the expanded
        sweep. The ``spectral_envelope_ridge`` candidate passes
        rank/correlation screening but misses the strict uncertainty/model-
-       selection transport gate. The failed
+       selection transport gate. It is accepted only as a scoped manuscript
+       model-selection result. The failed
        ``quasilinear_model_selection_status.json`` gate does not promote a
        runtime/TOML absolute-flux predictor, universal nonlinear transport
        model, or user-facing saturation law. Any future absolute-flux
