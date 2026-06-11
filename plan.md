@@ -45,6 +45,16 @@
   and interval coverage `8/9`. The artifact is documented as a fail-closed
   model-development guardrail, not as an absolute-flux predictor.
 
+- 2026-06-11: The live shaped-tokamak-pressure `n80/t450` office run completed
+  the integrator but failed artifact validation because `Wg_t` became
+  non-finite at an early saved sample. Root cause is a diagnostic masking bug:
+  `gx_Wg` and `gx_Wg_resolved` multiplied `abs(G)**2` by the dealias mask after
+  squaring, so `inf * 0` in a masked/dealiased mode produced `NaN`. Patched both
+  reductions to zero masked modes before squaring and added a regression test
+  that injects `inf` into a masked mode while preserving strict validation for
+  unmasked diagnostics. The shaped holdout remains unadmitted until the repaired
+  `n80/n96` reruns and high-grid/window gates pass.
+
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
   as a scoped high-grid nonlinear transport holdout, with `n48` explicitly

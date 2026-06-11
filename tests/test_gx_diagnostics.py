@@ -454,6 +454,36 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
         )
 
 
+def test_gx_wg_masks_dealiased_nonfinite_state_before_squaring() -> None:
+    _cfg, grid, _geom, params, _cache, vol_fac, _flux_fac = _multispecies_setup(
+        Nl=2, Nm=2
+    )
+    shape = (2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    base = np.ones(shape, dtype=np.complex64)
+    masked_indices = np.argwhere(~np.asarray(grid.dealias_mask, dtype=bool))
+    assert masked_indices.size > 0
+    ky_idx, kx_idx = masked_indices[0]
+    contaminated = base.copy()
+    contaminated[:, :, :, ky_idx, kx_idx, :] = np.inf + 0.0j
+    clean = base.copy()
+    clean[:, :, :, ky_idx, kx_idx, :] = 0.0
+
+    wg = gx_Wg(jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True)
+    wg_clean = gx_Wg(jnp.asarray(clean), grid, params, vol_fac, use_dealias=True)
+    resolved = gx_Wg_resolved(
+        jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True
+    )
+    resolved_clean = gx_Wg_resolved(
+        jnp.asarray(clean), grid, params, vol_fac, use_dealias=True
+    )
+
+    assert np.isfinite(np.asarray(wg))
+    np.testing.assert_allclose(np.asarray(wg), np.asarray(wg_clean))
+    for got, expected in zip(resolved, resolved_clean, strict=True):
+        assert np.all(np.isfinite(np.asarray(got)))
+        np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
+
+
 def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
     _cfg, grid, _geom, params, cache, vol_fac, flux_fac = _multispecies_setup(
         Nl=3, Nm=4
