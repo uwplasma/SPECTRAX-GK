@@ -191,8 +191,8 @@ historical logs live outside the release repository so clones stay small.
 ## Current Release Status
 
 - CI/CD: release-readiness, package build, docs build, quick numerical shards,
-  and wide package coverage are green on commit `a2e1072`.
-  - GitHub Actions run `27288648364`: 59 successful jobs, 1 skipped nightly job.
+  and wide package coverage are green on commit `f00d736`.
+  - GitHub Actions run `27292829121`: 59 successful jobs, 1 skipped nightly job.
   - Wide package coverage gate remains required at `>=95%`.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
@@ -214,7 +214,7 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 98% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; `+20%` and remaining higher positive-side coefficients remain pending/repair |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 98.5% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; `+20%` is under current-main later-window repair; `+45%` and higher are strict-protocol nonfinite/stability-boundary points unless a separate stabilized protocol is studied |
 | Differentiable QA optimization evidence | 92.5% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; successful broad nonlinear turbulent-flux optimization is still not promoted |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
@@ -1185,3 +1185,35 @@ No long nonlinear audit should be launched from these candidates.
   23/31 strict true nonlinear overlays. ``+45%`` and higher remain incomplete
   and are not shown in the public nonlinear overlay until their three-member
   strict ensembles pass.
+- Re-audited the pending positive-side ``RBC(1,1)`` campaign before launching
+  new GPU time. The old office ``+20%``/``p0p2`` strict ensemble over
+  ``t=[1100,1500]`` failed only the mean-spread gate
+  (``15.481%`` versus the fail-closed ``15%`` threshold) while all individual
+  windows passed; this remains a convergence-window repair target rather than a
+  threshold-relaxation candidate. The old ``+45%`` and higher positive-side
+  attempts failed much earlier with non-finite nonlinear diagnostics under the
+  strict protocol, typically by ``t≈0..5`` after compilation, so they are
+  treated as strict-protocol stability-boundary points and not inferred from
+  deterministic reduced metrics.
+- Staged a fresh current-main office repair in
+  ``/home/rjorge/spectrax_rbc11_completion_20260610_214752/SPECTRAX-GK`` at
+  commit ``f00d736``. VMEC-JAX solved the missing ``+20%``, ``+45%``, and
+  ``+50%`` WOUTs on current main; the slow higher-positive VMEC batch was
+  stopped to avoid competing with the transport repair queue. The active
+  detached controller
+  ``tools_out/vmec_boundary_transport_landscape_rbc11_completion/run_p0p2_repair_controller.py``
+  is running the ``+20%`` staged repair with horizons
+  ``700,1100,1500,1900`` and the later acceptance window
+  ``t=[1500,1900]`` for seed32, seed33, and ``dt=0.04`` variants. PID and logs
+  are recorded under
+  ``tools_out/vmec_boundary_transport_landscape_rbc11_completion/`` in that
+  office clone. Promotion remains blocked until all three current-main variants
+  finish and the fail-closed ensemble gate passes.
+- The first current-main ``+20%`` controller attempt exposed office resource
+  contention rather than a numerical result: stale unrelated VMEC-JAX QI jobs
+  held GPU memory and caused one BLAS-initialization error and one GPU OOM.
+  Those stale jobs were stopped, partial ``+20%`` transport outputs were
+  deleted, and the repair was relaunched as PID ``2478543`` with
+  ``SPECTRAX_DEVICES=0`` and ``XLA_PYTHON_CLIENT_PREALLOCATE=false`` so the
+  three variants run sequentially and reproducibly. Focused local tests for the
+  landscape/admission helpers pass: ``21 passed``.
