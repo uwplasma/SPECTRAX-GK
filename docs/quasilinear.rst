@@ -1246,6 +1246,16 @@ tracked holdout gap is a near-miss in the same family. The new
 classified as reproducibility evidence rather than an independent holdout
 because that family is already consumed by a training reference.
 
+After the CTH-like modified-protocol admission, the refreshed runbook selects
+the shaped-tokamak-pressure reference as the next legitimate independent
+holdout repair. The selected launch uses the already-screened unstable branch
+(``gamma = 0.0473`` at ``k_y rho_i = 0.4762``), raises the grid ladder from the
+failed ``48x48x32``/``64x64x40`` pair to ``64x64x40``/``80x80x48``/
+``96x96x56``, and extends the restart ladder to ``t = 650``. The campaign is
+a modified-protocol repair of a failed grid-agreement gate, not a promotion:
+the resulting window can enter the calibration ledger only if the new
+post-transient high-grid gate passes.
+
 The matched strict QA full-sweep audit is also deliberately excluded from this
 calibration ledger. The office campaign completed the raw baseline, linear-
 growth optimized, quasilinear-optimized, and nonlinear-window-optimized runs,

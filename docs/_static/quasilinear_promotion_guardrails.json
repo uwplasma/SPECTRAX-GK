@@ -23,10 +23,10 @@
     {
       "artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
       "claim_level": "calibration_dataset",
-      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_abs_relative_error": 1.907079547263154,
       "holdout_mean_rel_gate": 0.35,
       "kind": "quasilinear_calibration_report",
-      "n_holdout": 6,
+      "n_holdout": 7,
       "n_train": 2,
       "passed": false
     },
@@ -168,7 +168,7 @@
         "passed": true
       },
       {
-        "detail": "train=2 holdout=6",
+        "detail": "train=2 holdout=7",
         "metric": "train_holdout_point_metadata",
         "passed": true
       },
@@ -593,7 +593,7 @@
         "passed": true
       },
       {
-        "detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'absolute_requirement:minimum_external_vmec_holdout_families', 'absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=2.114098664675138 screening=True holdout_screening=False",
+        "detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=False",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_holdout_gap_report",
         "passed": true
       },
@@ -759,7 +759,7 @@
     {
       "claim_level": "holdout_gap_report_no_absolute_flux_promotion",
       "claim_scoped": true,
-      "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'absolute_requirement:minimum_external_vmec_holdout_families', 'absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=2.114098664675138 screening=True holdout_screening=False",
+      "failed_baseline_detail": "blockers=['absolute_flux_predictor_not_promoted', 'absolute_requirement:absolute_train_holdout_report_passed', 'absolute_requirement:holdout_mean_abs_relative_error', 'absolute_requirement:minimum_total_independent_holdouts', 'stellarator_train_holdout_report_failed', 'holdout_mean_error_exceeds_gate', 'screening_requirement:heldout_screening_correlation_passed', 'screening_requirement:additional_independent_holdouts_needed'] holdout_mean=1.907079547263154 screening=True holdout_screening=False",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_holdout_gap_report.png",
       "index_mentions_json_sidecar": true,

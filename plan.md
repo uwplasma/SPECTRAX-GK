@@ -1,3 +1,19 @@
+- 2026-06-11: Returned to the larger science gates after the RBC(1,1)
+  diagnostic refresh. CI for commit `20e22a9` passed, including wide coverage.
+  The quasilinear holdout-gap report was regenerated and still blocks
+  absolute-flux promotion with seven independent holdouts and held-out error
+  `1.91 > 0.35`. The runbook now selects a modified
+  shaped-tokamak-pressure external-VMEC campaign (`n64/n80/n96`, `t=450,650`)
+  rather than replaying CTH-like or same-family ITERModel evidence. The office
+  campaign was launched from a fresh shallow clone at
+  `/home/rjorge/spectrax_ql_shaped_holdout_20260611_063247`; it waits for an
+  idle GPU, runs the restart ladder, and postprocesses the nonlinear gate.
+  The production nonlinear turbulent-flux optimization guard was also
+  re-audited: the selected QA optimized-equilibrium audit remains a scoped
+  positive result with `18.4%` lower long-window heat flux and `7.8 sigma`
+  separation, while broader nonlinear turbulence-gradient optimization and
+  universal absolute QL-flux prediction remain open.
+
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
   as a scoped high-grid nonlinear transport holdout, with `n48` explicitly
@@ -210,7 +226,7 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Quasilinear screening/model-development | 99% | Scoped full-portfolio screening/model-development is claimable; held-out-only screening and absolute flux remain gated |
 | Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`) and two additional independent post-transient nonlinear holdouts are required |
-| Nonlinear holdout expansion/audits | 88% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; two more independent holdouts are needed for absolute-flux reconsideration |
+| Nonlinear holdout expansion/audits | 89% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; shaped-tokamak-pressure high-resolution `t=650` repair campaign is running; two more independent holdouts are needed for absolute-flux reconsideration |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
@@ -221,7 +237,7 @@ historical logs live outside the release repository so clones stay small.
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 75% | Metadata/generators and strategy report are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
-| Production nonlinear turbulent-flux optimization evidence | 78% | Current true long-window matched QA audits are robust negative evidence; no successful broad nonlinear turbulent-flux optimization is promoted |
+| Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is promoted by replicated long-window windows (`18.4%` reduction, `7.8 sigma`); broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,

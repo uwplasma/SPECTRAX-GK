@@ -478,7 +478,10 @@ Quasilinear model-selection state:
   finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
   excluded from calibration because the ``n48``/``n64`` heat-flux windows
   differ by about ``0.306``, above the ``0.15`` grid-convergence gate. This is
-  negative validation evidence, not an admitted holdout.
+  negative validation evidence, not an admitted holdout. The current runbook
+  treats this as a failed-family repair target only under a materially changed
+  protocol: higher ``n64/n80/n96`` grids and a longer ``t = 650`` restart
+  ladder before any admission is reconsidered.
 
 Nonlinear benchmark state:
 

@@ -10,7 +10,7 @@
     "requires_post_transient_window": true
   },
   "allow_modified_protocol_families": [
-    "cth_like_external_vmec"
+    "shaped_tokamak_external_vmec"
   ],
   "claim_level": "nonlinear_holdout_launch_plan_not_transport_validation",
   "csv": "docs/_static/external_vmec_next_holdout_runbook.csv",
@@ -29,10 +29,10 @@
   },
   "kind": "external_vmec_holdout_runbook",
   "launch_commands": [
-    "python tools/write_external_vmec_holdout_configs.py --case cth_like_fixed_bdy_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc --out-dir tools_out/external_vmec_holdouts/cth_like_fixed_bdy --ky 0.285714285714 --dt 0.05 --horizons 150,250,350 --grid n48:48:48:32:32 --grid n64:64:64:40:40 --grid n80:80:80:48:48"
+    "python tools/write_external_vmec_holdout_configs.py --case shaped_tokamak_pressure_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc --out-dir tools_out/external_vmec_holdouts/shaped_tokamak_pressure_reference --ky 0.4762 --dt 0.05 --horizons 450,650 --grid n64:64:64:40:40 --grid n80:80:80:48:48 --grid n96:96:96:56:56"
   ],
   "min_launch_gamma": 0.02,
-  "modified_protocol_note": "restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
+  "modified_protocol_note": "higher-resolution n64/n80/n96 and longer t=650 windows after t450 n48/n64 grid-agreement failure",
   "nearest_tracked_gap": {
     "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
     "failed_gates": [
@@ -49,19 +49,19 @@
   "preferred_family": "itermodel_external_vmec",
   "ranked_candidates": [
     {
-      "best_gamma": 0.04880132171848534,
-      "best_ky": 0.2857142857142857,
-      "best_omega": 0.0592529538169946,
-      "case": "cth_like_fixed_bdy_nc",
-      "family": "cth_like_external_vmec",
-      "log": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.csv",
+      "best_gamma": 0.047324,
+      "best_ky": 0.4762,
+      "best_omega": 0.282209,
+      "case": "shaped_tokamak_pressure_reference_nc",
+      "family": "shaped_tokamak_external_vmec",
+      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
       "priority": 1.5,
       "rank": 1,
-      "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
+      "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: higher-resolution n64/n80/n96 and longer t=650 windows after t450 n48/n64 grid-agreement failure",
       "returncode": 0,
       "status": "modified_protocol_failed_family_candidate",
       "unstable": true,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc"
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
     },
     {
       "best_gamma": 0.088737,
@@ -124,111 +124,51 @@
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak_reference.nc"
     },
     {
-      "best_gamma": 0.047324,
-      "best_ky": 0.4762,
-      "best_omega": 0.282209,
-      "case": "shaped_tokamak_pressure_reference_nc",
-      "family": "shaped_tokamak_external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
+      "best_gamma": 0.04880132171848534,
+      "best_ky": 0.2857142857142857,
+      "best_omega": 0.0592529538169946,
+      "case": "cth_like_fixed_bdy_nc",
+      "family": "cth_like_external_vmec",
+      "log": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.csv",
       "priority": 6.0,
       "rank": 6,
       "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
       "returncode": 0,
       "status": "recent_family_failed_external_gate",
       "unstable": true,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
-    },
-    {
-      "best_gamma": 0.003835,
-      "best_ky": 0.1429,
-      "best_omega": -0.089976,
-      "case": "QI_stel_seed_3127_nc",
-      "family": "qi_external_vmec",
-      "log": "tools_out/candidate_screen_qi_seed/qi_seed_lowky_scan.log",
-      "priority": 7.0,
-      "rank": 7,
-      "reason": "positive growth is below the nonlinear-launch threshold; refine the linear branch before launching a transport holdout",
-      "returncode": 0,
-      "status": "screen_marginal_needs_linear_refinement",
-      "unstable": true,
-      "vmec_file": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_QI_stel_seed_3127.nc"
-    },
-    {
-      "best_gamma": -0.001248,
-      "best_ky": 0.1905,
-      "best_omega": -0.143501,
-      "case": "LandremanSengupta2019_section5_4_B2_A80_reference_nc",
-      "family": "external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanSengupta2019_section5_4_B2_A80_reference_nc.log",
-      "priority": 9.0,
-      "rank": 8,
-      "reason": "screen row did not finish with positive growth",
-      "returncode": 0,
-      "status": "screen_rejected_stable_or_failed",
-      "unstable": false,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanSengupta2019_section5.4_B2_A80_reference.nc"
-    },
-    {
-      "best_gamma": -0.012907,
-      "best_ky": 0.4762,
-      "best_omega": -0.090396,
-      "case": "LandremanPaul2021_QH_reactorScale_lowres_reference_nc",
-      "family": "qh_external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanPaul2021_QH_reactorScale_lowres_reference_nc.log",
-      "priority": 9.0,
-      "rank": 9,
-      "reason": "screen row did not finish with positive growth",
-      "returncode": 0,
-      "status": "screen_rejected_stable_or_failed",
-      "unstable": false,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
-    },
-    {
-      "best_gamma": -0.016791,
-      "best_ky": 0.4762,
-      "best_omega": -0.165161,
-      "case": "li383_low_res_nc",
-      "family": "li383_external_vmec",
-      "log": "tools_out/candidate_screen_li383/li383_linear_scan.log",
-      "priority": 9.0,
-      "rank": 10,
-      "reason": "screen row did not finish with positive growth",
-      "returncode": 0,
-      "status": "screen_rejected_stable_or_failed",
-      "unstable": false,
-      "vmec_file": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_li383_low_res.nc"
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc"
     }
   ],
   "recommended_grids": [
-    "n48:48:48:32:32",
     "n64:64:64:40:40",
-    "n80:80:80:48:48"
+    "n80:80:80:48:48",
+    "n96:96:96:56:56"
   ],
   "recommended_horizons": [
-    150.0,
-    250.0,
-    350.0
+    450.0,
+    650.0
   ],
   "represented_families": [
     "circular_external_vmec",
+    "cth_like_external_vmec",
     "dshape_external_vmec",
     "itermodel_external_vmec",
     "updown_asym_external_vmec"
   ],
   "selected_new_family_candidate": {
-    "best_gamma": 0.04880132171848534,
-    "best_ky": 0.2857142857142857,
-    "best_omega": 0.0592529538169946,
-    "case": "cth_like_fixed_bdy_nc",
-    "family": "cth_like_external_vmec",
-    "log": "docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum_scan.csv",
+    "best_gamma": 0.047324,
+    "best_ky": 0.4762,
+    "best_omega": 0.282209,
+    "case": "shaped_tokamak_pressure_reference_nc",
+    "family": "shaped_tokamak_external_vmec",
+    "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
     "priority": 1.5,
     "rank": 1,
-    "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: restart ladder with n48/n64/n80 grids and longer t=150,250,350 post-transient windows after the earlier 32-to-48 grid/window failure",
+    "reason": "this external-VMEC family has a tracked failed convergence gate, but an explicit modified-protocol rerun was requested; protocol change: higher-resolution n64/n80/n96 and longer t=650 windows after t450 n48/n64 grid-agreement failure",
     "returncode": 0,
     "status": "modified_protocol_failed_family_candidate",
     "unstable": true,
-    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_cth_like_fixed_bdy.nc"
+    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
   },
   "selected_preferred_family_audit": null
 }
