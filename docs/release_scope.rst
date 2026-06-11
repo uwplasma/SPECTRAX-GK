@@ -43,14 +43,15 @@ score.
    * - Quasilinear diagnostics
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
-       artifacts are reproducible. The refreshed nine-case train/holdout
+       artifacts are reproducible. The refreshed ten-case train/holdout
        calibration report rejects the one-constant absolute-flux family, with
-       CTH-like external VMEC admitted only through the explicit high-grid
-       policy. Simple one-scalar saturation rules are rejected on the expanded
-       sweep. The ``spectral_envelope_ridge`` candidate passes
-       rank/correlation screening but misses the strict uncertainty/model-
-       selection transport gate. It is accepted only as a scoped manuscript
-       model-selection result. The failed
+       CTH-like and shaped-pressure external VMEC admitted only through
+       explicit high-grid policies. Simple one-scalar saturation rules are
+       rejected on the expanded sweep. The ``spectral_envelope_ridge``
+       candidate is the least-bad reduced model, but it misses the strict
+       transport and rank/correlation screening gates after the shaped-pressure
+       holdout is added. It is retained only as a scoped manuscript
+       model-development result. The failed
        ``quasilinear_model_selection_status.json`` gate does not promote a
        runtime/TOML absolute-flux predictor, universal nonlinear transport
        model, or user-facing saturation law. Any future absolute-flux
@@ -285,7 +286,7 @@ Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
-  ``passed = false`` with held-out mean relative error about ``1.91``.
+  ``passed = false`` with held-out mean relative error about ``3.42``.
 - ``tools/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.quasilinear_window`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
@@ -439,57 +440,58 @@ Quasilinear model-selection state:
   nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. On the expanded saturation sweep,
-  positive-growth mixing length is the least-bad simple rule with mean
-  held-out relative error about ``1.91``; the training-mean null is about
-  ``1.10``.
+  the linear-weight fit is the least-bad simple rule with mean held-out
+  relative error about ``2.87``; the training-mean null is about ``1.09``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
-  no candidate is accepted by the uncertainty gate on the expanded nine-case
+  no candidate is accepted by the uncertainty gate on the expanded ten-case
   electrostatic-compatible candidate portfolio. ``spectral_envelope_ridge`` is
-  the best near miss with mean relative error about ``0.377`` and interval
-  coverage ``8/9``, but it remains above the ``0.35`` transport gate.
+  the best near miss with mean relative error about ``0.424`` and interval
+  coverage ``8/10``, but it remains above the ``0.35`` transport gate.
 - ``docs/_static/quasilinear_candidate_regularization_sweep.json``:
   the ridge-penalty sensitivity audit does not rescue that near miss. The best
-  tested setting remains ``lambda = 0.3`` with mean relative error about
-  ``0.377`` and held-out mean about ``0.355``; no tested penalty is accepted as
+  tested setting is now ``lambda = 0.7`` with mean relative error about
+  ``0.423`` and held-out mean about ``0.415``; no tested penalty is accepted as
   an absolute-flux predictor.
 - ``docs/_static/quasilinear_stellarator_usefulness.json``:
   the current stellarator-facing synthesis is scoped as
   ``scoped_model_skill_summary_not_runtime_absolute_flux_predictor``. It
   records HSX/W7-X as admitted finite nonlinear holdouts where the simple
-  positive-growth mixing-length rule predicts zero, keeps QA at
+  positive-growth mixing-length rule predicts zero, records CTH-like and
+  shaped-pressure as scoped high-grid external-VMEC admissions, keeps QA at
   matched-nonlinear-audit-only scope, and keeps QH excluded until grid/window
-  convergence passes. The accepted model-selection result remains the
-  ``spectral_envelope_ridge`` candidate, not a universal stellarator
-  absolute-flux predictor.
+  convergence passes. No model-selection result is currently accepted as a
+  universal stellarator absolute-flux predictor.
 - ``docs/_static/quasilinear_screening_skill.json``:
   the current correlation/ranking synthesis is scoped as
   ``screening_correlation_model_development_not_absolute_flux_promotion``. It
-  records ``spectral_envelope_ridge`` as the only model that passes the
-  full-portfolio and held-out-only rank/correlation screening gates on the
-  expanded nine-case candidate portfolio. The mean-error gate and
-  ``accepted_absolute_flux_models`` remain empty. Screening skill is therefore
-  claimable only as a model-development proxy, not as a runtime saturation law
-  or universal absolute-flux predictor.
+  records no accepted screening model on the expanded ten-case candidate
+  portfolio. The least-bad ``spectral_envelope_ridge`` candidate has
+  full/held-out Spearman correlations about ``0.66``/``0.60`` and pairwise
+  order accuracies about ``0.71``/``0.68``, below the ``0.75`` gates. The
+  mean-error gate and ``accepted_absolute_flux_models`` remain empty. Screening
+  skill is therefore not promoted as a runtime saturation law or universal
+  absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` and
-  ``screening_promotion_requirements`` blocks quantify the current gaps: the
-  absolute train/holdout mean relative error is about ``5.45`` times the
-  ``0.35`` gate, the full-portfolio and held-out-only rank/correlation
-  screening gates pass, and two additional independent passed holdouts are
-  still required before screening promotion can be reconsidered. The
-  external-VMEC-family and
-  non-axisymmetric external-VMEC-family coverage requirements are already
-  satisfied by the scoped CTH-like high-grid admission. These are evidence
-  prerequisites, not a promoted runtime absolute-flux option.
-- ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
-  finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
-  excluded from calibration because the ``n48``/``n64`` heat-flux windows
-  differ by about ``0.306``, above the ``0.15`` grid-convergence gate. This is
-  negative validation evidence, not an admitted holdout. The current runbook
-  treats this as a failed-family repair target only under a materially changed
-  protocol: higher ``n64/n80/n96`` grids and a longer ``t = 650`` restart
-  ladder before any admission is reconsidered.
+  ``screening_promotion_requirements`` blocks quantify the current gaps after
+  admitting the shaped-pressure external-VMEC high-grid holdout: the absolute
+  train/holdout mean relative error is about ``3.42`` against the ``0.35``
+  gate, no full-portfolio or held-out-only screening model is currently
+  accepted, and one additional independent passed holdout is still required
+  before screening promotion can even be reconsidered. The external-VMEC-family
+  and non-axisymmetric external-VMEC-family coverage requirements are
+  satisfied, but these are evidence prerequisites, not a promoted runtime
+  absolute-flux option.
+- ``docs/_static/external_vmec_shaped_tokamak_pressure_dt0p04_high_grid_admission_gate.json``:
+  shaped-tokamak pressure is now admitted only as a scoped high-grid holdout.
+  The full ``n48/n64/n80`` ladder fails because the coarse ``n48`` trace moves
+  the heat-flux window by about ``0.469``. The retained ``n64/n80`` gates pass
+  at ``t=450`` and ``t=650``; the high-grid time-horizon gate passes; and the
+  ``n80`` seed/timestep ensemble passes on ``t=[325,650]`` with mean heat flux
+  about ``7.16``, mean-relative spread ``0.0939``, and combined SEM/mean
+  ``0.0463``. This does not claim full ``n48/n64/n80`` convergence and does
+  not promote an absolute quasilinear-flux predictor.
 
 Nonlinear benchmark state:
 

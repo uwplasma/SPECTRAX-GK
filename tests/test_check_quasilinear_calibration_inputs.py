@@ -177,7 +177,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         for point in report["points"]
         if point["required"]
     ]
-    assert len(required_rows) == 17
+    assert len(required_rows) == 18
     assert all(point["matched_gate"] is not None for point in required_rows)
     matched_cases = {point["matched_gate"]["case"] for point in required_rows}
     assert matched_cases == {
@@ -190,6 +190,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "updown_asym_external_vmec_t450",
         "circular_external_vmec_t450",
         "CTH-like external VMEC modified-protocol high-grid admission",
+        "Shaped tokamak pressure external VMEC dt=0.04 high-grid transport holdout admission",
     }
     external_rows = [
         point for point in required_rows if "external_vmec" in str(point["matched_gate"]["artifact"])
@@ -200,4 +201,5 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "updown_asym_external_vmec_t450_window",
         "circular_external_vmec_t450_window",
         "cth_like_external_vmec_t700_high_grid_window",
+        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
     ]

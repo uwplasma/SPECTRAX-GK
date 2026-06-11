@@ -347,12 +347,13 @@ as a promoted runtime predictor.
      - ``docs/_static/quasilinear_candidate_uncertainty.json`` and
        ``docs/_static/quasilinear_candidate_regularization_sweep.json`` and
        ``docs/_static/quasilinear_model_selection_status.json``
-     - Closed as scoped model-selection result / near miss
-     - rank/correlation screening passes, but the expanded nine-case
-       uncertainty/model-selection gate is failed because the best candidate
-       has mean relative error about ``0.377 > 0.35``; it does not promote a
-       runtime/TOML absolute-flux predictor, universal nonlinear transport
-       model, or shipped saturation option
+     - Closed as scoped model-development result / failed promotion gate
+     - the expanded ten-case uncertainty/model-selection gate fails because the
+       best candidate has mean relative error about ``0.424 > 0.35`` and
+       prediction-interval coverage ``8/10``; after adding the shaped-pressure
+       holdout it also fails the strict rank/correlation screening gates, so it
+       does not promote a runtime/TOML absolute-flux predictor, universal
+       nonlinear transport model, or shipped saturation option
    * - Future absolute-flux promotion
      - calibrated heat-flux prediction on nonlinear holdouts
      - future late-window convergence metadata and promotion JSON

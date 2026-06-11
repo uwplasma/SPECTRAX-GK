@@ -48,6 +48,7 @@ CASE_LABELS = {
     "updown_asym_external_vmec_t450_window": "Up-down VMEC",
     "circular_external_vmec_t450_window": "Circular VMEC",
     "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
+    "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
 }
 
 DEFAULT_MODELS = (

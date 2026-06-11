@@ -31,6 +31,8 @@ CASE_LABELS = {
     "circular_external_vmec_t450_window": "Circular VMEC",
     "itermodel_external_vmec_t350_window": "ITERModel VMEC",
     "cyclone_long_window": "Cyclone",
+    "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
+    "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
 }
 
 MODEL_LABELS = {

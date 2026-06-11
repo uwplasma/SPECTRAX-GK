@@ -114,6 +114,16 @@ DEFAULT_CASES = (
         / "docs/_static/external_vmec_cth_like_modified_replicates_t700/replicate_ensemble_gate.json",
         shape_gate=None,
     ),
+    SaturationCase(
+        case="shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        split="holdout",
+        geometry="shaped_tokamak_external_vmec",
+        spectrum=ROOT
+        / "docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT
+        / "docs/_static/external_vmec_shaped_tokamak_pressure_replicates_t650/replicate_ensemble_gate.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -135,6 +145,7 @@ CASE_LABELS = {
     "updown_asym_external_vmec_t450_window": "Up-Down Asym VMEC",
     "circular_external_vmec_t450_window": "Circular VMEC",
     "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
+    "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
 }
 
 

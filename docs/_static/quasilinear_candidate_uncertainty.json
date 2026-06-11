@@ -5,22 +5,22 @@
         "insufficient_train_to_parameter_ratio"
       ],
       "label": "linear-state ridge",
-      "max_abs_relative_error": 4.063371161911828,
-      "mean_abs_relative_error": 0.9976075297783302,
-      "prediction_interval_coverage": 1.0,
+      "max_abs_relative_error": 7.385104361033506,
+      "mean_abs_relative_error": 1.2836792589774924,
+      "prediction_interval_coverage": 0.9,
       "promotion_eligible": false,
       "rows": [
         {
-          "absolute_relative_error": 4.063371161911828,
+          "absolute_relative_error": 7.385104361033506,
           "coefficients": [
-            2.255890388825553,
-            -0.29322182105462374,
-            0.335992620672482,
-            0.2194664165936338,
-            0.26531138778617014
+            2.2239045014547165,
+            -0.38914171034182077,
+            0.30443061936422433,
+            0.18206290597029995,
+            0.25481240356287177
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 9.751075283327687,
+          "condition_number": 13.102859165889676,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -39,12 +39,12 @@
           "holdout_case": "cyclone_long_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 6.6689961798985795,
-          "predicted_heat_flux": 33.767602936198614,
-          "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 239.72725745041737,
-          "prediction_interval_low": 4.756451227881779,
+          "predicted_heat_flux": 55.92022895178337,
+          "prediction_interval_contains_observed": false,
+          "prediction_interval_high": 396.99599488715114,
+          "prediction_interval_low": 7.876835147691509,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -55,24 +55,25 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 1.3877787807814457e-16,
+          "train_log_residual_mean": 1.9737298215558337e-16,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.4354213708297896,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.4368281852328687,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 2.8858253347951592,
+          "absolute_relative_error": 1.9948524345923793,
           "coefficients": [
-            2.3119206338293576,
-            0.02112200498639079,
-            0.3065417147116018,
-            0.26552641615427564,
-            0.238237269795006
+            2.2737091636803206,
+            0.005933031447682227,
+            0.1853821117867932,
+            0.2107999225697437,
+            0.16155478122537198
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 15.990648875941051,
+          "condition_number": 16.31626939961165,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -91,12 +92,12 @@
           "holdout_case": "cyclone_miller_long_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 4.259822065746515,
-          "predicted_heat_flux": 16.552924504797257,
+          "predicted_heat_flux": 12.757538484531286,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 117.51462494440166,
-          "prediction_interval_low": 2.3316188073710125,
+          "prediction_interval_high": 90.56993824801029,
+          "prediction_interval_low": 1.7970067257705384,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -107,24 +108,25 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 8.326672684688674e-17,
+          "train_log_residual_mean": 1.4802973661668753e-16,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.19911976101974577,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.3935626040828168,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.009344368485914785,
+          "absolute_relative_error": 0.05757825886490875,
           "coefficients": [
-            2.289674017654458,
-            -0.052296628091405596,
-            0.26439668796984983,
-            0.19076273638034652,
-            0.13358555140497008
+            2.2539343937470764,
+            -0.05178658704608448,
+            0.17924822881262464,
+            0.15289008310644772,
+            0.09250335535518601
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 15.292475894858269,
+          "condition_number": 15.952764139636797,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -143,12 +145,12 @@
           "holdout_case": "hsx_nonlinear_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 5.089605487565396,
-          "predicted_heat_flux": 5.137164636689141,
+          "predicted_heat_flux": 5.382656109848696,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 36.470411943412756,
-          "prediction_interval_low": 0.7236128987354662,
+          "prediction_interval_high": 38.21323620307956,
+          "prediction_interval_low": 0.7581924399943023,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -159,24 +161,25 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -3.885780586188048e-16,
+          "train_log_residual_mean": -9.868649107779169e-17,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.5060245566764553,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.5320226810385049,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.039207306563885526,
+          "absolute_relative_error": 0.042835937260770146,
           "coefficients": [
-            2.2827718418783527,
-            -0.05769459662859303,
-            0.2662644601136209,
-            0.1869957727383909,
-            0.1339462348663983
+            2.2477991263905386,
+            -0.057689992303283026,
+            0.18434198341344307,
+            0.15519697660004594,
+            0.09344015463261164
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 14.801756485868504,
+          "condition_number": 15.5465243893878,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -195,12 +198,12 @@
           "holdout_case": "w7x_nonlinear_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 5.378544112072135,
-          "predicted_heat_flux": 5.589422339941529,
+          "predicted_heat_flux": 5.608939090211142,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 39.68113729653802,
-          "prediction_interval_low": 0.7873172046649761,
+          "prediction_interval_high": 39.81969308995098,
+          "prediction_interval_low": 0.7900663032894643,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -211,24 +214,25 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -3.0531133177191805e-16,
+          "train_log_residual_mean": -3.20731096002823e-16,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.5055990766378629,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.5316403530609375,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.35971782652686674,
+          "absolute_relative_error": 0.469294862219546,
           "coefficients": [
-            2.1284916032231322,
-            -0.06808449534289045,
-            0.22100224188845075,
-            0.24198272014880967,
-            0.10261632016188944
+            2.110661136474787,
+            -0.069626337041075,
+            0.14535517126073327,
+            0.2173539308212185,
+            0.0479093939704404
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 16.43153146526615,
+          "condition_number": 16.550767818013576,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -247,12 +251,12 @@
           "holdout_case": "dshape_external_vmec_t250_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 18.479456131274883,
-          "predicted_heat_flux": 11.832066336334101,
+          "predicted_heat_flux": 9.807142312256092,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 83.99970877826536,
-          "prediction_interval_low": 1.6666461803690755,
+          "prediction_interval_high": 69.62411084924247,
+          "prediction_interval_low": 1.3814185798523593,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -263,24 +267,25 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 2.7755575615628914e-17,
+          "train_log_residual_mean": 7.401486830834377e-17,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.49017011404610394,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.4958709117941961,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.5035774289877163,
+          "absolute_relative_error": 0.5607515381479707,
           "coefficients": [
-            2.106428427724918,
-            -0.026986121900035045,
-            0.1984682856280586,
-            0.21184366429640847,
-            0.10715206265060369
+            2.0910494249208185,
+            -0.023842821435346995,
+            0.12872717149272106,
+            0.18170720294576972,
+            0.06659470853630844
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 16.10480620223465,
+          "condition_number": 16.31692607295415,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -299,12 +304,12 @@
           "holdout_case": "itermodel_external_vmec_t350_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 22.046746492385864,
-          "predicted_heat_flux": 10.944502576206238,
+          "predicted_heat_flux": 9.683999485622111,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 77.6986033539374,
-          "prediction_interval_low": 1.5416253506507196,
+          "prediction_interval_high": 68.74987964723996,
+          "prediction_interval_low": 1.3640728757449427,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -315,24 +320,25 @@
             "dshape_external_vmec_t250_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -1.942890293094024e-16,
+          "train_log_residual_mean": 9.868649107779169e-17,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.4564362875556464,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.46454102654088075,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.3650751691524954,
+          "absolute_relative_error": 0.2877496499319703,
           "coefficients": [
-            2.236881661496499,
-            0.012478282993729892,
-            0.17676532504591683,
-            0.23951076666599908,
-            0.1637845440526944
+            2.2070078549400014,
+            -0.001911561057575351,
+            0.10931770203384499,
+            0.20196368451808921,
+            0.11743743667872093
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 18.574650287220038,
+          "condition_number": 19.220416864271076,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -351,12 +357,12 @@
           "holdout_case": "updown_asym_external_vmec_t450_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 7.76432224499282,
-          "predicted_heat_flux": 10.598883501938056,
+          "predicted_heat_flux": 9.998503252948513,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 75.24494050575095,
-          "prediction_interval_low": 1.4929419936091102,
+          "prediction_interval_high": 70.98264475471404,
+          "prediction_interval_low": 1.4083733797842592,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -367,24 +373,25 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 1.1102230246251565e-16,
+          "train_log_residual_mean": 2.713878504639272e-16,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.501636764359152,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.5291281530721009,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.41824315042912863,
+          "absolute_relative_error": 0.4896843301831384,
           "coefficients": [
-            2.1222217178447984,
-            -0.0325550354159998,
-            0.21223615491511863,
-            0.21654491623541713,
-            0.11821285998266945
+            2.1050879050273794,
+            -0.02914747227336455,
+            0.13766463771142337,
+            0.1845517293754343,
+            0.07492429335223559
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 16.111010563114018,
+          "condition_number": 16.32149944069777,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -403,12 +410,12 @@
           "holdout_case": "circular_external_vmec_t450_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 19.430008846324878,
-          "predicted_heat_flux": 11.303540733572122,
+          "predicted_heat_flux": 9.915437978959826,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 80.24753266194902,
-          "prediction_interval_low": 1.5921988985476796,
+          "prediction_interval_high": 70.39293720691144,
+          "prediction_interval_low": 1.396672936456839,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -419,24 +426,25 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 3.3306690738754696e-16,
+          "train_log_residual_mean": 0.0,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.4789418873114537,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.48876728472053094,
+          "train_to_parameter_ratio": 1.8
         },
         {
-          "absolute_relative_error": 0.33410602115197713,
+          "absolute_relative_error": 0.4196205238540412,
           "coefficients": [
-            2.2103121689626346,
-            -0.05196801047081135,
-            0.24313017076218554,
-            0.11042907754271869,
-            0.268043618157513
+            2.1833905282432333,
+            -0.05417088121543586,
+            0.15923040529891652,
+            0.039067311000978544,
+            0.2667575426821541
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 19.596035009394992,
+          "condition_number": 20.026965858996796,
           "eligibility_failures": [
             "insufficient_train_to_parameter_ratio"
           ],
@@ -455,12 +463,12 @@
           "holdout_case": "cth_like_external_vmec_t700_high_grid_ensemble",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 5,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 9.603187837312081,
-          "predicted_heat_flux": 6.394704958612682,
+          "predicted_heat_flux": 5.573493126350429,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 45.39810198637033,
-          "prediction_interval_low": 0.9007480427261587,
+          "prediction_interval_high": 39.56805059936406,
+          "prediction_interval_low": 0.7850734407920198,
           "promotion_eligible": false,
           "ridge_lambda": 1.0,
           "train_cases": [
@@ -471,33 +479,87 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "circular_external_vmec_t450_window"
+            "circular_external_vmec_t450_window",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -1.1102230246251565e-16,
+          "train_log_residual_mean": 7.401486830834377e-17,
           "train_log_residual_sigma": 1.0,
-          "train_log_residual_sigma_fit": 0.5003833395424352,
-          "train_to_parameter_ratio": 1.6
+          "train_log_residual_sigma_fit": 0.5210002798660662,
+          "train_to_parameter_ratio": 1.8
+        },
+        {
+          "absolute_relative_error": 1.1293206936866935,
+          "coefficients": [
+            2.2160658290488557,
+            -0.06134519893908763,
+            0.26182085064786603,
+            0.22751673447507514,
+            0.15293732702693483
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 16.95774381721373,
+          "eligibility_failures": [
+            "insufficient_train_to_parameter_ratio"
+          ],
+          "feature_names": [
+            "log_linear_weight",
+            "log_abs_growth_mixing_length",
+            "unstable_weight_fraction",
+            "log_weighted_ky_centroid"
+          ],
+          "feature_values": [
+            1.0488030024023336,
+            0.829133100191958,
+            0.9760080641524368,
+            -1.0033236011575195
+          ],
+          "holdout_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 5,
+          "n_train": 9,
+          "observed_heat_flux": 7.156474006536328,
+          "predicted_heat_flux": 15.238428195948725,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 108.18258572194478,
+          "prediction_interval_low": 2.146460933000066,
+          "promotion_eligible": false,
+          "ridge_lambda": 1.0,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window",
+            "dshape_external_vmec_t250_window",
+            "itermodel_external_vmec_t350_window",
+            "updown_asym_external_vmec_t450_window",
+            "circular_external_vmec_t450_window",
+            "cth_like_external_vmec_t700_high_grid_ensemble"
+          ],
+          "train_log_residual_mean": 2.9605947323337506e-16,
+          "train_log_residual_sigma": 1.0,
+          "train_log_residual_sigma_fit": 0.47269845382316006,
+          "train_to_parameter_ratio": 1.8
         }
       ]
     },
     "linear_weight": {
       "eligibility_failures": [],
       "label": "$\\hat Q$ calibrated",
-      "max_abs_relative_error": 3.2592259577406013,
-      "mean_abs_relative_error": 0.853638219650207,
-      "prediction_interval_coverage": 0.8888888888888888,
+      "max_abs_relative_error": 2.138319446937202,
+      "mean_abs_relative_error": 0.8447213326664013,
+      "prediction_interval_coverage": 0.9,
       "promotion_eligible": true,
       "rows": [
         {
-          "absolute_relative_error": 0.9070028889391132,
+          "absolute_relative_error": 0.9260942246379401,
           "holdout_case": "cyclone_long_window",
           "observed_heat_flux": 6.6689961798985795,
-          "predicted_heat_flux": 0.6201973784066577,
+          "predicted_heat_flux": 0.49287733356202,
           "prediction_interval_contains_observed": false,
-          "prediction_interval_high": 2.2906943056140276,
-          "prediction_interval_low": 0.14164228927036057,
+          "prediction_interval_high": 2.19064540884854,
+          "prediction_interval_low": 0.11837029048150752,
           "raw_estimate": 0.08285458758473396,
-          "scale": 7.485371618951002,
+          "scale": 5.948702997983821,
           "train_cases": [
             "cyclone_miller_long_window",
             "hsx_nonlinear_window",
@@ -506,21 +568,22 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -0.08508026437919328,
-          "train_log_residual_sigma": 0.710026900793096
+          "train_log_residual_mean": 0.032624299524126675,
+          "train_log_residual_sigma": 0.7444218675137703
         },
         {
-          "absolute_relative_error": 3.2592259577406013,
+          "absolute_relative_error": 2.138319446937202,
           "holdout_case": "cyclone_miller_long_window",
           "observed_heat_flux": 4.259822065746515,
-          "predicted_heat_flux": 18.143544717783747,
+          "predicted_heat_flux": 13.36868242942449,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 144.70809234735438,
-          "prediction_interval_low": 3.2651856326842004,
+          "prediction_interval_high": 138.51104668988853,
+          "prediction_interval_low": 2.464404618548732,
           "raw_estimate": 2.0071109980344772,
-          "scale": 9.039631956354855,
+          "scale": 6.660659247304293,
           "train_cases": [
             "cyclone_long_window",
             "hsx_nonlinear_window",
@@ -529,21 +592,22 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.18070275224652765,
-          "train_log_residual_sigma": 0.9671943726073398
+          "train_log_residual_mean": 0.3235353236336189,
+          "train_log_residual_sigma": 1.0278060810401168
         },
         {
-          "absolute_relative_error": 1.0610446151986748,
+          "absolute_relative_error": 0.5956833849128573,
           "holdout_case": "hsx_nonlinear_window",
           "observed_heat_flux": 5.089605487565396,
-          "predicted_heat_flux": 10.489903983632285,
+          "predicted_heat_flux": 8.121398912269404,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 109.66311753123543,
-          "prediction_interval_low": 1.6241747365948367,
+          "prediction_interval_high": 100.08517812351951,
+          "prediction_interval_low": 1.3069492328566663,
           "raw_estimate": 1.3269210495054722,
-          "scale": 7.905446965018566,
+          "scale": 6.120483894121775,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -552,21 +616,22 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.24079319627358,
-          "train_log_residual_sigma": 1.07459522098462
+          "train_log_residual_mean": 0.3423561788559467,
+          "train_log_residual_sigma": 1.1067158197124065
         },
         {
-          "absolute_relative_error": 0.9315083688442405,
+          "absolute_relative_error": 0.49653949376198314,
           "holdout_case": "w7x_nonlinear_window",
           "observed_heat_flux": 5.378544112072135,
-          "predicted_heat_flux": 10.388702964665244,
+          "predicted_heat_flux": 8.049203682656929,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 109.802976517402,
-          "prediction_interval_low": 1.579014805544857,
+          "prediction_interval_high": 99.86967413111232,
+          "prediction_interval_low": 1.2771393918170872,
           "raw_estimate": 1.3192062399432951,
-          "scale": 7.8749649979762015,
+          "scale": 6.101550643819663,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -575,21 +640,22 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.2370254121547713,
-          "train_log_residual_sigma": 1.0821139095620635
+          "train_log_residual_mean": 0.33867123692321843,
+          "train_log_residual_sigma": 1.1120518751364619
         },
         {
-          "absolute_relative_error": 0.09519526114400036,
+          "absolute_relative_error": 0.32398068784580036,
           "holdout_case": "dshape_external_vmec_t250_window",
           "observed_heat_flux": 18.479456131274883,
-          "predicted_heat_flux": 16.720299479059072,
+          "predicted_heat_flux": 12.492469222848154,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 191.48106168601115,
-          "prediction_interval_low": 2.3071898381345606,
+          "prediction_interval_high": 169.84127900772768,
+          "prediction_interval_low": 1.9501039904276791,
           "raw_estimate": 2.2930220564131654,
-          "scale": 7.291817988534143,
+          "scale": 5.448037094937221,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -598,21 +664,22 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.2287860674890989,
-          "train_log_residual_sigma": 1.1272343483306446
+          "train_log_residual_mean": 0.3762475232208461,
+          "train_log_residual_sigma": 1.1395361348089286
         },
         {
-          "absolute_relative_error": 0.6131197298218583,
+          "absolute_relative_error": 0.6918581138853657,
           "holdout_case": "itermodel_external_vmec_t350_window",
           "observed_heat_flux": 22.046746492385864,
-          "predicted_heat_flux": 8.529451239523242,
+          "predicted_heat_flux": 6.793526046854978,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 93.93987441085974,
-          "prediction_interval_low": 1.2606301644787066,
+          "prediction_interval_high": 82.8982662716046,
+          "prediction_interval_low": 1.0932908641884755,
           "raw_estimate": 1.3025812708940083,
-          "scale": 6.548114447914005,
+          "scale": 5.215433538509529,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -621,21 +688,22 @@
             "dshape_external_vmec_t250_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.24360830864850325,
-          "train_log_residual_sigma": 1.09975592275803
+          "train_log_residual_mean": 0.3374331120778824,
+          "train_log_residual_sigma": 1.1041892497929104
         },
         {
-          "absolute_relative_error": 0.12910412179373526,
+          "absolute_relative_error": 0.313302641022022,
           "holdout_case": "updown_asym_external_vmec_t450_window",
           "observed_heat_flux": 7.76432224499282,
-          "predicted_heat_flux": 6.761916240229459,
+          "predicted_heat_flux": 5.3317395798905345,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 75.18999557497638,
-          "prediction_interval_low": 0.9033785511430232,
+          "prediction_interval_high": 66.61019223537656,
+          "prediction_interval_low": 0.7658114457528602,
           "raw_estimate": 0.9060503900122323,
-          "scale": 7.463068627053037,
+          "scale": 5.884594983529064,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -644,21 +712,22 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.19789597568753564,
-          "train_log_residual_sigma": 1.127967291569415
+          "train_log_residual_mean": 0.29234159410332666,
+          "train_log_residual_sigma": 1.1392032898767341
         },
         {
-          "absolute_relative_error": 0.5460776992229307,
+          "absolute_relative_error": 0.640238254723245,
           "holdout_case": "circular_external_vmec_t450_window",
           "observed_heat_flux": 19.430008846324878,
-          "predicted_heat_flux": 8.819714319642598,
+          "predicted_heat_flux": 6.990173893296626,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 97.71159530139361,
-          "prediction_interval_low": 1.2580862352924378,
+          "prediction_interval_high": 86.17296524398263,
+          "prediction_interval_low": 1.0878622070656438,
           "raw_estimate": 1.3059193904159918,
-          "scale": 6.753643742768179,
+          "scale": 5.3526840512491,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -667,21 +736,22 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.22881649065346366,
-          "train_log_residual_sigma": 1.1103134003257744
+          "train_log_residual_mean": 0.32578006298179124,
+          "train_log_residual_sigma": 1.1153423489087597
         },
         {
-          "absolute_relative_error": 0.1404653341467097,
+          "absolute_relative_error": 0.32483785637891166,
           "holdout_case": "cth_like_external_vmec_t700_high_grid_ensemble",
           "observed_heat_flux": 9.603187837312081,
-          "predicted_heat_flux": 8.254272848870421,
+          "predicted_heat_flux": 6.483708885835588,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 92.09363992554252,
-          "prediction_interval_low": 1.106205115313709,
+          "prediction_interval_high": 81.57157768971054,
+          "prediction_interval_low": 0.9381346407200215,
           "raw_estimate": 1.110829005873401,
-          "scale": 7.43073218760651,
+          "scale": 5.836819934979736,
           "train_cases": [
             "cyclone_long_window",
             "cyclone_miller_long_window",
@@ -690,30 +760,55 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "circular_external_vmec_t450_window"
+            "circular_external_vmec_t450_window",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 0.20113962639447833,
-          "train_log_residual_sigma": 1.1280281994654575
+          "train_log_residual_mean": 0.29951683874819346,
+          "train_log_residual_sigma": 1.1391180328399524
+        },
+        {
+          "absolute_relative_error": 1.9963592225586844,
+          "holdout_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+          "observed_heat_flux": 7.156474006536328,
+          "predicted_heat_flux": 21.443366890486626,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 204.06379156213097,
+          "prediction_interval_low": 3.259716352191607,
+          "raw_estimate": 2.8542325629491794,
+          "scale": 7.512831003627098,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window",
+            "dshape_external_vmec_t250_window",
+            "itermodel_external_vmec_t350_window",
+            "updown_asym_external_vmec_t450_window",
+            "circular_external_vmec_t450_window",
+            "cth_like_external_vmec_t700_high_grid_ensemble"
+          ],
+          "train_log_residual_mean": 0.18462105420474673,
+          "train_log_residual_sigma": 1.055304200417234
         }
       ]
     },
     "spectral_envelope_ridge": {
       "eligibility_failures": [],
       "label": "spectral-envelope ridge",
-      "max_abs_relative_error": 0.8369314413366308,
-      "mean_abs_relative_error": 0.37738980527841215,
-      "prediction_interval_coverage": 0.8888888888888888,
+      "max_abs_relative_error": 1.1380910783329683,
+      "mean_abs_relative_error": 0.4237826936689464,
+      "prediction_interval_coverage": 0.8,
       "promotion_eligible": true,
       "rows": [
         {
-          "absolute_relative_error": 0.43090313542193764,
+          "absolute_relative_error": 0.31762110622131534,
           "coefficients": [
-            2.255890388825553,
-            0.7881327588005872,
-            -0.47087362611058065
+            2.223904501454717,
+            0.6596066326676335,
+            -0.3849375594400395
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 8.59023256580476,
+          "condition_number": 8.45143351864189,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -726,12 +821,12 @@
           "holdout_case": "cyclone_long_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 6.6689961798985795,
-          "predicted_heat_flux": 9.542687543933802,
+          "predicted_heat_flux": 8.787210123943693,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 17.637360233377667,
-          "prediction_interval_low": 5.163067735545718,
+          "prediction_interval_high": 19.11738416718375,
+          "prediction_interval_low": 4.038997233464778,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -742,22 +837,23 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 3.608224830031759e-16,
-          "train_log_residual_sigma": 0.3133899151833984,
-          "train_log_residual_sigma_fit": 0.3133899151833984,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 2.9605947323337506e-16,
+          "train_log_residual_sigma": 0.3965820498210247,
+          "train_log_residual_sigma_fit": 0.3965820498210247,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.8369314413366308,
+          "absolute_relative_error": 0.8348291360042438,
           "coefficients": [
-            2.3119206338293576,
-            0.6649459164923709,
-            -0.2820586478600941
+            2.2737091636803206,
+            0.5355666572871479,
+            -0.20414631860944404
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 13.035396834538162,
+          "condition_number": 13.136379026282999,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -770,12 +866,12 @@
           "holdout_case": "cyclone_miller_long_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 4.259822065746515,
-          "predicted_heat_flux": 7.825001087069329,
+          "predicted_heat_flux": 7.81604564042549,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 14.518768424588753,
-          "prediction_interval_low": 4.217344076439497,
+          "prediction_interval_high": 16.753398375266887,
+          "prediction_interval_low": 3.6464583533930988,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -786,22 +882,23 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 1.1102230246251565e-16,
-          "train_log_residual_sigma": 0.31536648530984207,
-          "train_log_residual_sigma_fit": 0.31536648530984207,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 2.713878504639272e-16,
+          "train_log_residual_sigma": 0.3889910059621661,
+          "train_log_residual_sigma_fit": 0.3889910059621661,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.11414239013423806,
+          "absolute_relative_error": 0.07458083074094703,
           "coefficients": [
-            2.289674017654458,
-            0.6959555972666176,
-            -0.4987954810585925
+            2.2539343937470764,
+            0.572375571237282,
+            -0.4026789619306524
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 6.633189161923412,
+          "condition_number": 6.280328574592535,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -814,12 +911,12 @@
           "holdout_case": "hsx_nonlinear_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 5.089605487565396,
-          "predicted_heat_flux": 4.508665752374347,
+          "predicted_heat_flux": 4.710018482159086,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 8.498438025524656,
-          "prediction_interval_low": 2.3919768321636217,
+          "prediction_interval_high": 10.32899497163934,
+          "prediction_interval_low": 2.147766957307295,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -830,22 +927,23 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -3.0531133177191805e-16,
-          "train_log_residual_sigma": 0.32340873326935826,
-          "train_log_residual_sigma_fit": 0.32340873326935826,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": -7.401486830834377e-17,
+          "train_log_residual_sigma": 0.4006444664075352,
+          "train_log_residual_sigma_fit": 0.4006444664075352,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.18382808383415308,
+          "absolute_relative_error": 0.14915028261065508,
           "coefficients": [
-            2.2827718418783527,
-            0.7089109243330718,
-            -0.49711679779066187
+            2.2477991263905386,
+            0.5849569368115073,
+            -0.40120252260364025
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 6.570196779747305,
+          "condition_number": 6.220635719456817,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -858,12 +956,12 @@
           "holdout_case": "w7x_nonlinear_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 5.378544112072135,
-          "predicted_heat_flux": 4.389816654132448,
+          "predicted_heat_flux": 4.576332737722701,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 8.200488110299634,
-          "prediction_interval_low": 2.3499199069254533,
+          "prediction_interval_high": 9.987360380753985,
+          "prediction_interval_low": 2.0969325755692316,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -874,22 +972,23 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -2.498001805406602e-16,
-          "train_log_residual_sigma": 0.3188297022267978,
-          "train_log_residual_sigma_fit": 0.3188297022267978,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": -2.4671622769447924e-16,
+          "train_log_residual_sigma": 0.39817467678503377,
+          "train_log_residual_sigma_fit": 0.39817467678503377,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.00010762389231442948,
+          "absolute_relative_error": 0.20797864822520634,
           "coefficients": [
-            2.1284916032231327,
-            0.7584494134647181,
-            -0.5366212993607036
+            2.1106611364747874,
+            0.595885625731443,
+            -0.4024820545707464
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 10.376422699859662,
+          "condition_number": 9.476299617363766,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -902,12 +1001,12 @@
           "holdout_case": "dshape_external_vmec_t250_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 18.479456131274883,
-          "predicted_heat_flux": 18.47746730027818,
+          "predicted_heat_flux": 14.636123825155332,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 35.35718125394468,
-          "prediction_interval_low": 9.656222179610507,
+          "prediction_interval_high": 32.16227036555389,
+          "prediction_interval_low": 6.660478821629057,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -918,22 +1017,23 @@
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -5.551115123125783e-17,
-          "train_log_residual_sigma": 0.33109669028190314,
-          "train_log_residual_sigma_fit": 0.33109669028190314,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 9.868649107779169e-17,
+          "train_log_residual_sigma": 0.4016843522080013,
+          "train_log_residual_sigma_fit": 0.4016843522080013,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.47713606670609554,
+          "absolute_relative_error": 0.5336524528009045,
           "coefficients": [
-            2.1064284277249183,
-            0.7139825462933103,
-            -0.5018417337959604
+            2.0910494249208194,
+            0.6014838003538192,
+            -0.4152424644336971
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 8.588196096016581,
+          "condition_number": 8.234798974452486,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -946,12 +1046,12 @@
           "holdout_case": "itermodel_external_vmec_t350_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 22.046746492385864,
-          "predicted_heat_flux": 11.527448587342464,
+          "predicted_heat_flux": 10.281446150444411,
           "prediction_interval_contains_observed": false,
-          "prediction_interval_high": 19.12007864027731,
-          "prediction_interval_low": 6.949870522702855,
+          "prediction_interval_high": 19.383867548661566,
+          "prediction_interval_low": 5.453407823754306,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -962,22 +1062,23 @@
             "dshape_external_vmec_t250_window",
             "updown_asym_external_vmec_t450_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -2.7755575615628914e-17,
-          "train_log_residual_sigma": 0.25816734464892244,
-          "train_log_residual_sigma_fit": 0.25816734464892244,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 2.4671622769447922e-17,
+          "train_log_residual_sigma": 0.3235205225614718,
+          "train_log_residual_sigma_fit": 0.3235205225614718,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.2743736989341392,
+          "absolute_relative_error": 0.16493125809472492,
           "coefficients": [
-            2.2368816614964993,
-            0.8001847832488107,
-            -0.4997130094346985
+            2.207007854940002,
+            0.6709241062048347,
+            -0.41021170729963874
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 8.507681843411186,
+          "condition_number": 8.322626217205324,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -990,12 +1091,12 @@
           "holdout_case": "updown_asym_external_vmec_t450_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 7.76432224499282,
-          "predicted_heat_flux": 9.89464805906812,
+          "predicted_heat_flux": 9.044901681112345,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 18.640142577192155,
-          "prediction_interval_low": 5.252323570347293,
+          "prediction_interval_high": 19.882415820077163,
+          "prediction_interval_low": 4.114703523018433,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -1006,22 +1107,23 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "circular_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -1.6653345369377348e-16,
-          "train_log_residual_sigma": 0.32312420783147344,
-          "train_log_residual_sigma_fit": 0.32312420783147344,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 2.713878504639272e-16,
+          "train_log_residual_sigma": 0.4018543189555496,
+          "train_log_residual_sigma_fit": 0.4018543189555496,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.3896576542873766,
+          "absolute_relative_error": 0.45865320774753915,
           "coefficients": [
-            2.122221717844799,
-            0.7313181173103077,
-            -0.5078668192706963
+            2.1050879050273794,
+            0.6136191468164582,
+            -0.41789038511844095
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 8.590927276152449,
+          "condition_number": 8.236554887501105,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -1034,12 +1136,12 @@
           "holdout_case": "circular_external_vmec_t450_window",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 19.430008846324878,
-          "predicted_heat_flux": 11.85895717648295,
+          "predicted_heat_flux": 10.51837296239491,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 21.077288529621327,
-          "prediction_interval_low": 6.672341421716215,
+          "prediction_interval_high": 21.08665008927673,
+          "prediction_interval_low": 5.2467399661695175,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -1050,22 +1152,23 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "cth_like_external_vmec_t700_high_grid_ensemble"
+            "cth_like_external_vmec_t700_high_grid_ensemble",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": 1.1102230246251565e-16,
-          "train_log_residual_sigma": 0.2934248091086948,
-          "train_log_residual_sigma_fit": 0.2934248091086948,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": 1.7270135938613546e-16,
+          "train_log_residual_sigma": 0.3548554127933966,
+          "train_log_residual_sigma_fit": 0.3548554127933966,
+          "train_to_parameter_ratio": 3.0
         },
         {
-          "absolute_relative_error": 0.6894281529588235,
+          "absolute_relative_error": 0.3583389359109593,
           "coefficients": [
-            2.210312168962635,
-            0.9155351961098781,
-            -0.6228404469370822
+            2.183390528243234,
+            0.7273871918371422,
+            -0.463536901450817
           ],
           "condition_gate": 1000000.0,
-          "condition_number": 10.937013842821216,
+          "condition_number": 9.920463747366426,
           "eligibility_failures": [],
           "feature_names": [
             "log_positive_ky_centroid",
@@ -1078,12 +1181,12 @@
           "holdout_case": "cth_like_external_vmec_t700_high_grid_ensemble",
           "min_train_to_parameter_ratio": 2.0,
           "n_parameters": 3,
-          "n_train": 8,
+          "n_train": 9,
           "observed_heat_flux": 9.603187837312081,
-          "predicted_heat_flux": 16.22389589050679,
+          "predicted_heat_flux": 13.044383948287559,
           "prediction_interval_contains_observed": true,
-          "prediction_interval_high": 27.500504995115637,
-          "prediction_interval_low": 9.571271433479225,
+          "prediction_interval_high": 27.914433009728974,
+          "prediction_interval_low": 6.095626321016011,
           "promotion_eligible": true,
           "ridge_lambda": 0.3,
           "train_cases": [
@@ -1094,12 +1197,58 @@
             "dshape_external_vmec_t250_window",
             "itermodel_external_vmec_t350_window",
             "updown_asym_external_vmec_t450_window",
-            "circular_external_vmec_t450_window"
+            "circular_external_vmec_t450_window",
+            "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
           ],
-          "train_log_residual_mean": -1.6653345369377348e-16,
-          "train_log_residual_sigma": 0.2692444681529277,
-          "train_log_residual_sigma_fit": 0.2692444681529277,
-          "train_to_parameter_ratio": 2.6666666666666665
+          "train_log_residual_mean": -1.2335811384723962e-16,
+          "train_log_residual_sigma": 0.3881562116797495,
+          "train_log_residual_sigma_fit": 0.3881562116797495,
+          "train_to_parameter_ratio": 3.0
+        },
+        {
+          "absolute_relative_error": 1.1380910783329683,
+          "coefficients": [
+            2.2160658290488557,
+            0.7770176213578108,
+            -0.5114198686877739
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 8.901297785493183,
+          "eligibility_failures": [],
+          "feature_names": [
+            "log_positive_ky_centroid",
+            "ky_weighted_std"
+          ],
+          "feature_values": [
+            -0.9749148970239598,
+            0.1028158384590808
+          ],
+          "holdout_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 3,
+          "n_train": 9,
+          "observed_heat_flux": 7.156474006536328,
+          "predicted_heat_flux": 15.301193225697116,
+          "prediction_interval_contains_observed": false,
+          "prediction_interval_high": 28.062972943298373,
+          "prediction_interval_low": 8.342897760803005,
+          "promotion_eligible": true,
+          "ridge_lambda": 0.3,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window",
+            "dshape_external_vmec_t250_window",
+            "itermodel_external_vmec_t350_window",
+            "updown_asym_external_vmec_t450_window",
+            "circular_external_vmec_t450_window",
+            "cth_like_external_vmec_t700_high_grid_ensemble"
+          ],
+          "train_log_residual_mean": 1.7270135938613546e-16,
+          "train_log_residual_sigma": 0.30944908398401705,
+          "train_log_residual_sigma_fit": 0.30944908398401705,
+          "train_to_parameter_ratio": 3.0
         }
       ]
     }
@@ -1196,6 +1345,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        "gate_case": "shaped_tokamak_pressure_n80_t650_seed_timestep_ensemble_gate",
+        "gate_passed": true,
+        "nonlinear_summary": "docs/_static/external_vmec_shaped_tokamak_pressure_replicates_t650/replicate_ensemble_gate.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -1210,62 +1369,68 @@
   "kind": "quasilinear_candidate_uncertainty_report",
   "notes": "Candidate predictions are leave-one-geometry-out. Prediction intervals are estimated from training log residuals only. Candidates remain unavailable as runtime saturation rules unless promotion_gate.passed is true.",
   "null_training_mean_baseline": {
-    "max_abs_relative_error": 1.7718548414085222,
-    "mean_abs_relative_error": 0.7892038099536056,
+    "max_abs_relative_error": 1.6505369308856064,
+    "mean_abs_relative_error": 0.7188195373778768,
     "rows": [
       {
-        "absolute_relative_error": 0.7253663582671761,
+        "absolute_relative_error": 0.6528918887079983,
         "holdout_case": "cyclone_long_window",
         "observed_heat_flux": 6.6689961798985795,
-        "predicted_heat_flux": 11.506461652209321
+        "predicted_heat_flux": 11.023129691578989
       },
       {
-        "absolute_relative_error": 1.7718548414085222,
+        "absolute_relative_error": 1.6505369308856064,
         "holdout_case": "cyclone_miller_long_window",
         "observed_heat_flux": 4.259822065746515,
-        "predicted_heat_flux": 11.80760841647833
+        "predicted_heat_flux": 11.29081570426255
       },
       {
-        "absolute_relative_error": 1.2995663450428854,
+        "absolute_relative_error": 1.2002918642009552,
         "holdout_case": "hsx_nonlinear_window",
         "observed_heat_flux": 5.089605487565396,
-        "predicted_heat_flux": 11.70388548875097
+        "predicted_heat_flux": 11.198617546282676
       },
       {
-        "absolute_relative_error": 1.1693171827854558,
+        "absolute_relative_error": 1.0761219062250675,
         "holdout_case": "w7x_nonlinear_window",
         "observed_heat_flux": 5.378544112072135,
-        "predicted_heat_flux": 11.667768160687626
+        "predicted_heat_flux": 11.166513254670814
       },
       {
-        "absolute_relative_error": 0.45722676646786625,
+        "absolute_relative_error": 0.47450529416753223,
         "holdout_case": "dshape_external_vmec_t250_window",
         "observed_heat_flux": 18.479456131274883,
-        "predicted_heat_flux": 10.030154158287283
+        "predicted_heat_flux": 9.710856363648288
       },
       {
-        "absolute_relative_error": 0.5652763156478233,
+        "absolute_relative_error": 0.5775117761168899,
         "holdout_case": "itermodel_external_vmec_t350_window",
         "observed_heat_flux": 22.046746492385864,
-        "predicted_heat_flux": 9.584242863148411
+        "predicted_heat_flux": 9.314490767969291
       },
       {
-        "absolute_relative_error": 0.4643320479652574,
+        "absolute_relative_error": 0.40404100338412563,
         "holdout_case": "updown_asym_external_vmec_t450_window",
         "observed_heat_flux": 7.76432224499282,
-        "predicted_heat_flux": 11.369545894072541
+        "predicted_heat_flux": 10.901426795457406
       },
       {
-        "absolute_relative_error": 0.48989549375420227,
+        "absolute_relative_error": 0.5056492525927903,
         "holdout_case": "circular_external_vmec_t450_window",
         "observed_heat_flux": 19.430008846324878,
-        "predicted_heat_flux": 9.911335068906034
+        "predicted_heat_flux": 9.6052393953094
       },
       {
-        "absolute_relative_error": 0.15999893824326333,
+        "absolute_relative_error": 0.11391223180582169,
         "holdout_case": "cth_like_external_vmec_t700_high_grid_ensemble",
         "observed_heat_flux": 9.603187837312081,
-        "predicted_heat_flux": 11.139687695032634
+        "predicted_heat_flux": 10.697108396310822
+      },
+      {
+        "absolute_relative_error": 0.5327332256919808,
+        "holdout_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        "observed_heat_flux": 7.156474006536328,
+        "predicted_heat_flux": 10.96896548861924
       }
     ]
   },
@@ -1273,14 +1438,14 @@
   "parallel": {
     "executor": "thread",
     "identity_contract": "parallel holdout rows preserve serial holdout ordering",
-    "workers": 1
+    "workers": 4
   },
   "passed_shape_only": true,
   "promotion_gate": {
     "accepted_candidates": [],
     "interval_coverage_gate": 0.75,
-    "linear_weight_mean_abs_relative_error": 0.853638219650207,
-    "null_training_mean_mean_abs_relative_error": 0.7892038099536056,
+    "linear_weight_mean_abs_relative_error": 0.8447213326664013,
+    "null_training_mean_mean_abs_relative_error": 0.7188195373778768,
     "passed": false,
     "requires_beating_linear_weight_baseline": true,
     "requires_beating_training_mean_null": true,

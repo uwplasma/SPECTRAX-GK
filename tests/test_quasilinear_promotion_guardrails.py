@@ -278,6 +278,36 @@ def test_docs_without_nonpromotion_marker_fail_scope_check(tmp_path: Path) -> No
     assert f"doc_no_absolute_flux_overclaim:{doc}" in failed_metrics
 
 
+def test_wrapped_negative_absolute_flux_phrase_is_not_overclaim(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    report.write_text(
+        json.dumps(
+            _calibration_report(
+                claim_level="calibration_dataset",
+                passed=False,
+                holdout_error=4.0,
+            )
+        ),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(
+        doc,
+        (
+            "This result is scoped model-development evidence, not a\n"
+            "runtime/TOML absolute-flux predictor. Absolute-flux prediction not "
+            "promoted.\n"
+        ),
+    )
+
+    audit = mod.build_guardrail_audit([str(report)], [doc])
+
+    assert audit["passed"] is True
+    doc_rows = {row["doc"]: row for row in audit["doc_checks"]}
+    assert doc_rows[str(doc)]["overclaim_lines"] == []
+
+
 def test_manuscript_readiness_ql_lane_requires_scoped_nonabsolute_candidate(
     tmp_path: Path,
 ) -> None:

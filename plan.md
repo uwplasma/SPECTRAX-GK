@@ -1,3 +1,17 @@
+- 2026-06-11: Closed the shaped-tokamak-pressure external-VMEC repair as a
+  scoped high-grid nonlinear holdout. The full `n48/n64/n80`, `dt=0.04`,
+  `t=450` ladder fails only coarse-grid heat-flux agreement (`0.469 > 0.15`),
+  while retained `n64/n80` gates pass at `t=450` (`0.0789`) and `t=650`
+  (`0.0983` common, `0.0981` least). The high-grid horizon gate passes
+  (`0.0418` common, `0.1237` least), and the `n80` seed/timestep ensemble
+  passes on `t=[325,650]` with mean heat flux `7.156`, mean-relative spread
+  `0.0939`, and combined SEM/mean `0.0463`. The case is now in the
+  quasilinear ledger as high-grid admission evidence only. It makes the
+  current absolute/screening QL claims weaker, not stronger:
+  positive-growth mixing length has holdout mean error `3.42 > 0.35`, the
+  spectral-envelope candidate has uncertainty mean error `0.424 > 0.35`, and
+  no screening model is currently accepted after the shaped holdout.
+
 - 2026-06-11: Repaired the shaped-tokamak-pressure external-VMEC nonlinear
   holdout after the `dt=0.05` `n80` instability. The office `n64/n80`,
   `dt=0.04`, `t=450` reruns completed with finite diagnostics and passed the
@@ -280,9 +294,9 @@ historical logs live outside the release repository so clones stay small.
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
-| Quasilinear screening/model-development | 99.7% | Rank/correlation screening passes on the expanded ledger; strict candidate uncertainty/model-selection remains a near miss (`0.377 > 0.35`), and the ridge-regularization audit confirms the near miss is not a penalty-tuning artifact |
-| Universal absolute quasilinear-flux prediction | 72% | Still blocked: one-constant report fails (`1.91 > 0.35`), model-selection is failed, and two additional independent post-transient nonlinear holdouts are required |
-| Nonlinear holdout expansion/audits | 89% | Seven admitted holdouts; CTH-like is admitted only under high-grid policy; shaped-tokamak-pressure high-resolution `t=650` repair campaign is running; two more independent holdouts are needed for absolute-flux reconsideration |
+| Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
+| Universal absolute quasilinear-flux prediction | 73% | Still blocked: one-constant report fails (`3.42 > 0.35`), candidate uncertainty/model-selection fail (`0.424 > 0.35`), and at least one additional independent post-transient nonlinear holdout plus a better saturation model are required |
+| Nonlinear holdout expansion/audits | 94% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, not full coarse-to-high-grid convergence claims |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |

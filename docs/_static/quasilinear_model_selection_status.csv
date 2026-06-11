@@ -3,9 +3,9 @@ dataset_sufficiency_passed,False,blockers=['downstream_candidate_skill_gates_not
 candidate_uncertainty_passed,False,accepted=[]
 required_candidate_accepted,False,required=spectral_envelope_ridge accepted=[]
 required_candidate_eligible,True,eligibility_failures=[]
-required_candidate_transport_error,False,mean_abs_relative_error=0.37738980527841215 gate=0.35
-required_candidate_interval_coverage,True,coverage=0.8888888888888888 gate=0.75
-required_candidate_beats_training_mean_null,True,candidate=0.37738980527841215 null=0.7892038099536056
-required_candidate_beats_linear_weight,True,candidate=0.37738980527841215 linear_weight=0.853638219650207
+required_candidate_transport_error,False,mean_abs_relative_error=0.4237826936689464 gate=0.35
+required_candidate_interval_coverage,True,coverage=0.8 gate=0.75
+required_candidate_beats_training_mean_null,True,candidate=0.4237826936689464 null=0.7188195373778768
+required_candidate_beats_linear_weight,True,candidate=0.4237826936689464 linear_weight=0.8447213326664013
 absolute_flux_not_promoted,True,promoted_reports=0
 calibration_reports_have_holdout_metrics,True,missing_holdout_metrics=0

@@ -512,7 +512,6 @@ def write_candidate_uncertainty_figure(
     set_plot_style()
     candidates = dict(report["candidates"])
     null_rows = list(report["null_training_mean_baseline"]["rows"])
-    case_labels = [row["holdout_case"].replace("_long_window", "").replace("_nonlinear_window", "") for row in null_rows]
 
     fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.4), constrained_layout=True)
     ax0, ax1 = axes
@@ -552,16 +551,43 @@ def write_candidate_uncertainty_figure(
             label=payload["label"],
             linewidth=1.2,
         )
-    label_offset_cycle = ((4, 4), (8, 10), (10, -10), (10, 18))
-    label_offsets = [label_offset_cycle[i % len(label_offset_cycle)] for i in range(len(case_labels))]
-    for label, xval, yval, offset in zip(
-        case_labels,
-        observed_all,
-        [row["predicted_heat_flux"] for row in candidates[next(iter(candidates))]["rows"]],
-        label_offsets,
-        strict=True,
-    ):
-        ax0.annotate(label, (xval, yval), xytext=offset, textcoords="offset points", fontsize=7)
+    short_labels = {
+        "cyclone_long_window": "Cyclone",
+        "cyclone_miller_long_window": "Cyclone Miller",
+        "hsx_nonlinear_window": "HSX",
+        "w7x_nonlinear_window": "W7-X",
+        "dshape_external_vmec_t250_window": "D-shaped",
+        "itermodel_external_vmec_t350_window": "ITERModel",
+        "updown_asym_external_vmec_t450_window": "up-down VMEC",
+        "circular_external_vmec_t450_window": "circular",
+        "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like",
+        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "shaped-pressure",
+    }
+    if "spectral_envelope_ridge" in candidates:
+        spectral_rows = list(candidates["spectral_envelope_ridge"]["rows"])
+        label_indices = sorted(
+            range(len(spectral_rows)),
+            key=lambda idx: float(spectral_rows[idx]["absolute_relative_error"]),
+            reverse=True,
+        )[:5]
+        label_offsets = ((12, 16), (12, -20), (-62, 18), (-58, -18), (12, 28))
+        for idx, offset in zip(label_indices, label_offsets, strict=True):
+            row = spectral_rows[idx]
+            label = short_labels.get(str(row["holdout_case"]), str(row["holdout_case"]))
+            ax0.annotate(
+                label,
+                (float(row["observed_heat_flux"]), float(row["predicted_heat_flux"])),
+                xytext=offset,
+                textcoords="offset points",
+                fontsize=7,
+                arrowprops={"arrowstyle": "-", "color": "0.45", "linewidth": 0.6},
+                bbox={
+                    "boxstyle": "round,pad=0.15",
+                    "fc": "white",
+                    "ec": "0.85",
+                    "alpha": 0.78,
+                },
+            )
     ax0.set_xscale("log")
     ax0.set_yscale("log")
     ax0.set_xlim(lim_lo, lim_hi)

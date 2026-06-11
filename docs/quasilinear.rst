@@ -68,15 +68,15 @@ instead of a single uncalibrated mixing-length constant.
 For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
 research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
-validated absolute nonlinear flux predictor. The current nine-case
+validated absolute nonlinear flux predictor. The current ten-case
 train/holdout calibration portfolio validates the input plumbing and rejects
-the legacy one-constant family, with CTH-like external VMEC admitted only
-through the explicit high-grid policy. The simple-rule and candidate-model
-sweeps have been regenerated on that expanded ledger. The richer
-``spectral_envelope_ridge`` candidate passes rank/correlation screening, but
-its uncertainty/model-selection gate is a near miss rather than an accepted
-absolute-flux model; it is not exposed as a runtime saturation law or universal
-transport model.
+the legacy one-constant family, with CTH-like and shaped-pressure external VMEC
+admitted only through explicit high-grid policies. The simple-rule and
+candidate-model sweeps have been regenerated on that expanded ledger. The
+richer ``spectral_envelope_ridge`` candidate is the least-bad reduced model,
+but it misses the strict transport and rank-screening gates after the
+shaped-pressure holdout is added; it is not exposed as a runtime saturation law
+or universal transport model.
 
 Executable usage
 ----------------
@@ -609,12 +609,13 @@ gate before they can be used in calibration. The audit tool
 ``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
 each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
 passes for the current Cyclone, Cyclone Miller, HSX, W7-X, D-shaped
-external-VMEC, ITERModel, up-down asymmetric, circular, and high-grid-admitted
-CTH-like external-VMEC calibration inputs in the nine-case portfolio. The
-CTH-like row is matched through the explicit high-grid admission gate rather
-than through the failed coarse-grid pilot. The same audit would still fail if
-an exploratory or non-converged pilot such as the older CTH-like feasibility
-trace were inserted directly as a train/holdout point.
+external-VMEC, ITERModel, up-down asymmetric, circular, high-grid-admitted
+CTH-like, and high-grid-admitted shaped-pressure external-VMEC calibration
+inputs in the ten-case portfolio. The CTH-like and shaped-pressure rows are
+matched through explicit high-grid admission gates rather than through failed
+coarse-grid pilots. The same audit would still fail if an exploratory or
+non-converged pilot such as the older CTH-like feasibility trace were inserted
+directly as a train/holdout point.
 The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
 metadata promotion guard: it requires finite nonlinear window means and
 standard deviations, train/holdout artifact provenance, passed held-out gates
@@ -705,21 +706,21 @@ demonstrates that the implemented linear weights and nonlinear-window ingestion
 are working, while a transferable saturation model remains an open research
 task.
 
-The manuscript-facing combined report broadens this test to nine
+The manuscript-facing combined report broadens this test to ten
 electrostatic-compatible nonlinear windows. It fits Cyclone and external-VMEC
 ITERModel, then holds out Cyclone Miller, HSX, W7-X, D-shaped external VMEC,
-up-down asymmetric external VMEC, circular external VMEC, and CTH-like
-external VMEC admitted under the high-grid policy. The nonlinear input
-validation passes, but the one-constant model still fails with held-out mean
-relative error about ``1.91``. The older simple saturation-rule sweep also
-fails on the pre-CTH ledger: positive-growth mixing length is the least-bad
-simple rule at about ``2.11`` mean held-out relative error, while the
-training-mean null baseline is about ``1.20``. The accepted
-``spectral_envelope_ridge`` candidate reaches about ``0.295`` mean relative
-error with interval coverage ``7/8`` on its pre-CTH candidate ledger; keep it labeled as
+up-down asymmetric external VMEC, circular external VMEC, CTH-like external
+VMEC, and shaped-pressure external VMEC admitted under the high-grid policy.
+The nonlinear input validation passes, but the one-constant model still fails
+with held-out mean relative error about ``3.42``. The simple saturation-rule
+sweep also fails on this ledger: positive-growth mixing length gives mean
+held-out relative error about ``3.42``, raw linear weight about ``2.87``, and
+the training-mean null baseline about ``1.09``. The reduced
+``spectral_envelope_ridge`` candidate reaches about ``0.424`` mean relative
+error with interval coverage ``8/10`` and is kept labeled as
 ``candidate_model_development_not_runtime_option`` until additional
-electrostatic holdouts, electromagnetic channels, and optimized-equilibrium
-audits close.
+independent holdouts, better saturation physics, electromagnetic channels, and
+optimized-equilibrium audits close.
 
 The report is generated with:
 
@@ -861,11 +862,11 @@ is retained as a negative absolute-flux result and should not be presented as a
 validated W7-X transport model.
 
 The manuscript-facing combined holdout panel now puts two training geometries
-(Cyclone and the admitted external-VMEC ITERModel case) together with seven
+(Cyclone and the admitted external-VMEC ITERModel case) together with eight
 held-out nonlinear windows: Cyclone Miller, HSX, W7-X, the admitted D-shaped
 external-VMEC case, the admitted up-down asymmetric external-VMEC case, the
-admitted circular external-VMEC case, and the CTH-like external-VMEC case
-admitted only by the high-grid policy.
+admitted circular external-VMEC case, and the CTH-like and shaped-pressure
+external-VMEC cases admitted only by high-grid policies.
 
 .. image:: _static/quasilinear_stellarator_train_holdout.png
    :alt: Combined quasilinear train/holdout calibration including stellarator and external VMEC holdouts
@@ -875,26 +876,27 @@ This combined report is also ``calibration_dataset`` and ``passed = false``.
 It is the clearest current figure for the absolute-flux story: one-constant
 mixing length does not transfer across the present tokamak, stellarator, and
 external-VMEC nonlinear windows. The fitted heat-flux scale uses only the two
-training points and still leaves the seven holdouts at mean absolute relative
-error about ``1.91``, with the worst held-out error about ``8.08``. The
-external-VMEC points are included only after their high-grid convergence gates
-passed or after a scoped high-grid admission gate passed: D-shaped tokamak at
-``t = 250``, ITERModel at ``t = 350``, up-down asymmetric tokamak at
-``t = 450``, circular tokamak at ``t = 450``, and CTH-like external VMEC on
-the ``t=[350,700]`` high-grid replicate window. The
-result is useful precisely because it blocks premature absolute quasilinear
-transport claims and motivates the next saturation-model sweep.
+training points and still leaves the eight holdouts at mean absolute relative
+error about ``3.42``, with shaped-pressure as the worst held-out transfer case.
+The external-VMEC points are included only after their high-grid convergence
+gates passed or after a scoped high-grid admission gate passed: D-shaped
+tokamak at ``t = 250``, ITERModel at ``t = 350``, up-down asymmetric tokamak
+at ``t = 450``, circular tokamak at ``t = 450``, CTH-like external VMEC on the
+``t=[350,700]`` high-grid replicate window, and shaped-pressure external VMEC
+on the ``t=[325,650]`` high-grid replicate window. The result is useful
+precisely because it blocks premature absolute quasilinear transport claims
+and motivates the next saturation-model sweep.
 
 Saturation-rule sweep
 ---------------------
 
-The first saturation-rule sweep compares three one-scalar intensity rules using
-the pre-CTH train/holdout split: fit one multiplicative scale on the two
-training geometries and score the holdouts then present. The tested rules are the current
-positive-growth mixing-length rule, the raw linear heat-flux weight, and an
-absolute-growth mixing-length diagnostic that gives stable branches nonzero
-intensity. The last rule is included only as a diagnostic stress test; it is
-not a validated physical saturation rule.
+The saturation-rule sweep compares three one-scalar intensity rules using the
+current ten-case train/holdout split: fit one multiplicative scale on the two
+training geometries and score the eight held-out windows. The tested rules are
+the current positive-growth mixing-length rule, the raw linear heat-flux
+weight, and an absolute-growth mixing-length diagnostic that gives stable
+branches nonzero intensity. The last rule is included only as a diagnostic
+stress test; it is not a validated physical saturation rule.
 
 .. code-block:: bash
 
@@ -910,20 +912,19 @@ quasilinear spectra, nonlinear window summaries, or validation gates.
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
    :width: 100%
 
-All tested one-scalar rules fail the held-out absolute-flux gate. On that
-pre-CTH sweep, the current
-positive-growth mixing-length rule is still the best of the three, but its
-holdout mean absolute relative error is about ``2.11``. The raw linear-weight
-rule is worse at about ``2.68``, and the absolute-growth diagnostic is worse
-again at about ``3.32``. The figure also reports a training-mean null baseline;
-that null gives holdout mean relative error about ``1.20``. It is not a
-quasilinear model, but it is a necessary reviewer check: no calibrated
-saturation rule should be promoted unless it beats this null baseline as well
-as the linear-weight baseline. The JSON companion carries the same
-``promotion_gate`` and currently has no accepted rules. This narrows the next
-research task: the admitted external-VMEC cases strengthen the negative
-transfer evidence, but absolute-flux prediction still needs a richer
-saturation/intensity model than any one-scalar fit tested here.
+All tested one-scalar rules fail the held-out absolute-flux gate. On the
+current ten-case sweep, the raw linear-weight rule is the least-bad simple rule
+with holdout mean absolute relative error about ``2.87``. Positive-growth
+mixing length is about ``3.42``, and the absolute-growth diagnostic is about
+``4.46``. The figure also reports a training-mean null baseline; that null
+gives holdout mean relative error about ``1.09``. It is not a quasilinear
+model, but it is a necessary reviewer check: no calibrated saturation rule
+should be promoted unless it beats this null baseline as well as the
+linear-weight baseline. The JSON companion carries the same ``promotion_gate``
+and currently has no accepted rules. This narrows the next research task: the
+admitted external-VMEC cases strengthen the negative transfer evidence, but
+absolute-flux prediction still needs a richer saturation/intensity model than
+any one-scalar fit tested here.
 
 Shape-aware saturation diagnostic
 ---------------------------------
@@ -1009,17 +1010,17 @@ acceptance remains the same as the serial report.
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
 
-The stricter expanded ledger now includes the high-grid CTH-like external-VMEC
-ensemble as a held-out nonlinear point. On that nine-case ledger, the reduced
-``spectral_envelope_ridge`` candidate is the best candidate but is not
-accepted by the uncertainty gate: it reaches mean relative error about
-``0.377`` with interval coverage ``8/9``, just above the ``0.35`` transport
-gate. The calibrated linear-weight baseline is worse (about ``0.854``), the
-training-mean null is about ``0.789``, and the broader four-feature
-``linear_state_ridge`` candidate remains ineligible because its five fitted
-parameters still exceed the training-volume gate. This is the intended
-research posture after admitting CTH-like evidence: keep the small
-spectrum-aware candidate as a useful rank-screening model, but not as an
+The stricter expanded ledger now includes the high-grid CTH-like and
+shaped-pressure external-VMEC ensembles as held-out nonlinear points. On that
+ten-case ledger, the reduced ``spectral_envelope_ridge`` candidate is still the
+best candidate but is not accepted by the uncertainty gate: it reaches mean
+relative error about ``0.424`` with interval coverage ``8/10``, above the
+``0.35`` transport gate. The calibrated linear-weight baseline is worse
+(about ``0.845``), the training-mean null is about ``0.719``, and the broader
+four-feature ``linear_state_ridge`` candidate remains ineligible because its
+five fitted parameters still exceed the training-volume gate. This is the
+intended research posture after admitting tougher external-VMEC evidence: keep
+the small spectrum-aware candidate as model-development signal, but not as an
 uncertainty-validated flux predictor.
 
 Regularization sensitivity audit
@@ -1043,22 +1044,21 @@ is intentional: the artifact is a guardrail, not a promoted runtime model.
    :alt: Quasilinear candidate regularization audit
    :width: 100%
 
-The best tracked penalty is ``lambda = 0.3``. It gives full-ledger mean
-relative error about ``0.377``, held-out mean relative error about ``0.355``,
-and prediction-interval coverage ``8/9``. No tested penalty passes the
+The best tracked penalty is ``lambda = 0.7``. It gives full-ledger mean
+relative error about ``0.423``, held-out mean relative error about ``0.415``,
+and prediction-interval coverage ``8/10``. No tested penalty passes the
 ``0.35`` transport gate. The conclusion is therefore stable under this
 regularization sweep: the spectral-envelope candidate is useful as a
-rank-screening/model-development diagnostic, but not as an absolute heat-flux
-predictor.
+model-development diagnostic, but not as an absolute heat-flux predictor.
 
 Stellarator usefulness summary
 ------------------------------
 
 The stellarator-focused summary below is generated from existing validation
 artifacts only; it does not refit a model or add any unvalidated nonlinear
-points. It compares the admitted HSX and W7-X nonlinear windows against the
-current quasilinear candidates, then records the present status of the QA and
-QH optimization families.
+points. It compares the admitted HSX, W7-X, CTH-like, and shaped-pressure
+nonlinear windows against the current quasilinear candidates, then records the
+present status of the QA and QH optimization families.
 
 .. code-block:: bash
 
@@ -1074,10 +1074,12 @@ positive-growth mixing-length rule predicts zero because the tracked short
 linear branches are stable under ``gamma_floor = 0``, while the admitted
 nonlinear heat-flux windows are finite. That is a direct fail for this simple
 absolute-flux proxy. The raw linear-weight fit is nonzero but overpredicts
-both stellarator holdouts by roughly a factor of four. The reduced
-``spectral_envelope_ridge`` candidate is much closer for HSX and W7-X and
-remains the best current scoped model-development candidate, but it is not a
-runtime saturation law and not a universal stellarator transport model.
+both stellarator holdouts by roughly a factor of four. The shaped-pressure
+holdout is the opposite stress test: the one-scalar positive-growth rule
+overpredicts it strongly. The reduced ``spectral_envelope_ridge`` candidate is
+closer for HSX and W7-X and remains the best current scoped model-development
+candidate, but it fails the current ten-case transport and rank-screening gates
+and is not a runtime saturation law or universal stellarator transport model.
 
 This behavior is consistent with the literature rather than surprising. Modern
 tokamak quasilinear transport models separate linear flux weights from an
@@ -1088,9 +1090,9 @@ transfer to damped modes [Hegna18]_, and zonal-flow dynamics [Tiwari25]_. The
 QHS/QAS comparison in [McKinney19]_ likewise emphasizes that linear growth
 rates alone are a weak proxy for saturated heat flux across quasi-symmetric
 stellarators. The SPECTRAX-GK conclusion is therefore: quasilinear metrics are
-useful for screening, differentiable optimization, and model-development
-figures, but reliable absolute nonlinear heat-flux prediction for QA, QH,
-W7-X, and HSX requires more matched nonlinear holdouts and a richer
+useful for exploratory screening, differentiable optimization research, and
+model-development figures, but reliable absolute nonlinear heat-flux prediction
+for QA, QH, W7-X, and HSX requires more matched nonlinear holdouts and a richer
 saturation theory calibrated against those holdouts.
 
 Screening and rank-correlation gate
@@ -1114,18 +1116,18 @@ also pass.
    :width: 100%
 
 The current result is stronger than the simple one-constant story but still
-properly scoped. On the expanded nine-case electrostatic portfolio,
-``spectral_envelope_ridge`` is the only candidate that passes the full and
-held-out rank/correlation gates. Its full-portfolio Spearman correlation is
-about ``0.78`` with pairwise order accuracy about ``0.78``; held-out-only
-Spearman is about ``0.75`` with pairwise order accuracy about ``0.76``. The
-mean-error gate remains empty because the best held-out mean relative error is
-about ``0.355``, just above the ``0.35`` absolute-error gate. The simple
-positive-growth mixing-length rule, raw linear-weight fit, absolute-growth
-diagnostic, and broader linear-state ridge do not pass the screening gate.
-This supports using the spectral-envelope candidate as a rank-screening and
-model-development proxy in constrained studies, but not as a runtime/TOML
-absolute-flux predictor or universal stellarator saturation law.
+properly scoped. On the expanded ten-case electrostatic portfolio, no model
+passes both the full and held-out rank/correlation screening gates. The best
+candidate remains ``spectral_envelope_ridge`` with full-portfolio Spearman
+correlation about ``0.66`` and pairwise order accuracy about ``0.71``;
+held-out-only Spearman is about ``0.60`` with pairwise order accuracy about
+``0.68``. Its held-out mean relative error is about ``0.423``, above the
+``0.35`` absolute-error gate. The simple positive-growth mixing-length rule,
+raw linear-weight fit, absolute-growth diagnostic, and broader linear-state
+ridge do not pass the screening gate either. This supports using the
+spectral-envelope candidate as a model-development diagnostic only, not as a
+runtime/TOML absolute-flux predictor, promoted rank screener, or universal
+stellarator saturation law.
 The next calibration step is not a looser threshold; it is additional
 independent, replicated, post-transient nonlinear holdouts.
 
@@ -1164,8 +1166,8 @@ model fit is attempted. It requires:
 
 The tracked gate now fails closed on downstream candidate skill for the
 expanded candidate-model dataset.
-There are now nine admitted electrostatic-compatible cases, two explicit
-training geometries, and seven held-out geometries. That is enough data volume
+There are now ten admitted electrostatic-compatible cases, two explicit
+training geometries, and eight held-out geometries. That is enough data volume
 for the one-parameter linear-weight candidate, the two-parameter
 shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge``
 candidate, though not yet for the five-parameter ``linear_state_ridge`` model.
@@ -1195,17 +1197,18 @@ and are we still avoiding an absolute-flux overclaim?
    :alt: Quasilinear model-selection status and claim-boundary guardrails
    :width: 100%
 
-The current status does not pass after the CTH-like holdout is admitted. The
-``spectral_envelope_ridge`` candidate has leave-one-geometry-out mean relative
-error about ``0.377`` and interval coverage ``8/9``. It beats the calibrated
-linear-weight baseline (``0.854``) but is above the ``0.35`` transport gate and
-does not pass the downstream candidate-skill gate. The model-selection status
+The current status does not pass after the CTH-like and shaped-pressure
+holdouts are admitted. The ``spectral_envelope_ridge`` candidate has
+leave-one-geometry-out mean relative error about ``0.424`` and interval
+coverage ``8/10``. It beats the calibrated linear-weight baseline (``0.845``)
+but is above the ``0.35`` transport gate and does not pass the downstream
+candidate-skill gate. The model-selection status
 therefore records blockers ``dataset_sufficiency_passed``,
 ``candidate_uncertainty_passed``, ``required_candidate_accepted``, and
 ``required_candidate_transport_error``. This is a useful negative update for
-the manuscript: it preserves the rank-screening result while keeping this result fail-closed: not as a runtime/TOML
-absolute-flux predictor, universal saturation rule, or nonlinear turbulence-gradient
-optimization claim.
+the manuscript: it keeps the reduced-model ledger fail-closed, not as a
+runtime/TOML absolute-flux predictor, universal saturation rule, promoted rank
+screener, or nonlinear turbulence-gradient optimization claim.
 
 The companion claim-boundary artifact
 ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` is
@@ -1237,12 +1240,12 @@ data product is needed before absolute-flux promotion can be reconsidered?
    :alt: Quasilinear holdout gap report and absolute-flux promotion blocker
    :width: 100%
 
-The current report admits seven holdouts and two training references, but it
+The current report admits eight holdouts and two training references, but it
 keeps ``absolute_flux_promoted = false`` because the aggregate held-out
-absolute-flux error remains about ``1.91`` against the ``0.35`` gate. The
-``spectral_envelope_ridge`` candidate remains the best rank-screening result,
-but its uncertainty/model-selection gate is not accepted. Its mean
-leave-one-geometry-out relative error is about ``0.377`` on the expanded
+absolute-flux error remains about ``3.42`` against the ``0.35`` gate. The
+``spectral_envelope_ridge`` candidate remains the best reduced candidate, but
+its uncertainty/model-selection gate is not accepted. Its mean
+leave-one-geometry-out relative error is about ``0.424`` on the expanded
 ledger, above the ``0.35`` gate, and that number is not a saturated
 absolute-flux promotion because it comes from the candidate-selection
 uncertainty report rather than a passed absolute train/holdout calibration
@@ -1250,40 +1253,39 @@ artifact.
 
 The JSON sidecar now carries explicit
 ``absolute_flux_promotion_requirements`` and
-``screening_promotion_requirements`` blocks. For the current frozen artifacts
-it records an error factor of about ``5.45`` over the absolute-flux gate, with
-Cyclone Miller as the worst admitted holdout (``Q_i = 4.26`` observed versus
-``38.7`` predicted). It also records that both the full-portfolio and
-held-out-only rank/correlation screening gates pass for
-``spectral_envelope_ridge``. Screening is still not promoted because the report
-requires at least two additional independent passed holdouts to reduce
-rank-correlation fragility; the external-VMEC-family and non-axisymmetric
-external-VMEC-family coverage gates are already satisfied by the CTH-like
-high-grid admission. These are evidence requirements, not automatic promotion
+``screening_promotion_requirements`` blocks. For the current frozen artifacts,
+no full-portfolio or held-out-only screening model is accepted after adding the
+shaped-pressure holdout, and one additional independent passed holdout is still
+required before screening promotion can be reconsidered. The external-VMEC
+family coverage gates are satisfied by CTH-like and shaped-pressure high-grid
+admissions, but these are evidence requirements, not automatic promotion
 criteria; any future model must still pass the held-out transport-error gate,
 prediction interval/skill gates, and provenance checks on the same frozen case
 ledger.
 
-The report tracks ``13`` excluded candidates. The shaped-tokamak pressure
-candidate is one of those exclusions: it is finite and late-window stable at
-``t = 450``, but its ``48x48x32`` and ``64x64x40`` heat-flux windows differ by
-about ``0.306``, above the ``0.15`` grid-agreement gate. The report currently
-identifies the external-VMEC family as the highest-leverage next source
-because an ITERModel window already passes as training data and the nearest
-tracked holdout gap is a near-miss in the same family. The new
-``ITERModel_reference`` same-family audit passes at ``t = 450``, but it is
-classified as reproducibility evidence rather than an independent holdout
-because that family is already consumed by a training reference.
+The report now tracks the shaped-tokamak-pressure reference as a scoped
+high-grid admission rather than as an excluded failed-family candidate. The
+full ``n48/n64/n80``, ``t = 450``, ``dt = 0.04`` ladder fails only because the
+coarse ``n48`` trace is not converged: the common/least pairwise heat-flux
+shift is about ``0.469``, above the ``0.15`` gate. The retained ``n64/n80``
+pair passes at both ``t = 450`` and ``t = 650`` with common-window relative
+differences about ``0.0789`` and ``0.0983``. The high-grid time-horizon gate
+also passes, with common/least changes about ``0.0418``/``0.1237``, and the
+``n80`` seed/timestep ensemble passes on ``t=[325,650]`` with mean heat flux
+``7.16``, mean-relative spread ``0.0939``, and combined SEM/mean ``0.0463``.
+The dedicated high-grid admission sidecar therefore admits this case only
+under coarse-grid exclusion. It is not a full ``n48/n64/n80`` convergence claim
+and not an absolute-flux promotion.
 
-After the CTH-like modified-protocol admission, the refreshed runbook selects
-the shaped-tokamak-pressure reference as the next legitimate independent
-holdout repair. The selected launch uses the already-screened unstable branch
-(``gamma = 0.0473`` at ``k_y rho_i = 0.4762``), raises the grid ladder from the
-failed ``48x48x32``/``64x64x40`` pair to ``64x64x40``/``80x80x48``/
-``96x96x56``, and extends the restart ladder to ``t = 650``. The campaign is
-a modified-protocol repair of a failed grid-agreement gate, not a promotion:
-the resulting window can enter the calibration ledger only if the new
-post-transient high-grid gate passes.
+The added holdout makes the quasilinear model-development ledger more honest
+and more difficult. The portfolio now contains ten electrostatic-compatible
+cases with eight holdouts. Positive-growth mixing-length transfer has
+holdout mean relative error about ``3.42`` against the ``0.35`` transport gate;
+the best spectral-envelope candidate has leave-one-geometry-out mean error
+about ``0.424`` and no longer passes the full or held-out rank/correlation
+screening gates. Absolute-flux promotion remains blocked by transport error,
+screening failure, and the need for at least one more independent converged
+nonlinear holdout.
 
 The matched strict QA full-sweep audit is also deliberately excluded from this
 calibration ledger. The office campaign completed the raw baseline, linear-
@@ -1321,11 +1323,12 @@ gate must pass before a new point can enter the calibration set.
 The current runbook is intentionally blocked for unchanged replays. The
 ITERModel preferred-family audit has now passed, so replaying the same
 ``wout_ITERModel_reference.nc`` ladder would not create independent holdout
-leverage. The unchanged shaped-tokamak pressure case is also demoted because
-its tracked ``t = 450`` high-grid convergence gate failed. Families with a
-recent failed external-VMEC convergence gate are demoted until the rerun
-protocol is materially changed, for example by increasing resolution or
-changing the candidate. The generated JSON sidecar includes replayable
+leverage. The unchanged shaped-tokamak pressure case is also demoted because it
+is already admitted as a scoped high-grid holdout; replaying the same family
+would not provide independent evidence. Families with a recent failed
+external-VMEC convergence gate are demoted until the rerun protocol is
+materially changed, for example by increasing resolution or changing the
+candidate. The generated JSON sidecar includes replayable
 ``write_external_vmec_holdout_configs.py`` commands only when an admissible
 launch target exists, the recommended high-grid horizons, and the fail-closed
 acceptance requirements: ``split = holdout``, passed grid/window convergence,
@@ -1527,21 +1530,17 @@ as useful convergence-history artifacts.
    :alt: External circular tokamak VMEC seed/timestep replicate gate
    :width: 100%
 
-The shaped-tokamak pressure candidate was then run through the same
-``48x48x32`` / ``64x64x40`` ladder to ``t = 450``. This is a scientifically
-useful negative result rather than a calibration point. Both traces are finite
-and their late windows are statistically interpretable: the ``48x48x32``
-common-window heat flux is about ``11.45`` with relative slope
-``6.3e-5`` per time unit, and the ``64x64x40`` common-window heat flux is
-about ``8.41`` with relative slope ``-9.3e-4`` per time unit. The pair fails
-only the grid-agreement gate: the common-window and least-window symmetric
-relative heat-flux differences are both about ``0.306``. The candidate stays
-excluded from quasilinear calibration until a higher-resolution or otherwise
-modified protocol demonstrates grid convergence.
-
-.. image:: _static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.png
-   :alt: External shaped-tokamak pressure VMEC nonlinear t450 high-grid convergence gate
-   :width: 100%
+The shaped-tokamak pressure candidate was then repaired with a materially
+changed high-grid protocol. The same-protocol full-grid sidecar intentionally
+keeps the failed ``n48/n64/n80`` ladder visible: ``n48`` is finite but not
+converged, and the full-grid common/least heat-flux shift is about ``0.469``.
+After excluding only that coarse grid, the retained ``n64/n80`` pair passes at
+``t = 450`` and ``t = 650``. The time-horizon and seed/timestep ensemble gates
+then admit the case as a scoped high-grid nonlinear holdout with mean heat
+flux ``7.16`` on ``t=[325,650]``. The tracked admission sidecar is
+``docs/_static/external_vmec_shaped_tokamak_pressure_dt0p04_high_grid_admission_gate.json``;
+PNG/PDF traces are deliberately omitted from git because the compact JSON/CSV
+sidecars and office NetCDF provenance are sufficient for release evidence.
 
 The next screened unstable axisymmetric external-VMEC candidate,
 ``wout_ITERModel_reference.nc``, does close the gate after one bounded
@@ -1725,7 +1724,10 @@ passes on ``t=[350,700]`` with mean heat flux ``9.60``, mean-relative spread
 ``0.041``, and combined SEM/mean ``0.052``. The dedicated
 ``tools/check_external_vmec_high_grid_admission.py`` gate therefore admits
 CTH-like as a scoped high-grid holdout while explicitly excluding any full
-``n48/n64/n80`` convergence claim.
+``n48/n64/n80`` convergence claim. The shaped-tokamak-pressure repair uses the
+same admission policy: full-grid failure is retained as a coarse-grid warning,
+while the ``n64/n80`` high-grid, time-horizon, and replicate gates define the
+scoped holdout evidence.
 
 .. image:: _static/external_vmec_cth_like_grid_convergence_gate.png
    :alt: External CTH-like VMEC nonlinear grid convergence gate

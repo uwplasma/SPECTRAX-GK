@@ -812,12 +812,15 @@ def _audit_failed_baseline_contract(
         }
         spectral = by_model.get("spectral_envelope_ridge", {})
         simple = by_model.get("positive_mixing_length", {})
-        return (
-            gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
-            and gates.get("accepted_holdout_screening_models") == ["spectral_envelope_ridge"]
-            and gates.get("mean_error_gate_models") == []
+        no_absolute_promotion = (
+            gates.get("mean_error_gate_models") == []
             and gates.get("accepted_absolute_flux_models") == []
             and gates.get("absolute_flux_promotion_passed") is False
+            and simple.get("screening_gate_passed") is False
+        )
+        scoped_screening_pass = (
+            gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
+            and gates.get("accepted_holdout_screening_models") == ["spectral_envelope_ridge"]
             and gates.get("holdout_screening_correlation_passed") is True
             and spectral.get("screening_gate_passed") is True
             and spectral.get("holdout_screening_gate_passed") is True
@@ -825,7 +828,21 @@ def _audit_failed_baseline_contract(
             and float(spectral["spearman"]) >= 0.75
             and _finite_number(spectral.get("holdout_spearman"))
             and float(spectral["holdout_spearman"]) >= 0.75
-            and simple.get("screening_gate_passed") is False,
+        )
+        fail_closed_screening = (
+            gates.get("accepted_screening_models") == []
+            and gates.get("accepted_holdout_screening_models") == []
+            and gates.get("screening_correlation_passed") is False
+            and gates.get("holdout_screening_correlation_passed") is False
+            and spectral.get("screening_gate_passed") is False
+            and spectral.get("holdout_screening_gate_passed") is False
+            and _finite_number(spectral.get("spearman"))
+            and _finite_number(spectral.get("holdout_spearman"))
+            and float(spectral["spearman"]) < float(gates.get("spearman_gate", 0.75))
+            and float(spectral["holdout_spearman"]) < float(gates.get("spearman_gate", 0.75))
+        )
+        return (
+            no_absolute_promotion and (scoped_screening_pass or fail_closed_screening),
             (
                 f"screening={gates.get('accepted_screening_models')} "
                 f"holdout_screening={gates.get('accepted_holdout_screening_models')} "
@@ -845,14 +862,23 @@ def _audit_failed_baseline_contract(
         screening_reqs = data.get("screening_promotion_requirements")
         screening_reqs = screening_reqs if isinstance(screening_reqs, dict) else {}
         blockers = promotion.get("blockers", [])
+        screening_passed = (
+            screening.get("screening_correlation_passed") is True
+            and screening.get("holdout_screening_correlation_passed") is True
+        )
+        screening_fail_closed = (
+            screening.get("screening_correlation_passed") is False
+            and screening.get("holdout_screening_correlation_passed") is False
+            and "full_portfolio_screening_correlation_passed" in screening_reqs.get("blockers", [])
+            and "heldout_screening_correlation_passed" in screening_reqs.get("blockers", [])
+        )
         return (
             promotion.get("passed") is False
             and "absolute_flux_predictor_not_promoted" in blockers
             and "screening_requirement:additional_independent_holdouts_needed" in blockers
             and status.get("absolute_flux_promoted") is False
             and status.get("passed") is False
-            and screening.get("screening_correlation_passed") is True
-            and screening.get("holdout_screening_correlation_passed") is True
+            and (screening_passed or screening_fail_closed)
             and screening_reqs.get("screening_promoted") is False
             and "additional_independent_holdouts_needed" in screening_reqs.get("blockers", [])
             and _finite_number(status.get("holdout_mean_abs_relative_error")),
@@ -1008,11 +1034,16 @@ def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
         text = path.read_text(encoding="utf-8")
         lower = _normalized_text(text)
         scope_present = any(marker in lower for marker in DOC_SCOPE_MARKERS)
-        overclaim_lines = [
-            f"{lineno}: {line.strip()}"
-            for lineno, line in enumerate(text.splitlines(), start=1)
-            if _line_overclaims_absolute_flux(line)
-        ]
+        text_lines = text.splitlines()
+        overclaim_lines = []
+        for idx, line in enumerate(text_lines):
+            context = " ".join(
+                text_lines[max(0, idx - 1) : min(len(text_lines), idx + 2)]
+            )
+            if _line_overclaims_absolute_flux(line) and _line_overclaims_absolute_flux(
+                context
+            ):
+                overclaim_lines.append(f"{idx + 1}: {line.strip()}")
         gates.append(
             _gate(
                 f"doc_scope_marker:{_repo_relative(path)}",
