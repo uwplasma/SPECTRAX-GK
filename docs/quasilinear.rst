@@ -1333,7 +1333,10 @@ candidate. The generated JSON sidecar includes replayable
 launch target exists, the recommended high-grid horizons, and the fail-closed
 acceptance requirements: ``split = holdout``, passed grid/window convergence,
 a post-transient transport window, and independence from the training
-reference.
+reference. The current sidecar contains no launch commands; its nearest tracked
+gap is the ITERModel ``t = 250`` high-grid convergence near-miss, which still
+fails the common-window slope/CV gates and therefore cannot enter calibration
+without a materially improved rerun.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
