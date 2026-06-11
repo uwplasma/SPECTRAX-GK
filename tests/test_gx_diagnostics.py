@@ -454,12 +454,16 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
         )
 
 
-def test_gx_wg_masks_dealiased_nonfinite_state_before_squaring() -> None:
-    _cfg, grid, _geom, params, _cache, vol_fac, _flux_fac = _multispecies_setup(
+def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> None:
+    _cfg, grid, _geom, params, cache, vol_fac, flux_fac = _multispecies_setup(
         Nl=2, Nm=2
     )
     shape = (2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.ones(shape, dtype=np.complex64)
+    field_shape = (grid.ky.size, grid.kx.size, grid.z.size)
+    phi_base = np.ones(field_shape, dtype=np.complex64) * (1.0 + 0.25j)
+    apar_base = np.ones(field_shape, dtype=np.complex64) * (0.1 - 0.05j)
+    bpar_base = np.ones(field_shape, dtype=np.complex64) * (0.02 + 0.03j)
     masked_indices = np.argwhere(~np.asarray(grid.dealias_mask, dtype=bool))
     assert masked_indices.size > 0
     ky_idx, kx_idx = masked_indices[0]
@@ -467,6 +471,18 @@ def test_gx_wg_masks_dealiased_nonfinite_state_before_squaring() -> None:
     contaminated[:, :, :, ky_idx, kx_idx, :] = np.inf + 0.0j
     clean = base.copy()
     clean[:, :, :, ky_idx, kx_idx, :] = 0.0
+    phi_contaminated = phi_base.copy()
+    apar_contaminated = apar_base.copy()
+    bpar_contaminated = bpar_base.copy()
+    phi_contaminated[ky_idx, kx_idx, :] = np.inf + 0.0j
+    apar_contaminated[ky_idx, kx_idx, :] = np.inf + 0.0j
+    bpar_contaminated[ky_idx, kx_idx, :] = np.inf + 0.0j
+    phi_clean = phi_base.copy()
+    apar_clean = apar_base.copy()
+    bpar_clean = bpar_base.copy()
+    phi_clean[ky_idx, kx_idx, :] = 0.0
+    apar_clean[ky_idx, kx_idx, :] = 0.0
+    bpar_clean[ky_idx, kx_idx, :] = 0.0
 
     wg = gx_Wg(jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True)
     wg_clean = gx_Wg(jnp.asarray(clean), grid, params, vol_fac, use_dealias=True)
@@ -480,6 +496,173 @@ def test_gx_wg_masks_dealiased_nonfinite_state_before_squaring() -> None:
     assert np.isfinite(np.asarray(wg))
     np.testing.assert_allclose(np.asarray(wg), np.asarray(wg_clean))
     for got, expected in zip(resolved, resolved_clean, strict=True):
+        assert np.all(np.isfinite(np.asarray(got)))
+        np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
+
+    energy_pairs = [
+        (
+            gx_Wphi(
+                jnp.asarray(phi_contaminated), cache, params, vol_fac, use_dealias=True
+            ),
+            gx_Wphi(jnp.asarray(phi_clean), cache, params, vol_fac, use_dealias=True),
+        ),
+        (
+            gx_Wapar(jnp.asarray(apar_contaminated), cache, vol_fac, use_dealias=True),
+            gx_Wapar(jnp.asarray(apar_clean), cache, vol_fac, use_dealias=True),
+        ),
+    ]
+    for got, expected in energy_pairs:
+        assert np.isfinite(np.asarray(got))
+        np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
+
+    resolved_pairs = [
+        (
+            gx_Wphi_resolved(
+                jnp.asarray(phi_contaminated),
+                cache,
+                params,
+                vol_fac,
+                use_dealias=True,
+            ),
+            gx_Wphi_resolved(
+                jnp.asarray(phi_clean), cache, params, vol_fac, use_dealias=True
+            ),
+        ),
+        (
+            gx_Wapar_resolved(
+                jnp.asarray(apar_contaminated),
+                cache,
+                vol_fac,
+                nspecies=2,
+                use_dealias=True,
+            ),
+            gx_Wapar_resolved(
+                jnp.asarray(apar_clean),
+                cache,
+                vol_fac,
+                nspecies=2,
+                use_dealias=True,
+            ),
+        ),
+        (
+            gx_phi2_resolved(jnp.asarray(phi_contaminated), grid, vol_fac),
+            gx_phi2_resolved(jnp.asarray(phi_clean), grid, vol_fac),
+        ),
+        (
+            gx_heat_flux_resolved_species(
+                jnp.asarray(contaminated),
+                jnp.asarray(phi_contaminated),
+                jnp.asarray(apar_contaminated),
+                jnp.asarray(bpar_contaminated),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+            gx_heat_flux_resolved_species(
+                jnp.asarray(clean),
+                jnp.asarray(phi_clean),
+                jnp.asarray(apar_clean),
+                jnp.asarray(bpar_clean),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+        ),
+    ]
+    for got_tuple, expected_tuple in resolved_pairs:
+        for got, expected in zip(got_tuple, expected_tuple, strict=True):
+            assert np.all(np.isfinite(np.asarray(got)))
+            np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
+
+    channel_pairs = [
+        (
+            gx_heat_flux_species(
+                jnp.asarray(contaminated),
+                jnp.asarray(phi_contaminated),
+                jnp.asarray(apar_contaminated),
+                jnp.asarray(bpar_contaminated),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+            gx_heat_flux_species(
+                jnp.asarray(clean),
+                jnp.asarray(phi_clean),
+                jnp.asarray(apar_clean),
+                jnp.asarray(bpar_clean),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+        ),
+        (
+            gx_particle_flux_species(
+                jnp.asarray(contaminated),
+                jnp.asarray(phi_contaminated),
+                jnp.asarray(apar_contaminated),
+                jnp.asarray(bpar_contaminated),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+            gx_particle_flux_species(
+                jnp.asarray(clean),
+                jnp.asarray(phi_clean),
+                jnp.asarray(apar_clean),
+                jnp.asarray(bpar_clean),
+                cache,
+                grid,
+                params,
+                flux_fac,
+                use_dealias=True,
+            ),
+        ),
+        (
+            gx_turbulent_heating_species(
+                jnp.asarray(contaminated),
+                0.9 * jnp.asarray(contaminated),
+                jnp.asarray(phi_contaminated),
+                jnp.asarray(apar_contaminated),
+                jnp.asarray(bpar_contaminated),
+                0.9 * jnp.asarray(phi_contaminated),
+                0.9 * jnp.asarray(apar_contaminated),
+                0.9 * jnp.asarray(bpar_contaminated),
+                cache,
+                grid,
+                params,
+                vol_fac,
+                0.1,
+                use_dealias=True,
+            ),
+            gx_turbulent_heating_species(
+                jnp.asarray(clean),
+                0.9 * jnp.asarray(clean),
+                jnp.asarray(phi_clean),
+                jnp.asarray(apar_clean),
+                jnp.asarray(bpar_clean),
+                0.9 * jnp.asarray(phi_clean),
+                0.9 * jnp.asarray(apar_clean),
+                0.9 * jnp.asarray(bpar_clean),
+                cache,
+                grid,
+                params,
+                vol_fac,
+                0.1,
+                use_dealias=True,
+            ),
+        ),
+    ]
+    for got, expected in channel_pairs:
         assert np.all(np.isfinite(np.asarray(got)))
         np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
 

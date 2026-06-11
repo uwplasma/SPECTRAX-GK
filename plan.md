@@ -48,12 +48,14 @@
 - 2026-06-11: The live shaped-tokamak-pressure `n80/t450` office run completed
   the integrator but failed artifact validation because `Wg_t` became
   non-finite at an early saved sample. Root cause is a diagnostic masking bug:
-  `gx_Wg` and `gx_Wg_resolved` multiplied `abs(G)**2` by the dealias mask after
-  squaring, so `inf * 0` in a masked/dealiased mode produced `NaN`. Patched both
-  reductions to zero masked modes before squaring and added a regression test
-  that injects `inf` into a masked mode while preserving strict validation for
-  unmasked diagnostics. The shaped holdout remains unadmitted until the repaired
-  `n80/n96` reruns and high-grid/window gates pass.
+  GX-style diagnostic reductions multiplied energy/flux factors by the dealias
+  mask after intermediate products, so `inf * 0` in a masked/dealiased mode
+  could produce `NaN`. Patched free-energy, field-energy, `phi2`, heat-flux,
+  particle-flux, and turbulent-heating reductions to zero masked modes before
+  products or moment contractions. Added a regression test that injects `inf`
+  into a masked mode while preserving strict validation for unmasked diagnostics.
+  The shaped holdout remains unadmitted until the repaired `n80/n96` reruns and
+  high-grid/window gates pass.
 
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
