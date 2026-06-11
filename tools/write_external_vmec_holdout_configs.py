@@ -462,24 +462,47 @@ def _bundle_base(path: Path) -> Path:
     return path.with_suffix("") if path.suffix == ".nc" else path
 
 
+def _bundle_complete_condition(base: Path) -> str:
+    return " && ".join(
+        f"[ -f {base.as_posix()}.{ext} ]" for ext in ("out.nc", "restart.nc", "big.nc")
+    )
+
+
+def _skip_existing_bundle_command(base: Path, command: str) -> str:
+    condition = _bundle_complete_condition(base)
+    return (
+        f"if {condition}; then "
+        f"echo '[skip-existing] {base.as_posix()} bundle already exists'; "
+        f"else {command}; fi"
+    )
+
+
 def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
     """Write launch and restart-copy commands next to generated configs."""
 
     previous_by_grid: dict[tuple[str, str], WrittenConfig] = {}
     configs: list[dict[str, Any]] = []
     launch_commands: list[str] = []
+    launch_skip_existing_commands: list[str] = []
     restart_seed_commands: list[str] = []
+    restart_seed_skip_existing_commands: list[str] = []
     staged_ladder_commands: list[str] = []
+    staged_ladder_skip_existing_commands: list[str] = []
     direct_full_horizon_launch_commands: list[str] = []
+    direct_full_horizon_skip_existing_launch_commands: list[str] = []
     segment_step_counts: dict[str, int] = {}
     direct_full_horizon_step_counts: dict[str, int] = {}
     manifest: dict[str, Any] = {
         "kind": "external_vmec_holdout_config_manifest",
         "configs": configs,
         "launch_commands": launch_commands,
+        "launch_skip_existing_commands": launch_skip_existing_commands,
         "restart_seed_commands": restart_seed_commands,
+        "restart_seed_skip_existing_commands": restart_seed_skip_existing_commands,
         "staged_ladder_commands": staged_ladder_commands,
+        "staged_ladder_skip_existing_commands": staged_ladder_skip_existing_commands,
         "direct_full_horizon_launch_commands": direct_full_horizon_launch_commands,
+        "direct_full_horizon_skip_existing_launch_commands": direct_full_horizon_skip_existing_launch_commands,
         "segment_step_counts": segment_step_counts,
         "direct_full_horizon_step_counts": direct_full_horizon_step_counts,
         "restart_ladder_note": (
@@ -488,6 +511,11 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             "the direct_full_horizon_launch_command when starting from t=0. "
             "Running a final segment command from t=0 intentionally reaches only "
             "the segment duration, not the horizon encoded in the file name."
+        ),
+        "skip_existing_note": (
+            "The *_skip_existing_* command lists are safe wrappers around the "
+            "corresponding commands. They skip only when the complete output "
+            "bundle (.out.nc, .restart.nc, and .big.nc) already exists."
         ),
     }
     for item in written:
@@ -525,6 +553,11 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
         )
         launch_commands.append(segment_command)
         direct_full_horizon_launch_commands.append(direct_command)
+        output_base = _bundle_base(item.output_path)
+        launch_skip_existing_commands.append(_skip_existing_bundle_command(output_base, segment_command))
+        direct_full_horizon_skip_existing_launch_commands.append(
+            _skip_existing_bundle_command(output_base, direct_command)
+        )
         segment_step_counts[config_key] = int(item.steps)
         direct_full_horizon_step_counts[config_key] = int(direct_steps)
         variant_key = "" if item.variant is None else item.variant.label
@@ -539,8 +572,12 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
                 "done"
             )
             restart_seed_commands.append(restart_command)
+            restart_skip = _skip_existing_bundle_command(dst_base, restart_command)
+            restart_seed_skip_existing_commands.append(restart_skip)
             staged_ladder_commands.append(restart_command)
+            staged_ladder_skip_existing_commands.append(restart_skip)
         staged_ladder_commands.append(segment_command)
+        staged_ladder_skip_existing_commands.append(_skip_existing_bundle_command(output_base, segment_command))
         previous_by_grid[previous_key] = item
     path = out_dir / "run_manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")

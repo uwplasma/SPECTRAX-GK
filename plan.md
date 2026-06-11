@@ -26,6 +26,16 @@
   (`0.377 > 0.35`) and universal absolute-flux promotion remains blocked
   (`1.91 > 0.35`, two more independent holdouts required).
 
+- 2026-06-11: Added skip-existing command lists to the external-VMEC nonlinear
+  holdout config manifest. Future office campaigns can use
+  `staged_ladder_skip_existing_commands` or
+  `direct_full_horizon_skip_existing_launch_commands` to resume interrupted
+  long runs or manually distribute remaining grids without treating partial
+  outputs as complete: each wrapper skips only after the full `.out.nc`,
+  `.restart.nc`, and `.big.nc` bundle exists. The live shaped-tokamak-pressure
+  campaign remains unchanged; the completed `n64/t450` segment passed the basic
+  runtime output gate with late-window mean heat flux about `8.39`.
+
 - 2026-06-10: Added and passed the explicit CTH-like high-grid admission
   policy. The case is now admitted to the quasilinear model-development ledger
   as a scoped high-grid nonlinear transport holdout, with `n48` explicitly

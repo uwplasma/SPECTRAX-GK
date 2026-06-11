@@ -55,6 +55,10 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert len(payload["direct_full_horizon_launch_commands"]) == 6
     assert len(payload["staged_ladder_commands"]) == 10
     assert len(payload["restart_seed_commands"]) == 4
+    assert len(payload["launch_skip_existing_commands"]) == 6
+    assert len(payload["direct_full_horizon_skip_existing_launch_commands"]) == 6
+    assert len(payload["staged_ladder_skip_existing_commands"]) == 10
+    assert len(payload["restart_seed_skip_existing_commands"]) == 4
     assert payload["configs"][0]["dt"] == 0.25
     assert payload["configs"][2]["steps"] == 2
     assert payload["configs"][2]["direct_full_horizon_steps"] == 6
@@ -76,6 +80,16 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert "candidate_nonlinear_t2_n8" in payload["restart_seed_commands"][2]
     assert payload["staged_ladder_commands"][2] == payload["restart_seed_commands"][0]
     assert payload["staged_ladder_commands"][3] == payload["launch_commands"][2]
+    guarded = payload["staged_ladder_skip_existing_commands"][0]
+    assert "[skip-existing]" in guarded
+    assert "candidate_nonlinear_t1_n8.out.nc" in guarded
+    assert "candidate_nonlinear_t1_n8.restart.nc" in guarded
+    assert "candidate_nonlinear_t1_n8.big.nc" in guarded
+    restart_guarded = payload["restart_seed_skip_existing_commands"][0]
+    assert "candidate_nonlinear_t1p5_n8.out.nc" in restart_guarded
+    assert "candidate_nonlinear_t1p5_n8.restart.nc" in restart_guarded
+    assert "candidate_nonlinear_t1p5_n8.big.nc" in restart_guarded
+    assert "skip_existing_note" in payload
 
 
 def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) -> None:

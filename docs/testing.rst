@@ -312,6 +312,12 @@ enter quasilinear calibration reports or optimization studies. Its
 ``direct_full_horizon_launch_commands`` can be launched with
 ``tools/run_nonlinear_gradient_direct_campaign.py`` even though the manifest is
 an external-VMEC holdout manifest rather than a nonlinear-gradient manifest.
+For manual restart-ladder launches, prefer the paired
+``staged_ladder_skip_existing_commands`` or
+``direct_full_horizon_skip_existing_launch_commands`` lists; those wrappers
+skip only after the full ``.out.nc``/``.restart.nc``/``.big.nc`` bundle exists,
+so interrupted office runs can be resumed without accidentally treating a
+partial output as complete.
 That launcher now preserves manifest command provenance, honors leading
 ``PYTHONPATH=...``/``CUDA_VISIBLE_DEVICES=...`` assignments, and uses one
 work-conserving worker per listed GPU so a shorter grid does not leave a GPU
