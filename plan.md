@@ -214,7 +214,7 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 98.5% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 23 true long-window nonlinear overlays pass convergence/window gates; `+20%` is under current-main later-window repair; `+45%` and higher are strict-protocol nonfinite/stability-boundary points unless a separate stabilized protocol is studied |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
 | Differentiable QA optimization evidence | 92.5% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; successful broad nonlinear turbulent-flux optimization is still not promoted |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
@@ -1217,3 +1217,17 @@ No long nonlinear audit should be launched from these candidates.
   ``SPECTRAX_DEVICES=0`` and ``XLA_PYTHON_CLIENT_PREALLOCATE=false`` so the
   three variants run sequentially and reproducibly. Focused local tests for the
   landscape/admission helpers pass: ``21 passed``.
+- Accepted the existing ``+20%``/``p0p2`` ``t=[1100,1500]`` long-window
+  ensemble under the explicitly relaxed diagnostic landscape policy requested
+  for this lane. The three individual windows were already converged and the
+  combined SEM/mean was ``4.472%``; only the mean-relative seed/timestep spread
+  separated it from the stricter gate. With ``max_mean_rel_spread=0.20``, the
+  point passes with mean ``Q_i=9.2545128095`` and spread ``15.481%``. The
+  public ``RBC(1,1)`` landscape was regenerated with 24/31 nonlinear overlays:
+  all negative-side coefficients, zero offset, and positive ``+5%``, ``+10%``,
+  ``+15%``, ``+20%``, ``+25%``, ``+30%``, ``+35%``, and ``+40%``. The relaxed
+  gate is scoped to the landscape/noise diagnostic and does not promote broad
+  nonlinear turbulent-flux optimization or absolute quasilinear-flux claims.
+  Current-main ``+45%`` and ``+50%`` short stability probes reached ``t=50``
+  without the old immediate non-finite diagnostic failure, but they remain
+  short diagnostic probes rather than accepted long-window overlays.

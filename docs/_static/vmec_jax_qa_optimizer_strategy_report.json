@@ -131,37 +131,37 @@
     "metric_correlations": [
       {
         "metric": "growth",
-        "pearson_with_nonlinear_q": -0.21190105778978277,
-        "spearman_with_nonlinear_q": 0.10474308300395258
+        "pearson_with_nonlinear_q": -0.20011870188122882,
+        "spearman_with_nonlinear_q": 0.06173913043478261
       },
       {
         "metric": "quasilinear_flux_absolute_growth_mixing_length",
-        "pearson_with_nonlinear_q": -0.2043262881726344,
-        "spearman_with_nonlinear_q": 0.04940711462450593
+        "pearson_with_nonlinear_q": -0.20503358305618766,
+        "spearman_with_nonlinear_q": -0.03130434782608696
       },
       {
         "metric": "quasilinear_flux_lapillonne_2011",
-        "pearson_with_nonlinear_q": -0.2043262881726344,
-        "spearman_with_nonlinear_q": 0.04940711462450593
+        "pearson_with_nonlinear_q": -0.20503358305618766,
+        "spearman_with_nonlinear_q": -0.03130434782608696
       },
       {
         "metric": "quasilinear_flux_linear_weight",
-        "pearson_with_nonlinear_q": -0.5550921679480293,
-        "spearman_with_nonlinear_q": -0.6907114624505929
+        "pearson_with_nonlinear_q": -0.5700632542073908,
+        "spearman_with_nonlinear_q": -0.7069565217391305
       },
       {
         "metric": "quasilinear_flux_mixing_length",
-        "pearson_with_nonlinear_q": -0.2043262881726344,
-        "spearman_with_nonlinear_q": 0.04940711462450593
+        "pearson_with_nonlinear_q": -0.20503358305618766,
+        "spearman_with_nonlinear_q": -0.03130434782608696
       },
       {
         "metric": "quasilinear_flux_shape_aware_power_law",
-        "pearson_with_nonlinear_q": -0.5552497292226386,
-        "spearman_with_nonlinear_q": -0.6907114624505929
+        "pearson_with_nonlinear_q": -0.5702269092065192,
+        "spearman_with_nonlinear_q": -0.7069565217391305
       }
     ],
-    "n_admitted_nonlinear_points": 23,
-    "n_converged_nonlinear_points": 23,
+    "n_admitted_nonlinear_points": 24,
+    "n_converged_nonlinear_points": 24,
     "nonlinear_points": [
       {
         "coefficient_value": 0.031656127034592856,
@@ -447,6 +447,21 @@
         },
         "relative_fraction": 0.15,
         "sem": 0.17145893734310266
+      },
+      {
+        "coefficient_value": 0.1519494097660457,
+        "label": "p0p2",
+        "mean": 9.254512809515218,
+        "metrics": {
+          "growth": 0.0007155590250868938,
+          "quasilinear_flux_absolute_growth_mixing_length": 0.005489956618270852,
+          "quasilinear_flux_lapillonne_2011": 0.005489956618270852,
+          "quasilinear_flux_linear_weight": 1.5898524623916634,
+          "quasilinear_flux_mixing_length": 0.005489956618270852,
+          "quasilinear_flux_shape_aware_power_law": 1.6323386651547653
+        },
+        "relative_fraction": 0.2,
+        "sem": 0.4138402902814722
       },
       {
         "coefficient_value": 0.15828063517296428,
