@@ -12,8 +12,12 @@
   negative evidence for current whole-state CPU nonlinear speedup, not a
   promotion; the production nonlinear domain-decomposition speedup lane remains
   at `55.0%` pending a communication-complete decomposed RHS/integrator with
-  CPU/GPU identity, transport-window, and profiler-backed speedup gates. Office
-  QA `t=1500` and Solovev CPU `dt=0.01` runs remain active and unharvested.
+  CPU/GPU identity, transport-window, and profiler-backed speedup gates. The
+  office QA growth-candidate `t=1500` `dt=0.04` run has now completed and the
+  existing postprocessed artifacts are consistent: the growth ensemble passes,
+  but the matched baseline-to-growth comparison gives only `0.60%` reduction
+  and fails the configured reduction gate, so it remains negative/non-promoted
+  evidence. Solovev CPU `dt=0.01` remains active and unharvested.
 
 - 2026-06-12: Harvested the first production-scope VMEC/Boozer held-out
   nonlinear transport artifact and kept broader claims fail-closed. The QH
