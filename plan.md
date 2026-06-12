@@ -21,6 +21,12 @@
   size passed (`tracked_total_bytes=49.87 MB`). GitHub Actions for the previous
   push is still queued. Office QA `t=1500` jobs are still running and should
   not be harvested until final `t≈1500`; Solovev remains queued behind them.
+  After commit `1920196`, the older office checkout could not be fast-forwarded
+  because untracked generated docs artifacts would be overwritten, so those
+  files were left untouched and a fresh checkout was created at
+  `/home/rjorge/spectrax_premanuscript_holdouts_20260612`. The same QH
+  held-out VMEC/Boozer configs were generated there and deferred launcher PID
+  `3425020` is waiting behind the active QA/Solovev queues.
 
 - 2026-06-12: Tightened the production nonlinear turbulent-flux optimization
   promotion guard to match the broader pre-manuscript requirement. The guard is
