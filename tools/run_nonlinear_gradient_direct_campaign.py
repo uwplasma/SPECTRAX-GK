@@ -202,6 +202,20 @@ def _write_status(
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _output_bundle_paths(output: Path) -> tuple[Path, ...]:
+    """Return the files that make a nonlinear runtime output restart-complete."""
+
+    name = output.name
+    if name.endswith(".out.nc"):
+        base = output.with_name(name[: -len(".out.nc")])
+        return tuple(base.with_suffix(f".{suffix}") for suffix in ("out.nc", "restart.nc", "big.nc"))
+    return (output,)
+
+
+def _output_bundle_complete(output: Path) -> bool:
+    return all(path.exists() and path.stat().st_size > 0 for path in _output_bundle_paths(output))
+
+
 def _run_one(
     task: DirectTask,
     *,
@@ -221,7 +235,9 @@ def _run_one(
         "gpu": gpu,
         "log": _repo_path(log_path),
     }
-    if skip_existing and task.output.exists() and task.output.stat().st_size > 0:
+    bundle_paths = _output_bundle_paths(task.output)
+    row["required_output_bundle"] = [_repo_path(path) for path in bundle_paths]
+    if skip_existing and _output_bundle_complete(task.output):
         return {**row, "status": "skipped", "returncode": 0, "elapsed_s": 0.0}
 
     start = time.monotonic()
@@ -281,12 +297,14 @@ def run_tasks(
                     skip_existing=skip_existing,
                 )
             except subprocess.TimeoutExpired as exc:
+                bundle_paths = _output_bundle_paths(task.output)
                 result = {
                     "state": task.state,
                     "label": task.label,
                     "command": task.command,
                     "config": _repo_path(task.config),
                     "output": _repo_path(task.output),
+                    "required_output_bundle": [_repo_path(path) for path in bundle_paths],
                     "gpu": gpu,
                     "log": _repo_path(log_dir / f"{task.output.stem}.gpu{gpu}.log"),
                     "status": "failed",

@@ -176,38 +176,43 @@
       "model": "absolute_growth_mixing_length",
       "label": "$|\\gamma|\\,\\hat Q/k_\\perp^2$",
       "source": "simple_saturation_rule",
-      "mean_abs_relative_error": 3.3245843428684867,
+      "mean_abs_relative_error": 4.464526858463534,
       "passed": false
     },
     {
       "model": "linear_weight",
       "label": "$\\hat Q$",
       "source": "simple_saturation_rule",
-      "mean_abs_relative_error": 2.6801413240896292,
+      "mean_abs_relative_error": 2.865107150222107,
       "passed": false
     },
     {
       "model": "positive_mixing_length",
       "label": "$\\max(\\gamma,0)\\,\\hat Q/k_\\perp^2$",
       "source": "simple_saturation_rule",
-      "mean_abs_relative_error": 2.114098664675138,
+      "mean_abs_relative_error": 3.418296167633783,
       "passed": false
     },
     {
       "model": "spectral_envelope_ridge",
       "label": "spectral envelope ridge",
       "source": "model_selection_status",
-      "mean_abs_relative_error": 0.29524327596674427,
-      "passed": true
+      "mean_abs_relative_error": 0.4237826936689464,
+      "passed": false
     }
   ],
   "long_window_nonlinear_audit": {
     "passed": true,
+    "raw_passed": true,
     "baseline_mean": 12.497835857108996,
     "optimized_mean": 10.19273263179093,
     "relative_reduction": 0.1844401904195982,
     "uncertainty_separation_sigma": 7.819308425110687,
-    "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit"
+    "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit",
+    "expected_claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit",
+    "claim_level_matches_expected": true,
+    "metrics_finite": true,
+    "blockers": []
   },
   "prelaunch_gates": [
     {
@@ -272,13 +277,20 @@
     }
   ],
   "summary": {
+    "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+    "claim_promotion_blockers": [
+      "direct_scalar_transport_branch_blocked",
+      "projected_transport_metric_not_improved",
+      "quasilinear_model_selection_not_promoted",
+      "simple_quasilinear_absolute_flux_not_promoted"
+    ],
     "qa_baseline_gate_passed": true,
     "direct_scalar_transport_gate_passed": false,
     "direct_scalar_transport_blocked": true,
     "projected_transport_gate_passed": true,
     "projected_transport_relative_metric_change": 0.0038143971469909088,
     "projected_transport_improved": false,
-    "quasilinear_model_selection_passed": true,
+    "quasilinear_model_selection_passed": false,
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "landscape_admission_passed": true,

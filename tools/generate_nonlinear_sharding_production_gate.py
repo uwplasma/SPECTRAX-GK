@@ -25,6 +25,13 @@ DEFAULT_MIN_DEVICES = 2
 DEFAULT_REQUIRED_BACKENDS = ("cpu", "gpu")
 DEFAULT_IDENTITY_ATOL = 1.0e-5
 DEFAULT_IDENTITY_RTOL = 1.0e-5
+IDENTITY_BLOCKERS = {
+    "identity_gate_failed",
+    "identity_abs_error_missing",
+    "identity_abs_error_above_tolerance",
+    "identity_rel_error_missing",
+    "identity_rel_error_above_tolerance",
+}
 
 
 def _json_clean(value: Any) -> Any:
@@ -84,6 +91,16 @@ def _identity_error_blockers(
     return tuple(blockers)
 
 
+def _repo_relative(path: Path) -> str:
+    """Return a stable artifact path for generated JSON/CSV metadata."""
+
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
 def load_rows(paths: list[Path]) -> list[dict[str, Any]]:
     """Load rows from sweep or combined nonlinear sharding artifacts."""
 
@@ -96,7 +113,7 @@ def load_rows(paths: list[Path]) -> list[dict[str, Any]]:
             item = dict(row)
             item.setdefault("backend", backend or str(item.get("backend", "")).lower())
             item["backend"] = str(item["backend"]).lower()
-            item["source"] = str(path)
+            item["source"] = _repo_relative(path)
             item["source_kind"] = source_kind
             rows.append(item)
     return rows
@@ -158,18 +175,11 @@ def _row_classification(
     """Classify rows for claim-boundary review without changing gate policy."""
 
     blocker_set = set(blockers)
-    identity_blockers = {
-        "identity_gate_failed",
-        "identity_abs_error_missing",
-        "identity_abs_error_above_tolerance",
-        "identity_rel_error_missing",
-        "identity_rel_error_above_tolerance",
-    }
     if "profile_row_error" in blocker_set:
         return "profile_error"
     if requested_devices < int(min_devices) or actual_devices < int(min_devices):
         return "reference_only"
-    if identity_blockers & blocker_set:
+    if IDENTITY_BLOCKERS & blocker_set:
         return "identity_failed"
     if "state_sharding_inactive" in blocker_set:
         return "inactive_or_fallback"
@@ -227,6 +237,110 @@ def _backend_summary(
     return summary
 
 
+def _tolerance_fraction(value: Any, tolerance: float) -> float:
+    metric = _finite_float(value)
+    tol = float(tolerance)
+    if not math.isfinite(metric) or tol <= 0.0:
+        return math.nan
+    return metric / tol
+
+
+def _worst_identity_error_row(
+    rows: list[dict[str, Any]],
+    *,
+    identity_atol: float,
+    identity_rtol: float,
+) -> dict[str, Any] | None:
+    finite_rows = [
+        row
+        for row in rows
+        if math.isfinite(_finite_float(row.get("max_abs_state_error")))
+        and math.isfinite(_finite_float(row.get("max_rel_state_error")))
+    ]
+    if not finite_rows:
+        return None
+    worst = max(
+        finite_rows,
+        key=lambda row: max(
+            _tolerance_fraction(row.get("max_abs_state_error"), identity_atol),
+            _tolerance_fraction(row.get("max_rel_state_error"), identity_rtol),
+        ),
+    )
+    return {
+        "backend": worst["backend"],
+        "requested_devices": worst["requested_devices"],
+        "actual_devices": worst["actual_devices"],
+        "state_sharding_active": worst["state_sharding_active"],
+        "identity_gate_pass": worst["identity_gate_pass"],
+        "max_abs_state_error": worst["max_abs_state_error"],
+        "max_rel_state_error": worst["max_rel_state_error"],
+        "identity_abs_tolerance_fraction": worst["identity_abs_tolerance_fraction"],
+        "identity_rel_tolerance_fraction": worst["identity_rel_tolerance_fraction"],
+        "classification": worst["classification"],
+        "source": worst["source"],
+    }
+
+
+def _identity_evidence_summary(
+    rows: list[dict[str, Any]],
+    required_backends: tuple[str, ...],
+    *,
+    identity_atol: float,
+    identity_rtol: float,
+) -> dict[str, dict[str, Any]]:
+    """Summarize identity coverage and error margins without speedup promotion."""
+
+    summary: dict[str, dict[str, Any]] = {}
+    for backend in required_backends:
+        backend_rows = [row for row in rows if row["backend"] == backend]
+        finite_abs = [
+            _finite_float(row.get("max_abs_state_error"))
+            for row in backend_rows
+            if math.isfinite(_finite_float(row.get("max_abs_state_error")))
+        ]
+        finite_rel = [
+            _finite_float(row.get("max_rel_state_error"))
+            for row in backend_rows
+            if math.isfinite(_finite_float(row.get("max_rel_state_error")))
+        ]
+        identity_complete_rows = [
+            row for row in backend_rows if not (IDENTITY_BLOCKERS & set(row["blockers"]))
+        ]
+        blocker_counts = {
+            blocker: sum(1 for row in backend_rows if blocker in set(row["blockers"]))
+            for blocker in sorted(IDENTITY_BLOCKERS)
+        }
+        max_abs_error = max(finite_abs) if finite_abs else math.nan
+        max_rel_error = max(finite_rel) if finite_rel else math.nan
+        summary[backend] = {
+            "row_count": len(backend_rows),
+            "identity_gate_pass_count": sum(
+                1 for row in backend_rows if bool(row["identity_gate_pass"])
+            ),
+            "finite_error_metric_count": sum(
+                1
+                for row in backend_rows
+                if math.isfinite(_finite_float(row.get("max_abs_state_error")))
+                and math.isfinite(_finite_float(row.get("max_rel_state_error")))
+            ),
+            "identity_within_tolerance_count": len(identity_complete_rows),
+            "active_identity_within_tolerance_count": sum(
+                1 for row in identity_complete_rows if bool(row["state_sharding_active"])
+            ),
+            "identity_blocker_counts": blocker_counts,
+            "max_abs_state_error": max_abs_error,
+            "max_rel_state_error": max_rel_error,
+            "max_abs_tolerance_fraction": _tolerance_fraction(max_abs_error, identity_atol),
+            "max_rel_tolerance_fraction": _tolerance_fraction(max_rel_error, identity_rtol),
+            "worst_finite_error_row": _worst_identity_error_row(
+                backend_rows,
+                identity_atol=identity_atol,
+                identity_rtol=identity_rtol,
+            ),
+        }
+    return summary
+
+
 def evaluate_production_gate(
     rows: list[dict[str, Any]],
     *,
@@ -274,6 +388,14 @@ def evaluate_production_gate(
             "parallel_efficiency": efficiency,
             "max_abs_state_error": row.get("max_abs_state_error"),
             "max_rel_state_error": row.get("max_rel_state_error"),
+            "identity_abs_tolerance_fraction": _tolerance_fraction(
+                row.get("max_abs_state_error"),
+                identity_atol,
+            ),
+            "identity_rel_tolerance_fraction": _tolerance_fraction(
+                row.get("max_rel_state_error"),
+                identity_rtol,
+            ),
             "identity_atol": float(identity_atol),
             "identity_rtol": float(identity_rtol),
             "source": row.get("source"),
@@ -316,6 +438,12 @@ def evaluate_production_gate(
             "identity_rtol": float(identity_rtol),
             "best_candidates": best_candidates,
             "backend_summary": _backend_summary(evaluated_rows, required_backends),
+            "identity_evidence_summary": _identity_evidence_summary(
+                evaluated_rows,
+                required_backends,
+                identity_atol=float(identity_atol),
+                identity_rtol=float(identity_rtol),
+            ),
             "blockers": tuple(gate_blockers),
             "rows": evaluated_rows,
             "claim_scope": (
@@ -343,6 +471,8 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         "parallel_efficiency",
         "max_abs_state_error",
         "max_rel_state_error",
+        "identity_abs_tolerance_fraction",
+        "identity_rel_tolerance_fraction",
         "classification",
         "candidate_passed",
         "blockers",

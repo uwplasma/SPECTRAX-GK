@@ -805,7 +805,9 @@ status, and the long-window nonlinear audit anchor:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_qa_transport_optimization_status.py --pdf
+   python tools/build_vmec_jax_qa_transport_optimization_status.py \
+     --campaign-admission-json docs/_static/nonlinear_campaign_admission_report.json \
+     --pdf
 
 .. figure:: _static/vmec_jax_qa_transport_optimization_status.png
    :alt: VMEC-JAX QA plus SPECTRAX-GK transport optimization status
@@ -815,18 +817,23 @@ status, and the long-window nonlinear audit anchor:
    solved-equilibrium branch passes the aspect/iota/QS gate. The direct scalar
    transport-residual branch is blocked because it breaks solved-equilibrium
    gates. Earlier projected-gradient artifacts in this status panel remain
-   useful negative controls, while the newer full max-mode-5 sweep and matched
-   audits above now provide positive single-point projected-candidate results.
-   The quasilinear model-selection entry is a scoped model-development result,
-   not a universal absolute-flux predictor. The nonlinear heat-flux bar pair is
-   the separate replicated long-window audit anchor used to keep
-   optimized-equilibrium transport claims distinct from reduced-objective
-   optimization attempts. The older prelaunch-policy row is retained as a
-   legacy control: it combines the earlier narrow-scan replicated landscape
-   admission, an 18-point selected-candidate reduced gate, and a deliberately
-   failing weak-reference gate. The refreshed strict-baseline ``RBC(1,1)``
-   landscape is documented separately below and needs new matched nonlinear
-   ensemble sidecars before it can feed the same admission policy.
+   useful negative controls; the regenerated JSON records
+   ``projected_transport_improved=false`` for this row, so it is not a promoted
+   projected-candidate transport result. The quasilinear model-selection entry
+   is a fail-closed model-development diagnostic, not a universal absolute-flux
+   predictor. The nonlinear heat-flux bar pair is the separate replicated
+   long-window audit anchor used to keep optimized-equilibrium transport claims
+   distinct from reduced-objective optimization attempts. The regenerated JSON
+   now also records ``claim_evidence_level`` and
+   ``claim_promotion_blockers``; a raw nonlinear-audit ``passed=true`` is
+   promoted only when its ``claim_level`` matches the expected matched-audit
+   level and the comparison metrics are finite. The older prelaunch-policy row
+   is retained as a legacy control: it combines the earlier narrow-scan
+   replicated landscape admission, an 18-point selected-candidate reduced gate,
+   and a deliberately failing weak-reference gate. The refreshed
+   strict-baseline ``RBC(1,1)`` landscape is documented separately below and
+   needs new matched nonlinear ensemble sidecars before it can feed the same
+   admission policy.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to

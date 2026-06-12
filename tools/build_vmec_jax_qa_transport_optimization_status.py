@@ -60,6 +60,7 @@ DEFAULT_LANDSCAPE_ADMISSION_JSON = ROOT / "docs" / "_static" / "vmec_boundary_tr
 DEFAULT_POSITIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_prelaunch_gate.json"
 DEFAULT_NEGATIVE_PRELAUNCH_JSON = ROOT / "docs" / "_static" / "strict_qa_top12_edge_prelaunch_gate.json"
 DEFAULT_CAMPAIGN_ADMISSION_JSON = ROOT / "docs" / "_static" / "nonlinear_campaign_admission_report.json"
+EXPECTED_NONLINEAR_AUDIT_CLAIM_LEVEL = "matched_baseline_to_optimized_replicated_nonlinear_transport_audit"
 
 
 def _repo_relative(path: Path) -> str:
@@ -336,6 +337,90 @@ def _campaign_admission_gate(path: Path) -> dict[str, Any]:
     }
 
 
+def _nonlinear_audit_summary(data: dict[str, Any]) -> dict[str, Any]:
+    comparison = data.get("comparison", {})
+    if not isinstance(comparison, dict):
+        comparison = {}
+    claim_level = data.get("claim_level")
+    baseline_mean = _finite_float(comparison.get("baseline_mean"))
+    optimized_mean = _finite_float(comparison.get("optimized_mean"))
+    relative_reduction = _finite_float(comparison.get("relative_reduction"))
+    uncertainty_separation_sigma = _finite_float(comparison.get("uncertainty_separation_sigma"))
+    metrics_finite = all(
+        math.isfinite(value)
+        for value in (
+            baseline_mean,
+            optimized_mean,
+            relative_reduction,
+            uncertainty_separation_sigma,
+        )
+    )
+    raw_passed = bool(data.get("passed", False))
+    claim_level_matches = claim_level == EXPECTED_NONLINEAR_AUDIT_CLAIM_LEVEL
+    blockers = []
+    if not raw_passed:
+        blockers.append("nonlinear_audit_raw_gate_failed")
+    if not claim_level_matches:
+        blockers.append("nonlinear_audit_claim_level_mismatch")
+    if not metrics_finite:
+        blockers.append("nonlinear_audit_metrics_nonfinite")
+    return {
+        "passed": raw_passed and claim_level_matches and metrics_finite,
+        "raw_passed": raw_passed,
+        "baseline_mean": baseline_mean,
+        "optimized_mean": optimized_mean,
+        "relative_reduction": relative_reduction,
+        "uncertainty_separation_sigma": uncertainty_separation_sigma,
+        "claim_level": claim_level,
+        "expected_claim_level": EXPECTED_NONLINEAR_AUDIT_CLAIM_LEVEL,
+        "claim_level_matches_expected": claim_level_matches,
+        "metrics_finite": metrics_finite,
+        "blockers": blockers,
+    }
+
+
+def _claim_evidence_level(
+    *,
+    qa_baseline_gate_passed: bool,
+    direct_scalar_transport_blocked: bool,
+    projected_transport_gate_passed: bool,
+    projected_transport_improved: bool,
+    quasilinear_model_selection_passed: bool,
+    simple_quasilinear_absolute_flux_promoted: bool,
+    long_window_nonlinear_audit_passed: bool,
+    nonlinear_prelaunch_policy_ready: bool,
+) -> tuple[str, list[str]]:
+    blockers = []
+    if not qa_baseline_gate_passed:
+        blockers.append("qa_baseline_solved_gate_not_passed")
+    if direct_scalar_transport_blocked:
+        blockers.append("direct_scalar_transport_branch_blocked")
+    if not projected_transport_gate_passed:
+        blockers.append("projected_transport_solved_gate_not_passed")
+    if not projected_transport_improved:
+        blockers.append("projected_transport_metric_not_improved")
+    if not quasilinear_model_selection_passed:
+        blockers.append("quasilinear_model_selection_not_promoted")
+    if not simple_quasilinear_absolute_flux_promoted:
+        blockers.append("simple_quasilinear_absolute_flux_not_promoted")
+    if not long_window_nonlinear_audit_passed:
+        blockers.append("matched_long_window_nonlinear_audit_not_passed")
+    if not nonlinear_prelaunch_policy_ready:
+        blockers.append("nonlinear_prelaunch_policy_not_ready")
+
+    if long_window_nonlinear_audit_passed:
+        level = "scoped_matched_replicated_nonlinear_audit"
+    elif nonlinear_prelaunch_policy_ready:
+        level = "nonlinear_campaign_prelaunch_ready"
+    elif projected_transport_gate_passed:
+        level = "solved_projected_candidate_screen"
+    elif qa_baseline_gate_passed:
+        level = "solved_qa_baseline_only"
+    else:
+        level = "blocked"
+    return level, blockers
+
+
 def build_payload(
     *,
     constraints_dir: Path = DEFAULT_CONSTRAINTS_DIR,
@@ -393,9 +478,7 @@ def build_payload(
         ),
         _campaign_admission_gate(campaign_admission_json),
     ]
-    comparison = nonlinear.get("comparison", {})
-    if not isinstance(comparison, dict):
-        comparison = {}
+    nonlinear_audit = _nonlinear_audit_summary(nonlinear)
     baseline_metric = projected_baseline["transport_metric_final"]
     projected_metric = candidates[1]["transport_metric_final"]
     projected_relative_change = (
@@ -410,6 +493,30 @@ def build_payload(
         if not bool(row["passed_solved_wout_gate"])
         or any(not bool(v) for v in row["gate_checks"].values())
     ]
+    qa_baseline_gate_passed = bool(candidates[0]["passed_solved_wout_gate"])
+    direct_scalar_transport_gate_passed = bool(direct_transport_candidate["passed_solved_wout_gate"])
+    direct_scalar_transport_blocked = not direct_scalar_transport_gate_passed
+    projected_transport_gate_passed = bool(candidates[1]["passed_solved_wout_gate"])
+    projected_transport_improved = bool(math.isfinite(projected_relative_change) and projected_relative_change < 0.0)
+    quasilinear_model_selection_passed = any(
+        row["model"] == "spectral_envelope_ridge" and bool(row["passed"]) for row in ql_rows
+    )
+    simple_quasilinear_absolute_flux_promoted = any(
+        row["source"] == "simple_saturation_rule" and bool(row["passed"]) for row in ql_rows
+    )
+    long_window_nonlinear_audit_passed = bool(nonlinear_audit["passed"])
+    nonlinear_prelaunch_policy_ready = all(bool(row["passed"]) for row in prelaunch_gates)
+    claim_evidence_level, claim_promotion_blockers = _claim_evidence_level(
+        qa_baseline_gate_passed=qa_baseline_gate_passed,
+        direct_scalar_transport_blocked=direct_scalar_transport_blocked,
+        projected_transport_gate_passed=projected_transport_gate_passed,
+        projected_transport_improved=projected_transport_improved,
+        quasilinear_model_selection_passed=quasilinear_model_selection_passed,
+        simple_quasilinear_absolute_flux_promoted=simple_quasilinear_absolute_flux_promoted,
+        long_window_nonlinear_audit_passed=long_window_nonlinear_audit_passed,
+        nonlinear_prelaunch_policy_ready=nonlinear_prelaunch_policy_ready,
+    )
+    claim_promotion_blockers.extend(nonlinear_audit["blockers"])
     return {
         "kind": "vmec_jax_qa_transport_optimization_status",
         "claim_scope": (
@@ -435,34 +542,25 @@ def build_payload(
         "candidates": candidates,
         "line_search_rows": line_search,
         "quasilinear_model_rows": ql_rows,
-        "long_window_nonlinear_audit": {
-            "passed": bool(nonlinear.get("passed", False)),
-            "baseline_mean": _finite_float(comparison.get("baseline_mean")),
-            "optimized_mean": _finite_float(comparison.get("optimized_mean")),
-            "relative_reduction": _finite_float(comparison.get("relative_reduction")),
-            "uncertainty_separation_sigma": _finite_float(comparison.get("uncertainty_separation_sigma")),
-            "claim_level": nonlinear.get("claim_level"),
-        },
+        "long_window_nonlinear_audit": nonlinear_audit,
         "prelaunch_gates": prelaunch_gates,
         "summary": {
-            "qa_baseline_gate_passed": bool(candidates[0]["passed_solved_wout_gate"]),
-            "direct_scalar_transport_gate_passed": bool(direct_transport_candidate["passed_solved_wout_gate"]),
-            "direct_scalar_transport_blocked": not bool(direct_transport_candidate["passed_solved_wout_gate"]),
-            "projected_transport_gate_passed": bool(candidates[1]["passed_solved_wout_gate"]),
+            "claim_evidence_level": claim_evidence_level,
+            "claim_promotion_blockers": claim_promotion_blockers,
+            "qa_baseline_gate_passed": qa_baseline_gate_passed,
+            "direct_scalar_transport_gate_passed": direct_scalar_transport_gate_passed,
+            "direct_scalar_transport_blocked": direct_scalar_transport_blocked,
+            "projected_transport_gate_passed": projected_transport_gate_passed,
             "projected_transport_relative_metric_change": projected_relative_change,
-            "projected_transport_improved": bool(math.isfinite(projected_relative_change) and projected_relative_change < 0.0),
-            "quasilinear_model_selection_passed": any(
-                row["model"] == "spectral_envelope_ridge" and bool(row["passed"]) for row in ql_rows
-            ),
-            "simple_quasilinear_absolute_flux_promoted": any(
-                row["source"] == "simple_saturation_rule" and bool(row["passed"]) for row in ql_rows
-            ),
-            "long_window_nonlinear_audit_passed": bool(nonlinear.get("passed", False)),
+            "projected_transport_improved": projected_transport_improved,
+            "quasilinear_model_selection_passed": quasilinear_model_selection_passed,
+            "simple_quasilinear_absolute_flux_promoted": simple_quasilinear_absolute_flux_promoted,
+            "long_window_nonlinear_audit_passed": long_window_nonlinear_audit_passed,
             "landscape_admission_passed": bool(prelaunch_gates[0]["passed"]),
             "positive_prelaunch_gate_passed": bool(prelaunch_gates[1]["passed"]),
             "negative_reference_blocks_weak_margin": bool(prelaunch_gates[2]["passed"]),
             "nonlinear_campaign_admission_ready": bool(prelaunch_gates[3]["passed"]),
-            "nonlinear_prelaunch_policy_ready": all(bool(row["passed"]) for row in prelaunch_gates),
+            "nonlinear_prelaunch_policy_ready": nonlinear_prelaunch_policy_ready,
             "blocked_candidates": blocked,
             "next_action": (
                 "Use the passing QA baseline and any constraint-preserving candidates that also pass the "
@@ -714,6 +812,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--landscape-admission-json", type=Path, default=DEFAULT_LANDSCAPE_ADMISSION_JSON)
     parser.add_argument("--positive-prelaunch-json", type=Path, default=DEFAULT_POSITIVE_PRELAUNCH_JSON)
     parser.add_argument("--negative-prelaunch-json", type=Path, default=DEFAULT_NEGATIVE_PRELAUNCH_JSON)
+    parser.add_argument("--campaign-admission-json", type=Path, default=DEFAULT_CAMPAIGN_ADMISSION_JSON)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--pdf", action="store_true", help="also write a PDF companion")
     return parser.parse_args()
@@ -733,6 +832,7 @@ def main() -> int:
         landscape_admission_json=args.landscape_admission_json,
         positive_prelaunch_json=args.positive_prelaunch_json,
         negative_prelaunch_json=args.negative_prelaunch_json,
+        campaign_admission_json=args.campaign_admission_json,
     )
     base = args.out.with_suffix("")
     base.with_suffix(".json").write_text(
@@ -754,6 +854,8 @@ def main() -> int:
                 "quasilinear_model_selection_passed": payload["summary"]["quasilinear_model_selection_passed"],
                 "long_window_nonlinear_audit_passed": payload["summary"]["long_window_nonlinear_audit_passed"],
                 "nonlinear_prelaunch_policy_ready": payload["summary"]["nonlinear_prelaunch_policy_ready"],
+                "claim_evidence_level": payload["summary"]["claim_evidence_level"],
+                "claim_promotion_blockers": payload["summary"]["claim_promotion_blockers"],
                 "paths": {
                     "png": str(args.out),
                     "json": str(base.with_suffix(".json")),

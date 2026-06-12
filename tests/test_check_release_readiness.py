@@ -149,12 +149,17 @@ spectrax-gk = "spectraxgk.cli:main"
   ],
   "summary": {
     "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": true,
+    "quasilinear_model_selection_passed": false,
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
     "nonlinear_campaign_admission_ready": true,
-    "negative_reference_blocks_weak_margin": true
+    "negative_reference_blocks_weak_margin": true,
+    "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+    "claim_promotion_blockers": [
+      "quasilinear_model_selection_not_promoted",
+      "simple_quasilinear_absolute_flux_not_promoted"
+    ]
   }
 }
 """.lstrip(),
@@ -355,7 +360,7 @@ def test_release_readiness_rejects_missing_optimization_prelaunch_policy(
   "prelaunch_gates": [],
   "summary": {
     "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": true,
+    "quasilinear_model_selection_passed": false,
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": false,
@@ -390,7 +395,7 @@ def test_release_readiness_requires_explicit_optimization_status_booleans(
   ],
   "summary": {
     "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": true,
+    "quasilinear_model_selection_passed": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
     "negative_reference_blocks_weak_margin": true
@@ -457,12 +462,17 @@ def test_release_readiness_rejects_stale_prelaunch_gate_rows(
   ],
   "summary": {
     "qa_baseline_gate_passed": true,
-    "quasilinear_model_selection_passed": true,
+    "quasilinear_model_selection_passed": false,
     "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
     "nonlinear_campaign_admission_ready": true,
-    "negative_reference_blocks_weak_margin": true
+    "negative_reference_blocks_weak_margin": true,
+    "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+    "claim_promotion_blockers": [
+      "quasilinear_model_selection_not_promoted",
+      "simple_quasilinear_absolute_flux_not_promoted"
+    ]
   }
 }
 """.lstrip(),

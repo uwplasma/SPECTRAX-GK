@@ -99,7 +99,11 @@ def _candidate(
             (root / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
 
 
-def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
+def _supporting_artifacts(
+    tmp_path: Path,
+    *,
+    nonlinear_claim_level: str = mod.EXPECTED_NONLINEAR_AUDIT_CLAIM_LEVEL,
+) -> dict[str, Path]:
     line_search = tmp_path / "line_search.json"
     line_search.write_text(
         json.dumps(
@@ -157,7 +161,7 @@ def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
         json.dumps(
             {
                 "passed": True,
-                "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit",
+                "claim_level": nonlinear_claim_level,
                 "comparison": {
                     "baseline_mean": 12.0,
                     "optimized_mean": 9.0,
@@ -221,6 +225,28 @@ def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
         ),
         encoding="utf-8",
     )
+    campaign_admission = tmp_path / "campaign_admission.json"
+    campaign_admission.write_text(
+        json.dumps(
+            {
+                "kind": "vmec_jax_nonlinear_campaign_admission_report",
+                "passed": True,
+                "claim_scope": "next nonlinear optimizer-campaign admission only",
+                "next_action": "launch bounded campaign",
+                "blockers": [],
+                "policy": {"minimum_landscape_relative_reduction": 0.1},
+                "selected_landscape_candidate": {"relative_reduction": 0.12},
+                "gates": [
+                    {
+                        "metric": "reduced_objective_sample_coverage",
+                        "passed": True,
+                        "value": 18,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     return {
         "line_search_json": line_search,
         "ql_rule_json": ql_rule,
@@ -229,6 +255,7 @@ def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
         "landscape_admission_json": landscape_admission,
         "positive_prelaunch_json": positive_prelaunch,
         "negative_prelaunch_json": negative_prelaunch,
+        "campaign_admission_json": campaign_admission,
     }
 
 
@@ -259,6 +286,9 @@ def test_build_payload_separates_gate_failures_from_transport_metrics(tmp_path: 
     assert payload["summary"]["long_window_nonlinear_audit_passed"] is True
     assert payload["summary"]["nonlinear_prelaunch_policy_ready"] is True
     assert payload["summary"]["negative_reference_blocks_weak_margin"] is True
+    assert payload["summary"]["claim_evidence_level"] == "scoped_matched_replicated_nonlinear_audit"
+    assert "direct_scalar_transport_branch_blocked" in payload["summary"]["claim_promotion_blockers"]
+    assert "projected_transport_metric_not_improved" in payload["summary"]["claim_promotion_blockers"]
     assert "direct scalar transport" in payload["summary"]["blocked_candidates"]
 
 
@@ -352,3 +382,47 @@ def test_status_admits_explicit_authoritative_rerun_wout(tmp_path: Path) -> None
     assert baseline["passed_solved_wout_gate"] is True
     assert baseline["authoritative_wout"].endswith("wout_final_rerun.nc")
     assert payload["summary"]["qa_baseline_gate_passed"] is True
+
+
+def test_nonlinear_audit_requires_expected_claim_level(tmp_path: Path) -> None:
+    constraints = tmp_path / "constraints"
+    direct = tmp_path / "direct"
+    projected_base = tmp_path / "projected_base"
+    projected_step = tmp_path / "projected_step"
+    _candidate(constraints, passed=True, metric=None)
+    _candidate(direct, passed=False, metric=None, qs=1.0)
+    _candidate(projected_base, passed=True, metric=0.1)
+    _candidate(projected_step, passed=True, metric=0.09)
+
+    payload = mod.build_payload(
+        constraints_dir=constraints,
+        direct_transport_dir=direct,
+        projected_baseline_dir=projected_base,
+        projected_step_dir=projected_step,
+        **_supporting_artifacts(tmp_path, nonlinear_claim_level="startup_window_observable"),
+    )
+    audit = payload["long_window_nonlinear_audit"]
+
+    assert audit["raw_passed"] is True
+    assert audit["claim_level_matches_expected"] is False
+    assert audit["passed"] is False
+    assert payload["summary"]["long_window_nonlinear_audit_passed"] is False
+    assert payload["summary"]["claim_evidence_level"] == "nonlinear_campaign_prelaunch_ready"
+    assert "nonlinear_audit_claim_level_mismatch" in payload["summary"]["claim_promotion_blockers"]
+
+
+def test_parse_args_accepts_campaign_admission_json(monkeypatch, tmp_path: Path) -> None:
+    campaign = tmp_path / "campaign.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "build_vmec_jax_qa_transport_optimization_status.py",
+            "--campaign-admission-json",
+            str(campaign),
+        ],
+    )
+
+    args = mod._parse_args()
+
+    assert args.campaign_admission_json == campaign

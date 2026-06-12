@@ -4,6 +4,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 
 def _load_tool_module():
     path = Path(__file__).resolve().parents[1] / "tools" / "generate_nonlinear_sharding_production_gate.py"
@@ -125,6 +127,56 @@ def test_nonlinear_sharding_production_gate_fails_closed_on_missing_error_metric
     assert summary["gate_passed"] is False
     assert summary["rows"][0]["classification"] == "identity_failed"
     assert "identity_abs_error_missing" in summary["rows"][0]["blockers"]
+    assert summary["rows"][0]["identity_abs_tolerance_fraction"] is None
+    assert summary["identity_evidence_summary"]["gpu"]["finite_error_metric_count"] == 0
+    assert (
+        summary["identity_evidence_summary"]["gpu"]["identity_blocker_counts"][
+            "identity_abs_error_missing"
+        ]
+        == 1
+    )
+
+
+def test_nonlinear_sharding_production_gate_reports_identity_evidence_by_backend() -> None:
+    mod = _load_tool_module()
+    cpu = _row(backend="cpu", speedup=1.3)
+    cpu["max_abs_state_error"] = 5.0e-6
+    cpu["max_rel_state_error"] = 2.0e-6
+    gpu = _row(backend="gpu", speedup=1.4)
+    gpu["max_abs_state_error"] = 2.0e-5
+    gpu["max_rel_state_error"] = 1.0e-6
+
+    summary = mod.evaluate_production_gate(
+        [cpu, gpu],
+        required_backends=("cpu", "gpu"),
+        min_speedup=1.20,
+        min_efficiency=0.50,
+        identity_atol=1.0e-5,
+        identity_rtol=1.0e-5,
+    )
+
+    cpu_evidence = summary["identity_evidence_summary"]["cpu"]
+    gpu_evidence = summary["identity_evidence_summary"]["gpu"]
+
+    assert cpu_evidence["row_count"] == 1
+    assert cpu_evidence["identity_gate_pass_count"] == 1
+    assert cpu_evidence["finite_error_metric_count"] == 1
+    assert cpu_evidence["identity_within_tolerance_count"] == 1
+    assert cpu_evidence["active_identity_within_tolerance_count"] == 1
+    assert cpu_evidence["max_abs_tolerance_fraction"] == pytest.approx(0.5)
+    assert cpu_evidence["max_rel_tolerance_fraction"] == pytest.approx(0.2)
+    assert cpu_evidence["worst_finite_error_row"]["requested_devices"] == 2
+    assert summary["rows"][0]["identity_abs_tolerance_fraction"] == pytest.approx(0.5)
+    assert summary["rows"][0]["identity_rel_tolerance_fraction"] == pytest.approx(0.2)
+
+    assert gpu_evidence["identity_within_tolerance_count"] == 0
+    assert gpu_evidence["max_abs_tolerance_fraction"] == pytest.approx(2.0)
+    assert (
+        gpu_evidence["identity_blocker_counts"]["identity_abs_error_above_tolerance"]
+        == 1
+    )
+    assert summary["rows"][1]["classification"] == "identity_failed"
+    assert summary["gate_passed"] is False
 
 
 def test_nonlinear_sharding_production_gate_classifies_reference_and_weak_scaling() -> None:

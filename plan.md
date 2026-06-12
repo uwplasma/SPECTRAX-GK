@@ -1,3 +1,20 @@
+- 2026-06-11: Tightened two release-facing evidence ledgers while QH nonlinear
+  runs continued on office. The QA transport optimization status now reports a
+  machine-readable `claim_evidence_level` and explicit
+  `claim_promotion_blockers`, and release readiness expects the current scoped
+  state: matched long-window nonlinear audit evidence is present, while QL
+  model selection and simple absolute-flux QL remain unpromoted. The nonlinear
+  sharding production-speedup gate now records per-backend identity-evidence
+  summaries and tolerance fractions; it remains `diagnostic_only` because the
+  GPU production speedup candidate is still missing.
+
+- 2026-06-11: Hardened the direct nonlinear campaign runner used by external
+  VMEC holdouts and nonlinear-gradient audits. `--skip-existing` now skips a
+  task only when the complete runtime bundle (`*.out.nc`, `*.restart.nc`, and
+  `*.big.nc`) exists, and status rows record the required bundle files. This
+  prevents interrupted long GPU runs from being mistaken for completed
+  restartable transport evidence.
+
 - 2026-06-11: Promoted the next external-VMEC nonlinear holdout work from a
   blocked replay to a launch-ready modified-protocol QH candidate. A bounded
   local screen of the `vmec_jax` `nfp4_QH_warm_start` fixture found a weak but

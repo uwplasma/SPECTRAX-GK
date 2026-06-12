@@ -80,13 +80,18 @@ TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
 OPTIMIZATION_STATUS_ARTIFACT = "docs/_static/vmec_jax_qa_transport_optimization_status.json"
 REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "qa_baseline_gate_passed": True,
-    "quasilinear_model_selection_passed": True,
+    "quasilinear_model_selection_passed": False,
     "simple_quasilinear_absolute_flux_promoted": False,
     "long_window_nonlinear_audit_passed": True,
     "nonlinear_prelaunch_policy_ready": True,
     "nonlinear_campaign_admission_ready": True,
     "negative_reference_blocks_weak_margin": True,
 }
+REQUIRED_OPTIMIZATION_CLAIM_EVIDENCE_LEVEL = "scoped_matched_replicated_nonlinear_audit"
+REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS = (
+    "quasilinear_model_selection_not_promoted",
+    "simple_quasilinear_absolute_flux_not_promoted",
+)
 REQUIRED_PRELAUNCH_GATE_ROWS = (
     {
         "label": "replicated landscape admission",
@@ -402,6 +407,37 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
                     "observed": observed,
                 }
             )
+    claim_evidence_level = summary.get("claim_evidence_level")
+    if claim_evidence_level != REQUIRED_OPTIMIZATION_CLAIM_EVIDENCE_LEVEL:
+        failed_flags.append(
+            {
+                "key": "claim_evidence_level",
+                "expected": REQUIRED_OPTIMIZATION_CLAIM_EVIDENCE_LEVEL,
+                "observed": claim_evidence_level,
+            }
+        )
+    claim_blockers = summary.get("claim_promotion_blockers")
+    if not isinstance(claim_blockers, list):
+        failed_flags.append(
+            {
+                "key": "claim_promotion_blockers",
+                "expected": list(REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS),
+                "observed": claim_blockers,
+            }
+        )
+    else:
+        missing_claim_blockers = [
+            blocker for blocker in REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS if blocker not in claim_blockers
+        ]
+        if missing_claim_blockers:
+            failed_flags.append(
+                {
+                    "key": "claim_promotion_blockers",
+                    "expected": list(REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS),
+                    "observed": claim_blockers,
+                    "missing": missing_claim_blockers,
+                }
+            )
     failed_prelaunch_rows = [
         {
             "label": row.get("label"),
@@ -435,6 +471,8 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
                 set(REQUIRED_OPTIMIZATION_STATUS_FLAGS)
                 | {
                     "direct_scalar_transport_blocked",
+                    "claim_evidence_level",
+                    "claim_promotion_blockers",
                     "projected_transport_improved",
                     "positive_prelaunch_gate_passed",
                     "landscape_admission_passed",

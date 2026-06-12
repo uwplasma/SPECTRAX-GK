@@ -182,3 +182,50 @@ def test_status_writer_records_initial_running_campaign(tmp_path: Path) -> None:
     assert payload["pending_count"] == 4
     assert payload["finished_count"] == 0
     assert payload["failed_count"] == 0
+
+
+def test_skip_existing_requires_complete_runtime_bundle(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    output = tmp_path / "case.out.nc"
+    output.write_text("partial", encoding="utf-8")
+
+    assert mod._output_bundle_complete(output) is False
+    assert [path.name for path in mod._output_bundle_paths(output)] == [
+        "case.out.nc",
+        "case.restart.nc",
+        "case.big.nc",
+    ]
+
+    (tmp_path / "case.restart.nc").write_text("restart", encoding="utf-8")
+    (tmp_path / "case.big.nc").write_text("big", encoding="utf-8")
+
+    assert mod._output_bundle_complete(output) is True
+
+
+def test_skip_existing_row_records_required_bundle(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    output = tmp_path / "case.out.nc"
+    for suffix in ("out.nc", "restart.nc", "big.nc"):
+        (tmp_path / f"case.{suffix}").write_text(suffix, encoding="utf-8")
+    task = mod.DirectTask(
+        state="external_vmec",
+        label="case.out.nc",
+        command="python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/case.toml",
+        config=ROOT / "tools_out/case.toml",
+        output=output,
+    )
+
+    row = mod._run_one(
+        task,
+        gpu="0",
+        log_dir=tmp_path / "logs",
+        timeout_s=0.1,
+        skip_existing=True,
+    )
+
+    assert row["status"] == "skipped"
+    assert row["required_output_bundle"] == [
+        str(output),
+        str(tmp_path / "case.restart.nc"),
+        str(tmp_path / "case.big.nc"),
+    ]
