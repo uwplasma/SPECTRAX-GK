@@ -1,3 +1,22 @@
+- 2026-06-12: Tightened the production nonlinear turbulent-flux optimization
+  promotion guard to match the broader pre-manuscript requirement. The guard is
+  now release-safe but not production-promoted: current counts are `1/3`
+  matched baseline-to-optimized audits, `1/3` optimized-equilibrium ensembles,
+  and `2` accepted long-window holdout ensembles. README/docs/plan wording was
+  updated so the selected QA no-ESS -> optimized QA/ESS audit remains visible
+  as one positive scoped result (`18.4%`, `7.8 sigma`) without closing the
+  broad multi-equilibrium nonlinear optimization lane. Office status at
+  `2026-06-12T10:51-05:00`: the true `t=1500` growth-objective QA audits are
+  still running on both GPUs; seed33 has written `t≈800`, seed32 remains at the
+  first `t≈400` checkpoint, and the Solovev external-VMEC holdout launcher is
+  correctly waiting behind those queues. A local 4-logical-CPU pjit nonlinear
+  sharding attempt on velocity axes (`l,m`) reproduced the XLA CPU FFT layout
+  failure and collective stall seen for `ky/kx`; it was killed before the
+  five-minute cap. This is negative evidence for exposing current pjit
+  nonlinear state sharding as production CPU speedup. The next parallelization
+  step is a different communication-aware decomposition, not widening the
+  existing `state_sharding` options.
+
 - 2026-06-12: Advanced the independent external-VMEC holdout lane. A bounded
   VMEC linear screen over four previously unscreened `vmec_jax` examples found
   `wout_solovev_reference.nc` launchable (`gamma=0.0944` at `ky=0.2857`) and
