@@ -32,6 +32,10 @@ IDENTITY_BLOCKERS = {
     "identity_rel_error_missing",
     "identity_rel_error_above_tolerance",
 }
+REFERENCE_BLOCKERS = {
+    "below_min_devices",
+    "actual_devices_below_min_devices",
+}
 
 
 def _json_clean(value: Any) -> Any:
@@ -341,6 +345,78 @@ def _identity_evidence_summary(
     return summary
 
 
+def _count_row_values(rows: list[dict[str, Any]], field: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = row.get(field)
+        values = value if isinstance(value, (list, tuple)) else (value,)
+        for item in values:
+            key = str(item)
+            if not key:
+                continue
+            counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _backend_blocker_report(
+    rows: list[dict[str, Any]],
+    required_backends: tuple[str, ...],
+) -> dict[str, dict[str, Any]]:
+    """Explain why each backend did or did not qualify for a claim."""
+
+    report: dict[str, dict[str, Any]] = {}
+    for backend in required_backends:
+        backend_rows = [row for row in rows if row["backend"] == backend]
+        candidate_rows = [
+            row
+            for row in backend_rows
+            if not (REFERENCE_BLOCKERS & set(row["blockers"]))
+        ]
+        passing_rows = [row for row in candidate_rows if bool(row["candidate_passed"])]
+        identity_complete_rows = [
+            row
+            for row in candidate_rows
+            if not (IDENTITY_BLOCKERS & set(row["blockers"]))
+        ]
+        active_identity_complete_rows = [
+            row
+            for row in identity_complete_rows
+            if bool(row["state_sharding_active"])
+        ]
+        production_speedup_candidate_missing = not passing_rows
+        identity_evidence_complete = bool(identity_complete_rows)
+        active_identity_evidence_complete = bool(active_identity_complete_rows)
+
+        primary_blockers: list[str] = []
+        if not backend_rows:
+            primary_blockers.append("backend_rows_missing")
+        if not candidate_rows:
+            primary_blockers.append("candidate_rows_missing")
+        if not identity_evidence_complete:
+            primary_blockers.append("identity_evidence_incomplete")
+        if not active_identity_evidence_complete:
+            primary_blockers.append("active_identity_evidence_incomplete")
+        if production_speedup_candidate_missing:
+            primary_blockers.append(f"{backend}_production_speedup_candidate_missing")
+
+        report[backend] = {
+            "row_count": len(backend_rows),
+            "candidate_row_count": len(candidate_rows),
+            "passing_candidate_count": len(passing_rows),
+            "production_speedup_candidate_missing": production_speedup_candidate_missing,
+            "identity_evidence_complete": identity_evidence_complete,
+            "active_identity_evidence_complete": active_identity_evidence_complete,
+            "classification_counts": _count_row_values(backend_rows, "classification"),
+            "candidate_blocker_counts": _count_row_values(candidate_rows, "blockers"),
+            "primary_blockers": tuple(primary_blockers),
+            "claim_scope": (
+                "Backend remains diagnostic unless at least one active candidate row "
+                "has complete identity evidence and passes the speedup and efficiency gates."
+            ),
+        }
+    return report
+
+
 def evaluate_production_gate(
     rows: list[dict[str, Any]],
     *,
@@ -443,6 +519,10 @@ def evaluate_production_gate(
                 required_backends,
                 identity_atol=float(identity_atol),
                 identity_rtol=float(identity_rtol),
+            ),
+            "backend_blocker_report": _backend_blocker_report(
+                evaluated_rows,
+                required_backends,
             ),
             "blockers": tuple(gate_blockers),
             "rows": evaluated_rows,

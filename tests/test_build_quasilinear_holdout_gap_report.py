@@ -41,12 +41,22 @@ def _gate(metric: str, observed: float, limit: float, *, passed: bool) -> dict:
     }
 
 
-def _external_gate(path: Path, case: str, *, passed: bool, gates: list[dict]) -> Path:
+def _external_gate(
+    path: Path,
+    case: str,
+    *,
+    passed: bool,
+    gates: list[dict],
+    claim_level: str | None = None,
+) -> Path:
     payload = {
         "case": case,
-        "claim_level": "passed_grid_convergence_candidate_for_transport_holdout"
-        if passed
-        else "negative_grid_convergence_result_not_transport_validation",
+        "claim_level": claim_level
+        or (
+            "passed_grid_convergence_candidate_for_transport_holdout"
+            if passed
+            else "negative_grid_convergence_result_not_transport_validation"
+        ),
         "gate_report": {"case": case, "gates": gates, "passed": passed},
         "kind": "external_vmec_nonlinear_grid_convergence_gate",
         "promotion_gate": {
@@ -339,6 +349,53 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
     assert any(
         row["case"] == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
         for row in requirements["required_nonlinear_cases"]
+    )
+
+
+def test_gap_report_records_raw_passed_qh_gate_with_bad_claim_as_negative_evidence(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    paths = _write_inputs(tmp_path)
+    pass_gate = [
+        _gate("common_window_max_relative_slope_per_time", 0.001, 0.002, passed=True)
+    ]
+    qh_gate = _external_gate(
+        tmp_path / "external_qh_raw_passed.json",
+        "nfp4 QH external VMEC nonlinear high-grid convergence",
+        passed=True,
+        gates=pass_gate,
+        claim_level="finite_high_grid_long_nonlinear_feasibility_not_yet_transport_validation",
+    )
+    external_gates = [mod._load_external_gate(qh_gate)]
+
+    report = mod.build_holdout_gap_report(
+        model_selection=json.loads(paths["model_selection"].read_text(encoding="utf-8")),
+        train_holdout=json.loads(paths["train_holdout"].read_text(encoding="utf-8")),
+        window_stats=json.loads(paths["window_stats"].read_text(encoding="utf-8")),
+        external_gates=external_gates,
+        dataset=json.loads(paths["dataset"].read_text(encoding="utf-8")),
+        screening_skill=json.loads(paths["screening_skill"].read_text(encoding="utf-8")),
+    )
+
+    qh = next(
+        row
+        for row in report["excluded_candidates"]
+        if row["case"] == "nfp4 QH external VMEC nonlinear high-grid convergence"
+    )
+    assert qh["status"] == "excluded_negative_external_evidence"
+    assert qh["gate_passed"] is False
+    assert qh["raw_gate_passed"] is True
+    assert qh["promotion_gate_passed"] is True
+    assert qh["claim_level_acceptable"] is False
+    assert qh["negative_evidence"] is True
+    assert qh["eligible_for_next_candidate"] is False
+    assert qh["admission_blockers"] == ["claim_level_not_acceptable"]
+    assert report["summary"]["n_external_gates_passed"] == 0
+    assert report["summary"]["n_external_negative_evidence"] == 1
+    assert all(
+        row["case"] != "nfp4 QH external VMEC nonlinear high-grid convergence"
+        for row in report["next_best_candidates"]
     )
 
 

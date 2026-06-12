@@ -174,8 +174,11 @@ artifact that may promote whole-state nonlinear sharding wording beyond
 diagnostic/profiler evidence, and only for the exact workload it gates. The fast
 checker
 ``tools/check_parallel_scaling_artifacts.py`` now validates that gate, its CSV
-sidecar, its CPU/GPU source rows, and its required-backend blockers without
-rerunning long CPU or GPU profilers.
+sidecar, its CPU/GPU source rows, its required-backend blockers, and the
+per-backend blocker report without rerunning long CPU or GPU profilers. The
+report keeps identity-evidence blockers separate from speedup/efficiency
+blockers so an identity-complete slowdown remains diagnostic rather than a
+production speedup claim.
 
 The next decomposition step is also gated, but still diagnostic. The artifact
 ``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a

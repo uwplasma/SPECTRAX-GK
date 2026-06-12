@@ -972,7 +972,10 @@ CPU and GPU rows both pass serial identity, use active state sharding, and meet
 the configured speedup and parallel-efficiency thresholds. The tracked gate
 artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``;
 in the current artifact set the CPU two-device row passes, but the GPU row
-blocks production speedup claims.
+blocks production speedup claims. Its ``backend_blocker_report`` separates
+identity-evidence completeness from speedup/efficiency blockers; currently the
+GPU candidate row is identity-complete but remains diagnostic because the
+speedup and efficiency gates fail.
 The raw sweep JSON files also carry ``speedup_passed``, ``status``, and
 ``speedup_blockers`` fields so a timeout, profiler failure, or identity-correct
 slowdown is visible before the stricter production gate is evaluated.

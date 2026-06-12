@@ -1,4 +1,44 @@
 {
+  "backend_blocker_report": {
+    "cpu": {
+      "active_identity_evidence_complete": true,
+      "candidate_blocker_counts": {
+        "parallel_efficiency_below_threshold": 2
+      },
+      "candidate_row_count": 3,
+      "claim_scope": "Backend remains diagnostic unless at least one active candidate row has complete identity evidence and passes the speedup and efficiency gates.",
+      "classification_counts": {
+        "identity_only_insufficient_speedup": 2,
+        "production_candidate": 1,
+        "reference_only": 1
+      },
+      "identity_evidence_complete": true,
+      "passing_candidate_count": 1,
+      "primary_blockers": [],
+      "production_speedup_candidate_missing": false,
+      "row_count": 4
+    },
+    "gpu": {
+      "active_identity_evidence_complete": true,
+      "candidate_blocker_counts": {
+        "parallel_efficiency_below_threshold": 1,
+        "speedup_below_threshold": 1
+      },
+      "candidate_row_count": 1,
+      "claim_scope": "Backend remains diagnostic unless at least one active candidate row has complete identity evidence and passes the speedup and efficiency gates.",
+      "classification_counts": {
+        "identity_preserving_regression": 1,
+        "reference_only": 1
+      },
+      "identity_evidence_complete": true,
+      "passing_candidate_count": 0,
+      "primary_blockers": [
+        "gpu_production_speedup_candidate_missing"
+      ],
+      "production_speedup_candidate_missing": true,
+      "row_count": 2
+    }
+  },
   "backend_summary": {
     "cpu": {
       "best_identity_preserving_row": {

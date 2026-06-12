@@ -23,6 +23,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.quasilinear_holdout_admission import (  # noqa: E402
+    external_vmec_holdout_admission_status,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,6 +52,12 @@ CSV_FIELDS = (
     "split",
     "gate_case",
     "gate_passed",
+    "raw_gate_passed",
+    "promotion_gate_passed",
+    "claim_level",
+    "claim_level_acceptable",
+    "admitted_for_calibration",
+    "negative_evidence",
     "source_artifact",
     "observed_heat_flux",
     "predicted_heat_flux",
@@ -57,6 +66,7 @@ CSV_FIELDS = (
     "holdout_mean_rel_gate",
     "next_best_score",
     "failed_gates",
+    "admission_blockers",
     "reason",
 )
 
@@ -259,7 +269,8 @@ def _load_external_gate(path: Path) -> dict[str, Any]:
     promotion_gate = payload.get("promotion_gate", {})
     if not isinstance(promotion_gate, dict):
         promotion_gate = {}
-    passed = bool(promotion_gate.get("passed", gate_report.get("passed", False)))
+    admission = external_vmec_holdout_admission_status(payload)
+    passed = bool(admission["admissible_for_calibration"])
     ratios = [_gate_ratio(gate) for gate in gates]
     finite_ratios = [ratio for ratio in ratios if ratio is not None and math.isfinite(ratio)]
     failed_ratios = [
@@ -276,6 +287,12 @@ def _load_external_gate(path: Path) -> dict[str, Any]:
         "claim_level": str(payload.get("claim_level", "")),
         "family": _external_family(case, path.name),
         "passed": passed,
+        "raw_gate_passed": bool(admission["raw_gate_passed"]),
+        "promotion_gate_passed": bool(admission["promotion_gate_passed"]),
+        "claim_level_acceptable": bool(admission["claim_level_acceptable"]),
+        "admitted_for_calibration": passed,
+        "negative_evidence": bool(admission["negative_evidence"]),
+        "admission_blockers": list(admission["admission_blockers"]),
         "reason": str(promotion_gate.get("reason", "")),
         "failed_gates": [str(gate.get("metric", "unknown")) for gate in gates if not bool(gate.get("passed", False))],
         "failed_gate_details": failed_details,
@@ -542,6 +559,12 @@ def _external_excluded_rows(
         failed_gates = list(gate.get("failed_gates", []))
         failed_details = list(gate.get("failed_gate_details", []))
         passed = bool(gate.get("passed", False))
+        raw_gate_passed = bool(gate.get("raw_gate_passed", passed))
+        promotion_gate_passed = bool(gate.get("promotion_gate_passed", passed))
+        claim_level_acceptable = bool(gate.get("claim_level_acceptable", passed))
+        admitted_for_calibration = bool(gate.get("admitted_for_calibration", passed))
+        negative_evidence = bool(gate.get("negative_evidence", not passed))
+        admission_blockers = [str(item) for item in gate.get("admission_blockers", [])]
         if passed and family in holdout_families:
             status = "excluded_superseded_by_current_holdout_family"
             reason = "passed external-VMEC gate, but this family is already represented by a current admitted holdout"
@@ -557,6 +580,16 @@ def _external_excluded_rows(
             status = "next_best_passed_gate_not_in_holdout_report"
             reason = "passed external-VMEC gate but is not yet represented as a current holdout"
             eligible = True
+        elif negative_evidence and raw_gate_passed:
+            status = "excluded_negative_external_evidence"
+            detail = "; ".join(admission_blockers) or str(
+                gate.get("reason", "failed external-VMEC holdout admission")
+            )
+            reason = (
+                "not admitted because external-VMEC holdout admission failed closed: "
+                f"{detail}"
+            )
+            eligible = False
         else:
             status = "excluded_failed_external_gate"
             detail = "; ".join(failed_details) or str(gate.get("reason", "failed external-VMEC gate"))
@@ -573,6 +606,12 @@ def _external_excluded_rows(
                 "split": "excluded",
                 "gate_case": str(gate["case"]),
                 "gate_passed": passed,
+                "raw_gate_passed": raw_gate_passed,
+                "promotion_gate_passed": promotion_gate_passed,
+                "claim_level": str(gate.get("claim_level", "")),
+                "claim_level_acceptable": claim_level_acceptable,
+                "admitted_for_calibration": admitted_for_calibration,
+                "negative_evidence": negative_evidence,
                 "source_artifact": str(gate["artifact"]),
                 "observed_heat_flux": None,
                 "predicted_heat_flux": None,
@@ -582,6 +621,7 @@ def _external_excluded_rows(
                 "next_best_score": float(gate.get("max_failed_gate_ratio", 0.0)),
                 "failed_gates": failed_gates,
                 "failed_gate_details": failed_details,
+                "admission_blockers": admission_blockers,
                 "reason": reason,
                 "absolute_flux_promoted": False,
                 "eligible_for_next_candidate": eligible,
@@ -1159,6 +1199,9 @@ def build_holdout_gap_report(
     )
     external_passed = sum(1 for gate in external_gates if bool(gate.get("passed", False)))
     external_failed = len(external_gates) - external_passed
+    external_negative = sum(
+        1 for gate in external_gates if bool(gate.get("negative_evidence", False))
+    )
     window_passed = _window_case_passes(window_stats)
     blockers = ["absolute_flux_predictor_not_promoted"]
     blockers.extend(
@@ -1207,6 +1250,7 @@ def build_holdout_gap_report(
             "n_external_gates": len(external_gates),
             "n_external_gates_passed": external_passed,
             "n_external_gates_failed": external_failed,
+            "n_external_negative_evidence": external_negative,
             "n_nonlinear_window_cases": len(window_passed),
             "n_nonlinear_window_cases_passed": sum(1 for passed in window_passed.values() if passed),
             "holdout_mean_abs_relative_error": calibration.get("holdout_mean_abs_relative_error"),

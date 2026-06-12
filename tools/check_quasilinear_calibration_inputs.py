@@ -18,6 +18,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.quasilinear_holdout_admission import (  # noqa: E402
+    external_vmec_holdout_admission_status,
+    is_external_vmec_holdout_gate,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,15 +134,57 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
         passed = _is_gate_passed(data)
         if passed is None:
             continue
-        for key in _artifact_keys_from_gate(data):
+        artifact_keys = _artifact_keys_from_gate(data)
+        external_holdout_gate = is_external_vmec_holdout_gate(
+            data,
+            artifact=path,
+            artifact_keys=artifact_keys,
+        )
+        admission = (
+            external_vmec_holdout_admission_status(data)
+            if external_holdout_gate
+            else {
+                "admissible_for_calibration": bool(passed),
+                "promotion_gate_passed": bool(passed),
+                "claim_level_acceptable": True,
+                "raw_gate_passed": bool(passed),
+                "negative_evidence": not bool(passed),
+                "admission_blockers": [] if bool(passed) else ["gate_not_passed"],
+            }
+        )
+        for key in artifact_keys:
             index[key] = {
                 "artifact": _repo_relative_path(path),
                 "case": _gate_case(data, path),
-                "passed": passed,
+                "passed": bool(admission["admissible_for_calibration"]),
+                "raw_gate_passed": bool(admission["raw_gate_passed"]),
+                "promotion_gate_passed": bool(admission["promotion_gate_passed"]),
+                "claim_level_acceptable": bool(admission["claim_level_acceptable"]),
+                "admissible_for_calibration": bool(
+                    admission["admissible_for_calibration"]
+                ),
+                "negative_evidence": bool(admission["negative_evidence"]),
+                "admission_blockers": list(admission["admission_blockers"]),
                 "kind": str(data.get("kind", "")),
                 "claim_level": str(data.get("claim_level", "")),
             }
     return index
+
+
+def _negative_evidence_rows(
+    gate_index: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for gate in gate_index.values():
+        if not bool(gate.get("negative_evidence", False)):
+            continue
+        key = (str(gate.get("artifact", "")), str(gate.get("case", "")))
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(dict(gate))
+    return rows
 
 
 def _load_points_from_report(path: Path) -> list[dict[str, Any]]:
@@ -182,6 +228,8 @@ def audit_calibration_inputs(
             reason = "not required split"
             if required and gate is None:
                 reason = "no matching nonlinear validation/convergence gate"
+            elif required and gate is not None and bool(gate.get("negative_evidence", False)):
+                reason = "matching nonlinear gate is negative evidence for calibration admission"
             elif required and gate is not None and not bool(gate["passed"]):
                 reason = "matching nonlinear gate is not passed"
             elif required:
@@ -215,6 +263,8 @@ def audit_calibration_inputs(
             "required_splits": list(required_splits),
             "gate_patterns": [str(pattern) for pattern in (gate_patterns or [DEFAULT_GATE_GLOB])],
             "n_gate_artifact_matches": len(gate_index),
+            "n_negative_evidence": len(_negative_evidence_rows(gate_index)),
+            "negative_evidence": _negative_evidence_rows(gate_index),
             "reports": report_rows,
         }
     )

@@ -90,6 +90,23 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert "candidate_nonlinear_t1p5_n8.restart.nc" in restart_guarded
     assert "candidate_nonlinear_t1p5_n8.big.nc" in restart_guarded
     assert "skip_existing_note" in payload
+    staged_script = tmp_path / "runs" / payload["staged_ladder_skip_existing_script"]
+    direct_script = tmp_path / "runs" / payload["direct_full_horizon_skip_existing_script"]
+    assert staged_script.exists()
+    assert direct_script.exists()
+    assert staged_script.stat().st_mode & 0o111
+    staged_text = staged_script.read_text(encoding="utf-8")
+    assert "external-VMEC staged restart ladder" in staged_text
+    assert "cp " in staged_text
+    assert "candidate_nonlinear_t1_n8.$ext" in staged_text
+    assert "candidate_nonlinear_t1p5_n8.$ext" in staged_text
+    assert "[skip-existing]" in staged_text
+    assert "candidate_nonlinear_t1p5_n8 bundle already exists" in staged_text
+    assert "--steps 2 --no-progress" in staged_text
+    direct_text = direct_script.read_text(encoding="utf-8")
+    assert "external-VMEC direct full-horizon launches" in direct_text
+    assert "cp " not in direct_text
+    assert "--steps 6 --no-progress" in direct_text
 
 
 def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) -> None:

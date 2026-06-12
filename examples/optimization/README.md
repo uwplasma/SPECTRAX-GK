@@ -39,6 +39,16 @@ The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transpor
 Running one script is not a transport-optimization success claim, and is not,
 by itself, a nonlinear turbulent-flux optimization success claim.
 
+Use the following claim boundaries when citing these scripts or their generated
+sidecars:
+
+| Script | Differentiable objective | Claim boundary |
+| --- | --- | --- |
+| `QA_optimization_linear_ITG.py` | Linear ITG growth-rate residual | Trace-safe VMEC-JAX plus SPECTRAX-GK objective-refinement evidence only; not a quasilinear calibration and not a nonlinear heat-flux reduction claim. |
+| `QA_optimization_quasilinear_ITG.py` | Electrostatic quasilinear heat-flux residual | Screening/model-development evidence only; not an absolute flux predictor and not a nonlinear turbulent-flux optimization claim. |
+| `QA_optimization_nonlinear_ITG.py` | Reduced nonlinear-window heat-flux screening residual | Startup/window-estimator evidence only; not a converged nonlinear transport average and not a nonlinear turbulent-flux optimization success claim. |
+| `QA_parameter_scan.py` | `RBC(1,1)` linear/QL landscape plus concrete nonlinear sidecars | Landscape and noise/convergence diagnostics only; reduced/startup nonlinear-window diagnostics are excluded from optimization-promotion claims. |
+
 The optimization scripts write strict long-window initial/final nonlinear ITG
 audit config manifests after the VMEC-JAX solve. The current promotion policy
 uses staged horizons `700,1100,1500`, averages only over `t=[1100,1500]`, and

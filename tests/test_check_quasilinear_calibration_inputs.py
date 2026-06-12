@@ -104,7 +104,58 @@ def test_audit_fails_when_required_point_uses_failed_gate(tmp_path: Path) -> Non
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["passed"] is False
-    assert payload["reports"][0]["points"][0]["reason"] == "matching nonlinear gate is not passed"
+    assert (
+        payload["reports"][0]["points"][0]["reason"]
+        == "matching nonlinear gate is negative evidence for calibration admission"
+    )
+    assert payload["n_negative_evidence"] == 1
+
+
+def test_audit_records_qh_gate_with_unacceptable_claim_as_negative_evidence(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "external_qh_gate.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "nfp4 QH external VMEC nonlinear high-grid convergence",
+                "claim_level": "finite_high_grid_long_nonlinear_feasibility_not_yet_transport_validation",
+                "gate_report": {
+                    "case": "nfp4 QH external VMEC nonlinear high-grid convergence",
+                    "passed": True,
+                    "gates": [],
+                },
+                "kind": "external_vmec_nonlinear_grid_convergence_gate",
+                "promotion_gate": {"passed": True},
+                "runs": [{"csv": "docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.traces.csv"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(
+        report,
+        "docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.traces.csv",
+    )
+
+    paths = mod.write_audit(
+        [report],
+        gate_patterns=[str(gate)],
+        out_json=tmp_path / "audit.json",
+        no_plot=True,
+    )
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is False
+    assert point["passed"] is False
+    assert point["reason"] == "matching nonlinear gate is negative evidence for calibration admission"
+    assert point["matched_gate"]["raw_gate_passed"] is True
+    assert point["matched_gate"]["promotion_gate_passed"] is True
+    assert point["matched_gate"]["claim_level_acceptable"] is False
+    assert point["matched_gate"]["admission_blockers"] == ["claim_level_not_acceptable"]
+    assert payload["negative_evidence"][0]["case"] == "nfp4 QH external VMEC nonlinear high-grid convergence"
 
 
 def test_audit_fails_when_required_point_has_no_gate(tmp_path: Path) -> None:
@@ -124,12 +175,13 @@ def test_audit_accepts_nested_high_grid_admission_input_artifact(tmp_path: Path)
     gate = tmp_path / "high_grid_admission.json"
     gate.write_text(
         json.dumps(
-            {
-                "kind": "external_vmec_high_grid_admission_gate",
-                "case": "synthetic high-grid admission",
-                "inputs": {
-                    "replicate_ensemble_gate": "docs/_static/replicate/ensemble_gate.json",
-                },
+                {
+                    "kind": "external_vmec_high_grid_admission_gate",
+                    "case": "synthetic high-grid admission",
+                    "claim_level": "passed_high_grid_transport_holdout_admission_under_coarse_grid_exclusion",
+                    "inputs": {
+                        "replicate_ensemble_gate": "docs/_static/replicate/ensemble_gate.json",
+                    },
                 "promotion_gate": {"passed": True},
             }
         ),

@@ -61,6 +61,24 @@ def test_nonlinear_sharding_production_gate_fails_closed_on_identity_without_spe
     assert summary["rows"][0]["candidate_passed"] is False
     assert summary["rows"][0]["classification"] == "identity_preserving_regression"
     assert "speedup_below_threshold" in summary["rows"][0]["blockers"]
+    assert summary["backend_blocker_report"]["gpu"] == {
+        "row_count": 1,
+        "candidate_row_count": 1,
+        "passing_candidate_count": 0,
+        "production_speedup_candidate_missing": True,
+        "identity_evidence_complete": True,
+        "active_identity_evidence_complete": True,
+        "classification_counts": {"identity_preserving_regression": 1},
+        "candidate_blocker_counts": {
+            "parallel_efficiency_below_threshold": 1,
+            "speedup_below_threshold": 1,
+        },
+        "primary_blockers": ["gpu_production_speedup_candidate_missing"],
+        "claim_scope": (
+            "Backend remains diagnostic unless at least one active candidate row "
+            "has complete identity evidence and passes the speedup and efficiency gates."
+        ),
+    }
 
 
 def test_nonlinear_sharding_production_gate_requires_identity_and_active_sharding() -> None:
@@ -135,6 +153,13 @@ def test_nonlinear_sharding_production_gate_fails_closed_on_missing_error_metric
         ]
         == 1
     )
+    gpu_report = summary["backend_blocker_report"]["gpu"]
+    assert gpu_report["production_speedup_candidate_missing"] is True
+    assert gpu_report["identity_evidence_complete"] is False
+    assert gpu_report["active_identity_evidence_complete"] is False
+    assert "identity_evidence_incomplete" in gpu_report["primary_blockers"]
+    assert "active_identity_evidence_incomplete" in gpu_report["primary_blockers"]
+    assert gpu_report["candidate_blocker_counts"]["identity_abs_error_missing"] == 1
 
 
 def test_nonlinear_sharding_production_gate_reports_identity_evidence_by_backend() -> None:
@@ -204,3 +229,7 @@ def test_nonlinear_sharding_production_gate_classifies_reference_and_weak_scalin
         summary["backend_summary"]["cpu"]["best_identity_preserving_row"]["requested_devices"]
         == 4
     )
+    assert summary["backend_blocker_report"]["cpu"]["candidate_row_count"] == 1
+    assert summary["backend_blocker_report"]["cpu"]["candidate_blocker_counts"] == {
+        "parallel_efficiency_below_threshold": 1
+    }

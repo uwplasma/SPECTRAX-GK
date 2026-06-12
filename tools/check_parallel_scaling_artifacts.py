@@ -55,6 +55,17 @@ PRODUCTION_GATE_CLASSIFICATIONS = {
     "profile_error",
     "diagnostic_only",
 }
+PRODUCTION_GATE_IDENTITY_BLOCKERS = {
+    "identity_gate_failed",
+    "identity_abs_error_missing",
+    "identity_abs_error_above_tolerance",
+    "identity_rel_error_missing",
+    "identity_rel_error_above_tolerance",
+}
+PRODUCTION_GATE_REFERENCE_BLOCKERS = {
+    "below_min_devices",
+    "actual_devices_below_min_devices",
+}
 PROFILE_SOURCE_CONTRACT_VERSION = 1
 PROFILE_SOURCE_CONTRACT_VERSION_KEYS = (
     "python",
@@ -477,6 +488,98 @@ def _production_gate_source_artifacts_exist(root: Path) -> bool:
     return all((root / source_name).exists() for source_name in _nonlinear_sharding_split_artifacts())
 
 
+def _count_production_gate_values(rows: list[dict[str, Any]], field: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = row.get(field)
+        values = value if isinstance(value, list) else [value]
+        for item in values:
+            key = str(item)
+            if not key:
+                continue
+            counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _expected_backend_blocker_report(
+    rows: list[dict[str, Any]],
+    required: tuple[str, ...],
+) -> dict[str, dict[str, Any]]:
+    expected: dict[str, dict[str, Any]] = {}
+    for backend in required:
+        backend_rows = [row for row in rows if str(row.get("backend", "")).lower() == backend]
+        candidate_rows = [
+            row
+            for row in backend_rows
+            if not (PRODUCTION_GATE_REFERENCE_BLOCKERS & set(row.get("blockers", [])))
+        ]
+        passing_rows = [row for row in candidate_rows if bool(row.get("candidate_passed"))]
+        identity_complete_rows = [
+            row
+            for row in candidate_rows
+            if not (PRODUCTION_GATE_IDENTITY_BLOCKERS & set(row.get("blockers", [])))
+        ]
+        active_identity_complete_rows = [
+            row
+            for row in identity_complete_rows
+            if bool(row.get("state_sharding_active"))
+        ]
+        production_speedup_candidate_missing = not passing_rows
+        identity_evidence_complete = bool(identity_complete_rows)
+        active_identity_evidence_complete = bool(active_identity_complete_rows)
+        primary_blockers: list[str] = []
+        if not backend_rows:
+            primary_blockers.append("backend_rows_missing")
+        if not candidate_rows:
+            primary_blockers.append("candidate_rows_missing")
+        if not identity_evidence_complete:
+            primary_blockers.append("identity_evidence_incomplete")
+        if not active_identity_evidence_complete:
+            primary_blockers.append("active_identity_evidence_incomplete")
+        if production_speedup_candidate_missing:
+            primary_blockers.append(f"{backend}_production_speedup_candidate_missing")
+
+        expected[backend] = {
+            "row_count": len(backend_rows),
+            "candidate_row_count": len(candidate_rows),
+            "passing_candidate_count": len(passing_rows),
+            "production_speedup_candidate_missing": production_speedup_candidate_missing,
+            "identity_evidence_complete": identity_evidence_complete,
+            "active_identity_evidence_complete": active_identity_evidence_complete,
+            "classification_counts": _count_production_gate_values(
+                backend_rows,
+                "classification",
+            ),
+            "candidate_blocker_counts": _count_production_gate_values(
+                candidate_rows,
+                "blockers",
+            ),
+            "primary_blockers": primary_blockers,
+            "claim_scope": (
+                "Backend remains diagnostic unless at least one active candidate row "
+                "has complete identity evidence and passes the speedup and efficiency gates."
+            ),
+        }
+    return expected
+
+
+def _assert_backend_blocker_report(
+    payload: dict[str, Any],
+    rows: list[dict[str, Any]],
+    required: tuple[str, ...],
+    context: str,
+) -> None:
+    report = payload.get("backend_blocker_report")
+    if not isinstance(report, dict):
+        raise ValueError(f"{context}: backend_blocker_report must be an object")
+    if set(report) != set(required):
+        raise ValueError(f"{context}: backend_blocker_report keys must match required_backends")
+    expected = _expected_backend_blocker_report(rows, required)
+    for backend in required:
+        if report.get(backend) != expected[backend]:
+            raise ValueError(f"{context}: backend_blocker_report[{backend!r}] is stale")
+
+
 def validate_nonlinear_sharding_production_gate(
     root: Path,
     *,
@@ -653,6 +756,7 @@ def validate_nonlinear_sharding_production_gate(
     expected_gate_passed = not expected_gate_blockers
     if gate_passed != expected_gate_passed:
         raise ValueError(f"{context}: gate_passed is inconsistent with candidate rows")
+    _assert_backend_blocker_report(payload, rows, required, context)
 
     return {
         "name": "nonlinear_sharding_production_speedup_gate",

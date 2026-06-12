@@ -37,6 +37,53 @@ DEFAULT_PANEL_JSON = ROOT / "docs" / "_static" / "vmec_jax_qa_full_sweep_panel.j
 DEFAULT_LANDSCAPE_JSON = ROOT / "docs" / "_static" / "vmec_boundary_transport_landscape_rbc11_full.json"
 DEFAULT_OUT_PREFIX = ROOT / "docs" / "_static" / "vmec_jax_qa_optimizer_strategy_report"
 MIN_IOTA = 0.41
+QA_TRANSPORT_CLAIM_BOUNDARIES = [
+    {
+        "transport_kind": "growth",
+        "script": "examples/optimization/QA_optimization_linear_ITG.py",
+        "evidence_tier": "differentiable_linear_objective_refinement",
+        "claim_boundary": (
+            "Trace-safe linear growth-rate residual for VMEC-JAX refinement; "
+            "not a quasilinear calibration and not a nonlinear turbulent-flux reduction claim."
+        ),
+        "promotion_requires": [
+            "strict solved-WOUT aspect/iota/QS gate",
+            "matched long post-transient nonlinear audit before any transport reduction claim",
+        ],
+        "nonlinear_turbulent_flux_claim": False,
+    },
+    {
+        "transport_kind": "quasilinear_flux",
+        "script": "examples/optimization/QA_optimization_quasilinear_ITG.py",
+        "evidence_tier": "differentiable_quasilinear_screening_objective",
+        "claim_boundary": (
+            "Electrostatic quasilinear heat-flux residual for screening/model development; "
+            "not an absolute flux predictor and not a nonlinear turbulent-flux optimization claim."
+        ),
+        "promotion_requires": [
+            "strict solved-WOUT aspect/iota/QS gate",
+            "held-out quasilinear calibration gates for predictor claims",
+            "matched long post-transient nonlinear audit before any transport reduction claim",
+        ],
+        "nonlinear_turbulent_flux_claim": False,
+    },
+    {
+        "transport_kind": "nonlinear_window_heat_flux",
+        "script": "examples/optimization/QA_optimization_nonlinear_ITG.py",
+        "evidence_tier": "reduced_nonlinear_window_screening_estimator",
+        "claim_boundary": (
+            "Reduced/startup nonlinear-window screening objective for campaign design; "
+            "not a converged nonlinear transport average and not a nonlinear turbulent-flux "
+            "optimization success claim."
+        ),
+        "promotion_requires": [
+            "strict solved-WOUT aspect/iota/QS gate",
+            "matched t=1500 replicated nonlinear audits",
+            "seed/timestep/window/grid convergence gates on concrete nonlinear outputs",
+        ],
+        "nonlinear_turbulent_flux_claim": False,
+    },
+]
 
 
 def _optimize_png_if_possible(path: Path) -> None:
@@ -287,6 +334,7 @@ def build_report(panel_json: Path, landscape_json: Path) -> dict[str, Any]:
             "has_material_landscape_reduction_direction": bool(math.isfinite(best_reduction) and best_reduction > 0.10),
             "nonlinear_absolute_optimization_promoted": False,
         },
+        "claim_boundaries": QA_TRANSPORT_CLAIM_BOUNDARIES,
         "optimizer_recommendations": recommendations,
         "literature_context": [
             {

@@ -1,3 +1,18 @@
+- 2026-06-11: Corrected the QH warm-start long-window restart protocol and
+  kept the admission fail-closed. The earlier direct `n80/t450` and `n80/t700`
+  launches were segment-length runs from zero, not cumulative horizons, so a
+  true staged ladder was relaunched on office by copying the complete `t250`
+  bundle into `t450` before restarting. The corrected `n80/t450` run reached
+  `t=449.973` and passed runtime-output checks, but the relaxed 20% high-grid
+  convergence gate still fails (`0.355` common-window and `0.294`
+  least-window heat-flux differences). QH remains excluded from quasilinear
+  calibration while the corrected `n80/t700` continuation finishes. Added local
+  guardrails so generated external-VMEC manifests write executable staged
+  restart-ladder scripts, external-VMEC QL admission is fail-closed on
+  promotion-gate/claim-level metadata, nonlinear sharding artifacts report
+  per-backend identity/speedup blockers, and public QA optimization examples
+  state linear/QL/reduced-nonlinear claim boundaries explicitly.
+
 - 2026-06-11: Harvested the first modified-protocol QH warm-start nonlinear
   office gate. The `n64/n80`, `dt=0.04`, `t=250` pair finished cleanly and is
   finite, but it is not admissible: the common-window and least-trending

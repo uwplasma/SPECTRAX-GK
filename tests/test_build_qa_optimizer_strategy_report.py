@@ -130,6 +130,41 @@ def test_strategy_report_keeps_nonlinear_optimization_fail_closed(tmp_path: Path
     assert "spsa_common_random_numbers_then_cma_es_or_bo_for_low_dimensional_projected_controls" in methods
 
 
+def test_strategy_report_exports_public_qa_transport_claim_boundaries(tmp_path: Path) -> None:
+    panel = tmp_path / "panel.json"
+    landscape = tmp_path / "landscape.json"
+    _write_panel(panel)
+    _write_landscape(landscape)
+
+    report = mod.build_report(panel, landscape)
+    boundaries = {row["transport_kind"]: row for row in report["claim_boundaries"]}
+
+    assert set(boundaries) == {"growth", "quasilinear_flux", "nonlinear_window_heat_flux"}
+    assert all(row["nonlinear_turbulent_flux_claim"] is False for row in boundaries.values())
+    assert "linear growth-rate residual" in boundaries["growth"]["claim_boundary"]
+    assert "not an absolute flux predictor" in boundaries["quasilinear_flux"]["claim_boundary"]
+    assert "not a converged nonlinear transport average" in boundaries["nonlinear_window_heat_flux"]["claim_boundary"]
+    assert all(
+        any("matched" in requirement for requirement in row["promotion_requires"])
+        for row in boundaries.values()
+    )
+
+    readme = (ROOT / "examples" / "optimization" / "README.md").read_text(encoding="utf-8")
+    assert "Claim boundary" in readme
+    for kind, row in boundaries.items():
+        script = ROOT / row["script"]
+        text = script.read_text(encoding="utf-8")
+
+        assert script.name in readme
+        assert f'SPECTRAX_KIND = "{kind}"' in text
+        assert "WRITE_LONG_NONLINEAR_AUDIT_CONFIGS = True" in text
+        assert "RUN_LONG_NONLINEAR_AUDIT_COMMANDS = False" in text
+        assert 'NONLINEAR_AUDIT_HORIZONS = "700,1100,1500"' in text
+        assert "NONLINEAR_AUDIT_WINDOW_TMIN = 1100.0" in text
+        assert "NONLINEAR_AUDIT_WINDOW_TMAX = 1500.0" in text
+        assert "build_matched_nonlinear_transport_comparison.py" in text
+
+
 def test_strategy_report_cli_writes_artifacts(tmp_path: Path) -> None:
     panel = tmp_path / "panel.json"
     landscape = tmp_path / "landscape.json"

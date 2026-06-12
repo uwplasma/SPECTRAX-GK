@@ -563,6 +563,102 @@ def test_parallel_scaling_artifact_checker_rejects_stale_production_gate_source_
         mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
 
 
+def test_parallel_scaling_artifact_checker_rejects_stale_production_gate_blocker_report(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    rows = [
+        {
+            "backend": "cpu",
+            "requested_devices": 2,
+            "actual_devices": 2,
+            "best_spec": "kx",
+            "state_sharding_active": True,
+            "identity_gate_pass": True,
+            "strong_speedup_vs_1_device": 1.30,
+            "parallel_efficiency": 0.65,
+            "max_abs_state_error": 0.0,
+            "max_rel_state_error": 0.0,
+            "source": "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+            "candidate_passed": True,
+            "classification": "production_candidate",
+            "blockers": [],
+        },
+        {
+            "backend": "gpu",
+            "requested_devices": 2,
+            "actual_devices": 2,
+            "best_spec": "kx",
+            "state_sharding_active": True,
+            "identity_gate_pass": True,
+            "strong_speedup_vs_1_device": 0.80,
+            "parallel_efficiency": 0.40,
+            "max_abs_state_error": 0.0,
+            "max_rel_state_error": 0.0,
+            "source": "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
+            "candidate_passed": False,
+            "classification": "identity_preserving_regression",
+            "blockers": [
+                "speedup_below_threshold",
+                "parallel_efficiency_below_threshold",
+            ],
+        },
+    ]
+    _write_nonlinear_sharding_source_artifacts(tmp_path, rows)
+    payload = {
+        "kind": "nonlinear_sharding_production_speedup_gate",
+        "claim_scope": (
+            "Whole-state nonlinear sharding gate; otherwise keep it as a "
+            "diagnostic identity/profiler artifact."
+        ),
+        "gate_passed": False,
+        "production_speedup_claim_allowed": False,
+        "status": "diagnostic_only",
+        "required_backends": ["cpu", "gpu"],
+        "min_devices": 2,
+        "min_speedup_vs_1_device": 1.2,
+        "min_parallel_efficiency": 0.5,
+        "identity_atol": 1.0e-5,
+        "identity_rtol": 1.0e-5,
+        "best_candidates": {"cpu": rows[0], "gpu": None},
+        "blockers": ["gpu_production_speedup_candidate_missing"],
+        "backend_blocker_report": {
+            "cpu": {
+                "row_count": 1,
+                "candidate_row_count": 1,
+                "passing_candidate_count": 1,
+                "production_speedup_candidate_missing": False,
+                "identity_evidence_complete": True,
+                "active_identity_evidence_complete": True,
+                "classification_counts": {"production_candidate": 1},
+                "candidate_blocker_counts": {},
+                "primary_blockers": [],
+                "claim_scope": "stale",
+            },
+            "gpu": {
+                "row_count": 1,
+                "candidate_row_count": 1,
+                "passing_candidate_count": 1,
+                "production_speedup_candidate_missing": False,
+                "identity_evidence_complete": True,
+                "active_identity_evidence_complete": True,
+                "classification_counts": {"identity_preserving_regression": 1},
+                "candidate_blocker_counts": {},
+                "primary_blockers": [],
+                "claim_scope": "stale",
+            },
+        },
+        "rows": rows,
+    }
+    (tmp_path / mod.PRODUCTION_GATE_JSON).write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="backend_blocker_report"):
+        mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
+
+
 def test_independent_ky_scaling_artifact_preserves_order_and_identity_scope() -> None:
     payload = _load_json("independent_ky_scan_scaling_large.json")
 
