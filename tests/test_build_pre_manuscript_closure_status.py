@@ -147,6 +147,14 @@ def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> Non
     assert payload["summary"]["n_closed"] == 4
     assert payload["summary"]["mean_completion_percent"] == 100.0
     assert all(lane["passed"] for lane in payload["lanes"])
+    vmec_lane = {
+        lane["lane"]: lane for lane in payload["lanes"]
+    }["VMEC/Boozer holdout optimization"]
+    assert "closed for the current pre-manuscript gate" in vmec_lane["next_action"]
+    assert all(
+        "production-scope held-out surface or field-line artifact" not in item
+        for item in vmec_lane["required_next_artifacts"]
+    )
 
 
 def test_write_pre_manuscript_artifacts(tmp_path: Path) -> None:

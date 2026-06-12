@@ -222,10 +222,12 @@ blocked. The required order is:
   communication-aware nonlinear decomposed RHS/integrator path and require
   serial-vs-decomposed transport-window identity plus large-grid CPU and
   multi-GPU speedup ``>=1.5`` before any speedup claim;
-- VMEC/Boozer holdout optimization: keep the existing reduced alpha/surface and
-  second-equilibrium gates as plumbing, then add a production-scope held-out
-  surface or field-line nonlinear transport artifact with same-WOUT provenance
-  through ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``.
+- VMEC/Boozer holdout optimization: closed for the current pre-manuscript gate
+  after adding the production-scope QH held-out surface/field-line nonlinear
+  transport artifact with same-WOUT provenance through
+  ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``. Broader optimization claims
+  still require nonlinear transport-gradient and second-equilibrium nonlinear
+  transport validation.
 
 The VMEC-JAX aspect-6 QA transport restart now has a measured reduced
 transport-gradient diagnostic and a solved-gate projected line-search bracket.

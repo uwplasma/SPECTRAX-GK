@@ -59,11 +59,10 @@
       "blockers": [
         "need_at_least_four_replicated_holdout_ensembles",
         "need_at_least_three_matched_optimized_transport_audits",
-        "need_at_least_three_optimized_equilibrium_ensembles",
-        "vmec_boozer_production_scope_holdout_missing"
+        "need_at_least_three_optimized_equilibrium_ensembles"
       ],
       "claim_level": "single_candidate_scoped_positive_audit_not_broad_optimization",
-      "completion_percent": 54.2,
+      "completion_percent": 72.9,
       "key_metrics": {
         "min_qualifying_matched_optimized_transport_audits": 3,
         "min_qualifying_optimized_equilibrium_ensembles": 3,
@@ -71,9 +70,9 @@
         "qa_long_window_anchor_passed": true,
         "qualifying_matched_optimized_transport_audits": 1,
         "qualifying_optimized_equilibrium_ensembles": 1,
-        "qualifying_replicated_holdout_ensembles": 2,
+        "qualifying_replicated_holdout_ensembles": 3,
         "scoped_guard_passed": true,
-        "vmec_boozer_holdout_promotion_passed": false
+        "vmec_boozer_holdout_promotion_passed": true
       },
       "lane": "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "next_action": "Move from one scoped QA positive audit to a multi-equilibrium, multi-surface/multi-alpha campaign; only count long post-transient replicated transport windows, not reduced/startup objectives.",
@@ -91,7 +90,7 @@
         "replicated seed/timestep ensembles for each optimized equilibrium and selected holdout",
         "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows"
       ],
-      "status": "blocked"
+      "status": "partial"
     },
     {
       "blockers": [
@@ -134,22 +133,14 @@
       "status": "partial"
     },
     {
-      "blockers": [
-        "aggregate_holdout_promotion_gate_failed",
-        "line_search_reuses_aggregate_sample_set",
-        "no_production_scope_heldout_surface_or_alpha_artifact",
-        "production_scope_heldout_surface_or_field_line_artifact_missing"
-      ],
-      "claim_level": "reduced_holdout_plumbing_not_production_optimization",
-      "completion_percent": 78.0,
+      "blockers": [],
+      "claim_level": "vmec_boozer_holdout_optimization_ready",
+      "completion_percent": 100.0,
       "key_metrics": {
         "gradient_holdout_matrix_passed": true,
-        "promotion_gate_blockers": [
-          "line_search_reuses_aggregate_sample_set",
-          "passed_holdout_surface_or_field_line_artifact"
-        ],
-        "promotion_gate_passed": false,
-        "qualifying_production_holdout_artifacts": 0,
+        "promotion_gate_blockers": [],
+        "promotion_gate_passed": true,
+        "qualifying_production_holdout_artifacts": 1,
         "reduced_alpha_holdout_passed": true,
         "reduced_surface_holdout_passed": true,
         "second_equilibrium_reduced_gate_passed": true,
@@ -157,8 +148,8 @@
         "vmec_boozer_quasilinear_gradient_gate_passed": true
       },
       "lane": "VMEC/Boozer holdout optimization",
-      "next_action": "Promote the existing reduced alpha/surface/second-equilibrium gates only as plumbing; add a true production-scope heldout nonlinear transport artifact before claiming VMEC/Boozer optimization closure.",
-      "passed": false,
+      "next_action": "VMEC/Boozer held-out nonlinear transport is closed for the current pre-manuscript gate; extend to nonlinear transport-gradient and second-equilibrium nonlinear transport before broader optimization claims.",
+      "passed": true,
       "primary_artifacts": [
         "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
         "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
@@ -169,12 +160,11 @@
         "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json"
       ],
       "required_next_artifacts": [
-        "production-scope held-out surface or field-line artifact using long post-transient nonlinear transport, not reduced growth/QL objectives",
         "VMEC/Boozer nonlinear transport-gradient or robust finite-difference gate on the held-out split",
         "second-equilibrium heldout nonlinear transport validation before broad geometry-optimization claims",
         "same-WOUT provenance linking optimizer state, Boozer transform, SPECTRAX-GK input, and nonlinear audit output"
       ],
-      "status": "partial"
+      "status": "closed"
     }
   ],
   "status_order": {
@@ -187,12 +177,11 @@
     "blocking_lanes": [
       "Universal absolute quasilinear heat-flux prediction",
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
-      "Production nonlinear domain-decomposition speedup",
-      "VMEC/Boozer holdout optimization"
+      "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 61.8,
-    "n_blocked": 1,
-    "n_closed": 0,
+    "mean_completion_percent": 72.0,
+    "n_blocked": 0,
+    "n_closed": 1,
     "n_lanes": 4,
     "n_open": 0,
     "n_partial": 3,

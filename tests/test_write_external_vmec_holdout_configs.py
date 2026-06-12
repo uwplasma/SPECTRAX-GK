@@ -230,6 +230,53 @@ def test_write_external_vmec_holdout_configs_timestep_only_metadata(tmp_path: Pa
     assert variants[-1] == {"axis": "timestep", "label": "dt0p125", "seed": 22, "timestep": 0.125}
 
 
+def test_write_external_vmec_holdout_configs_exposes_repair_protocol_knobs(
+    tmp_path: Path,
+) -> None:
+    vmec_file = tmp_path / "wout_solovev_reference.nc"
+    vmec_file.write_text("placeholder", encoding="utf-8")
+
+    written = write_configs(
+        case="solovev_repair",
+        vmec_file=vmec_file,
+        out_dir=tmp_path / "runs",
+        grids=[_parse_grid("n48:48:48:32:32")],
+        horizons=(50.0,),
+        dt=0.02,
+        ky=0.2857,
+        nl=4,
+        nm=8,
+        torflux=0.64,
+        alpha=1.2,
+        npol=2.0,
+        tprim=2.5,
+        fprim=0.75,
+        nu=0.02,
+        init_amp=1.0e-5,
+        y0=18.0,
+        lx=54.0,
+        ly=55.0,
+        sample_stride=25,
+        diagnostics_stride=25,
+    )
+
+    config = written[0].path.read_text(encoding="utf-8")
+    assert "dt = 0.02" in config
+    assert "ky = 0.2857" in config
+    assert "init_amp = 1e-05" in config
+    assert "alpha = 1.2" in config
+    assert "npol = 2" in config
+    assert "tprim = 2.5" in config
+    assert "fprim = 0.75" in config
+    assert "nu = 0.02" in config
+    assert "y0 = 18" in config
+    assert "Lx = 54" in config
+    assert "Ly = 55" in config
+    assert "sample_stride = 25" in config
+    assert "diagnostics_stride = 25" in config
+    assert "steps = 2500" in config
+
+
 def test_external_vmec_holdout_config_parsers_reject_bad_inputs(tmp_path: Path) -> None:
     assert _parse_horizons("1,2,3") == (1.0, 2.0, 3.0)
     with pytest.raises(ValueError, match="sorted"):

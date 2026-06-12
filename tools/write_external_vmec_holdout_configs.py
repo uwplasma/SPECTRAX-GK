@@ -630,6 +630,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
+    parser.add_argument("--torflux", type=float, default=0.64)
+    parser.add_argument("--alpha", type=float, default=0.0)
+    parser.add_argument("--npol", type=float, default=1.0)
+    parser.add_argument("--tprim", type=float, default=3.0)
+    parser.add_argument("--fprim", type=float, default=1.0)
+    parser.add_argument("--nu", type=float, default=0.01)
+    parser.add_argument("--init-amp", type=float, default=1.0e-3)
+    parser.add_argument("--y0", type=float, default=21.0)
+    parser.add_argument("--Lx", type=float, default=62.8)
+    parser.add_argument("--Ly", type=float, default=62.8)
+    parser.add_argument("--sample-stride", type=int, default=50)
+    parser.add_argument("--diagnostics-stride", type=int, default=50)
     parser.add_argument(
         "--baseline-seed",
         type=int,
@@ -675,6 +687,18 @@ def main(argv: list[str] | None = None) -> int:
         ky=float(args.ky),
         nl=int(args.Nl),
         nm=int(args.Nm),
+        torflux=float(args.torflux),
+        alpha=float(args.alpha),
+        npol=float(args.npol),
+        tprim=float(args.tprim),
+        fprim=float(args.fprim),
+        nu=float(args.nu),
+        init_amp=float(args.init_amp),
+        y0=float(args.y0),
+        lx=float(args.Lx),
+        ly=float(args.Ly),
+        sample_stride=int(args.sample_stride),
+        diagnostics_stride=int(args.diagnostics_stride),
         baseline_seed=int(args.baseline_seed),
         seed_variants=args.seed_variant,
         dt_variants=args.dt_variant,

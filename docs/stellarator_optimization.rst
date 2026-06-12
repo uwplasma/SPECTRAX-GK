@@ -2474,12 +2474,14 @@ the following pass:
 
    Production nonlinear turbulent-flux optimization guard. The release-safety
    side passes because startup and reduced nonlinear artifacts are explicitly
-   blocked from production promotion and two long post-transient replicated
-   holdout ensembles pass. The selected optimized-equilibrium audit contributes
-   one accepted matched audit, but production promotion remains blocked until
-   three independent optimized-equilibrium ensembles and three matched
-   baseline-to-optimized audits pass; broader nonlinear transport-optimization
-   claims still require separate gates.
+   blocked from production promotion and three long post-transient replicated
+   holdout ensembles pass: D-shaped VMEC, circular VMEC, and the QH
+   VMEC/Boozer held-out surface/field-line transport run. The selected
+   optimized-equilibrium audit contributes one accepted matched audit, but
+   production promotion remains blocked until three independent
+   optimized-equilibrium ensembles and three matched baseline-to-optimized
+   audits pass; broader nonlinear transport-optimization claims still require
+   separate gates.
 
 The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
 ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a

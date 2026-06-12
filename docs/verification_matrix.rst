@@ -449,26 +449,28 @@ gate.
        ``docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, and
        ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
-     - Open for production transport claims
-     - aggregate finite-difference and line-search artifacts must pass on the
-       same training sample set, then an independent passed production-scope
-       validation artifact must cover a held-out ``surface_index`` or field-line
-       ``alpha``. Production nonlinear optimization promotion additionally
-       requires a passed replicated nonlinear-window ensemble artifact, so a
-       single converged window cannot by itself support an optimized-equilibrium
-       heat-flux claim.
+     - Closed for VMEC/Boozer held-out plumbing; open for broad production
+       nonlinear optimization claims
+     - aggregate finite-difference and line-search artifacts pass on the same
+       training sample set, and the independent QH production-scope validation
+       artifact covers a held-out field-line ``alpha`` with a passed replicated
+       nonlinear-window ensemble. Production nonlinear optimization promotion
+       still requires three independent optimized-equilibrium ensembles and
+       three matched baseline-to-optimized audits, so one converged held-out
+       VMEC/Boozer transport window cannot by itself support a broad
+       optimized-equilibrium heat-flux claim.
        The multi-alpha finite-difference artifact passes and the growth-vs-QL
        comparison shows objective-dependent descent directions. The
        reduced-portfolio guard now verifies that the multi-alpha rows have real
        VMEC/Boozer provenance, multi-alpha/multi-``k_y`` metadata, finite
        aggregate FD fields, finite growth/QL AD/FD diagnostics, and no
        production nonlinear claim. The alpha-heldout and surface-heldout
-       splits pass as reduced generalization
-       evidence, and Li383 passes as a second-equilibrium aggregate
-       finite-difference/line-search check. The aggregate artifacts remain
-       reduced optimizer-plumbing evidence. The separate production nonlinear
-       optimization guard now includes long-window D-shaped/circular holdouts
-       and one selected optimized-equilibrium seed/timestep audit; production
+       splits pass as reduced generalization evidence, Li383 passes as a
+       second-equilibrium aggregate finite-difference/line-search check, and
+       the QH held-out transport artifact closes the VMEC/Boozer aggregate
+       promotion gate. The separate production nonlinear optimization guard now
+       includes long-window D-shaped, circular, and QH VMEC/Boozer holdouts plus
+       one selected optimized-equilibrium seed/timestep audit; production
        promotion remains blocked until three independent optimized-equilibrium
        ensembles and three matched audits pass. Broader nonlinear turbulence
        gradients and multi-surface transport optimization are still separate

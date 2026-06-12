@@ -1,3 +1,36 @@
+- 2026-06-12: Harvested the first production-scope VMEC/Boozer held-out
+  nonlinear transport artifact and kept broader claims fail-closed. The QH
+  `vmec_jax -> booz_xform_jax` held-out surface/field-line run
+  (`wout_nfp4_QH_warm_start.nc`, `torflux=0.78`, `alpha=1.2`, `ky rho_i≈0.2`,
+  `n64`, `t=700`, window `350-700`, seed31/seed32 plus `dt=0.04`) passed the
+  runtime-output, replicated-window, production-holdout, and aggregate
+  VMEC/Boozer promotion gates. The accepted ensemble has
+  `<Q_i>=7.9978`, mean-relative spread `0.0837`, and combined SEM/mean
+  `0.0242`; VMEC/Boozer holdout optimization is now closed for the strict
+  pre-manuscript gate. The production nonlinear optimization guard was
+  regenerated with three qualifying replicated holdout ensembles
+  (D-shaped, circular, QH VMEC/Boozer) but remains not production-promoted
+  because it still has only `1/3` optimized-equilibrium ensembles and `1/3`
+  matched optimized transport audits. The strict closure dashboard is now
+  `72.0%` mean completion: universal absolute QL remains `60.0%`, broad
+  nonlinear turbulent-flux optimization `72.9%`, production nonlinear domain
+  decomposition `55.0%`, and VMEC/Boozer holdout optimization `100.0%`.
+  The Solovev external-VMEC repair protocol (`dt=0.02`, `init_amp=1e-5`) passed
+  a finite `t=50` pilot. The first `n64/t250` repaired launch was resource-terminated
+  before writing an output bundle while GPU 0 was sharing memory with another VMEC/JAX job, so a
+  separate bounded `n48/t250` seed/timestep manifest is now running on office GPU 0 with
+  `XLA_PYTHON_CLIENT_PREALLOCATE=false`; the current QA `t=1500` dt0.04 replicate is still
+  running on office GPU 1, so no new QA promotion was made. The nonlinear
+  spectral logical route identity gate was refreshed on a larger deterministic
+  state, and a bounded local CPU profile again showed identity with no active
+  state sharding; nonlinear domain speedup remains blocked pending a real
+  communication-aware implementation and CPU/GPU profiler-backed speedup.
+  `tools/write_external_vmec_holdout_configs.py` now exposes the protocol
+  knobs needed for repair launches (`--init-amp`, gradients, geometry sampling,
+  and diagnostic strides), with regression coverage. README/docs now include
+  the QH held-out transport panel and corrected claim boundaries. Repository
+  size remains under policy after compressing three existing plot PNGs.
+
 - 2026-06-12: Added the next concrete pre-manuscript closure tranche without
   promoting unfinished claims. `tools/write_optimized_equilibrium_transport_configs.py`
   now exposes and records explicit VMEC transport-sample metadata (`torflux`,

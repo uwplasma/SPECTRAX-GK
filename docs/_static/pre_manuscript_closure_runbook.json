@@ -107,12 +107,11 @@
     "blocking_lanes": [
       "Universal absolute quasilinear heat-flux prediction",
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
-      "Production nonlinear domain-decomposition speedup",
-      "VMEC/Boozer holdout optimization"
+      "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 61.8,
-    "n_blocked": 1,
-    "n_closed": 0,
+    "mean_completion_percent": 72.0,
+    "n_blocked": 0,
+    "n_closed": 1,
     "n_lanes": 4,
     "n_open": 0,
     "n_partial": 3,

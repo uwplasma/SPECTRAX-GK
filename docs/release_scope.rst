@@ -306,8 +306,9 @@ Quasilinear model-selection state:
   base-window manifest, but the current D-shaped and circular case-local
   replicate campaigns now pass their own ensemble gates. Those case-local
   artifacts supersede the stale global missing-replicate message for those two
-  cases. The selected optimized-equilibrium audit now also passes its local
-  seed/timestep ensemble gate.
+  cases. The QH VMEC/Boozer held-out surface/field-line campaign and the
+  selected optimized-equilibrium audit now also pass their local seed/timestep
+  ensemble gates.
 - ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
@@ -317,12 +318,13 @@ Quasilinear model-selection state:
 - ``tools/check_production_nonlinear_optimization_guard.py`` is the explicit
   production nonlinear turbulent-flux optimization guard. Its tracked artifact,
   ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
-  safety because reduced/startup estimators are blocked and two long
-  post-transient replicated holdout ensembles pass. The selected optimized QA
-  equilibrium contributes one accepted ``t=[350,700]`` seed/timestep replicated
-  transport-window audit. Production promotion remains blocked until three
-  independent optimized-equilibrium ensembles and three matched
-  baseline-to-optimized audits pass; the current selected audit is scoped
+  safety because reduced/startup estimators are blocked and three long
+  post-transient replicated holdout ensembles pass: D-shaped VMEC, circular
+  VMEC, and QH VMEC/Boozer. The selected optimized QA equilibrium contributes
+  one accepted ``t=[350,700]`` seed/timestep replicated transport-window audit.
+  Production promotion remains blocked until three independent
+  optimized-equilibrium ensembles and three matched baseline-to-optimized
+  audits pass; the current selected audit is scoped
   candidate evidence, not a broad nonlinear transport-optimization claim.
 - ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
   QA no-ESS reference to optimized QA/ESS comparison. The tracked
@@ -561,7 +563,7 @@ Differentiable-geometry state:
   finite-difference plumbing checks. Both record ``transport_average_gate =
   false``.
 - Finite-beta drift reconstruction, converged nonlinear turbulence gradients,
-  held-out surface/field-line aggregate promotion, and broader
+  broader VMEC/Boozer nonlinear transport-gradient validation, and broader
   optimized-equilibrium nonlinear audits beyond the selected QA candidate remain
   future promotion gates.
 

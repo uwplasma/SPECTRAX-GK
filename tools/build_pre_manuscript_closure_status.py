@@ -469,6 +469,29 @@ def _vmec_boozer_holdout_lane(root: Path) -> dict[str, Any]:
         + _bool_score(promotion_passed, 12.0)
     )
     passed = bool(promotion_passed and qualifying_production_holdouts >= 1)
+    required_next_artifacts = (
+        [
+            "VMEC/Boozer nonlinear transport-gradient or robust finite-difference gate on the held-out split",
+            "second-equilibrium heldout nonlinear transport validation before broad geometry-optimization claims",
+            "same-WOUT provenance linking optimizer state, Boozer transform, SPECTRAX-GK input, and nonlinear audit output",
+        ]
+        if passed
+        else [
+            "production-scope held-out surface or field-line artifact using long post-transient nonlinear transport, not reduced growth/QL objectives",
+            "VMEC/Boozer nonlinear transport-gradient or robust finite-difference gate on the held-out split",
+            "second-equilibrium heldout nonlinear transport validation before broad geometry-optimization claims",
+            "same-WOUT provenance linking optimizer state, Boozer transform, SPECTRAX-GK input, and nonlinear audit output",
+        ]
+    )
+    next_action = (
+        "VMEC/Boozer held-out nonlinear transport is closed for the current pre-manuscript gate; extend to nonlinear "
+        "transport-gradient and second-equilibrium nonlinear transport before broader optimization claims."
+        if passed
+        else (
+            "Promote the existing reduced alpha/surface/second-equilibrium gates only as plumbing; add a true production-scope "
+            "heldout nonlinear transport artifact before claiming VMEC/Boozer optimization closure."
+        )
+    )
 
     return {
         "lane": "VMEC/Boozer holdout optimization",
@@ -497,16 +520,8 @@ def _vmec_boozer_holdout_lane(root: Path) -> dict[str, Any]:
             "promotion_gate_blockers": _as_list(promotion_gate.get("blockers")),
         },
         "blockers": _normalize_blockers(blockers),
-        "required_next_artifacts": [
-            "production-scope held-out surface or field-line artifact using long post-transient nonlinear transport, not reduced growth/QL objectives",
-            "VMEC/Boozer nonlinear transport-gradient or robust finite-difference gate on the held-out split",
-            "second-equilibrium heldout nonlinear transport validation before broad geometry-optimization claims",
-            "same-WOUT provenance linking optimizer state, Boozer transform, SPECTRAX-GK input, and nonlinear audit output",
-        ],
-        "next_action": (
-            "Promote the existing reduced alpha/surface/second-equilibrium gates only as plumbing; add a true production-scope "
-            "heldout nonlinear transport artifact before claiming VMEC/Boozer optimization closure."
-        ),
+        "required_next_artifacts": required_next_artifacts,
+        "next_action": next_action,
     }
 
 

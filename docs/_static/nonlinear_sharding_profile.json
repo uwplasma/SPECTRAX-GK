@@ -1,8 +1,9 @@
 {
+  "backend": "cpu",
   "best_identity_preserving_candidate": {
-    "engineering_speedup_median": 1.218175416111761,
+    "engineering_speedup_median": 1.2009055913682534,
     "identity_gate_pass": true,
-    "spec": "auto",
+    "spec": "kx",
     "state_sharding_active": false
   },
   "case": "cyclone_nonlinear_fixed_step",
@@ -13,12 +14,41 @@
     "TFRT_CPU_0"
   ],
   "dt": 0.02,
-  "engineering_speedup": 1.218175416111761,
+  "engineering_speedup": 1.182322321199327,
   "identity_gate_pass": true,
   "laguerre_mode": "grid",
   "max_abs_state_error": 0.0,
   "max_rel_state_error": 0.0,
   "method": "rk2",
+  "profile_command": "/opt/local/bin/python3 /Users/rogeriojorge/local/SPECTRAX-GK/tools/profile_nonlinear_sharding.py --out-json docs/_static/nonlinear_sharding_profile.json --nx 16 --ny 16 --nz 24 --nl 2 --nm 4 --steps 8 --method rk2 --sharding auto --sharding-options auto,kx --warmups 1 --repeats 2",
+  "profile_command_argv": [
+    "/opt/local/bin/python3",
+    "/Users/rogeriojorge/local/SPECTRAX-GK/tools/profile_nonlinear_sharding.py",
+    "--out-json",
+    "docs/_static/nonlinear_sharding_profile.json",
+    "--nx",
+    "16",
+    "--ny",
+    "16",
+    "--nz",
+    "24",
+    "--nl",
+    "2",
+    "--nm",
+    "4",
+    "--steps",
+    "8",
+    "--method",
+    "rk2",
+    "--sharding",
+    "auto",
+    "--sharding-options",
+    "auto,kx",
+    "--warmups",
+    "1",
+    "--repeats",
+    "2"
+  ],
   "profiler_trace": {
     "error": null,
     "path": null,
@@ -26,21 +56,21 @@
   },
   "repeats": 2,
   "serial_stats_s": {
-    "max": 0.46112245810218155,
-    "mean": 0.42205991654191166,
-    "median": 0.42205991654191166,
-    "min": 0.38299737498164177,
-    "std": 0.03906254156026989
+    "max": 0.46701687504537404,
+    "mean": 0.44432618748396635,
+    "median": 0.44432618748396635,
+    "min": 0.42163549992255867,
+    "std": 0.022690687561407685
   },
   "serial_times_s": [
-    0.38299737498164177,
-    0.46112245810218155
+    0.42163549992255867,
+    0.46701687504537404
   ],
-  "serial_warm_s": 0.42205991654191166,
+  "serial_warm_s": 0.44432618748396635,
   "sharded_results": {
     "auto": {
       "diagnostic_identity_gate_pass": true,
-      "engineering_speedup_median": 1.218175416111761,
+      "engineering_speedup_median": 1.182322321199327,
       "error": null,
       "identity_gate_pass": true,
       "max_abs_phi_error": 0.0,
@@ -51,20 +81,20 @@
       "max_rel_state_error": 0.0,
       "state_sharding_active": false,
       "stats_s": {
-        "max": 0.352041166042909,
-        "mean": 0.34646891651209444,
-        "median": 0.34646891651209444,
-        "min": 0.34089666698127985,
-        "std": 0.005572249530814588
+        "max": 0.37728091701865196,
+        "mean": 0.37580800050636753,
+        "median": 0.37580800050636753,
+        "min": 0.3743350839940831,
+        "std": 0.0014729165122844279
       },
       "times_s": [
-        0.352041166042909,
-        0.34089666698127985
+        0.37728091701865196,
+        0.3743350839940831
       ]
     },
     "kx": {
       "diagnostic_identity_gate_pass": true,
-      "engineering_speedup_median": 1.2040187444708557,
+      "engineering_speedup_median": 1.2009055913682534,
       "error": null,
       "identity_gate_pass": true,
       "max_abs_phi_error": 0.0,
@@ -75,32 +105,46 @@
       "max_rel_state_error": 0.0,
       "state_sharding_active": false,
       "stats_s": {
-        "max": 0.35390412504784763,
-        "mean": 0.3505426460178569,
-        "median": 0.3505426460178569,
-        "min": 0.34718116698786616,
-        "std": 0.0033614790299907327
+        "max": 0.3757882089121267,
+        "mean": 0.3699926044791937,
+        "median": 0.3699926044791937,
+        "min": 0.36419700004626065,
+        "std": 0.0057956044329330325
       },
       "times_s": [
-        0.35390412504784763,
-        0.34718116698786616
+        0.3757882089121267,
+        0.36419700004626065
       ]
     }
   },
-  "sharded_warm_s": 0.34646891651209444,
+  "sharded_warm_s": 0.37580800050636753,
+  "sharding_axis": "auto",
   "sharding_options": [
     "auto",
     "kx"
   ],
+  "software_versions": {
+    "jax": "0.9.2",
+    "jaxlib": "0.9.2",
+    "numpy": "2.4.4",
+    "python": "3.11.14",
+    "spectraxgk": "1.6.5"
+  },
+  "source_artifact": "docs/_static/nonlinear_sharding_profile.json",
+  "source_contract_version": 1,
   "state_shape": [
     2,
-    3,
     4,
-    2,
-    8
+    16,
+    16,
+    24
   ],
   "state_sharding_active": false,
   "state_sharding_requested": "auto",
-  "steps": 2,
+  "steps": 8,
+  "timing_warmup_repeat": {
+    "repeats": 2,
+    "warmups": 1
+  },
   "warmups": 1
 }
