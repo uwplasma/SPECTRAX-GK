@@ -31,7 +31,7 @@
     {
       "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_stellarator_train_holdout_report.json",
       "claim_level": "calibration_dataset",
-      "holdout_mean_abs_relative_error": 3.418296167633783,
+      "holdout_mean_abs_relative_error": 3.1265878826989333,
       "kind": "quasilinear_calibration_report",
       "passed": false
     },
@@ -68,22 +68,22 @@
         "passed": true
       },
       {
-        "detail": "mean_abs_relative_error=0.4237826936689464 gate=0.35",
+        "detail": "mean_abs_relative_error=0.39974927464926485 gate=0.35",
         "metric": "required_candidate_transport_error",
         "passed": false
       },
       {
-        "detail": "coverage=0.8 gate=0.75",
+        "detail": "coverage=0.8181818181818182 gate=0.75",
         "metric": "required_candidate_interval_coverage",
         "passed": true
       },
       {
-        "detail": "candidate=0.4237826936689464 null=0.7188195373778768",
+        "detail": "candidate=0.39974927464926485 null=0.7313502858374321",
         "metric": "required_candidate_beats_training_mean_null",
         "passed": true
       },
       {
-        "detail": "candidate=0.4237826936689464 linear_weight=0.8447213326664013",
+        "detail": "candidate=0.39974927464926485 linear_weight=0.8638526360452393",
         "metric": "required_candidate_beats_linear_weight",
         "passed": true
       },
@@ -104,11 +104,11 @@
   },
   "kind": "quasilinear_model_selection_status",
   "metrics": {
-    "candidate_mean_abs_relative_error": 0.4237826936689464,
-    "candidate_prediction_interval_coverage": 0.8,
+    "candidate_mean_abs_relative_error": 0.39974927464926485,
+    "candidate_prediction_interval_coverage": 0.8181818181818182,
     "interval_coverage_gate": 0.75,
-    "linear_weight_mean_abs_relative_error": 0.8447213326664013,
-    "null_training_mean_mean_abs_relative_error": 0.7188195373778768,
+    "linear_weight_mean_abs_relative_error": 0.8638526360452393,
+    "null_training_mean_mean_abs_relative_error": 0.7313502858374321,
     "transport_mean_relative_error_gate": 0.35
   },
   "notes": "A passed status promotes only the scoped model-selection result. Optimized-equilibrium nonlinear audits, when supplied, can support only that audited equilibrium. The status does not promote a runtime/TOML absolute-flux predictor or a universal nonlinear transport model.",

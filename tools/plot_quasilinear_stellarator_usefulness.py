@@ -33,6 +33,7 @@ CASE_LABELS = {
     "cyclone_long_window": "Cyclone",
     "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
     "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
+    "qp_diag_nfp2_m4_final_t250": "QP VMEC",
 }
 
 MODEL_LABELS = {
@@ -252,7 +253,12 @@ def write_csv(report: dict[str, Any], path: Path) -> None:
     ]
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=fields,
+            extrasaction="ignore",
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
 

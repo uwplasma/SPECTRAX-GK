@@ -43,14 +43,14 @@ score.
    * - Quasilinear diagnostics
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
-       artifacts are reproducible. The refreshed ten-case train/holdout
+       artifacts are reproducible. The refreshed 11-case train/holdout
        calibration report rejects the one-constant absolute-flux family, with
        CTH-like and shaped-pressure external VMEC admitted only through
        explicit high-grid policies. Simple one-scalar saturation rules are
        rejected on the expanded sweep. The ``spectral_envelope_ridge``
        candidate is the least-bad reduced model, but it misses the strict
-       transport and rank/correlation screening gates after the shaped-pressure
-       holdout is added. It is retained only as a scoped manuscript
+       transport and rank/correlation screening gates after the QP holdout is
+       added. It is retained only as a scoped manuscript
        model-development result. The failed
        ``quasilinear_model_selection_status.json`` gate does not promote a
        runtime/TOML absolute-flux predictor, universal nonlinear transport
@@ -286,7 +286,7 @@ Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
-  ``passed = false`` with held-out mean relative error about ``3.42``.
+  ``passed = false`` with held-out mean relative error about ``3.13``.
 - ``tools/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.quasilinear_window`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
@@ -441,16 +441,17 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. On the expanded saturation sweep,
   the linear-weight fit is the least-bad simple rule with mean held-out
-  relative error about ``2.87``; the training-mean null is about ``1.09``.
+  relative error about ``2.56``; the positive-growth mixing-length rule is
+  about ``3.13`` and the training-mean null is about ``0.98``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
-  no candidate is accepted by the uncertainty gate on the expanded ten-case
+  no candidate is accepted by the uncertainty gate on the expanded 11-case
   electrostatic-compatible candidate portfolio. ``spectral_envelope_ridge`` is
-  the best near miss with mean relative error about ``0.424`` and interval
-  coverage ``8/10``, but it remains above the ``0.35`` transport gate.
+  the best near miss with mean relative error about ``0.400`` and interval
+  coverage ``9/11``, but it remains above the ``0.35`` transport gate.
 - ``docs/_static/quasilinear_candidate_regularization_sweep.json``:
   the ridge-penalty sensitivity audit does not rescue that near miss. The best
-  tested setting is now ``lambda = 0.7`` with mean relative error about
-  ``0.423`` and held-out mean about ``0.415``; no tested penalty is accepted as
+  tested setting is now ``lambda = 0`` with mean relative error about
+  ``0.393`` and held-out mean about ``0.415``; no tested penalty is accepted as
   an absolute-flux predictor.
 - ``docs/_static/quasilinear_stellarator_usefulness.json``:
   the current stellarator-facing synthesis is scoped as
@@ -464,10 +465,10 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_screening_skill.json``:
   the current correlation/ranking synthesis is scoped as
   ``screening_correlation_model_development_not_absolute_flux_promotion``. It
-  records no accepted screening model on the expanded ten-case candidate
+  records no accepted screening model on the expanded 11-case candidate
   portfolio. The least-bad ``spectral_envelope_ridge`` candidate has
-  full/held-out Spearman correlations about ``0.66``/``0.60`` and pairwise
-  order accuracies about ``0.71``/``0.68``, below the ``0.75`` gates. The
+  full/held-out Spearman correlations about ``0.664``/``0.650`` and pairwise
+  order accuracies about ``0.727``/``0.722``, below the ``0.75`` gates. The
   mean-error gate and ``accepted_absolute_flux_models`` remain empty. Screening
   skill is therefore not promoted as a runtime saturation law or universal
   absolute-flux predictor.
@@ -476,10 +477,10 @@ Quasilinear model-selection state:
   ``absolute_flux_promotion_requirements`` and
   ``screening_promotion_requirements`` blocks quantify the current gaps after
   admitting the shaped-pressure external-VMEC high-grid holdout: the absolute
-  train/holdout mean relative error is about ``3.42`` against the ``0.35``
+  train/holdout mean relative error is about ``3.13`` against the ``0.35``
   gate, no full-portfolio or held-out-only screening model is currently
-  accepted, and one additional independent passed holdout is still required
-  before screening promotion can even be reconsidered. The external-VMEC-family
+  accepted, and the independent-holdout-count blocker is closed. Screening
+  promotion still fails the rank/correlation and transport-error gates. The external-VMEC-family
   and non-axisymmetric external-VMEC-family coverage requirements are
   satisfied, but these are evidence prerequisites, not a promoted runtime
   absolute-flux option.

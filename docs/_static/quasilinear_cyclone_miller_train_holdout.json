@@ -5,7 +5,6 @@
   "mean_abs_relative_error": 306.4496457572293,
   "n_points": 2,
   "passed": false,
-  "pdf": "docs/_static/quasilinear_cyclone_miller_train_holdout.pdf",
   "png": "docs/_static/quasilinear_cyclone_miller_train_holdout.png",
   "source": "docs/_static/quasilinear_cyclone_miller_train_holdout_report.json"
 }

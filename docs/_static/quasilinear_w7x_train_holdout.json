@@ -5,7 +5,6 @@
   "mean_abs_relative_error": 204.63309717148618,
   "n_points": 3,
   "passed": false,
-  "pdf": "docs/_static/quasilinear_w7x_train_holdout.pdf",
   "png": "docs/_static/quasilinear_w7x_train_holdout.png",
   "source": "docs/_static/quasilinear_w7x_train_holdout_report.json"
 }

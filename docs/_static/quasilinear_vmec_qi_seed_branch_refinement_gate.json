@@ -18,7 +18,6 @@
   "nonlinear_launch_ready": false,
   "notes": "A finite near-marginal QI branch is useful branch-continuation evidence, but nonlinear transport holdout launches require max_gamma above the minimum launch threshold and the usual post-transient grid/window gates.",
   "passed": false,
-  "pdf": "docs/_static/quasilinear_vmec_qi_seed_branch_refinement_gate.pdf",
   "png": "docs/_static/quasilinear_vmec_qi_seed_branch_refinement_gate.png",
   "positive_run_length": 3,
   "source": "docs/_static/quasilinear_vmec_qi_seed_linear_spectrum_scan.quasilinear_spectrum.csv",

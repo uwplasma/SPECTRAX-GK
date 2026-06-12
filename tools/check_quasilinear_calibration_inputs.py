@@ -135,6 +135,10 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
         if passed is None:
             continue
         artifact_keys = _artifact_keys_from_gate(data)
+        artifact_keys.add(_repo_relative_path(path))
+        path_key = _canonical_artifact_key(path)
+        if path_key:
+            artifact_keys.add(path_key)
         external_holdout_gate = is_external_vmec_holdout_gate(
             data,
             artifact=path,

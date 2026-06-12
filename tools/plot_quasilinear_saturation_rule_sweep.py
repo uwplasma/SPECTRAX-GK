@@ -124,6 +124,16 @@ DEFAULT_CASES = (
         / "docs/_static/external_vmec_shaped_tokamak_pressure_replicates_t650/replicate_ensemble_gate.json",
         shape_gate=None,
     ),
+    SaturationCase(
+        case="qp_diag_nfp2_m4_final_t250",
+        split="holdout",
+        geometry="qp_diag_nfp2_m4",
+        spectrum=ROOT
+        / "docs/_static/quasilinear_vmec_qp_diag_nfp2_m4_final_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT
+        / "docs/_static/qp_diag_nfp2_m4_t250_replicate_ensemble_gate.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -146,6 +156,7 @@ CASE_LABELS = {
     "circular_external_vmec_t450_window": "Circular VMEC",
     "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
     "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
+    "qp_diag_nfp2_m4_final_t250": "QP VMEC",
 }
 
 

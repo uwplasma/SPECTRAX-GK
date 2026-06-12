@@ -5,7 +5,6 @@
   "mean_abs_relative_error": 0.999739581037872,
   "n_points": 1,
   "passed": false,
-  "pdf": "docs/_static/quasilinear_cyclone_calibration_audit.pdf",
   "png": "docs/_static/quasilinear_cyclone_calibration_audit.png",
   "source": "docs/_static/quasilinear_cyclone_calibration_audit_report.json"
 }

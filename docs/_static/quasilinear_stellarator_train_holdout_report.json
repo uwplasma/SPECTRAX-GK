@@ -8,9 +8,9 @@
     },
     "holdout": {
       "max_abs_relative_error": 13.996812510228187,
-      "mean_abs_relative_error": 3.418296167633783,
-      "n": 8,
-      "rmse": 39.44333092609524
+      "mean_abs_relative_error": 3.1265878826989333,
+      "n": 9,
+      "rmse": 37.4391701963599
     },
     "train": {
       "max_abs_relative_error": 0.9852145617003454,
@@ -40,15 +40,16 @@
         "w7x_nonlinear_window: nonlinear window convergence report did not pass",
         "w7x_nonlinear_window: missing passed gate_report"
       ],
-      "n_holdout": 8,
-      "n_passed": 5,
+      "n_holdout": 9,
+      "n_passed": 6,
       "passed": false,
       "passed_cases": [
         "dshape_external_vmec_t250_window",
         "updown_asym_external_vmec_t450_window",
         "circular_external_vmec_t450_window",
         "cth_like_external_vmec_t700_high_grid_window",
-        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        "qp_diag_nfp2_m4_final_t250"
       ]
     },
     "source_nonlinear_summary": null,
@@ -57,9 +58,9 @@
   },
   "metrics": {
     "max_abs_relative_error": 13.996812510228187,
-    "mean_abs_relative_error": 2.833291502896511,
-    "n": 10,
-    "rmse": 35.34031939667981
+    "mean_abs_relative_error": 2.6478033301986588,
+    "n": 11,
+    "rmse": 33.92289934429889
   },
   "observed_floor": 1e-12,
   "passed": false,
@@ -1792,6 +1793,143 @@
       "predicted_heat_flux": 107.32429891034684,
       "quasilinear_artifact": "docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 1.8903249242191644,
+      "saturation_rule": "mixing_length",
+      "split": "holdout"
+    },
+    {
+      "calibration_scale": 56.77558261825238,
+      "case": "qp_diag_nfp2_m4_final_t250",
+      "electron_model": "adiabatic",
+      "geometry": "qp_diag_nfp2_m4",
+      "ky": null,
+      "nonlinear_artifact": "docs/_static/qp_diag_nfp2_m4_t250_replicate_ensemble_gate.json",
+      "nonlinear_window_stats": {
+        "case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
+        "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+        "comparison": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_seed_timestep_replicates",
+        "config": {
+          "max_combined_sem_rel": 0.25,
+          "max_mean_rel_spread": 0.15,
+          "min_reports": 2,
+          "require_individual_passed": true,
+          "value_floor": 1e-12
+        },
+        "gate_report": {
+          "case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
+          "gates": [
+            {
+              "detail": "reports=3 min_reports=2",
+              "metric": "report_count",
+              "passed": true
+            },
+            {
+              "detail": "require_individual_passed=True",
+              "metric": "individual_windows_passed",
+              "passed": true
+            },
+            {
+              "detail": "finite_means=3 reports=3",
+              "metric": "finite_late_means",
+              "passed": true
+            },
+            {
+              "detail": "mean_rel_spread=0.07121585903168443 gate=0.15",
+              "metric": "mean_relative_spread",
+              "passed": true
+            },
+            {
+              "detail": "combined_sem_rel=0.029164409265566113 gate=0.25",
+              "metric": "combined_sem",
+              "passed": true
+            }
+          ],
+          "max_abs_error": 0.0,
+          "max_rel_error": 0.0,
+          "passed": true,
+          "source": "nonlinear_window_convergence_reports"
+        },
+        "gates": [
+          {
+            "detail": "reports=3 min_reports=2",
+            "metric": "report_count",
+            "passed": true
+          },
+          {
+            "detail": "require_individual_passed=True",
+            "metric": "individual_windows_passed",
+            "passed": true
+          },
+          {
+            "detail": "finite_means=3 reports=3",
+            "metric": "finite_late_means",
+            "passed": true
+          },
+          {
+            "detail": "mean_rel_spread=0.07121585903168443 gate=0.15",
+            "metric": "mean_relative_spread",
+            "passed": true
+          },
+          {
+            "detail": "combined_sem_rel=0.029164409265566113 gate=0.25",
+            "metric": "combined_sem",
+            "passed": true
+          }
+        ],
+        "kind": "nonlinear_window_ensemble_report",
+        "passed": true,
+        "rows": [
+          {
+            "case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep",
+            "failures": [],
+            "index": 0,
+            "late_mean": 16.373681592005884,
+            "passed": true,
+            "promotion_ready": true,
+            "sem": 0.47816980915084456,
+            "source_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_seed22_heat_flux_trace.csv",
+            "summary_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_seed22_transport_window.json"
+          },
+          {
+            "case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep",
+            "failures": [],
+            "index": 1,
+            "late_mean": 15.822837249907844,
+            "passed": true,
+            "promotion_ready": true,
+            "sem": 0.47167478238219734,
+            "source_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_seed31_heat_flux_trace.csv",
+            "summary_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_seed31_transport_window.json"
+          },
+          {
+            "case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep",
+            "failures": [],
+            "index": 2,
+            "late_mean": 16.99046843391746,
+            "passed": true,
+            "promotion_ready": true,
+            "sem": 0.44817121268120474,
+            "source_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_dt0p04_heat_flux_trace.csv",
+            "summary_artifact": "tools_out/external_vmec_holdouts/qp_diag_nfp2_m4_final/replicates_t250/qp_diag_nfp2_m4_final_nonlinear_t250_n64_dt0p04_transport_window.json"
+          }
+        ],
+        "statistics": {
+          "combined_sem": 0.47816980915084456,
+          "combined_sem_rel": 0.029164409265566113,
+          "ensemble_mean": 16.395662425277063,
+          "max_individual_sem": 0.47816980915084456,
+          "mean_rel_spread": 0.07121585903168443,
+          "mean_spread": 1.1676311840096165,
+          "n_finite_means": 3,
+          "n_reports": 3,
+          "sample_sem": 0.3372452190130085
+        }
+      },
+      "notes": "admitted QP external-VMEC holdout; t=250 n64 seed/timestep replicated late-window ensemble; nonlinear_source=replicated_ensemble_gate; nonlinear_ensemble_reports=3; nonlinear_ensemble_combined_sem_rel=0.029164409265566113; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=274.174; train_fitted_heat_flux_scale=56.7755826183",
+      "observed_heat_flux": 16.395662425277063,
+      "observed_heat_flux_std": 0.47816980915084456,
+      "predicted_heat_flux": 3.395187489170261,
+      "quasilinear_artifact": "docs/_static/quasilinear_vmec_qp_diag_nfp2_m4_final_spectrum_scan.quasilinear_spectrum.csv",
+      "raw_predicted_heat_flux": 0.05980013471634136,
       "saturation_rule": "mixing_length",
       "split": "holdout"
     }

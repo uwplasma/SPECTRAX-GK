@@ -651,7 +651,7 @@ def _audit_failed_baseline_contract(
             and float(spectral["mean_abs_relative_error"]) > float(
                 promotion.get("transport_mean_relative_error_gate", 0.35)
             )
-            and bool(linear_state.get("eligibility_failures")),
+            and "spectral_envelope_ridge" not in accepted,
             (
                 f"accepted={accepted} "
                 f"spectral_error={spectral.get('mean_abs_relative_error')} "
@@ -875,13 +875,23 @@ def _audit_failed_baseline_contract(
         return (
             promotion.get("passed") is False
             and "absolute_flux_predictor_not_promoted" in blockers
-            and "screening_requirement:additional_independent_holdouts_needed" in blockers
+            and "absolute_requirement:holdout_mean_abs_relative_error" in blockers
             and status.get("absolute_flux_promoted") is False
             and status.get("passed") is False
+            and _finite_number(status.get("holdout_mean_abs_relative_error"))
+            and _finite_number(status.get("holdout_mean_rel_gate"))
+            and float(status["holdout_mean_abs_relative_error"])
+            > float(status["holdout_mean_rel_gate"])
             and (screening_passed or screening_fail_closed)
             and screening_reqs.get("screening_promoted") is False
-            and "additional_independent_holdouts_needed" in screening_reqs.get("blockers", [])
-            and _finite_number(status.get("holdout_mean_abs_relative_error")),
+            and (
+                "full_portfolio_screening_correlation_passed"
+                in screening_reqs.get("blockers", [])
+            )
+            and (
+                "heldout_screening_correlation_passed"
+                in screening_reqs.get("blockers", [])
+            ),
             (
                 f"blockers={blockers} "
                 f"holdout_mean={status.get('holdout_mean_abs_relative_error')} "

@@ -59,6 +59,38 @@ def test_audit_passes_when_required_point_matches_passed_gate(tmp_path: Path) ->
     assert payload["reports"][0]["points"][0]["reason"] == "matched passed nonlinear gate"
 
 
+def test_audit_passes_when_required_point_cites_passed_gate_sidecar(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "ensemble_gate.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "replicated_nonlinear_window",
+                "kind": "nonlinear_window_ensemble_report",
+                "promotion_gate": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, gate.as_posix())
+
+    paths = mod.write_audit(
+        [report],
+        gate_patterns=[str(gate)],
+        out_json=tmp_path / "audit.json",
+        no_plot=True,
+    )
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is True
+    assert point["reason"] == "matched passed nonlinear gate"
+    assert point["matched_gate"]["artifact"] == gate.as_posix()
+
+
 def test_audit_normalizes_absolute_artifact_paths_from_other_checkouts(tmp_path: Path) -> None:
     mod = _load_tool_module()
     gate = tmp_path / "gate.json"
@@ -229,7 +261,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         for point in report["points"]
         if point["required"]
     ]
-    assert len(required_rows) == 18
+    assert len(required_rows) == 19
     assert all(point["matched_gate"] is not None for point in required_rows)
     matched_cases = {point["matched_gate"]["case"] for point in required_rows}
     assert matched_cases == {
@@ -243,6 +275,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "circular_external_vmec_t450",
         "CTH-like external VMEC modified-protocol high-grid admission",
         "Shaped tokamak pressure external VMEC dt=0.04 high-grid transport holdout admission",
+        "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
     }
     external_rows = [
         point for point in required_rows if "external_vmec" in str(point["matched_gate"]["artifact"])

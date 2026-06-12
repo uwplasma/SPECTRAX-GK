@@ -3,7 +3,6 @@
   "ky_max": 0.5,
   "ky_min": 0.1,
   "n_ky": 5,
-  "pdf": "docs/_static/quasilinear_cyclone_miller_spectrum.pdf",
   "png": "docs/_static/quasilinear_cyclone_miller_spectrum.png",
   "source": "docs/_static/quasilinear_cyclone_miller_spectrum_scan.quasilinear_spectrum.csv"
 }
