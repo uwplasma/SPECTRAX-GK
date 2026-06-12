@@ -26,11 +26,11 @@ def test_error_anatomy_locks_current_fail_closed_residual_story() -> None:
 
     assert report["kind"] == "quasilinear_error_anatomy"
     assert report["claim_level"] == "model_development_residual_anatomy_not_absolute_flux_promotion"
-    assert report["case_count"] == 10
-    assert report["holdout_count"] == 8
+    assert report["case_count"] == 11
+    assert report["holdout_count"] == 9
     assert report["promotion_gate"]["passed"] is False
     assert "case_residuals_exceed_transport_gate" in report["promotion_gate"]["blockers"]
-    assert 0.422 < report["candidate_mean_abs_relative_error"] < 0.425
+    assert 0.399 < report["candidate_mean_abs_relative_error"] < 0.401
     assert report["rows"][0]["case"] == "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
     assert report["rows"][0]["above_transport_gate"] is True
     assert report["rows"][0]["overpredicts"] is True
