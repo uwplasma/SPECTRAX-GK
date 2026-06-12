@@ -129,7 +129,7 @@
         "updown_asym_external_vmec_t450_converged": true,
         "uq_accepted_candidates": [],
         "uq_candidate_promotion_passed": false,
-        "validated_inputs_passed": false,
+        "validated_inputs_passed": true,
         "variance_reduced_nonlinear_gradient_common_pairs": 21,
         "variance_reduced_nonlinear_gradient_control_mean_passed": true,
         "variance_reduced_nonlinear_gradient_response_mean": -0.3561353531352798,
