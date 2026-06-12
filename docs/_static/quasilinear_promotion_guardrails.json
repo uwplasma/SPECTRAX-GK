@@ -123,7 +123,7 @@
         "passed": true
       },
       {
-        "detail": "10 required nonlinear summaries passed",
+        "detail": "11 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -478,7 +478,7 @@
         "passed": true
       },
       {
-        "detail": "linear_state_data_volume_passed=False saturation_rule_accepted=[]",
+        "detail": "linear_state_data_volume_passed=True saturation_rule_accepted=[] blockers=['downstream_candidate_skill_gates_not_passed']",
         "metric": "ql_figure_failed_baselines_explicit:docs/_static/quasilinear_dataset_sufficiency",
         "passed": true
       },
@@ -664,7 +664,7 @@
       "artifact": "docs/_static/quasilinear_dataset_sufficiency.json",
       "failed_required_cases": [],
       "kind": "quasilinear_dataset_sufficiency",
-      "required_cases": 10
+      "required_cases": 11
     },
     {
       "artifact": "docs/_static/quasilinear_saturation_rule_sweep.json",
@@ -759,7 +759,7 @@
     {
       "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
       "claim_scoped": true,
-      "failed_baseline_detail": "linear_state_data_volume_passed=False saturation_rule_accepted=[]",
+      "failed_baseline_detail": "linear_state_data_volume_passed=True saturation_rule_accepted=[] blockers=['downstream_candidate_skill_gates_not_passed']",
       "failed_baselines_explicit": true,
       "figure": "docs/_static/quasilinear_dataset_sufficiency.png",
       "index_mentions_json_sidecar": true,

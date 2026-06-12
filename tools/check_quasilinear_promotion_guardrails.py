@@ -704,18 +704,21 @@ def _audit_failed_baseline_contract(
         downstream = downstream if isinstance(downstream, dict) else {}
         simple_sweep = downstream.get("saturation_rule_sweep")
         simple_sweep = simple_sweep if isinstance(simple_sweep, dict) else {}
+        downstream_skill_blocked = (
+            "downstream_candidate_skill_gates_not_passed"
+            in promotion.get("blockers", [])
+            and bool(promotion.get("requires_downstream_candidate_skill_gates", False))
+        )
         return (
             bool(linear_state_rows)
-            and linear_state_rows[0].get("data_volume_passed") is False
             and simple_sweep.get("accepted") == []
             and promotion.get("passed") is False
-            and "downstream_candidate_skill_gates_not_passed"
-            in promotion.get("blockers", [])
-            and bool(promotion.get("requires_downstream_candidate_skill_gates", False)),
+            and downstream_skill_blocked,
             (
                 f"linear_state_data_volume_passed="
                 f"{linear_state_rows[0].get('data_volume_passed') if linear_state_rows else None} "
-                f"saturation_rule_accepted={simple_sweep.get('accepted')}"
+                f"saturation_rule_accepted={simple_sweep.get('accepted')} "
+                f"blockers={promotion.get('blockers', [])}"
             ),
         )
 

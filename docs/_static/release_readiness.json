@@ -168,7 +168,7 @@
       "nonlinear_campaign_admission_ready": true,
       "nonlinear_prelaunch_policy_ready": true,
       "qa_baseline_gate_passed": true,
-      "quasilinear_model_selection_passed": true,
+      "quasilinear_model_selection_passed": false,
       "simple_quasilinear_absolute_flux_promoted": false
     },
     "required_prelaunch_gate_rows": [
@@ -203,6 +203,13 @@
     ],
     "source": "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "summary": {
+      "claim_evidence_level": "scoped_matched_replicated_nonlinear_audit",
+      "claim_promotion_blockers": [
+        "direct_scalar_transport_branch_blocked",
+        "projected_transport_metric_not_improved",
+        "quasilinear_model_selection_not_promoted",
+        "simple_quasilinear_absolute_flux_not_promoted"
+      ],
       "direct_scalar_transport_blocked": true,
       "landscape_admission_passed": true,
       "long_window_nonlinear_audit_passed": true,
@@ -212,7 +219,7 @@
       "positive_prelaunch_gate_passed": true,
       "projected_transport_improved": false,
       "qa_baseline_gate_passed": true,
-      "quasilinear_model_selection_passed": true,
+      "quasilinear_model_selection_passed": false,
       "simple_quasilinear_absolute_flux_promoted": false
     }
   },

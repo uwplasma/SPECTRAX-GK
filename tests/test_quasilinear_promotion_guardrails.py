@@ -520,6 +520,72 @@ def test_manuscript_figure_audit_accepts_scoped_candidate_sidecar(
     )
 
 
+def test_dataset_sufficiency_failure_can_be_downstream_skill_not_data_volume(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+    figure_base = tmp_path / "docs/_static/quasilinear_dataset_sufficiency"
+    figure_base.parent.mkdir(parents=True)
+    figure_base.with_suffix(".png").write_bytes(b"not a real png for metadata test")
+    figure_base.with_suffix(".json").write_text(
+        json.dumps(
+            {
+                "kind": "quasilinear_dataset_sufficiency",
+                "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
+                "notes": "Dataset guard, not a runtime/TOML absolute-flux predictor.",
+                "candidate_requirements": [
+                    {
+                        "candidate": "linear_state_ridge",
+                        "data_volume_passed": True,
+                    }
+                ],
+                "downstream_gates": {
+                    "saturation_rule_sweep": {
+                        "passed": False,
+                        "accepted": [],
+                    }
+                },
+                "promotion_gate": {
+                    "passed": False,
+                    "blockers": ["downstream_candidate_skill_gates_not_passed"],
+                    "requires_downstream_candidate_skill_gates": True,
+                },
+                "input_validation": {
+                    "passed": True,
+                    "cases": [
+                        {"case": "holdout", "required": True, "passed": True}
+                    ],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    index = tmp_path / "manuscript_figures.rst"
+    index.write_text(
+        (
+            f"current artifact base: ``{figure_base.with_suffix('.png')}`` "
+            f"with JSON companion ``{figure_base.with_suffix('.json')}``. "
+            "No runtime/TOML absolute-flux predictor; absolute-flux runtime "
+            "promotion remains blocked.\n"
+        ),
+        encoding="utf-8",
+    )
+
+    audit = mod.build_guardrail_audit(
+        [str(figure_base.with_suffix(".json"))],
+        [doc],
+        [figure_base],
+        index,
+    )
+
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert f"ql_figure_failed_baselines_explicit:{figure_base}" not in failed_metrics
+
+
 def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     mod = _load_tool_module()
 
