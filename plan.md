@@ -1,3 +1,13 @@
+- 2026-06-11: Harvested the first modified-protocol QH warm-start nonlinear
+  office gate. The `n64/n80`, `dt=0.04`, `t=250` pair finished cleanly and is
+  finite, but it is not admissible: the common-window and least-trending
+  high-grid heat-flux disagreements are `0.3675` and `0.4120`, above both the
+  strict `15%` and relaxed `20%` policies. QH therefore stays excluded from the
+  quasilinear calibration ledger. Longer `n80/t450` and `n80/t700` runs were
+  launched on office to compare against the completed `n64/t450` and
+  `n64/t700` traces and decide whether the mismatch is an early-window artifact
+  or a real grid-resolution blocker.
+
 - 2026-06-11: Tightened two release-facing evidence ledgers while QH nonlinear
   runs continued on office. The QA transport optimization status now reports a
   machine-readable `claim_evidence_level` and explicit
