@@ -136,6 +136,7 @@
     {
       "blockers": [
         "aggregate_holdout_promotion_gate_failed",
+        "line_search_reuses_aggregate_sample_set",
         "no_production_scope_heldout_surface_or_alpha_artifact",
         "production_scope_heldout_surface_or_field_line_artifact_missing"
       ],
@@ -144,6 +145,7 @@
       "key_metrics": {
         "gradient_holdout_matrix_passed": true,
         "promotion_gate_blockers": [
+          "line_search_reuses_aggregate_sample_set",
           "passed_holdout_surface_or_field_line_artifact"
         ],
         "promotion_gate_passed": false,

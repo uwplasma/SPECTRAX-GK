@@ -123,7 +123,7 @@
       {
         "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
         "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/premanuscript_growth_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
-        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --torflux 0.64 --alpha 0.0 --npol 1.0 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
         "manifest": "tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/run_manifest.json",
         "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
         "optimizer_case": "growth_scalar_trust_from_strict_baseline",
@@ -141,7 +141,7 @@
       {
         "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
         "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/premanuscript_growth_lbfgs_adjoint_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
-        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --torflux 0.64 --alpha 0.0 --npol 1.0 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
         "manifest": "tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/run_manifest.json",
         "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
         "optimizer_case": "growth_lbfgs_adjoint_from_strict_baseline",
@@ -159,7 +159,7 @@
       {
         "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
         "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/premanuscript_quasilinear_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
-        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_quasilinear_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_quasilinear_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --torflux 0.64 --alpha 0.0 --npol 1.0 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
         "manifest": "tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/run_manifest.json",
         "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
         "optimizer_case": "quasilinear_scalar_trust_from_strict_baseline",
@@ -173,6 +173,36 @@
           1500.0
         ],
         "wout": "tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc"
+      }
+    ],
+    "heldout_transport_commands": [
+      {
+        "case": "vmec_boozer_qh_torflux078_alpha120_holdout",
+        "claim_level": "production_scope_vmec_boozer_surface_field_line_launch_contract_not_transport_promotion",
+        "direct_full_horizon_launch_commands": [
+          "CUDA_VISIBLE_DEVICES=0 python3 -m spectraxgk.cli run-runtime-nonlinear --config /home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed31.toml --steps 14000 --no-progress",
+          "CUDA_VISIBLE_DEVICES=1 python3 -m spectraxgk.cli run-runtime-nonlinear --config /home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed32.toml --steps 14000 --no-progress",
+          "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config /home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_dt0p04.toml --steps 17500 --no-progress"
+        ],
+        "expected_outputs": [
+          "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed31.out.nc",
+          "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_seed32.out.nc",
+          "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/vmec_boozer_qh_torflux078_alpha120_holdout_nonlinear_t700_n64_dt0p04.out.nc"
+        ],
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc --case vmec_boozer_qh_torflux078_alpha120_holdout --out-dir /home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout --horizons 250,350,450,700 --grid n64:64:64:40:40 --torflux 0.78 --alpha 1.2 --npol 1.0 --ky 0.2 --window-tmin 350 --window-tmax 700 --dt-variant 0.04 --seed-variant 31 --seed-variant 32",
+        "manifest": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK/tools_out/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout/run_manifest.json",
+        "transport_sample": {
+          "alpha": 1.2,
+          "ky": 0.2,
+          "npol": 1.0,
+          "role": "heldout_surface_field_line_transport",
+          "torflux": 0.78
+        },
+        "window": [
+          350.0,
+          700.0
+        ],
+        "wout": "/home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
       }
     ],
     "ladder_commands": 14,
@@ -191,7 +221,7 @@
     },
     "optimizer_manifest": "docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json",
     "optimizer_manifest_entries": 19,
-    "purpose": "three matched long-window optimized-equilibrium nonlinear audits for broad VMEC/Boozer and nonlinear turbulent-flux optimization evidence",
+    "purpose": "three matched long-window optimized-equilibrium nonlinear audits for broad VMEC/Boozer and nonlinear turbulent-flux optimization evidence, plus a held-out VMEC/Boozer surface/field-line nonlinear transport audit",
     "status": "launch_contracts_generated_on_office"
   }
 }

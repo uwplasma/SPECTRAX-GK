@@ -14,7 +14,7 @@
     {
       "detail": "line-search samples must match the aggregate objective samples",
       "metric": "line_search_reuses_aggregate_sample_set",
-      "passed": true
+      "passed": false
     },
     {
       "detail": "provide a passed production-scope holdout artifact with a new surface_index or alpha",
@@ -80,6 +80,7 @@
   "passed": false,
   "promotion_gate": {
     "blockers": [
+      "line_search_reuses_aggregate_sample_set",
       "passed_holdout_surface_or_field_line_artifact"
     ],
     "passed": false,
@@ -93,9 +94,10 @@
   },
   "training_sample_summary": {
     "alphas": [
-      "0"
+      "0",
+      "0.7"
     ],
-    "n_samples": 2,
+    "n_samples": 4,
     "selected_ky_indices": [
       "1",
       "2"

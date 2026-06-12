@@ -144,6 +144,24 @@ def _promotion_commands(
     }
 
 
+def _transport_sample_metadata(args: argparse.Namespace) -> dict[str, Any]:
+    """Return explicit surface/field-line metadata encoded in the TOMLs."""
+
+    return {
+        "vmec_file": _repo_relative(args.vmec_file),
+        "torflux": float(args.torflux),
+        "alpha": float(args.alpha),
+        "npol": float(args.npol),
+        "ky": float(args.ky),
+        "tprim": float(args.tprim),
+        "fprim": float(args.fprim),
+        "nu": float(args.nu),
+        "claim_level": (
+            "launch_contract_surface_field_line_metadata_not_transport_promotion"
+        ),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--vmec-file", required=True, type=Path, help="Concrete optimized-equilibrium VMEC wout file.")
@@ -158,6 +176,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
+    parser.add_argument("--torflux", type=float, default=0.64, help="VMEC toroidal-flux label for the flux tube.")
+    parser.add_argument("--alpha", type=float, default=0.0, help="VMEC/Boozer field-line label for the flux tube.")
+    parser.add_argument("--npol", type=float, default=1.0, help="Number of poloidal turns in the VMEC flux tube.")
+    parser.add_argument("--tprim", type=float, default=3.0, help="Ion temperature-gradient drive.")
+    parser.add_argument("--fprim", type=float, default=1.0, help="Ion density-gradient drive.")
+    parser.add_argument("--nu", type=float, default=0.01, help="Collision frequency used by the nonlinear transport audit.")
     parser.add_argument("--window-tmin", type=float, default=DEFAULT_WINDOW[0])
     parser.add_argument("--window-tmax", type=float, default=DEFAULT_WINDOW[1])
     return parser
@@ -179,6 +203,12 @@ def main(argv: list[str] | None = None) -> int:
         ky=float(args.ky),
         nl=int(args.Nl),
         nm=int(args.Nm),
+        torflux=float(args.torflux),
+        alpha=float(args.alpha),
+        npol=float(args.npol),
+        tprim=float(args.tprim),
+        fprim=float(args.fprim),
+        nu=float(args.nu),
         baseline_seed=int(args.baseline_seed),
         seed_variants=seed_variants,
         dt_variants=(float(args.dt_variant),),
@@ -188,6 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     dt_variant_label = f"dt{float(args.dt_variant):.12g}".replace(".", "p").replace("-", "m")
     manifest["claim_level"] = "optimized_equilibrium_transport_launch_plan_not_simulation_claim"
     manifest["optimized_equilibrium_vmec_file"] = _repo_relative(args.vmec_file)
+    manifest["transport_sample"] = _transport_sample_metadata(args)
     manifest["promotion_contract"] = _promotion_commands(
         out_dir=args.out_dir,
         case=str(args.case),

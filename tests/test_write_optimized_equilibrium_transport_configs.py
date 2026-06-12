@@ -28,6 +28,18 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
                 "0.5",
                 "--dt-variant",
                 "0.25",
+                "--torflux",
+                "0.78",
+                "--alpha",
+                "0.7",
+                "--npol",
+                "1.5",
+                "--tprim",
+                "4.0",
+                "--fprim",
+                "0.5",
+                "--nu",
+                "0.02",
                 "--window-tmin",
                 "1",
                 "--window-tmax",
@@ -44,6 +56,26 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
     assert len(manifest["launch_commands"]) == 6
     assert len(manifest["direct_full_horizon_launch_commands"]) == 6
     assert len(manifest["restart_seed_commands"]) == 3
+    assert manifest["transport_sample"] == {
+        "alpha": 0.7,
+        "claim_level": "launch_contract_surface_field_line_metadata_not_transport_promotion",
+        "fprim": 0.5,
+        "ky": 0.47619047619047616,
+        "npol": 1.5,
+        "nu": 0.02,
+        "torflux": 0.78,
+        "tprim": 4.0,
+        "vmec_file": str(vmec),
+    }
+    first_config = (out_dir / "optimized_equilibrium_test_nonlinear_t1_n8_seed31.toml").read_text(
+        encoding="utf-8"
+    )
+    assert "torflux = 0.78" in first_config
+    assert "alpha = 0.7" in first_config
+    assert "npol = 1.5" in first_config
+    assert "tprim = 4" in first_config
+    assert "fprim = 0.5" in first_config
+    assert "nu = 0.02" in first_config
 
     contract = manifest["promotion_contract"]
     assert contract["claim_level"] == "optimized_equilibrium_replicated_transport_window_launch_contract_not_promotion"

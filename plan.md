@@ -1,3 +1,27 @@
+- 2026-06-12: Added the next concrete pre-manuscript closure tranche without
+  promoting unfinished claims. `tools/write_optimized_equilibrium_transport_configs.py`
+  now exposes and records explicit VMEC transport-sample metadata (`torflux`,
+  `alpha`, `npol`, `ky`, `tprim`, `fprim`, `nu`) so long nonlinear audits can
+  be tied to a held-out surface/field-line rather than a default flux tube.
+  Generated a local QH held-out transport launch contract for
+  `wout_nfp4_QH_warm_start.nc` at `torflux=0.78`, `alpha=1.2`, `ky=0.2`,
+  `n64`, `t=700`, window `350-700`, seed31/seed32 plus `dt=0.04`; the tracked
+  pre-manuscript runbook now lists the matching office commands. Regenerating
+  the VMEC/Boozer promotion gate exposed an additional honest blocker: the
+  aggregate objective artifact currently covers alphas `0` and `0.7`, while the
+  line-search artifact covers only alpha `0`; this gate now fails closed on
+  `line_search_reuses_aggregate_sample_set` and the still-missing production
+  held-out nonlinear transport artifact. Added
+  `integrate_logical_decomposed_nonlinear_spectral` as the callable logical
+  decomposed nonlinear spectral RHS/integrator route behind the identity
+  artifacts. It is identity-gated and serial-fallback safe; it remains a
+  diagnostic/profiling route, not a production distributed-FFT speedup claim
+  until CPU/GPU profiler and speedup gates pass. Local targeted status:
+  34 focused tests passed, ruff passed, release-readiness passed, and repository
+  size passed (`tracked_total_bytes=49.87 MB`). GitHub Actions for the previous
+  push is still queued. Office QA `t=1500` jobs are still running and should
+  not be harvested until final `t≈1500`; Solovev remains queued behind them.
+
 - 2026-06-12: Tightened the production nonlinear turbulent-flux optimization
   promotion guard to match the broader pre-manuscript requirement. The guard is
   now release-safe but not production-promoted: current counts are `1/3`

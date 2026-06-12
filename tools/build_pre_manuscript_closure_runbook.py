@@ -151,6 +151,7 @@ def _optimizer_audit_commands(
             f"--case {case} "
             f"--out-dir {out_dir.as_posix()} "
             "--horizons 700,1100,1500 --grid n64:64:64:40:40 "
+            "--torflux 0.64 --alpha 0.0 --npol 1.0 "
             "--window-tmin 1100 --window-tmax 1500 "
             "--dt-variant 0.04 --seed-variant 32 --seed-variant 33"
         )
@@ -184,6 +185,65 @@ def _optimizer_audit_commands(
             }
         )
     return rows
+
+
+def _vmec_boozer_holdout_transport_commands(
+    *,
+    office_root: Path,
+    out_root: Path,
+) -> list[dict[str, Any]]:
+    """Return production-scope held-out VMEC/Boozer nonlinear launch contracts."""
+
+    wout = Path("/home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc")
+    case = "vmec_boozer_qh_torflux078_alpha120_holdout"
+    out_dir = out_root / case
+    generate = (
+        "python3 tools/write_optimized_equilibrium_transport_configs.py "
+        f"--vmec-file {wout.as_posix()} "
+        f"--case {case} "
+        f"--out-dir {out_dir.as_posix()} "
+        "--horizons 250,350,450,700 --grid n64:64:64:40:40 "
+        "--torflux 0.78 --alpha 1.2 --npol 1.0 --ky 0.2 "
+        "--window-tmin 350 --window-tmax 700 "
+        "--dt-variant 0.04 --seed-variant 31 --seed-variant 32"
+    )
+    outputs = [
+        out_dir / f"{case}_nonlinear_t700_n64_seed31.out.nc",
+        out_dir / f"{case}_nonlinear_t700_n64_seed32.out.nc",
+        out_dir / f"{case}_nonlinear_t700_n64_dt0p04.out.nc",
+    ]
+    return [
+        {
+            "case": case,
+            "wout": wout.as_posix(),
+            "transport_sample": {
+                "torflux": 0.78,
+                "alpha": 1.2,
+                "ky": 0.2,
+                "npol": 1.0,
+                "role": "heldout_surface_field_line_transport",
+            },
+            "manifest": (out_dir / "run_manifest.json").as_posix(),
+            "generate_configs_command": generate,
+            "direct_full_horizon_launch_commands": [
+                (
+                    f"CUDA_VISIBLE_DEVICES={device} python3 -m spectraxgk.cli run-runtime-nonlinear "
+                    f"--config {out_dir / f'{case}_nonlinear_t700_n64_{variant}.toml'} "
+                    f"--steps {steps} --no-progress"
+                )
+                for device, variant, steps in (
+                    (0, "seed31", 14000),
+                    (1, "seed32", 14000),
+                    ("${DEVICE:-0}", "dt0p04", 17500),
+                )
+            ],
+            "expected_outputs": [path.as_posix() for path in outputs],
+            "window": [350.0, 700.0],
+            "claim_level": (
+                "production_scope_vmec_boozer_surface_field_line_launch_contract_not_transport_promotion"
+            ),
+        }
+    ]
 
 
 def build_runbook_payload(
@@ -220,6 +280,10 @@ def build_runbook_payload(
         office_root=office_root,
         audit_root=audit_root,
         names=optimizer_names,
+    )
+    heldout_transport = _vmec_boozer_holdout_transport_commands(
+        office_root=office_root,
+        out_root=office_root / "tools_out" / "vmec_boozer_holdout_transport",
     )
     external_has_launch = bool(external_runbook.get("passed", False)) and bool(
         external_runbook.get("launch_commands")
@@ -264,13 +328,15 @@ def build_runbook_payload(
             "status": "launch_contracts_generated_on_office",
             "purpose": (
                 "three matched long-window optimized-equilibrium nonlinear audits for broad "
-                "VMEC/Boozer and nonlinear turbulent-flux optimization evidence"
+                "VMEC/Boozer and nonlinear turbulent-flux optimization evidence, plus a held-out "
+                "VMEC/Boozer surface/field-line nonlinear transport audit"
             ),
             "optimizer_manifest": optimizer_manifest_path.relative_to(root).as_posix(),
             "optimizer_manifest_entries": len(optimizer_manifest.get("entries", []) or []),
             "ladder_status": ladder_status_path.relative_to(root).as_posix(),
             "ladder_commands": len(ladder_status.get("commands", []) or []),
             "audit_commands": optimizer_audits,
+            "heldout_transport_commands": heldout_transport,
             "office_seed_queue": {
                 "launched": True,
                 "pids": [3402448, 3402449],

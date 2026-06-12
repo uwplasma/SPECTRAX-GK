@@ -79,6 +79,10 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     assert holdout["status"] == "blocked_on_new_linear_screen"
     assert holdout["unscreened_candidates"][0]["name"] == "wout_new_qh.nc"
     assert payload["vmec_boozer_production_scope_artifacts"]["audit_commands"]
+    heldout = payload["vmec_boozer_production_scope_artifacts"]["heldout_transport_commands"]
+    assert heldout[0]["transport_sample"]["alpha"] == 1.2
+    assert "--torflux 0.78 --alpha 1.2" in heldout[0]["generate_configs_command"]
+    assert "production_scope_vmec_boozer" in heldout[0]["claim_level"]
     assert payload["vmec_boozer_production_scope_artifacts"]["office_seed_queue"]["launched"] is True
     assert "strict gates" in payload["claim_scope"]
 

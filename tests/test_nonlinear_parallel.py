@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+import jax.numpy as jnp
 import pytest
 
 import spectraxgk
@@ -32,6 +33,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "classify_nonlinear_parallel_strategy",
         "deterministic_nonlinear_domain_state",
         "deterministic_nonlinear_spectral_state",
+        "integrate_logical_decomposed_nonlinear_spectral",
         "nonlinear_domain_identity_report",
         "nonlinear_domain_parallel_identity_gate",
         "nonlinear_domain_transport_window_identity_gate",
@@ -80,6 +82,31 @@ def test_fft_axis_domain_sharding_is_diagnostic_until_runtime_fft_gates_exist() 
     assert "distributed_fft_field_solve_identity" in strategy.identity_gates
     assert "split/reassemble spectral communication identity" in strategy.notes
     assert "runtime distributed FFT routing" in strategy.notes
+
+
+def test_logical_decomposed_spectral_integrator_routes_after_identity_gate() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 5))
+
+    routed, report = nonlinear_parallel.integrate_logical_decomposed_nonlinear_spectral(
+        state,
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        dt=0.0025,
+        steps=3,
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+    serial = state
+    dt = jnp.asarray(0.0025, dtype=jnp.real(state).dtype)
+    for _ in range(3):
+        _field, _bracket, rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(serial)
+        serial = serial + dt * rhs
+
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert routed.shape == state.shape
+    assert jnp.allclose(routed, serial, atol=5.0e-6, rtol=5.0e-6)
+    assert "no production distributed FFT" in report.claim_scope
 
 
 def test_whole_state_kx_ky_is_diagnostic_only() -> None:
