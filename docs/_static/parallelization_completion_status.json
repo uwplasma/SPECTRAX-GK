@@ -183,12 +183,12 @@
         "kind_gate_passed": true,
         "missing_scope_phrases": [],
         "required_scope_phrases": [
-          "split/reassemble layout simulation",
-          "no production routing or speedup claim"
+          "communication, RHS, and fixed-step integrator identity gate",
+          "no production distributed FFT routing or speedup claim"
         ]
       },
       "status": "diagnostic_identity_closed",
-      "summary": "Spectral split/reassemble, FFT round-trip, bracket, and field-layout identity are closed; runtime distributed FFT routing remains out of production scope.",
+      "summary": "Spectral communication, logical RHS, and fixed-step integrator identity are closed; runtime distributed FFT routing remains out of production scope.",
       "threshold_passed": null
     }
   ],

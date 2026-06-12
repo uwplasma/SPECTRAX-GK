@@ -51,8 +51,8 @@ CLAIM_SCOPE_PHRASES = {
         "not a production speedup claim",
     ),
     "fft_axis_domain": (
-        "split/reassemble layout simulation",
-        "no production routing or speedup claim",
+        "communication, RHS, and fixed-step integrator identity gate",
+        "no production distributed FFT routing or speedup claim",
     ),
 }
 
@@ -223,7 +223,7 @@ def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
         "best_speedups": {},
         "source": f"docs/_static/{ARTIFACTS['fft_axis_domain']}",
         "summary": (
-            "Spectral split/reassemble, FFT round-trip, bracket, and field-layout identity are closed; "
+            "Spectral communication, logical RHS, and fixed-step integrator identity are closed; "
             "runtime distributed FFT routing remains out of production scope."
         ),
     }
