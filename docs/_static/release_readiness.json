@@ -21,7 +21,7 @@
         "lane_source_key": "lanes",
         "lanes": [
           {
-            "claim_level": "scoped_candidate_model_selection_not_runtime_flux_predictor",
+            "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
             "lane": "Quasilinear diagnostics and saturation-model selection",
             "status": "closed"
           },
@@ -87,9 +87,9 @@
             "status": "partial"
           },
           {
-            "claim_level": "scoped_candidate_model_selection_not_absolute_flux",
+            "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
             "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-            "status": "closed"
+            "status": "open"
           },
           {
             "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
@@ -103,15 +103,15 @@
           }
         ],
         "status_counts": {
-          "closed": 2,
-          "open": 1,
+          "closed": 1,
+          "open": 2,
           "partial": 2
         },
         "summary": {
           "n_blocked": 0,
-          "n_closed": 2,
+          "n_closed": 1,
           "n_lanes": 5,
-          "n_open": 1,
+          "n_open": 2,
           "n_partial": 2
         }
       },

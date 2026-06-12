@@ -18,8 +18,8 @@ replay_command = "pytest -q tests/test_example_smoke.py tests/test_geometry.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_readme_panel.png"
-size_bytes = 247399
-sha256 = "6333c48c2d1a559794bc762826aaca409480ccd2a5062c0d7eca8824b05a523e"
+size_bytes = 246482
+sha256 = "8605e77d44e126c68998d99b736cb404c6665fa8402ff3f429f4ce61ac08e498"
 action = "keep_preview_in_repo"
 artifact_type = "documentation_preview"
 release_asset_name = "benchmark_readme_panel.png"
@@ -42,8 +42,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_core_nonlinear_atlas.png"
-size_bytes = 172344
-sha256 = "d9cf0bbb2b6976efe09b530ab7777ab2fac25a2dd2831a868ea2506fe83fe9d0"
+size_bytes = 171443
+sha256 = "c9789906b11dfa6f0e1c3057c31ae69c0c28ba1e2d9989d97db806be6d75be5c"
 action = "keep_preview_in_repo"
 artifact_type = "documentation_preview"
 release_asset_name = "benchmark_core_nonlinear_atlas.png"
