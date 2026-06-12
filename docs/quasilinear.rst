@@ -765,11 +765,12 @@ demonstrates that the implemented linear weights and nonlinear-window ingestion
 are working, while a transferable saturation model remains an open research
 task.
 
-The manuscript-facing combined report broadens this test to ten
+The manuscript-facing combined report broadens this test to eleven
 electrostatic-compatible nonlinear windows. It fits Cyclone and external-VMEC
 ITERModel, then holds out Cyclone Miller, HSX, W7-X, D-shaped external VMEC,
 up-down asymmetric external VMEC, circular external VMEC, CTH-like external
-VMEC, and shaped-pressure external VMEC admitted under the high-grid policy.
+VMEC, shaped-pressure external VMEC admitted under the high-grid policy, and
+the replicated QP external-VMEC window.
 The nonlinear input validation passes, but the one-constant model still fails
 with held-out mean relative error about ``3.13``. The simple saturation-rule
 sweep also fails on this ledger: positive-growth mixing length gives mean
@@ -1072,17 +1073,18 @@ acceptance remains the same as the serial report.
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
 
-The stricter expanded ledger now includes the high-grid CTH-like and
-shaped-pressure external-VMEC ensembles as held-out nonlinear points. On that
-11-case ledger, the reduced ``spectral_envelope_ridge`` candidate is still the
-best candidate but is not accepted by the uncertainty gate: it reaches mean
-relative error about ``0.400`` with interval coverage ``9/11``, above the
-``0.35`` transport gate. The calibrated linear-weight baseline is worse
-(about ``0.864``), the training-mean null is about ``0.731``, and the broader
-four-feature ``linear_state_ridge`` candidate remains ineligible because its
-five fitted parameters still exceed the training-volume gate. This is the
-intended research posture after admitting tougher external-VMEC evidence: keep
-the small spectrum-aware candidate as model-development signal, but not as an
+The stricter expanded ledger now includes the high-grid CTH-like,
+shaped-pressure external-VMEC, and replicated QP external-VMEC ensembles as
+held-out nonlinear points. On that 11-case ledger, the reduced
+``spectral_envelope_ridge`` candidate is still the best candidate but is not
+accepted by the uncertainty gate: it reaches mean relative error about
+``0.400`` with interval coverage ``9/11``, above the ``0.35`` transport gate.
+The calibrated linear-weight baseline is worse (about ``0.864``), the
+training-mean null is about ``0.731``, and the broader four-feature
+``linear_state_ridge`` candidate is now data-volume eligible but performs
+poorly (mean relative error about ``1.287``). This is the intended research
+posture after admitting tougher external-VMEC evidence: keep the small
+spectrum-aware candidate as model-development signal, but not as an
 uncertainty-validated flux predictor.
 
 Residual-anatomy gate
@@ -1258,17 +1260,17 @@ model fit is attempted. It requires:
    :width: 100%
 
 The tracked gate now fails closed on downstream candidate skill for the
-expanded candidate-model dataset.
-There are now ten admitted electrostatic-compatible cases, two explicit
-training geometries, and nine held-out geometries. That is enough data volume
-for the one-parameter linear-weight candidate, the two-parameter
-shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge``
-candidate, though not yet for the five-parameter ``linear_state_ridge`` model.
-However, the sufficiency artifact now fails closed because the downstream
-candidate-skill gate is not passed on the expanded ledger. KBM is still listed
-as a validated but excluded nonlinear case because the present quasilinear
-diagnostics are electrostatic; electromagnetic quasilinear field-channel
-normalization and calibration remain separate future work.
+expanded candidate-model dataset. There are now eleven admitted
+electrostatic-compatible cases, two explicit training geometries, and nine
+held-out geometries. That is enough data volume for the one-parameter
+linear-weight candidate, the two-parameter shape-power-law candidate, the
+three-parameter ``spectral_envelope_ridge`` candidate, and the five-parameter
+``linear_state_ridge`` model at the configured leave-one-out train-to-parameter
+threshold. However, the sufficiency artifact still fails closed because the
+downstream candidate-skill gate is not passed on the expanded ledger. KBM is
+still listed as a validated but excluded nonlinear case because the present
+quasilinear diagnostics are electrostatic; electromagnetic quasilinear
+field-channel normalization and calibration remain separate future work.
 
 Model-selection status
 ----------------------

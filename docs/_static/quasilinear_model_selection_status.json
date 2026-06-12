@@ -9,7 +9,7 @@
     "honest_status": "not_promoted",
     "runtime_absolute_flux_predictor_promoted": false,
     "scoped_model_selection_promoted": false,
-    "scoped_optimized_equilibrium_nonlinear_audit_supported": false,
+    "scoped_optimized_equilibrium_nonlinear_audit_supported": true,
     "universal_absolute_flux_promoted": false
   },
   "accepted_candidates": [],
@@ -96,6 +96,21 @@
         "detail": "missing_holdout_metrics=0",
         "metric": "calibration_reports_have_holdout_metrics",
         "passed": true
+      },
+      {
+        "detail": "audits=1",
+        "metric": "optimized_equilibrium_nonlinear_audit_present",
+        "passed": true
+      },
+      {
+        "detail": "qualifying_audits=1",
+        "metric": "optimized_equilibrium_nonlinear_audit_qualified",
+        "passed": true
+      },
+      {
+        "detail": "universal_absolute_flux_overclaims=0",
+        "metric": "optimized_equilibrium_nonlinear_audit_scope_limited",
+        "passed": true
       }
     ],
     "max_abs_error": 1.0,
@@ -112,7 +127,21 @@
     "transport_mean_relative_error_gate": 0.35
   },
   "notes": "A passed status promotes only the scoped model-selection result. Optimized-equilibrium nonlinear audits, when supplied, can support only that audited equilibrium. The status does not promote a runtime/TOML absolute-flux predictor or a universal nonlinear transport model.",
-  "optimized_equilibrium_nonlinear_audits": [],
+  "optimized_equilibrium_nonlinear_audits": [
+    {
+      "artifact": "docs/_static/production_nonlinear_optimization_guard.json",
+      "blockers": [],
+      "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+      "claims_universal_absolute_flux": false,
+      "kind": "production_nonlinear_turbulent_flux_optimization_guard",
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "production_nonlinear_optimization_promoted": true,
+      "promotion_gate_passed": true,
+      "qualifying_optimized_equilibrium_ensembles": 1,
+      "supports_scoped_optimized_equilibrium_transport": true
+    }
+  ],
   "passed": false,
   "promotion_gate": {
     "blockers": [
@@ -124,7 +153,7 @@
     "passed": false,
     "requires_dataset_sufficiency": true,
     "requires_no_absolute_flux_promotion": true,
-    "requires_optimized_equilibrium_nonlinear_audit": false,
+    "requires_optimized_equilibrium_nonlinear_audit": true,
     "requires_uncertainty_skill": true
   },
   "required_candidate": "spectral_envelope_ridge"

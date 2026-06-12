@@ -4,37 +4,37 @@
       "candidate": "linear_weight",
       "data_volume_passed": true,
       "label": "linear weight",
-      "leave_one_out_train_cases_per_fold": 9,
+      "leave_one_out_train_cases_per_fold": 10,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 1,
-      "train_to_parameter_ratio": 9.0
+      "train_to_parameter_ratio": 10.0
     },
     {
       "candidate": "shape_power_law",
       "data_volume_passed": true,
       "label": "shape power law",
-      "leave_one_out_train_cases_per_fold": 9,
+      "leave_one_out_train_cases_per_fold": 10,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 2,
-      "train_to_parameter_ratio": 4.5
+      "train_to_parameter_ratio": 5.0
     },
     {
       "candidate": "spectral_envelope_ridge",
       "data_volume_passed": true,
       "label": "spectral-envelope ridge",
-      "leave_one_out_train_cases_per_fold": 9,
+      "leave_one_out_train_cases_per_fold": 10,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 3,
-      "train_to_parameter_ratio": 3.0
+      "train_to_parameter_ratio": 3.3333333333333335
     },
     {
       "candidate": "linear_state_ridge",
-      "data_volume_passed": false,
+      "data_volume_passed": true,
       "label": "linear-state ridge",
-      "leave_one_out_train_cases_per_fold": 9,
+      "leave_one_out_train_cases_per_fold": 10,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 5,
-      "train_to_parameter_ratio": 1.8
+      "train_to_parameter_ratio": 2.0
     }
   ],
   "cases": [
@@ -137,6 +137,16 @@
       "shape_gate_passed": null,
       "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_jax_shaped_tokamak_pressure_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "qp_diag_nfp2_m4_final_t250",
+      "gate_case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
+      "geometry": "qp_diag_nfp2_m4",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/qp_diag_nfp2_m4_t250_replicate_ensemble_gate.json",
+      "shape_gate": null,
+      "shape_gate_passed": null,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_qp_diag_nfp2_m4_final_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
     }
   ],
   "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
@@ -170,6 +180,7 @@
     "dshape_external_vmec",
     "hsx",
     "itermodel_external_vmec",
+    "qp_diag_nfp2_m4",
     "shaped_tokamak_external_vmec",
     "updown_asym_external_vmec",
     "w7x"
@@ -180,6 +191,7 @@
     "cyclone_miller",
     "dshape_external_vmec",
     "hsx",
+    "qp_diag_nfp2_m4",
     "shaped_tokamak_external_vmec",
     "updown_asym_external_vmec",
     "w7x"
@@ -285,6 +297,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "qp_diag_nfp2_m4_final_t250",
+        "gate_case": "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
+        "gate_passed": true,
+        "nonlinear_summary": "docs/_static/qp_diag_nfp2_m4_t250_replicate_ensemble_gate.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -313,9 +335,9 @@
       "validated_input_gates": true
     },
     "current_explicit_train_geometries": 2,
-    "current_holdout_geometries": 8,
-    "current_leave_one_out_train_cases_per_fold": 9,
-    "current_total_cases": 10,
+    "current_holdout_geometries": 9,
+    "current_leave_one_out_train_cases_per_fold": 10,
+    "current_total_cases": 11,
     "min_explicit_train_geometries": 2,
     "min_holdout_geometries": 3,
     "min_leave_one_out_train_to_parameter_ratio": 2.0,

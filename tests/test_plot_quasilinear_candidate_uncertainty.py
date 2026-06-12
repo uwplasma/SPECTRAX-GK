@@ -222,5 +222,8 @@ def test_tracked_candidate_uncertainty_sidecar_is_fail_closed_near_miss() -> Non
     assert spectral["mean_abs_relative_error"] < linear["mean_abs_relative_error"]
     assert spectral["mean_abs_relative_error"] < null["mean_abs_relative_error"]
     assert spectral["prediction_interval_coverage"] >= gate["interval_coverage_gate"]
-    assert state["promotion_eligible"] is False
-    assert state["eligibility_failures"] == ["insufficient_train_to_parameter_ratio"]
+    assert state["promotion_eligible"] is True
+    assert state["eligibility_failures"] == []
+    assert state["mean_abs_relative_error"] > null["mean_abs_relative_error"]
+    assert state["mean_abs_relative_error"] > linear["mean_abs_relative_error"]
+    assert state["mean_abs_relative_error"] > spectral["mean_abs_relative_error"]
