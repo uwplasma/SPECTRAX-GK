@@ -42,6 +42,21 @@ conditioning, and nonlinear audits of additional optimized equilibria. W7-X
 zonal recurrence and TEM/kinetic-electron stellarator validation remain
 deferred from the current manuscript scope.
 
+Before manuscript drafting, four stricter promotion lanes must close. The
+machine-readable dashboard
+``docs/_static/pre_manuscript_closure_status.json`` and companion figure below
+track those lanes separately from release-safe scoped diagnostics. The current
+strict status is not ready for manuscript drafting: universal absolute
+quasilinear heat-flux prediction is partial at ``60.0%``; broad end-to-end
+nonlinear turbulent-flux stellarator optimization is blocked at ``54.2%``;
+production nonlinear domain-decomposition speedup is partial at ``55.0%``; and
+VMEC/Boozer holdout optimization is partial at ``78.0%``. These percentages are
+strict closure metrics for the four requested manuscript blockers, not older
+release-lane completion estimates.
+
+.. image:: _static/pre_manuscript_closure_status.png
+   :alt: Strict pre-manuscript closure status for remaining blocking lanes
+
 The latest manuscript-stack additions are deliberately contract-level figures:
 ``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON/PDF
 companions states exactly why absolute-flux promotion remains blocked;

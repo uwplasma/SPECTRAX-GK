@@ -1,0 +1,199 @@
+{
+  "claim_scope": "strict manuscript-blocking closure gates; release-safe diagnostics and scoped optimization evidence do not close these lanes unless the listed production or absolute-prediction gates pass",
+  "kind": "pre_manuscript_closure_status",
+  "lanes": [
+    {
+      "blockers": [
+        "absolute_train_holdout_report_failed",
+        "candidate_uncertainty_gate_failed",
+        "dataset_sufficiency_gate_failed",
+        "holdout_mean_abs_relative_error_exceeds_0.35",
+        "model_selection_not_passed",
+        "no_accepted_absolute_flux_candidate",
+        "required_candidate_not_accepted",
+        "required_candidate_transport_error_gate_failed"
+      ],
+      "claim_level": "blocked_absolute_flux_prediction",
+      "completion_percent": 60.0,
+      "key_metrics": {
+        "accepted_candidates": [],
+        "candidate_mean_abs_relative_error": 0.39974927464926485,
+        "candidate_prediction_interval_coverage": 0.8181818181818182,
+        "candidate_soft_error_gate": 0.5,
+        "dataset_volume_passed": true,
+        "guardrails_passed": true,
+        "holdout_cases": 9,
+        "holdout_gap_blockers": [
+          "absolute_flux_predictor_not_promoted",
+          "absolute_requirement:absolute_train_holdout_report_passed",
+          "absolute_requirement:holdout_mean_abs_relative_error",
+          "stellarator_train_holdout_report_failed",
+          "holdout_mean_error_exceeds_gate",
+          "screening_requirement:full_portfolio_screening_correlation_passed",
+          "screening_requirement:heldout_screening_correlation_passed"
+        ],
+        "holdout_mean_abs_relative_error": 3.1265878826989333,
+        "train_cases": 2,
+        "transport_mean_relative_error_gate": 0.35
+      },
+      "lane": "Universal absolute quasilinear heat-flux prediction",
+      "next_action": "Add independent converged nonlinear holdouts and a better saturation/transport-amplitude model; do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass.",
+      "passed": false,
+      "primary_artifacts": [
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_model_selection_status.json",
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        "docs/_static/quasilinear_holdout_gap_report.json",
+        "docs/_static/quasilinear_promotion_guardrails.json"
+      ],
+      "required_next_artifacts": [
+        "at least one additional independent converged nonlinear holdout outside the current residual-dominated families",
+        "a saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
+        "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
+        "a promotion-guardrail report proving the candidate is not just a scoped diagnostic"
+      ],
+      "status": "partial"
+    },
+    {
+      "blockers": [
+        "need_at_least_four_replicated_holdout_ensembles",
+        "need_at_least_three_matched_optimized_transport_audits",
+        "need_at_least_three_optimized_equilibrium_ensembles",
+        "vmec_boozer_production_scope_holdout_missing"
+      ],
+      "claim_level": "single_candidate_scoped_positive_audit_not_broad_optimization",
+      "completion_percent": 54.2,
+      "key_metrics": {
+        "min_qualifying_matched_optimized_transport_audits": 3,
+        "min_qualifying_optimized_equilibrium_ensembles": 3,
+        "min_qualifying_replicated_holdout_ensembles": 4,
+        "qa_long_window_anchor_passed": true,
+        "qualifying_matched_optimized_transport_audits": 1,
+        "qualifying_optimized_equilibrium_ensembles": 1,
+        "qualifying_replicated_holdout_ensembles": 2,
+        "scoped_guard_passed": true,
+        "vmec_boozer_holdout_promotion_passed": false
+      },
+      "lane": "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
+      "next_action": "Move from one scoped QA positive audit to a multi-equilibrium, multi-surface/multi-alpha campaign; only count long post-transient replicated transport windows, not reduced/startup objectives.",
+      "passed": false,
+      "primary_artifacts": [
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "docs/_static/vmec_jax_qa_transport_optimization_status.json",
+        "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json"
+      ],
+      "required_next_artifacts": [
+        "matched long post-transient baseline-vs-optimized audits for at least three independent optimized equilibria",
+        "surface/alpha held-out VMEC/Boozer production-scope nonlinear transport artifact",
+        "replicated seed/timestep ensembles for each optimized equilibrium and selected holdout",
+        "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows"
+      ],
+      "status": "blocked"
+    },
+    {
+      "blockers": [
+        "combined_strong_scaling_speedup_not_passed",
+        "cpu_domain_speedup_below_1p5",
+        "gpu:gpu_2devices_speedup_0.626_below_1",
+        "gpu_domain_speedup_below_1p5",
+        "production_speedup_gate_not_passed"
+      ],
+      "claim_level": "identity_and_profiler_diagnostic_not_production_speedup",
+      "completion_percent": 55.0,
+      "key_metrics": {
+        "combined_identity_passed": true,
+        "cpu_best_speedup": null,
+        "cpu_speedup_gate": 1.5,
+        "domain_identity_passed": true,
+        "gpu_best_speedup": null,
+        "gpu_speedup_gate": 1.5,
+        "parallel_decomposition_contract_passed": true,
+        "production_gate_passed": false,
+        "spectral_identity_passed": true,
+        "strong_scaling_speedup_passed": false
+      },
+      "lane": "Production nonlinear domain-decomposition speedup",
+      "next_action": "Keep independent-work batching as the production path; for nonlinear domains, implement a real decomposed RHS/integrator route and require identity plus CPU/GPU speedup before any manuscript claim.",
+      "passed": false,
+      "primary_artifacts": [
+        "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+        "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+        "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+        "docs/_static/nonlinear_sharding_production_speedup_gate.json",
+        "docs/_static/parallel_decomposition_status.json"
+      ],
+      "required_next_artifacts": [
+        "real communication-aware nonlinear domain decomposition in the production RHS/integrator path",
+        "transport-window identity gates comparing serial and decomposed trajectories on a nonlinear case",
+        "large-grid CPU and multi-GPU strong-scaling artifacts with speedup >= 1.5 on each backend",
+        "profiler traces proving the communication overhead is below the saved RHS work"
+      ],
+      "status": "partial"
+    },
+    {
+      "blockers": [
+        "aggregate_holdout_promotion_gate_failed",
+        "no_production_scope_heldout_surface_or_alpha_artifact",
+        "production_scope_heldout_surface_or_field_line_artifact_missing"
+      ],
+      "claim_level": "reduced_holdout_plumbing_not_production_optimization",
+      "completion_percent": 78.0,
+      "key_metrics": {
+        "gradient_holdout_matrix_passed": true,
+        "promotion_gate_blockers": [
+          "passed_holdout_surface_or_field_line_artifact"
+        ],
+        "promotion_gate_passed": false,
+        "qualifying_production_holdout_artifacts": 0,
+        "reduced_alpha_holdout_passed": true,
+        "reduced_surface_holdout_passed": true,
+        "second_equilibrium_reduced_gate_passed": true,
+        "vmec_boozer_nonlinear_window_gradient_gate_passed": true,
+        "vmec_boozer_quasilinear_gradient_gate_passed": true
+      },
+      "lane": "VMEC/Boozer holdout optimization",
+      "next_action": "Promote the existing reduced alpha/surface/second-equilibrium gates only as plumbing; add a true production-scope heldout nonlinear transport artifact before claiming VMEC/Boozer optimization closure.",
+      "passed": false,
+      "primary_artifacts": [
+        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+        "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+        "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+        "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json",
+        "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+        "docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json",
+        "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json"
+      ],
+      "required_next_artifacts": [
+        "production-scope held-out surface or field-line artifact using long post-transient nonlinear transport, not reduced growth/QL objectives",
+        "VMEC/Boozer nonlinear transport-gradient or robust finite-difference gate on the held-out split",
+        "second-equilibrium heldout nonlinear transport validation before broad geometry-optimization claims",
+        "same-WOUT provenance linking optimizer state, Boozer transform, SPECTRAX-GK input, and nonlinear audit output"
+      ],
+      "status": "partial"
+    }
+  ],
+  "status_order": {
+    "blocked": 3,
+    "closed": 0,
+    "open": 2,
+    "partial": 1
+  },
+  "summary": {
+    "blocking_lanes": [
+      "Universal absolute quasilinear heat-flux prediction",
+      "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
+      "Production nonlinear domain-decomposition speedup",
+      "VMEC/Boozer holdout optimization"
+    ],
+    "mean_completion_percent": 61.8,
+    "n_blocked": 1,
+    "n_closed": 0,
+    "n_lanes": 4,
+    "n_open": 0,
+    "n_partial": 3,
+    "ready_for_manuscript_drafting": false
+  }
+}

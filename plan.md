@@ -1,3 +1,40 @@
+- 2026-06-12: Started the pre-manuscript closure phase after verified
+  ``v1.6.5`` release/PyPI publication. Added
+  ``tools/build_pre_manuscript_closure_status.py`` and tracked
+  ``docs/_static/pre_manuscript_closure_status.{png,pdf,json,csv}`` as the
+  strict machine-readable gate for the four lanes that must close before
+  drafting starts. Current strict status: not ready for manuscript drafting,
+  mean closure ``61.8%``. Lane status is recalibrated against stricter
+  manuscript requirements, not release-safe scoped diagnostics:
+  universal absolute quasilinear heat-flux prediction ``60.0%`` partial,
+  broad end-to-end nonlinear turbulent-flux stellarator optimization ``54.2%``
+  blocked, production nonlinear domain-decomposition speedup ``55.0%``
+  partial, and VMEC/Boozer holdout optimization ``78.0%`` partial. Immediate
+  execution order:
+
+  1. Universal absolute QL: add at least one genuinely independent converged
+     nonlinear holdout, then replace the failed amplitude/saturation model so
+     leave-one-geometry-out candidate uncertainty, model selection, and
+     absolute train/holdout error all pass the ``0.35`` mean-relative-error
+     transport gate. No runtime/TOML absolute-flux predictor is allowed until
+     this closes.
+  2. Broad nonlinear turbulent-flux optimization: extend from the single
+     selected-QA positive audit to at least three independent matched
+     baseline-vs-optimized long-window transport audits, at least three
+     optimized-equilibrium ensembles, and at least four replicated nonlinear
+     holdout ensembles. Only post-transient running-average transport windows
+     count; reduced/startup nonlinear-window objectives remain excluded.
+  3. Production nonlinear domain decomposition: keep independent ``k_y`` and
+     UQ batching as the current production path while implementing a real
+     communication-aware nonlinear decomposed RHS/integrator route. Promotion
+     requires serial-vs-decomposed transport-window identity plus large-grid
+     CPU and multi-GPU speedup ``>=1.5`` with profiler artifacts.
+  4. VMEC/Boozer holdout optimization: keep the existing alpha/surface and
+     second-equilibrium holdouts as reduced plumbing evidence, then add a
+     production-scope held-out surface/field-line nonlinear transport artifact
+     with same-WOUT provenance through ``vmec_jax -> booz_xform_jax ->
+     SPECTRAX-GK`` before claiming optimization closure.
+
 - 2026-06-11: Started nonlinear admission for the top solved-WOUT screen
   candidate, `qp_diag_nfp2_m4_final`. The `t=150`, `dt=0.05`, `n48/n64`
   office-GPU pair is finite but non-admissible (`0.163` common-window and
@@ -354,7 +391,7 @@
 
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-10
+Last updated: 2026-06-12
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
@@ -367,8 +404,10 @@ historical logs live outside the release repository so clones stay small.
 ## Current Release Status
 
 - CI/CD: release-readiness, package build, docs build, quick numerical shards,
-  and wide package coverage are green on commit `f00d736`.
-  - GitHub Actions run `27292829121`: 59 successful jobs, 1 skipped nightly job.
+  and wide package coverage are green for the verified `v1.6.5` release commit
+  `5e845f1`.
+  - GitHub Actions CI run `27419886180`: successful.
+  - GitHub release/PyPI workflow run `27421079800`: successful.
   - Wide package coverage gate remains required at `>=95%`.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
@@ -385,23 +424,28 @@ historical logs live outside the release repository so clones stay small.
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
-| Universal absolute quasilinear-flux prediction | 73% | Still blocked: one-constant report fails (`3.42 > 0.35`), candidate uncertainty/model-selection fail (`0.424 > 0.35`), and at least one additional independent post-transient nonlinear holdout plus a better saturation model are required |
+| Universal absolute quasilinear-flux prediction | 60% | Strict pre-manuscript gate remains partial: train/holdout absolute report fails, holdout mean relative error is `3.13 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists |
 | Nonlinear holdout expansion/audits | 95% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is now closed as negative high-grid evidence through corrected `t700`, and the next runbook fails closed until a new independent/modified candidate exists |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
 | Differentiable QA optimization evidence | 93% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; a new solved-WOUT candidate screen prevents invalid metric/high-growth artifacts from entering nonlinear launches; successful broad nonlinear turbulent-flux optimization is still not promoted |
+| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 54.2% | Strict pre-manuscript gate is blocked until at least three matched optimized transport audits, three optimized-equilibrium ensembles, four replicated holdout ensembles, and one production-scope VMEC/Boozer held-out nonlinear transport artifact pass |
+| VMEC/Boozer holdout optimization | 78% | Reduced alpha/surface and second-equilibrium gates pass, but aggregate promotion fails because no production-scope held-out surface/field-line nonlinear transport artifact qualifies |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
+| Production nonlinear domain-decomposition speedup | 55% | Strict pre-manuscript gate remains partial: local and spectral identity pass, but combined strong-scaling speedup and production-speedup gates fail; CPU and GPU speedup are below `1.5x` |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
 | Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is promoted by replicated long-window windows (`18.4%` reduction, `7.8 sigma`); broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
-W7-X zonal long-window recurrence/damping, W7-X TEM/multi-flux-tube extension,
-and promotion of nonlinear domain decomposition beyond diagnostic evidence.
+W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
+extension. Nonlinear domain decomposition is no longer merely deferred in the
+pre-manuscript plan: it is an active strict gate, but remains diagnostic until
+identity, transport-window, and CPU/GPU speedup requirements pass.
 
 ## Strict QA Baseline Convention
 
