@@ -27,8 +27,8 @@
   "n_excluded_modules": 6,
   "n_high_priority_open": 22,
   "n_modules": 37,
-  "n_owned_modules": 58,
-  "n_package_modules": 101,
+  "n_owned_modules": 59,
+  "n_package_modules": 102,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -98,7 +98,9 @@
       "spectraxgk.quasilinear_model_selection",
       "spectraxgk.external_holdout_plan"
     ],
-    "spectraxgk.quasilinear_calibration": [],
+    "spectraxgk.quasilinear_calibration": [
+      "spectraxgk.quasilinear_holdout_admission"
+    ],
     "spectraxgk.quasilinear_window": [],
     "spectraxgk.runtime": [
       "spectraxgk.cli",
@@ -357,11 +359,11 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear_calibration",
-      "n_artifacts": 25,
-      "n_fast_tests": 9,
+      "n_artifacts": 31,
+      "n_fast_tests": 10,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/quasilinear_calibration.py",
