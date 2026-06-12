@@ -121,8 +121,12 @@ config path intentionally rejects ``"z"`` sharding because the current
 multi-device FFT-axis decomposition has not passed the identity gate.
 On macOS you can emulate multiple CPU devices with
 ``XLA_FLAGS=--xla_force_host_platform_device_count=2`` for non-FFT-axis
-parallelization checks, but multi-GPU artifacts remain the release reference for
-active nonlinear state sharding.
+parallelization checks, but the nonlinear whole-state ``pjit`` profile skips
+active multi-device CPU sharding by default because current JAX/XLA CPU FFT
+layouts can abort before Python can catch a failure. Multi-GPU artifacts remain
+the release reference for active nonlinear state-sharding diagnostics, and
+production nonlinear speedup claims still require separate identity,
+transport-window, and profiler gates.
 
 For scan workloads, the default path is custom fixed-step ``imex2`` with
 ``TimeConfig.use_diffrax=False``. This keeps stepping shape-stable and improves

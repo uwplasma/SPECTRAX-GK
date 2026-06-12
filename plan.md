@@ -1,3 +1,20 @@
+- 2026-06-12: Hardened nonlinear sharding profiling after the local CPU
+  forced-device profile exposed a JAX/XLA FFT-layout abort path. The
+  multi-device CPU whole-state `pjit` route now fails closed before execution
+  unless `--allow-unsafe-cpu-state-sharding` is explicitly set, writing
+  `cpu_whole_state_pjit_sharding_unsafe_for_fft_layout` into the profile JSON
+  instead of risking a process abort or collective stall. The sweep wrapper now
+  preserves failed profile JSON artifacts even when the profile exits nonzero
+  because an identity gate failed, and it replaces inherited
+  `--xla_force_host_platform_device_count` values so requested CPU device counts
+  cannot be contaminated by the parent environment. A bounded local check now
+  gives a true one-device identity row and a safe four-device skip row. This is
+  negative evidence for current whole-state CPU nonlinear speedup, not a
+  promotion; the production nonlinear domain-decomposition speedup lane remains
+  at `55.0%` pending a communication-complete decomposed RHS/integrator with
+  CPU/GPU identity, transport-window, and profiler-backed speedup gates. Office
+  QA `t=1500` and Solovev CPU `dt=0.01` runs remain active and unharvested.
+
 - 2026-06-12: Harvested the first production-scope VMEC/Boozer held-out
   nonlinear transport artifact and kept broader claims fail-closed. The QH
   `vmec_jax -> booz_xform_jax` held-out surface/field-line run

@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -47,7 +48,11 @@ def _parse_int_list(text: str) -> list[int]:
 
 
 def _append_xla_flag(existing: str, flag: str) -> str:
-    if flag.split("=")[0] in existing:
+    key = flag.split("=")[0]
+    if key == "--xla_force_host_platform_device_count":
+        cleaned = re.sub(r"--xla_force_host_platform_device_count=\S+", "", existing).strip()
+        return f"{cleaned} {flag}".strip()
+    if key in existing:
         return existing
     return f"{existing} {flag}".strip()
 
@@ -301,6 +306,19 @@ def run_sweep(
                     )
                 )
                 continue
+            if profile_json.exists():
+                try:
+                    payload = json.loads(profile_json.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    payload = None
+                if isinstance(payload, dict):
+                    payload["_profile_json"] = str(profile_json)
+                    payload["profile_returncode"] = int(completed.returncode)
+                    profiles[str(requested_devices)] = payload
+                    row = _row_from_payload(payload, requested_devices=int(requested_devices))
+                    row["profile_returncode"] = int(completed.returncode)
+                    rows.append(row)
+                    continue
             if completed.returncode != 0:
                 rows.append(
                     _failure_row(
@@ -311,10 +329,14 @@ def run_sweep(
                     )
                 )
                 continue
-            payload = json.loads(profile_json.read_text(encoding="utf-8"))
-            payload["_profile_json"] = str(profile_json)
-            profiles[str(requested_devices)] = payload
-            rows.append(_row_from_payload(payload, requested_devices=int(requested_devices)))
+            rows.append(
+                _failure_row(
+                    requested_devices=int(requested_devices),
+                    backend=backend,
+                    profile_json=profile_json,
+                    error="profile returned success but did not write a valid JSON artifact",
+                )
+            )
 
     valid_rows = [row for row in rows if bool(row.get("identity_gate_pass")) and float(row["parallel_median_s"]) > 0.0]
     baseline_row = next((row for row in valid_rows if int(row["requested_devices"]) == 1), None)
@@ -393,6 +415,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         "profile_backend",
         "profile_device_count",
         "profile_sharding_axis",
+        "profile_returncode",
         "error",
     ]
     with csv_path.open("w", newline="", encoding="utf-8") as fh:

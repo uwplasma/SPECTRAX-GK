@@ -47,10 +47,18 @@ def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> No
     mod = _load_tool_module()
 
     cpu_env = mod._device_env({"XLA_FLAGS": "--foo=bar"}, backend="cpu", devices=4)
+    replaced_cpu_env = mod._device_env(
+        {"XLA_FLAGS": "--foo=bar --xla_force_host_platform_device_count=8"},
+        backend="cpu",
+        devices=2,
+    )
     gpu_env = mod._device_env({}, backend="gpu", devices=2)
 
     assert cpu_env["JAX_PLATFORMS"] == "cpu"
     assert "--xla_force_host_platform_device_count=4" in cpu_env["XLA_FLAGS"]
+    assert "--xla_force_host_platform_device_count=8" not in replaced_cpu_env["XLA_FLAGS"]
+    assert "--xla_force_host_platform_device_count=2" in replaced_cpu_env["XLA_FLAGS"]
+    assert "--foo=bar" in replaced_cpu_env["XLA_FLAGS"]
     assert gpu_env["JAX_PLATFORMS"] == "cuda"
     assert gpu_env["CUDA_VISIBLE_DEVICES"] == "0,1"
     assert gpu_env["XLA_PYTHON_CLIENT_PREALLOCATE"] == "false"
@@ -222,3 +230,64 @@ def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(monkeypat
     assert summary["status"] == "diagnostic_identity_only"
     assert summary["rows"][1]["strong_speedup_vs_1_device"] == 0.5
     assert summary["speedup_blockers"] == ["gpu_2devices_speedup_0.5_below_1"]
+
+
+def test_profile_nonlinear_sharding_sweep_preserves_failed_profile_json(monkeypatch) -> None:
+    mod = _load_tool_module()
+
+    def _fake_run(cmd, **_kwargs):
+        out_json = Path(cmd[cmd.index("--out-json") + 1])
+        payload = {
+            "device_count": 4,
+            "default_backend": "cpu",
+            "state_shape": [4, 8, 17, 32, 64],
+            "state_sharding_requested": "auto",
+            "serial_stats_s": {"median": 10.0},
+            "best_identity_preserving_candidate": {
+                "spec": None,
+                "identity_gate_pass": False,
+                "state_sharding_active": False,
+                "engineering_speedup_median": None,
+            },
+            "sharded_results": {
+                "auto": {
+                    "state_sharding_active": True,
+                    "stats_s": None,
+                    "identity_gate_pass": False,
+                    "max_abs_state_error": None,
+                    "max_rel_state_error": None,
+                    "error": "skipped: cpu_whole_state_pjit_sharding_unsafe_for_fft_layout",
+                    "skip_reason": "cpu_whole_state_pjit_sharding_unsafe_for_fft_layout",
+                }
+            },
+        }
+        out_json.write_text(json.dumps(payload), encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 2, "profile json written", "")
+
+    monkeypatch.setattr(mod.subprocess, "run", _fake_run)
+
+    summary = mod.run_sweep(
+        backend="cpu",
+        devices=[4],
+        nx=4,
+        ny=4,
+        nz=4,
+        nl=1,
+        nm=1,
+        dt=0.02,
+        steps=1,
+        method="rk2",
+        sharding="auto",
+        sharding_options="auto",
+        laguerre_mode="grid",
+        warmups=0,
+        repeats=1,
+        timeout_s=1.0,
+        trace=False,
+    )
+
+    assert summary["identity_passed"] is False
+    assert summary["rows"][0]["profile_returncode"] == 2
+    assert summary["rows"][0]["state_sharding_active"] is True
+    assert "unsafe_for_fft_layout" in summary["rows"][0]["error"]
+    assert summary["profiles"]["4"]["profile_returncode"] == 2

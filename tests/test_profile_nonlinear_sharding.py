@@ -29,6 +29,7 @@ def test_profile_nonlinear_sharding_parser_defaults_to_tracked_artifact() -> Non
     assert args.method == "rk2"
     assert args.warmups == 1
     assert args.repeats == 3
+    assert args.allow_unsafe_cpu_state_sharding is False
     assert mod._artifact_path_for_contract(args.out_json) == "docs/_static/nonlinear_sharding_profile.json"
 
 
@@ -55,6 +56,7 @@ def test_profile_nonlinear_sharding_source_contract_is_machine_readable(tmp_path
     assert contract["sharding_axis"] == "kx"
     assert contract["source_artifact"] == str(out_json.resolve())
     assert contract["timing_warmup_repeat"] == {"warmups": 0, "repeats": 2}
+    assert contract["allow_unsafe_cpu_state_sharding"] is False
     assert contract["profile_command_argv"][-len(argv) :] == argv
     assert "tools/profile_nonlinear_sharding.py" in contract["profile_command"]
     assert {"python", "spectraxgk", "jax", "jaxlib", "numpy"} <= set(contract["software_versions"])
@@ -102,6 +104,49 @@ def test_profile_nonlinear_sharding_reports_best_identity_candidate() -> None:
         "state_sharding_active": True,
         "identity_gate_pass": True,
     }
+
+
+def test_profile_nonlinear_sharding_skips_unsafe_cpu_state_sharding() -> None:
+    mod = _load_tool_module()
+
+    assert (
+        mod._skip_unsafe_cpu_state_sharding(
+            backend="cpu",
+            device_count=4,
+            state_sharding_active=True,
+            allow_unsafe_cpu_state_sharding=False,
+        )
+        is True
+    )
+    assert (
+        mod._skip_unsafe_cpu_state_sharding(
+            backend="cpu",
+            device_count=4,
+            state_sharding_active=True,
+            allow_unsafe_cpu_state_sharding=True,
+        )
+        is False
+    )
+    assert (
+        mod._skip_unsafe_cpu_state_sharding(
+            backend="gpu",
+            device_count=2,
+            state_sharding_active=True,
+            allow_unsafe_cpu_state_sharding=False,
+        )
+        is False
+    )
+
+    row = mod._candidate_failure(
+        state_sharding_active=True,
+        error=mod.CPU_WHOLE_STATE_SHARDING_SKIP_REASON,
+        skip_reason="cpu_whole_state_pjit_sharding_unsafe_for_fft_layout",
+    )
+
+    assert row["identity_gate_pass"] is False
+    assert row["state_sharding_active"] is True
+    assert row["skip_reason"] == "cpu_whole_state_pjit_sharding_unsafe_for_fft_layout"
+    assert "unsafe_for_fft_layout" in row["error"]
 
 
 def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(monkeypatch) -> None:

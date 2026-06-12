@@ -32,6 +32,10 @@ from spectraxgk.terms.config import TermConfig
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "nonlinear_sharding_profile.json"
+CPU_WHOLE_STATE_SHARDING_SKIP_REASON = (
+    "skipped: cpu_whole_state_pjit_sharding_unsafe_for_fft_layout; "
+    "use --allow-unsafe-cpu-state-sharding only for bounded debugging"
+)
 
 
 def _artifact_path_for_contract(path: Path) -> str:
@@ -83,6 +87,7 @@ def _source_contract(
         "source_artifact": _artifact_path_for_contract(Path(args.out_json)),
         "software_versions": _software_versions(),
         "timing_warmup_repeat": timing_warmup_repeat,
+        "allow_unsafe_cpu_state_sharding": bool(args.allow_unsafe_cpu_state_sharding),
     }
 
 
@@ -232,6 +237,57 @@ def _best_identity_preserving_candidate(sharded_results: dict[str, dict[str, Any
     }
 
 
+def _skip_unsafe_cpu_state_sharding(
+    *,
+    backend: str,
+    device_count: int,
+    state_sharding_active: bool,
+    allow_unsafe_cpu_state_sharding: bool,
+) -> bool:
+    """Return True when a pjit whole-state shard should be skipped on CPU.
+
+    Multi-device CPU pjit sharding of the nonlinear state can feed non-monotonic
+    layouts into XLA FFT thunks and abort the process before Python can catch an
+    exception. The production-speedup lane must therefore fail closed unless a
+    developer explicitly opts into this unsafe diagnostic path.
+    """
+
+    return bool(
+        str(backend).lower() == "cpu"
+        and int(device_count) > 1
+        and bool(state_sharding_active)
+        and not bool(allow_unsafe_cpu_state_sharding)
+    )
+
+
+def _candidate_failure(
+    *,
+    state_sharding_active: bool,
+    error: str,
+    skip_reason: str | None = None,
+) -> dict[str, Any]:
+    """Return the standard fail-closed candidate row."""
+
+    row: dict[str, Any] = {
+        "state_sharding_active": bool(state_sharding_active),
+        "times_s": [],
+        "stats_s": None,
+        "engineering_speedup_median": None,
+        "max_abs_state_error": None,
+        "max_rel_state_error": None,
+        "max_abs_rhs_error": None,
+        "max_rel_rhs_error": None,
+        "max_abs_phi_error": None,
+        "max_rel_phi_error": None,
+        "diagnostic_identity_gate_pass": False,
+        "identity_gate_pass": False,
+        "error": str(error),
+    }
+    if skip_reason is not None:
+        row["skip_reason"] = str(skip_reason)
+    return row
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
@@ -261,6 +317,14 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Optional JAX profiler trace directory. The trace is not a runtime claim; it localizes hot paths.",
+    )
+    parser.add_argument(
+        "--allow-unsafe-cpu-state-sharding",
+        action="store_true",
+        help=(
+            "Allow multi-device CPU pjit whole-state nonlinear sharding. This can abort in XLA FFT "
+            "layout/collective code on current CPU backends and is intended only for bounded debugging."
+        ),
     )
     return parser
 
@@ -328,7 +392,14 @@ def main(argv: list[str] | None = None) -> int:
         try:
             jax.profiler.start_trace(str(trace_dir))
             _block_until_ready(serial_run())
-            for fn in sharded_fns.values():
+            for spec, fn in sharded_fns.items():
+                if _skip_unsafe_cpu_state_sharding(
+                    backend=str(jax.default_backend()),
+                    device_count=int(jax.device_count()),
+                    state_sharding_active=bool(sharded_state_active[spec]),
+                    allow_unsafe_cpu_state_sharding=bool(args.allow_unsafe_cpu_state_sharding),
+                ):
+                    continue
                 _block_until_ready(fn())
             jax.profiler.stop_trace()
         except Exception as exc:  # pragma: no cover - profiler availability is platform-specific.
@@ -345,6 +416,20 @@ def main(argv: list[str] | None = None) -> int:
     sharded_results: dict[str, dict[str, Any]] = {}
     identity_passes: list[bool] = []
     for spec, fn in sharded_fns.items():
+        if _skip_unsafe_cpu_state_sharding(
+            backend=str(jax.default_backend()),
+            device_count=int(jax.device_count()),
+            state_sharding_active=bool(sharded_state_active[spec]),
+            allow_unsafe_cpu_state_sharding=bool(args.allow_unsafe_cpu_state_sharding),
+        ):
+            identity_pass = False
+            sharded_results[spec] = _candidate_failure(
+                state_sharding_active=bool(sharded_state_active[spec]),
+                error=CPU_WHOLE_STATE_SHARDING_SKIP_REASON,
+                skip_reason="cpu_whole_state_pjit_sharding_unsafe_for_fft_layout",
+            )
+            identity_passes.append(identity_pass)
+            continue
         try:
             sharded_final, sharded_times = _time_repeated(fn, warmups=int(args.warmups), repeats=int(args.repeats))
             sharded_stats = _time_stats(sharded_times)
@@ -383,21 +468,10 @@ def main(argv: list[str] | None = None) -> int:
             }
         except Exception as exc:
             identity_pass = False
-            sharded_results[spec] = {
-                "state_sharding_active": bool(sharded_state_active[spec]),
-                "times_s": [],
-                "stats_s": None,
-                "engineering_speedup_median": None,
-                "max_abs_state_error": None,
-                "max_rel_state_error": None,
-                "max_abs_rhs_error": None,
-                "max_rel_rhs_error": None,
-                "max_abs_phi_error": None,
-                "max_rel_phi_error": None,
-                "diagnostic_identity_gate_pass": False,
-                "identity_gate_pass": False,
-                "error": repr(exc),
-            }
+            sharded_results[spec] = _candidate_failure(
+                state_sharding_active=bool(sharded_state_active[spec]),
+                error=repr(exc),
+            )
         identity_passes.append(identity_pass)
 
     primary = sharded_results[str(args.sharding)]

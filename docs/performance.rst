@@ -929,6 +929,14 @@ identity-preserving candidate is explicit ``kx`` sharding at about ``0.96x``.
 That is not a speedup, so this artifact should be treated as a correctness and
 profiler-localization gate rather than a publication runtime claim.
 
+Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
+the nonlinear whole-state ``pjit`` path shards the packed state over multiple
+forced CPU devices. The profiling tool therefore skips active multi-device CPU
+whole-state sharding by default and records
+``cpu_whole_state_pjit_sharding_unsafe_for_fft_layout`` as a fail-closed
+blocker. Use ``--allow-unsafe-cpu-state-sharding`` only for bounded debugging,
+not for a production or manuscript speedup artifact.
+
 The larger strong-scaling sweep is regenerated with isolated subprocesses so
 each device count gets a clean JAX runtime:
 
