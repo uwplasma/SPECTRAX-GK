@@ -188,3 +188,22 @@ def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(tmp_path: Pa
         "dt": 0.04,
         "variant": {"seed": 32, "timestep": 0.04},
     }
+
+
+def test_replicate_ensemble_tool_parses_timestep_variant_with_device_suffix(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    variant = mod._variant_from_path(
+        tmp_path / "demo_nonlinear_t250_n48_dt0p01_gpu.out.nc",
+        baseline_seed=22,
+        baseline_dt=0.05,
+    )
+
+    assert variant == {
+        "variant_axis": "timestep",
+        "variant_label": "dt0p01",
+        "seed": 22,
+        "dt": 0.01,
+        "variant": {"seed": 22, "timestep": 0.01},
+    }

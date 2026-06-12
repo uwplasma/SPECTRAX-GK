@@ -17,7 +17,13 @@
   existing postprocessed artifacts are consistent: the growth ensemble passes,
   but the matched baseline-to-growth comparison gives only `0.60%` reduction
   and fails the configured reduction gate, so it remains negative/non-promoted
-  evidence. Solovev CPU `dt=0.01` remains active and unharvested.
+  evidence. The original Solovev CPU `dt=0.01` duplicate ran for about
+  46 minutes without writing an output bundle, so it was stopped after a
+  clean GPU duplicate was launched on office GPU 1 with the same `n48/t250`,
+  `dt=0.01` protocol and `XLA_PYTHON_CLIENT_PREALLOCATE=false`. That GPU run
+  is the active Solovev holdout source; it remains unharvested until its
+  final NetCDF output appears and passes the runtime-output and replicated
+  ensemble gates.
 
 - 2026-06-12: Harvested the first production-scope VMEC/Boozer held-out
   nonlinear transport artifact and kept broader claims fail-closed. The QH
