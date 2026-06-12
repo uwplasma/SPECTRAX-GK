@@ -1023,6 +1023,37 @@ intended research posture after admitting tougher external-VMEC evidence: keep
 the small spectrum-aware candidate as model-development signal, but not as an
 uncertainty-validated flux predictor.
 
+Residual-anatomy gate
+---------------------
+
+The residual-anatomy artifact below asks a narrower reviewer-facing question:
+which cases make the current best reduced candidate fail, and are those errors
+coming from one geometry class or from the full portfolio? It consumes only the
+tracked uncertainty, screening, and saturation-rule JSON sidecars. It does not
+refit or promote a new model.
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_error_anatomy.py \
+     --out docs/_static/quasilinear_error_anatomy.png || true
+
+The command exits nonzero while promotion remains blocked. That is intentional:
+this is a fail-closed diagnostic for model development.
+
+.. image:: _static/quasilinear_error_anatomy.png
+   :alt: Quasilinear residual-anatomy gate
+   :width: 100%
+
+The current anatomy is specific enough to guide the next model-development
+step. The shaped-pressure external-VMEC holdout is the largest residual, and
+external axisymmetric VMEC cases contribute about ``59%`` of the residual
+budget for ``spectral_envelope_ridge``. In contrast, the admitted HSX and W7-X
+benchmarks have mean relative error below ``0.2`` in this reduced candidate.
+That split argues against a looser universal acceptance threshold: the next
+absolute-flux attempt needs either additional independent nonlinear holdouts
+that clarify the external-VMEC transfer failure or richer saturation physics
+that can distinguish pressure-shaping and local-axisymmetric stress cases.
+
 Regularization sensitivity audit
 --------------------------------
 

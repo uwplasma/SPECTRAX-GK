@@ -1,3 +1,14 @@
+- 2026-06-11: Added a quasilinear residual-anatomy artifact for the current
+  best reduced candidate. `docs/_static/quasilinear_error_anatomy.{png,json,csv}`
+  consumes the existing uncertainty, screening, and saturation-rule sidecars
+  and remains fail-closed: `spectral_envelope_ridge` has mean relative error
+  `0.424 > 0.35`, no screening gate passes, and no runtime/TOML absolute-flux
+  predictor is promoted. The anatomy shows the shaped-pressure external-VMEC
+  holdout is the largest residual and external axisymmetric VMEC cases account
+  for about `59%` of the residual budget, while HSX/W7-X are comparatively
+  well tracked. This points the next QL work toward richer saturation physics
+  and one additional independent converged holdout, not threshold loosening.
+
 - 2026-06-11: Closed the shaped-tokamak-pressure external-VMEC repair as a
   scoped high-grid nonlinear holdout. The full `n48/n64/n80`, `dt=0.04`,
   `t=450` ladder fails only coarse-grid heat-flux agreement (`0.469 > 0.15`),
