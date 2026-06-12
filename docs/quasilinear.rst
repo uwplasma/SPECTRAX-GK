@@ -1502,6 +1502,25 @@ or absolute-flux calibration point.
    :alt: QI seed branch-refinement gate
    :width: 100%
 
+Solved VMEC optimization outputs use the same launch discipline. The screen
+below consumes runtime linear-scan spectra from solved ``vmec_jax`` WOUTs and
+blocks nonlinear launches unless growth, metric, and heat-flux weights are all
+finite and launchable:
+
+.. code-block:: bash
+
+   python tools/build_vmec_optimization_candidate_screen_gate.py \
+     --spectrum qa_nfp2_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qa_nfp2_mode5_ess_final_scan.quasilinear_spectrum.csv \
+     --spectrum qh_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qh_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
+     --spectrum qp_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
+     --spectrum qp_nfp4_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp4_mode5_ess_final_scan.quasilinear_spectrum.csv \
+     --out docs/_static/vmec_optimization_candidate_screen_gate.json
+
+The current four-case CPU screen is fail-closed: ``qa_nfp2`` is marginal,
+``qh_nfp3``/``qp_nfp4`` are stable, and ``qp_nfp3`` is rejected despite large
+fitted growth because sampled effective ``k_perp^2`` is non-positive. This is
+candidate triage, not nonlinear transport validation.
+
 Nonlinear follow-up configs for these external VMEC candidates should be
 generated with ``tools/write_external_vmec_holdout_configs.py`` rather than by
 hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs

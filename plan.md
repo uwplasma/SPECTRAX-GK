@@ -1,3 +1,12 @@
+- 2026-06-11: Added a fail-closed VMEC optimization-result candidate screen
+  before launching nonlinear holdouts from solved `vmec_jax` WOUTs. A bounded
+  local CPU scan of four solved mode-5 optimization outputs found no launchable
+  nonlinear holdout: `qa_nfp2` is marginal, `qh_nfp3`/`qp_nfp4` are stable, and
+  apparent high-growth `qp_nfp3` is rejected because all sampled rows have
+  non-positive effective `k_perp^2`. Added
+  `tools/build_vmec_optimization_candidate_screen_gate.py` and tracked the JSON
+  gate artifact so future screens require finite positive metric evidence.
+
 - 2026-06-11: Corrected and closed the QH warm-start long-window restart
   protocol as negative evidence. The earlier direct `n80/t450` and `n80/t700`
   launches were segment-length runs from zero, not cumulative horizons, so a
@@ -370,12 +379,12 @@ historical logs live outside the release repository so clones stay small.
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
-| Differentiable QA optimization evidence | 92.5% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; successful broad nonlinear turbulent-flux optimization is still not promoted |
+| Differentiable QA optimization evidence | 93% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; a new solved-WOUT candidate screen prevents invalid metric/high-growth artifacts from entering nonlinear launches; successful broad nonlinear turbulent-flux optimization is still not promoted |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
-| Optimizer comparison campaign execution | 75% | Metadata/generators and strategy report are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
+| Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
 | Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is promoted by replicated long-window windows (`18.4%` reduction, `7.8 sigma`); broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
