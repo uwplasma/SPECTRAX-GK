@@ -1,3 +1,14 @@
+- 2026-06-11: Promoted the next external-VMEC nonlinear holdout work from a
+  blocked replay to a launch-ready modified-protocol QH candidate. A bounded
+  local screen of the `vmec_jax` `nfp4_QH_warm_start` fixture found a weak but
+  finite unstable branch (`gamma = 0.022949` at `ky = 0.4762`). The refreshed
+  `docs/_static/external_vmec_next_holdout_runbook.{png,json,csv}` now passes
+  only as `nonlinear_holdout_launch_plan_not_transport_validation` and writes a
+  single command for `n64/n80`, `dt=0.04`, and horizons `t=250,450,700`.
+  Previous QH nonlinear gates remain excluded; this candidate can enter the QL
+  ledger only after the fresh high-grid convergence, late-window time-horizon,
+  and seed/timestep replicate gates pass.
+
 - 2026-06-11: Added a quasilinear residual-anatomy artifact for the current
   best reduced candidate. `docs/_static/quasilinear_error_anatomy.{png,json,csv}`
   consumes the existing uncertainty, screening, and saturation-rule sidecars

@@ -1351,23 +1351,48 @@ gate must pass before a new point can enter the calibration set.
    :alt: External-VMEC nonlinear holdout launch runbook
    :width: 100%
 
-The current runbook is intentionally blocked for unchanged replays. The
-ITERModel preferred-family audit has now passed, so replaying the same
+The current runbook remains fail-closed for unchanged replays. The ITERModel
+preferred-family audit has now passed, so replaying the same
 ``wout_ITERModel_reference.nc`` ladder would not create independent holdout
 leverage. The unchanged shaped-tokamak pressure case is also demoted because it
-is already admitted as a scoped high-grid holdout; replaying the same family
-would not provide independent evidence. Families with a recent failed
-external-VMEC convergence gate are demoted until the rerun protocol is
-materially changed, for example by increasing resolution or changing the
-candidate. The generated JSON sidecar includes replayable
-``write_external_vmec_holdout_configs.py`` commands only when an admissible
-launch target exists, the recommended high-grid horizons, and the fail-closed
-acceptance requirements: ``split = holdout``, passed grid/window convergence,
-a post-transient transport window, and independence from the training
-reference. The current sidecar contains no launch commands; its nearest tracked
-gap is the ITERModel ``t = 250`` high-grid convergence near-miss, which still
-fails the common-window slope/CV gates and therefore cannot enter calibration
-without a materially improved rerun.
+is already admitted as a scoped high-grid holdout. Families with a recent
+failed external-VMEC convergence gate are demoted unless the rerun protocol is
+materially changed by changing the candidate and/or the nonlinear validation
+ladder. With the explicit modified-protocol allowance below, the runbook
+selects the ``nfp4_QH_warm_start`` fixture from ``vmec_jax`` because a bounded
+linear screen found a weak but finite branch (``gamma = 0.022949`` at
+``ky = 0.4762``):
+
+.. code-block:: bash
+
+   python tools/build_external_vmec_holdout_runbook.py \
+     --allow-modified-protocol-family qh_external_vmec \
+     --modified-protocol-note "new nfp4_QH_warm_start candidate from vmec_jax examples/data; previous QH nonlinear gates remain excluded, so any launch must use a fresh high-grid/time-horizon/replicate protocol before calibration admission" \
+     --horizons 250,450,700 \
+     --grid n64:64:64:40:40 \
+     --grid n80:80:80:48:48 \
+     --dt 0.04 \
+     --out docs/_static/external_vmec_next_holdout_runbook.png
+
+The generated sidecar contains one replayable launch-contract command:
+
+.. code-block:: bash
+
+   python tools/write_external_vmec_holdout_configs.py \
+     --case nfp4_QH_warm_start_holdout \
+     --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc \
+     --out-dir tools_out/external_vmec_holdouts/nfp4_QH_warm_start \
+     --ky 0.4762 \
+     --dt 0.04 \
+     --horizons 250,450,700 \
+     --grid n64:64:64:40:40 \
+     --grid n80:80:80:48:48
+
+This is a nonlinear holdout launch plan, not transport validation. Previous QH
+nonlinear gates remain excluded, and the candidate can enter the quasilinear
+calibration ledger only after the fresh high-grid convergence, late-window
+time-horizon, and seed/timestep replicate gates pass with a post-transient
+transport window.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
