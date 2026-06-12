@@ -1358,41 +1358,27 @@ leverage. The unchanged shaped-tokamak pressure case is also demoted because it
 is already admitted as a scoped high-grid holdout. Families with a recent
 failed external-VMEC convergence gate are demoted unless the rerun protocol is
 materially changed by changing the candidate and/or the nonlinear validation
-ladder. With the explicit modified-protocol allowance below, the runbook
-selects the ``nfp4_QH_warm_start`` fixture from ``vmec_jax`` because a bounded
-linear screen found a weak but finite branch (``gamma = 0.022949`` at
-``ky = 0.4762``):
+ladder. The previous modified-protocol QH attempt is now closed as negative
+evidence: ``nfp4_QH_warm_start`` has a weak but finite screened branch
+(``gamma = 0.022949`` at ``ky = 0.4762``), but the corrected staged
+``n64/n80``, ``dt=0.04`` ladder fails the relaxed 20% high-grid heat-flux gate
+at ``t=250``, ``t=450``, and ``t=700``. The final ``t=700`` common-window and
+least-window symmetric differences are about ``0.349`` and ``0.367``.
 
 .. code-block:: bash
 
    python tools/build_external_vmec_holdout_runbook.py \
-     --allow-modified-protocol-family qh_external_vmec \
-     --modified-protocol-note "new nfp4_QH_warm_start candidate from vmec_jax examples/data; previous QH nonlinear gates remain excluded, so any launch must use a fresh high-grid/time-horizon/replicate protocol before calibration admission" \
      --horizons 250,450,700 \
      --grid n64:64:64:40:40 \
      --grid n80:80:80:48:48 \
      --dt 0.04 \
      --out docs/_static/external_vmec_next_holdout_runbook.png
 
-The generated sidecar contains one replayable launch-contract command:
-
-.. code-block:: bash
-
-   python tools/write_external_vmec_holdout_configs.py \
-     --case nfp4_QH_warm_start_holdout \
-     --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc \
-     --out-dir tools_out/external_vmec_holdouts/nfp4_QH_warm_start \
-     --ky 0.4762 \
-     --dt 0.04 \
-     --horizons 250,450,700 \
-     --grid n64:64:64:40:40 \
-     --grid n80:80:80:48:48
-
-This is a nonlinear holdout launch plan, not transport validation. Previous QH
-nonlinear gates remain excluded, and the candidate can enter the quasilinear
-calibration ledger only after the fresh high-grid convergence, late-window
-time-horizon, and seed/timestep replicate gates pass with a post-transient
-transport window.
+The generated sidecar currently contains no launch command. That is intentional:
+after the QH failure, the next quasilinear-calibration holdout needs a genuinely
+independent VMEC candidate or a materially higher-resolution protocol with new
+grid/window/replicate acceptance evidence. This is a nonlinear holdout runbook,
+not transport validation or a quasilinear absolute-flux promotion.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------

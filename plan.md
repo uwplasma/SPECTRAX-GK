@@ -1,17 +1,22 @@
-- 2026-06-11: Corrected the QH warm-start long-window restart protocol and
-  kept the admission fail-closed. The earlier direct `n80/t450` and `n80/t700`
+- 2026-06-11: Corrected and closed the QH warm-start long-window restart
+  protocol as negative evidence. The earlier direct `n80/t450` and `n80/t700`
   launches were segment-length runs from zero, not cumulative horizons, so a
-  true staged ladder was relaunched on office by copying the complete `t250`
-  bundle into `t450` before restarting. The corrected `n80/t450` run reached
-  `t=449.973` and passed runtime-output checks, but the relaxed 20% high-grid
-  convergence gate still fails (`0.355` common-window and `0.294`
-  least-window heat-flux differences). QH remains excluded from quasilinear
-  calibration while the corrected `n80/t700` continuation finishes. Added local
-  guardrails so generated external-VMEC manifests write executable staged
-  restart-ladder scripts, external-VMEC QL admission is fail-closed on
-  promotion-gate/claim-level metadata, nonlinear sharding artifacts report
-  per-backend identity/speedup blockers, and public QA optimization examples
-  state linear/QL/reduced-nonlinear claim boundaries explicitly.
+  true staged ladder was relaunched on office by copying complete restart
+  bundles forward. The corrected `n80/t450` and `n80/t700` runs both passed
+  runtime-output checks, but the relaxed 20% high-grid convergence gates still
+  fail: `t450` has `0.355` common-window and `0.294` least-window heat-flux
+  differences, while `t700` has `0.3487` common-window and `0.3668`
+  least-window differences. The final `t700` late-window means are about
+  `5.885` for `n64` and `4.137` for `n80`, so the mismatch is not an early
+  transient. QH remains excluded from quasilinear calibration. Regenerated the
+  external-VMEC runbook without a QH modified-protocol allowance; it now fails
+  closed with no launch commands until a genuinely new independent candidate or
+  materially higher-resolution protocol exists. Added local guardrails so
+  generated external-VMEC manifests write executable staged restart-ladder
+  scripts, external-VMEC QL admission is fail-closed on promotion-gate/claim
+  metadata, nonlinear sharding artifacts report per-backend identity/speedup
+  blockers, and public QA optimization examples state linear/QL/reduced
+  nonlinear claim boundaries explicitly.
 
 - 2026-06-11: Harvested the first modified-protocol QH warm-start nonlinear
   office gate. The `n64/n80`, `dt=0.04`, `t=250` pair finished cleanly and is
@@ -360,7 +365,7 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
 | Universal absolute quasilinear-flux prediction | 73% | Still blocked: one-constant report fails (`3.42 > 0.35`), candidate uncertainty/model-selection fail (`0.424 > 0.35`), and at least one additional independent post-transient nonlinear holdout plus a better saturation model are required |
-| Nonlinear holdout expansion/audits | 94% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, not full coarse-to-high-grid convergence claims |
+| Nonlinear holdout expansion/audits | 95% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is now closed as negative high-grid evidence through corrected `t700`, and the next runbook fails closed until a new independent/modified candidate exists |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |

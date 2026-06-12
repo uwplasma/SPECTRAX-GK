@@ -309,6 +309,18 @@ def test_runbook_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert out.with_suffix(".csv").exists()
 
 
+def test_tracked_next_holdout_runbook_is_fail_closed_after_qh_audit() -> None:
+    """The public runbook must not keep launching QH after the corrected gate failed."""
+
+    path = Path(__file__).resolve().parents[1] / "docs" / "_static" / "external_vmec_next_holdout_runbook.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["passed"] is False
+    assert payload["launch_commands"] == []
+    qh_rows = [row for row in payload["ranked_candidates"] if row["family"] == "qh_external_vmec"]
+    assert qh_rows
+    assert all(row["status"] != "modified_protocol_failed_family_candidate" for row in qh_rows)
+
+
 def test_runbook_tool_writes_modified_protocol_contract(tmp_path: Path) -> None:
     mod = _load_tool_module()
     gap = tmp_path / "gap.json"
