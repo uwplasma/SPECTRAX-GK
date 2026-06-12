@@ -83,6 +83,7 @@ def test_family_detection_covers_screen_names() -> None:
     assert external_vmec_family("li383_low_res_nc", "/vmec/wout_li383_low_res.nc") == "li383_external_vmec"
     assert external_vmec_family("basic_non_stellsym_nc") == "non_stellsym_external_vmec"
     assert external_vmec_family("cth_like_reference_nc", "/vmec/wout_cth_like.nc") == "cth_like_external_vmec"
+    assert external_vmec_family("up_down_asymmetric_tokamak_reference_nc") == "updown_asym_external_vmec"
 
 
 def test_read_external_holdout_screen_and_rank_runbook(tmp_path: Path) -> None:
@@ -309,15 +310,18 @@ def test_runbook_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert out.with_suffix(".csv").exists()
 
 
-def test_tracked_next_holdout_runbook_is_fail_closed_after_qh_audit() -> None:
-    """The public runbook must not keep launching QH after the corrected gate failed."""
+def test_tracked_next_holdout_runbook_launches_new_family_not_failed_qh() -> None:
+    """The public runbook may launch only a newly screened family, not failed QH."""
 
     path = Path(__file__).resolve().parents[1] / "docs" / "_static" / "external_vmec_next_holdout_runbook.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
-    assert payload["passed"] is False
-    assert payload["launch_commands"] == []
+    assert payload["passed"] is True
+    assert payload["selected_new_family_candidate"]["case"] == "solovev_reference_nc"
+    assert payload["selected_new_family_candidate"]["family"] == "solovev_external_vmec"
+    assert payload["launch_commands"]
+    assert all("solovev_reference_holdout" in command for command in payload["launch_commands"])
+    assert all("qh" not in command.lower() and "nfp4" not in command.lower() for command in payload["launch_commands"])
     qh_rows = [row for row in payload["ranked_candidates"] if row["family"] == "qh_external_vmec"]
-    assert qh_rows
     assert all(row["status"] != "modified_protocol_failed_family_candidate" for row in qh_rows)
 
 

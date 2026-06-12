@@ -2,23 +2,31 @@
   "claim_scope": "actionable campaign runbook only; generated or launched commands do not promote absolute quasilinear, broad nonlinear optimization, VMEC/Boozer optimization, or production nonlinear parallel speedup claims without the strict gates",
   "external_vmec_holdout_campaign": {
     "external_runbook": "docs/_static/external_vmec_next_holdout_runbook.json",
-    "external_runbook_passed": false,
+    "external_runbook_passed": true,
     "inventory_equilibria": 24,
+    "launch_commands": [
+      "python tools/write_external_vmec_holdout_configs.py --case solovev_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc --out-dir tools_out/external_vmec_holdouts/solovev_reference --ky 0.2857 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
+    ],
     "min_launch_gamma": 0.02,
-    "next_action": "Run a linear ky screen on the listed unscreened VMEC candidates; only candidates with gamma >= 0.02 and valid flux-tube metrics may enter the nonlinear holdout runbook.",
-    "screen_rows": 15,
-    "status": "blocked_on_new_linear_screen",
+    "next_action": "Launch or harvest the selected nonlinear holdout campaign, then admit it only through grid/window convergence, replicated post-transient transport, and QL recalibration gates.",
+    "screen_rows": 19,
+    "selected_candidate": {
+      "best_gamma": 0.0944048057885,
+      "best_ky": 0.2857,
+      "best_omega": 0.0715627460964,
+      "case": "solovev_reference_nc",
+      "family": "solovev_external_vmec",
+      "log": "tools_out/external_vmec_linear_screen_20260612/solovev_reference_nc.log",
+      "priority": 2.0,
+      "rank": 1,
+      "reason": "unstable electrostatic-compatible VMEC family not yet represented",
+      "returncode": 0,
+      "status": "new_family_holdout_candidate",
+      "unstable": true,
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc"
+    },
+    "status": "launchable",
     "unscreened_candidates": [
-      {
-        "aspect": 9.953585703744592,
-        "candidate_score": 5.0,
-        "family": "stellarator",
-        "iota_edge": -0.32044786860302343,
-        "name": "wout_LandremanSenguptaPlunk_section5p3_low_res_reference.nc",
-        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
-        "path": "wout_LandremanSenguptaPlunk_section5p3_low_res_reference.nc",
-        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
-      },
       {
         "aspect": 2.6427407334522504,
         "candidate_score": 4.75,
@@ -28,36 +36,6 @@
         "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
         "path": "wout_shaped_tokamak_pressure.nc",
         "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
-      },
-      {
-        "aspect": 10.100000000000003,
-        "candidate_score": 4.0,
-        "family": "axisymmetric",
-        "iota_edge": 0.2499999999999999,
-        "name": "wout_up_down_asymmetric_tokamak_reference.nc",
-        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
-        "path": "wout_up_down_asymmetric_tokamak_reference.nc",
-        "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
-      },
-      {
-        "aspect": 4.384423044481727,
-        "candidate_score": 3.5,
-        "family": "finite-beta",
-        "iota_edge": -0.13623075572843985,
-        "name": "wout_basic_non_stellsym_pressure_reference.nc",
-        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
-        "path": "wout_basic_non_stellsym_pressure_reference.nc",
-        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
-      },
-      {
-        "aspect": 3.11799834373432,
-        "candidate_score": 3.5,
-        "family": "axisymmetric",
-        "iota_edge": 1.0,
-        "name": "wout_solovev_reference.nc",
-        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
-        "path": "wout_solovev_reference.nc",
-        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
       },
       {
         "aspect": 2.9277749505152215,
@@ -88,6 +66,16 @@
         "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
         "path": "wout_circular_tokamak_aspect_100_reference.nc",
         "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
+      },
+      {
+        "aspect": 2.9277749505152215,
+        "candidate_score": 3.0,
+        "family": "axisymmetric",
+        "iota_edge": 1e-06,
+        "name": "wout_purely_toroidal_field_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_purely_toroidal_field_reference.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
       }
     ]
   },
@@ -111,7 +99,7 @@
   },
   "overall_next_actions": [
     "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
-    "Run linear screens for unscreened VMEC inventory candidates before any new absolute-QL nonlinear holdout launch.",
+    "Launch or harvest the selected nonlinear holdout campaign, then admit it only through grid/window convergence, replicated post-transient transport, and QL recalibration gates.",
     "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
     "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass."
   ],

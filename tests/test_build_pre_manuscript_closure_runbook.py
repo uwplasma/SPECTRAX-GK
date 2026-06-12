@@ -83,6 +83,41 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     assert "strict gates" in payload["claim_scope"]
 
 
+def test_pre_manuscript_runbook_reports_launchable_external_holdout(tmp_path: Path) -> None:
+    inventory = _write_json(tmp_path, "inventory.json", {"n_equilibria": 1, "rows": []})
+    screen = _write_screen(tmp_path)
+    external = _write_json(
+        tmp_path,
+        "external.json",
+        {
+            "passed": True,
+            "launch_commands": ["python tools/write_external_vmec_holdout_configs.py --case solovev"],
+            "min_launch_gamma": 0.02,
+            "selected_new_family_candidate": {"case": "solovev_reference_nc", "best_gamma": 0.094},
+        },
+    )
+    optimizer = _write_json(tmp_path, "optimizer.json", {"entries": []})
+    ladder = _write_json(tmp_path, "ladder.json", {"commands": []})
+
+    payload = mod.build_runbook_payload(
+        root=tmp_path,
+        inventory_path=inventory,
+        screen_path=screen,
+        external_runbook_path=external,
+        optimizer_manifest_path=optimizer,
+        ladder_status_path=ladder,
+        office_root=Path("/office/repo"),
+        audit_root=Path("tools_out/audits"),
+    )
+
+    holdout = payload["external_vmec_holdout_campaign"]
+    assert holdout["status"] == "launchable"
+    assert holdout["selected_candidate"]["case"] == "solovev_reference_nc"
+    assert holdout["launch_commands"]
+    assert "Launch or harvest" in holdout["next_action"]
+    assert payload["overall_next_actions"][1] == holdout["next_action"]
+
+
 def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
     payload = {
         "external_vmec_holdout_campaign": {

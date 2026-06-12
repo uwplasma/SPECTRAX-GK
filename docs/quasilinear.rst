@@ -1715,7 +1715,15 @@ training audit as if it were independent, replaying a family with a recent
 failed convergence gate unchanged, and launching expensive nonlinear
 simulations from near-marginal linear branches such as the present QI seed.
 
-The next screened unstable external-VMEC tokamak candidate,
+The current next-holdout screen adds two useful rows to that policy. The
+Solovev VMEC equilibrium is the selected independent nonlinear launch contract
+(``gamma ≈ 0.0944`` at ``ky ≈ 0.2857``), while the up-down asymmetric tokamak is
+unstable but already represented in the calibration ledger
+(``gamma ≈ 0.0360`` at ``ky ≈ 0.4762``). The Solovev configs are staged for the
+office GPU queue, but the case is still outside the calibration dataset until
+its nonlinear grid/window, replicate, and recalibration gates pass.
+
+A previously screened unstable external-VMEC tokamak candidate,
 ``wout_up_down_asymmetric_tokamak_reference.nc``, also closes after a bounded
 extension ladder. At ``t = 150`` the grid difference already passed
 (``0.138``), but the ``64x64x40`` common-window trend was still too large

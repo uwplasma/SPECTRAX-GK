@@ -1,3 +1,18 @@
+- 2026-06-12: Advanced the independent external-VMEC holdout lane. A bounded
+  VMEC linear screen over four previously unscreened `vmec_jax` examples found
+  `wout_solovev_reference.nc` launchable (`gamma=0.0944` at `ky=0.2857`) and
+  `wout_up_down_asymmetric_tokamak_reference.nc` unstable but already
+  represented (`gamma=0.0360` at `ky=0.4762`). `LandremanSenguptaPlunk`
+  remains below the nonlinear-launch threshold (`gamma=0.0073`) and
+  `basic_non_stellsym_pressure_reference` fails the current VMEC aspect-cut
+  flux-tube path. The tracked external-VMEC runbook now selects Solovev and
+  writes an office-resolvable nonlinear launch command. Configs were generated
+  on office under `tools_out/external_vmec_holdouts/solovev_reference`, and a
+  deferred launcher is waiting behind the active QA `t=1500` GPU queues so it
+  does not oversubscribe the two GPUs. This is a launch contract only: Solovev
+  is not admitted into quasilinear calibration until its long-window nonlinear
+  grid/window, replicate, and recalibration gates pass.
+
 - 2026-06-12: Started the pre-manuscript closure phase after verified
   ``v1.6.5`` release/PyPI publication. Added
   ``tools/build_pre_manuscript_closure_status.py`` and tracked
@@ -425,7 +440,7 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
 | Universal absolute quasilinear-flux prediction | 60% | Strict pre-manuscript gate remains partial: train/holdout absolute report fails, holdout mean relative error is `3.13 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists |
-| Nonlinear holdout expansion/audits | 95% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is now closed as negative high-grid evidence through corrected `t700`, and the next runbook fails closed until a new independent/modified candidate exists |
+| Nonlinear holdout expansion/audits | 96% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is closed as negative high-grid evidence through corrected `t700`, and the next independent Solovev nonlinear holdout is staged on office but not admitted |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |

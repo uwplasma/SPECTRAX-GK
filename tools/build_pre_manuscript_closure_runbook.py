@@ -224,6 +224,20 @@ def build_runbook_payload(
     external_has_launch = bool(external_runbook.get("passed", False)) and bool(
         external_runbook.get("launch_commands")
     )
+    external_next_action = (
+        "Launch or harvest the selected nonlinear holdout campaign, then admit it only through "
+        "grid/window convergence, replicated post-transient transport, and QL recalibration gates."
+        if external_has_launch
+        else (
+            "Run a linear ky screen on the listed unscreened VMEC candidates; only candidates "
+            "with gamma >= 0.02 and valid flux-tube metrics may enter the nonlinear holdout runbook."
+        )
+    )
+    selected_external = (
+        external_runbook.get("selected_new_family_candidate")
+        or external_runbook.get("selected_preferred_family_audit")
+        or {}
+    )
     lanes = {str(lane["lane"]): lane for lane in status.get("lanes", []) if isinstance(lane, dict)}
     domain_lane = lanes.get("Production nonlinear domain-decomposition speedup", {})
     payload = {
@@ -241,11 +255,10 @@ def build_runbook_payload(
             "min_launch_gamma": float(external_runbook.get("min_launch_gamma", MIN_LINEAR_LAUNCH_GAMMA)),
             "screen_rows": len(screen_rows),
             "inventory_equilibria": int(inventory.get("n_equilibria", 0) or 0),
+            "selected_candidate": selected_external,
+            "launch_commands": external_runbook.get("launch_commands", []),
             "unscreened_candidates": screen_candidates,
-            "next_action": (
-                "Run a linear ky screen on the listed unscreened VMEC candidates; only candidates "
-                "with gamma >= 0.02 and valid flux-tube metrics may enter the nonlinear holdout runbook."
-            ),
+            "next_action": external_next_action,
         },
         "vmec_boozer_production_scope_artifacts": {
             "status": "launch_contracts_generated_on_office",
@@ -291,7 +304,7 @@ def build_runbook_payload(
     }
     payload["overall_next_actions"] = [
         "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
-        "Run linear screens for unscreened VMEC inventory candidates before any new absolute-QL nonlinear holdout launch.",
+        external_next_action,
         "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
         "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass.",
     ]
