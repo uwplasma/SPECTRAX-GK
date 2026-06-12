@@ -468,9 +468,11 @@ gate.
        finite-difference/line-search check. The aggregate artifacts remain
        reduced optimizer-plumbing evidence. The separate production nonlinear
        optimization guard now includes long-window D-shaped/circular holdouts
-       and the selected optimized-equilibrium seed/timestep audit; broader
-       nonlinear turbulence gradients and multi-surface transport optimization
-       are still separate gates.
+       and one selected optimized-equilibrium seed/timestep audit; production
+       promotion remains blocked until three independent optimized-equilibrium
+       ensembles and three matched audits pass. Broader nonlinear turbulence
+       gradients and multi-surface transport optimization are still separate
+       gates.
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty

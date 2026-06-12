@@ -108,20 +108,37 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
     counts = [
         summaries["qualifying_replicated_holdout_ensembles"],
         summaries["qualifying_optimized_equilibrium_ensembles"],
+        summaries["qualifying_matched_optimized_transport_audits"],
     ]
     axs[1].bar(
-        [0, 1],
+        [0, 1, 2],
         counts,
-        color=["#2563eb", "#f97316"],
+        color=["#2563eb", "#f97316", "#7c3aed"],
         alpha=0.88,
     )
     axs[1].axhline(report["config"]["min_replicated_ensembles"], color="#2563eb", ls=":", lw=1.5)
+    axs[1].axhline(
+        report["config"]["min_optimized_equilibrium_ensembles"],
+        color="#f97316",
+        ls="--",
+        lw=1.2,
+    )
+    axs[1].axhline(
+        report["config"]["min_matched_optimized_audits"],
+        color="#7c3aed",
+        ls="-.",
+        lw=1.2,
+    )
     axs[1].set_xticks(
-        [0, 1],
-        ["long-window\nholdouts", "optimized-equilibrium\ntransport"],
+        [0, 1, 2],
+        [
+            "long-window\nholdouts",
+            "optimized-equilibrium\ntransport",
+            "matched\noptimization audits",
+        ],
         fontsize=9,
     )
-    axs[1].set_ylabel("qualifying replicated ensembles")
+    axs[1].set_ylabel("qualifying artifacts")
     axs[1].set_title("Evidence available for nonlinear optimization")
     axs[1].grid(axis="y", alpha=0.25)
 
@@ -150,6 +167,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-reports-per-ensemble", type=int, default=2)
     parser.add_argument("--max-mean-rel-spread", type=float, default=0.15)
     parser.add_argument("--max-combined-sem-rel", type=float, default=0.25)
+    parser.add_argument("--min-optimized-equilibrium-ensembles", type=int, default=3)
+    parser.add_argument("--min-matched-optimized-audits", type=int, default=3)
     parser.add_argument("--min-matched-optimized-relative-reduction", type=float, default=0.05)
     parser.add_argument("--min-matched-optimized-uncertainty-sigma", type=float, default=1.0)
     parser.add_argument(
@@ -190,6 +209,8 @@ def main(argv: list[str] | None = None) -> int:
         max_combined_sem_rel=args.max_combined_sem_rel,
         require_optimized_equilibrium_transport=not args.allow_missing_optimized_equilibrium_transport,
         require_matched_optimized_transport_audit=not args.allow_missing_matched_optimized_audit,
+        min_optimized_equilibrium_ensembles=args.min_optimized_equilibrium_ensembles,
+        min_matched_optimized_audits=args.min_matched_optimized_audits,
         min_matched_optimized_relative_reduction=args.min_matched_optimized_relative_reduction,
         min_matched_optimized_uncertainty_sigma=args.min_matched_optimized_uncertainty_sigma,
     )

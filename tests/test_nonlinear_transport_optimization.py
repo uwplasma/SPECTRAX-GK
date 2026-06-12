@@ -173,12 +173,13 @@ def test_production_nonlinear_guard_blocks_optimized_window_without_matched_redu
     assert report["safe_to_release"] is True
     assert report["production_nonlinear_optimization_promoted"] is False
     assert report["promotion_gate"]["blockers"] == [
+        "optimized_equilibrium_replicated_transport_window",
         "matched_baseline_to_optimized_transport_reduction"
     ]
 
 
-def test_production_nonlinear_guard_promotes_only_with_matched_optimized_audit() -> None:
-    report = production_nonlinear_optimization_guard_report(
+def test_production_nonlinear_guard_requires_three_matched_optimized_audits() -> None:
+    one_audit = production_nonlinear_optimization_guard_report(
         optimization_artifact=_optimization_payload(),
         optimization_artifact_path="optimization.json",
         reduced_artifacts={"startup.json": _startup_payload()},
@@ -196,10 +197,53 @@ def test_production_nonlinear_guard_promotes_only_with_matched_optimized_audit()
         },
     )
 
+    assert one_audit["safe_to_release"] is True
+    assert one_audit["production_nonlinear_optimization_promoted"] is False
+    assert one_audit["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+    assert one_audit["promotion_gate"]["blockers"] == [
+        "optimized_equilibrium_replicated_transport_window",
+        "matched_baseline_to_optimized_transport_reduction",
+    ]
+
+
+def test_production_nonlinear_guard_promotes_only_with_three_matched_audits() -> None:
+    report = production_nonlinear_optimization_guard_report(
+        optimization_artifact=_optimization_payload(),
+        optimization_artifact_path="optimization.json",
+        reduced_artifacts={"startup.json": _startup_payload()},
+        replicated_ensemble_artifacts={
+            "dshape.json": _ensemble_payload(case="dshape"),
+            "circular.json": _ensemble_payload(case="circular", mean=3.8),
+        },
+        optimized_equilibrium_artifacts={
+            "optimized_equilibrium_final.json": _ensemble_payload(
+                case="optimized_equilibrium_final", mean=2.6
+            ),
+            "optimized_equilibrium_second.json": _ensemble_payload(
+                case="optimized_equilibrium_second", mean=2.7
+            ),
+            "optimized_equilibrium_third.json": _ensemble_payload(
+                case="optimized_equilibrium_third", mean=2.8
+            ),
+        },
+        matched_optimized_transport_artifacts={
+            "matched_optimized_audit.json": _matched_audit_payload(),
+            "matched_optimized_audit_second.json": _matched_audit_payload(
+                relative_reduction=0.11,
+                sigma=2.2,
+            ),
+            "matched_optimized_audit_third.json": _matched_audit_payload(
+                relative_reduction=0.08,
+                sigma=1.6,
+            ),
+        },
+    )
+
     assert report["safe_to_release"] is True
     assert report["production_nonlinear_optimization_promoted"] is True
     assert report["promotion_gate"]["blockers"] == []
-    assert report["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+    assert report["summary"]["qualifying_matched_optimized_transport_audits"] == 3
+    assert report["summary"]["qualifying_optimized_equilibrium_ensembles"] == 3
 
 
 def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> None:
@@ -237,8 +281,9 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
     assert rc == 0
     assert out_png.exists()
     assert payload["safe_to_release"] is True
-    assert payload["production_nonlinear_optimization_promoted"] is True
+    assert payload["production_nonlinear_optimization_promoted"] is False
     assert payload["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+    assert "matched_baseline_to_optimized_transport_reduction" in payload["promotion_gate"]["blockers"]
 
 
 def test_matched_optimized_transport_report_requires_reduction_and_uncertainty() -> None:
@@ -330,6 +375,8 @@ def test_production_nonlinear_guard_config_validation() -> None:
         ProductionNonlinearOptimizationGuardConfig(min_reports_per_ensemble=1),
         ProductionNonlinearOptimizationGuardConfig(max_mean_rel_spread=-1.0),
         ProductionNonlinearOptimizationGuardConfig(max_combined_sem_rel=-1.0),
+        ProductionNonlinearOptimizationGuardConfig(min_optimized_equilibrium_ensembles=0),
+        ProductionNonlinearOptimizationGuardConfig(min_matched_optimized_audits=0),
         ProductionNonlinearOptimizationGuardConfig(min_seed_variants=0),
         ProductionNonlinearOptimizationGuardConfig(min_timestep_variants=0),
         ProductionNonlinearOptimizationGuardConfig(

@@ -319,9 +319,11 @@ Quasilinear model-selection state:
   ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
   safety because reduced/startup estimators are blocked and two long
   post-transient replicated holdout ensembles pass. The selected optimized QA
-  equilibrium also satisfies this guard because the ``t=[350,700]``
-  seed/timestep replicated transport-window audit is attached; that is a scoped
-  candidate audit, not a broad nonlinear transport-optimization claim.
+  equilibrium contributes one accepted ``t=[350,700]`` seed/timestep replicated
+  transport-window audit. Production promotion remains blocked until three
+  independent optimized-equilibrium ensembles and three matched
+  baseline-to-optimized audits pass; the current selected audit is scoped
+  candidate evidence, not a broad nonlinear transport-optimization claim.
 - ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
   QA no-ESS reference to optimized QA/ESS comparison. The tracked
   ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes

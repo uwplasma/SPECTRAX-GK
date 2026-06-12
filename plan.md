@@ -454,7 +454,7 @@ historical logs live outside the release repository so clones stay small.
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
-| Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is promoted by replicated long-window windows (`18.4%` reduction, `7.8 sigma`); broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
+| Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is one positive long-window matched audit (`18.4%` reduction, `7.8 sigma`), but production promotion now requires three optimized-equilibrium ensembles and three matched audits; broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
@@ -658,9 +658,11 @@ No long nonlinear audit should be launched from these candidates.
    repository-size gate, docs links, and package build.
 5. Keep the production nonlinear optimization guard strict:
    `docs/_static/production_nonlinear_optimization_guard.json` now requires
-   optimized-equilibrium seed/timestep provenance and a matched
-   baseline-to-optimized reduction audit before promotion. New optimized
-   candidates must reproduce that evidence structure before any broader claim.
+   optimized-equilibrium seed/timestep provenance plus at least three
+   independent optimized-equilibrium ensembles and three matched
+   baseline-to-optimized reduction audits before production promotion. New
+   optimized candidates must reproduce that evidence structure before any
+   broader claim.
 
 ## Release Hygiene Rules
 

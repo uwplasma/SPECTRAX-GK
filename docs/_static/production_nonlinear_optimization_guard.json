@@ -1,10 +1,12 @@
 {
-  "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+  "claim_level": "production_nonlinear_optimization_blocked_until_optimized_equilibrium_replicated_transport_windows",
   "config": {
     "max_combined_sem_rel": 0.25,
     "max_mean_rel_spread": 0.15,
+    "min_matched_optimized_audits": 3,
     "min_matched_optimized_relative_reduction": 0.05,
     "min_matched_optimized_uncertainty_sigma": 1.0,
+    "min_optimized_equilibrium_ensembles": 3,
     "min_replicated_ensembles": 2,
     "min_reports_per_ensemble": 2,
     "min_seed_variants": 2,
@@ -38,12 +40,12 @@
     {
       "detail": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
       "metric": "optimized_equilibrium_replicated_transport_window",
-      "passed": true
+      "passed": false
     },
     {
       "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
       "metric": "matched_baseline_to_optimized_transport_reduction",
-      "passed": true
+      "passed": false
     }
   ],
   "kind": "production_nonlinear_turbulent_flux_optimization_guard",
@@ -122,13 +124,16 @@
     }
   ],
   "passed": true,
-  "production_nonlinear_optimization_promoted": true,
+  "production_nonlinear_optimization_promoted": false,
   "promotion_gate": {
-    "blockers": [],
-    "passed": true,
+    "blockers": [
+      "optimized_equilibrium_replicated_transport_window",
+      "matched_baseline_to_optimized_transport_reduction"
+    ],
+    "passed": false,
     "requirements": [
       "optimized equilibrium must have long post-transient replicated nonlinear transport-window audits",
-      "matched baseline-to-optimized nonlinear audit must show a positive uncertainty-separated reduction",
+      "at least three matched baseline-to-optimized nonlinear audits must show positive uncertainty-separated reductions",
       "replicates must include independent seed/initial-condition and timestep evidence",
       "optimized-equilibrium transport means must satisfy running-window, block/SEM, spread, and finite-flux gates"
     ]
@@ -248,7 +253,7 @@
     ]
   },
   "summary": {
-    "production_nonlinear_optimization_ready": 1,
+    "production_nonlinear_optimization_ready": 0,
     "qualifying_matched_optimized_transport_audits": 1,
     "qualifying_optimized_equilibrium_ensembles": 1,
     "qualifying_replicated_holdout_ensembles": 2
