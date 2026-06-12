@@ -963,18 +963,20 @@ each device count gets a clean JAX runtime:
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
    :align: center
 
-The May 10, 2026 large sweep passes the final-state identity gate at every
-tracked point. The CPU logical-device path improves from one to four devices
-but saturates at about ``1.39x`` and does not improve further at eight logical
-devices. The two-RTX-A4000 GPU path is slower than one GPU even for the larger
+The May 10, 2026 large sweep is retained as historical engineering evidence:
+it passed the final-state identity gate at every tracked point, the CPU
+logical-device path saturated at about ``1.39x``, and the two-RTX-A4000 GPU path
+was slower than one GPU even for the larger
 ``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured speedup
-of about ``0.63x``. This makes the technical conclusion explicit: the current
-whole-state nonlinear sharding path is useful as a correctness/profiler gate,
-but production parallelization should prioritize independent ``k_y`` scans and
-UQ/ensemble batching. Communication-aware nonlinear domain decomposition remains
-diagnostic until the exact workload has identity, communication,
-transport-window, and matched profiler evidence for any nonlinear multi-GPU
-speedup claim.
+of about ``0.63x``. Current JAX/XLA CPU refreshes are stricter: unsafe active
+multi-device CPU whole-state ``pjit`` routes are skipped before execution and
+record a fail-closed blocker instead of producing a speedup row. This makes the
+technical conclusion explicit: whole-state nonlinear sharding is useful as a
+correctness/profiler gate, but production parallelization should prioritize
+independent ``k_y`` scans and UQ/ensemble batching. Communication-aware
+nonlinear domain decomposition remains diagnostic until the exact workload has
+identity, communication, transport-window, and matched profiler evidence for any
+nonlinear multi-GPU speedup claim.
 The production gate fails closed as ``diagnostic_only`` unless the refreshed
 CPU and GPU rows both pass serial identity, use active state sharding, and meet
 the configured speedup and parallel-efficiency thresholds. The tracked gate
