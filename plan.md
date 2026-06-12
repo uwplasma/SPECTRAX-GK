@@ -26,7 +26,13 @@
   files were left untouched and a fresh checkout was created at
   `/home/rjorge/spectrax_premanuscript_holdouts_20260612`. The same QH
   held-out VMEC/Boozer configs were generated there and deferred launcher PID
-  `3425020` is waiting behind the active QA/Solovev queues.
+  `3425020` is waiting behind the active QA/Solovev queues. Added
+  `tools/build_vmec_boozer_production_holdout_artifact.py`, a fail-closed
+  postprocessor that combines a concrete transport manifest with a passed
+  replicated nonlinear ensemble to produce the exact held-out surface/field-line
+  JSON consumed by the VMEC/Boozer promotion gate. The runbook now lists the
+  complete postprocessing chain: finite-output gate, replicate-ensemble gate,
+  production holdout artifact, then VMEC/Boozer aggregate promotion gate.
 
 - 2026-06-12: Tightened the production nonlinear turbulent-flux optimization
   promotion guard to match the broader pre-manuscript requirement. The guard is

@@ -212,6 +212,45 @@ def _vmec_boozer_holdout_transport_commands(
         out_dir / f"{case}_nonlinear_t700_n64_seed32.out.nc",
         out_dir / f"{case}_nonlinear_t700_n64_dt0p04.out.nc",
     ]
+    artifact_dir = office_root / "docs" / "_static" / "vmec_boozer_holdout_transport"
+    ensemble_json = artifact_dir / f"{case}_ensemble_gate.json"
+    readiness_json = artifact_dir / f"{case}_readiness.json"
+    ensemble_png = artifact_dir / f"{case}_ensemble_gate.png"
+    holdout_json = artifact_dir / f"{case}_production_holdout.json"
+    output_gate_json = artifact_dir / f"{case}_output_gate.json"
+    output_gate_command = (
+        "python3 tools/check_nonlinear_runtime_outputs.py "
+        + " ".join(path.as_posix() for path in outputs)
+        + " --min-samples 200 --tmin 350 --tmax 700 --min-window-samples 80 "
+        f"--min-abs-window-mean 0.0001 --json-out {output_gate_json.as_posix()}"
+    )
+    build_ensemble_command = (
+        "python3 tools/build_external_vmec_replicate_ensemble.py "
+        + " ".join(path.as_posix() for path in outputs)
+        + f" --out-dir {artifact_dir.as_posix()}"
+        + f" --case {case}_replicated_nonlinear_window"
+        + " --tmin 350 --tmax 700"
+        + " --artifact-prefix docs/_static/vmec_boozer_holdout_transport"
+        + f" --readiness-json {readiness_json.name}"
+        + f" --ensemble-json {ensemble_json.name}"
+        + f" --out-png {ensemble_png.name}"
+    )
+    build_holdout_artifact_command = (
+        "python3 tools/build_vmec_boozer_production_holdout_artifact.py "
+        f"--transport-manifest {(out_dir / 'run_manifest.json').as_posix()} "
+        f"--ensemble-json {ensemble_json.as_posix()} "
+        f"--case {case} --out {holdout_json.as_posix()}"
+    )
+    promotion_gate_command = (
+        "python3 tools/check_vmec_boozer_aggregate_holdout_gate.py "
+        "--holdout-artifact docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json "
+        "--holdout-artifact docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json "
+        f"--holdout-artifact {holdout_json.as_posix()} "
+        "--nonlinear-ensemble-artifact docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json "
+        "--nonlinear-ensemble-artifact docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json "
+        f"--nonlinear-ensemble-artifact {ensemble_json.as_posix()} "
+        "--json-out docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json"
+    )
     return [
         {
             "case": case,
@@ -238,6 +277,17 @@ def _vmec_boozer_holdout_transport_commands(
                 )
             ],
             "expected_outputs": [path.as_posix() for path in outputs],
+            "output_gate_command": output_gate_command,
+            "build_ensemble_command": build_ensemble_command,
+            "build_holdout_artifact_command": build_holdout_artifact_command,
+            "promotion_gate_command": promotion_gate_command,
+            "postprocess_artifacts": {
+                "output_gate": output_gate_json.as_posix(),
+                "ensemble_json": ensemble_json.as_posix(),
+                "readiness_json": readiness_json.as_posix(),
+                "ensemble_png": ensemble_png.as_posix(),
+                "production_holdout_json": holdout_json.as_posix(),
+            },
             "window": [350.0, 700.0],
             "claim_level": (
                 "production_scope_vmec_boozer_surface_field_line_launch_contract_not_transport_promotion"
