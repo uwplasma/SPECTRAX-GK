@@ -27,19 +27,19 @@ def _load_tool_module():
 def test_regularization_sweep_locks_tracked_near_miss() -> None:
     mod = _load_tool_module()
 
-    report = mod.score_regularization_sweep(lambdas=(0.1, 0.2, 0.3, 0.5))
+    report = mod.score_regularization_sweep(lambdas=(0.1, 0.2, 0.3, 0.5, 0.7, 1.0))
 
     assert report["kind"] == "quasilinear_candidate_regularization_sweep"
     assert report["claim_level"] == "spectral_envelope_regularization_audit_not_runtime_flux_predictor"
-    assert report["best_lambda"] == 0.3
-    assert 0.37 < report["best_mean_abs_relative_error"] < 0.38
+    assert report["best_lambda"] == 0.7
+    assert 0.422 < report["best_mean_abs_relative_error"] < 0.424
     assert report["best_mean_abs_relative_error"] > report["transport_gate"]
     assert report["promotion_gate"]["passed"] is False
     assert report["promotion_gate"]["accepted_lambdas"] == []
     assert report["promotion_gate"]["blockers"] == [
         "best_regularization_transport_error_above_gate"
     ]
-    assert len(report["rows"]) == 4
+    assert len(report["rows"]) == 6
 
 
 def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(tmp_path: Path) -> None:
