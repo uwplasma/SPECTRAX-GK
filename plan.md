@@ -1,3 +1,15 @@
+- 2026-06-11: Started nonlinear admission for the top solved-WOUT screen
+  candidate, `qp_diag_nfp2_m4_final`. The `t=150`, `dt=0.05`, `n48/n64`
+  office-GPU pair is finite but non-admissible (`0.163` common-window and
+  `0.200` least-window heat-flux differences). The true restart continuation
+  to `t=250` passes the grid/window gate (`0.033` common-window, `0.0023`
+  least-window, slopes below `2e-3`, CV about `0.08`). The minimal `n64`
+  seed/timestep ensemble also passes (`<Q_i>=16.40`, spread `0.071`,
+  combined SEM/mean `0.029`). A temporary QL re-score with this new holdout
+  improves aggregate mean relative error `2.83 -> 2.65`, but holdout error is
+  still `3.13 > 0.35`, so absolute-flux promotion remains blocked. Backup
+  QA/QI ladders are prepared locally under `tools_out/` but remain untracked.
+
 - 2026-06-11: Added a fail-closed VMEC optimization-result candidate screen
   before launching nonlinear holdouts from solved `vmec_jax` WOUTs. A bounded
   local CPU scan of four solved mode-5 optimization outputs found no launchable
