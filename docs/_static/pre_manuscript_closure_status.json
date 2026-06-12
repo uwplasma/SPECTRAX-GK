@@ -14,15 +14,15 @@
         "required_candidate_transport_error_gate_failed"
       ],
       "claim_level": "blocked_absolute_flux_prediction",
-      "completion_percent": 60.0,
+      "completion_percent": 50.0,
       "key_metrics": {
         "accepted_candidates": [],
-        "candidate_mean_abs_relative_error": 0.39974927464926485,
-        "candidate_prediction_interval_coverage": 0.8181818181818182,
+        "candidate_mean_abs_relative_error": 0.6972871490908844,
+        "candidate_prediction_interval_coverage": 0.9166666666666666,
         "candidate_soft_error_gate": 0.5,
         "dataset_volume_passed": true,
         "guardrails_passed": true,
-        "holdout_cases": 9,
+        "holdout_cases": 10,
         "holdout_gap_blockers": [
           "absolute_flux_predictor_not_promoted",
           "absolute_requirement:absolute_train_holdout_report_passed",
@@ -32,7 +32,7 @@
           "screening_requirement:full_portfolio_screening_correlation_passed",
           "screening_requirement:heldout_screening_correlation_passed"
         ],
-        "holdout_mean_abs_relative_error": 3.1265878826989333,
+        "holdout_mean_abs_relative_error": 6.491149442266367,
         "train_cases": 2,
         "transport_mean_relative_error_gate": 0.35
       },
@@ -53,7 +53,7 @@
         "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
         "a promotion-guardrail report proving the candidate is not just a scoped diagnostic"
       ],
-      "status": "partial"
+      "status": "blocked"
     },
     {
       "blockers": [
@@ -179,12 +179,12 @@
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 72.0,
-    "n_blocked": 0,
+    "mean_completion_percent": 69.5,
+    "n_blocked": 1,
     "n_closed": 1,
     "n_lanes": 4,
     "n_open": 0,
-    "n_partial": 3,
+    "n_partial": 2,
     "ready_for_manuscript_drafting": false
   }
 }

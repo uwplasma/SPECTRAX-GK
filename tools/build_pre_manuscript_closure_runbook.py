@@ -37,6 +37,7 @@ DEFAULT_OUT = ROOT / "docs" / "_static" / "pre_manuscript_closure_runbook.png"
 DEFAULT_INVENTORY = ROOT / "docs" / "_static" / "vmec_jax_equilibrium_inventory.json"
 DEFAULT_SCREEN = ROOT / "docs" / "_static" / "external_vmec_candidate_linear_screen.csv"
 DEFAULT_EXTERNAL_RUNBOOK = ROOT / "docs" / "_static" / "external_vmec_next_holdout_runbook.json"
+DEFAULT_HOLDOUT_GAP = ROOT / "docs" / "_static" / "quasilinear_holdout_gap_report.json"
 DEFAULT_OPTIMIZER_MANIFEST = ROOT / "docs" / "_static" / "vmec_jax_qa_optimizer_comparison_manifest.json"
 DEFAULT_LADDER_STATUS = ROOT / "docs" / "_static" / "vmec_jax_qa_optimizer_ladder_resume_status.json"
 DEFAULT_OFFICE_ROOT = Path("/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK")
@@ -125,6 +126,41 @@ def _screen_expansion_candidates(
         )
     candidates.sort(key=lambda item: (-float(item.get("candidate_score") or 0.0), str(item["name"])))
     return candidates[:max_candidates]
+
+
+def _candidate_admitted_holdout(
+    selected: dict[str, Any], holdout_gap: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Return the admitted nonlinear holdout matching a selected runbook row."""
+
+    selected_slugs = {
+        _slug(value)
+        for key in ("case", "family", "geometry", "vmec_file")
+        if (value := selected.get(key))
+    }
+    selected_slugs.discard("")
+    if not selected_slugs:
+        return None
+    for row in holdout_gap.get("admitted_holdouts", []):
+        if not isinstance(row, dict):
+            continue
+        if not bool(row.get("gate_passed", False)):
+            continue
+        row_slugs = {
+            _slug(value)
+            for key in ("case", "case_label", "geometry", "nonlinear_artifact")
+            if (value := row.get(key))
+        }
+        row_slugs.discard("")
+        if any(
+            row_slug == selected_slug
+            or row_slug.startswith(selected_slug)
+            or selected_slug.startswith(row_slug)
+            for selected_slug in selected_slugs
+            for row_slug in row_slugs
+        ):
+            return row
+    return None
 
 
 def _optimizer_audit_commands(
@@ -302,6 +338,7 @@ def build_runbook_payload(
     inventory_path: Path = DEFAULT_INVENTORY,
     screen_path: Path = DEFAULT_SCREEN,
     external_runbook_path: Path = DEFAULT_EXTERNAL_RUNBOOK,
+    holdout_gap_path: Path | None = None,
     optimizer_manifest_path: Path = DEFAULT_OPTIMIZER_MANIFEST,
     ladder_status_path: Path = DEFAULT_LADDER_STATUS,
     office_root: Path = DEFAULT_OFFICE_ROOT,
@@ -314,6 +351,7 @@ def build_runbook_payload(
     inventory = _read_json(inventory_path)
     screen_rows = _screen_rows(screen_path)
     external_runbook = _read_json(external_runbook_path)
+    holdout_gap = _read_json(holdout_gap_path or (root / "docs/_static/quasilinear_holdout_gap_report.json"))
     optimizer_manifest = _read_json(optimizer_manifest_path)
     ladder_status = _read_json(ladder_status_path)
     screen_candidates = _screen_expansion_candidates(
@@ -352,6 +390,18 @@ def build_runbook_payload(
         or external_runbook.get("selected_preferred_family_audit")
         or {}
     )
+    admitted_external = _candidate_admitted_holdout(selected_external, holdout_gap)
+    if admitted_external:
+        external_status = "harvested_admitted"
+        external_next_action = (
+            "Selected external-VMEC candidate is already harvested and admitted as nonlinear "
+            "holdout evidence; use the holdout-gap report to choose the next independent "
+            "candidate rather than relaunching this case."
+        )
+        external_launch_commands: list[Any] = []
+    else:
+        external_status = "blocked_on_new_linear_screen" if not external_has_launch else "launchable"
+        external_launch_commands = external_runbook.get("launch_commands", [])
     lanes = {str(lane["lane"]): lane for lane in status.get("lanes", []) if isinstance(lane, dict)}
     domain_lane = lanes.get("Production nonlinear domain-decomposition speedup", {})
     payload = {
@@ -363,14 +413,18 @@ def build_runbook_payload(
         ),
         "status_summary": status.get("summary", {}),
         "external_vmec_holdout_campaign": {
-            "status": "blocked_on_new_linear_screen" if not external_has_launch else "launchable",
+            "status": external_status,
             "external_runbook": external_runbook_path.relative_to(root).as_posix(),
             "external_runbook_passed": bool(external_runbook.get("passed", False)),
+            "holdout_gap_report": (holdout_gap_path or (root / "docs/_static/quasilinear_holdout_gap_report.json"))
+            .relative_to(root)
+            .as_posix(),
             "min_launch_gamma": float(external_runbook.get("min_launch_gamma", MIN_LINEAR_LAUNCH_GAMMA)),
             "screen_rows": len(screen_rows),
             "inventory_equilibria": int(inventory.get("n_equilibria", 0) or 0),
             "selected_candidate": selected_external,
-            "launch_commands": external_runbook.get("launch_commands", []),
+            "admitted_holdout": admitted_external,
+            "launch_commands": external_launch_commands,
             "unscreened_candidates": screen_candidates,
             "next_action": external_next_action,
         },
@@ -467,6 +521,7 @@ def write_runbook_artifacts(payload: dict[str, Any], *, out: Path = DEFAULT_OUT)
     labels = [row["lane"].replace("_", "\n") for row in rows]
     status_to_score = {
         "launchable": 0.75,
+        "harvested_admitted": 0.85,
         "running_or_launchable": 0.72,
         "launch_contracts_generated_on_office": 0.68,
         "identity_route_extended_no_speedup_claim": 0.62,
@@ -504,6 +559,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)
     parser.add_argument("--screen", type=Path, default=DEFAULT_SCREEN)
     parser.add_argument("--external-runbook", type=Path, default=DEFAULT_EXTERNAL_RUNBOOK)
+    parser.add_argument("--holdout-gap", type=Path, default=None)
     parser.add_argument("--optimizer-manifest", type=Path, default=DEFAULT_OPTIMIZER_MANIFEST)
     parser.add_argument("--ladder-status", type=Path, default=DEFAULT_LADDER_STATUS)
     parser.add_argument("--office-root", type=Path, default=DEFAULT_OFFICE_ROOT)
@@ -518,6 +574,7 @@ def main(argv: list[str] | None = None) -> int:
         inventory_path=args.inventory,
         screen_path=args.screen,
         external_runbook_path=args.external_runbook,
+        holdout_gap_path=args.holdout_gap,
         optimizer_manifest_path=args.optimizer_manifest,
         ladder_status_path=args.ladder_status,
         office_root=args.office_root,

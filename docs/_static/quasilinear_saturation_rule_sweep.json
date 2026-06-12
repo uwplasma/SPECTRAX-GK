@@ -250,6 +250,29 @@
       "shape_tv_gate": null,
       "spectrum": "docs/_static/quasilinear_vmec_qp_diag_nfp2_m4_final_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+      "geometry": "solovev_external_vmec",
+      "nonlinear_summary": "docs/_static/external_vmec_holdouts/solovev_reference_repair_dt002_amp1em5_n48_t250/solovev_n48_t250_ensemble_gate.json",
+      "observed_heat_flux": 1.4094473959257687,
+      "observed_heat_flux_std": 0.06508713362749292,
+      "raw_estimates": {
+        "absolute_growth_mixing_length": 0.9376906651743699,
+        "linear_weight": 1.8143535895774772,
+        "positive_mixing_length": 0.9376906651743699
+      },
+      "shape_cosine": null,
+      "shape_cosine_gate": null,
+      "shape_gate": null,
+      "shape_gate_kind": null,
+      "shape_gate_notes": "no shape-gate JSON configured for this case",
+      "shape_gate_status": "missing",
+      "shape_passed": null,
+      "shape_tv": null,
+      "shape_tv_gate": null,
+      "spectrum": "docs/_static/quasilinear_vmec_solovev_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
     }
   ],
   "claim_level": "model_comparison_not_validated_transport",
@@ -365,6 +388,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+        "gate_case": "solovev_reference_repair_dt002_amp1em5_n48_t250_ensemble_gate",
+        "gate_passed": true,
+        "nonlinear_summary": "docs/_static/external_vmec_holdouts/solovev_reference_repair_dt002_amp1em5_n48_t250/solovev_n48_t250_ensemble_gate.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -388,12 +421,14 @@
       0.26104658779617773,
       0.4951151200392399,
       1.0062772984333535,
-      0.12428842679715067
+      0.12428842679715067,
+      9.186879891825637
     ],
-    "holdout_max_abs_relative_error": 2.3705331148910482,
-    "holdout_mean_abs_relative_error": 0.9799997753376606,
+    "holdout_max_abs_relative_error": 9.186879891825637,
+    "holdout_mean_abs_relative_error": 1.8006877869864581,
     "label": "training-mean null",
     "predicted_heat_flux": [
+      14.357871336142221,
       14.357871336142221,
       14.357871336142221,
       14.357871336142221,
@@ -416,8 +451,8 @@
   "promotion_gate": {
     "accepted_rules": [],
     "best_rule": "linear_weight",
-    "best_rule_holdout_mean_abs_relative_error": 2.5628824233988166,
-    "null_training_mean_holdout_mean_abs_relative_error": 0.9799997753376606,
+    "best_rule_holdout_mean_abs_relative_error": 4.418344106628153,
+    "null_training_mean_holdout_mean_abs_relative_error": 1.8006877869864581,
     "passed": false,
     "requires_beating_training_mean_null": true,
     "transport_mean_relative_error_gate": 0.35
@@ -435,11 +470,12 @@
         0.14399632420788017,
         0.8727241759691502,
         14.895984634528201,
-        0.7707127681339379
+        0.7707127681339379,
+        32.03005701315105
       ],
       "holdout_gate_passed": false,
-      "holdout_max_abs_relative_error": 14.895984634528201,
-      "holdout_mean_abs_relative_error": 4.054103070649135,
+      "holdout_max_abs_relative_error": 32.03005701315105,
+      "holdout_mean_abs_relative_error": 6.851698464899326,
       "holdout_relative_error_gate": 0.35,
       "label": "$|\\gamma|\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
@@ -453,7 +489,8 @@
         22.227858699522255,
         17.984122029307233,
         113.75920084530195,
-        3.759316052102184
+        3.759316052102184,
+        46.55412784446542
       ],
       "scale": 49.6476392199216
     },
@@ -469,11 +506,12 @@
         0.15479883386577564,
         0.9874433225644319,
         5.852565934674645,
-        0.1450846088124911
+        0.1450846088124911,
+        21.117499255692177
       ],
       "holdout_gate_passed": false,
-      "holdout_max_abs_relative_error": 7.095485447591235,
-      "holdout_mean_abs_relative_error": 2.5628824233988166,
+      "holdout_max_abs_relative_error": 21.117499255692177,
+      "holdout_mean_abs_relative_error": 4.418344106628153,
       "holdout_relative_error_gate": 0.35,
       "label": "$\\hat Q$",
       "predicted_heat_flux": [
@@ -487,7 +525,8 @@
         22.437751557737673,
         19.085791542597864,
         49.04020998957541,
-        14.016904156084081
+        14.016904156084081,
+        31.173451730325468
       ],
       "scale": 17.18157469933139
     },
@@ -503,11 +542,12 @@
         0.14476372213618077,
         0.6649648427912522,
         13.996812510228187,
-        0.7929216032201342
+        0.7929216032201342,
+        36.77220347837327
       ],
       "holdout_gate_passed": false,
-      "holdout_max_abs_relative_error": 13.996812510228187,
-      "holdout_mean_abs_relative_error": 3.1265878826989333,
+      "holdout_max_abs_relative_error": 36.77220347837327,
+      "holdout_mean_abs_relative_error": 6.491149442266367,
       "holdout_relative_error_gate": 0.35,
       "label": "$\\max(\\gamma,0)\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
@@ -521,7 +561,8 @@
         22.242769248057787,
         15.988970127845175,
         107.32429891034684,
-        3.395187489170261
+        3.395187489170261,
+        53.23793383097147
       ],
       "scale": 56.77558261825238
     }

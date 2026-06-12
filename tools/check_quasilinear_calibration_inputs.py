@@ -25,7 +25,7 @@ from spectraxgk.quasilinear_holdout_admission import (  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_GATE_GLOB = str(ROOT / "docs" / "_static" / "*.json")
+DEFAULT_GATE_GLOB = str(ROOT / "docs" / "_static" / "**" / "*.json")
 DEFAULT_JSON = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.json"
 DEFAULT_PNG = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.png"
 
@@ -126,6 +126,24 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
     """Map nonlinear artifact paths to gate metadata."""
 
     index: dict[str, dict[str, Any]] = {}
+
+    def prefer_gate(new: dict[str, Any], old: dict[str, Any] | None) -> bool:
+        if old is None:
+            return True
+        new_score = (
+            int(bool(new.get("admissible_for_calibration", False))),
+            int(bool(new.get("promotion_gate_passed", False))),
+            int(bool(new.get("claim_level_acceptable", False))),
+            int(bool(new.get("raw_gate_passed", False))),
+        )
+        old_score = (
+            int(bool(old.get("admissible_for_calibration", False))),
+            int(bool(old.get("promotion_gate_passed", False))),
+            int(bool(old.get("claim_level_acceptable", False))),
+            int(bool(old.get("raw_gate_passed", False))),
+        )
+        return new_score >= old_score
+
     for path in _expand_gate_paths(patterns):
         try:
             data = _load_json(path)
@@ -156,22 +174,26 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
                 "admission_blockers": [] if bool(passed) else ["gate_not_passed"],
             }
         )
+        gate_metadata = {
+            "artifact": _repo_relative_path(path),
+            "case": _gate_case(data, path),
+            "passed": bool(admission["admissible_for_calibration"]),
+            "raw_gate_passed": bool(admission["raw_gate_passed"]),
+            "promotion_gate_passed": bool(admission["promotion_gate_passed"]),
+            "claim_level_acceptable": bool(admission["claim_level_acceptable"]),
+            "admissible_for_calibration": bool(
+                admission["admissible_for_calibration"]
+            ),
+            "negative_evidence": bool(admission["negative_evidence"]),
+            "admission_blockers": list(admission["admission_blockers"]),
+            "kind": str(data.get("kind", "")),
+            "claim_level": str(data.get("claim_level", "")),
+        }
         for key in artifact_keys:
-            index[key] = {
-                "artifact": _repo_relative_path(path),
-                "case": _gate_case(data, path),
-                "passed": bool(admission["admissible_for_calibration"]),
-                "raw_gate_passed": bool(admission["raw_gate_passed"]),
-                "promotion_gate_passed": bool(admission["promotion_gate_passed"]),
-                "claim_level_acceptable": bool(admission["claim_level_acceptable"]),
-                "admissible_for_calibration": bool(
-                    admission["admissible_for_calibration"]
-                ),
-                "negative_evidence": bool(admission["negative_evidence"]),
-                "admission_blockers": list(admission["admission_blockers"]),
-                "kind": str(data.get("kind", "")),
-                "claim_level": str(data.get("claim_level", "")),
-            }
+            if prefer_gate(gate_metadata, index.get(key)):
+                index[key] = {
+                    **gate_metadata,
+                }
     return index
 
 

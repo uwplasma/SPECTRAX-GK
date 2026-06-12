@@ -134,6 +134,16 @@ DEFAULT_CASES = (
         / "docs/_static/qp_diag_nfp2_m4_t250_replicate_ensemble_gate.json",
         shape_gate=None,
     ),
+    SaturationCase(
+        case="solovev_reference_repair_dt002_amp1em5_n48_t250",
+        split="holdout",
+        geometry="solovev_external_vmec",
+        spectrum=ROOT
+        / "docs/_static/quasilinear_vmec_solovev_linear_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT
+        / "docs/_static/external_vmec_holdouts/solovev_reference_repair_dt002_amp1em5_n48_t250/solovev_n48_t250_ensemble_gate.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -157,6 +167,7 @@ CASE_LABELS = {
     "cth_like_external_vmec_t700_high_grid_ensemble": "CTH-like VMEC",
     "shaped_tokamak_pressure_external_vmec_t650_high_grid_window": "Shaped-pressure VMEC",
     "qp_diag_nfp2_m4_final_t250": "QP VMEC",
+    "solovev_reference_repair_dt002_amp1em5_n48_t250": "Solovev VMEC",
 }
 
 

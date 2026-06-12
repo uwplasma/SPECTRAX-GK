@@ -207,3 +207,36 @@ def test_replicate_ensemble_tool_parses_timestep_variant_with_device_suffix(
         "dt": 0.01,
         "variant": {"seed": 22, "timestep": 0.01},
     }
+
+
+def test_replicate_ensemble_tool_ignores_protocol_dt_in_case_slug(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+
+    seed_variant = mod._variant_from_path(
+        tmp_path / "solovev_reference_repair_dt002_amp1em5_n48_seed31.out.nc",
+        baseline_seed=22,
+        baseline_dt=0.02,
+    )
+    timestep_variant = mod._variant_from_path(
+        tmp_path
+        / "solovev_reference_repair_dt002_amp1em5_n48_dt0p01_gpu.out.nc",
+        baseline_seed=22,
+        baseline_dt=0.02,
+    )
+
+    assert seed_variant == {
+        "variant_axis": "seed",
+        "variant_label": "seed31",
+        "seed": 31,
+        "dt": 0.02,
+        "variant": {"seed": 31, "timestep": 0.02},
+    }
+    assert timestep_variant == {
+        "variant_axis": "timestep",
+        "variant_label": "dt0p01",
+        "seed": 22,
+        "dt": 0.01,
+        "variant": {"seed": 22, "timestep": 0.01},
+    }

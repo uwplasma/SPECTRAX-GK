@@ -1,14 +1,36 @@
 {
   "claim_scope": "actionable campaign runbook only; generated or launched commands do not promote absolute quasilinear, broad nonlinear optimization, VMEC/Boozer optimization, or production nonlinear parallel speedup claims without the strict gates",
   "external_vmec_holdout_campaign": {
+    "admitted_holdout": {
+      "absolute_flux_promoted": false,
+      "absolute_relative_error": 36.77220347837327,
+      "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+      "case_label": "Solovev Reference Repair Dt002 Amp1Em5 N48 T250",
+      "failed_gates": [],
+      "gate_case": "solovev_reference_repair_dt002_amp1em5_n48_t250_ensemble_gate",
+      "gate_passed": true,
+      "geometry": "solovev_external_vmec",
+      "holdout_mean_abs_relative_error": 6.491149442266367,
+      "holdout_mean_rel_gate": 0.35,
+      "next_best_score": null,
+      "nonlinear_artifact": "docs/_static/external_vmec_holdouts/solovev_reference_repair_dt002_amp1em5_n48_t250/solovev_n48_t250_ensemble_gate.json",
+      "observed_heat_flux": 1.4094473959257687,
+      "predicted_heat_flux": 53.23793383097147,
+      "quasilinear_artifact": "docs/_static/quasilinear_vmec_solovev_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "rank": null,
+      "reason": "admitted nonlinear holdout with passed input gate; current absolute-flux calibration remains blocked by the aggregate holdout error gate; matched passed nonlinear summary gate",
+      "section": "admitted_holdouts",
+      "source_artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+      "split": "holdout",
+      "status": "admitted_holdout"
+    },
     "external_runbook": "docs/_static/external_vmec_next_holdout_runbook.json",
     "external_runbook_passed": true,
+    "holdout_gap_report": "docs/_static/quasilinear_holdout_gap_report.json",
     "inventory_equilibria": 24,
-    "launch_commands": [
-      "python tools/write_external_vmec_holdout_configs.py --case solovev_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc --out-dir tools_out/external_vmec_holdouts/solovev_reference --ky 0.2857 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
-    ],
+    "launch_commands": [],
     "min_launch_gamma": 0.02,
-    "next_action": "Launch or harvest the selected nonlinear holdout campaign, then admit it only through grid/window convergence, replicated post-transient transport, and QL recalibration gates.",
+    "next_action": "Selected external-VMEC candidate is already harvested and admitted as nonlinear holdout evidence; use the holdout-gap report to choose the next independent candidate rather than relaunching this case.",
     "screen_rows": 19,
     "selected_candidate": {
       "best_gamma": 0.0944048057885,
@@ -25,7 +47,7 @@
       "unstable": true,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc"
     },
-    "status": "launchable",
+    "status": "harvested_admitted",
     "unscreened_candidates": [
       {
         "aspect": 2.6427407334522504,
@@ -99,7 +121,7 @@
   },
   "overall_next_actions": [
     "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
-    "Launch or harvest the selected nonlinear holdout campaign, then admit it only through grid/window convergence, replicated post-transient transport, and QL recalibration gates.",
+    "Selected external-VMEC candidate is already harvested and admitted as nonlinear holdout evidence; use the holdout-gap report to choose the next independent candidate rather than relaunching this case.",
     "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
     "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass."
   ],
@@ -109,12 +131,12 @@
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 72.0,
-    "n_blocked": 0,
+    "mean_completion_percent": 69.5,
+    "n_blocked": 1,
     "n_closed": 1,
     "n_lanes": 4,
     "n_open": 0,
-    "n_partial": 3,
+    "n_partial": 2,
     "ready_for_manuscript_drafting": false
   },
   "vmec_boozer_production_scope_artifacts": {

@@ -91,6 +91,39 @@ def test_audit_passes_when_required_point_cites_passed_gate_sidecar(
     assert point["matched_gate"]["artifact"] == gate.as_posix()
 
 
+def test_default_gate_glob_recurses_into_nested_holdout_artifacts(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "docs/_static/nested_holdouts/case/ensemble_gate.json"
+    gate.parent.mkdir(parents=True)
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "nested_replicated_ensemble",
+                "kind": "nonlinear_window_ensemble_report",
+                "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+                "passed": True,
+                "promotion_gate": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, gate.as_posix())
+    old_default = mod.DEFAULT_GATE_GLOB
+    mod.DEFAULT_GATE_GLOB = str(tmp_path / "docs/_static/**/*.json")
+    try:
+        paths = mod.write_audit([report], out_json=tmp_path / "audit.json", no_plot=True)
+    finally:
+        mod.DEFAULT_GATE_GLOB = old_default
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is True
+    assert point["matched_gate"]["artifact"].endswith("nested_holdouts/case/ensemble_gate.json")
+
+
 def test_audit_normalizes_absolute_artifact_paths_from_other_checkouts(tmp_path: Path) -> None:
     mod = _load_tool_module()
     gate = tmp_path / "gate.json"
@@ -230,6 +263,54 @@ def test_audit_accepts_nested_high_grid_admission_input_artifact(tmp_path: Path)
     assert point["matched_gate"]["case"] == "synthetic high-grid admission"
 
 
+def test_audit_prefers_external_admission_gate_over_raw_nested_ensemble(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    raw = tmp_path / "docs/_static/external_vmec_holdouts/case/ensemble_gate.json"
+    admission = tmp_path / "aa_admission.json"
+    artifact = raw.as_posix()
+    raw.parent.mkdir(parents=True)
+    raw.write_text(
+        json.dumps(
+            {
+                "case": "synthetic_external_vmec_ensemble",
+                "kind": "nonlinear_window_ensemble_report",
+                "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+                "passed": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    admission.write_text(
+        json.dumps(
+            {
+                "case": "synthetic external admission",
+                "kind": "external_vmec_replicate_admission_gate",
+                "claim_level": "passed_replicated_external_vmec_transport_holdout_under_explicit_spread_gate",
+                "inputs": {"replicate_ensemble_gate": artifact},
+                "promotion_gate": {"passed": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, artifact)
+
+    paths = mod.write_audit(
+        [report],
+        gate_patterns=[str(raw), str(admission)],
+        out_json=tmp_path / "audit.json",
+        no_plot=True,
+    )
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is True
+    assert point["matched_gate"]["kind"] == "external_vmec_replicate_admission_gate"
+    assert point["matched_gate"]["claim_level_acceptable"] is True
+
+
 def test_audit_ignores_non_required_audit_split_without_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     report = tmp_path / "report.json"
@@ -261,7 +342,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         for point in report["points"]
         if point["required"]
     ]
-    assert len(required_rows) == 19
+    assert len(required_rows) == 20
     assert all(point["matched_gate"] is not None for point in required_rows)
     matched_cases = {point["matched_gate"]["case"] for point in required_rows}
     assert matched_cases == {
@@ -276,6 +357,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "CTH-like external VMEC modified-protocol high-grid admission",
         "Shaped tokamak pressure external VMEC dt=0.04 high-grid transport holdout admission",
         "qp_diag_nfp2_m4_final_t250_n64_seed_timestep_ensemble_gate",
+        "solovev_reference_repair_dt002_amp1em5_n48_t250",
     }
     external_rows = [
         point for point in required_rows if "external_vmec" in str(point["matched_gate"]["artifact"])
@@ -287,4 +369,5 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "circular_external_vmec_t450_window",
         "cth_like_external_vmec_t700_high_grid_window",
         "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        "solovev_reference_repair_dt002_amp1em5_n48_t250",
     ]

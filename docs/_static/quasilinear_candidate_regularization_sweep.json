@@ -1,16 +1,16 @@
 {
-  "best_holdout_mean_abs_relative_error": 0.393318872188891,
-  "best_lambda": 0.0,
-  "best_mean_abs_relative_error": 0.3928471024821324,
-  "best_prediction_interval_coverage": 0.8181818181818182,
+  "best_holdout_mean_abs_relative_error": 0.7642731837107084,
+  "best_lambda": 0.5,
+  "best_mean_abs_relative_error": 0.6894007646285855,
+  "best_prediction_interval_coverage": 0.9166666666666666,
   "candidate": "spectral_envelope_ridge",
-  "case_count": 11,
+  "case_count": 12,
   "claim_level": "spectral_envelope_regularization_audit_not_runtime_flux_predictor",
   "feature_names": [
     "log_positive_ky_centroid",
     "ky_weighted_std"
   ],
-  "holdout_count": 9,
+  "holdout_count": 10,
   "interval_coverage_gate": 0.75,
   "interval_z": 1.96,
   "kind": "quasilinear_candidate_regularization_sweep",
@@ -18,8 +18,8 @@
   "observed_floor": 1e-12,
   "promotion_gate": {
     "accepted_lambdas": [],
-    "best_lambda": 0.0,
-    "best_mean_abs_relative_error": 0.3928471024821324,
+    "best_lambda": 0.5,
+    "best_mean_abs_relative_error": 0.6894007646285855,
     "blockers": [
       "best_regularization_transport_error_above_gate"
     ],
@@ -31,147 +31,147 @@
   "rows": [
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.393318872188891,
+      "holdout_mean_abs_relative_error": 0.812814164570416,
       "holdout_transport_gate_passed": false,
       "lambda": 0.0,
-      "max_abs_relative_error": 1.269071460238424,
-      "mean_abs_relative_error": 0.3928471024821324,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.432494493194787,
+      "mean_abs_relative_error": 0.7262743402319719,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.3933345877254817,
+      "holdout_mean_abs_relative_error": 0.8113882867923866,
       "holdout_transport_gate_passed": false,
       "lambda": 0.01,
-      "max_abs_relative_error": 1.2636414546946355,
-      "mean_abs_relative_error": 0.3930881812061527,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.439735698644945,
+      "mean_abs_relative_error": 0.7249717577512941,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.3933750959108786,
+      "holdout_mean_abs_relative_error": 0.8085921418402233,
       "holdout_transport_gate_passed": false,
       "lambda": 0.03,
-      "max_abs_relative_error": 1.2530049375036358,
-      "mean_abs_relative_error": 0.3935706431406489,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.454022065775948,
+      "mean_abs_relative_error": 0.7224157421582612,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.3935915887346659,
+      "holdout_mean_abs_relative_error": 0.7993499134499661,
       "holdout_transport_gate_passed": false,
       "lambda": 0.1,
-      "max_abs_relative_error": 1.2179692794214052,
-      "mean_abs_relative_error": 0.39524919057662944,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.502053474265045,
+      "mean_abs_relative_error": 0.7139516776933005,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.3940212250165114,
+      "holdout_mean_abs_relative_error": 0.7874392831372049,
       "holdout_transport_gate_passed": false,
       "lambda": 0.2,
-      "max_abs_relative_error": 1.1731387861539666,
-      "mean_abs_relative_error": 0.39757018085792345,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.565764280573591,
+      "mean_abs_relative_error": 0.7047069295016373,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.39449980210826624,
+      "holdout_mean_abs_relative_error": 0.7768078260967324,
       "holdout_transport_gate_passed": false,
       "lambda": 0.3,
-      "max_abs_relative_error": 1.133483572475085,
-      "mean_abs_relative_error": 0.39974927464926485,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.624316151099059,
+      "mean_abs_relative_error": 0.6972871490908844,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.3953830641932757,
+      "holdout_mean_abs_relative_error": 0.7642731837107084,
       "holdout_transport_gate_passed": false,
       "lambda": 0.5,
-      "max_abs_relative_error": 1.0664538812012294,
-      "mean_abs_relative_error": 0.4035893708445947,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 4.728202018029228,
+      "mean_abs_relative_error": 0.6894007646285855,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
-      "coverage_gate_passed": false,
-      "holdout_mean_abs_relative_error": 0.39601186824475687,
+      "coverage_gate_passed": true,
+      "holdout_mean_abs_relative_error": 0.7687073952908303,
       "holdout_transport_gate_passed": false,
       "lambda": 0.7,
-      "max_abs_relative_error": 1.1090562792088916,
-      "mean_abs_relative_error": 0.4067253972441324,
-      "prediction_interval_coverage": 0.7272727272727273,
+      "max_abs_relative_error": 4.8174664154933255,
+      "mean_abs_relative_error": 0.6952992317602226,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "cyclone_miller_long_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
-      "coverage_gate_passed": false,
-      "holdout_mean_abs_relative_error": 0.3963878809713338,
+      "coverage_gate_passed": true,
+      "holdout_mean_abs_relative_error": 0.7752836412535459,
       "holdout_transport_gate_passed": false,
       "lambda": 1.0,
-      "max_abs_relative_error": 1.238973730671167,
-      "mean_abs_relative_error": 0.41025548752270796,
-      "prediction_interval_coverage": 0.7272727272727273,
+      "max_abs_relative_error": 4.929892858244456,
+      "mean_abs_relative_error": 0.703559152030962,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "cyclone_miller_long_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.4102081553628663,
+      "holdout_mean_abs_relative_error": 0.7996569697632738,
       "holdout_transport_gate_passed": false,
       "lambda": 2.0,
-      "max_abs_relative_error": 1.493785980397892,
-      "mean_abs_relative_error": 0.42849466816453385,
-      "prediction_interval_coverage": 0.8181818181818182,
+      "max_abs_relative_error": 5.184797989837105,
+      "mean_abs_relative_error": 0.7301811787971301,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "cyclone_miller_long_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.48014216825329675,
+      "holdout_mean_abs_relative_error": 0.8602976663865316,
       "holdout_transport_gate_passed": false,
       "lambda": 5.0,
-      "max_abs_relative_error": 1.7209827740267436,
-      "mean_abs_relative_error": 0.4933209612348142,
-      "prediction_interval_coverage": 0.9090909090909091,
+      "max_abs_relative_error": 5.5055896281251515,
+      "mean_abs_relative_error": 0.7885833362675632,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "cyclone_miller_long_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     },
     {
       "coverage_gate_passed": true,
-      "holdout_mean_abs_relative_error": 0.5206645450284367,
+      "holdout_mean_abs_relative_error": 0.9054856873085623,
       "holdout_transport_gate_passed": false,
       "lambda": 10.0,
-      "max_abs_relative_error": 1.7572548726509303,
-      "mean_abs_relative_error": 0.5290613240417908,
-      "prediction_interval_coverage": 0.9090909090909091,
+      "max_abs_relative_error": 5.662376076074539,
+      "mean_abs_relative_error": 0.8298877722418928,
+      "prediction_interval_coverage": 0.9166666666666666,
       "promotion_eligible": true,
       "transport_gate_passed": false,
-      "worst_case": "cyclone_miller_long_window"
+      "worst_case": "solovev_reference_repair_dt002_amp1em5_n48_t250"
     }
   ],
   "transport_gate": 0.35

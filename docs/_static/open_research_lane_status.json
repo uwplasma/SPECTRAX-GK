@@ -85,7 +85,7 @@
       "status": "partial"
     },
     {
-      "claim_level": "scoped_candidate_model_selection_not_absolute_flux",
+      "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
       "key_metrics": {
         "calibration_report_passed": false,
         "circular_external_vmec_t250_converged": false,
@@ -95,7 +95,7 @@
         "cth_like_external_vmec_converged": true,
         "cth_like_external_vmec_full_grid_converged": false,
         "cth_like_external_vmec_high_grid_admitted": true,
-        "dataset_sufficiency_promotion_passed": true,
+        "dataset_sufficiency_promotion_passed": false,
         "dshape_external_vmec_t250_converged": true,
         "dshape_external_vmec_t250_replicate_mean_rel_spread": 0.14102885109482344,
         "dshape_external_vmec_t250_replicate_sem_rel": 0.05360630620607054,
@@ -107,35 +107,36 @@
           "dshape_external_vmec_t250_window",
           "updown_asym_external_vmec_t450_window",
           "circular_external_vmec_t450_window",
-          "cth_like_external_vmec_t700_high_grid_window"
+          "cth_like_external_vmec_t700_high_grid_window",
+          "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+          "qp_diag_nfp2_m4_final_t250",
+          "solovev_reference_repair_dt002_amp1em5_n48_t250"
         ],
-        "holdout_points": 7,
+        "holdout_points": 10,
         "itermodel_external_vmec_t350_converged": true,
         "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
         "matched_qa_no_ess_to_optimized_audit_passed": true,
         "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
-        "model_selection_candidate_mean_error": 0.29524327596674427,
-        "model_selection_status_passed": true,
+        "model_selection_candidate_mean_error": 0.6972871490908844,
+        "model_selection_status_passed": false,
         "production_nonlinear_optimization_guard_safe": true,
-        "production_nonlinear_optimization_promoted": true,
+        "production_nonlinear_optimization_promoted": false,
         "production_nonlinear_optimized_equilibrium_ensembles": 1,
-        "production_nonlinear_replicated_holdout_ensembles": 2,
+        "production_nonlinear_replicated_holdout_ensembles": 3,
         "qh_external_vmec_low_to_mid_grid_converged": false,
         "qh_external_vmec_mid_to_high_grid_converged": false,
         "train_points": 2,
         "updown_asym_external_vmec_t450_converged": true,
-        "uq_accepted_candidates": [
-          "spectral_envelope_ridge"
-        ],
-        "uq_candidate_promotion_passed": true,
-        "validated_inputs_passed": true,
+        "uq_accepted_candidates": [],
+        "uq_candidate_promotion_passed": false,
+        "validated_inputs_passed": false,
         "variance_reduced_nonlinear_gradient_common_pairs": 21,
         "variance_reduced_nonlinear_gradient_control_mean_passed": true,
         "variance_reduced_nonlinear_gradient_response_mean": -0.3561353531352798,
         "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.31148835872140096
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep QH excluded until its common-window and grid-refinement gates pass, and keep CTH-like scoped to high-grid admission rather than full n48/n64/n80 convergence.",
+      "next_action": "Use the admitted D-shaped, circular, ITERModel, up-down asymmetric, and high-grid CTH-like external-VMEC holdouts as negative transfer constraints while developing richer saturation models; keep QH excluded until its common-window and grid-refinement gates pass.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -158,7 +159,7 @@
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json"
       ],
-      "status": "closed"
+      "status": "open"
     },
     {
       "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
@@ -249,9 +250,9 @@
   },
   "summary": {
     "n_blocked": 0,
-    "n_closed": 2,
+    "n_closed": 1,
     "n_lanes": 5,
-    "n_open": 1,
+    "n_open": 2,
     "n_partial": 2
   }
 }

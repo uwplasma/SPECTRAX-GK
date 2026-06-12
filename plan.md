@@ -1,3 +1,27 @@
+- 2026-06-12: Harvested the Solovev repaired external-VMEC holdout and used it
+  to harden the quasilinear claim boundary. The original CPU `dt=0.01`
+  duplicate remained too slow, but the office GPU duplicate completed the
+  `n48/t250` run with `501` samples through `t=249.94`. Runtime-output,
+  readiness, and replicated seed/timestep ensemble gates pass when the Solovev
+  repair protocol is admitted under the explicit `20%` spread gate:
+  `<Q_i>=1.409`, mean-relative spread `0.1599`, combined SEM/mean `0.0462`.
+  Postprocessing exposed a real filename-parser bug: protocol labels such as
+  `repair_dt002` in the case slug were being mistaken for timestep replicate
+  suffixes. `tools/build_external_vmec_replicate_ensemble.py` now treats only
+  suffix-style `seedNN`/`dtNN` tokens as replicate variants, with regression
+  tests for GPU suffixes and protocol-`dt` case slugs. The Solovev spectrum and
+  nonlinear ensemble are now included in the 12-case QL ledger as negative
+  transfer evidence. Positive-growth mixing-length transfer worsens to
+  `6.49 > 0.35`; the best reduced `spectral_envelope_ridge` candidate has
+  leave-one-geometry-out mean relative error about `0.697`, interval coverage
+  `11/12`, and held-out screening metrics `Spearman=0.624`, pairwise order
+  `0.689`, so universal absolute-flux and promoted screening claims remain
+  blocked. Regenerated the train/holdout, saturation-rule, candidate
+  uncertainty, regularization, residual-anatomy, screening, dataset-sufficiency,
+  model-selection, holdout-gap, and stellarator-usefulness panels. The
+  nonlinear holdout expansion/audit lane is now effectively complete for this
+  tranche, while universal absolute QL remains an explicit negative result.
+
 - 2026-06-12: Hardened nonlinear sharding profiling after the local CPU
   forced-device profile exposed a JAX/XLA FFT-layout abort path. The
   multi-device CPU whole-state `pjit` route now fails closed before execution
@@ -21,9 +45,8 @@
   46 minutes without writing an output bundle, so it was stopped after a
   clean GPU duplicate was launched on office GPU 1 with the same `n48/t250`,
   `dt=0.01` protocol and `XLA_PYTHON_CLIENT_PREALLOCATE=false`. That GPU run
-  is the active Solovev holdout source; it remains unharvested until its
-  final NetCDF output appears and passes the runtime-output and replicated
-  ensemble gates.
+  became the active Solovev holdout source and is superseded by the successful
+  harvest entry above.
 
 - 2026-06-12: Harvested the first production-scope VMEC/Boozer held-out
   nonlinear transport artifact and kept broader claims fail-closed. The QH
@@ -554,8 +577,8 @@ historical logs live outside the release repository so clones stay small.
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
-| Universal absolute quasilinear-flux prediction | 60% | Strict pre-manuscript gate remains partial: train/holdout absolute report fails, holdout mean relative error is `3.13 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists |
-| Nonlinear holdout expansion/audits | 96% | Eight admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is closed as negative high-grid evidence through corrected `t700`, and the next independent Solovev nonlinear holdout is staged on office but not admitted |
+| Universal absolute quasilinear-flux prediction | 50% | Strict pre-manuscript gate is blocked: train/holdout absolute report fails, holdout mean relative error is `6.49 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists |
+| Nonlinear holdout expansion/audits | 98% | Ten admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is closed as negative high-grid evidence through corrected `t700`, and Solovev now passes a repaired `n48/t250` seed/timestep ensemble under the explicit `20%` spread gate as negative absolute-QL evidence |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |

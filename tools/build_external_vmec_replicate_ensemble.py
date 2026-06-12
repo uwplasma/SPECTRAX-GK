@@ -78,20 +78,41 @@ def _variant_from_path(
     path: Path, *, baseline_seed: int, baseline_dt: float
 ) -> dict[str, Any]:
     stem = _base_stem(path)
-    seed_match = re.search(r"(?:^|_)seed([0-9]+)(?:_|$)", stem)
-    dt_match = re.search(r"(?:^|_)dt([0-9]+(?:p[0-9]+)?)(?:_|$)", stem)
-    if seed_match and dt_match:
-        seed = int(seed_match.group(1))
-        dt = _float_from_label(dt_match.group(1))
+    tokens = stem.split("_")
+    seed_tokens = [
+        (index, match)
+        for index, token in enumerate(tokens)
+        if (match := re.fullmatch(r"seed([0-9]+)", token)) is not None
+    ]
+    dt_tokens = [
+        (index, match)
+        for index, token in enumerate(tokens)
+        if (match := re.fullmatch(r"dt([0-9]+(?:p[0-9]+)?)", token)) is not None
+    ]
+
+    # Case slugs may contain protocol labels such as ``repair_dt002``.  Treat
+    # only suffix-style ``seedNN``/``dtNN`` tokens as replicate variants.
+    seed_item = seed_tokens[-1] if seed_tokens else None
+    dt_item = None
+    if seed_item is not None:
+        seed_index = seed_item[0]
+        dt_after_seed = [item for item in dt_tokens if item[0] > seed_index]
+        dt_item = dt_after_seed[-1] if dt_after_seed else None
+    elif dt_tokens:
+        dt_item = dt_tokens[-1]
+
+    if seed_item is not None and dt_item is not None:
+        seed = int(seed_item[1].group(1))
+        dt = _float_from_label(dt_item[1].group(1))
         return {
             "variant_axis": "seed_timestep",
-            "variant_label": f"seed{seed}_dt{dt_match.group(1)}",
+            "variant_label": f"seed{seed}_dt{dt_item[1].group(1)}",
             "seed": seed,
             "dt": dt,
             "variant": {"seed": seed, "timestep": dt},
         }
-    if seed_match:
-        seed = int(seed_match.group(1))
+    if seed_item is not None:
+        seed = int(seed_item[1].group(1))
         return {
             "variant_axis": "seed",
             "variant_label": f"seed{seed}",
@@ -99,11 +120,11 @@ def _variant_from_path(
             "dt": float(baseline_dt),
             "variant": {"seed": seed, "timestep": float(baseline_dt)},
         }
-    if dt_match:
-        dt = _float_from_label(dt_match.group(1))
+    if dt_item is not None:
+        dt = _float_from_label(dt_item[1].group(1))
         return {
             "variant_axis": "timestep",
-            "variant_label": f"dt{dt_match.group(1)}",
+            "variant_label": f"dt{dt_item[1].group(1)}",
             "seed": int(baseline_seed),
             "dt": dt,
             "variant": {"seed": int(baseline_seed), "timestep": dt},

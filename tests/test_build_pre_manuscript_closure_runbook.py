@@ -129,6 +129,56 @@ def test_pre_manuscript_runbook_reports_launchable_external_holdout(tmp_path: Pa
     assert payload["overall_next_actions"][1] == holdout["next_action"]
 
 
+def test_pre_manuscript_runbook_marks_selected_external_holdout_harvested(
+    tmp_path: Path,
+) -> None:
+    inventory = _write_json(tmp_path, "inventory.json", {"n_equilibria": 1, "rows": []})
+    screen = _write_screen(tmp_path)
+    external = _write_json(
+        tmp_path,
+        "external.json",
+        {
+            "passed": True,
+            "launch_commands": ["python tools/write_external_vmec_holdout_configs.py --case solovev"],
+            "selected_new_family_candidate": {"case": "solovev_reference_nc", "best_gamma": 0.094},
+        },
+    )
+    holdout_gap = _write_json(
+        tmp_path,
+        "holdout_gap.json",
+        {
+            "admitted_holdouts": [
+                {
+                    "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+                    "geometry": "solovev_external_vmec",
+                    "gate_passed": True,
+                    "status": "admitted_holdout",
+                }
+            ]
+        },
+    )
+    optimizer = _write_json(tmp_path, "optimizer.json", {"entries": []})
+    ladder = _write_json(tmp_path, "ladder.json", {"commands": []})
+
+    payload = mod.build_runbook_payload(
+        root=tmp_path,
+        inventory_path=inventory,
+        screen_path=screen,
+        external_runbook_path=external,
+        holdout_gap_path=holdout_gap,
+        optimizer_manifest_path=optimizer,
+        ladder_status_path=ladder,
+        office_root=Path("/office/repo"),
+        audit_root=Path("tools_out/audits"),
+    )
+
+    holdout = payload["external_vmec_holdout_campaign"]
+    assert holdout["status"] == "harvested_admitted"
+    assert holdout["admitted_holdout"]["case"].startswith("solovev_reference_repair")
+    assert holdout["launch_commands"] == []
+    assert "already harvested" in holdout["next_action"]
+
+
 def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
     payload = {
         "external_vmec_holdout_campaign": {

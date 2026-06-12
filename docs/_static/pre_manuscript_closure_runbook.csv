@@ -1,5 +1,5 @@
 lane,status,next_action
-external_vmec_holdout_campaign,launchable,"Launch or harvest the selected nonlinear holdout campaign, then admit it only through grid/window convergence, replicated post-transient transport, and QL recalibration gates."
+external_vmec_holdout_campaign,harvested_admitted,Selected external-VMEC candidate is already harvested and admitted as nonlinear holdout evidence; use the holdout-gap report to choose the next independent candidate rather than relaunching this case.
 vmec_boozer_production_scope_artifacts,launch_contracts_generated_on_office,harvest launched office t=1500 audits and build ensemble gates
 nonlinear_optimization_audit_extension,running_or_launchable,"each candidate must pass finite-output, long-window sample count, running-mean/block-SEM, seed/timestep ensemble, and matched baseline-vs-optimized transport gates"
 nonlinear_domain_decomposition,identity_route_extended_no_speedup_claim,"Replace the local logical tile route with real device communication/distributed FFT routing, then require serial-vs-decomposed transport-window identity and CPU/GPU speedup >= 1.5."
