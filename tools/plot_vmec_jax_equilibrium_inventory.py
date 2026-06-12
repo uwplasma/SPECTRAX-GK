@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from itertools import cycle
 import json
 import math
 import os
@@ -237,13 +238,21 @@ def write_inventory_figure(report: dict[str, Any], *, out: str | Path = DEFAULT_
         raise ValueError("inventory has no equilibria to plot")
     set_plot_style()
     families = sorted({str(row["family"]) for row in rows})
+    palette = (
+        "#0f4c81",
+        "#2a9d8f",
+        "#b45309",
+        "#6b7280",
+        "#7c3aed",
+        "#c2410c",
+        "#0e7490",
+        "#7f1d1d",
+        "#3f6212",
+        "#4c1d95",
+    )
     color_map = {
         family: color
-        for family, color in zip(
-            families,
-            ["#0f4c81", "#2a9d8f", "#b45309", "#6b7280", "#7c3aed", "#c2410c"],
-            strict=False,
-        )
+        for family, color in zip(families, cycle(palette), strict=False)
     }
     aspect = np.asarray([np.nan if row["aspect"] in (None, 0.0) else row["aspect"] for row in rows], dtype=float)
     iota_edge = np.asarray([np.nan if row["iota_edge"] is None else abs(float(row["iota_edge"])) for row in rows])

@@ -12,7 +12,7 @@
   "allow_modified_protocol_families": [],
   "claim_level": "nonlinear_holdout_launch_plan_not_transport_validation",
   "csv": "docs/_static/external_vmec_next_holdout_runbook.csv",
-  "dt": 0.04,
+  "dt": 0.05,
   "failed_external_families": [
     "circular_external_vmec",
     "cth_like_external_vmec",
@@ -40,6 +40,7 @@
   },
   "notes": "Run the selected configurations on the large-run host, build a convergence gate with tools/plot_external_vmec_nonlinear_convergence_gate.py, and admit the resulting transport window to quasilinear calibration only if the gate passes and the split is holdout.",
   "passed": false,
+  "pdf": "docs/_static/external_vmec_next_holdout_runbook.pdf",
   "png": "docs/_static/external_vmec_next_holdout_runbook.png",
   "preferred_family": "itermodel_external_vmec",
   "ranked_candidates": [
@@ -132,76 +133,16 @@
       "status": "recent_family_failed_external_gate",
       "unstable": true,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
-    },
-    {
-      "best_gamma": 0.022949,
-      "best_ky": 0.4762,
-      "best_omega": 0.045872,
-      "case": "nfp4_QH_warm_start_nc",
-      "family": "qh_external_vmec",
-      "log": "tools_out/candidate_screen_qh_warm_start/nfp4_QH_warm_start_linear_scan.log",
-      "priority": 6.0,
-      "rank": 7,
-      "reason": "this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol",
-      "returncode": 0,
-      "status": "recent_family_failed_external_gate",
-      "unstable": true,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
-    },
-    {
-      "best_gamma": 0.003835,
-      "best_ky": 0.1429,
-      "best_omega": -0.089976,
-      "case": "QI_stel_seed_3127_nc",
-      "family": "qi_external_vmec",
-      "log": "tools_out/candidate_screen_qi_seed/qi_seed_lowky_scan.log",
-      "priority": 7.0,
-      "rank": 8,
-      "reason": "positive growth is below the nonlinear-launch threshold; refine the linear branch before launching a transport holdout",
-      "returncode": 0,
-      "status": "screen_marginal_needs_linear_refinement",
-      "unstable": true,
-      "vmec_file": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_QI_stel_seed_3127.nc"
-    },
-    {
-      "best_gamma": -0.001248,
-      "best_ky": 0.1905,
-      "best_omega": -0.143501,
-      "case": "LandremanSengupta2019_section5_4_B2_A80_reference_nc",
-      "family": "external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanSengupta2019_section5_4_B2_A80_reference_nc.log",
-      "priority": 9.0,
-      "rank": 9,
-      "reason": "screen row did not finish with positive growth",
-      "returncode": 0,
-      "status": "screen_rejected_stable_or_failed",
-      "unstable": false,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanSengupta2019_section5.4_B2_A80_reference.nc"
-    },
-    {
-      "best_gamma": -0.012907,
-      "best_ky": 0.4762,
-      "best_omega": -0.090396,
-      "case": "LandremanPaul2021_QH_reactorScale_lowres_reference_nc",
-      "family": "qh_external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanPaul2021_QH_reactorScale_lowres_reference_nc.log",
-      "priority": 9.0,
-      "rank": 10,
-      "reason": "screen row did not finish with positive growth",
-      "returncode": 0,
-      "status": "screen_rejected_stable_or_failed",
-      "unstable": false,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
     }
   ],
   "recommended_grids": [
-    "n64:64:64:40:40",
-    "n80:80:80:48:48"
+    "n48:48:48:32:32",
+    "n64:64:64:40:40"
   ],
   "recommended_horizons": [
     250.0,
-    450.0,
-    700.0
+    350.0,
+    450.0
   ],
   "represented_families": [
     "circular_external_vmec",

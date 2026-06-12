@@ -1,0 +1,209 @@
+{
+  "claim_scope": "actionable campaign runbook only; generated or launched commands do not promote absolute quasilinear, broad nonlinear optimization, VMEC/Boozer optimization, or production nonlinear parallel speedup claims without the strict gates",
+  "external_vmec_holdout_campaign": {
+    "external_runbook": "docs/_static/external_vmec_next_holdout_runbook.json",
+    "external_runbook_passed": false,
+    "inventory_equilibria": 24,
+    "min_launch_gamma": 0.02,
+    "next_action": "Run a linear ky screen on the listed unscreened VMEC candidates; only candidates with gamma >= 0.02 and valid flux-tube metrics may enter the nonlinear holdout runbook.",
+    "screen_rows": 15,
+    "status": "blocked_on_new_linear_screen",
+    "unscreened_candidates": [
+      {
+        "aspect": 9.953585703744592,
+        "candidate_score": 5.0,
+        "family": "stellarator",
+        "iota_edge": -0.32044786860302343,
+        "name": "wout_LandremanSenguptaPlunk_section5p3_low_res_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_LandremanSenguptaPlunk_section5p3_low_res_reference.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
+      },
+      {
+        "aspect": 2.6427407334522504,
+        "candidate_score": 4.75,
+        "family": "axisymmetric",
+        "iota_edge": 0.7,
+        "name": "wout_shaped_tokamak_pressure.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_shaped_tokamak_pressure.nc",
+        "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
+      },
+      {
+        "aspect": 10.100000000000003,
+        "candidate_score": 4.0,
+        "family": "axisymmetric",
+        "iota_edge": 0.2499999999999999,
+        "name": "wout_up_down_asymmetric_tokamak_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_up_down_asymmetric_tokamak_reference.nc",
+        "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
+      },
+      {
+        "aspect": 4.384423044481727,
+        "candidate_score": 3.5,
+        "family": "finite-beta",
+        "iota_edge": -0.13623075572843985,
+        "name": "wout_basic_non_stellsym_pressure_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_basic_non_stellsym_pressure_reference.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
+      },
+      {
+        "aspect": 3.11799834373432,
+        "candidate_score": 3.5,
+        "family": "axisymmetric",
+        "iota_edge": 1.0,
+        "name": "wout_solovev_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_solovev_reference.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
+      },
+      {
+        "aspect": 2.9277749505152215,
+        "candidate_score": 3.25,
+        "family": "axisymmetric",
+        "iota_edge": 1e-06,
+        "name": "wout_purely_toroidal_field.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_purely_toroidal_field.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
+      },
+      {
+        "aspect": 6.000007793589189,
+        "candidate_score": 3.0,
+        "family": "quasi-axisymmetric",
+        "iota_edge": 0.4157911300312282,
+        "name": "wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_LandremanPaul2021_QA_reactorScale_lowres_reference.nc",
+        "priority_note": "independent VMEC candidate requiring linear screen before nonlinear launch"
+      },
+      {
+        "aspect": 99.99999999999912,
+        "candidate_score": 3.0,
+        "family": "axisymmetric",
+        "iota_edge": 0.24999999999999994,
+        "name": "wout_circular_tokamak_aspect_100_reference.nc",
+        "next_required_gate": "linear_ky_screen_with_gamma_ge_0p02_before_nonlinear_holdout_launch",
+        "path": "wout_circular_tokamak_aspect_100_reference.nc",
+        "priority_note": "axisymmetric reserve candidate; use only if stellarator candidates fail screen"
+      }
+    ]
+  },
+  "kind": "pre_manuscript_closure_runbook",
+  "nonlinear_domain_decomposition": {
+    "artifact": "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+    "completion_percent": 55.0,
+    "new_gate": "logical_sharded_nonlinear_spectral_integrator_identity",
+    "next_action": "Replace the local logical tile route with real device communication/distributed FFT routing, then require serial-vs-decomposed transport-window identity and CPU/GPU speedup >= 1.5.",
+    "status": "identity_route_extended_no_speedup_claim"
+  },
+  "nonlinear_optimization_audit_extension": {
+    "acceptance": "each candidate must pass finite-output, long-window sample count, running-mean/block-SEM, seed/timestep ensemble, and matched baseline-vs-optimized transport gates",
+    "candidate_count": 3,
+    "required_count": 3,
+    "status": "running_or_launchable",
+    "window": [
+      1100.0,
+      1500.0
+    ]
+  },
+  "overall_next_actions": [
+    "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
+    "Run linear screens for unscreened VMEC inventory candidates before any new absolute-QL nonlinear holdout launch.",
+    "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
+    "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass."
+  ],
+  "status_summary": {
+    "blocking_lanes": [
+      "Universal absolute quasilinear heat-flux prediction",
+      "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
+      "Production nonlinear domain-decomposition speedup",
+      "VMEC/Boozer holdout optimization"
+    ],
+    "mean_completion_percent": 61.8,
+    "n_blocked": 1,
+    "n_closed": 0,
+    "n_lanes": 4,
+    "n_open": 0,
+    "n_partial": 3,
+    "ready_for_manuscript_drafting": false
+  },
+  "vmec_boozer_production_scope_artifacts": {
+    "audit_commands": [
+      {
+        "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
+        "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/premanuscript_growth_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "manifest": "tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/run_manifest.json",
+        "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
+        "optimizer_case": "growth_scalar_trust_from_strict_baseline",
+        "rank": 1,
+        "seed_launch_commands": [
+          "CUDA_VISIBLE_DEVICES=0 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/premanuscript_growth_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_seed32.toml --steps 30000 --no-progress",
+          "CUDA_VISIBLE_DEVICES=1 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_scalar_trust_from_strict_baseline/premanuscript_growth_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_seed33.toml --steps 30000 --no-progress"
+        ],
+        "window": [
+          1100.0,
+          1500.0
+        ],
+        "wout": "tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_scalar_trust_from_strict_baseline/wout_final_rerun.nc"
+      },
+      {
+        "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
+        "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/premanuscript_growth_lbfgs_adjoint_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc --case premanuscript_growth_lbfgs_adjoint_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "manifest": "tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/run_manifest.json",
+        "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
+        "optimizer_case": "growth_lbfgs_adjoint_from_strict_baseline",
+        "rank": 2,
+        "seed_launch_commands": [
+          "CUDA_VISIBLE_DEVICES=0 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/premanuscript_growth_lbfgs_adjoint_from_strict_baseline_nonlinear_t1500_n64_seed32.toml --steps 30000 --no-progress",
+          "CUDA_VISIBLE_DEVICES=1 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/growth_lbfgs_adjoint_from_strict_baseline/premanuscript_growth_lbfgs_adjoint_from_strict_baseline_nonlinear_t1500_n64_seed33.toml --steps 30000 --no-progress"
+        ],
+        "window": [
+          1100.0,
+          1500.0
+        ],
+        "wout": "tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/growth_lbfgs_adjoint_from_strict_baseline/wout_final_rerun.nc"
+      },
+      {
+        "claim_level": "launch_contract_or_running_audit_not_transport_promotion",
+        "dt_variant_followup_command": "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/premanuscript_quasilinear_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_dt0p04.toml --steps 37500 --no-progress",
+        "generate_configs_command": "python3 tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc --case premanuscript_quasilinear_scalar_trust_from_strict_baseline --out-dir tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline --horizons 700,1100,1500 --grid n64:64:64:40:40 --window-tmin 1100 --window-tmax 1500 --dt-variant 0.04 --seed-variant 32 --seed-variant 33",
+        "manifest": "tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/run_manifest.json",
+        "office_root": "/home/rjorge/spectrax_optimizer_ladder_20260609/SPECTRAX-GK",
+        "optimizer_case": "quasilinear_scalar_trust_from_strict_baseline",
+        "rank": 3,
+        "seed_launch_commands": [
+          "CUDA_VISIBLE_DEVICES=0 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/premanuscript_quasilinear_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_seed32.toml --steps 30000 --no-progress",
+          "CUDA_VISIBLE_DEVICES=1 python3 -m spectraxgk.cli run-runtime-nonlinear --config tools_out/pre_manuscript_nonlinear_audits/quasilinear_scalar_trust_from_strict_baseline/premanuscript_quasilinear_scalar_trust_from_strict_baseline_nonlinear_t1500_n64_seed33.toml --steps 30000 --no-progress"
+        ],
+        "window": [
+          1100.0,
+          1500.0
+        ],
+        "wout": "tools_out/vmec_jax_qa_optimizer_ladder_20260609/runs/quasilinear_scalar_trust_from_strict_baseline/wout_final_rerun.nc"
+      }
+    ],
+    "ladder_commands": 14,
+    "ladder_status": "docs/_static/vmec_jax_qa_optimizer_ladder_resume_status.json",
+    "office_seed_queue": {
+      "dt_variant_policy": "launch dt=0.04 variants after seed outputs are finite and logs show no NaNs",
+      "launched": true,
+      "pids": [
+        3402448,
+        3402449
+      ],
+      "queues": [
+        "GPU0 seed32: growth_scalar_trust -> growth_lbfgs_adjoint -> quasilinear_scalar_trust",
+        "GPU1 seed33: growth_scalar_trust -> growth_lbfgs_adjoint -> quasilinear_scalar_trust"
+      ]
+    },
+    "optimizer_manifest": "docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json",
+    "optimizer_manifest_entries": 19,
+    "purpose": "three matched long-window optimized-equilibrium nonlinear audits for broad VMEC/Boozer and nonlinear turbulent-flux optimization evidence",
+    "status": "launch_contracts_generated_on_office"
+  }
+}

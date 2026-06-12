@@ -1669,6 +1669,7 @@ fast_tests = [
   "tests/test_autodiff_twomode_demo.py",
   "tests/test_build_manuscript_readiness_status.py",
   "tests/test_build_pre_manuscript_closure_status.py",
+  "tests/test_build_pre_manuscript_closure_runbook.py",
   "tests/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
@@ -1678,6 +1679,8 @@ artifact_paths = [
   "docs/_static/manuscript_readiness_status.png",
   "docs/_static/pre_manuscript_closure_status.json",
   "docs/_static/pre_manuscript_closure_status.png",
+  "docs/_static/pre_manuscript_closure_runbook.json",
+  "docs/_static/pre_manuscript_closure_runbook.png",
   "docs/_static/gx_publication_panel.png",
 ]
 next_tests = [

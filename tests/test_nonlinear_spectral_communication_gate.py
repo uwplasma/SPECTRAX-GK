@@ -5,10 +5,13 @@ import pytest
 
 from spectraxgk.nonlinear_parallel import (
     NonlinearSpectralCommunicationReport,
+    NonlinearSpectralIntegratorIdentityReport,
     NonlinearSpectralRHSIdentityReport,
     deterministic_nonlinear_spectral_state,
+    logical_decomposed_nonlinear_spectral_rhs,
     nonlinear_spectral_communication_identity_gate,
     nonlinear_spectral_communication_identity_report,
+    nonlinear_spectral_integrator_identity_gate,
     nonlinear_spectral_rhs_identity_gate,
     nonlinear_spectral_rhs_identity_report,
 )
@@ -138,6 +141,55 @@ def test_nonlinear_spectral_rhs_identity_gate_reconstructs_ordered_logical_tiles
     assert report.to_dict()["tile_bounds"] == report.tile_bounds
 
 
+def test_logical_decomposed_nonlinear_spectral_rhs_returns_gated_rhs() -> None:
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    rhs, report = logical_decomposed_nonlinear_spectral_rhs(
+        state,
+        y_chunks=(2, 1, 3),
+        x_chunks=(1, 3),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralRHSIdentityReport)
+    assert rhs.shape == state.shape
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.rhs_max_abs_error <= report.atol
+    assert report.rhs_max_rel_error <= report.rtol
+
+
+def test_nonlinear_spectral_integrator_identity_gate_closes_multistep_route() -> None:
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_spectral_integrator_identity_gate(
+        state,
+        y_chunks=(2, 1, 3),
+        x_chunks=(1, 3),
+        steps=3,
+        dt=0.0025,
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralIntegratorIdentityReport)
+    assert report.state_shape == (2, 3, 6, 4, 2)
+    assert report.y_offsets == (0, 2, 3)
+    assert report.x_offsets == (0, 1)
+    assert report.steps == 3
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.final_state_max_rel_error <= report.rtol
+    assert report.free_energy_trace_max_abs_error <= report.atol
+    assert report.field_energy_trace_max_abs_error <= report.atol
+    assert report.flux_proxy_trace_max_abs_error <= report.atol
+    assert len(report.serial_free_energy_trace) == report.steps + 1
+    assert "no production distributed FFT routing or speedup claim" in report.claim_scope
+    assert report.to_dict()["identity_passed"] is True
+
+
 def test_nonlinear_spectral_rhs_report_fails_closed_on_rhs_mismatch() -> None:
     reference = jnp.ones((2, 3, 6, 4, 2), dtype=jnp.complex64)
     field = jnp.ones((6, 4, 2), dtype=jnp.complex64)
@@ -186,3 +238,5 @@ def test_nonlinear_spectral_state_and_chunk_validation_reject_invalid_inputs() -
         nonlinear_spectral_communication_identity_gate(state, y_chunks=(3, 3), x_chunks=(4, 0))
     with pytest.raises(ValueError, match="y_chunks must sum"):
         nonlinear_spectral_rhs_identity_gate(state, y_chunks=(2, 2), x_chunks=(2, 2))
+    with pytest.raises(ValueError, match="steps must be at least one"):
+        nonlinear_spectral_integrator_identity_gate(state, y_chunks=(3, 3), x_chunks=(2, 2), steps=0)

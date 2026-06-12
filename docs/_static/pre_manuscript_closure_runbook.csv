@@ -1,0 +1,5 @@
+lane,status,next_action
+external_vmec_holdout_campaign,blocked_on_new_linear_screen,Run a linear ky screen on the listed unscreened VMEC candidates; only candidates with gamma >= 0.02 and valid flux-tube metrics may enter the nonlinear holdout runbook.
+vmec_boozer_production_scope_artifacts,launch_contracts_generated_on_office,harvest launched office t=1500 audits and build ensemble gates
+nonlinear_optimization_audit_extension,running_or_launchable,"each candidate must pass finite-output, long-window sample count, running-mean/block-SEM, seed/timestep ensemble, and matched baseline-vs-optimized transport gates"
+nonlinear_domain_decomposition,identity_route_extended_no_speedup_claim,"Replace the local logical tile route with real device communication/distributed FFT routing, then require serial-vs-decomposed transport-window identity and CPU/GPU speedup >= 1.5."

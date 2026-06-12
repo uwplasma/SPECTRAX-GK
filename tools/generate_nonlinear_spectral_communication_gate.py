@@ -40,67 +40,155 @@ def build_nonlinear_spectral_communication_gate(
     shape: tuple[int, int, int, int, int],
     y_chunks: tuple[int, ...],
     x_chunks: tuple[int, ...],
+    steps: int,
+    dt: float,
     atol: float,
     rtol: float,
 ) -> dict[str, object]:
-    """Run the deterministic split/reassemble spectral communication gate."""
+    """Run deterministic spectral communication, RHS, and integrator gates."""
 
     from spectraxgk.nonlinear_parallel import (
         deterministic_nonlinear_spectral_state,
         nonlinear_spectral_communication_identity_gate,
+        nonlinear_spectral_integrator_identity_gate,
+        nonlinear_spectral_rhs_identity_gate,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
-    report = nonlinear_spectral_communication_identity_gate(
+    communication_report = nonlinear_spectral_communication_identity_gate(
         state,
         y_chunks=y_chunks,
         x_chunks=x_chunks,
         atol=atol,
         rtol=rtol,
     )
+    rhs_report = nonlinear_spectral_rhs_identity_gate(
+        state,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+        atol=atol,
+        rtol=rtol,
+    )
+    integrator_report = nonlinear_spectral_integrator_identity_gate(
+        state,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+        steps=steps,
+        dt=dt,
+        atol=atol,
+        rtol=rtol,
+    )
     error_rows = [
         {
             "operator": "fft_forward_inverse",
-            "max_abs_error": report.fft_max_abs_error,
-            "max_rel_error": report.fft_max_rel_error,
+            "stage": "communication",
+            "max_abs_error": communication_report.fft_max_abs_error,
+            "max_rel_error": communication_report.fft_max_rel_error,
             "identity_passed": bool(
-                report.fft_max_abs_error <= report.atol
-                and report.fft_max_rel_error <= report.rtol
+                communication_report.fft_max_abs_error <= communication_report.atol
+                and communication_report.fft_max_rel_error <= communication_report.rtol
             ),
         },
         {
             "operator": "nonlinear_bracket",
-            "max_abs_error": report.bracket_max_abs_error,
-            "max_rel_error": report.bracket_max_rel_error,
+            "stage": "communication",
+            "max_abs_error": communication_report.bracket_max_abs_error,
+            "max_rel_error": communication_report.bracket_max_rel_error,
             "identity_passed": bool(
-                report.bracket_max_abs_error <= report.atol
-                and report.bracket_max_rel_error <= report.rtol
+                communication_report.bracket_max_abs_error <= communication_report.atol
+                and communication_report.bracket_max_rel_error <= communication_report.rtol
             ),
         },
         {
             "operator": "spectral_field_solve_layout",
-            "max_abs_error": report.field_max_abs_error,
-            "max_rel_error": report.field_max_rel_error,
+            "stage": "communication",
+            "max_abs_error": communication_report.field_max_abs_error,
+            "max_rel_error": communication_report.field_max_rel_error,
             "identity_passed": bool(
-                report.field_max_abs_error <= report.atol
-                and report.field_max_rel_error <= report.rtol
+                communication_report.field_max_abs_error <= communication_report.atol
+                and communication_report.field_max_rel_error <= communication_report.rtol
+            ),
+        },
+        {
+            "operator": "logical_sharded_rhs",
+            "stage": "rhs",
+            "max_abs_error": rhs_report.rhs_max_abs_error,
+            "max_rel_error": rhs_report.rhs_max_rel_error,
+            "identity_passed": bool(
+                rhs_report.rhs_max_abs_error <= rhs_report.atol
+                and rhs_report.rhs_max_rel_error <= rhs_report.rtol
+            ),
+        },
+        {
+            "operator": "logical_integrator_final_state",
+            "stage": "integrator",
+            "max_abs_error": integrator_report.final_state_max_abs_error,
+            "max_rel_error": integrator_report.final_state_max_rel_error,
+            "identity_passed": bool(
+                integrator_report.final_state_max_abs_error <= integrator_report.atol
+                and integrator_report.final_state_max_rel_error <= integrator_report.rtol
+            ),
+        },
+        {
+            "operator": "logical_integrator_flux_proxy_trace",
+            "stage": "integrator",
+            "max_abs_error": integrator_report.flux_proxy_trace_max_abs_error,
+            "max_rel_error": integrator_report.flux_proxy_trace_max_rel_error,
+            "identity_passed": bool(
+                integrator_report.flux_proxy_trace_max_abs_error <= integrator_report.atol
+                and integrator_report.flux_proxy_trace_max_rel_error <= integrator_report.rtol
             ),
         },
     ]
+    combined_gate = {
+        "identity_passed": bool(
+            communication_report.identity_passed
+            and rhs_report.identity_passed
+            and integrator_report.identity_passed
+        ),
+        "communication_identity_passed": bool(communication_report.identity_passed),
+        "rhs_identity_passed": bool(rhs_report.identity_passed),
+        "integrator_identity_passed": bool(integrator_report.identity_passed),
+        "decomposed_path_enabled": bool(
+            communication_report.decomposed_path_enabled
+            and rhs_report.decomposed_path_enabled
+            and integrator_report.decomposed_path_enabled
+        ),
+        "atol": float(atol),
+        "rtol": float(rtol),
+        "steps": int(steps),
+        "dt": float(dt),
+        "claim_scope": (
+            "diagnostic nonlinear spectral communication, RHS, and fixed-step "
+            "integrator identity gate; no production distributed FFT routing or "
+            "speedup claim"
+        ),
+        "blocked_reasons": sorted(
+            {
+                *communication_report.blocked_reasons,
+                *rhs_report.blocked_reasons,
+                *integrator_report.blocked_reasons,
+            }
+        ),
+    }
     return _json_clean(
         {
-            "case": "Nonlinear spectral communication identity gate",
+            "case": "Nonlinear spectral decomposition identity gate",
             "source": "spectraxgk.nonlinear_parallel nonlinear-spectral communication utilities",
-            "claim_scope": report.claim_scope,
+            "claim_scope": combined_gate["claim_scope"],
             "kind": "nonlinear_spectral_communication_identity_gate",
             "communication_decomposition": {
-                "y_chunks": report.y_chunks,
-                "y_offsets": report.y_offsets,
-                "x_chunks": report.x_chunks,
-                "x_offsets": report.x_offsets,
-                "blocked_reasons": report.blocked_reasons,
+                "y_chunks": communication_report.y_chunks,
+                "y_offsets": communication_report.y_offsets,
+                "x_chunks": communication_report.x_chunks,
+                "x_offsets": communication_report.x_offsets,
+                "tile_bounds": rhs_report.tile_bounds,
+                "blocked_reasons": combined_gate["blocked_reasons"],
             },
-            "gate": report.to_dict(),
+            "gate": combined_gate,
+            "communication_gate": communication_report.to_dict(),
+            "rhs_gate": rhs_report.to_dict(),
+            "integrator_gate": integrator_report.to_dict(),
             "rows": error_rows,
         }
     )
@@ -136,7 +224,7 @@ def write_artifacts(summary: dict[str, object], out_json: Path, out_png: Path) -
     axes[0].set_yscale("log")
     axes[0].set_xticks(x, operators)
     axes[0].set_ylabel("max absolute error")
-    axes[0].set_title("Split/reassemble identity")
+    axes[0].set_title("Communication, RHS, integrator identity")
     axes[0].legend(frameon=False, fontsize=8)
 
     axes[1].bar(x, np.maximum(rel_errors, 1.0e-16), color="#b65f23")
@@ -144,12 +232,12 @@ def write_artifacts(summary: dict[str, object], out_json: Path, out_png: Path) -
     axes[1].set_yscale("log")
     axes[1].set_xticks(x, operators)
     axes[1].set_ylabel("max relative error")
-    axes[1].set_title("Communication gate passed")
+    axes[1].set_title("All logical routes gated")
     axes[1].legend(frameon=False, fontsize=8)
 
     for ax in axes:
         ax.grid(True, alpha=0.25, axis="y")
-    fig.suptitle("Nonlinear spectral communication identity gate", fontsize=12)
+    fig.suptitle("Nonlinear spectral decomposition identity gate", fontsize=12)
     fig.savefig(out_png, dpi=220)
     plt.close(fig)
 
@@ -169,6 +257,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--nz", type=int, default=2)
     parser.add_argument("--y-chunks", type=_parse_chunks, default=(2, 2, 2))
     parser.add_argument("--x-chunks", type=_parse_chunks, default=(2, 2))
+    parser.add_argument("--steps", type=int, default=4)
+    parser.add_argument("--dt", type=float, default=0.005)
     parser.add_argument("--atol", type=float, default=5.0e-6)
     parser.add_argument("--rtol", type=float, default=5.0e-6)
     return parser
@@ -180,6 +270,8 @@ def main(argv: list[str] | None = None) -> int:
         shape=(args.nl, args.nm, args.ny, args.nx, args.nz),
         y_chunks=args.y_chunks,
         x_chunks=args.x_chunks,
+        steps=int(args.steps),
+        dt=float(args.dt),
         atol=args.atol,
         rtol=args.rtol,
     )

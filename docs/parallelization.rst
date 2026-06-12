@@ -202,24 +202,27 @@ transport acceptance, or speedup.
 The spectral communication layer now has the same fail-closed treatment. The
 artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``
 uses deterministic complex spectral coefficients in ``(N_l,N_m,N_y,N_x,N_z)``
-layout, applies the split/reassemble and axis-transpose operations that a
-distributed FFT route would need, and compares three serial observables against
-the communicated layout: FFT forward/inverse round trip, pseudo-spectral
-nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
-``fft_axis_domain`` from blocked to diagnostic. It still does not add runtime
-distributed FFT routing, conservation checks, nonlinear transport-window
+layout and now combines three diagnostic layers in one JSON sidecar. First, it
+applies the split/reassemble and axis-transpose operations that a distributed
+FFT route would need and compares FFT round-trip, pseudo-spectral bracket, and
+spectral field-solve layout. Second, it owns row-major logical ``(k_y,k_x)``
+tiles, reconstructs them, recomputes the spectral field and bracket, and gates
+the serial nonlinear RHS contribution ``-\{\phi,g\}`` against the
+tile-reassembled route. Third, it advances a short fixed-step micro-integration
+and checks final-state, free-energy-proxy, field-energy-proxy, and flux-proxy
+trace identity. Passing this combined gate promotes ``fft_axis_domain`` from
+blocked to diagnostic. It still does not add runtime distributed FFT routing,
+conservation checks on a physical nonlinear case, nonlinear transport-window
 acceptance, profiler evidence, or any speedup claim.
 
 The package also exposes
-``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate`` as the
-next diagnostic micro-route. This gate owns logical row-major ``(k_y,k_x)``
-tiles, reconstructs them, recomputes the spectral field and pseudo-spectral
-bracket, and compares the serial nonlinear RHS contribution ``-\{\phi,g\}``
-against the tile-reassembled route. It is useful because it exercises the
-field/bracket/RHS dataflow instead of only layout round trips. It remains
-fail-closed and diagnostic-only: logical tiles are reconstructed for identity
-validation, not executed through a production ``pjit``/``shard_map`` distributed
-FFT path.
+``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate``,
+``spectraxgk.nonlinear_parallel.logical_decomposed_nonlinear_spectral_rhs``,
+and ``spectraxgk.nonlinear_parallel.nonlinear_spectral_integrator_identity_gate``
+for focused tests. They are useful because they exercise field/bracket/RHS and
+fixed-step dataflow instead of only layout round trips. They remain fail-closed
+and diagnostic-only: logical tiles are reconstructed for identity validation,
+not executed through a production ``pjit``/``shard_map`` distributed FFT path.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
