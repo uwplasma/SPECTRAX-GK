@@ -245,6 +245,16 @@ production step is therefore device-level pencil-FFT routing with real
 collectives and profiler evidence, not a speedup claim from the local
 axis-staged diagnostic.
 
+The first real-device candidate is a ``z``-sharded fused pencil RHS. This route
+keeps the FFT axes local on each device, shards the field-line dimension, and
+avoids global spectral tile reconstruction. The tracked logical-CPU artifact
+``docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json`` confirms
+serial-vs-sharded RHS identity on two and four CPU devices for a
+``(4,16,96,96,32)`` nonlinear bracket workload, with maximum absolute RHS error
+``7.4e-10``. It is still slower than serial on this machine (``0.45x`` on two
+logical CPU devices and ``0.41x`` on four), so it is a correctness/profiling
+milestone rather than a production speedup claim.
+
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
 workload family that appears in the speedup figure:

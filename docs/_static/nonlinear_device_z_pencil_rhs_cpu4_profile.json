@@ -1,0 +1,91 @@
+{
+  "atol": 5e-06,
+  "backend": "cpu",
+  "claim_scope": "device z-sharded fused pencil nonlinear RHS timing; FFT axes are local per z shard, no global spectral reconstruction is used, and no production speedup claim is allowed unless the speedup gate passes",
+  "device_count_available": 4,
+  "kind": "nonlinear_device_z_pencil_rhs_profile",
+  "min_speedup": 1.5,
+  "repeats": 5,
+  "rows": [
+    {
+      "active": true,
+      "blocked_reasons": [],
+      "device_count": 1,
+      "identity_passed": true,
+      "median_s": 0.1687920830445364,
+      "rhs_max_abs_error": 0.0,
+      "rhs_max_rel_error": 0.0,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": 1.0,
+      "stats": {
+        "max": 0.1875777079258114,
+        "mean": 0.17232179138809442,
+        "median": 0.1687920830445364,
+        "min": 0.16805329092312604,
+        "std": 0.007636830909014777
+      }
+    },
+    {
+      "active": true,
+      "blocked_reasons": [
+        "speedup_below_gate"
+      ],
+      "device_count": 2,
+      "identity_passed": true,
+      "median_s": 0.37804704206064343,
+      "rhs_max_abs_error": 7.362751519579547e-10,
+      "rhs_max_rel_error": 3.7210398304767414e-07,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": 0.4464843373049327,
+      "stats": {
+        "max": 0.3812561249360442,
+        "mean": 0.3766203167848289,
+        "median": 0.37804704206064343,
+        "min": 0.370297999936156,
+        "std": 0.004036143944141606
+      }
+    },
+    {
+      "active": true,
+      "blocked_reasons": [
+        "speedup_below_gate"
+      ],
+      "device_count": 4,
+      "identity_passed": true,
+      "median_s": 0.4150436249328777,
+      "rhs_max_abs_error": 7.362751519579547e-10,
+      "rhs_max_rel_error": 3.7210398304767414e-07,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": 0.4066851600764475,
+      "stats": {
+        "max": 0.4411027079913765,
+        "mean": 0.41473564140032976,
+        "median": 0.4150436249328777,
+        "min": 0.3895471660653129,
+        "std": 0.016338688473169848
+      }
+    }
+  ],
+  "rtol": 0.0001,
+  "serial_stats_s": {
+    "max": 0.1875777079258114,
+    "mean": 0.17232179138809442,
+    "median": 0.1687920830445364,
+    "min": 0.16805329092312604,
+    "std": 0.007636830909014777
+  },
+  "shape": [
+    4,
+    16,
+    96,
+    96,
+    32
+  ],
+  "summary": {
+    "all_active_identity_passed": true,
+    "max_speedup_vs_serial": 0.4464843373049327,
+    "production_speedup_claim_allowed": false,
+    "status": "identity_timed_no_production_speedup"
+  },
+  "warmups": 2
+}

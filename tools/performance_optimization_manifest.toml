@@ -236,6 +236,7 @@ profiling_tools = [
   "tools/build_parallelization_completion_status.py",
   "tools/profile_linear_rhs_parallel_slices.py",
   "tools/profile_nonlinear_sharding.py",
+  "tools/profile_device_z_pencil_nonlinear_rhs.py",
 ]
 metrics = [
   "strong_scaling_speedup",
@@ -243,6 +244,7 @@ metrics = [
   "memory_per_device_mb",
   "device_parity_error",
   "nonlinear_state_sharding_identity_error",
+  "device_z_pencil_rhs_identity_error",
   "parallel_scaling_artifact_contract_status",
   "production_parallelization_completion_percent",
 ]
@@ -313,6 +315,9 @@ artifact_paths = [
   "docs/_static/nonlinear_sharding_strong_scaling_large.png",
   "docs/_static/nonlinear_sharding_production_speedup_gate.json",
   "docs/_static/nonlinear_sharding_production_speedup_gate.csv",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.csv",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.png",
   ]
 bottleneck_hypotheses = [
   "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",
@@ -337,6 +342,7 @@ optimization_actions = [
   "use tools/profile_linear_rhs_parallel_slices.py as the engineering profile before making any Hermite-sharded RHS speedup claim",
   "gate CPU sharding locally and two-GPU sharding on office",
   "profile fixed-step nonlinear state sharding and keep local plus two-GPU identity artifacts attached to the manifest",
+  "profile the device-z fused pencil nonlinear RHS and keep it diagnostic until CPU/GPU speedup gates pass",
   "keep z-axis FFT sharding as exploratory until a dedicated communication/layout gate passes",
   "only publish strong-scaling plots when speedup is meaningful and numerically identical",
 ]

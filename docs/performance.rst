@@ -51,6 +51,15 @@ micro-route, but the local JIT timing remains below the production ``1.5x``
 gate. Treat this as implementation evidence for the next distributed-FFT
 tranche, not as a shipped nonlinear domain-decomposition speedup.
 
+The follow-up z-sharded fused pencil RHS artifact
+``docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json`` is the first
+active device-sharded version of that idea. It passes serial-vs-sharded RHS
+identity on a ``(4,16,96,96,32)`` bracket workload with maximum absolute error
+``7.4e-10``, but the logical-CPU timing is slower than serial (best observed
+speedup ``0.45x``). This is intentionally recorded as negative profiler
+evidence: production nonlinear domain speedup remains open until the same route
+or a better one clears the ``1.5x`` gate on CPU/GPU hardware.
+
 Nonlinear profiling
 -------------------
 

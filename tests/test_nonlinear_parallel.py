@@ -13,6 +13,7 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
+    NonlinearSpectralDevicePencilRHSIdentityReport,
     NonlinearSpectralDomainWorkModel,
     NonlinearSpectralPencilRHSIdentityReport,
     NonlinearSpectralPencilTransportWindowReport,
@@ -32,6 +33,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearDomainTransportWindowReport",
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
+        "NonlinearSpectralDevicePencilRHSIdentityReport",
         "NonlinearSpectralDomainWorkModel",
         "NonlinearSpectralPencilRHSIdentityReport",
         "NonlinearSpectralPencilTransportWindowReport",
@@ -41,6 +43,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "classify_nonlinear_parallel_strategy",
         "deterministic_nonlinear_domain_state",
         "deterministic_nonlinear_spectral_state",
+        "device_z_pencil_nonlinear_spectral_rhs",
         "integrate_logical_decomposed_nonlinear_spectral",
         "nonlinear_domain_identity_report",
         "nonlinear_domain_parallel_identity_gate",
@@ -73,6 +76,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert (
         NonlinearSpectralCommunicationReport
         is nonlinear_parallel.NonlinearSpectralCommunicationReport
+    )
+    assert (
+        NonlinearSpectralDevicePencilRHSIdentityReport
+        is nonlinear_parallel.NonlinearSpectralDevicePencilRHSIdentityReport
     )
     assert (
         NonlinearSpectralDomainWorkModel
@@ -111,8 +118,9 @@ def test_fft_axis_domain_sharding_is_diagnostic_until_runtime_fft_gates_exist() 
     assert "distributed_fft_field_solve_identity" in strategy.identity_gates
     assert "pencil_fft_fused_nonlinear_rhs_identity" in strategy.identity_gates
     assert "pencil_fft_physical_transport_window_identity" in strategy.identity_gates
+    assert "device_z_pencil_fused_nonlinear_rhs_identity" in strategy.identity_gates
     assert "pencil-FFT fused-bracket identity" in strategy.notes
-    assert "device-level distributed FFT routing" in strategy.notes
+    assert "device-level transport-window routing" in strategy.notes
 
 
 def test_logical_decomposed_spectral_integrator_routes_after_identity_gate() -> None:
@@ -232,6 +240,25 @@ def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() ->
     assert routed_report.identity_passed is True
     assert routed_report.decomposed_path_enabled is True
     assert jnp.allclose(routed_rhs, serial_rhs, atol=5.0e-6, rtol=5.0e-6)
+
+
+def test_device_z_pencil_route_fails_closed_without_two_devices() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    routed_rhs, report = nonlinear_parallel.device_z_pencil_nonlinear_spectral_rhs(
+        state,
+        devices=(),
+        atol=5.0e-6,
+        rtol=1.0e-5,
+    )
+    _field, _bracket, serial_rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(state)
+
+    assert isinstance(report, NonlinearSpectralDevicePencilRHSIdentityReport)
+    assert report.identity_passed is False
+    assert report.device_sharding_active is False
+    assert report.decomposed_path_enabled is False
+    assert report.blocked_reasons == ("requires_at_least_two_devices",)
+    assert jnp.allclose(routed_rhs, serial_rhs, atol=0.0, rtol=0.0)
 
 
 def test_pencil_fft_physical_transport_window_identity_gate() -> None:
