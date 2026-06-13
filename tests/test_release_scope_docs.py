@@ -12,8 +12,9 @@ def _compact(path: str) -> str:
 
 REQUIRED_PHRASES = {
     "docs/release_scope.rst": (
-        "retained only as a scoped manuscript model-development result",
-        "does not promote a runtime/TOML absolute-flux predictor",
+        "a scoped model-development and optimization-screening result",
+        "No runtime/TOML absolute-flux predictor",
+        "Solovev and shaped-pressure stress outliers outside the scoped claim",
         "W7-X TEM / kinetic-electron validation",
         "W7-X long-window zonal recurrence/damping closure",
         "selected QA optimized-equilibrium audit is the current scoped exception",
@@ -25,7 +26,8 @@ REQUIRED_PHRASES = {
         "Production nonlinear optimization is promoted only for the selected optimized-equilibrium audit",
     ),
     "README.md": (
-        "scoped manuscript model-development diagnostic, not a runtime/TOML absolute-flux predictor",
+        "not a runtime/TOML universal absolute-flux predictor",
+        "declared Solovev and shaped-pressure stress outliers",
         "W7-X zonal long-window recurrence/damping and W7-X TEM / kinetic-electron extensions are deferred",
         "converged post-transient heat-flux windows",
         "Sensitivity sweeps can use the same deterministic independent-work reconstruction, but they need a dedicated",
