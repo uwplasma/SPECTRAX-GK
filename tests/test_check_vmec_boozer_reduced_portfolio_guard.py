@@ -256,6 +256,68 @@ def test_reduced_portfolio_guard_marks_bad_gradient_gate_without_crashing() -> N
     assert report["ad_fd_gradient_gate"]["finite_ad_fd_values"] is False
 
 
+@pytest.mark.parametrize(
+    ("mutator", "message"),
+    [
+        (lambda artifact: artifact.update({"reduction": "median"}), "artifact reduction"),
+        (lambda artifact: artifact.update({"base_sample_values": [0.8, 1.0]}), "base_sample_values"),
+        (lambda artifact: artifact.update({"base_objective_table": [0.8, 1.0, 0.9, 1.1]}), "two-dimensional"),
+        (lambda artifact: artifact.update({"samples": [*artifact["samples"][:-1], "bad-sample"]}), "all samples"),
+    ],
+)
+def test_reduced_portfolio_guard_rejects_malformed_artifact_shapes(
+    mutator,
+    message: str,
+) -> None:
+    artifact = _row_artifact()
+    mutator(artifact)
+
+    with pytest.raises(ValueError, match=message):
+        reduced_portfolio_artifact_guard_report(
+            artifact,
+            gradient_artifacts=[_gradient_artifact()],
+        )
+
+
+def test_reduced_portfolio_guard_reports_objective_and_provenance_blockers() -> None:
+    artifact = _row_artifact()
+    artifact["objective_names"] = ["omega", "kperp_eff2"]
+    artifact["options"] = {"mboz": 8, "nboz": 8}
+    artifact["input_path"] = ""
+    artifact["wout_path"] = ""
+
+    report = reduced_portfolio_artifact_guard_report(
+        artifact,
+        gradient_artifacts=[_gradient_artifact()],
+    )
+
+    assert report["passed"] is False
+    assert report["objective_name_gate"]["passed"] is False
+    assert report["objective_name_gate"]["has_growth_objective"] is False
+    assert report["objective_name_gate"]["has_quasilinear_objective"] is False
+    assert report["provenance_gate"]["passed"] is False
+    assert report["provenance_gate"]["mboz"] == 8
+    assert report["provenance_gate"]["has_input_and_wout_paths"] is False
+
+
+def test_reduced_portfolio_guard_reports_unresolved_finite_difference_diagnostics() -> None:
+    artifact = _row_artifact()
+    artifact["response_resolved"] = False
+    artifact["finite_difference_consistent"] = False
+    artifact["plus_value"] = float("inf")
+
+    report = reduced_portfolio_artifact_guard_report(
+        artifact,
+        gradient_artifacts=[_gradient_artifact()],
+    )
+
+    assert report["passed"] is False
+    assert report["finite_difference_gate"]["passed"] is False
+    assert report["finite_difference_gate"]["response_resolved"] is False
+    assert report["finite_difference_gate"]["finite_difference_consistent"] is False
+    assert report["finite_difference_gate"]["finite_scalar_fields"]["plus_value"] is False
+
+
 def test_reduced_portfolio_guard_fails_single_alpha_or_missing_gradient_gate() -> None:
     artifact = _row_artifact()
     artifact["samples"] = [
