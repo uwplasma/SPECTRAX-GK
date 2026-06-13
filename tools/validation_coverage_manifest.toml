@@ -433,7 +433,7 @@ artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
 ]
 next_tests = [
-  "add a host-gathered GPU shard-layout regression once the CUDA device-z mismatch is localized",
+  "add a regression that direct device-backed resharding and host-staged z sharding are not silently conflated on CUDA",
   "add physical transport-window identity and profiler gates before promoting nonlinear domain speedup wording",
 ]
 

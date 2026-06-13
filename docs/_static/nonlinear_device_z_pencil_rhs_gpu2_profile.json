@@ -12,41 +12,47 @@
       "blocked_reasons": [],
       "device_count": 1,
       "identity_passed": true,
-      "median_s": 0.013234120793640614,
+      "median_s": 0.01050171721726656,
       "rhs_max_abs_error": 0.0,
       "rhs_max_rel_error": 0.0,
       "speedup_gate_passed": false,
       "speedup_vs_serial": 1.0,
       "stats": {
-        "max": 0.019441884011030197,
-        "mean": 0.014500135369598866,
-        "median": 0.013234120793640614,
-        "min": 0.013025933876633644,
-        "std": 0.0024774683786754105
+        "max": 0.010602103546261787,
+        "mean": 0.01051583755761385,
+        "median": 0.01050171721726656,
+        "min": 0.010473906062543392,
+        "std": 4.5322405296741844e-05
       }
     },
     {
       "active": true,
       "blocked_reasons": [
-        "device_z_pencil_rhs_identity_failed"
+        "speedup_below_gate"
       ],
       "device_count": 2,
-      "identity_passed": false,
-      "median_s": null,
-      "rhs_max_abs_error": 0.0004848346870858222,
-      "rhs_max_rel_error": 1.0,
+      "identity_passed": true,
+      "median_s": 0.0815538028255105,
+      "rhs_max_abs_error": 5.238689482212067e-10,
+      "rhs_max_rel_error": 2.647566533346983e-07,
       "speedup_gate_passed": false,
-      "speedup_vs_serial": null,
-      "stats": {}
+      "speedup_vs_serial": 0.1287704172389808,
+      "stats": {
+        "max": 0.08413937129080296,
+        "mean": 0.08127926643937826,
+        "median": 0.0815538028255105,
+        "min": 0.07784253638237715,
+        "std": 0.0020257045149549317
+      }
     }
   ],
   "rtol": 0.0001,
   "serial_stats_s": {
-    "max": 0.019441884011030197,
-    "mean": 0.014500135369598866,
-    "median": 0.013234120793640614,
-    "min": 0.013025933876633644,
-    "std": 0.0024774683786754105
+    "max": 0.010602103546261787,
+    "mean": 0.01051583755761385,
+    "median": 0.01050171721726656,
+    "min": 0.010473906062543392,
+    "std": 4.5322405296741844e-05
   },
   "shape": [
     4,
@@ -56,10 +62,10 @@
     32
   ],
   "summary": {
-    "all_active_identity_passed": false,
-    "max_speedup_vs_serial": 1.0,
+    "all_active_identity_passed": true,
+    "max_speedup_vs_serial": 0.1287704172389808,
     "production_speedup_claim_allowed": false,
-    "status": "identity_failed_no_production_speedup"
+    "status": "identity_timed_no_production_speedup"
   },
   "warmups": 2
 }

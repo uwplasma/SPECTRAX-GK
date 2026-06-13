@@ -165,7 +165,10 @@ def build_profile(
         sharding = NamedSharding(mesh, PartitionSpec(None, None, None, None, "z"))
         field_sharding = NamedSharding(mesh, PartitionSpec(None, None, "z"))
         with mesh:
-            sharded_state = jax.device_put(state, sharding)
+            # Stage through host before explicit z sharding. On current CUDA JAX,
+            # resharding directly from a single-device array can corrupt the
+            # second z shard and should not be mixed into the route timing gate.
+            sharded_state = jax.device_put(np.asarray(jax.device_get(state)), sharding)
             sharded_jit = jax.jit(
                 lambda item: _pencil_nonlinear_spectral_rhs(item),
                 in_shardings=sharding,
