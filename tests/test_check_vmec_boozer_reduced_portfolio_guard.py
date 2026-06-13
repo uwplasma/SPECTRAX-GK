@@ -119,6 +119,34 @@ def test_reduced_portfolio_guard_passes_real_metadata_contract() -> None:
     assert report["claim_scope_gate"]["passed"] is True
 
 
+@pytest.mark.parametrize(
+    ("reduction", "base_value", "expected_shape"),
+    [
+        ("weighted_mean", 0.95, [1, 2, 2, 1]),
+        ("max", 1.0, [1, 2, 2, 1]),
+    ],
+)
+def test_reduced_portfolio_guard_accepts_declared_reducer_semantics(
+    reduction: str,
+    base_value: float,
+    expected_shape: list[int],
+) -> None:
+    artifact = _row_artifact()
+    artifact["reduction"] = reduction
+    if reduction == "max":
+        artifact["base_sample_values"] = [0.5, 0.75, 0.875, 1.0]
+    artifact["base_value"] = base_value
+
+    report = reduced_portfolio_artifact_guard_report(
+        artifact,
+        gradient_artifacts=[_gradient_artifact()],
+    )
+
+    assert report["passed"] is True
+    assert report["portfolio_reducer_gate"]["reduction"] == reduction
+    assert report["portfolio_reducer_gate"]["contract"]["row_shape"] == expected_shape
+
+
 def test_reduced_portfolio_guard_distinguishes_physical_torflux_surfaces() -> None:
     artifact = _row_artifact()
     artifact["samples"] = [
@@ -172,6 +200,62 @@ def test_reduced_portfolio_guard_distinguishes_physical_torflux_surfaces() -> No
     assert report["portfolio_reducer_gate"]["contract"]["row_shape"] == [2, 1, 2, 1]
 
 
+def test_reduced_portfolio_guard_rejects_duplicate_or_incomplete_sample_grids() -> None:
+    duplicate = _row_artifact()
+    duplicate["samples"] = [
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.25},
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.25},
+        {"surface_index": None, "alpha": 0.5, "selected_ky_index": 1, "weight": 0.25},
+        {"surface_index": None, "alpha": 0.5, "selected_ky_index": 2, "weight": 0.25},
+    ]
+    with pytest.raises(ValueError, match="duplicate"):
+        reduced_portfolio_artifact_guard_report(
+            duplicate,
+            gradient_artifacts=[_gradient_artifact()],
+        )
+
+    incomplete = _row_artifact()
+    incomplete["samples"] = incomplete["samples"][:-1]  # type: ignore[index]
+    incomplete["base_sample_values"] = incomplete["base_sample_values"][:-1]  # type: ignore[index]
+    incomplete["minus_sample_values"] = incomplete["minus_sample_values"][:-1]  # type: ignore[index]
+    incomplete["plus_sample_values"] = incomplete["plus_sample_values"][:-1]  # type: ignore[index]
+    incomplete["base_objective_table"] = incomplete["base_objective_table"][:-1]  # type: ignore[index]
+    incomplete["minus_objective_table"] = incomplete["minus_objective_table"][:-1]  # type: ignore[index]
+    incomplete["plus_objective_table"] = incomplete["plus_objective_table"][:-1]  # type: ignore[index]
+    with pytest.raises(ValueError, match="complete rectangular"):
+        reduced_portfolio_artifact_guard_report(
+            incomplete,
+            gradient_artifacts=[_gradient_artifact()],
+        )
+
+
+def test_reduced_portfolio_guard_marks_bad_gradient_gate_without_crashing() -> None:
+    bad_gradient = {
+        "kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+        "passed": False,
+        "objective_gates": [
+            {
+                "objective": "gamma",
+                "passed": True,
+                "implicit": 1.0,
+                "finite_difference": float("nan"),
+                "abs_error": 0.0,
+                "rel_error": 0.0,
+            },
+            "not-a-dict",
+        ],
+    }
+
+    report = reduced_portfolio_artifact_guard_report(
+        _row_artifact(),
+        gradient_artifacts=[bad_gradient],  # type: ignore[list-item]
+    )
+
+    assert report["passed"] is False
+    assert report["ad_fd_gradient_gate"]["passed"] is False
+    assert report["ad_fd_gradient_gate"]["finite_ad_fd_values"] is False
+
+
 def test_reduced_portfolio_guard_fails_single_alpha_or_missing_gradient_gate() -> None:
     artifact = _row_artifact()
     artifact["samples"] = [
@@ -209,9 +293,20 @@ def test_reduced_portfolio_guard_fails_production_nonlinear_claim() -> None:
     assert report["claim_scope_gate"]["passed"] is False
 
 
-def test_reduced_portfolio_guard_validates_config() -> None:
-    with pytest.raises(ValueError, match="min_alphas"):
-        ReducedPortfolioArtifactGuardConfig(min_alphas=0)
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"min_alphas": 0}, "min_alphas"),
+        ({"min_ky": 0}, "min_ky"),
+        ({"min_objectives": 0}, "min_objectives"),
+        ({"min_boozer_mode": 0}, "min_boozer_mode"),
+        ({"value_rtol": -1.0e-8}, "tolerances"),
+        ({"value_atol": -1.0e-8}, "tolerances"),
+    ],
+)
+def test_reduced_portfolio_guard_validates_config(kwargs: dict[str, float], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        ReducedPortfolioArtifactGuardConfig(**kwargs)
 
 
 def test_tool_writes_guard_artifact(tmp_path: Path) -> None:
