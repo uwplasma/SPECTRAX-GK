@@ -94,7 +94,8 @@ def _write_minimal_status_inputs(root: Path, *, cpu_speedup: float, gpu_speedup:
             "kind": "nonlinear_spectral_communication_identity_gate",
             "gate": {"identity_passed": True},
             "claim_scope": (
-                "diagnostic nonlinear spectral communication, RHS, and fixed-step integrator identity gate; "
+                "diagnostic nonlinear spectral communication, RHS, fixed-step integrator, "
+                "pencil fused-bracket, and physical transport-window identity gate; "
                 "no production distributed FFT routing or speedup claim"
             ),
             "rows": [{"identity_passed": True}],
