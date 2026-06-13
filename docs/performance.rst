@@ -84,6 +84,15 @@ not numerical identity or a hidden global reconstruction. This remains a
 micro-route transport-window claim, not a full production nonlinear
 turbulence-solve speedup claim.
 
+For larger GPU diagnostic grids, the profiler also supports
+``--z-chunk-size``. This processes independent local ``z`` slabs separately and
+can avoid cuFFT batched-plan failures when used with
+``XLA_PYTHON_CLIENT_PREALLOCATE=false``. The June 13, 2026 office diagnostics
+used this mode to run previously failing ``(4,16,96,96,64)`` and
+``(4,16,128,128,32)`` transport windows, but their two-GPU speedups were only
+about ``1.40x`` and ``1.30x`` respectively. Treat this as bottleneck
+localization, not as promotion evidence.
+
 Nonlinear profiling
 -------------------
 

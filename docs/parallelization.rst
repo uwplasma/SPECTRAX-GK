@@ -275,6 +275,12 @@ locations; both CPU and GPU sharded HLO summaries show local FFTs and no
 all-to-all or collective-permute operations. The remaining nonlinear
 parallelization blocker is therefore production workload granularity and
 end-to-end solver routing, not this micro-route's serial-vs-sharded identity.
+For larger diagnostic grids, ``tools/profile_device_z_pencil_transport_window.py``
+also accepts ``--z-chunk-size``. Combined with
+``XLA_PYTHON_CLIENT_PREALLOCATE=false`` on office GPUs, the chunked route avoids
+the cuFFT plan failures seen on the unchunked ``96x96x64`` and ``128x128x32``
+transport windows, but the measured two-GPU speedups remain below the ``1.5x``
+promotion gate.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same

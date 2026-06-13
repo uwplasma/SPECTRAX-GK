@@ -252,6 +252,42 @@ def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() ->
     assert jnp.allclose(routed_rhs, serial_rhs, atol=5.0e-6, rtol=5.0e-6)
 
 
+def test_z_chunked_pencil_bracket_matches_unchunked_route() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 5))
+    field = nonlinear_parallel._field_from_state(state)
+
+    unchunked = nonlinear_parallel._pencil_spectral_bracket(state, field)
+    chunked = nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+        state,
+        field,
+        z_chunk_size=2,
+    )
+    chunked_rhs = nonlinear_parallel._pencil_nonlinear_spectral_rhs_z_chunked(
+        state,
+        z_chunk_size=2,
+    )[2]
+    unchunked_rhs = nonlinear_parallel._pencil_nonlinear_spectral_rhs(state)[2]
+
+    assert jnp.allclose(chunked, unchunked, atol=5.0e-6, rtol=1.0e-5)
+    assert jnp.allclose(chunked_rhs, unchunked_rhs, atol=5.0e-6, rtol=1.0e-5)
+    assert jnp.allclose(
+        nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+            state,
+            field,
+            z_chunk_size=99,
+        ),
+        unchunked,
+        atol=5.0e-6,
+        rtol=1.0e-5,
+    )
+    with pytest.raises(ValueError, match="z_chunk_size must be at least one"):
+        nonlinear_parallel._pencil_spectral_bracket_z_chunked(
+            state,
+            field,
+            z_chunk_size=0,
+        )
+
+
 def test_device_z_pencil_route_fails_closed_without_two_devices() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
 

@@ -133,6 +133,7 @@ def build_profile(
     atol: float,
     rtol: float,
     min_speedup: float,
+    z_chunk_size: int | None,
     trace_dir: Path | None,
     trace_device_count: int | None,
     hlo_prefix: Path | None,
@@ -219,6 +220,7 @@ def build_profile(
             dt=float(dt),
             atol=float(atol),
             rtol=float(rtol),
+            z_chunk_size=z_chunk_size,
         )
         if not report.decomposed_path_enabled:
             rows.append(
@@ -253,7 +255,11 @@ def build_profile(
                 _host_staged_array_for_sharding(state),
                 sharding,
             )
-            sharded_rhs_fn = _device_z_pencil_shard_map_rhs_fn(mesh, axis_name="z")
+            sharded_rhs_fn = _device_z_pencil_shard_map_rhs_fn(
+                mesh,
+                axis_name="z",
+                z_chunk_size=z_chunk_size,
+            )
 
             def sharded_route(item: jax.Array) -> jax.Array:
                 out = item
@@ -353,6 +359,7 @@ def build_profile(
             "atol": float(atol),
             "rtol": float(rtol),
             "min_speedup": float(min_speedup),
+            "z_chunk_size": None if z_chunk_size is None else int(z_chunk_size),
             "serial_stats_s": serial_stats,
             "rows": rows,
             "trace": trace_report,
@@ -443,6 +450,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--atol", type=float, default=5.0e-6)
     parser.add_argument("--rtol", type=float, default=1.0e-4)
     parser.add_argument("--min-speedup", type=float, default=1.5)
+    parser.add_argument("--z-chunk-size", type=int)
     parser.add_argument("--trace-dir", type=Path)
     parser.add_argument("--trace-device-count", type=int)
     parser.add_argument("--hlo-prefix", type=Path)
@@ -464,6 +472,7 @@ def main(argv: list[str] | None = None) -> int:
         atol=float(args.atol),
         rtol=float(args.rtol),
         min_speedup=float(args.min_speedup),
+        z_chunk_size=args.z_chunk_size,
         trace_dir=args.trace_dir,
         trace_device_count=args.trace_device_count,
         hlo_prefix=args.hlo_prefix,
