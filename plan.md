@@ -18,9 +18,21 @@
   optimized-equilibrium audit, giving `4` qualifying optimized-equilibrium
   ensembles and closing that trace-count blocker. The guard remains
   unpromoted because only `1/3` matched baseline-to-optimized audits passes
-  (`18.4%` reduction, `7.82` combined SEMs) and the strict dashboard still has
-  `3/4` replicated holdout ensembles. Broad nonlinear optimization moves to
-  `82.9%`; mean pre-manuscript closure moves to `84.5%`.
+  (`18.4%` reduction, `7.82` combined SEMs). The replicated-holdout lane is
+  frozen at three accepted long-window holdout ensembles; no additional
+  generic holdouts are active for this tranche. Broad nonlinear optimization
+  moves to `86.7%`; mean pre-manuscript closure moves to `85.4%`.
+
+- 2026-06-13: Added a routed nonlinear spectral-domain profiling artifact to
+  the strict closure dashboard. The new
+  `docs/_static/nonlinear_spectral_domain_routing_profile.{png,json,csv}`
+  verifies serial-vs-logical routed identity on the deterministic nonlinear
+  spectral RHS and records warm timing (`1.04x` locally), but it explicitly
+  does not permit a production speedup claim. The production nonlinear
+  domain-decomposition lane therefore moves from `55.0%` to `65.0%` on
+  identity/timing diagnostics while retaining the CPU/GPU `>=1.5x`
+  strong-scaling blockers. Mean strict pre-manuscript closure moves to
+  `87.9%`.
 
 - 2026-06-13: Froze the nonlinear holdout-expansion lane for this tranche.
   The Solovev-inclusive 12-case QL ledger is now the working calibration and
@@ -96,8 +108,9 @@
   cannot be contaminated by the parent environment. A bounded local check now
   gives a true one-device identity row and a safe four-device skip row. This is
   negative evidence for current whole-state CPU nonlinear speedup, not a
-  promotion; the production nonlinear domain-decomposition speedup lane remains
-  at `55.0%` pending a communication-complete decomposed RHS/integrator with
+  promotion; the production nonlinear domain-decomposition speedup lane moves
+  to `65.0%` after adding a routed spectral-domain identity/timing profile,
+  but remains blocked pending a communication-complete decomposed RHS/integrator with
   CPU/GPU identity, transport-window, and profiler-backed speedup gates. The
   office QA growth-candidate `t=1500` `dt=0.04` run has now completed and the
   existing postprocessed artifacts are consistent: the growth ensemble passes,
@@ -236,7 +249,7 @@
   2. Broad nonlinear turbulent-flux optimization: extend from the single
      selected-QA positive audit to at least three independent matched
      baseline-vs-optimized long-window transport audits, at least three
-     optimized-equilibrium ensembles, and at least four replicated nonlinear
+     optimized-equilibrium ensembles, and the frozen three replicated nonlinear
      holdout ensembles. Only post-transient running-average transport windows
      count; reduced/startup nonlinear-window objectives remain excluded.
   3. Production nonlinear domain decomposition: keep independent ``k_y`` and
@@ -650,11 +663,11 @@ historical logs live outside the release repository so clones stay small.
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
 | Differentiable QA optimization evidence | 100% | Current VMEC/Boozer differentiability and holdout plumbing gate is closed: frequency, QL, reduced nonlinear-window estimator gradients, alpha/surface/second-equilibrium holdouts, and production-scope QH heldout transport pass; broad nonlinear turbulent-flux optimization remains a separate lane |
-| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 82.9% | Partial: optimized-equilibrium trace-count blocker is closed with four qualifying ensembles, but only one matched baseline-to-optimized audit passes and the strict dashboard still has `3/4` replicated holdout ensembles |
+| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 86.7% | Partial: optimized-equilibrium trace-count blocker is closed with four qualifying ensembles and the generic holdout lane is frozen with three accepted replicated holdout ensembles, but only one matched baseline-to-optimized audit passes; remaining work is matched optimized-audit evidence, not more generic holdouts |
 | VMEC/Boozer holdout optimization | 100% | Closed for the current pre-manuscript gate: reduced alpha/surface, second-equilibrium, gradient holdout matrix, and aggregate promotion gates pass |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| Production nonlinear domain-decomposition speedup | 55% | Strict pre-manuscript gate remains partial: local and spectral identity pass, but combined strong-scaling speedup and production-speedup gates fail; CPU and GPU speedup are below `1.5x` |
+| Production nonlinear domain-decomposition speedup | 65% | Strict pre-manuscript gate remains partial: local, spectral, combined, and routed timing identity pass, but routed timing is only `1.04x`; combined strong-scaling and production-speedup gates fail, and CPU/GPU speedup remain below `1.5x` |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |

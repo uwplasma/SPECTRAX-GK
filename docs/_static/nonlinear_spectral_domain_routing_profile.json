@@ -1,0 +1,169 @@
+{
+  "atol": 5e-06,
+  "backend": "cpu",
+  "claim_scope": "diagnostic serial-vs-logical nonlinear spectral-domain timing; identity-gated local route only, not production distributed FFT or GPU speedup",
+  "decomposed_path_enabled": true,
+  "device_count": 1,
+  "dt": 0.001,
+  "identity_passed": true,
+  "identity_report": {
+    "atol": 5e-06,
+    "blocked_reasons": [],
+    "claim_scope": "diagnostic nonlinear spectral integrator identity gate only; fixed-step serial-vs-logical-shard RHS routing with final-state and transport-proxy trace identity, no production distributed FFT routing or speedup claim",
+    "decomposed_path_enabled": true,
+    "dt": 0.001,
+    "field_energy_trace_max_abs_error": 0.0,
+    "field_energy_trace_max_rel_error": 0.0,
+    "final_state_max_abs_error": 0.0,
+    "final_state_max_rel_error": 0.0,
+    "flux_proxy_trace_max_abs_error": 0.0,
+    "flux_proxy_trace_max_rel_error": 0.0,
+    "free_energy_trace_max_abs_error": 0.0,
+    "free_energy_trace_max_rel_error": 0.0,
+    "identity_passed": true,
+    "logical_field_energy_trace": [
+      1.6720057725906372,
+      1.672005534172058,
+      1.672005534172058
+    ],
+    "logical_flux_proxy_trace": [
+      0.0009066384518519044,
+      0.0009066363563761115,
+      0.000906634028069675
+    ],
+    "logical_free_energy_drift": 1.52587890625e-05,
+    "logical_free_energy_trace": [
+      133.5522918701172,
+      133.5522918701172,
+      133.55230712890625
+    ],
+    "rtol": 5e-06,
+    "serial_field_energy_trace": [
+      1.6720057725906372,
+      1.672005534172058,
+      1.672005534172058
+    ],
+    "serial_flux_proxy_trace": [
+      0.0009066384518519044,
+      0.0009066363563761115,
+      0.000906634028069675
+    ],
+    "serial_free_energy_drift": 1.52587890625e-05,
+    "serial_free_energy_trace": [
+      133.5522918701172,
+      133.5522918701172,
+      133.55230712890625
+    ],
+    "state_shape": [
+      2,
+      4,
+      32,
+      32,
+      4
+    ],
+    "steps": 2,
+    "tile_bounds": [
+      [
+        0,
+        16,
+        0,
+        16
+      ],
+      [
+        0,
+        16,
+        16,
+        32
+      ],
+      [
+        16,
+        32,
+        0,
+        16
+      ],
+      [
+        16,
+        32,
+        16,
+        32
+      ]
+    ],
+    "x_chunks": [
+      16,
+      16
+    ],
+    "x_offsets": [
+      0,
+      16
+    ],
+    "y_chunks": [
+      16,
+      16
+    ],
+    "y_offsets": [
+      0,
+      16
+    ]
+  },
+  "kind": "nonlinear_spectral_domain_routing_profile",
+  "logical_domain_stats_s": {
+    "max": 0.0006402920698747039,
+    "mean": 0.0005133020167704672,
+    "median": 0.0004988545551896095,
+    "min": 0.00046616606414318085,
+    "std": 5.061114756861274e-05
+  },
+  "logical_domain_times_s": [
+    0.0006402920698747039,
+    0.0005228749942034483,
+    0.0004994170740246773,
+    0.0004955410258844495,
+    0.00047770794481039047,
+    0.0004982920363545418,
+    0.00046616606414318085,
+    0.0005061249248683453
+  ],
+  "min_speedup": 1.5,
+  "production_speedup_claim_allowed": false,
+  "repeats": 8,
+  "rtol": 5e-06,
+  "serial_stats_s": {
+    "max": 0.0007308329222723842,
+    "mean": 0.0005512392526725307,
+    "median": 0.0005181040032766759,
+    "min": 0.0004960410296916962,
+    "std": 7.741365532151171e-05
+  },
+  "serial_times_s": [
+    0.0005172080127522349,
+    0.0005189999938011169,
+    0.0005059579852968454,
+    0.0007308329222723842,
+    0.0006203330121934414,
+    0.0004987911088392138,
+    0.0004960410296916962,
+    0.0005217499565333128
+  ],
+  "shape": [
+    2,
+    4,
+    32,
+    32,
+    4
+  ],
+  "speedup_gate_passed": false,
+  "status": "identity_timed_no_production_speedup",
+  "steps": 2,
+  "strong_speedup_vs_serial": 1.0385872954086786,
+  "timing_identity_max_abs_error": 0.0,
+  "timing_identity_max_rel_error": 0.0,
+  "warmups": 2,
+  "x_chunks": [
+    16,
+    16
+  ],
+  "y_chunks": [
+    16,
+    16
+  ]
+}

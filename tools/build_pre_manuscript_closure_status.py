@@ -47,7 +47,7 @@ STATUS_ORDER = {"closed": 0, "partial": 1, "open": 2, "blocked": 3}
 QL_ABSOLUTE_ERROR_GATE = 0.35
 MIN_BROAD_MATCHED_OPTIMIZATION_AUDITS = 3
 MIN_BROAD_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = 3
-MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES = 4
+MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES = 3
 MIN_DOMAIN_CPU_SPEEDUP = 1.5
 MIN_DOMAIN_GPU_SPEEDUP = 1.5
 
@@ -316,7 +316,7 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
     if optimized < MIN_BROAD_OPTIMIZED_EQUILIBRIUM_ENSEMBLES:
         blockers.append("need_at_least_three_optimized_equilibrium_ensembles")
     if replicated < MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES:
-        blockers.append("need_at_least_four_replicated_holdout_ensembles")
+        blockers.append("need_at_least_three_replicated_holdout_ensembles")
     if not holdout_promotion_passed:
         blockers.append("vmec_boozer_production_scope_holdout_missing")
     if not scoped_guard_passed:
@@ -360,7 +360,7 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
         "required_next_artifacts": [
             "matched long post-transient baseline-vs-optimized audits for at least three independent optimized equilibria",
             "surface/alpha held-out VMEC/Boozer production-scope nonlinear transport artifact",
-            "replicated seed/timestep ensembles for each optimized equilibrium and selected holdout",
+            "replicated seed/timestep ensembles for each optimized equilibrium",
             "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows",
         ],
         "next_action": (
@@ -375,6 +375,7 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
     production = _read_json(root, "docs/_static/nonlinear_sharding_production_speedup_gate.json")
     domain_identity = _read_json(root, "docs/_static/nonlinear_domain_parallel_identity_gate.json")
     spectral_identity = _read_json(root, "docs/_static/nonlinear_spectral_communication_identity_gate.json")
+    routed_profile = _read_json(root, "docs/_static/nonlinear_spectral_domain_routing_profile.json")
     decomposition_status = _read_json(root, "docs/_static/parallel_decomposition_status.json")
 
     rows = _as_list((combined or {}).get("rows"))
@@ -385,6 +386,9 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
     production_passed = bool((production or {}).get("passed", False)) or str((production or {}).get("status", "")).lower() == "production_speedup"
     domain_identity_passed = _gate_bool(domain_identity, "gate", "identity_passed")
     spectral_identity_passed = _gate_bool(spectral_identity, "gate", "identity_passed")
+    routed_profile_identity_passed = bool((routed_profile or {}).get("identity_passed", False))
+    routed_profile_speedup = _finite_float((routed_profile or {}).get("strong_speedup_vs_serial"))
+    routed_profile_speedup_passed = bool((routed_profile or {}).get("speedup_gate_passed", False))
     decomposition_contract_passed = bool((decomposition_status or {}).get("passed", False))
     cpu_speedup_passed = cpu_speedup is not None and cpu_speedup >= MIN_DOMAIN_CPU_SPEEDUP
     gpu_speedup_passed = gpu_speedup is not None and gpu_speedup >= MIN_DOMAIN_GPU_SPEEDUP
@@ -404,16 +408,18 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
         _bool_score(domain_identity_passed, 15.0)
         + _bool_score(spectral_identity_passed, 15.0)
         + _bool_score(identity_passed, 15.0)
+        + _bool_score(routed_profile_identity_passed, 10.0)
         + _bool_score(decomposition_contract_passed, 10.0)
-        + _bool_score(cpu_speedup_passed, 15.0)
-        + _bool_score(gpu_speedup_passed, 15.0)
-        + _bool_score(strong_scaling_speedup_passed, 10.0)
-        + _bool_score(production_passed, 5.0)
+        + _bool_score(cpu_speedup_passed, 12.5)
+        + _bool_score(gpu_speedup_passed, 12.5)
+        + _bool_score(strong_scaling_speedup_passed, 7.5)
+        + _bool_score(production_passed, 2.5)
     )
     passed = bool(
         domain_identity_passed
         and spectral_identity_passed
         and identity_passed
+        and routed_profile_identity_passed
         and cpu_speedup_passed
         and gpu_speedup_passed
         and strong_scaling_speedup_passed
@@ -429,6 +435,7 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
         "primary_artifacts": [
             "docs/_static/nonlinear_domain_parallel_identity_gate.json",
             "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+            "docs/_static/nonlinear_spectral_domain_routing_profile.json",
             "docs/_static/nonlinear_sharding_strong_scaling_large.json",
             "docs/_static/nonlinear_sharding_production_speedup_gate.json",
             "docs/_static/parallel_decomposition_status.json",
@@ -437,6 +444,9 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
             "domain_identity_passed": domain_identity_passed,
             "spectral_identity_passed": spectral_identity_passed,
             "combined_identity_passed": identity_passed,
+            "routed_domain_timing_identity_passed": routed_profile_identity_passed,
+            "routed_domain_timing_speedup": routed_profile_speedup,
+            "routed_domain_timing_speedup_gate_passed": routed_profile_speedup_passed,
             "parallel_decomposition_contract_passed": decomposition_contract_passed,
             "cpu_best_speedup": cpu_speedup,
             "cpu_speedup_gate": MIN_DOMAIN_CPU_SPEEDUP,

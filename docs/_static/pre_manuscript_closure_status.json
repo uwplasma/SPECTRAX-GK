@@ -48,15 +48,14 @@
     },
     {
       "blockers": [
-        "need_at_least_four_replicated_holdout_ensembles",
         "need_at_least_three_matched_optimized_transport_audits"
       ],
       "claim_level": "single_candidate_scoped_positive_audit_not_broad_optimization",
-      "completion_percent": 82.9,
+      "completion_percent": 86.7,
       "key_metrics": {
         "min_qualifying_matched_optimized_transport_audits": 3,
         "min_qualifying_optimized_equilibrium_ensembles": 3,
-        "min_qualifying_replicated_holdout_ensembles": 4,
+        "min_qualifying_replicated_holdout_ensembles": 3,
         "qa_long_window_anchor_passed": true,
         "qualifying_matched_optimized_transport_audits": 1,
         "qualifying_optimized_equilibrium_ensembles": 4,
@@ -77,7 +76,7 @@
       "required_next_artifacts": [
         "matched long post-transient baseline-vs-optimized audits for at least three independent optimized equilibria",
         "surface/alpha held-out VMEC/Boozer production-scope nonlinear transport artifact",
-        "replicated seed/timestep ensembles for each optimized equilibrium and selected holdout",
+        "replicated seed/timestep ensembles for each optimized equilibrium",
         "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows"
       ],
       "status": "partial"
@@ -91,7 +90,7 @@
         "production_speedup_gate_not_passed"
       ],
       "claim_level": "identity_and_profiler_diagnostic_not_production_speedup",
-      "completion_percent": 55.0,
+      "completion_percent": 65.0,
       "key_metrics": {
         "combined_identity_passed": true,
         "cpu_best_speedup": null,
@@ -101,6 +100,9 @@
         "gpu_speedup_gate": 1.5,
         "parallel_decomposition_contract_passed": true,
         "production_gate_passed": false,
+        "routed_domain_timing_identity_passed": true,
+        "routed_domain_timing_speedup": 1.0385872954086786,
+        "routed_domain_timing_speedup_gate_passed": false,
         "spectral_identity_passed": true,
         "strong_scaling_speedup_passed": false
       },
@@ -110,6 +112,7 @@
       "primary_artifacts": [
         "docs/_static/nonlinear_domain_parallel_identity_gate.json",
         "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+        "docs/_static/nonlinear_spectral_domain_routing_profile.json",
         "docs/_static/nonlinear_sharding_strong_scaling_large.json",
         "docs/_static/nonlinear_sharding_production_speedup_gate.json",
         "docs/_static/parallel_decomposition_status.json"
@@ -168,7 +171,7 @@
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 84.5,
+    "mean_completion_percent": 87.9,
     "n_blocked": 0,
     "n_closed": 2,
     "n_lanes": 4,

@@ -131,6 +131,16 @@ def _write_all_pass_fixture(root: Path) -> None:
     _write_json(root, "docs/_static/nonlinear_sharding_production_speedup_gate.json", {"passed": True})
     _write_json(root, "docs/_static/nonlinear_domain_parallel_identity_gate.json", {"gate": {"identity_passed": True}})
     _write_json(root, "docs/_static/nonlinear_spectral_communication_identity_gate.json", {"gate": {"identity_passed": True}})
+    _write_json(
+        root,
+        "docs/_static/nonlinear_spectral_domain_routing_profile.json",
+        {
+            "identity_passed": True,
+            "strong_speedup_vs_serial": 1.8,
+            "speedup_gate_passed": True,
+            "production_speedup_claim_allowed": False,
+        },
+    )
     _write_json(root, "docs/_static/parallel_decomposition_status.json", {"passed": True})
 
     _write_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json", {"passed": True})
@@ -179,6 +189,10 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
         "gpu_domain_speedup_below_1p5"
         in lanes["Production nonlinear domain-decomposition speedup"]["blockers"]
     )
+    domain_lane = lanes["Production nonlinear domain-decomposition speedup"]
+    assert domain_lane["completion_percent"] == 65.0
+    assert domain_lane["key_metrics"]["routed_domain_timing_identity_passed"] is True
+    assert domain_lane["key_metrics"]["routed_domain_timing_speedup_gate_passed"] is False
 
 
 def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> None:

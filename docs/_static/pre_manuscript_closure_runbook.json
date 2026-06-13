@@ -104,7 +104,7 @@
   "kind": "pre_manuscript_closure_runbook",
   "nonlinear_domain_decomposition": {
     "artifact": "docs/_static/nonlinear_spectral_communication_identity_gate.json",
-    "completion_percent": 55.0,
+    "completion_percent": 65.0,
     "new_gate": "logical_sharded_nonlinear_spectral_integrator_identity",
     "next_action": "Replace the local logical tile route with real device communication/distributed FFT routing, then require serial-vs-decomposed transport-window identity and CPU/GPU speedup >= 1.5.",
     "status": "identity_route_extended_no_speedup_claim"
@@ -130,7 +130,7 @@
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 84.5,
+    "mean_completion_percent": 87.9,
     "n_blocked": 0,
     "n_closed": 2,
     "n_lanes": 4,

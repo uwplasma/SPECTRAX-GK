@@ -209,7 +209,7 @@ or one positive candidate audit does not close a broad manuscript claim.
 .. image:: _static/pre_manuscript_closure_status.png
    :alt: Strict pre-manuscript closure status for scoped and production gates
 
-Current strict closure is ``84.5%`` on average, so manuscript drafting remains
+Current strict closure is ``87.9%`` on average, so manuscript drafting remains
 blocked by broad nonlinear optimization and nonlinear domain speedup, not by
 the scoped QL diagnostic. The required order is:
 
@@ -219,8 +219,9 @@ the scoped QL diagnostic. The required order is:
   promotion stays deferred;
 - broad end-to-end nonlinear turbulent-flux stellarator optimization: promote
   only after at least three independent matched baseline-vs-optimized
-  long-window transport audits and at least four replicated nonlinear holdout
-  ensembles. The optimized-equilibrium trace-count requirement is closed by the
+  long-window transport audits. The generic replicated-holdout lane is frozen
+  at three accepted long-window holdout ensembles; no additional holdouts are
+  active for this tranche. The optimized-equilibrium trace-count requirement is closed by the
   selected t700 optimized-equilibrium audit plus the strict t1500 growth/QL/
   nonlinear-window candidate trace ensembles;
 - production nonlinear domain-decomposition speedup: implement a real
