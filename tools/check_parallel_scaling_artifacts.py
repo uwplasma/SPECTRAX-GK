@@ -33,6 +33,14 @@ PRODUCTION_GATE_ARTIFACT_PATHS = (
     f"docs/_static/{PRODUCTION_GATE_JSON}",
     f"docs/_static/{PRODUCTION_GATE_CSV}",
 )
+OBSERVABLE_SPLIT_JSON = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json"
+OBSERVABLE_SPLIT_CSV = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv"
+OBSERVABLE_SPLIT_PNG = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png"
+OBSERVABLE_SPLIT_ARTIFACT_PATHS = (
+    f"docs/_static/{OBSERVABLE_SPLIT_JSON}",
+    f"docs/_static/{OBSERVABLE_SPLIT_CSV}",
+    f"docs/_static/{OBSERVABLE_SPLIT_PNG}",
+)
 PRODUCTION_GATE_SOURCE_FIELDS = (
     "backend",
     "requested_devices",
@@ -200,7 +208,7 @@ def _as_rows(payload: dict[str, Any], name: str) -> list[dict[str, Any]]:
     return rows
 
 
-def _finite_positive(value: object, field: str, context: str) -> float:
+def _finite_positive(value: Any, field: str, context: str) -> float:
     try:
         number = float(value)
     except (TypeError, ValueError) as exc:
@@ -210,7 +218,7 @@ def _finite_positive(value: object, field: str, context: str) -> float:
     return number
 
 
-def _finite_nonnegative(value: object, field: str, context: str) -> float:
+def _finite_nonnegative(value: Any, field: str, context: str) -> float:
     try:
         number = float(value)
     except (TypeError, ValueError) as exc:
@@ -436,7 +444,11 @@ def _production_gate_candidate_key(row: dict[str, Any]) -> tuple[str, int, int, 
         int(row.get("requested_devices") or 0),
         int(row.get("actual_devices") or 0),
         _path_basename(row.get("source")),
-        float(row.get("strong_speedup_vs_1_device")),
+        _finite_positive(
+            row.get("strong_speedup_vs_1_device"),
+            "strong_speedup_vs_1_device",
+            "production_gate_candidate_key",
+        ),
     )
 
 
@@ -774,6 +786,121 @@ def validate_nonlinear_sharding_production_gate(
     }
 
 
+def validate_device_z_pencil_observable_split(
+    root: Path,
+    *,
+    check_sidecars: bool = True,
+) -> dict[str, Any]:
+    """Validate the tracked device-z observable-overhead diagnostic artifact."""
+
+    root = root.resolve()
+    sidecars = 0
+    if check_sidecars:
+        for artifact in OBSERVABLE_SPLIT_ARTIFACT_PATHS:
+            path = REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            if not path.exists():
+                raise ValueError(
+                    "device_z_pencil_observable_split: missing sidecar artifact "
+                    f"{artifact}"
+                )
+            sidecars += 1
+
+    payload = _load_json(root, OBSERVABLE_SPLIT_JSON)
+    context = OBSERVABLE_SPLIT_JSON
+    if payload.get("kind") != "nonlinear_device_z_pencil_transport_window_profile":
+        raise ValueError(
+            f"{context}: kind must be 'nonlinear_device_z_pencil_transport_window_profile'"
+        )
+    _assert_claim_scope(payload, "not yet a full production nonlinear", context)
+    if int(payload.get("observable_repeats") or 0) < 1:
+        raise ValueError(f"{context}: observable_repeats must be at least one")
+
+    min_speedup = _finite_positive(payload.get("min_speedup"), "min_speedup", context)
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise ValueError(f"{context}: summary must be an object")
+    if summary.get("all_active_identity_passed") is not True:
+        raise ValueError(f"{context}: all active identity gates must pass")
+    if summary.get("transport_window_speedup_claim_allowed") is not False:
+        raise ValueError(f"{context}: transport speedup claim must remain blocked")
+    if summary.get("full_solver_speedup_claim_allowed") is not False:
+        raise ValueError(f"{context}: full solver speedup claim must remain blocked")
+    max_speedup = _finite_positive(
+        summary.get("max_speedup_vs_serial"),
+        "max_speedup_vs_serial",
+        context,
+    )
+    if max_speedup >= min_speedup:
+        raise ValueError(f"{context}: tracked observable-overhead artifact is no longer below gate")
+
+    model = payload.get("fft_batch_pressure_model")
+    if not isinstance(model, dict) or model.get("profiling_candidate") is not True:
+        raise ValueError(f"{context}: fft_batch_pressure_model must pass preflight")
+
+    rows = _as_rows(payload, context)
+    if check_sidecars:
+        count = _csv_row_count(root / OBSERVABLE_SPLIT_CSV)
+        if count != len(rows):
+            raise ValueError(f"{context}: CSV row count must match JSON rows")
+
+    active_parallel_rows = [
+        row
+        for row in rows
+        if bool(row.get("active")) and int(row.get("device_count") or 0) > 1
+    ]
+    if not active_parallel_rows:
+        raise ValueError(f"{context}: must include at least one active multi-device row")
+    for index, row in enumerate(active_parallel_rows):
+        row_context = f"{context}: active multi-device row {index}"
+        if row.get("identity_passed") is not True:
+            raise ValueError(f"{row_context}: identity_passed must be true")
+        if row.get("transport_window_identity_passed") is not True:
+            raise ValueError(f"{row_context}: transport_window_identity_passed must be true")
+        if row.get("speedup_gate_passed") is not False:
+            raise ValueError(f"{row_context}: speedup gate must remain false")
+        speedup = _finite_positive(row.get("speedup_vs_serial"), "speedup_vs_serial", row_context)
+        if speedup >= min_speedup:
+            raise ValueError(f"{row_context}: speedup unexpectedly exceeds the promotion gate")
+        blockers = row.get("blocked_reasons")
+        if not isinstance(blockers, list) or "speedup_below_gate" not in blockers:
+            raise ValueError(f"{row_context}: blockers must include speedup_below_gate")
+        _finite_positive(row.get("median_s"), "median_s", row_context)
+        _finite_positive(
+            row.get("observable_gate_median_s"),
+            "observable_gate_median_s",
+            row_context,
+        )
+        _finite_positive(
+            row.get("observable_gate_overhead_vs_compute"),
+            "observable_gate_overhead_vs_compute",
+            row_context,
+        )
+        _finite_nonnegative(
+            row.get("final_state_max_abs_error"),
+            "final_state_max_abs_error",
+            row_context,
+        )
+        _finite_nonnegative(
+            row.get("physical_flux_trace_max_abs_error"),
+            "physical_flux_trace_max_abs_error",
+            row_context,
+        )
+
+    return {
+        "name": "device_z_pencil_observable_split",
+        "json": OBSERVABLE_SPLIT_JSON,
+        "n_rows": len(rows),
+        "n_sidecars": sidecars,
+        "max_speedup_vs_serial": max_speedup,
+        "min_speedup": min_speedup,
+        "production_speedup_claim_allowed": False,
+        "max_observable_gate_overhead_vs_compute": max(
+            float(row["observable_gate_overhead_vs_compute"])
+            for row in active_parallel_rows
+        ),
+    }
+
+
 def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool = True) -> dict[str, Any]:
     """Validate one artifact family under ``root`` and return a compact summary."""
 
@@ -867,12 +994,17 @@ def validate_all(
         root,
         check_sidecars=check_sidecars,
     )
+    observable_split = validate_device_z_pencil_observable_split(
+        root,
+        check_sidecars=check_sidecars,
+    )
 
     missing_from_manifest: list[str] = []
     if check_manifest:
         manifest_paths = _manifest_parallel_artifacts(manifest)
         required = {path for family in FAMILIES for path in family.artifact_paths}
         required.update(PRODUCTION_GATE_ARTIFACT_PATHS)
+        required.update(OBSERVABLE_SPLIT_ARTIFACT_PATHS)
         missing_from_manifest = sorted(required - manifest_paths)
         if missing_from_manifest:
             raise ValueError(
@@ -882,13 +1014,15 @@ def validate_all(
 
     return {
         "n_families": len(summaries),
-        "n_json_artifacts": sum(1 + len(family.split) for family in FAMILIES) + 1,
+        "n_json_artifacts": sum(1 + len(family.split) for family in FAMILIES) + 2,
         "n_sidecars": sum(summary["n_sidecars"] for summary in summaries)
-        + int(production_gate["n_sidecars"]),
+        + int(production_gate["n_sidecars"])
+        + int(observable_split["n_sidecars"]),
         "manifest_checked": check_manifest,
         "missing_from_manifest": missing_from_manifest,
         "families": summaries,
         "production_gate": production_gate,
+        "observable_split": observable_split,
     }
 
 

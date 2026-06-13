@@ -105,6 +105,9 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.png",
         "docs/_static/nonlinear_sharding_production_speedup_gate.json",
         "docs/_static/nonlinear_sharding_production_speedup_gate.csv",
+        "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+        "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv",
+        "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png",
         "docs/_static/linear_rhs_parallel_slices_sweep.json",
         "docs/_static/linear_rhs_parallel_slices_sweep.csv",
         "docs/_static/linear_rhs_parallel_slices_sweep.png",
@@ -219,8 +222,8 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
     summary = mod.validate_all()
 
     assert summary["n_families"] == 4
-    assert summary["n_json_artifacts"] == 11
-    assert summary["n_sidecars"] == 32
+    assert summary["n_json_artifacts"] == 12
+    assert summary["n_sidecars"] == 35
     assert summary["manifest_checked"] is True
     assert {family["name"] for family in summary["families"]} == {
         "independent_ky_scan",
@@ -232,6 +235,32 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
     assert summary["production_gate"]["gate_passed"] is False
     assert summary["production_gate"]["status"] == "diagnostic_only"
     assert summary["production_gate"]["production_candidate_backends"] == ["cpu"]
+    assert summary["observable_split"]["name"] == "device_z_pencil_observable_split"
+    assert summary["observable_split"]["production_speedup_claim_allowed"] is False
+    assert summary["observable_split"]["max_observable_gate_overhead_vs_compute"] > 1.0
+
+
+def test_parallel_scaling_artifact_checker_validates_observable_split() -> None:
+    mod = _load_parallel_checker()
+
+    summary = mod.validate_device_z_pencil_observable_split(STATIC)
+
+    assert summary["json"] == mod.OBSERVABLE_SPLIT_JSON
+    assert summary["production_speedup_claim_allowed"] is False
+    assert summary["max_speedup_vs_serial"] < summary["min_speedup"]
+    assert summary["max_observable_gate_overhead_vs_compute"] > 10.0
+
+
+def test_parallel_scaling_artifact_checker_rejects_promoted_observable_split(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    payload = _load_json(mod.OBSERVABLE_SPLIT_JSON)
+    payload["summary"]["max_speedup_vs_serial"] = payload["min_speedup"]
+    (tmp_path / mod.OBSERVABLE_SPLIT_JSON).write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="no longer below gate"):
+        mod.validate_device_z_pencil_observable_split(tmp_path, check_sidecars=False)
 
 
 def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(tmp_path: Path) -> None:

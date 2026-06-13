@@ -433,6 +433,9 @@ artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
   "docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json",
   "docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png",
 ]
 next_tests = [
   "add a regression that direct device-backed resharding and host-staged z sharding are not silently conflated on CUDA",
@@ -1643,6 +1646,9 @@ artifact_paths = [
   "docs/_static/nonlinear_sharding_strong_scaling_large.png",
   "docs/_static/nonlinear_sharding_production_speedup_gate.json",
   "docs/_static/nonlinear_sharding_production_speedup_gate.csv",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png",
     "docs/_static/linear_rhs_parallel_slices_sweep.json",
   "docs/_static/linear_rhs_parallel_slices_sweep.csv",
   "docs/_static/linear_rhs_parallel_slices_sweep.png",
