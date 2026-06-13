@@ -35,6 +35,7 @@ def test_auto_z_chunk_size_records_fft_batch_pressure_model(monkeypatch) -> None
         z_chunk_size=None,
         auto_z_chunk_size=True,
         max_fft_batch_count=4,
+        observable_mode="host_gather",
         trace_dir=None,
         trace_device_count=None,
         hlo_prefix=None,
@@ -48,6 +49,7 @@ def test_auto_z_chunk_size_records_fft_batch_pressure_model(monkeypatch) -> None
     assert model["chunked_fft_batch_count"] == 4
     assert payload["rows"][1]["blocked_reasons"] == ["not_enough_devices"]
     assert payload["observable_repeats"] == 0
+    assert payload["observable_mode"] == "host_gather"
     assert payload["rows"][0]["timing_scope"] == "compute_only_final_state_update"
     assert payload["rows"][1]["observable_gate_stats_s"] == {}
 
@@ -71,6 +73,7 @@ def test_observable_repeats_rejects_negative_values(monkeypatch) -> None:
             z_chunk_size=None,
             auto_z_chunk_size=False,
             max_fft_batch_count=4,
+            observable_mode="host_gather",
             trace_dir=None,
             trace_device_count=None,
             hlo_prefix=None,

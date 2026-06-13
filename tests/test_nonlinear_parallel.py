@@ -287,6 +287,41 @@ def test_device_z_pencil_fft_batch_pressure_model_fails_closed() -> None:
         )
 
 
+def test_spectral_physical_observable_sums_are_z_additive() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 4))
+    _field, bracket, _rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(state)
+
+    whole = nonlinear_parallel._spectral_physical_transport_observable_vector_from_sums(
+        nonlinear_parallel._spectral_physical_transport_observable_sums(state, bracket)
+    )
+    split = (
+        nonlinear_parallel._spectral_physical_transport_observable_sums(
+            state[..., :2],
+            bracket[..., :2],
+        )
+        + nonlinear_parallel._spectral_physical_transport_observable_sums(
+            state[..., 2:],
+            bracket[..., 2:],
+        )
+    )
+    reassembled = (
+        nonlinear_parallel._spectral_physical_transport_observable_vector_from_sums(split)
+    )
+
+    np.testing.assert_allclose(np.asarray(reassembled), np.asarray(whole), rtol=1.0e-6)
+
+
+def test_device_z_transport_window_observable_mode_fails_closed() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((1, 1, 4, 4, 2))
+
+    with pytest.raises(ValueError, match="observable_mode"):
+        nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+            state,
+            devices=[jax.devices()[0]],
+            observable_mode="device_get",  # type: ignore[arg-type]
+        )
+
+
 def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
 

@@ -102,13 +102,21 @@ updates; the ``observable_gate_*`` JSON/CSV fields report the cost of
 host-gathered free-energy, field-energy, physical-flux, and bracket-RMS checks
 separately. Those fields are diagnostic bottleneck evidence and are not part of
 the nonlinear speedup promotion gate.
+Use ``--observable-mode sharded_reduce`` to evaluate the same scalar
+observables through z-sharded device reductions instead of full-state host
+gathers. This is an identity/profiling option, not a production speedup mode:
+when it recomputes the nonlinear bracket only for diagnostics, it can be slower
+than the host-gathered path. A production version should fuse scalar diagnostic
+accumulation into the RHS/update route rather than launching a second bracket
+pipeline.
 The tracked office artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``
 records this split on the ``(4,16,96,96,64)`` auto-chunked two-GPU diagnostic:
 identity passes, compute-only speedup remains below gate at ``1.19x``, and the
 observable gate median is about ``42.6`` times the sharded compute median. The
-next production route should therefore keep scalar diagnostics streamed or
-device-side during timing rather than host-gathering them every step.
+next production route should therefore keep scalar diagnostics streamed and
+fused with the device computation rather than host-gathering full states or
+recomputing the nonlinear bracket every step.
 
 Nonlinear profiling
 -------------------

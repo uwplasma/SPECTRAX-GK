@@ -137,6 +137,7 @@ def build_profile(
     z_chunk_size: int | None,
     auto_z_chunk_size: bool,
     max_fft_batch_count: int,
+    observable_mode: str,
     trace_dir: Path | None,
     trace_device_count: int | None,
     hlo_prefix: Path | None,
@@ -155,6 +156,8 @@ def build_profile(
     dt_array = jnp.asarray(float(dt), dtype=jnp.real(state).dtype)
     if int(observable_repeats) < 0:
         raise ValueError("observable_repeats must be non-negative")
+    if observable_mode not in {"host_gather", "sharded_reduce"}:
+        raise ValueError("observable_mode must be 'host_gather' or 'sharded_reduce'")
     requested_parallel_counts = tuple(int(count) for count in device_counts if int(count) > 1)
     batch_model: dict[str, Any] | None = None
     if requested_parallel_counts:
@@ -257,6 +260,7 @@ def build_profile(
             atol=float(atol),
             rtol=float(rtol),
             z_chunk_size=z_chunk_size,
+            observable_mode=observable_mode,  # type: ignore[arg-type]
         )
         identity_gate_elapsed_s = float(time.perf_counter() - identity_start)
         observable_stats: dict[str, float] = {}
@@ -270,6 +274,7 @@ def build_profile(
                     atol=float(atol),
                     rtol=float(rtol),
                     z_chunk_size=z_chunk_size,
+                    observable_mode=observable_mode,  # type: ignore[arg-type]
                 ),
                 warmups=0,
                 repeats=int(observable_repeats),
@@ -428,6 +433,7 @@ def build_profile(
             "warmups": int(warmups),
             "repeats": int(repeats),
             "observable_repeats": int(observable_repeats),
+            "observable_mode": str(observable_mode),
             "atol": float(atol),
             "rtol": float(rtol),
             "min_speedup": float(min_speedup),
@@ -586,6 +592,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="choose z_chunk_size from the cuFFT batch-pressure preflight model",
     )
     parser.add_argument("--max-fft-batch-count", type=int, default=65_536)
+    parser.add_argument(
+        "--observable-mode",
+        choices=("host_gather", "sharded_reduce"),
+        default="host_gather",
+        help=(
+            "choose how the identity gate records scalar observables; "
+            "sharded_reduce avoids full-state host gathers"
+        ),
+    )
     parser.add_argument("--trace-dir", type=Path)
     parser.add_argument("--trace-device-count", type=int)
     parser.add_argument("--hlo-prefix", type=Path)
@@ -611,6 +626,7 @@ def main(argv: list[str] | None = None) -> int:
         z_chunk_size=args.z_chunk_size,
         auto_z_chunk_size=bool(args.auto_z_chunk_size),
         max_fft_batch_count=int(args.max_fft_batch_count),
+        observable_mode=str(args.observable_mode),
         trace_dir=args.trace_dir,
         trace_device_count=args.trace_device_count,
         hlo_prefix=args.hlo_prefix,

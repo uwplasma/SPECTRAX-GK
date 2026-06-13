@@ -288,6 +288,12 @@ next optimization target is the sharded compute route or the scalar
 diagnostic/host-gather path. The timed speedup row remains compute-only; the
 ``observable_gate_*`` fields are a separate bottleneck split and do not promote
 nonlinear domain decomposition by themselves.
+The companion ``--observable-mode sharded_reduce`` option computes those scalar
+observables through device-side z reductions and is useful for identity
+debugging. It is not a production mode by itself because the current
+implementation recomputes the nonlinear bracket for diagnostics; the production
+target is a fused RHS/update path that accumulates the scalar diagnostics while
+the bracket is already available.
 The tracked two-GPU split artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``
 passes identity on the auto-chunked ``96x96x64`` diagnostic, but still records
