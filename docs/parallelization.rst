@@ -251,15 +251,15 @@ avoids global spectral tile reconstruction. The tracked logical-CPU artifact
 ``docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json`` confirms
 serial-vs-sharded RHS identity on two and four CPU devices for a
 ``(4,16,96,96,32)`` nonlinear bracket workload, with maximum absolute RHS error
-``7.6e-10``. It is still slower than serial on this machine (``0.37x`` on two
-logical CPU devices and ``0.32x`` on four), so it is a correctness/profiling
-milestone rather than a production speedup claim. The matching two-GPU office
-artifact ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` is
-also identity-clean after host staging the initial state before applying
-explicit z sharding (``max_abs_error=5.24e-10``), but the two-GPU timing is only
-``0.13x`` of the single-GPU serial JIT route. This is still negative evidence
-for speedup and cannot support any production nonlinear domain-decomposition
-claim.
+``7.6e-10``. The ``shard_map`` route is a CPU RHS speedup candidate on this
+machine (``1.51x`` on two logical CPU devices and ``2.62x`` on four). The
+matching two-GPU office artifact
+``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` is also
+identity-clean after host staging the initial state before applying explicit z
+sharding (``max_abs_error=5.24e-10``), but the two-GPU timing is only ``1.09x``
+of the single-GPU serial JIT route. These artifacts therefore support a
+CPU-microkernel speedup candidate, not a production nonlinear
+domain-decomposition claim.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same

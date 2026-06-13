@@ -1,7 +1,7 @@
 {
   "atol": 5e-06,
   "backend": "cpu",
-  "claim_scope": "device z-sharded fused pencil nonlinear RHS timing; FFT axes are local per z shard, no global spectral reconstruction is used, and no production speedup claim is allowed unless the speedup gate passes",
+  "claim_scope": "device z-sharded shard_map fused pencil nonlinear RHS timing; FFT axes are local per z shard, no global spectral reconstruction is used, and no production speedup claim is allowed unless the speedup gate passes",
   "device_count_available": 4,
   "kind": "nonlinear_device_z_pencil_rhs_profile",
   "min_speedup": 1.5,
@@ -12,67 +12,63 @@
       "blocked_reasons": [],
       "device_count": 1,
       "identity_passed": true,
-      "median_s": 0.15166954102460295,
+      "median_s": 0.16693333303555846,
       "rhs_max_abs_error": 0.0,
       "rhs_max_rel_error": 0.0,
       "speedup_gate_passed": false,
       "speedup_vs_serial": 1.0,
       "stats": {
-        "max": 0.1712162089534104,
-        "mean": 0.14959324980154634,
-        "median": 0.15166954102460295,
-        "min": 0.12666924996301532,
-        "std": 0.01962342598445787
+        "max": 0.1754635840188712,
+        "mean": 0.15441035840194672,
+        "median": 0.16693333303555846,
+        "min": 0.12752941704820842,
+        "std": 0.022119466830379485
       }
     },
     {
       "active": true,
-      "blocked_reasons": [
-        "speedup_below_gate"
-      ],
+      "blocked_reasons": [],
       "device_count": 2,
       "identity_passed": true,
-      "median_s": 0.40462275000754744,
+      "median_s": 0.11045808298513293,
       "rhs_max_abs_error": 7.566995363639251e-10,
       "rhs_max_rel_error": 3.8242620398443663e-07,
-      "speedup_gate_passed": false,
-      "speedup_vs_serial": 0.3748418521246614,
+      "speedup_gate_passed": true,
+      "speedup_vs_serial": 1.5112821852795217,
       "stats": {
-        "max": 0.4161297910613939,
-        "mean": 0.3972163080004975,
-        "median": 0.40462275000754744,
-        "min": 0.3608549159253016,
-        "std": 0.019821507479198378
+        "max": 0.1121690000873059,
+        "mean": 0.10432500822935253,
+        "median": 0.11045808298513293,
+        "min": 0.08244087500497699,
+        "std": 0.011172432177766778
       }
     },
     {
       "active": true,
-      "blocked_reasons": [
-        "speedup_below_gate"
-      ],
+      "blocked_reasons": [],
       "device_count": 4,
       "identity_passed": true,
-      "median_s": 0.4732553749345243,
+      "median_s": 0.06360866699833423,
       "rhs_max_abs_error": 7.566995363639251e-10,
       "rhs_max_rel_error": 3.8242620398443663e-07,
-      "speedup_gate_passed": false,
-      "speedup_vs_serial": 0.32048139135363585,
+      "speedup_gate_passed": true,
+      "speedup_vs_serial": 2.62438030716679,
       "stats": {
-        "max": 0.4803667920641601,
-        "mean": 0.46241705836728214,
-        "median": 0.4732553749345243,
-        "min": 0.4140704999445006,
-        "std": 0.024593577008883805
+        "max": 0.06930604099761695,
+        "mean": 0.0645568666048348,
+        "median": 0.06360866699833423,
+        "min": 0.059921749983914196,
+        "std": 0.003230850315636114
       }
     }
   ],
   "rtol": 0.0001,
   "serial_stats_s": {
-    "max": 0.1712162089534104,
-    "mean": 0.14959324980154634,
-    "median": 0.15166954102460295,
-    "min": 0.12666924996301532,
-    "std": 0.01962342598445787
+    "max": 0.1754635840188712,
+    "mean": 0.15441035840194672,
+    "median": 0.16693333303555846,
+    "min": 0.12752941704820842,
+    "std": 0.022119466830379485
   },
   "shape": [
     4,
@@ -83,9 +79,9 @@
   ],
   "summary": {
     "all_active_identity_passed": true,
-    "max_speedup_vs_serial": 0.3748418521246614,
-    "production_speedup_claim_allowed": false,
-    "status": "identity_timed_no_production_speedup"
+    "max_speedup_vs_serial": 2.62438030716679,
+    "production_speedup_claim_allowed": true,
+    "status": "production_speedup_candidate"
   },
   "warmups": 2
 }

@@ -162,20 +162,24 @@ def build_profile(
             continue
 
         mesh = Mesh(np.asarray(devices[:count]), ("z",))
-        sharding = NamedSharding(mesh, PartitionSpec(None, None, None, None, "z"))
-        field_sharding = NamedSharding(mesh, PartitionSpec(None, None, "z"))
+        state_spec = PartitionSpec(None, None, None, None, "z")
+        sharding = NamedSharding(mesh, state_spec)
         with mesh:
             # Stage through host before explicit z sharding. On current CUDA JAX,
             # resharding directly from a single-device array can corrupt the
             # second z shard and should not be mixed into the route timing gate.
             sharded_state = jax.device_put(np.asarray(jax.device_get(state)), sharding)
             sharded_jit = jax.jit(
-                lambda item: _pencil_nonlinear_spectral_rhs(item),
-                in_shardings=sharding,
-                out_shardings=(field_sharding, sharding, sharding),
+                jax.shard_map(
+                    lambda item: _pencil_nonlinear_spectral_rhs(item)[2],
+                    mesh=mesh,
+                    in_specs=state_spec,
+                    out_specs=state_spec,
+                    check_vma=False,
+                )
             )
             sharded_out, sharded_times = _time_repeated(
-                lambda: sharded_jit(sharded_state)[2],
+                lambda: sharded_jit(sharded_state),
                 warmups=int(warmups),
                 repeats=int(repeats),
             )
@@ -225,9 +229,9 @@ def build_profile(
         {
             "kind": "nonlinear_device_z_pencil_rhs_profile",
             "claim_scope": (
-                "device z-sharded fused pencil nonlinear RHS timing; FFT axes are local per z shard, "
-                "no global spectral reconstruction is used, and no production speedup claim is allowed "
-                "unless the speedup gate passes"
+                "device z-sharded shard_map fused pencil nonlinear RHS timing; FFT axes are local "
+                "per z shard, no global spectral reconstruction is used, and no production speedup "
+                "claim is allowed unless the speedup gate passes"
             ),
             "backend": str(jax.default_backend()),
             "device_count_available": int(len(devices)),

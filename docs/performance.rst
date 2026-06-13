@@ -55,15 +55,16 @@ The follow-up z-sharded fused pencil RHS artifact
 ``docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json`` is the first
 active device-sharded version of that idea. It passes serial-vs-sharded RHS
 identity on a ``(4,16,96,96,32)`` bracket workload with maximum absolute error
-``7.6e-10``, but the logical-CPU timing is slower than serial (best observed
-speedup ``0.37x``). This is intentionally recorded as negative profiler
-evidence: production nonlinear domain speedup remains open until the same route
-or a better one clears the ``1.5x`` gate on CPU/GPU hardware. The two-GPU office
-artifact ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` now
-passes host-gathered RHS identity (``max_abs_error=5.24e-10``) after staging the
-initial state through host before applying explicit z sharding. It is still
-negative performance evidence: the two-GPU row reaches only ``0.13x`` versus the
-single-GPU serial JIT route, so no GPU speedup claim is allowed.
+``7.6e-10``. The ``shard_map`` route is now a CPU speedup candidate for this
+RHS microkernel: ``1.51x`` on two logical CPU devices and ``2.62x`` on four
+logical CPU devices. This is still not a production nonlinear
+domain-decomposition claim because it has not yet been promoted through a
+physical transport-window gate. The two-GPU office artifact
+``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` also passes
+host-gathered RHS identity (``max_abs_error=5.24e-10``) after staging the
+initial state through host before applying explicit z sharding, but reaches only
+``1.09x`` versus the single-GPU serial JIT route, below the ``1.5x`` GPU speedup
+gate.
 
 Nonlinear profiling
 -------------------
