@@ -332,7 +332,7 @@ Core Validation Figures
    * - Performance panel
      - existing performance tooling
      - Closed for release-level scoped claims
-     - current artifact bases: ``docs/_static/runtime_memory_benchmark.png``, ``docs/_static/nonlinear_rhs_profile_miller.png``, ``docs/_static/nonlinear_rhs_profile_stellarator_runtime.png``, ``docs/_static/full_nonlinear_rhs_trace_summary.json``, ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json``, and ``docs/_static/nonlinear_sharding_profile_office_gpu.json``. The release claim is limited to current cold/warm runtime accounting, CPU/GPU nonlinear RHS hot-path localization, W7-X/HSX runtime-mode stellarator smoke profiles, and numerical-identity gates. It is not a production nonlinear domain-decomposition speedup claim.
+     - current artifact bases: ``docs/_static/runtime_memory_benchmark.png``, ``docs/_static/nonlinear_rhs_profile_miller.png``, ``docs/_static/nonlinear_rhs_profile_stellarator_runtime.png``, ``docs/_static/full_nonlinear_rhs_trace_summary.json``, ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json``, ``docs/_static/nonlinear_sharding_profile_office_gpu.json``, and ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``. The release claim is limited to current cold/warm runtime accounting, CPU/GPU nonlinear RHS hot-path localization, W7-X/HSX runtime-mode stellarator smoke profiles, and numerical-identity gates. The device-z pencil route is identity-correct but remains below the two-GPU speedup gate, so it is not a production nonlinear domain-decomposition speedup claim.
    * - Parallelization identity gate
      - ``tools/generate_parallel_ky_scan_gate.py``
      - Closed for independent Cyclone ``k_y`` batching

@@ -118,6 +118,14 @@ next production route should therefore keep scalar diagnostics streamed and
 fused with the device computation rather than host-gathering full states or
 recomputing the nonlinear bracket every step.
 
+For this release, performance work is closed at that evidence-backed boundary:
+runtime/memory accounting, nonlinear RHS hot-path localization, production
+independent-work parallelization, and diagnostic nonlinear decomposition
+identity are tracked and reproducible. Production nonlinear domain
+decomposition is deferred until a full solver route fuses scalar diagnostics
+into the RHS/update path and clears matched CPU/GPU transport-window speedup
+gates.
+
 Nonlinear profiling
 -------------------
 

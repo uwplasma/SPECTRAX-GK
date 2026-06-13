@@ -593,6 +593,13 @@ Parallelization and performance state:
   distributed-FFT or nonlinear speedup claims.
 - ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` and related RHS
   profiler artifacts support scoped hot-path localization only.
+- ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``
+  is the final performance artifact for this release tranche. It passes
+  serial-vs-sharded identity on the auto-chunked two-GPU transport-window
+  diagnostic, but compute-only speedup remains below the promotion gate and the
+  observable gate is dominated by scalar diagnostic overhead. This closes the
+  current performance work as diagnostic evidence and defers production
+  nonlinear domain decomposition to a future fused RHS/update diagnostic route.
 
 Deferred manuscript lanes
 -------------------------

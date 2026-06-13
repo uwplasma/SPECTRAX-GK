@@ -1,4 +1,4 @@
 lane,claim_level,n_items,requested_shards,actual_shards,artifact_identity_passed,reconstruction_identity_passed,claim_separation_passed,passed,source
 independent_ky_scan,production_independent_batching,4,2,2,True,True,True,True,docs/_static/parallel_ky_scan_gate.json
 uq_ensemble,production_independent_batching,2,2,2,True,True,True,True,docs/_static/quasilinear_runtime_parallel_gate.json
-diagnostic_nonlinear_domain,diagnostic_nonlinear_domain_partition,6,2,2,True,True,True,True,docs/_static/nonlinear_domain_parallel_identity_gate.json
+diagnostic_nonlinear_domain,diagnostic_nonlinear_domain_partition,24,3,3,True,True,True,True,docs/_static/nonlinear_domain_parallel_identity_gate.json
