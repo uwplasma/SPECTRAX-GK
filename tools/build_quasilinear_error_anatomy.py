@@ -256,6 +256,17 @@ def build_error_anatomy_report(
         blockers.append("heldout_screening_correlation_gate_failed")
     if any(bool(row["above_transport_gate"]) for row in rows):
         blockers.append("case_residuals_exceed_transport_gate")
+    dominant_residuals = [
+        {
+            "case": str(row["case"]),
+            "label": str(row["label"]),
+            "geometry_group": str(row["geometry_group"]),
+            "absolute_relative_error": float(row["absolute_relative_error"]),
+            "error_budget_fraction": float(row["error_budget_fraction"]),
+            "prediction_to_observed_ratio": float(row["prediction_to_observed_ratio"]),
+        }
+        for row in rows[:3]
+    ]
     return {
         "kind": "quasilinear_error_anatomy",
         "claim_level": "model_development_residual_anatomy_not_absolute_flux_promotion",
@@ -280,6 +291,35 @@ def build_error_anatomy_report(
                 "It does not promote a runtime/TOML absolute-flux predictor."
             ),
         },
+        "frozen_ledger_policy": {
+            "additional_holdout_collection_active": False,
+            "ledger_case_count": len(rows),
+            "ledger_holdout_count": sum(1 for row in rows if row["split"] == "holdout"),
+            "active_next_step": (
+                "improve saturation and transport-amplitude physics on the frozen admitted ledger"
+            ),
+            "do_not_promote_until": [
+                "transport mean relative error gate passes",
+                "prediction interval coverage gate passes",
+                "screening/rank gates pass",
+                "promotion guardrails still classify the candidate as non-diagnostic",
+            ],
+        },
+        "dominant_residuals": dominant_residuals,
+        "model_development_requirements": [
+            (
+                "reduce the external-axisymmetric residual budget, especially the Solovev "
+                "low-flux stress case, without loosening the 0.35 transport gate"
+            ),
+            (
+                "add saturation-amplitude physics that separates pressure shaping, "
+                "axisymmetric VMEC stress cases, and stellarator benchmark windows"
+            ),
+            (
+                "preserve the comparatively good HSX/W7-X errors while improving the "
+                "frozen-ledger mean and held-out rank/correlation metrics"
+            ),
+        ],
         "source_artifacts": {
             "candidate_uncertainty": str(Path(candidate_uncertainty)),
             "screening_skill": str(Path(screening_skill)),
@@ -368,7 +408,7 @@ def write_error_anatomy_figure(
     subtitle = (
         f"{report['candidate']} | mean error = "
         f"{float(report['candidate_mean_abs_relative_error']):.3f} | "
-        "absolute-flux promotion = FAIL"
+        "absolute-flux promotion = FAIL | frozen ledger"
     )
     fig.suptitle(f"{title}\n{subtitle}", fontsize=13.5, fontweight="bold")
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")

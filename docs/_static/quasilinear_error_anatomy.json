@@ -4,6 +4,44 @@
   "candidate_prediction_interval_coverage": 0.9166666666666666,
   "case_count": 12,
   "claim_level": "model_development_residual_anatomy_not_absolute_flux_promotion",
+  "dominant_residuals": [
+    {
+      "absolute_relative_error": 4.624316151099059,
+      "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+      "error_budget_fraction": 0.5526556451824511,
+      "geometry_group": "external axisymmetric VMEC",
+      "label": "solovev reference repair dt002 amp1em5 n48 t250",
+      "prediction_to_observed_ratio": 5.624316151099059
+    },
+    {
+      "absolute_relative_error": 0.9436504726236591,
+      "case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+      "error_budget_fraction": 0.11277640709115559,
+      "geometry_group": "external axisymmetric VMEC",
+      "label": "Shaped-pressure VMEC",
+      "prediction_to_observed_ratio": 1.943650472623659
+    },
+    {
+      "absolute_relative_error": 0.5748974181256636,
+      "case": "itermodel_external_vmec_t350_window",
+      "error_budget_fraction": 0.06870644072474405,
+      "geometry_group": "external axisymmetric VMEC",
+      "label": "ITERModel VMEC",
+      "prediction_to_observed_ratio": 0.4251025818743364
+    }
+  ],
+  "frozen_ledger_policy": {
+    "active_next_step": "improve saturation and transport-amplitude physics on the frozen admitted ledger",
+    "additional_holdout_collection_active": false,
+    "do_not_promote_until": [
+      "transport mean relative error gate passes",
+      "prediction interval coverage gate passes",
+      "screening/rank gates pass",
+      "promotion guardrails still classify the candidate as non-diagnostic"
+    ],
+    "ledger_case_count": 12,
+    "ledger_holdout_count": 10
+  },
   "geometry_group_summary": [
     {
       "error_budget_fraction": 0.8283674030936168,
@@ -43,6 +81,11 @@
   ],
   "holdout_count": 10,
   "kind": "quasilinear_error_anatomy",
+  "model_development_requirements": [
+    "reduce the external-axisymmetric residual budget, especially the Solovev low-flux stress case, without loosening the 0.35 transport gate",
+    "add saturation-amplitude physics that separates pressure shaping, axisymmetric VMEC stress cases, and stellarator benchmark windows",
+    "preserve the comparatively good HSX/W7-X errors while improving the frozen-ledger mean and held-out rank/correlation metrics"
+  ],
   "model_summary": [
     {
       "absolute_flux_gate_passed": false,
