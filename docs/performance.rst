@@ -85,8 +85,10 @@ micro-route transport-window claim, not a full production nonlinear
 turbulence-solve speedup claim.
 
 For larger GPU diagnostic grids, the profiler also supports
-``--z-chunk-size``. This processes independent local ``z`` slabs separately and
-can avoid cuFFT batched-plan failures when used with
+``--z-chunk-size`` or ``--auto-z-chunk-size``. The automatic option uses a
+backend-free cuFFT batch-pressure preflight model to choose a local
+``z_chunk_size`` before launching the timed route. This processes independent
+local ``z`` slabs separately and can avoid cuFFT batched-plan failures when used with
 ``XLA_PYTHON_CLIENT_PREALLOCATE=false``. The June 13, 2026 office diagnostics
 used this mode to run previously failing ``(4,16,96,96,64)`` and
 ``(4,16,128,128,32)`` transport windows, but their two-GPU speedups were only

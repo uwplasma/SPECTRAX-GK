@@ -276,7 +276,9 @@ all-to-all or collective-permute operations. The remaining nonlinear
 parallelization blocker is therefore production workload granularity and
 end-to-end solver routing, not this micro-route's serial-vs-sharded identity.
 For larger diagnostic grids, ``tools/profile_device_z_pencil_transport_window.py``
-also accepts ``--z-chunk-size``. Combined with
+also accepts ``--z-chunk-size`` and ``--auto-z-chunk-size``. The automatic
+mode uses the device-z pencil FFT batch-pressure model to keep the largest
+axis-wise cuFFT batch below a configured cap before timing. Combined with
 ``XLA_PYTHON_CLIENT_PREALLOCATE=false`` on office GPUs, the chunked route avoids
 the cuFFT plan failures seen on the unchunked ``96x96x64`` and ``128x128x32``
 transport windows, but the measured two-GPU speedups remain below the ``1.5x``

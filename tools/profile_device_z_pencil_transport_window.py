@@ -134,6 +134,8 @@ def build_profile(
     rtol: float,
     min_speedup: float,
     z_chunk_size: int | None,
+    auto_z_chunk_size: bool,
+    max_fft_batch_count: int,
     trace_dir: Path | None,
     trace_device_count: int | None,
     hlo_prefix: Path | None,
@@ -143,12 +145,32 @@ def build_profile(
         _host_staged_array_for_sharding,
         _serial_nonlinear_spectral_rhs,
         deterministic_nonlinear_spectral_state,
+        device_z_pencil_fft_batch_pressure_model,
         device_z_pencil_nonlinear_spectral_transport_window_identity_gate,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
     devices = tuple(jax.devices())
     dt_array = jnp.asarray(float(dt), dtype=jnp.real(state).dtype)
+    requested_parallel_counts = tuple(int(count) for count in device_counts if int(count) > 1)
+    batch_model: dict[str, Any] | None = None
+    if requested_parallel_counts:
+        target_count = max(requested_parallel_counts)
+        model = device_z_pencil_fft_batch_pressure_model(
+            shape,
+            device_count=target_count,
+            max_fft_batch_count=int(max_fft_batch_count),
+            z_chunk_size=z_chunk_size,
+        )
+        if bool(auto_z_chunk_size) and z_chunk_size is None:
+            z_chunk_size = model.suggested_z_chunk_size
+            model = device_z_pencil_fft_batch_pressure_model(
+                shape,
+                device_count=target_count,
+                max_fft_batch_count=int(max_fft_batch_count),
+                z_chunk_size=z_chunk_size,
+            )
+        batch_model = model.to_dict()
 
     def serial_route(item: jax.Array) -> jax.Array:
         out = item
@@ -360,6 +382,9 @@ def build_profile(
             "rtol": float(rtol),
             "min_speedup": float(min_speedup),
             "z_chunk_size": None if z_chunk_size is None else int(z_chunk_size),
+            "auto_z_chunk_size": bool(auto_z_chunk_size),
+            "max_fft_batch_count": int(max_fft_batch_count),
+            "fft_batch_pressure_model": batch_model,
             "serial_stats_s": serial_stats,
             "rows": rows,
             "trace": trace_report,
@@ -451,6 +476,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--rtol", type=float, default=1.0e-4)
     parser.add_argument("--min-speedup", type=float, default=1.5)
     parser.add_argument("--z-chunk-size", type=int)
+    parser.add_argument(
+        "--auto-z-chunk-size",
+        action="store_true",
+        help="choose z_chunk_size from the cuFFT batch-pressure preflight model",
+    )
+    parser.add_argument("--max-fft-batch-count", type=int, default=65_536)
     parser.add_argument("--trace-dir", type=Path)
     parser.add_argument("--trace-device-count", type=int)
     parser.add_argument("--hlo-prefix", type=Path)
@@ -473,6 +504,8 @@ def main(argv: list[str] | None = None) -> int:
         rtol=float(args.rtol),
         min_speedup=float(args.min_speedup),
         z_chunk_size=args.z_chunk_size,
+        auto_z_chunk_size=bool(args.auto_z_chunk_size),
+        max_fft_batch_count=int(args.max_fft_batch_count),
         trace_dir=args.trace_dir,
         trace_device_count=args.trace_device_count,
         hlo_prefix=args.hlo_prefix,

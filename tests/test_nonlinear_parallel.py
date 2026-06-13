@@ -15,6 +15,7 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
+    NonlinearSpectralDevicePencilFFTBatchModel,
     NonlinearSpectralDevicePencilRHSIdentityReport,
     NonlinearSpectralDevicePencilTransportWindowReport,
     NonlinearSpectralDomainWorkModel,
@@ -36,6 +37,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearDomainTransportWindowReport",
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
+        "NonlinearSpectralDevicePencilFFTBatchModel",
         "NonlinearSpectralDevicePencilRHSIdentityReport",
         "NonlinearSpectralDevicePencilTransportWindowReport",
         "NonlinearSpectralDomainWorkModel",
@@ -47,6 +49,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "classify_nonlinear_parallel_strategy",
         "deterministic_nonlinear_domain_state",
         "deterministic_nonlinear_spectral_state",
+        "device_z_pencil_fft_batch_pressure_model",
         "device_z_pencil_nonlinear_spectral_rhs",
         "device_z_pencil_nonlinear_spectral_transport_window_identity_gate",
         "integrate_logical_decomposed_nonlinear_spectral",
@@ -81,6 +84,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert (
         NonlinearSpectralCommunicationReport
         is nonlinear_parallel.NonlinearSpectralCommunicationReport
+    )
+    assert (
+        NonlinearSpectralDevicePencilFFTBatchModel
+        is nonlinear_parallel.NonlinearSpectralDevicePencilFFTBatchModel
     )
     assert (
         NonlinearSpectralDevicePencilRHSIdentityReport
@@ -212,6 +219,72 @@ def test_nonlinear_spectral_pencil_work_model_gates_plausible_scaling() -> None:
     )
     assert blocked.production_speedup_feasible is False
     assert "single_tile_no_domain_decomposition" in blocked.feasibility_blockers
+
+
+def test_device_z_pencil_fft_batch_pressure_model_suggests_profile_chunking() -> None:
+    model = nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+        (4, 16, 96, 96, 64),
+        device_count=2,
+        max_fft_batch_count=65_536,
+    )
+
+    assert isinstance(model, NonlinearSpectralDevicePencilFFTBatchModel)
+    assert model.local_z_extent == 32
+    assert model.unchunked_fft_batch_count == 4 * 16 * 96 * 32
+    assert model.chunking_required is True
+    assert model.suggested_z_chunk_size == 8
+    assert model.effective_z_chunk_size == 8
+    assert model.chunked_fft_batch_count == 4 * 16 * 96 * 8
+    assert model.chunking_active is True
+    assert model.disable_gpu_preallocation_recommended is True
+    assert model.profiling_candidate is True
+    assert model.feasibility_blockers == ()
+    assert "not constitute a nonlinear speedup claim" in model.claim_scope
+    assert model.to_dict()["suggested_z_chunk_size"] == 8
+
+    already_safe = nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+        (2, 3, 6, 4, 2),
+        device_count=2,
+    )
+    assert already_safe.chunking_required is False
+    assert already_safe.suggested_z_chunk_size is None
+    assert already_safe.effective_z_chunk_size == 1
+
+
+def test_device_z_pencil_fft_batch_pressure_model_fails_closed() -> None:
+    blocked = nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+        (4, 16, 128, 128, 3),
+        device_count=2,
+    )
+    assert blocked.profiling_candidate is False
+    assert "z_extent_not_divisible_by_device_count" in blocked.feasibility_blockers
+
+    too_large = nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+        (8, 32, 256, 256, 4),
+        device_count=2,
+        max_fft_batch_count=1_024,
+    )
+    assert too_large.suggested_z_chunk_size == 1
+    assert "fft_batch_pressure_exceeds_single_z_plane" in too_large.feasibility_blockers
+    assert "z_chunk_size_still_exceeds_fft_batch_cap" in too_large.feasibility_blockers
+
+    with pytest.raises(ValueError, match="device_count"):
+        nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+            (2, 3, 6, 4, 2),
+            device_count=0,
+        )
+    with pytest.raises(ValueError, match="max_fft_batch_count"):
+        nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+            (2, 3, 6, 4, 2),
+            device_count=1,
+            max_fft_batch_count=0,
+        )
+    with pytest.raises(ValueError, match="z_chunk_size"):
+        nonlinear_parallel.device_z_pencil_fft_batch_pressure_model(
+            (2, 3, 6, 4, 2),
+            device_count=1,
+            z_chunk_size=0,
+        )
 
 
 def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() -> None:
