@@ -255,13 +255,13 @@ def _universal_ql_lane(root: Path) -> dict[str, Any]:
         },
         "blockers": _normalize_blockers(blockers),
         "required_next_artifacts": [
-            "at least one additional independent converged nonlinear holdout outside the current residual-dominated families",
-            "a saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
+            "a frozen-ledger saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
             "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
             "a promotion-guardrail report proving the candidate is not just a scoped diagnostic",
         ],
         "next_action": (
-            "Add independent converged nonlinear holdouts and a better saturation/transport-amplitude model; "
+            "Keep the Solovev-inclusive twelve-case ledger frozen for this tranche and improve the "
+            "saturation/transport-amplitude model on that admitted data; "
             "do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass."
         ),
     }

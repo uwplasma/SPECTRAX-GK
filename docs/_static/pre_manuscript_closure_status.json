@@ -37,7 +37,7 @@
         "transport_mean_relative_error_gate": 0.35
       },
       "lane": "Universal absolute quasilinear heat-flux prediction",
-      "next_action": "Add independent converged nonlinear holdouts and a better saturation/transport-amplitude model; do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass.",
+      "next_action": "Keep the Solovev-inclusive twelve-case ledger frozen for this tranche and improve the saturation/transport-amplitude model on that admitted data; do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass.",
       "passed": false,
       "primary_artifacts": [
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -48,8 +48,7 @@
         "docs/_static/quasilinear_promotion_guardrails.json"
       ],
       "required_next_artifacts": [
-        "at least one additional independent converged nonlinear holdout outside the current residual-dominated families",
-        "a saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
+        "a frozen-ledger saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
         "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
         "a promotion-guardrail report proving the candidate is not just a scoped diagnostic"
       ],

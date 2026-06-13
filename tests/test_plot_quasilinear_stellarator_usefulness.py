@@ -28,6 +28,8 @@ def test_stellarator_usefulness_report_keeps_claim_scoped() -> None:
     assert report["models"]["positive_mixing_length"]["holdout_mean_abs_relative_error"] > 1.0
     assert "universal" in report["readme_sentence"]
     assert "rank-screening" in report["readme_sentence"]
+    assert "frozen ledger" in report["readme_sentence"]
+    assert "more converged nonlinear holdouts" not in " ".join(report["notes"])
 
 
 def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:

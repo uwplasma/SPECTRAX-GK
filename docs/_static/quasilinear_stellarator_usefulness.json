@@ -26,9 +26,9 @@
   "notes": [
     "The plot uses only tracked JSON artifacts and does not refit any quasilinear model.",
     "QA and QH are shown as scope/status evidence, not as accepted quasilinear calibration points.",
-    "A universal stellarator absolute-flux proxy needs more converged nonlinear holdouts and richer saturation theory."
+    "A universal stellarator absolute-flux proxy now needs better saturation theory on the frozen admitted ledger."
   ],
-  "readme_sentence": "Simple one-constant quasilinear rules do not transfer as absolute stellarator heat-flux predictors on the admitted portfolio. The spectral-envelope ridge model is the best current rank-screening candidate, but the expanded uncertainty/model-selection gate is not accepted; QA/QH coverage still requires matched, converged nonlinear holdouts before universal stellarator-flux claims.",
+  "readme_sentence": "Simple one-constant quasilinear rules do not transfer as absolute stellarator heat-flux predictors on the admitted portfolio. The spectral-envelope ridge model is the best current rank-screening candidate, but the expanded uncertainty/model-selection gate is not accepted; the frozen ledger now points to missing saturation physics rather than additional holdout collection before universal stellarator-flux claims.",
   "rows": [
     {
       "case": "cyclone_long_window",
@@ -265,7 +265,7 @@
     "QH": {
       "high_grid_gate_passed": false,
       "least_window_pairwise_heat_flux_symmetric_relative_difference": 0.7044243523495739,
-      "status": "excluded from QL calibration until grid/window convergence passes"
+      "status": "excluded from frozen QL calibration because grid/window convergence has not passed"
     },
     "W7-X": "admitted nonlinear holdout; simple positive-growth QL predicts zero while nonlinear Q is finite"
   }

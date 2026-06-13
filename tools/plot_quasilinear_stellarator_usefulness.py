@@ -170,8 +170,8 @@ def build_report(
         "Simple one-constant quasilinear rules do not transfer as absolute stellarator heat-flux "
         "predictors on the admitted portfolio. The spectral-envelope ridge model is the best current "
         "rank-screening candidate, but the expanded uncertainty/model-selection gate is not accepted; "
-        "QA/QH coverage still requires matched, converged nonlinear holdouts before universal "
-        "stellarator-flux claims."
+        "the frozen ledger now points to missing saturation physics rather than additional holdout "
+        "collection before universal stellarator-flux claims."
     )
 
     return {
@@ -216,7 +216,7 @@ def build_report(
                 "relative_reduction": qa_comparison["relative_reduction"],
             },
             "QH": {
-                "status": "excluded from QL calibration until grid/window convergence passes",
+                "status": "excluded from frozen QL calibration because grid/window convergence has not passed",
                 "high_grid_gate_passed": bool(qh.get("passed", False)),
                 "least_window_pairwise_heat_flux_symmetric_relative_difference": qh_pairwise,
             },
@@ -226,7 +226,7 @@ def build_report(
         "notes": [
             "The plot uses only tracked JSON artifacts and does not refit any quasilinear model.",
             "QA and QH are shown as scope/status evidence, not as accepted quasilinear calibration points.",
-            "A universal stellarator absolute-flux proxy needs more converged nonlinear holdouts and richer saturation theory.",
+            "A universal stellarator absolute-flux proxy now needs better saturation theory on the frozen admitted ledger.",
         ],
     }
 

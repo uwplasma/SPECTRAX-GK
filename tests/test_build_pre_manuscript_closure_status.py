@@ -128,9 +128,13 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     assert len(lanes) == 4
     assert lanes["Universal absolute quasilinear heat-flux prediction"]["passed"] is False
     assert lanes["Production nonlinear domain-decomposition speedup"]["passed"] is False
+    ql_lane = lanes["Universal absolute quasilinear heat-flux prediction"]
+    assert "twelve-case ledger frozen" in ql_lane["next_action"]
+    assert "Add independent converged nonlinear holdouts" not in ql_lane["next_action"]
+    assert all("additional independent converged nonlinear holdout" not in item for item in ql_lane["required_next_artifacts"])
     assert (
         "holdout_mean_abs_relative_error_exceeds_0.35"
-        in lanes["Universal absolute quasilinear heat-flux prediction"]["blockers"]
+        in ql_lane["blockers"]
     )
     assert (
         "gpu_domain_speedup_below_1p5"

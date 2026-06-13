@@ -291,8 +291,11 @@
   predictor is promoted. The anatomy shows the shaped-pressure external-VMEC
   holdout is the largest residual and external axisymmetric VMEC cases account
   for about `59%` of the residual budget, while HSX/W7-X are comparatively
-  well tracked. This points the next QL work toward richer saturation physics
-  and one additional independent converged holdout, not threshold loosening.
+  well tracked. This originally pointed the next QL work toward richer
+  saturation physics plus dataset expansion, not threshold loosening; that
+  data-expansion step is superseded by the
+  2026-06-13 frozen-ledger decision, so the active next step is saturation and
+  transport-amplitude physics on the admitted twelve-case ledger.
 
 - 2026-06-11: Closed the shaped-tokamak-pressure external-VMEC repair as a
   scoped high-grid nonlinear holdout. The full `n48/n64/n80`, `dt=0.04`,
@@ -545,22 +548,23 @@
   `spectral_envelope_ridge` as the only full-portfolio and held-out
   rank/correlation pass on the expanded ledger, but the mean-error gate remains
   empty. This strengthens the claim boundary: useful rank-screening evidence
-  is claimable now, while universal absolute-flux or screening promotion still
-  requires additional independent, replicated, post-transient nonlinear
-  holdouts.
+  is claimable now, while universal absolute-flux or screening promotion is now
+  treated as blocked by saturation/model physics on the frozen admitted ledger,
+  not by missing holdout collection for this tranche.
 
 - Extended the quasilinear holdout-gap report to ingest the screening-skill
   sidecar. The refreshed `docs/_static/quasilinear_holdout_gap_report.*` now
   carries both `absolute_flux_promotion_requirements` and
   `screening_promotion_requirements`: full-portfolio and held-out-only
-  rank/correlation screening pass for `spectral_envelope_ridge`, but the same
-  next evidence item is required before either screening or absolute-flux
-  promotion can be reconsidered: additional independent, replicated,
-  post-transient nonlinear holdouts.
+  rank/correlation screening pass for `spectral_envelope_ridge`, but the
+  active follow-up is no longer additional holdout collection. The frozen
+  Solovev-inclusive ledger should be used to improve the saturation and
+  transport-amplitude model before either screening or absolute-flux promotion
+  is reconsidered.
 
 # SPECTRAX-GK Active Plan and Running Log
 
-Last updated: 2026-06-12
+Last updated: 2026-06-13
 Active repository: `uwplasma/SPECTRAX-GK`
 Current public baseline: `main`; see `pyproject.toml` for the active release
 version and GitHub Actions for the latest CI result.
