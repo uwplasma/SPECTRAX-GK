@@ -28,6 +28,7 @@ def test_auto_z_chunk_size_records_fft_batch_pressure_model(monkeypatch) -> None
         dt=0.001,
         warmups=0,
         repeats=1,
+        observable_repeats=0,
         atol=5.0e-6,
         rtol=1.0e-4,
         min_speedup=1.5,
@@ -46,3 +47,35 @@ def test_auto_z_chunk_size_records_fft_batch_pressure_model(monkeypatch) -> None
     assert model["suggested_z_chunk_size"] == 1
     assert model["chunked_fft_batch_count"] == 4
     assert payload["rows"][1]["blocked_reasons"] == ["not_enough_devices"]
+    assert payload["observable_repeats"] == 0
+    assert payload["rows"][0]["timing_scope"] == "compute_only_final_state_update"
+    assert payload["rows"][1]["observable_gate_stats_s"] == {}
+
+
+def test_observable_repeats_rejects_negative_values(monkeypatch) -> None:
+    real_devices = tuple(jax.devices())
+    monkeypatch.setattr(mod.jax, "devices", lambda: [real_devices[0]])
+
+    try:
+        mod.build_profile(
+            shape=(1, 1, 4, 4, 8),
+            device_counts=(1,),
+            steps=1,
+            dt=0.001,
+            warmups=0,
+            repeats=1,
+            observable_repeats=-1,
+            atol=5.0e-6,
+            rtol=1.0e-4,
+            min_speedup=1.5,
+            z_chunk_size=None,
+            auto_z_chunk_size=False,
+            max_fft_batch_count=4,
+            trace_dir=None,
+            trace_device_count=None,
+            hlo_prefix=None,
+        )
+    except ValueError as exc:
+        assert "observable_repeats" in str(exc)
+    else:  # pragma: no cover - defensive assertion path.
+        raise AssertionError("negative observable_repeats should fail")

@@ -95,6 +95,14 @@ used this mode to run previously failing ``(4,16,96,96,64)`` and
 about ``1.40x`` and ``1.30x`` respectively. Treat this as bottleneck
 localization, not as promotion evidence.
 
+Use ``--observable-repeats`` when a device-z transport-window profile needs to
+separate compute-only RHS/integrator timing from the scalar observable and
+identity-gate path. The speedup rows still time only fixed-step final-state
+updates; the ``observable_gate_*`` JSON/CSV fields report the cost of
+host-gathered free-energy, field-energy, physical-flux, and bracket-RMS checks
+separately. Those fields are diagnostic bottleneck evidence and are not part of
+the nonlinear speedup promotion gate.
+
 Nonlinear profiling
 -------------------
 

@@ -283,6 +283,11 @@ axis-wise cuFFT batch below a configured cap before timing. Combined with
 the cuFFT plan failures seen on the unchunked ``96x96x64`` and ``128x128x32``
 transport windows, but the measured two-GPU speedups remain below the ``1.5x``
 promotion gate.
+Add ``--observable-repeats`` to the same profiler when deciding whether the
+next optimization target is the sharded compute route or the scalar
+diagnostic/host-gather path. The timed speedup row remains compute-only; the
+``observable_gate_*`` fields are a separate bottleneck split and do not promote
+nonlinear domain decomposition by themselves.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same

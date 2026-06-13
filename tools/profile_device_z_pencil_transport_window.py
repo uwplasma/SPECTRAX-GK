@@ -130,6 +130,7 @@ def build_profile(
     dt: float,
     warmups: int,
     repeats: int,
+    observable_repeats: int,
     atol: float,
     rtol: float,
     min_speedup: float,
@@ -152,6 +153,8 @@ def build_profile(
     state = deterministic_nonlinear_spectral_state(shape)
     devices = tuple(jax.devices())
     dt_array = jnp.asarray(float(dt), dtype=jnp.real(state).dtype)
+    if int(observable_repeats) < 0:
+        raise ValueError("observable_repeats must be non-negative")
     requested_parallel_counts = tuple(int(count) for count in device_counts if int(count) > 1)
     batch_model: dict[str, Any] | None = None
     if requested_parallel_counts:
@@ -207,6 +210,11 @@ def build_profile(
             "speedup_gate_passed": False,
             "blocked_reasons": [],
             "stats": serial_stats,
+            "timing_scope": "compute_only_final_state_update",
+            "identity_gate_elapsed_s": None,
+            "observable_gate_median_s": None,
+            "observable_gate_overhead_vs_compute": None,
+            "observable_gate_stats_s": {},
         }
     ]
     trace_report: dict[str, Any] = {"requested": False}
@@ -231,10 +239,16 @@ def build_profile(
                     "speedup_gate_passed": False,
                     "blocked_reasons": ["not_enough_devices"],
                     "stats": {},
+                    "timing_scope": "compute_only_final_state_update",
+                    "identity_gate_elapsed_s": None,
+                    "observable_gate_median_s": None,
+                    "observable_gate_overhead_vs_compute": None,
+                    "observable_gate_stats_s": {},
                 }
             )
             continue
 
+        identity_start = time.perf_counter()
         report = device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
             state,
             devices=devices[:count],
@@ -244,6 +258,23 @@ def build_profile(
             rtol=float(rtol),
             z_chunk_size=z_chunk_size,
         )
+        identity_gate_elapsed_s = float(time.perf_counter() - identity_start)
+        observable_stats: dict[str, float] = {}
+        if int(observable_repeats) > 0:
+            _last_observable_report, observable_times = _time_repeated(
+                lambda: device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+                    state,
+                    devices=devices[:count],
+                    steps=int(steps),
+                    dt=float(dt),
+                    atol=float(atol),
+                    rtol=float(rtol),
+                    z_chunk_size=z_chunk_size,
+                ),
+                warmups=0,
+                repeats=int(observable_repeats),
+            )
+            observable_stats = _stats(observable_times)
         if not report.decomposed_path_enabled:
             rows.append(
                 {
@@ -264,6 +295,13 @@ def build_profile(
                     "speedup_gate_passed": False,
                     "blocked_reasons": list(report.blocked_reasons),
                     "stats": {},
+                    "timing_scope": "compute_only_final_state_update",
+                    "identity_gate_elapsed_s": identity_gate_elapsed_s,
+                    "observable_gate_median_s": (
+                        observable_stats.get("median") if observable_stats else None
+                    ),
+                    "observable_gate_overhead_vs_compute": None,
+                    "observable_gate_stats_s": observable_stats,
                     "transport_window_report": report.to_dict(),
                 }
             )
@@ -311,6 +349,12 @@ def build_profile(
         state_abs, state_rel = _max_abs_rel(sharded_out, serial_out, floor=float(atol))
         sharded_stats = _stats(sharded_times)
         speedup = serial_stats["median"] / sharded_stats["median"]
+        observable_gate_median = observable_stats.get("median") if observable_stats else None
+        observable_gate_overhead = (
+            float(observable_gate_median) / sharded_stats["median"]
+            if observable_gate_median is not None and sharded_stats["median"] > 0.0
+            else None
+        )
         timing_identity_passed = bool(state_abs <= float(atol) or state_rel <= float(rtol))
         row_blockers = list(report.blocked_reasons)
         if not timing_identity_passed:
@@ -340,6 +384,11 @@ def build_profile(
                 ),
                 "blocked_reasons": sorted(set(row_blockers)),
                 "stats": sharded_stats,
+                "timing_scope": "compute_only_final_state_update",
+                "identity_gate_elapsed_s": identity_gate_elapsed_s,
+                "observable_gate_median_s": observable_gate_median,
+                "observable_gate_overhead_vs_compute": observable_gate_overhead,
+                "observable_gate_stats_s": observable_stats,
                 "transport_window_report": report.to_dict(),
             }
         )
@@ -378,6 +427,7 @@ def build_profile(
             "dt": float(dt),
             "warmups": int(warmups),
             "repeats": int(repeats),
+            "observable_repeats": int(observable_repeats),
             "atol": float(atol),
             "rtol": float(rtol),
             "min_speedup": float(min_speedup),
@@ -386,6 +436,12 @@ def build_profile(
             "max_fft_batch_count": int(max_fft_batch_count),
             "fft_batch_pressure_model": batch_model,
             "serial_stats_s": serial_stats,
+            "timing_scope": (
+                "speedup rows time compute-only fixed-step final-state updates; "
+                "observable_gate_* fields optionally time the scalar identity/"
+                "transport diagnostics separately and are not included in the "
+                "speedup gate"
+            ),
             "rows": rows,
             "trace": trace_report,
             "hlo": hlo_reports,
@@ -430,6 +486,10 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
                 "median_s",
                 "speedup_vs_serial",
                 "speedup_gate_passed",
+                "timing_scope",
+                "identity_gate_elapsed_s",
+                "observable_gate_median_s",
+                "observable_gate_overhead_vs_compute",
                 "blocked_reasons",
             ],
             lineterminator="\n",
@@ -472,6 +532,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dt", type=float, default=0.0025)
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--repeats", type=int, default=5)
+    parser.add_argument(
+        "--observable-repeats",
+        type=int,
+        default=0,
+        help=(
+            "time the scalar transport-window identity/observable gate this many "
+            "times after the required identity pass; not included in speedup gates"
+        ),
+    )
     parser.add_argument("--atol", type=float, default=5.0e-6)
     parser.add_argument("--rtol", type=float, default=1.0e-4)
     parser.add_argument("--min-speedup", type=float, default=1.5)
@@ -500,6 +569,7 @@ def main(argv: list[str] | None = None) -> int:
         dt=float(args.dt),
         warmups=int(args.warmups),
         repeats=int(args.repeats),
+        observable_repeats=int(args.observable_repeats),
         atol=float(args.atol),
         rtol=float(args.rtol),
         min_speedup=float(args.min_speedup),
