@@ -431,10 +431,12 @@ artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.json",
   "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
   "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json",
 ]
 next_tests = [
   "add a regression that direct device-backed resharding and host-staged z sharding are not silently conflated on CUDA",
-  "add physical transport-window identity and profiler gates before promoting nonlinear domain speedup wording",
+  "add physical solver-window identity and profiler gates before promoting full nonlinear domain speedup wording",
 ]
 
 [[modules]]

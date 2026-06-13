@@ -1,0 +1,322 @@
+{
+  "atol": 5e-06,
+  "backend": "cpu",
+  "claim_scope": "device z-sharded shard_map nonlinear transport-window timing; serial-vs-sharded final-state and scalar-trace identity are required before any micro-route speedup claim, and this is not yet a full production nonlinear turbulent-transport solve",
+  "device_count_available": 4,
+  "dt": 0.0025,
+  "hlo": {
+    "device_2": {
+      "all_reduce": 0,
+      "all_to_all": 0,
+      "collective_permute": 0,
+      "copy": 0,
+      "fft": 36,
+      "fusion": 0,
+      "line_count": 213,
+      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_device2.hlo.txt"
+    },
+    "device_4": {
+      "all_reduce": 0,
+      "all_to_all": 0,
+      "collective_permute": 0,
+      "copy": 0,
+      "fft": 36,
+      "fusion": 0,
+      "line_count": 213,
+      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_device4.hlo.txt"
+    },
+    "serial": {
+      "all_reduce": 0,
+      "all_to_all": 0,
+      "collective_permute": 0,
+      "copy": 0,
+      "fft": 78,
+      "fusion": 0,
+      "line_count": 507,
+      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_serial.hlo.txt"
+    }
+  },
+  "kind": "nonlinear_device_z_pencil_transport_window_profile",
+  "min_speedup": 1.5,
+  "repeats": 3,
+  "rows": [
+    {
+      "active": true,
+      "blocked_reasons": [],
+      "device_count": 1,
+      "final_state_max_abs_error": 0.0,
+      "final_state_max_rel_error": 0.0,
+      "identity_passed": true,
+      "median_s": 0.6340955829946324,
+      "physical_flux_trace_max_abs_error": 0.0,
+      "physical_flux_trace_max_rel_error": 0.0,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": 1.0,
+      "stats": {
+        "max": 0.6580973330419511,
+        "mean": 0.6197236386748651,
+        "median": 0.6340955829946324,
+        "min": 0.566977999988012,
+        "std": 0.03856248437446715
+      },
+      "transport_window_identity_passed": true
+    },
+    {
+      "active": true,
+      "blocked_reasons": [],
+      "device_count": 2,
+      "final_state_max_abs_error": 7.450580596923828e-09,
+      "final_state_max_rel_error": 8.765812825071403e-09,
+      "identity_passed": true,
+      "median_s": 0.38137416599784046,
+      "physical_flux_trace_max_abs_error": 0.0,
+      "physical_flux_trace_max_rel_error": 0.0,
+      "speedup_gate_passed": true,
+      "speedup_vs_serial": 1.6626600318759477,
+      "stats": {
+        "max": 0.3867154580075294,
+        "mean": 0.3795099580117191,
+        "median": 0.38137416599784046,
+        "min": 0.3704402500297874,
+        "std": 0.0067738247315839665
+      },
+      "transport_window_identity_passed": true,
+      "transport_window_report": {
+        "active_device_count": 2,
+        "atol": 5e-06,
+        "axis_name": "z",
+        "blocked_reasons": [],
+        "bracket_rms_trace_max_abs_error": 0.0,
+        "bracket_rms_trace_max_rel_error": 0.0,
+        "claim_scope": "device z-sharded shard_map nonlinear transport-window identity gate; compares serial and sharded final state plus free-energy, field-energy, physical-flux, and bracket-RMS traces before any profiler-backed speedup claim is allowed",
+        "decomposed_path_enabled": true,
+        "device_bracket_rms_trace": [
+          0.00016303829033859074,
+          0.00016303776646964252,
+          0.00016303722804877907,
+          0.00016303670417983085,
+          0.00016303618031088263
+        ],
+        "device_field_energy_trace": [
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871
+        ],
+        "device_free_energy_drift": -0.00927734375,
+        "device_free_energy_trace": [
+          4824.9501953125,
+          4824.9482421875,
+          4824.94580078125,
+          4824.943359375,
+          4824.94091796875
+        ],
+        "device_physical_flux_trace": [
+          1.5751442816736017e-08,
+          1.5751437487665498e-08,
+          1.57514286058813e-08,
+          1.575140551324239e-08,
+          1.575140018417187e-08
+        ],
+        "device_sharding_active": true,
+        "dt": 0.0025,
+        "field_energy_trace_max_abs_error": 0.0,
+        "field_energy_trace_max_rel_error": 0.0,
+        "final_state_max_abs_error": 7.450580596923828e-09,
+        "final_state_max_rel_error": 2.3111624614102766e-07,
+        "free_energy_trace_max_abs_error": 0.0,
+        "free_energy_trace_max_rel_error": 0.0,
+        "identity_passed": true,
+        "physical_flux_trace_max_abs_error": 0.0,
+        "physical_flux_trace_max_rel_error": 0.0,
+        "requested_device_count": 2,
+        "rtol": 0.0001,
+        "serial_bracket_rms_trace": [
+          0.00016303829033859074,
+          0.00016303776646964252,
+          0.00016303722804877907,
+          0.00016303670417983085,
+          0.00016303618031088263
+        ],
+        "serial_field_energy_trace": [
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871
+        ],
+        "serial_free_energy_drift": -0.00927734375,
+        "serial_free_energy_trace": [
+          4824.9501953125,
+          4824.9482421875,
+          4824.94580078125,
+          4824.943359375,
+          4824.94091796875
+        ],
+        "serial_physical_flux_trace": [
+          1.5751442816736017e-08,
+          1.5751437487665498e-08,
+          1.57514286058813e-08,
+          1.575140551324239e-08,
+          1.575140018417187e-08
+        ],
+        "sharded_axis": "z",
+        "state_shape": [
+          4,
+          16,
+          96,
+          96,
+          32
+        ],
+        "steps": 4
+      }
+    },
+    {
+      "active": true,
+      "blocked_reasons": [],
+      "device_count": 4,
+      "final_state_max_abs_error": 7.450580596923828e-09,
+      "final_state_max_rel_error": 8.765812825071403e-09,
+      "identity_passed": true,
+      "median_s": 0.2038312079384923,
+      "physical_flux_trace_max_abs_error": 0.0,
+      "physical_flux_trace_max_rel_error": 0.0,
+      "speedup_gate_passed": true,
+      "speedup_vs_serial": 3.1108856656826362,
+      "stats": {
+        "max": 0.2048675420228392,
+        "mean": 0.20165329162652293,
+        "median": 0.2038312079384923,
+        "min": 0.19626112491823733,
+        "std": 0.0038362389081888115
+      },
+      "transport_window_identity_passed": true,
+      "transport_window_report": {
+        "active_device_count": 4,
+        "atol": 5e-06,
+        "axis_name": "z",
+        "blocked_reasons": [],
+        "bracket_rms_trace_max_abs_error": 0.0,
+        "bracket_rms_trace_max_rel_error": 0.0,
+        "claim_scope": "device z-sharded shard_map nonlinear transport-window identity gate; compares serial and sharded final state plus free-energy, field-energy, physical-flux, and bracket-RMS traces before any profiler-backed speedup claim is allowed",
+        "decomposed_path_enabled": true,
+        "device_bracket_rms_trace": [
+          0.00016303829033859074,
+          0.00016303776646964252,
+          0.00016303722804877907,
+          0.00016303670417983085,
+          0.00016303618031088263
+        ],
+        "device_field_energy_trace": [
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871
+        ],
+        "device_free_energy_drift": -0.00927734375,
+        "device_free_energy_trace": [
+          4824.9501953125,
+          4824.9482421875,
+          4824.94580078125,
+          4824.943359375,
+          4824.94091796875
+        ],
+        "device_physical_flux_trace": [
+          1.5751442816736017e-08,
+          1.5751437487665498e-08,
+          1.57514286058813e-08,
+          1.575140551324239e-08,
+          1.575140018417187e-08
+        ],
+        "device_sharding_active": true,
+        "dt": 0.0025,
+        "field_energy_trace_max_abs_error": 0.0,
+        "field_energy_trace_max_rel_error": 0.0,
+        "final_state_max_abs_error": 7.450580596923828e-09,
+        "final_state_max_rel_error": 2.3111624614102766e-07,
+        "free_energy_trace_max_abs_error": 0.0,
+        "free_energy_trace_max_rel_error": 0.0,
+        "identity_passed": true,
+        "physical_flux_trace_max_abs_error": 0.0,
+        "physical_flux_trace_max_rel_error": 0.0,
+        "requested_device_count": 4,
+        "rtol": 0.0001,
+        "serial_bracket_rms_trace": [
+          0.00016303829033859074,
+          0.00016303776646964252,
+          0.00016303722804877907,
+          0.00016303670417983085,
+          0.00016303618031088263
+        ],
+        "serial_field_energy_trace": [
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871,
+          3.581099510192871
+        ],
+        "serial_free_energy_drift": -0.00927734375,
+        "serial_free_energy_trace": [
+          4824.9501953125,
+          4824.9482421875,
+          4824.94580078125,
+          4824.943359375,
+          4824.94091796875
+        ],
+        "serial_physical_flux_trace": [
+          1.5751442816736017e-08,
+          1.5751437487665498e-08,
+          1.57514286058813e-08,
+          1.575140551324239e-08,
+          1.575140018417187e-08
+        ],
+        "sharded_axis": "z",
+        "state_shape": [
+          4,
+          16,
+          96,
+          96,
+          32
+        ],
+        "steps": 4
+      }
+    }
+  ],
+  "rtol": 0.0001,
+  "serial_stats_s": {
+    "max": 0.6580973330419511,
+    "mean": 0.6197236386748651,
+    "median": 0.6340955829946324,
+    "min": 0.566977999988012,
+    "std": 0.03856248437446715
+  },
+  "shape": [
+    4,
+    16,
+    96,
+    96,
+    32
+  ],
+  "steps": 4,
+  "summary": {
+    "all_active_identity_passed": true,
+    "full_solver_speedup_claim_allowed": false,
+    "max_speedup_vs_serial": 3.1108856656826362,
+    "status": "transport_window_speedup_candidate",
+    "transport_window_speedup_claim_allowed": true
+  },
+  "trace": {
+    "file_count": 4,
+    "requested": true,
+    "sample_files": [
+      "Rogerios-MacBook-Pro.local.trace.json.gz",
+      "Rogerios-MacBook-Pro.local.trace.json.gz",
+      "Rogerios-MacBook-Pro.local.xplane.pb",
+      "Rogerios-MacBook-Pro.local.xplane.pb"
+    ],
+    "trace_dir": "/tmp/spectrax_traces/nonlinear_device_z_pencil_transport_cpu4/device4"
+  },
+  "warmups": 1
+}

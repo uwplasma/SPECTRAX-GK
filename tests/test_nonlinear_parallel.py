@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 
+import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 import spectraxgk
@@ -14,6 +16,7 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
     NonlinearSpectralDevicePencilRHSIdentityReport,
+    NonlinearSpectralDevicePencilTransportWindowReport,
     NonlinearSpectralDomainWorkModel,
     NonlinearSpectralPencilRHSIdentityReport,
     NonlinearSpectralPencilTransportWindowReport,
@@ -34,6 +37,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
         "NonlinearSpectralDevicePencilRHSIdentityReport",
+        "NonlinearSpectralDevicePencilTransportWindowReport",
         "NonlinearSpectralDomainWorkModel",
         "NonlinearSpectralPencilRHSIdentityReport",
         "NonlinearSpectralPencilTransportWindowReport",
@@ -44,6 +48,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "deterministic_nonlinear_domain_state",
         "deterministic_nonlinear_spectral_state",
         "device_z_pencil_nonlinear_spectral_rhs",
+        "device_z_pencil_nonlinear_spectral_transport_window_identity_gate",
         "integrate_logical_decomposed_nonlinear_spectral",
         "nonlinear_domain_identity_report",
         "nonlinear_domain_parallel_identity_gate",
@@ -80,6 +85,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert (
         NonlinearSpectralDevicePencilRHSIdentityReport
         is nonlinear_parallel.NonlinearSpectralDevicePencilRHSIdentityReport
+    )
+    assert (
+        NonlinearSpectralDevicePencilTransportWindowReport
+        is nonlinear_parallel.NonlinearSpectralDevicePencilTransportWindowReport
     )
     assert (
         NonlinearSpectralDomainWorkModel
@@ -119,6 +128,7 @@ def test_fft_axis_domain_sharding_is_diagnostic_until_runtime_fft_gates_exist() 
     assert "pencil_fft_fused_nonlinear_rhs_identity" in strategy.identity_gates
     assert "pencil_fft_physical_transport_window_identity" in strategy.identity_gates
     assert "device_z_pencil_fused_nonlinear_rhs_identity" in strategy.identity_gates
+    assert "device_z_pencil_physical_transport_window_identity" in strategy.identity_gates
     assert "pencil-FFT fused-bracket identity" in strategy.notes
     assert "device-level transport-window routing" in strategy.notes
 
@@ -259,6 +269,106 @@ def test_device_z_pencil_route_fails_closed_without_two_devices() -> None:
     assert report.decomposed_path_enabled is False
     assert report.blocked_reasons == ("requires_at_least_two_devices",)
     assert jnp.allclose(routed_rhs, serial_rhs, atol=0.0, rtol=0.0)
+
+    transport_report = (
+        nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+            state,
+            devices=(),
+            steps=2,
+            atol=5.0e-6,
+            rtol=1.0e-5,
+        )
+    )
+    assert isinstance(transport_report, NonlinearSpectralDevicePencilTransportWindowReport)
+    assert transport_report.identity_passed is False
+    assert transport_report.device_sharding_active is False
+    assert transport_report.decomposed_path_enabled is False
+    assert transport_report.blocked_reasons == ("requires_at_least_two_devices",)
+    assert "cannot support the z shard" in transport_report.claim_scope
+
+
+def test_host_staged_array_for_sharding_materializes_numpy_copy() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    staged = nonlinear_parallel._host_staged_array_for_sharding(state)
+
+    assert isinstance(staged, np.ndarray)
+    assert staged.shape == state.shape
+    assert np.allclose(staged, np.asarray(jax.device_get(state)))
+
+
+def test_abs_or_rel_tolerance_policy_matches_allclose_style_gate() -> None:
+    assert nonlinear_parallel._within_abs_or_rel_tolerance(
+        4.0e-6,
+        2.0e-2,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+    assert nonlinear_parallel._within_abs_or_rel_tolerance(
+        1.0e-3,
+        4.0e-7,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+    assert not nonlinear_parallel._within_abs_or_rel_tolerance(
+        1.0e-3,
+        1.0e-2,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+
+
+def test_device_z_transport_window_rejects_invalid_step_count() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    with pytest.raises(ValueError, match="steps must be at least one"):
+        nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+            state,
+            steps=0,
+        )
+
+
+def test_device_z_transport_window_blocks_nondivisible_z_extent() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 3))
+
+    report = nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+        state,
+        devices=(jax.devices()[0], jax.devices()[0]),
+        steps=2,
+    )
+
+    assert report.identity_passed is False
+    assert report.device_sharding_active is False
+    assert report.active_device_count == 0
+    assert report.requested_device_count == 2
+    assert report.blocked_reasons == ("z_extent_not_divisible_by_device_count",)
+    assert report.final_state_max_abs_error == float("inf")
+
+
+def test_device_z_pencil_transport_window_identity_on_available_devices() -> None:
+    if jax.local_device_count() < 2:
+        pytest.skip("requires at least two local JAX devices")
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+        state,
+        devices=jax.devices()[:2],
+        steps=2,
+        dt=0.0025,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+
+    assert report.identity_passed is True
+    assert report.device_sharding_active is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.final_state_max_rel_error <= report.rtol
+    assert report.physical_flux_trace_max_abs_error <= report.atol
+    assert report.bracket_rms_trace_max_rel_error <= report.rtol
+    assert len(report.serial_free_energy_trace) == report.steps + 1
+    assert len(report.device_free_energy_trace) == report.steps + 1
+    assert "transport-window identity gate" in report.claim_scope
 
 
 def test_pencil_fft_physical_transport_window_identity_gate() -> None:

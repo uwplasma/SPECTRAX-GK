@@ -261,6 +261,21 @@ of the single-GPU serial JIT route. These artifacts therefore support a
 CPU-microkernel speedup candidate, not a production nonlinear
 domain-decomposition claim.
 
+The physical transport-window follow-up is tracked separately. The CPU profile
+``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` advances
+the same serial and z-sharded routes for four fixed nonlinear steps and checks
+the final state plus free-energy, field-energy, physical-flux, and bracket-RMS
+traces. It passes the active identity gates and reaches ``1.72x`` on two
+logical CPU devices and ``3.11x`` on four. The two-GPU profile
+``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
+passes transport-window identity, with maximum final-state absolute error
+``7.45e-9``, but reaches only ``1.20x`` and remains below the ``1.5x`` speedup
+gate. The profiler artifacts include HLO keyword summaries and Perfetto trace
+locations; both CPU and GPU sharded HLO summaries show local FFTs and no
+all-to-all or collective-permute operations. The remaining nonlinear
+parallelization blocker is therefore production workload granularity and
+end-to-end solver routing, not this micro-route's serial-vs-sharded identity.
+
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
 workload family that appears in the speedup figure:

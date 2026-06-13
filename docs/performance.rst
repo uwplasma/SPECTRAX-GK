@@ -57,14 +57,32 @@ active device-sharded version of that idea. It passes serial-vs-sharded RHS
 identity on a ``(4,16,96,96,32)`` bracket workload with maximum absolute error
 ``7.6e-10``. The ``shard_map`` route is now a CPU speedup candidate for this
 RHS microkernel: ``1.51x`` on two logical CPU devices and ``2.62x`` on four
-logical CPU devices. This is still not a production nonlinear
-domain-decomposition claim because it has not yet been promoted through a
-physical transport-window gate. The two-GPU office artifact
+logical CPU devices. The two-GPU office artifact
 ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` also passes
 host-gathered RHS identity (``max_abs_error=5.24e-10``) after staging the
 initial state through host before applying explicit z sharding, but reaches only
 ``1.09x`` versus the single-GPU serial JIT route, below the ``1.5x`` GPU speedup
 gate.
+
+The next gate is a fixed-step physical transport-window profile that advances
+the same serial and z-sharded routes for four nonlinear steps and compares the
+final state plus free-energy, field-energy, physical-flux, and bracket-RMS
+traces. The CPU artifact
+``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` passes
+all active identity checks on two and four logical CPU devices for the same
+``(4,16,96,96,32)`` workload. It reaches ``1.72x`` on two logical CPU devices
+and ``3.11x`` on four, with maximum final-state absolute error ``7.45e-9``.
+The HLO dump recorded in the JSON shows local FFT lowering for the sharded
+route and no all-to-all or collective-permute operations. The matching two-GPU
+artifact
+``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
+passes the transport-window identity gate (``max_abs_error=7.45e-9``), but only
+reaches ``1.20x`` versus one GPU. Its Perfetto/TensorBoard trace was written
+under ``/tmp/spectrax_traces`` during generation, and its HLO summary likewise
+shows no collectives. The GPU blocker is therefore speedup/work granularity,
+not numerical identity or a hidden global reconstruction. This remains a
+micro-route transport-window claim, not a full production nonlinear
+turbulence-solve speedup claim.
 
 Nonlinear profiling
 -------------------
