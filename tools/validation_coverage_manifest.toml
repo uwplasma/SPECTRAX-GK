@@ -352,7 +352,6 @@ next_tests = [
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
-  "spectraxgk.nonlinear_parallel",
   "spectraxgk.terms.nonlinear",
 ]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
@@ -399,6 +398,43 @@ next_tests = [
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",
   "close TEM branch/frequency parity before kinetic-electron W7-X nonlinear gates",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_parallel"
+path = "src/spectraxgk/nonlinear_parallel.py"
+owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "communication-aware nonlinear FFT and bracket decomposition design",
+  "serial-vs-decomposed identity gates for nonlinear transport windows",
+]
+physics_contracts = [
+  "domain-decomposed nonlinear routes must reproduce serial nonlinear RHS and transport-window observables before any speedup claim",
+  "GPU and CPU artifacts remain fail-closed when host-gathered RHS identity or speedup gates fail",
+]
+numerics_contracts = [
+  "logical, pencil, and device-sharded spectral routes preserve shape, dtype, and serial RHS identity",
+  "profiler artifacts separate identity failures from speedup failures and record blocker reasons explicitly",
+]
+fast_tests = [
+  "tests/test_nonlinear_parallel.py",
+  "tests/test_nonlinear_domain_parallel.py",
+  "tests/test_nonlinear_spectral_communication_gate.py",
+  "tests/test_build_parallelization_completion_status.py",
+  "tests/test_profile_nonlinear_sharding.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
+]
+next_tests = [
+  "add a host-gathered GPU shard-layout regression once the CUDA device-z mismatch is localized",
+  "add physical transport-window identity and profiler gates before promoting nonlinear domain speedup wording",
 ]
 
 [[modules]]

@@ -163,32 +163,39 @@ def build_profile(
 
         mesh = Mesh(np.asarray(devices[:count]), ("z",))
         sharding = NamedSharding(mesh, PartitionSpec(None, None, None, None, "z"))
+        field_sharding = NamedSharding(mesh, PartitionSpec(None, None, "z"))
         with mesh:
             sharded_state = jax.device_put(state, sharding)
             sharded_jit = jax.jit(
-                lambda item: _pencil_nonlinear_spectral_rhs(item)[2],
+                lambda item: _pencil_nonlinear_spectral_rhs(item),
                 in_shardings=sharding,
-                out_shardings=sharding,
+                out_shardings=(field_sharding, sharding, sharding),
             )
             sharded_out, sharded_times = _time_repeated(
-                lambda: sharded_jit(sharded_state),
+                lambda: sharded_jit(sharded_state)[2],
                 warmups=int(warmups),
                 repeats=int(repeats),
             )
         rhs_abs, rhs_rel = _max_abs_rel(sharded_out, serial_out, floor=atol)
         sharded_stats = _stats(sharded_times)
         speedup = serial_stats["median"] / sharded_stats["median"]
+        timing_identity_passed = bool(rhs_abs <= atol and rhs_rel <= rtol)
+        row_blockers: list[str] = []
+        if not timing_identity_passed:
+            row_blockers.append("timed_device_z_pencil_rhs_identity_failed")
+        if speedup < min_speedup:
+            row_blockers.append("speedup_below_gate")
         rows.append(
             {
                 "device_count": count,
                 "active": True,
-                "identity_passed": bool(rhs_abs <= atol and rhs_rel <= rtol),
+                "identity_passed": timing_identity_passed,
                 "rhs_max_abs_error": rhs_abs,
                 "rhs_max_rel_error": rhs_rel,
                 "median_s": sharded_stats["median"],
                 "speedup_vs_serial": speedup,
-                "speedup_gate_passed": bool(speedup >= min_speedup and rhs_abs <= atol and rhs_rel <= rtol),
-                "blocked_reasons": [] if speedup >= min_speedup else ["speedup_below_gate"],
+                "speedup_gate_passed": bool(speedup >= min_speedup and timing_identity_passed),
+                "blocked_reasons": row_blockers,
                 "stats": sharded_stats,
             }
         )

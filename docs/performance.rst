@@ -61,8 +61,10 @@ evidence: production nonlinear domain speedup remains open until the same route
 or a better one clears the ``1.5x`` gate on CPU/GPU hardware. The two-GPU office
 artifact ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` is
 also negative: the active two-GPU route fails the strict absolute RHS identity
-gate (``max_abs_error=1.95e-3``), so GPU timing is not used for any speedup
-claim.
+gate after host materialization (``max_abs_error=4.85e-4``,
+``max_rel_error=1.0``), so GPU timing is not used for any speedup claim. This
+host-gathered check is the authoritative gate because runtime diagnostics and
+saved outputs eventually materialize arrays outside device-local reductions.
 
 Nonlinear profiling
 -------------------

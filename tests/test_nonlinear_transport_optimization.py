@@ -311,11 +311,12 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
     assert rc == 0
     assert out_png.exists()
     assert payload["safe_to_release"] is True
-    assert payload["production_nonlinear_optimization_promoted"] is False
-    assert payload["summary"]["qualifying_matched_optimized_transport_audits"] == 1
-    assert payload["summary"]["total_matched_optimized_transport_audits"] >= 4
+    assert payload["production_nonlinear_optimization_promoted"] is True
+    assert payload["summary"]["qualifying_matched_optimized_transport_audits"] >= 3
+    assert payload["summary"]["qualifying_optimized_equilibrium_ensembles"] >= 3
+    assert payload["summary"]["total_matched_optimized_transport_audits"] >= 6
     assert payload["summary"]["failed_matched_optimized_transport_audits"] >= 3
-    assert "matched_baseline_to_optimized_transport_reduction" in payload["promotion_gate"]["blockers"]
+    assert payload["promotion_gate"]["blockers"] == []
 
 
 def test_matched_optimized_transport_report_requires_reduction_and_uncertainty() -> None:
