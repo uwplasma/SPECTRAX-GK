@@ -1,3 +1,19 @@
+- 2026-06-13: Froze the nonlinear holdout-expansion lane for this tranche.
+  The Solovev-inclusive 12-case QL ledger is now the working calibration and
+  negative-evidence dataset; no additional holdouts should be launched to
+  rescue the current absolute-flux model. The universal absolute QL lane stays
+  blocked because the saturation/amplitude model fails the existing admitted
+  ledger (`6.49 > 0.35` for the one-constant positive-growth family and
+  `0.697 > 0.35` for the best reduced `spectral_envelope_ridge` candidate).
+  Next work therefore moves away from holdout collection and toward: (1)
+  better saturation/transport-amplitude physics using the frozen ledger, (2)
+  broad matched nonlinear turbulent-flux optimization evidence from existing
+  optimized-equilibrium artifacts, and (3) production nonlinear
+  domain-decomposition speedup with identity and profiler gates. CI failed only
+  because three QL tests still encoded the pre-Solovev 11-case near-miss
+  metrics; those tests were updated to assert the current fail-closed
+  Solovev-inclusive metrics without loosening any scientific promotion gate.
+
 - 2026-06-12: Harvested the Solovev repaired external-VMEC holdout and used it
   to harden the quasilinear claim boundary. The original CPU `dt=0.01`
   duplicate remained too slow, but the office GPU duplicate completed the
@@ -576,16 +592,16 @@ historical logs live outside the release repository so clones stay small.
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
-| Quasilinear screening/model-development | 99.5% | Scoped model-development artifacts are current; the shaped-pressure holdout demotes rank/correlation screening, so no screening model is currently accepted |
-| Universal absolute quasilinear-flux prediction | 50% | Strict pre-manuscript gate is blocked: train/holdout absolute report fails, holdout mean relative error is `6.49 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists |
-| Nonlinear holdout expansion/audits | 98% | Ten admitted holdouts; CTH-like and shaped-pressure are admitted only under scoped high-grid policies, QH warm-start is closed as negative high-grid evidence through corrected `t700`, and Solovev now passes a repaired `n48/t250` seed/timestep ensemble under the explicit `20%` spread gate as negative absolute-QL evidence |
+| Quasilinear screening/model-development | 100% | Scoped model-development artifacts are current for the frozen Solovev-inclusive ledger; no screening model is accepted, and the figures now document this as a negative model-selection result rather than a near-miss claim |
+| Universal absolute quasilinear-flux prediction | 50% | Strict pre-manuscript gate is blocked as a model-physics problem: train/holdout absolute report fails, holdout mean relative error is `6.49 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists; do not add more holdouts for this tranche |
+| Nonlinear holdout expansion/audits | 100% | Frozen for this tranche with ten admitted holdouts; CTH-like and shaped-pressure are scoped high-grid admissions, QH warm-start is retained as negative high-grid evidence, and Solovev passes a repaired `n48/t250` seed/timestep ensemble under the explicit `20%` spread gate as negative absolute-QL evidence |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
 | Differentiable QA optimization evidence | 93% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; a new solved-WOUT candidate screen prevents invalid metric/high-growth artifacts from entering nonlinear launches; successful broad nonlinear turbulent-flux optimization is still not promoted |
-| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 54.2% | Strict pre-manuscript gate is blocked until at least three matched optimized transport audits, three optimized-equilibrium ensembles, four replicated holdout ensembles, and one production-scope VMEC/Boozer held-out nonlinear transport artifact pass |
-| VMEC/Boozer holdout optimization | 78% | Reduced alpha/surface and second-equilibrium gates pass, but aggregate promotion fails because no production-scope held-out surface/field-line nonlinear transport artifact qualifies |
+| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 72.9% | Partial: one scoped QA matched optimized transport audit and one optimized-equilibrium ensemble pass; next work is to use existing optimized-equilibrium artifacts for more matched baseline-vs-optimized long-window audits, not to collect more generic holdouts |
+| VMEC/Boozer holdout optimization | 100% | Closed for the current pre-manuscript gate: reduced alpha/surface, second-equilibrium, gradient holdout matrix, and aggregate promotion gates pass |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
 | Production nonlinear domain-decomposition speedup | 55% | Strict pre-manuscript gate remains partial: local and spectral identity pass, but combined strong-scaling speedup and production-speedup gates fail; CPU and GPU speedup are below `1.5x` |

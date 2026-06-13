@@ -1117,10 +1117,10 @@ budget for ``spectral_envelope_ridge``. In contrast, the admitted HSX and W7-X
 benchmarks remain materially less severe stress cases, with mean relative error
 about ``0.31`` in this reduced candidate.
 That split argues against a looser universal acceptance threshold: the next
-absolute-flux attempt needs either additional independent nonlinear holdouts
-that clarify the external-VMEC transfer failure or richer saturation physics
-that can distinguish low-flux axisymmetric stress cases, pressure shaping, and
-stellarator turbulence windows.
+absolute-flux attempt should keep this twelve-case ledger fixed and improve
+the saturation physics enough to distinguish low-flux axisymmetric stress
+cases, pressure shaping, and stellarator turbulence windows. Additional
+holdout collection is not the active remedy for this tranche.
 
 Regularization sensitivity audit
 --------------------------------
