@@ -101,10 +101,18 @@ def build_profile(
         deterministic_nonlinear_spectral_state,
         integrate_logical_decomposed_nonlinear_spectral,
         nonlinear_spectral_domain_work_model,
+        nonlinear_spectral_pencil_transport_window_identity_gate,
+        nonlinear_spectral_pencil_work_model,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
     work_model = nonlinear_spectral_domain_work_model(
+        shape,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+    )
+    pencil_rtol = max(float(rtol), 1.0e-5)
+    pencil_work_model = nonlinear_spectral_pencil_work_model(
         shape,
         y_chunks=y_chunks,
         x_chunks=x_chunks,
@@ -117,6 +125,15 @@ def build_profile(
         dt=float(dt),
         atol=float(atol),
         rtol=float(rtol),
+    )
+    pencil_window_report = nonlinear_spectral_pencil_transport_window_identity_gate(
+        state,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+        steps=int(steps),
+        dt=float(dt),
+        atol=float(atol),
+        rtol=pencil_rtol,
     )
     serial_reference = state
     dt_array = jnp.asarray(float(dt), dtype=jnp.real(state).dtype)
@@ -145,8 +162,17 @@ def build_profile(
             out = out + local_dt * rhs
         return out
 
+    def pencil_route(item: jax.Array) -> jax.Array:
+        out = item
+        local_dt = jnp.asarray(float(dt), dtype=jnp.real(item).dtype)
+        for _ in range(int(steps)):
+            _field, _bracket, rhs = npmod._pencil_nonlinear_spectral_rhs(out)
+            out = out + local_dt * rhs
+        return out
+
     serial_jit = jax.jit(serial_route)
     logical_jit = jax.jit(logical_route)
+    pencil_jit = jax.jit(pencil_route)
     serial_out, serial_times = _time_repeated(
         lambda: serial_jit(state),
         warmups=int(warmups),
@@ -157,12 +183,28 @@ def build_profile(
         warmups=int(warmups),
         repeats=int(repeats),
     )
+    if pencil_work_model.production_speedup_feasible:
+        pencil_out, pencil_times = _time_repeated(
+            lambda: pencil_jit(state),
+            warmups=int(warmups),
+            repeats=int(repeats),
+        )
+    else:
+        pencil_out = serial_out
+        pencil_times = []
     routed_abs, routed_rel = _max_abs_rel_error(logical_out, serial_out, floor=float(atol))
+    pencil_abs, pencil_rel = _max_abs_rel_error(pencil_out, serial_out, floor=float(atol))
     serial_stats = _stats(serial_times)
     logical_stats = _stats(logical_times)
+    pencil_stats = _stats(pencil_times) if pencil_times else {}
     speedup = (
         serial_stats["median"] / logical_stats["median"]
         if logical_stats["median"] > 0.0
+        else math.nan
+    )
+    pencil_speedup = (
+        serial_stats["median"] / pencil_stats["median"]
+        if pencil_stats and pencil_stats["median"] > 0.0
         else math.nan
     )
     speedup_gate_passed = bool(
@@ -172,12 +214,21 @@ def build_profile(
         and math.isfinite(speedup)
         and speedup >= float(min_speedup)
     )
+    pencil_speedup_gate_passed = bool(
+        pencil_window_report.identity_passed
+        and pencil_abs <= float(atol)
+        and pencil_rel <= pencil_rtol
+        and pencil_work_model.production_speedup_feasible
+        and math.isfinite(pencil_speedup)
+        and pencil_speedup >= float(min_speedup)
+    )
     return _json_clean(
         {
             "kind": "nonlinear_spectral_domain_routing_profile",
             "claim_scope": (
-                "diagnostic serial-vs-logical nonlinear spectral-domain timing; "
-                "identity-gated local route only, not production distributed FFT or GPU speedup"
+                "diagnostic serial-vs-logical and serial-vs-pencil nonlinear "
+                "spectral-domain timing; identity-gated local route only, not "
+                "production distributed FFT or GPU speedup"
             ),
             "backend": str(jax.default_backend()),
             "device_count": int(jax.device_count()),
@@ -188,30 +239,59 @@ def build_profile(
             "dt": float(dt),
             "warmups": int(warmups),
             "repeats": int(repeats),
-            "identity_passed": bool(identity_report.identity_passed),
-            "decomposed_path_enabled": bool(identity_report.decomposed_path_enabled),
+            "identity_passed": bool(
+                identity_report.identity_passed and pencil_window_report.identity_passed
+            ),
+            "decomposed_path_enabled": bool(
+                identity_report.decomposed_path_enabled
+                and pencil_window_report.decomposed_path_enabled
+            ),
             "identity_report": identity_report.to_dict(),
+            "pencil_transport_window_report": pencil_window_report.to_dict(),
             "work_model": work_model.to_dict(),
+            "pencil_work_model": pencil_work_model.to_dict(),
             "communication_to_owned_work_ratio": work_model.communication_to_owned_work_ratio,
             "parallel_efficiency_ceiling": work_model.parallel_efficiency_ceiling,
             "work_model_speedup_feasible": work_model.production_speedup_feasible,
             "work_model_blockers": work_model.feasibility_blockers,
+            "pencil_communication_to_fft_work_ratio": (
+                pencil_work_model.communication_to_fft_work_ratio
+            ),
+            "pencil_parallel_efficiency_ceiling": (
+                pencil_work_model.parallel_efficiency_ceiling
+            ),
+            "pencil_predicted_speedup_ceiling": pencil_work_model.predicted_speedup_ceiling,
+            "pencil_work_model_speedup_feasible": (
+                pencil_work_model.production_speedup_feasible
+            ),
+            "pencil_work_model_blockers": pencil_work_model.feasibility_blockers,
             "timing_identity_max_abs_error": routed_abs,
             "timing_identity_max_rel_error": routed_rel,
+            "pencil_timing_identity_max_abs_error": pencil_abs,
+            "pencil_timing_identity_max_rel_error": pencil_rel,
             "atol": float(atol),
             "rtol": float(rtol),
+            "pencil_rtol": float(pencil_rtol),
             "min_speedup": float(min_speedup),
             "serial_stats_s": serial_stats,
             "logical_domain_stats_s": logical_stats,
+            "pencil_domain_stats_s": pencil_stats,
             "serial_times_s": serial_times,
             "logical_domain_times_s": logical_times,
+            "pencil_domain_times_s": pencil_times,
             "strong_speedup_vs_serial": speedup,
+            "pencil_strong_speedup_vs_serial": pencil_speedup,
             "speedup_gate_passed": speedup_gate_passed,
+            "pencil_speedup_gate_passed": pencil_speedup_gate_passed,
             "production_speedup_claim_allowed": False,
             "status": (
-                "diagnostic_speedup_candidate"
-                if speedup_gate_passed
-                else "identity_timed_no_production_speedup"
+                "diagnostic_pencil_speedup_candidate"
+                if pencil_speedup_gate_passed
+                else (
+                    "diagnostic_speedup_candidate"
+                    if speedup_gate_passed
+                    else "identity_timed_no_production_speedup"
+                )
             ),
         }
     )
@@ -247,6 +327,16 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
             "max_s": summary["logical_domain_stats_s"]["max"],
         },
     ]
+    if summary.get("pencil_domain_stats_s"):
+        rows.append(
+            {
+                "route": "pencil_domain",
+                "median_s": summary["pencil_domain_stats_s"]["median"],
+                "mean_s": summary["pencil_domain_stats_s"]["mean"],
+                "min_s": summary["pencil_domain_stats_s"]["min"],
+                "max_s": summary["pencil_domain_stats_s"]["max"],
+            }
+        )
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=tuple(rows[0]), lineterminator="\n")
         writer.writeheader()
@@ -256,7 +346,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     fig, axes = plt.subplots(1, 3, figsize=(11.4, 3.4), constrained_layout=True)
     labels = [row["route"].replace("_", "\n") for row in rows]
     medians = np.asarray([float(row["median_s"]) for row in rows])
-    axes[0].bar(labels, medians, color=["#495057", "#2a9d8f"])
+    axes[0].bar(labels, medians, color=["#495057", "#2a9d8f", "#1b6ca8"][: len(labels)])
     axes[0].set_ylabel("median time [s]")
     axes[0].set_title("JIT warm route timing")
     axes[0].grid(True, axis="y", alpha=0.25)
@@ -265,9 +355,11 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         [
             max(float(summary["timing_identity_max_abs_error"]), 1.0e-16),
             max(float(summary["timing_identity_max_rel_error"]), 1.0e-16),
+            max(float(summary["pencil_timing_identity_max_abs_error"]), 1.0e-16),
+            max(float(summary["pencil_timing_identity_max_rel_error"]), 1.0e-16),
         ]
     )
-    axes[1].bar(["abs", "rel"], errors, color="#1b6ca8")
+    axes[1].bar(["logical\nabs", "logical\nrel", "pencil\nabs", "pencil\nrel"], errors, color="#1b6ca8")
     axes[1].axhline(float(summary["atol"]), color="0.25", ls=":", lw=1.1, label="atol")
     axes[1].axhline(float(summary["rtol"]), color="0.45", ls="--", lw=1.1, label="rtol")
     axes[1].set_yscale("log")
@@ -277,10 +369,11 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[1].grid(True, axis="y", alpha=0.25)
 
     ratio = float(summary["communication_to_owned_work_ratio"])
-    efficiency = float(summary["parallel_efficiency_ceiling"])
-    axes[2].bar(["comm/\nowned"], [ratio], color="#d88c39")
+    pencil_ratio = float(summary["pencil_communication_to_fft_work_ratio"])
+    efficiency = float(summary["pencil_parallel_efficiency_ceiling"])
+    axes[2].bar(["global\ncomm/owned", "pencil\ncomm/FFT"], [ratio, pencil_ratio], color=["#d88c39", "#2a9d8f"])
     axes[2].axhline(
-        float(summary["work_model"]["max_communication_to_owned_work_ratio"]),
+        float(summary["pencil_work_model"]["max_communication_to_fft_work_ratio"]),
         color="0.25",
         ls=":",
         lw=1.1,
@@ -291,7 +384,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[2].grid(True, axis="y", alpha=0.25)
     axes[2].legend(frameon=False, fontsize=8)
 
-    speedup = float(summary["strong_speedup_vs_serial"])
+    speedup = float(summary.get("pencil_strong_speedup_vs_serial") or summary["strong_speedup_vs_serial"])
     status = str(summary["status"]).replace("_", " ")
     fig.suptitle(f"Logical nonlinear domain route: {speedup:.2f}x ({status})", fontsize=11)
     fig.savefig(png_path, dpi=220)

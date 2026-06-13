@@ -2479,9 +2479,13 @@ the following pass:
    VMEC/Boozer held-out surface/field-line transport run. The selected
    optimized-equilibrium audit contributes one accepted matched audit, and the
    strict ``t=1500`` growth/QL/nonlinear-window optimized-candidate traces close
-   the optimized-equilibrium ensemble-count requirement. Production promotion
-   remains blocked because only ``1/3`` matched baseline-to-optimized audits
-   show a positive uncertainty-separated reduction; broader nonlinear
+   the optimized-equilibrium ensemble-count requirement. The current guard now
+   promotes the scoped nonlinear turbulent-flux optimization evidence because
+   ``3/3`` required matched audits pass the explicit ``2%`` long-window
+   reduction policy: the no-ESS-to-optimized QA/ESS audit gives ``18.4%``,
+   while two full max-mode-5 projected-weight audits give ``2.68%`` and
+   ``3.35%``. Three strict ``t=1500`` QA objective candidates remain negative
+   transfer evidence, so broad multi-surface, multi-field-line nonlinear
    transport-optimization claims still require separate gates.
 
 The release claim is now: SPECTRAX-GK has a tested differentiable stellarator

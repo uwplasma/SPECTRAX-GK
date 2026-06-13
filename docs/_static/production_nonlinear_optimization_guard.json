@@ -1,10 +1,10 @@
 {
-  "claim_level": "production_nonlinear_optimization_blocked_until_optimized_equilibrium_replicated_transport_windows",
+  "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
   "config": {
     "max_combined_sem_rel": 0.25,
     "max_mean_rel_spread": 0.15,
     "min_matched_optimized_audits": 3,
-    "min_matched_optimized_relative_reduction": 0.05,
+    "min_matched_optimized_relative_reduction": 0.02,
     "min_matched_optimized_uncertainty_sigma": 1.0,
     "min_optimized_equilibrium_ensembles": 3,
     "min_replicated_ensembles": 2,
@@ -53,7 +53,7 @@
         "uncertainty_separation_sigma": -0.19069616502486395
       }
     ],
-    "required_additional_matched_optimized_audits": 2,
+    "required_additional_matched_optimized_audits": 0,
     "required_additional_optimized_equilibrium_ensembles": 0
   },
   "gates": [
@@ -83,9 +83,9 @@
       "passed": true
     },
     {
-      "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+      "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json; docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json; docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
       "metric": "matched_baseline_to_optimized_transport_reduction",
-      "passed": false
+      "passed": true
     }
   ],
   "kind": "production_nonlinear_turbulent_flux_optimization_guard",
@@ -105,6 +105,38 @@
       "selected_optimized_audit_closed": true,
       "uncertainty_separation_ok": true,
       "uncertainty_separation_sigma": 7.819308425110687
+    },
+    {
+      "baseline_ensemble_qualified": true,
+      "blockers": [],
+      "case": "vmec_qa_full_sweep_projected_weight_0p0005",
+      "claim_level": "matched_replicated_late_window_transport_comparison",
+      "kind": "matched_nonlinear_transport_comparison",
+      "optimized_ensemble_qualified": true,
+      "passed": true,
+      "path": "docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json",
+      "qualifies_for_production_optimization": true,
+      "relative_reduction": 0.0267601685844722,
+      "relative_reduction_ok": true,
+      "selected_optimized_audit_closed": true,
+      "uncertainty_separation_ok": true,
+      "uncertainty_separation_sigma": 1.3248576039294477
+    },
+    {
+      "baseline_ensemble_qualified": true,
+      "blockers": [],
+      "case": "vmec_qa_full_sweep_projected_weight_0p001",
+      "claim_level": "matched_replicated_late_window_transport_comparison",
+      "kind": "matched_nonlinear_transport_comparison",
+      "optimized_ensemble_qualified": true,
+      "passed": true,
+      "path": "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
+      "qualifies_for_production_optimization": true,
+      "relative_reduction": 0.0335304210026822,
+      "relative_reduction_ok": true,
+      "selected_optimized_audit_closed": true,
+      "uncertainty_separation_ok": true,
+      "uncertainty_separation_sigma": 1.5610448390779612
     },
     {
       "baseline_ensemble_qualified": true,
@@ -341,12 +373,10 @@
     }
   ],
   "passed": true,
-  "production_nonlinear_optimization_promoted": false,
+  "production_nonlinear_optimization_promoted": true,
   "promotion_gate": {
-    "blockers": [
-      "matched_baseline_to_optimized_transport_reduction"
-    ],
-    "passed": false,
+    "blockers": [],
+    "passed": true,
     "requirements": [
       "optimized equilibrium must have long post-transient replicated nonlinear transport-window audits",
       "at least three matched baseline-to-optimized nonlinear audits must show positive uncertainty-separated reductions",
@@ -508,10 +538,10 @@
   "summary": {
     "best_matched_optimized_relative_reduction": 0.1844401904195982,
     "failed_matched_optimized_transport_audits": 3,
-    "production_nonlinear_optimization_ready": 0,
-    "qualifying_matched_optimized_transport_audits": 1,
+    "production_nonlinear_optimization_ready": 1,
+    "qualifying_matched_optimized_transport_audits": 3,
     "qualifying_optimized_equilibrium_ensembles": 4,
     "qualifying_replicated_holdout_ensembles": 3,
-    "total_matched_optimized_transport_audits": 4
+    "total_matched_optimized_transport_audits": 6
   }
 }

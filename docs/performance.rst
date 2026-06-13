@@ -43,6 +43,14 @@ parallelization claims are limited to independent-work batching; whole-state
 nonlinear sharding and nonlinear domain decomposition remain diagnostic unless
 their workload-specific identity and profiler promotion gates pass.
 
+The nonlinear spectral-domain profile now records both the older
+global-reconstruction logical route and a pencil-FFT fused-bracket route. The
+pencil work model removes the state/bracket allgather from the estimated
+communication path and predicts plausible scaling on the tracked four-tile
+micro-route, but the local JIT timing remains below the production ``1.5x``
+gate. Treat this as implementation evidence for the next distributed-FFT
+tranche, not as a shipped nonlinear domain-decomposition speedup.
+
 Nonlinear profiling
 -------------------
 

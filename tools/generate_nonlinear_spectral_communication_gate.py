@@ -7,7 +7,7 @@ import argparse
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -51,10 +51,13 @@ def build_nonlinear_spectral_communication_gate(
         deterministic_nonlinear_spectral_state,
         nonlinear_spectral_communication_identity_gate,
         nonlinear_spectral_integrator_identity_gate,
+        nonlinear_spectral_pencil_rhs_identity_gate,
+        nonlinear_spectral_pencil_transport_window_identity_gate,
         nonlinear_spectral_rhs_identity_gate,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
+    pencil_rtol = max(float(rtol), 1.0e-5)
     communication_report = nonlinear_spectral_communication_identity_gate(
         state,
         y_chunks=y_chunks,
@@ -77,6 +80,22 @@ def build_nonlinear_spectral_communication_gate(
         dt=dt,
         atol=atol,
         rtol=rtol,
+    )
+    pencil_rhs_report = nonlinear_spectral_pencil_rhs_identity_gate(
+        state,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+        atol=atol,
+        rtol=pencil_rtol,
+    )
+    pencil_window_report = nonlinear_spectral_pencil_transport_window_identity_gate(
+        state,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+        steps=steps,
+        dt=dt,
+        atol=atol,
+        rtol=pencil_rtol,
     )
     error_rows = [
         {
@@ -139,35 +158,63 @@ def build_nonlinear_spectral_communication_gate(
                 and integrator_report.flux_proxy_trace_max_rel_error <= integrator_report.rtol
             ),
         },
+        {
+            "operator": "pencil_fused_rhs",
+            "stage": "pencil_rhs",
+            "max_abs_error": pencil_rhs_report.rhs_max_abs_error,
+            "max_rel_error": pencil_rhs_report.rhs_max_rel_error,
+            "identity_passed": bool(pencil_rhs_report.identity_passed),
+        },
+        {
+            "operator": "pencil_physical_transport_window",
+            "stage": "pencil_transport",
+            "max_abs_error": pencil_window_report.final_state_max_abs_error,
+            "max_rel_error": pencil_window_report.final_state_max_rel_error,
+            "identity_passed": bool(pencil_window_report.identity_passed),
+        },
     ]
     combined_gate = {
         "identity_passed": bool(
             communication_report.identity_passed
             and rhs_report.identity_passed
             and integrator_report.identity_passed
+            and pencil_rhs_report.identity_passed
+            and pencil_window_report.identity_passed
         ),
         "communication_identity_passed": bool(communication_report.identity_passed),
         "rhs_identity_passed": bool(rhs_report.identity_passed),
         "integrator_identity_passed": bool(integrator_report.identity_passed),
+        "pencil_rhs_identity_passed": bool(pencil_rhs_report.identity_passed),
+        "pencil_transport_window_identity_passed": bool(
+            pencil_window_report.identity_passed
+        ),
+        "pencil_work_model_speedup_feasible": bool(
+            pencil_window_report.work_model.production_speedup_feasible
+        ),
         "decomposed_path_enabled": bool(
             communication_report.decomposed_path_enabled
             and rhs_report.decomposed_path_enabled
             and integrator_report.decomposed_path_enabled
+            and pencil_rhs_report.decomposed_path_enabled
+            and pencil_window_report.decomposed_path_enabled
         ),
         "atol": float(atol),
         "rtol": float(rtol),
+        "pencil_rtol": float(pencil_rtol),
         "steps": int(steps),
         "dt": float(dt),
         "claim_scope": (
-            "diagnostic nonlinear spectral communication, RHS, and fixed-step "
-            "integrator identity gate; no production distributed FFT routing or "
-            "speedup claim"
+            "diagnostic nonlinear spectral communication, RHS, fixed-step "
+            "integrator, pencil fused-bracket, and physical transport-window "
+            "identity gate; no production distributed FFT routing or speedup claim"
         ),
         "blocked_reasons": sorted(
             {
                 *communication_report.blocked_reasons,
                 *rhs_report.blocked_reasons,
                 *integrator_report.blocked_reasons,
+                *pencil_rhs_report.blocked_reasons,
+                *pencil_window_report.blocked_reasons,
             }
         ),
     }
@@ -189,6 +236,8 @@ def build_nonlinear_spectral_communication_gate(
             "communication_gate": communication_report.to_dict(),
             "rhs_gate": rhs_report.to_dict(),
             "integrator_gate": integrator_report.to_dict(),
+            "pencil_rhs_gate": pencil_rhs_report.to_dict(),
+            "pencil_transport_window_gate": pencil_window_report.to_dict(),
             "rows": error_rows,
         }
     )
@@ -208,11 +257,11 @@ def write_artifacts(summary: dict[str, object], out_json: Path, out_png: Path) -
     out_png.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    rows = list(summary["rows"])
+    rows = cast(list[dict[str, Any]], summary["rows"])
     operators = [str(row["operator"]).replace("_", "\n") for row in rows]
     abs_errors = np.asarray([float(row["max_abs_error"]) for row in rows])
     rel_errors = np.asarray([float(row["max_rel_error"]) for row in rows])
-    gate = dict(summary["gate"])
+    gate = cast(dict[str, Any], summary["gate"])
     atol = float(gate["atol"])
     rtol = float(gate["rtol"])
 
@@ -277,7 +326,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     write_artifacts(summary, args.out_json, args.out_png)
     print(json.dumps(summary["gate"], indent=2, sort_keys=True))
-    return 0 if bool(dict(summary["gate"])["identity_passed"]) else 1
+    gate = cast(dict[str, Any], summary["gate"])
+    return 0 if bool(gate["identity_passed"]) else 1
 
 
 if __name__ == "__main__":

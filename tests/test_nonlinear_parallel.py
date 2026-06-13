@@ -14,6 +14,9 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
     NonlinearSpectralDomainWorkModel,
+    NonlinearSpectralPencilRHSIdentityReport,
+    NonlinearSpectralPencilTransportWindowReport,
+    NonlinearSpectralPencilWorkModel,
     NonlinearSpectralRHSIdentityReport,
     classify_nonlinear_parallel_strategy,
     nonlinear_parallel_strategies,
@@ -30,6 +33,9 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
         "NonlinearSpectralDomainWorkModel",
+        "NonlinearSpectralPencilRHSIdentityReport",
+        "NonlinearSpectralPencilTransportWindowReport",
+        "NonlinearSpectralPencilWorkModel",
         "NonlinearSpectralRHSIdentityReport",
         "build_nonlinear_domain_decomposition_plan",
         "classify_nonlinear_parallel_strategy",
@@ -44,8 +50,12 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "nonlinear_spectral_communication_identity_gate",
         "nonlinear_spectral_communication_identity_report",
         "nonlinear_spectral_domain_work_model",
+        "nonlinear_spectral_pencil_rhs_identity_gate",
+        "nonlinear_spectral_pencil_transport_window_identity_gate",
+        "nonlinear_spectral_pencil_work_model",
         "nonlinear_spectral_rhs_identity_gate",
         "nonlinear_spectral_rhs_identity_report",
+        "pencil_decomposed_nonlinear_spectral_rhs",
         "prototype_nonlinear_domain_decomposed_step",
         "prototype_nonlinear_domain_serial_step",
         "release_ready_nonlinear_parallel_strategies",
@@ -69,6 +79,18 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         is nonlinear_parallel.NonlinearSpectralDomainWorkModel
     )
     assert (
+        NonlinearSpectralPencilRHSIdentityReport
+        is nonlinear_parallel.NonlinearSpectralPencilRHSIdentityReport
+    )
+    assert (
+        NonlinearSpectralPencilTransportWindowReport
+        is nonlinear_parallel.NonlinearSpectralPencilTransportWindowReport
+    )
+    assert (
+        NonlinearSpectralPencilWorkModel
+        is nonlinear_parallel.NonlinearSpectralPencilWorkModel
+    )
+    assert (
         NonlinearSpectralRHSIdentityReport
         is nonlinear_parallel.NonlinearSpectralRHSIdentityReport
     )
@@ -87,8 +109,10 @@ def test_fft_axis_domain_sharding_is_diagnostic_until_runtime_fft_gates_exist() 
     assert "distributed_fft_forward_inverse_identity" in strategy.identity_gates
     assert "distributed_fft_nonlinear_bracket_identity" in strategy.identity_gates
     assert "distributed_fft_field_solve_identity" in strategy.identity_gates
-    assert "split/reassemble spectral communication identity" in strategy.notes
-    assert "runtime distributed FFT routing" in strategy.notes
+    assert "pencil_fft_fused_nonlinear_rhs_identity" in strategy.identity_gates
+    assert "pencil_fft_physical_transport_window_identity" in strategy.identity_gates
+    assert "pencil-FFT fused-bracket identity" in strategy.notes
+    assert "device-level distributed FFT routing" in strategy.notes
 
 
 def test_logical_decomposed_spectral_integrator_routes_after_identity_gate() -> None:
@@ -140,6 +164,98 @@ def test_nonlinear_spectral_domain_work_model_blocks_global_reconstruction_speed
     )
     assert "not a distributed FFT performance claim" in model.claim_scope
     assert model.to_dict()["production_speedup_feasible"] is False
+
+
+def test_nonlinear_spectral_pencil_work_model_gates_plausible_scaling() -> None:
+    model = nonlinear_parallel.nonlinear_spectral_pencil_work_model(
+        (2, 4, 32, 32, 4),
+        y_chunks=(16, 16),
+        x_chunks=(16, 16),
+    )
+
+    assert isinstance(model, NonlinearSpectralPencilWorkModel)
+    assert model.num_tiles == 4
+    assert model.global_reconstruction_elements_per_step == 0
+    assert (
+        model.transform_payload_elements_per_step
+        == 3 * model.state_elements + 2 * model.field_elements
+    )
+    assert model.pencil_transpose_elements_per_step > 0
+    assert model.communication_to_fft_work_ratio < model.max_communication_to_fft_work_ratio
+    assert model.predicted_speedup_ceiling >= model.min_predicted_speedup
+    assert model.production_speedup_feasible is True
+    assert model.feasibility_blockers == ()
+    assert "no global reconstruction" in model.claim_scope
+
+    blocked = nonlinear_parallel.nonlinear_spectral_pencil_work_model(
+        (2, 4, 8, 8, 2),
+        y_chunks=(8,),
+        x_chunks=(8,),
+    )
+    assert blocked.production_speedup_feasible is False
+    assert "single_tile_no_domain_decomposition" in blocked.feasibility_blockers
+
+
+def test_pencil_fft_route_matches_serial_fft_and_rhs_without_reconstruction() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    roundtrip_serial = jnp.fft.fft2(jnp.fft.ifft2(state, axes=(-3, -2)), axes=(-3, -2))
+    roundtrip_pencil = nonlinear_parallel._pencil_fft2(
+        nonlinear_parallel._pencil_ifft2(state, y_axis=-3, x_axis=-2),
+        y_axis=-3,
+        x_axis=-2,
+    )
+    assert jnp.allclose(roundtrip_pencil, roundtrip_serial, atol=5.0e-6, rtol=5.0e-6)
+
+    report = nonlinear_parallel.nonlinear_spectral_pencil_rhs_identity_gate(
+        state,
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=1.0e-5,
+    )
+    assert isinstance(report, NonlinearSpectralPencilRHSIdentityReport)
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.work_model.global_reconstruction_elements_per_step == 0
+    assert report.rhs_max_abs_error <= report.atol
+    assert report.rhs_max_rel_error <= report.rtol
+
+    routed_rhs, routed_report = nonlinear_parallel.pencil_decomposed_nonlinear_spectral_rhs(
+        state,
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=1.0e-5,
+    )
+    _field, _bracket, serial_rhs = nonlinear_parallel._serial_nonlinear_spectral_rhs(state)
+    assert routed_report.identity_passed is True
+    assert routed_report.decomposed_path_enabled is True
+    assert jnp.allclose(routed_rhs, serial_rhs, atol=5.0e-6, rtol=5.0e-6)
+
+
+def test_pencil_fft_physical_transport_window_identity_gate() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_parallel.nonlinear_spectral_pencil_transport_window_identity_gate(
+        state,
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        dt=0.001,
+        steps=3,
+        atol=5.0e-6,
+        rtol=1.0e-5,
+    )
+
+    assert isinstance(report, NonlinearSpectralPencilTransportWindowReport)
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.physical_flux_trace_max_abs_error <= report.atol
+    assert len(report.serial_physical_flux_trace) == 4
+    assert len(report.pencil_physical_flux_trace) == 4
+    assert max(report.serial_physical_flux_trace) > 0.0
+    assert "not an absolute nonlinear turbulent heat-flux claim" in report.claim_scope
 
 
 def test_whole_state_kx_ky_is_diagnostic_only() -> None:

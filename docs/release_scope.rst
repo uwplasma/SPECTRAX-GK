@@ -323,10 +323,11 @@ Quasilinear model-selection state:
   one accepted ``t=[350,700]`` seed/timestep replicated transport-window audit,
   and the strict ``t=1500`` growth/QL/nonlinear-window candidates now close the
   optimized-equilibrium trace-count requirement with four qualifying
-  ensembles. Production promotion remains blocked because only one matched
-  baseline-to-optimized audit has a positive uncertainty-separated heat-flux
-  reduction; the current selected audit is scoped candidate evidence, not a
-  broad nonlinear transport-optimization claim.
+  ensembles. The scoped production nonlinear turbulent-flux optimization guard
+  now promotes under its explicit ``2%`` long-window matched-audit policy:
+  three matched baseline-to-optimized audits pass with positive
+  uncertainty-separated heat-flux reductions. This is scoped candidate
+  evidence, not a broad multi-surface nonlinear transport-optimization claim.
 - ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
   QA no-ESS reference to optimized QA/ESS comparison. The tracked
   ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes

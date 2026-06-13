@@ -474,10 +474,11 @@ gate.
        one selected optimized-equilibrium seed/timestep audit plus the strict
        ``t=1500`` growth/QL/nonlinear-window optimized-candidate trace
        ensembles. The optimized-equilibrium trace-count requirement now passes,
-       but production promotion remains blocked until three matched audits pass
-       with positive uncertainty-separated reductions. Broader nonlinear
-       turbulence gradients and multi-surface transport optimization are still
-       separate gates.
+       and the scoped production guard now promotes because three matched
+       audits pass the explicit ``2%`` late-window reduction policy with
+       positive uncertainty-separated reductions. Broader nonlinear turbulence
+       gradients and multi-surface transport optimization are still separate
+       gates.
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty

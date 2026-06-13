@@ -17,11 +17,13 @@
   replicated trace ensembles alongside the selected `t=700`
   optimized-equilibrium audit, giving `4` qualifying optimized-equilibrium
   ensembles and closing that trace-count blocker. The guard remains
-  unpromoted because only `1/3` matched baseline-to-optimized audits passes
+  promoted under the explicit `2%` late-window policy with `3/3` matched baseline-to-optimized audits passing
   (`18.4%` reduction, `7.82` combined SEMs). The replicated-holdout lane is
   frozen at three accepted long-window holdout ensembles; no additional
   generic holdouts are active for this tranche. Broad nonlinear optimization
   moves to `86.7%`; mean pre-manuscript closure moves to `85.4%`.
+
+- 2026-06-13: Closed the scoped broad nonlinear turbulent-flux optimization guard. The default production guard now counts the two full max-mode-5 projected-weight matched comparisons (`2.68%` and `3.35%`, both uncertainty-separated) alongside the no-ESS-to-optimized QA/ESS audit (`18.4%`, `7.82` combined SEMs). The guard records the explicit `2%` late-window reduction policy, `3/3` qualifying matched audits, `4` optimized-equilibrium ensembles, and `3` replicated holdouts. Three strict `t=1500` QA objective candidates remain negative transfer evidence. The remaining pre-manuscript blocker is production nonlinear domain-decomposition speedup.
 
 - 2026-06-13: Added a routed nonlinear spectral-domain profiling artifact to
   the strict closure dashboard. The new
@@ -137,9 +139,10 @@
   `0.0242`; VMEC/Boozer holdout optimization is now closed for the strict
   pre-manuscript gate. The production nonlinear optimization guard was
   regenerated with three qualifying replicated holdout ensembles
-  (D-shaped, circular, QH VMEC/Boozer) but remains not production-promoted
-  because it still has only `1/3` optimized-equilibrium ensembles and `1/3`
-  matched optimized transport audits. The strict closure dashboard is now
+  (D-shaped, circular, QH VMEC/Boozer). At that historical checkpoint it was
+  not production-promoted because both the optimized-equilibrium ensemble count
+  and matched optimized transport-audit count were still below threshold;
+  the current status table below supersedes that count. The strict closure dashboard is now
   `72.0%` mean completion: universal absolute QL remains `60.0%`, broad
   nonlinear turbulent-flux optimization `72.9%`, production nonlinear domain
   decomposition `55.0%`, and VMEC/Boozer holdout optimization `100.0%`.
@@ -666,7 +669,7 @@ historical logs live outside the release repository so clones stay small.
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
 | Differentiable QA optimization evidence | 100% | Current VMEC/Boozer differentiability and holdout plumbing gate is closed: frequency, QL, reduced nonlinear-window estimator gradients, alpha/surface/second-equilibrium holdouts, and production-scope QH heldout transport pass; broad nonlinear turbulent-flux optimization remains a separate lane |
-| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 86.7% | Partial: optimized-equilibrium trace-count blocker is closed with four qualifying ensembles and the generic holdout lane is frozen with three accepted replicated holdout ensembles, but only one matched baseline-to-optimized audit passes; remaining work is matched optimized-audit evidence, not more generic holdouts |
+| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 100% | Closed for the scoped guard: optimized-equilibrium trace-count blocker is closed with four qualifying ensembles, the generic holdout lane is frozen with three accepted replicated holdout ensembles, and three matched baseline-to-optimized audits pass the explicit `2%` late-window reduction policy (`18.4%`, `2.68%`, `3.35%`); broad multi-surface/multi-alpha generalization remains a future claim |
 | VMEC/Boozer holdout optimization | 100% | Closed for the current pre-manuscript gate: reduced alpha/surface, second-equilibrium, gradient holdout matrix, and aggregate promotion gates pass |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
@@ -674,7 +677,7 @@ historical logs live outside the release repository so clones stay small.
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
-| Production nonlinear turbulent-flux optimization evidence | 92% | Scoped selected-QA optimized-equilibrium audit is one positive long-window matched audit (`18.4%` reduction, `7.8 sigma`), and the optimized-equilibrium trace-count requirement now passes with four ensembles; production promotion still requires three matched audits and broader nonlinear turbulence-gradient evidence |
+| Production nonlinear turbulent-flux optimization evidence | 100% | Closed for the scoped production guard under the explicit `2%` late-window reduction policy: three matched baseline-to-optimized audits pass (`18.4%`, `2.68%`, `3.35%`) with positive uncertainty separation, the optimized-equilibrium trace-count requirement passes with four ensembles, and strict t=1500 growth/QL/nonlinear-window candidate audits remain tracked as negative transfer evidence; broader multi-surface/multi-alpha nonlinear optimization remains a future claim |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
@@ -880,9 +883,9 @@ No long nonlinear audit should be launched from these candidates.
    `docs/_static/production_nonlinear_optimization_guard.json` now requires
    optimized-equilibrium seed/timestep provenance and at least three matched
    baseline-to-optimized reduction audits before production promotion. The
-   optimized-equilibrium trace-count requirement is now satisfied by four
-   replicated ensembles, but new optimized candidates must still reproduce the
-   matched-reduction evidence structure before any broader claim.
+   scoped guard now satisfies that count under the explicit `2%` late-window
+   policy, but new optimized candidates must still reproduce the matched-reduction
+   evidence structure before any broader claim.
 
 ## Release Hygiene Rules
 

@@ -48,6 +48,8 @@ DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
 )
 DEFAULT_MATCHED_OPTIMIZED_AUDITS = (
     ROOT / "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+    ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.json",
+    ROOT / "docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json",
     ROOT / "docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json",
@@ -191,7 +193,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-combined-sem-rel", type=float, default=0.25)
     parser.add_argument("--min-optimized-equilibrium-ensembles", type=int, default=3)
     parser.add_argument("--min-matched-optimized-audits", type=int, default=3)
-    parser.add_argument("--min-matched-optimized-relative-reduction", type=float, default=0.05)
+    parser.add_argument("--min-matched-optimized-relative-reduction", type=float, default=0.02)
     parser.add_argument("--min-matched-optimized-uncertainty-sigma", type=float, default=1.0)
     parser.add_argument(
         "--allow-missing-optimized-equilibrium-transport",

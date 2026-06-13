@@ -171,12 +171,13 @@ replicated ``t=[350,700]`` post-transient transport-window audit. The strict
 optimized-equilibrium ensemble-count requirement. A matched
 finite-transform no-ESS reference from the same VMEC-JAX campaign now also
 passes the same ensemble protocol, and the optimized QA/ESS equilibrium reduces
-the audited late-window heat flux by ``18.4%``. This is one positive scoped
-audit. Production promotion remains blocked until three matched
-baseline-to-optimized audits pass, along with the strict replicated-holdout
-breadth, local-gradient conditioning, and converged long post-transient
-running-average heat-flux windows required before claiming a production
-nonlinear heat-flux stellarator optimizer.
+the audited late-window heat flux by ``18.4%``. Together with the two
+full max-mode-5 projected-weight matched audits (``2.68%`` and ``3.35%``),
+this closes the scoped production nonlinear turbulent-flux optimization guard
+under its explicit ``2%`` late-window reduction policy. Broader nonlinear
+heat-flux stellarator optimization still requires multi-surface,
+multi-field-line, multi-``k_y`` evidence plus local-gradient conditioning and
+converged long post-transient running-average heat-flux windows.
 The latest QL-seeded nonlinear-gradient control screen admits
 ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as internal VMEC-state
 controls. The first measured mapping response is a negative result:

@@ -202,7 +202,7 @@ transport acceptance, or speedup.
 The spectral communication layer now has the same fail-closed treatment. The
 artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``
 uses deterministic complex spectral coefficients in ``(N_l,N_m,N_y,N_x,N_z)``
-layout and now combines three diagnostic layers in one JSON sidecar. First, it
+layout and now combines five diagnostic layers in one JSON sidecar. First, it
 applies the split/reassemble and axis-transpose operations that a distributed
 FFT route would need and compares FFT round-trip, pseudo-spectral bracket, and
 spectral field-solve layout. Second, it owns row-major logical ``(k_y,k_x)``
@@ -210,10 +210,16 @@ tiles, reconstructs them, recomputes the spectral field and bracket, and gates
 the serial nonlinear RHS contribution ``-\{\phi,g\}`` against the
 tile-reassembled route. Third, it advances a short fixed-step micro-integration
 and checks final-state, free-energy-proxy, field-energy-proxy, and flux-proxy
-trace identity. Passing this combined gate promotes ``fft_axis_domain`` from
-blocked to diagnostic. It still does not add runtime distributed FFT routing,
-conservation checks on a physical nonlinear case, nonlinear transport-window
-acceptance, profiler evidence, or any speedup claim.
+trace identity. Fourth, it exercises a pencil-FFT fused-bracket route that
+stacks the derivative operands, performs explicit axis-wise FFT stages, and
+returns the RHS without reconstructing logical output tiles. Fifth, it advances
+the same pencil route over a short physical-space transport window and compares
+final state, free-energy, field-energy, bracket-RMS, and
+density-times-radial-electric-field transport-proxy traces. Passing this
+combined gate promotes ``fft_axis_domain`` from blocked to diagnostic. It still
+does not add device-level ``pjit``/``shard_map`` distributed FFT routing,
+benchmark nonlinear conservation checks, accepted turbulent transport-window
+physics, or any speedup claim.
 
 The package also exposes
 ``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate``,
@@ -229,11 +235,15 @@ The routed spectral-domain timing artifact
 claim boundary quantitative. The current logical route is identity-clean, but
 its global-reconstruction work model gives a communication/owned-work ratio
 ``6.375`` and a parallel-efficiency ceiling ``0.136`` for the tracked
-``(N_l,N_m,N_y,N_x,N_z)=(2,4,32,32,4)`` four-tile profile; the observed warm
-timing is below unity, ``0.94x`` relative to the serial route in the tracked
-artifact. The next production step is
-therefore a true distributed-FFT/fused-bracket route, not more timing of the
-global-reconstruction diagnostic.
+``(N_l,N_m,N_y,N_x,N_z)=(2,4,32,32,4)`` four-tile profile. The pencil route
+removes the global reconstruction from the model and gives a
+communication/FFT-work ratio ``0.075`` with an efficiency ceiling ``0.930``.
+That is only a plausibility screen: the tracked local CPU timing still fails
+the speedup gate, with the logical route at about ``1.08x`` and the current
+pencil staging at about ``0.75x`` relative to the serial JIT route. The next
+production step is therefore device-level pencil-FFT routing with real
+collectives and profiler evidence, not a speedup claim from the local
+axis-staged diagnostic.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same

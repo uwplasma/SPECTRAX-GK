@@ -186,12 +186,16 @@ def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_close
     assert payload["gate"]["communication_identity_passed"] is True
     assert payload["gate"]["rhs_identity_passed"] is True
     assert payload["gate"]["integrator_identity_passed"] is True
+    assert payload["gate"]["pencil_rhs_identity_passed"] is True
+    assert payload["gate"]["pencil_transport_window_identity_passed"] is True
     assert payload["communication_gate"]["fft_max_abs_error"] <= payload["gate"]["atol"]
     assert payload["communication_gate"]["bracket_max_abs_error"] <= payload["gate"]["atol"]
     assert payload["communication_gate"]["field_max_abs_error"] <= payload["gate"]["atol"]
     assert payload["rhs_gate"]["rhs_max_abs_error"] <= payload["gate"]["atol"]
     assert payload["integrator_gate"]["final_state_max_abs_error"] <= payload["gate"]["atol"]
     assert payload["integrator_gate"]["flux_proxy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["pencil_rhs_gate"]["rhs_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["pencil_transport_window_gate"]["final_state_max_abs_error"] <= payload["gate"]["atol"]
     assert all(row["identity_passed"] is True for row in payload["rows"])
     assert {row["operator"] for row in payload["rows"]} == {
         "fft_forward_inverse",
@@ -200,8 +204,11 @@ def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_close
         "logical_sharded_rhs",
         "logical_integrator_final_state",
         "logical_integrator_flux_proxy_trace",
+        "pencil_fused_rhs",
+        "pencil_physical_transport_window",
     }
-    assert "communication, RHS, and fixed-step integrator identity gate" in payload["claim_scope"]
+    assert "pencil fused-bracket" in payload["claim_scope"]
+    assert "physical transport-window identity gate" in payload["claim_scope"]
     assert "no production distributed FFT routing or speedup claim" in payload["claim_scope"]
     assert (STATIC / "nonlinear_spectral_communication_identity_gate.png").exists()
 

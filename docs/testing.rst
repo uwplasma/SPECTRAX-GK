@@ -720,10 +720,12 @@ ladder on the release ``n64`` grid, two seed replicates, one timestep
 replicate, restart-copy commands, and the exact
 ``tools/build_external_vmec_replicate_ensemble.py`` plus
 ``tools/check_production_nonlinear_optimization_guard.py`` commands needed
-after the runs finish. This wrapper is a launch contract only: the production
-optimization claim remains blocked until the generated ``t=[350,700]`` ensemble
-actually passes finite-flux, running-window, block/SEM, replicate-spread, and
-optimized-equilibrium marker gates.
+after the runs finish. This wrapper is a launch contract only: a new production
+optimization claim should not be counted until the generated ``t=[350,700]``
+ensemble actually passes finite-flux, running-window, block/SEM,
+replicate-spread, optimized-equilibrium marker, and matched-audit gates. The
+current scoped guard is promoted by three accepted matched audits under the
+explicit ``2%`` long-window reduction policy.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips

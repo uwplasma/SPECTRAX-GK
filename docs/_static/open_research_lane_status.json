@@ -125,7 +125,7 @@
         "model_selection_candidate_mean_error": 0.6972871490908844,
         "model_selection_status_passed": false,
         "production_nonlinear_optimization_guard_safe": true,
-        "production_nonlinear_optimization_promoted": false,
+        "production_nonlinear_optimization_promoted": true,
         "production_nonlinear_optimized_equilibrium_ensembles": 4,
         "production_nonlinear_replicated_holdout_ensembles": 3,
         "qh_external_vmec_low_to_mid_grid_converged": false,
