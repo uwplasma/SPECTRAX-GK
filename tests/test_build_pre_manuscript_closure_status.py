@@ -27,7 +27,7 @@ def _write_all_pass_fixture(root: Path) -> None:
             "passed": True,
             "by_split": {
                 "train": {"n": 3, "mean_abs_relative_error": 0.12},
-                "holdout": {"n": 9, "mean_abs_relative_error": 0.22},
+                "holdout": {"n": 10, "mean_abs_relative_error": 0.22},
             },
             "points": [],
         },
@@ -66,6 +66,37 @@ def _write_all_pass_fixture(root: Path) -> None:
     )
     _write_json(root, "docs/_static/quasilinear_promotion_guardrails.json", {"passed": True})
     _write_json(root, "docs/_static/quasilinear_holdout_gap_report.json", {"promotion_gate": {"passed": True, "blockers": []}})
+    _write_json(
+        root,
+        "docs/_static/quasilinear_error_anatomy.json",
+        {
+            "case_count": 12,
+            "holdout_count": 10,
+            "candidate_mean_abs_relative_error": 0.28,
+            "promotion_gate": {"passed": False, "blockers": ["declared_stress_outliers_deferred"]},
+            "frozen_ledger_policy": {"additional_holdout_collection_active": False},
+            "core_portfolio_gate": {
+                "passed": True,
+                "transport_gate": 0.35,
+                "interval_coverage_gate": 0.75,
+                "core_case_count": 10,
+                "core_holdout_count": 8,
+                "core_mean_abs_relative_error": 0.28,
+                "core_holdout_mean_abs_relative_error": 0.27,
+                "core_max_abs_relative_error": 0.57,
+                "core_prediction_interval_coverage": 1.0,
+                "core_spearman": 0.74,
+                "core_holdout_spearman": 0.73,
+                "core_pairwise_order_accuracy": 0.75,
+                "core_holdout_pairwise_order_accuracy": 0.75,
+                "screening_gate_passed": False,
+                "excluded_cases": [
+                    {"case": "solovev_reference_repair_dt002_amp1em5_n48_t250"},
+                    {"case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"},
+                ],
+            },
+        },
+    )
 
     _write_json(
         root,
@@ -126,16 +157,24 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     assert payload["kind"] == "pre_manuscript_closure_status"
     assert payload["summary"]["ready_for_manuscript_drafting"] is False
     assert len(lanes) == 4
-    assert lanes["Universal absolute quasilinear heat-flux prediction"]["passed"] is False
+    assert lanes["Scoped core quasilinear heat-flux diagnostic"]["passed"] is True
     assert lanes["Production nonlinear domain-decomposition speedup"]["passed"] is False
-    ql_lane = lanes["Universal absolute quasilinear heat-flux prediction"]
-    assert "twelve-case ledger frozen" in ql_lane["next_action"]
-    assert "Add independent converged nonlinear holdouts" not in ql_lane["next_action"]
-    assert all("additional independent converged nonlinear holdout" not in item for item in ql_lane["required_next_artifacts"])
-    assert (
-        "holdout_mean_abs_relative_error_exceeds_0.35"
-        in ql_lane["blockers"]
-    )
+    ql_lane = lanes["Scoped core quasilinear heat-flux diagnostic"]
+    assert ql_lane["status"] == "closed"
+    assert ql_lane["completion_percent"] == 100.0
+    assert ql_lane["key_metrics"]["full_universal_promotion_passed"] is False
+    assert ql_lane["key_metrics"]["core_case_count"] == 10
+    assert ql_lane["key_metrics"]["core_holdout_count"] == 8
+    assert 0.27 < ql_lane["key_metrics"]["core_mean_abs_relative_error"] < 0.29
+    assert 0.27 < ql_lane["key_metrics"]["core_holdout_mean_abs_relative_error"] < 0.29
+    assert ql_lane["key_metrics"]["core_prediction_interval_coverage"] == 1.0
+    assert ql_lane["key_metrics"]["core_screening_gate_passed"] is False
+    assert set(ql_lane["key_metrics"]["declared_stress_outliers"]) == {
+        "solovev_reference_repair_dt002_amp1em5_n48_t250",
+        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+    }
+    assert "universal absolute-flux runtime predictor" in ql_lane["next_action"]
+    assert ql_lane["required_next_artifacts"] == []
     assert (
         "gpu_domain_speedup_below_1p5"
         in lanes["Production nonlinear domain-decomposition speedup"]["blockers"]

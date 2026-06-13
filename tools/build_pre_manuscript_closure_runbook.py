@@ -403,6 +403,15 @@ def build_runbook_payload(
         external_status = "blocked_on_new_linear_screen" if not external_has_launch else "launchable"
         external_launch_commands = external_runbook.get("launch_commands", [])
     lanes = {str(lane["lane"]): lane for lane in status.get("lanes", []) if isinstance(lane, dict)}
+    ql_lane = lanes.get("Scoped core quasilinear heat-flux diagnostic", {})
+    ql_scoped_closed = bool(ql_lane.get("passed", False))
+    if ql_scoped_closed:
+        external_status = "frozen_scoped_ql_closed"
+        external_next_action = (
+            "No additional QL holdout launches are active for this tranche: use the closed scoped-core "
+            "diagnostic and keep declared stress outliers deferred until a new saturation-physics lane is opened."
+        )
+        external_launch_commands = []
     domain_lane = lanes.get("Production nonlinear domain-decomposition speedup", {})
     payload = {
         "kind": "pre_manuscript_closure_runbook",
@@ -475,7 +484,10 @@ def build_runbook_payload(
     payload["overall_next_actions"] = [
         "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
         external_next_action,
-        "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
+        (
+            "Use the closed scoped-core QL diagnostic for examples and optimization screening; "
+            "do not launch additional QL holdouts for this release tranche."
+        ),
         "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass.",
     ]
     return _json_clean(payload)

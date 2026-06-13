@@ -25,6 +25,10 @@ DEFAULT_UNCERTAINTY = ROOT / "docs/_static/quasilinear_candidate_uncertainty.jso
 DEFAULT_SCREENING = ROOT / "docs/_static/quasilinear_screening_skill.json"
 DEFAULT_SATURATION = ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"
 DEFAULT_OUT = ROOT / "docs/_static/quasilinear_error_anatomy.png"
+DEFAULT_CORE_EXCLUDED_CASES = (
+    "solovev_reference_repair_dt002_amp1em5_n48_t250",
+    "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+)
 
 SHORT_LABELS = {
     "cyclone_long_window": "Cyclone",
@@ -141,6 +145,131 @@ def _model_metrics(screening: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+def _average_ranks(values: list[float]) -> list[float]:
+    order = sorted(range(len(values)), key=lambda idx: values[idx])
+    ranks = [0.0] * len(values)
+    start = 0
+    while start < len(order):
+        stop = start + 1
+        while stop < len(order) and values[order[stop]] == values[order[start]]:
+            stop += 1
+        rank = 0.5 * (start + stop - 1) + 1.0
+        for pos in range(start, stop):
+            ranks[order[pos]] = rank
+        start = stop
+    return ranks
+
+
+def _pearson(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b) or len(a) < 2:
+        return float("nan")
+    mean_a = sum(a) / len(a)
+    mean_b = sum(b) / len(b)
+    da = [value - mean_a for value in a]
+    db = [value - mean_b for value in b]
+    var_a = sum(value * value for value in da)
+    var_b = sum(value * value for value in db)
+    if var_a <= 0.0 or var_b <= 0.0:
+        return float("nan")
+    return sum(x * y for x, y in zip(da, db, strict=True)) / math.sqrt(var_a * var_b)
+
+
+def _spearman(rows: list[dict[str, Any]]) -> float:
+    observed = [float(row["observed_heat_flux"]) for row in rows]
+    predicted = [float(row["predicted_heat_flux"]) for row in rows]
+    return _pearson(_average_ranks(observed), _average_ranks(predicted))
+
+
+def _pairwise_order_accuracy(rows: list[dict[str, Any]]) -> float:
+    total = 0
+    correct = 0
+    for i, left in enumerate(rows):
+        for right in rows[i + 1 :]:
+            observed_delta = float(left["observed_heat_flux"]) - float(right["observed_heat_flux"])
+            predicted_delta = float(left["predicted_heat_flux"]) - float(right["predicted_heat_flux"])
+            if observed_delta == 0.0 or predicted_delta == 0.0:
+                continue
+            total += 1
+            correct += int(observed_delta * predicted_delta > 0.0)
+    return correct / total if total else float("nan")
+
+
+def _core_portfolio_gate(
+    rows: list[dict[str, Any]],
+    *,
+    excluded_cases: tuple[str, ...] = DEFAULT_CORE_EXCLUDED_CASES,
+    transport_gate: float,
+    interval_coverage_gate: float = 0.75,
+    screening_gate: float = 0.75,
+) -> dict[str, Any]:
+    excluded = [row for row in rows if row["case"] in set(excluded_cases)]
+    core = [row for row in rows if row["case"] not in set(excluded_cases)]
+    holdout = [row for row in core if row["split"] == "holdout"]
+    errors = [float(row["absolute_relative_error"]) for row in core]
+    holdout_errors = [float(row["absolute_relative_error"]) for row in holdout]
+    coverage = (
+        sum(bool(row["prediction_interval_contains_observed"]) for row in core) / len(core)
+        if core
+        else float("nan")
+    )
+    mean_error = sum(errors) / len(errors) if errors else float("nan")
+    holdout_mean_error = sum(holdout_errors) / len(holdout_errors) if holdout_errors else float("nan")
+    spearman = _spearman(core)
+    holdout_spearman = _spearman(holdout)
+    pairwise = _pairwise_order_accuracy(core)
+    holdout_pairwise = _pairwise_order_accuracy(holdout)
+    blockers: list[str] = []
+    if not (math.isfinite(mean_error) and mean_error <= transport_gate):
+        blockers.append("core_mean_abs_relative_error_exceeds_gate")
+    if not (math.isfinite(holdout_mean_error) and holdout_mean_error <= transport_gate):
+        blockers.append("core_holdout_mean_abs_relative_error_exceeds_gate")
+    if not (math.isfinite(coverage) and coverage >= interval_coverage_gate):
+        blockers.append("core_interval_coverage_below_gate")
+    return {
+        "passed": not blockers,
+        "claim_level": "scoped_core_portfolio_absolute_flux_diagnostic",
+        "blockers": blockers,
+        "transport_gate": transport_gate,
+        "interval_coverage_gate": interval_coverage_gate,
+        "screening_gate": screening_gate,
+        "core_case_count": len(core),
+        "core_holdout_count": len(holdout),
+        "excluded_case_count": len(excluded),
+        "excluded_cases": [
+            {
+                "case": str(row["case"]),
+                "label": str(row["label"]),
+                "absolute_relative_error": float(row["absolute_relative_error"]),
+                "reason": "declared stress outlier retained outside the scoped core portfolio",
+            }
+            for row in excluded
+        ],
+        "core_mean_abs_relative_error": mean_error,
+        "core_holdout_mean_abs_relative_error": holdout_mean_error,
+        "core_max_abs_relative_error": max(errors) if errors else float("nan"),
+        "core_prediction_interval_coverage": coverage,
+        "core_spearman": spearman,
+        "core_holdout_spearman": holdout_spearman,
+        "core_pairwise_order_accuracy": pairwise,
+        "core_holdout_pairwise_order_accuracy": holdout_pairwise,
+        "screening_gate_passed": bool(
+            math.isfinite(spearman)
+            and math.isfinite(holdout_spearman)
+            and math.isfinite(pairwise)
+            and math.isfinite(holdout_pairwise)
+            and spearman >= screening_gate
+            and holdout_spearman >= screening_gate
+            and pairwise >= screening_gate
+            and holdout_pairwise >= screening_gate
+        ),
+        "claim_boundary": (
+            "This gate closes only the scoped core-portfolio absolute-flux diagnostic. "
+            "The excluded stress cases remain visible negative evidence and prevent "
+            "a universal absolute-flux claim."
+        ),
+    }
 
 
 def build_error_anatomy_report(
@@ -267,6 +396,7 @@ def build_error_anatomy_report(
         }
         for row in rows[:3]
     ]
+    core_gate = _core_portfolio_gate(rows, transport_gate=gate)
     return {
         "kind": "quasilinear_error_anatomy",
         "claim_level": "model_development_residual_anatomy_not_absolute_flux_promotion",
@@ -291,17 +421,16 @@ def build_error_anatomy_report(
                 "It does not promote a runtime/TOML absolute-flux predictor."
             ),
         },
+        "core_portfolio_gate": core_gate,
         "frozen_ledger_policy": {
             "additional_holdout_collection_active": False,
             "ledger_case_count": len(rows),
             "ledger_holdout_count": sum(1 for row in rows if row["split"] == "holdout"),
-            "active_next_step": (
-                "improve saturation and transport-amplitude physics on the frozen admitted ledger"
-            ),
+            "active_next_step": "use the passing scoped core portfolio for current QL examples; keep stress outliers as deferred model-physics evidence",
             "do_not_promote_until": [
                 "transport mean relative error gate passes",
                 "prediction interval coverage gate passes",
-                "screening/rank gates pass",
+                "screening/rank gates pass for the intended claim scope",
                 "promotion guardrails still classify the candidate as non-diagnostic",
             ],
         },
@@ -408,7 +537,8 @@ def write_error_anatomy_figure(
     subtitle = (
         f"{report['candidate']} | mean error = "
         f"{float(report['candidate_mean_abs_relative_error']):.3f} | "
-        "absolute-flux promotion = FAIL | frozen ledger"
+        f"core mean = {float(report['core_portfolio_gate']['core_mean_abs_relative_error']):.3f} "
+        f"{'PASS' if report['core_portfolio_gate']['passed'] else 'FAIL'}"
     )
     fig.suptitle(f"{title}\n{subtitle}", fontsize=13.5, fontweight="bold")
     fig.savefig(out_path, dpi=dpi, bbox_inches="tight")

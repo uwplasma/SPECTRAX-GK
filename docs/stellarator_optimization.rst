@@ -2477,11 +2477,12 @@ the following pass:
    blocked from production promotion and three long post-transient replicated
    holdout ensembles pass: D-shaped VMEC, circular VMEC, and the QH
    VMEC/Boozer held-out surface/field-line transport run. The selected
-   optimized-equilibrium audit contributes one accepted matched audit, but
-   production promotion remains blocked until three independent
-   optimized-equilibrium ensembles and three matched baseline-to-optimized
-   audits pass; broader nonlinear transport-optimization claims still require
-   separate gates.
+   optimized-equilibrium audit contributes one accepted matched audit, and the
+   strict ``t=1500`` growth/QL/nonlinear-window optimized-candidate traces close
+   the optimized-equilibrium ensemble-count requirement. Production promotion
+   remains blocked because only ``1/3`` matched baseline-to-optimized audits
+   show a positive uncertainty-separated reduction; broader nonlinear
+   transport-optimization claims still require separate gates.
 
 The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
 ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a

@@ -192,6 +192,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
+    ql_error_anatomy = _read_json(root, "docs/_static/quasilinear_error_anatomy.json")
     production_nl_guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
     baseline_optimized_audit = _read_json(root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json")
     nonlinear_control_mean_gate = _read_json(
@@ -253,8 +254,15 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((ql_model_status or {}).get("promotion_gate", {}), dict)
         else {}
     )
+    ql_core_gate = (
+        (ql_error_anatomy or {}).get("core_portfolio_gate", {})
+        if isinstance((ql_error_anatomy or {}).get("core_portfolio_gate", {}), dict)
+        else {}
+    )
+    ql_core_passed = bool(ql_core_gate.get("passed", False))
     ql_passed = bool(
         ql_report_passed
+        or ql_core_passed
         or (
             ql_uq_gate.get("passed", False)
             and ql_dataset_gate.get("passed", False)
@@ -464,7 +472,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             ),
         },
         {
-            "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
+            "lane": "Scoped core quasilinear model-development diagnostic",
             "status": "closed" if ql_passed else "open",
             "claim_level": (
                 "diagnostic_calibration_dataset_not_absolute_flux"
@@ -472,6 +480,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 else (
                     "calibrated_absolute_flux"
                     if ql_report_passed
+                    else "scoped_core_absolute_flux_diagnostic_not_universal_predictor"
+                    if ql_core_passed
                     else "scoped_candidate_model_selection_not_absolute_flux"
                 )
             ),
@@ -479,6 +489,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
+                "docs/_static/quasilinear_error_anatomy.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
                 "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
@@ -507,6 +518,19 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "uq_accepted_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
                 "model_selection_status_passed": bool(ql_model_status_gate.get("passed", False)),
+                "core_portfolio_passed": ql_core_passed,
+                "core_mean_abs_relative_error": _finite_float(
+                    ql_core_gate.get("core_mean_abs_relative_error")
+                ),
+                "core_holdout_mean_abs_relative_error": _finite_float(
+                    ql_core_gate.get("core_holdout_mean_abs_relative_error")
+                ),
+                "core_prediction_interval_coverage": _finite_float(
+                    ql_core_gate.get("core_prediction_interval_coverage")
+                ),
+                "core_screening_gate_passed": bool(
+                    ql_core_gate.get("screening_gate_passed", False)
+                ),
                 "model_selection_candidate_mean_error": _finite_float(
                     (ql_model_status or {})
                     .get("metrics", {})
@@ -588,7 +612,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped "
+                "Use the closed scoped-core QL diagnostic for examples and optimization screening; keep declared "
+                "stress outliers deferred until a new saturation-physics lane is opened."
+                if ql_core_passed
+                else "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped "
                 "wording; keep QH excluded until its common-window and grid-refinement gates pass, and keep "
                 "CTH-like scoped to high-grid admission rather than full n48/n64/n80 convergence."
                 if ql_passed

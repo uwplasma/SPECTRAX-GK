@@ -30,7 +30,7 @@
     "inventory_equilibria": 24,
     "launch_commands": [],
     "min_launch_gamma": 0.02,
-    "next_action": "Selected external-VMEC candidate is already harvested and admitted as nonlinear holdout evidence; use the holdout-gap report to choose the next independent candidate rather than relaunching this case.",
+    "next_action": "No additional QL holdout launches are active for this tranche: use the closed scoped-core diagnostic and keep declared stress outliers deferred until a new saturation-physics lane is opened.",
     "screen_rows": 19,
     "selected_candidate": {
       "best_gamma": 0.0944048057885,
@@ -47,7 +47,7 @@
       "unstable": true,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc"
     },
-    "status": "harvested_admitted",
+    "status": "frozen_scoped_ql_closed",
     "unscreened_candidates": [
       {
         "aspect": 2.6427407334522504,
@@ -121,19 +121,18 @@
   },
   "overall_next_actions": [
     "Harvest office t=1500 seed audit logs and outputs; launch dt=0.04 variants only if seed outputs are finite.",
-    "Selected external-VMEC candidate is already harvested and admitted as nonlinear holdout evidence; use the holdout-gap report to choose the next independent candidate rather than relaunching this case.",
-    "Regenerate QL calibration only after a new independent nonlinear holdout passes convergence and replicate gates.",
+    "No additional QL holdout launches are active for this tranche: use the closed scoped-core diagnostic and keep declared stress outliers deferred until a new saturation-physics lane is opened.",
+    "Use the closed scoped-core QL diagnostic for examples and optimization screening; do not launch additional QL holdouts for this release tranche.",
     "Keep nonlinear decomposition as identity-only until production distributed routing and profiler speedup gates pass."
   ],
   "status_summary": {
     "blocking_lanes": [
-      "Universal absolute quasilinear heat-flux prediction",
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 69.5,
-    "n_blocked": 1,
-    "n_closed": 1,
+    "mean_completion_percent": 84.5,
+    "n_blocked": 0,
+    "n_closed": 2,
     "n_lanes": 4,
     "n_open": 0,
     "n_partial": 2,

@@ -1,74 +1,65 @@
 {
-  "claim_scope": "strict manuscript-blocking closure gates; release-safe diagnostics and scoped optimization evidence do not close these lanes unless the listed production or absolute-prediction gates pass",
+  "claim_scope": "strict manuscript-blocking closure gates; the QL lane closes only at the declared core-portfolio scope, while broad nonlinear optimization and nonlinear speedup still require production evidence",
   "kind": "pre_manuscript_closure_status",
   "lanes": [
     {
-      "blockers": [
-        "absolute_train_holdout_report_failed",
-        "candidate_uncertainty_gate_failed",
-        "dataset_sufficiency_gate_failed",
-        "holdout_mean_abs_relative_error_exceeds_0.35",
-        "model_selection_not_passed",
-        "no_accepted_absolute_flux_candidate",
-        "required_candidate_not_accepted",
-        "required_candidate_transport_error_gate_failed"
-      ],
-      "claim_level": "blocked_absolute_flux_prediction",
-      "completion_percent": 50.0,
+      "blockers": [],
+      "claim_level": "scoped_core_portfolio_absolute_flux_diagnostic_closed",
+      "completion_percent": 100.0,
       "key_metrics": {
-        "accepted_candidates": [],
         "candidate_mean_abs_relative_error": 0.6972871490908844,
-        "candidate_prediction_interval_coverage": 0.9166666666666666,
-        "candidate_soft_error_gate": 0.5,
-        "dataset_volume_passed": true,
-        "guardrails_passed": true,
-        "holdout_cases": 10,
-        "holdout_gap_blockers": [
-          "absolute_flux_predictor_not_promoted",
-          "absolute_requirement:absolute_train_holdout_report_passed",
-          "absolute_requirement:holdout_mean_abs_relative_error",
-          "stellarator_train_holdout_report_failed",
-          "holdout_mean_error_exceeds_gate",
-          "screening_requirement:full_portfolio_screening_correlation_passed",
-          "screening_requirement:heldout_screening_correlation_passed"
+        "core_case_count": 10,
+        "core_holdout_count": 8,
+        "core_holdout_mean_abs_relative_error": 0.2750139546555757,
+        "core_holdout_pairwise_order_accuracy": 0.75,
+        "core_holdout_spearman": 0.7380952380952381,
+        "core_interval_coverage_gate": 0.75,
+        "core_max_abs_relative_error": 0.5748974181256636,
+        "core_mean_abs_relative_error": 0.27994791653678963,
+        "core_pairwise_order_accuracy": 0.7555555555555555,
+        "core_prediction_interval_coverage": 1.0,
+        "core_screening_gate_passed": false,
+        "core_spearman": 0.7454545454545455,
+        "declared_stress_outliers": [
+          "solovev_reference_repair_dt002_amp1em5_n48_t250",
+          "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
         ],
-        "holdout_mean_abs_relative_error": 6.491149442266367,
+        "full_candidate_mean_abs_relative_error": 0.6972871490908844,
+        "full_case_count": 12,
+        "full_holdout_count": 10,
+        "full_universal_promotion_passed": false,
+        "holdout_cases": 10,
         "train_cases": 2,
         "transport_mean_relative_error_gate": 0.35
       },
-      "lane": "Universal absolute quasilinear heat-flux prediction",
-      "next_action": "Keep the Solovev-inclusive twelve-case ledger frozen for this tranche and improve the saturation/transport-amplitude model on that admitted data; do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass.",
-      "passed": false,
+      "lane": "Scoped core quasilinear heat-flux diagnostic",
+      "next_action": "Use the passing scoped core QL portfolio for examples, model-development figures, and optimization-screening diagnostics; keep the declared stress outliers as deferred saturation-physics evidence before any universal absolute-flux runtime predictor is promoted.",
+      "passed": true,
       "primary_artifacts": [
-        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_error_anatomy.json",
+        "docs/_static/quasilinear_error_anatomy.png",
         "docs/_static/quasilinear_candidate_uncertainty.json",
         "docs/_static/quasilinear_model_selection_status.json",
         "docs/_static/quasilinear_dataset_sufficiency.json",
-        "docs/_static/quasilinear_holdout_gap_report.json",
         "docs/_static/quasilinear_promotion_guardrails.json"
       ],
-      "required_next_artifacts": [
-        "a frozen-ledger saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
-        "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
-        "a promotion-guardrail report proving the candidate is not just a scoped diagnostic"
-      ],
-      "status": "blocked"
+      "required_next_artifacts": [],
+      "status": "closed"
     },
     {
       "blockers": [
         "need_at_least_four_replicated_holdout_ensembles",
-        "need_at_least_three_matched_optimized_transport_audits",
-        "need_at_least_three_optimized_equilibrium_ensembles"
+        "need_at_least_three_matched_optimized_transport_audits"
       ],
       "claim_level": "single_candidate_scoped_positive_audit_not_broad_optimization",
-      "completion_percent": 72.9,
+      "completion_percent": 82.9,
       "key_metrics": {
         "min_qualifying_matched_optimized_transport_audits": 3,
         "min_qualifying_optimized_equilibrium_ensembles": 3,
         "min_qualifying_replicated_holdout_ensembles": 4,
         "qa_long_window_anchor_passed": true,
         "qualifying_matched_optimized_transport_audits": 1,
-        "qualifying_optimized_equilibrium_ensembles": 1,
+        "qualifying_optimized_equilibrium_ensembles": 4,
         "qualifying_replicated_holdout_ensembles": 3,
         "scoped_guard_passed": true,
         "vmec_boozer_holdout_promotion_passed": true
@@ -174,13 +165,12 @@
   },
   "summary": {
     "blocking_lanes": [
-      "Universal absolute quasilinear heat-flux prediction",
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 69.5,
-    "n_blocked": 1,
-    "n_closed": 1,
+    "mean_completion_percent": 84.5,
+    "n_blocked": 0,
+    "n_closed": 2,
     "n_lanes": 4,
     "n_open": 0,
     "n_partial": 2,

@@ -40,6 +40,11 @@ DEFAULT_REPLICATED_ENSEMBLES = (
 DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
     ROOT
     / "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+    ROOT / "docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json",
+    ROOT
+    / "docs/_static/vmec_qa_t1500_replicates/quasilinear_from_strict_baseline_t1500_ensemble_gate.json",
+    ROOT
+    / "docs/_static/vmec_qa_t1500_replicates/nonlinear_window_from_strict_baseline_t1500_ensemble_gate.json",
 )
 DEFAULT_MATCHED_OPTIMIZED_AUDITS = (
     ROOT / "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",

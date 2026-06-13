@@ -455,10 +455,11 @@ gate.
        training sample set, and the independent QH production-scope validation
        artifact covers a held-out field-line ``alpha`` with a passed replicated
        nonlinear-window ensemble. Production nonlinear optimization promotion
-       still requires three independent optimized-equilibrium ensembles and
-       three matched baseline-to-optimized audits, so one converged held-out
-       VMEC/Boozer transport window cannot by itself support a broad
-       optimized-equilibrium heat-flux claim.
+       now has the optimized-equilibrium ensemble count closed, but still
+       requires three matched baseline-to-optimized audits with positive
+       uncertainty-separated reductions. One converged held-out VMEC/Boozer
+       transport window cannot by itself support a broad optimized-equilibrium
+       heat-flux claim.
        The multi-alpha finite-difference artifact passes and the growth-vs-QL
        comparison shows objective-dependent descent directions. The
        reduced-portfolio guard now verifies that the multi-alpha rows have real
@@ -470,11 +471,13 @@ gate.
        the QH held-out transport artifact closes the VMEC/Boozer aggregate
        promotion gate. The separate production nonlinear optimization guard now
        includes long-window D-shaped, circular, and QH VMEC/Boozer holdouts plus
-       one selected optimized-equilibrium seed/timestep audit; production
-       promotion remains blocked until three independent optimized-equilibrium
-       ensembles and three matched audits pass. Broader nonlinear turbulence
-       gradients and multi-surface transport optimization are still separate
-       gates.
+       one selected optimized-equilibrium seed/timestep audit plus the strict
+       ``t=1500`` growth/QL/nonlinear-window optimized-candidate trace
+       ensembles. The optimized-equilibrium trace-count requirement now passes,
+       but production promotion remains blocked until three matched audits pass
+       with positive uncertainty-separated reductions. Broader nonlinear
+       turbulence gradients and multi-surface transport optimization are still
+       separate gates.
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty

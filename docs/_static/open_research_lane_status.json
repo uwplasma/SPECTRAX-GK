@@ -85,13 +85,18 @@
       "status": "partial"
     },
     {
-      "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
+      "claim_level": "scoped_core_absolute_flux_diagnostic_not_universal_predictor",
       "key_metrics": {
         "calibration_report_passed": false,
         "circular_external_vmec_t250_converged": false,
         "circular_external_vmec_t700_replicate_mean_rel_spread": 0.035473869975602645,
         "circular_external_vmec_t700_replicate_sem_rel": 0.04283952221624353,
         "circular_external_vmec_t700_replicated": true,
+        "core_holdout_mean_abs_relative_error": 0.2750139546555757,
+        "core_mean_abs_relative_error": 0.27994791653678963,
+        "core_portfolio_passed": true,
+        "core_prediction_interval_coverage": 1.0,
+        "core_screening_gate_passed": false,
         "cth_like_external_vmec_converged": true,
         "cth_like_external_vmec_full_grid_converged": false,
         "cth_like_external_vmec_high_grid_admitted": true,
@@ -121,7 +126,7 @@
         "model_selection_status_passed": false,
         "production_nonlinear_optimization_guard_safe": true,
         "production_nonlinear_optimization_promoted": false,
-        "production_nonlinear_optimized_equilibrium_ensembles": 1,
+        "production_nonlinear_optimized_equilibrium_ensembles": 4,
         "production_nonlinear_replicated_holdout_ensembles": 3,
         "qh_external_vmec_low_to_mid_grid_converged": false,
         "qh_external_vmec_mid_to_high_grid_converged": false,
@@ -135,12 +140,13 @@
         "variance_reduced_nonlinear_gradient_response_mean": -0.3561353531352798,
         "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.31148835872140096
       },
-      "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Use the admitted D-shaped, circular, ITERModel, up-down asymmetric, and high-grid CTH-like external-VMEC holdouts as negative transfer constraints while developing richer saturation models; keep QH excluded until its common-window and grid-refinement gates pass.",
+      "lane": "Scoped core quasilinear model-development diagnostic",
+      "next_action": "Use the closed scoped-core QL diagnostic for examples and optimization screening; keep declared stress outliers deferred until a new saturation-physics lane is opened.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_error_anatomy.json",
         "docs/_static/quasilinear_dataset_sufficiency.json",
         "docs/_static/quasilinear_model_selection_status.json",
         "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
@@ -159,7 +165,7 @@
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json"
       ],
-      "status": "open"
+      "status": "closed"
     },
     {
       "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
@@ -250,9 +256,9 @@
   },
   "summary": {
     "n_blocked": 0,
-    "n_closed": 1,
+    "n_closed": 2,
     "n_lanes": 5,
-    "n_open": 2,
+    "n_open": 1,
     "n_partial": 2
   }
 }

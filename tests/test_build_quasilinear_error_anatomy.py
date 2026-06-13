@@ -40,9 +40,22 @@ def test_error_anatomy_locks_current_fail_closed_residual_story() -> None:
     policy = report["frozen_ledger_policy"]
     assert policy["additional_holdout_collection_active"] is False
     assert policy["ledger_case_count"] == 12
-    assert "saturation and transport-amplitude physics" in policy["active_next_step"]
+    assert "passing scoped core portfolio" in policy["active_next_step"]
     assert report["dominant_residuals"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
     assert any("external-axisymmetric residual budget" in item for item in report["model_development_requirements"])
+    core = report["core_portfolio_gate"]
+    assert core["passed"] is True
+    assert core["core_case_count"] == 10
+    assert core["core_holdout_count"] == 8
+    assert core["excluded_case_count"] == 2
+    assert 0.27 < core["core_mean_abs_relative_error"] < 0.29
+    assert 0.27 < core["core_holdout_mean_abs_relative_error"] < 0.29
+    assert core["core_prediction_interval_coverage"] == 1.0
+    assert core["screening_gate_passed"] is False
+    assert {row["case"] for row in core["excluded_cases"]} == {
+        "solovev_reference_repair_dt002_amp1em5_n48_t250",
+        "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+    }
 
 
 def test_error_anatomy_cli_writes_sidecars_and_fails_closed(tmp_path: Path) -> None:
@@ -68,6 +81,7 @@ def test_error_anatomy_cli_writes_sidecars_and_fails_closed(tmp_path: Path) -> N
     assert out.exists()
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["promotion_gate"]["passed"] is False
+    assert payload["core_portfolio_gate"]["passed"] is True
     assert payload["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
     csv_text = out.with_suffix(".csv").read_text(encoding="utf-8")
     assert csv_text.startswith("case,label,split,geometry")

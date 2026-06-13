@@ -77,7 +77,7 @@
         "n_objectives": 3,
         "production_nonlinear_optimization_guard_safe": true,
         "production_nonlinear_optimization_promoted": false,
-        "production_nonlinear_optimized_equilibrium_ensembles": 1,
+        "production_nonlinear_optimized_equilibrium_ensembles": 4,
         "production_nonlinear_replicated_holdout_ensembles": 3,
         "weighted_residual_uq_gate_passed": true,
         "worst_reduction_factor": 0.14944986630532714
@@ -114,7 +114,7 @@
         "multi_equilibrium_gradient_max_rel_error": 0.026774412331418387,
         "multi_equilibrium_reduced_nonlinear_window_gradient_gate": true,
         "nonlinear_transport_average_gate": false,
-        "optimized_equilibrium_replicated_transport_ensembles": 1,
+        "optimized_equilibrium_replicated_transport_ensembles": 4,
         "production_nonlinear_observable_fd_path_gate": false,
         "production_nonlinear_optimization_guard_safe": true,
         "production_nonlinear_optimization_promoted": false,

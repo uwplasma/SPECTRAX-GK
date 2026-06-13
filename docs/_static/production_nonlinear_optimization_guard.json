@@ -54,7 +54,7 @@
       }
     ],
     "required_additional_matched_optimized_audits": 2,
-    "required_additional_optimized_equilibrium_ensembles": 2
+    "required_additional_optimized_equilibrium_ensembles": 0
   },
   "gates": [
     {
@@ -78,9 +78,9 @@
       "passed": true
     },
     {
-      "detail": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+      "detail": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json; docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json; docs/_static/vmec_qa_t1500_replicates/nonlinear_window_from_strict_baseline_t1500_ensemble_gate.json; docs/_static/vmec_qa_t1500_replicates/quasilinear_from_strict_baseline_t1500_ensemble_gate.json",
       "metric": "optimized_equilibrium_replicated_transport_window",
-      "passed": false
+      "passed": true
     },
     {
       "detail": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
@@ -221,13 +221,129 @@
         ]
       },
       "seed_timestep_provenance_ok": true
+    },
+    {
+      "case": "vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.01237563555827857,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 11.510172783099975,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.042716648659487565,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "path": "docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "qualifies_for_production_optimization": true,
+      "report_count_ok": true,
+      "seed_timestep_provenance": {
+        "observed_row_count": 3,
+        "passed": true,
+        "required": true,
+        "requirements": {
+          "min_seed_variants": 2,
+          "min_timestep_variants": 1
+        },
+        "seed_gate_passed": true,
+        "seed_values": [
+          "seed32",
+          "seed33"
+        ],
+        "timestep_gate_passed": true,
+        "timestep_values": [
+          "dt0p04"
+        ]
+      },
+      "seed_timestep_provenance_ok": true
+    },
+    {
+      "case": "vmec_qa_full_sweep_nonlinear_window_from_strict_baseline_t1500_replicated_nonlinear_window_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.01771167198271938,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 11.608843444421765,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.03661360974234408,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "path": "docs/_static/vmec_qa_t1500_replicates/nonlinear_window_from_strict_baseline_t1500_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "qualifies_for_production_optimization": true,
+      "report_count_ok": true,
+      "seed_timestep_provenance": {
+        "observed_row_count": 3,
+        "passed": true,
+        "required": true,
+        "requirements": {
+          "min_seed_variants": 2,
+          "min_timestep_variants": 1
+        },
+        "seed_gate_passed": true,
+        "seed_values": [
+          "seed32",
+          "seed33"
+        ],
+        "timestep_gate_passed": true,
+        "timestep_values": [
+          "dt0p04"
+        ]
+      },
+      "seed_timestep_provenance_ok": true
+    },
+    {
+      "case": "vmec_qa_full_sweep_quasilinear_from_strict_baseline_t1500_replicated_nonlinear_window_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.016431645156022693,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 11.636412199910197,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.023401608225692535,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "path": "docs/_static/vmec_qa_t1500_replicates/quasilinear_from_strict_baseline_t1500_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "qualifies_for_production_optimization": true,
+      "report_count_ok": true,
+      "seed_timestep_provenance": {
+        "observed_row_count": 3,
+        "passed": true,
+        "required": true,
+        "requirements": {
+          "min_seed_variants": 2,
+          "min_timestep_variants": 1
+        },
+        "seed_gate_passed": true,
+        "seed_values": [
+          "seed32",
+          "seed33"
+        ],
+        "timestep_gate_passed": true,
+        "timestep_values": [
+          "dt0p04"
+        ]
+      },
+      "seed_timestep_provenance_ok": true
     }
   ],
   "passed": true,
   "production_nonlinear_optimization_promoted": false,
   "promotion_gate": {
     "blockers": [
-      "optimized_equilibrium_replicated_transport_window",
       "matched_baseline_to_optimized_transport_reduction"
     ],
     "passed": false,
@@ -394,7 +510,7 @@
     "failed_matched_optimized_transport_audits": 3,
     "production_nonlinear_optimization_ready": 0,
     "qualifying_matched_optimized_transport_audits": 1,
-    "qualifying_optimized_equilibrium_ensembles": 1,
+    "qualifying_optimized_equilibrium_ensembles": 4,
     "qualifying_replicated_holdout_ensembles": 3,
     "total_matched_optimized_transport_audits": 4
   }

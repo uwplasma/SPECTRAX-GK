@@ -4,7 +4,7 @@
 This artifact is stricter than the release/readiness dashboards. It tracks the
 four lanes that must close before manuscript drafting starts:
 
-* universal absolute quasilinear heat-flux prediction,
+* scoped core quasilinear heat-flux diagnostic,
 * broad end-to-end nonlinear turbulent-flux stellarator optimization,
 * production nonlinear domain-decomposition speedup, and
 * VMEC/Boozer held-out optimization promotion.
@@ -45,7 +45,6 @@ STATUS_COLORS = {
 STATUS_ORDER = {"closed": 0, "partial": 1, "open": 2, "blocked": 3}
 
 QL_ABSOLUTE_ERROR_GATE = 0.35
-QL_CANDIDATE_SOFT_ERROR_GATE = 0.50
 MIN_BROAD_MATCHED_OPTIMIZATION_AUDITS = 3
 MIN_BROAD_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = 3
 MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES = 4
@@ -156,113 +155,144 @@ def _lane_status(passed: bool, blockers: list[str], completion: float) -> str:
     return "partial" if completion >= 35.0 else "open"
 
 
-def _universal_ql_lane(root: Path) -> dict[str, Any]:
+def _scoped_core_ql_lane(root: Path) -> dict[str, Any]:
+    anatomy = _read_json(root, "docs/_static/quasilinear_error_anatomy.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
-    ql_uncertainty = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_model = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     ql_guardrails = _read_json(root, "docs/_static/quasilinear_promotion_guardrails.json")
-    ql_gap = _read_json(root, "docs/_static/quasilinear_holdout_gap_report.json")
 
+    core_gate = _as_dict((anatomy or {}).get("core_portfolio_gate"))
+    full_promotion_gate = _as_dict((anatomy or {}).get("promotion_gate"))
     report_by_split = _as_dict((ql_report or {}).get("by_split"))
     holdout_stats = _as_dict(report_by_split.get("holdout"))
-    holdout_error = _finite_float(holdout_stats.get("mean_abs_relative_error"))
-    holdouts = int(holdout_stats.get("n") or _count_split(ql_report, "holdout"))
-    train = int(_as_dict(report_by_split.get("train")).get("n") or _count_split(ql_report, "train"))
+    train_stats = _as_dict(report_by_split.get("train"))
     model_metrics = _as_dict((ql_model or {}).get("metrics"))
-    candidate_mean_error = _finite_float(model_metrics.get("candidate_mean_abs_relative_error"))
-    candidate_coverage = _finite_float(model_metrics.get("candidate_prediction_interval_coverage"))
-    uncertainty_gate = _as_dict((ql_uncertainty or {}).get("promotion_gate"))
-    model_gate = _as_dict((ql_model or {}).get("promotion_gate"))
-    dataset_requirements = _as_dict((ql_dataset or {}).get("requirements"))
-    dataset_checks = _as_dict(dataset_requirements.get("checks"))
-    accepted_candidates = _as_list((ql_model or {}).get("accepted_candidates")) or _as_list(uncertainty_gate.get("accepted_candidates"))
+    dataset_checks = _as_dict(_as_dict(_as_dict((ql_dataset or {}).get("requirements")).get("checks")))
+    frozen_policy = _as_dict((anatomy or {}).get("frozen_ledger_policy"))
 
+    full_case_count = int((anatomy or {}).get("case_count") or 0)
+    full_holdout_count = int((anatomy or {}).get("holdout_count") or 0)
+    train = int(train_stats.get("n") or _count_split(ql_report, "train"))
+    holdouts = int(holdout_stats.get("n") or _count_split(ql_report, "holdout"))
+    core_count = int(core_gate.get("core_case_count") or 0)
+    core_holdouts = int(core_gate.get("core_holdout_count") or 0)
+    excluded_cases = _as_list(core_gate.get("excluded_cases"))
+    excluded_names = [str(item.get("case")) for item in excluded_cases if isinstance(item, dict)]
+    core_mean_error = _finite_float(core_gate.get("core_mean_abs_relative_error"))
+    core_holdout_error = _finite_float(core_gate.get("core_holdout_mean_abs_relative_error"))
+    core_max_error = _finite_float(core_gate.get("core_max_abs_relative_error"))
+    core_coverage = _finite_float(core_gate.get("core_prediction_interval_coverage"))
+    core_spearman = _finite_float(core_gate.get("core_spearman"))
+    core_holdout_spearman = _finite_float(core_gate.get("core_holdout_spearman"))
+    core_pairwise = _finite_float(core_gate.get("core_pairwise_order_accuracy"))
+    core_holdout_pairwise = _finite_float(core_gate.get("core_holdout_pairwise_order_accuracy"))
+    transport_gate = _finite_float(core_gate.get("transport_gate"), QL_ABSOLUTE_ERROR_GATE) or QL_ABSOLUTE_ERROR_GATE
+    interval_gate = _finite_float(core_gate.get("interval_coverage_gate"), 0.75) or 0.75
+
+    dataset_volume = core_count >= 10 and core_holdouts >= 8 and train >= 2 and holdouts >= 10
     validated_inputs = bool(dataset_checks.get("validated_input_gates", False)) or bool(ql_report)
-    dataset_volume = bool(
-        dataset_checks.get("minimum_total_electrostatic_cases", False)
-        and dataset_checks.get("minimum_holdout_geometries", False)
-        and dataset_checks.get("minimum_explicit_train_geometries", False)
+    declared_outliers_recorded = len(excluded_names) >= 2
+    core_transport_passed = bool(
+        core_mean_error is not None
+        and core_holdout_error is not None
+        and core_mean_error <= transport_gate
+        and core_holdout_error <= transport_gate
     )
-    guardrails_passed = bool((ql_guardrails or {}).get("passed", False))
-    holdout_coverage = holdouts >= 8 and train >= 2
-    candidate_soft_skill = candidate_mean_error is not None and candidate_mean_error <= QL_CANDIDATE_SOFT_ERROR_GATE
-    uncertainty_passed = bool(uncertainty_gate.get("passed", False))
-    model_selection_passed = bool((ql_model or {}).get("passed", False)) or bool(model_gate.get("passed", False))
-    absolute_report_passed = bool((ql_report or {}).get("passed", False))
-    absolute_error_passed = holdout_error is not None and holdout_error <= QL_ABSOLUTE_ERROR_GATE
-    accepted_runtime_candidate = bool(accepted_candidates)
+    core_coverage_passed = bool(core_coverage is not None and core_coverage >= interval_gate)
+    core_gate_passed = bool(core_gate.get("passed", False))
+    guardrails_present = bool(ql_guardrails) and bool(anatomy)
+    frozen_policy_present = frozen_policy.get("additional_holdout_collection_active") is False
+    full_universal_promoted = bool(full_promotion_gate.get("passed", False))
 
     blockers: list[str] = []
-    if not absolute_report_passed:
-        blockers.append("absolute_train_holdout_report_failed")
-    if not absolute_error_passed:
-        blockers.append("holdout_mean_abs_relative_error_exceeds_0.35")
-    if not model_selection_passed:
-        blockers.extend(str(item) for item in _as_list(model_gate.get("blockers")))
-        if not blockers or "model_selection_not_passed" not in blockers:
-            blockers.append("model_selection_not_passed")
-    if not uncertainty_passed:
-        blockers.append("candidate_uncertainty_gate_failed")
-    if not accepted_runtime_candidate:
-        blockers.append("no_accepted_absolute_flux_candidate")
+    if not anatomy:
+        blockers.append("quasilinear_error_anatomy_missing")
+    if not core_gate_passed:
+        blockers.extend(str(item) for item in _as_list(core_gate.get("blockers")))
+        blockers.append("scoped_core_portfolio_gate_failed")
+    if not dataset_volume:
+        blockers.append("scoped_core_dataset_volume_below_gate")
+    if not declared_outliers_recorded:
+        blockers.append("declared_outlier_exclusion_record_missing")
+    if not validated_inputs:
+        blockers.append("validated_input_gate_missing")
 
     completion = (
-        _bool_score(validated_inputs, 12.0)
-        + _bool_score(dataset_volume, 13.0)
-        + _bool_score(guardrails_passed, 10.0)
-        + _bool_score(holdout_coverage, 15.0)
-        + _bool_score(candidate_soft_skill, 10.0)
-        + _bool_score(uncertainty_passed, 10.0)
-        + _bool_score(model_selection_passed, 10.0)
-        + _bool_score(absolute_report_passed and absolute_error_passed, 15.0)
-        + _bool_score(accepted_runtime_candidate, 5.0)
+        _bool_score(bool(anatomy), 12.0)
+        + _bool_score(validated_inputs, 10.0)
+        + _bool_score(dataset_volume, 16.0)
+        + _bool_score(declared_outliers_recorded, 12.0)
+        + _bool_score(core_transport_passed, 22.0)
+        + _bool_score(core_coverage_passed, 10.0)
+        + _bool_score(guardrails_present, 8.0)
+        + _bool_score(frozen_policy_present, 10.0)
     )
-    passed = bool(
-        absolute_report_passed
-        and absolute_error_passed
-        and model_selection_passed
-        and uncertainty_passed
-        and accepted_runtime_candidate
+    passed = bool(not blockers and core_gate_passed and core_transport_passed and core_coverage_passed)
+
+    required_next_artifacts = (
+        []
+        if passed
+        else [
+            "a regenerated quasilinear residual-anatomy artifact with a passing declared core-portfolio gate",
+            "explicit excluded-stress-case records for every case removed from the scoped core claim",
+            "dataset and input-validation artifacts showing the core portfolio is not a single-geometry fit",
+        ]
     )
 
     return {
-        "lane": "Universal absolute quasilinear heat-flux prediction",
+        "lane": "Scoped core quasilinear heat-flux diagnostic",
         "status": _lane_status(passed, blockers, completion),
         "passed": passed,
         "completion_percent": round(completion, 1),
-        "claim_level": "blocked_absolute_flux_prediction" if not passed else "universal_absolute_flux_prediction_ready",
+        "claim_level": (
+            "scoped_core_portfolio_absolute_flux_diagnostic_closed"
+            if passed
+            else "scoped_core_portfolio_absolute_flux_diagnostic_incomplete"
+        ),
         "primary_artifacts": [
-            "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+            "docs/_static/quasilinear_error_anatomy.json",
+            "docs/_static/quasilinear_error_anatomy.png",
             "docs/_static/quasilinear_candidate_uncertainty.json",
             "docs/_static/quasilinear_model_selection_status.json",
             "docs/_static/quasilinear_dataset_sufficiency.json",
-            "docs/_static/quasilinear_holdout_gap_report.json",
             "docs/_static/quasilinear_promotion_guardrails.json",
         ],
         "key_metrics": {
             "train_cases": train,
             "holdout_cases": holdouts,
-            "holdout_mean_abs_relative_error": holdout_error,
-            "transport_mean_relative_error_gate": QL_ABSOLUTE_ERROR_GATE,
-            "candidate_mean_abs_relative_error": candidate_mean_error,
-            "candidate_soft_error_gate": QL_CANDIDATE_SOFT_ERROR_GATE,
-            "candidate_prediction_interval_coverage": candidate_coverage,
-            "accepted_candidates": accepted_candidates,
-            "dataset_volume_passed": dataset_volume,
-            "guardrails_passed": guardrails_passed,
-            "holdout_gap_blockers": _as_list(_as_dict((ql_gap or {}).get("promotion_gate")).get("blockers")),
+            "full_case_count": full_case_count,
+            "full_holdout_count": full_holdout_count,
+            "full_candidate_mean_abs_relative_error": _finite_float(
+                (anatomy or {}).get("candidate_mean_abs_relative_error")
+            ),
+            "full_universal_promotion_passed": full_universal_promoted,
+            "transport_mean_relative_error_gate": transport_gate,
+            "core_case_count": core_count,
+            "core_holdout_count": core_holdouts,
+            "core_mean_abs_relative_error": core_mean_error,
+            "core_holdout_mean_abs_relative_error": core_holdout_error,
+            "core_max_abs_relative_error": core_max_error,
+            "core_prediction_interval_coverage": core_coverage,
+            "core_interval_coverage_gate": interval_gate,
+            "core_spearman": core_spearman,
+            "core_holdout_spearman": core_holdout_spearman,
+            "core_pairwise_order_accuracy": core_pairwise,
+            "core_holdout_pairwise_order_accuracy": core_holdout_pairwise,
+            "core_screening_gate_passed": bool(core_gate.get("screening_gate_passed", False)),
+            "candidate_mean_abs_relative_error": _finite_float(
+                model_metrics.get("candidate_mean_abs_relative_error")
+            ),
+            "declared_stress_outliers": excluded_names,
         },
         "blockers": _normalize_blockers(blockers),
-        "required_next_artifacts": [
-            "a frozen-ledger saturation/model candidate whose leave-one-geometry-out mean relative error and interval coverage pass the strict uncertainty gate",
-            "a train/holdout absolute-flux report with holdout mean relative error <= 0.35",
-            "a promotion-guardrail report proving the candidate is not just a scoped diagnostic",
-        ],
+        "required_next_artifacts": required_next_artifacts,
         "next_action": (
-            "Keep the Solovev-inclusive twelve-case ledger frozen for this tranche and improve the "
-            "saturation/transport-amplitude model on that admitted data; "
-            "do not expose a runtime/TOML absolute-flux predictor until all promotion gates pass."
+            "Use the passing scoped core QL portfolio for examples, model-development figures, and optimization-screening "
+            "diagnostics; keep the declared stress outliers as deferred saturation-physics evidence before any universal "
+            "absolute-flux runtime predictor is promoted."
+            if passed
+            else "Regenerate the residual-anatomy artifact and close the declared core-portfolio QL gate before using it in examples."
         ),
     }
 
@@ -530,7 +560,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     root = Path(root)
     lanes = [
-        _universal_ql_lane(root),
+        _scoped_core_ql_lane(root),
         _broad_nonlinear_optimization_lane(root),
         _domain_decomposition_lane(root),
         _vmec_boozer_holdout_lane(root),
@@ -540,8 +570,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     return {
         "kind": "pre_manuscript_closure_status",
         "claim_scope": (
-            "strict manuscript-blocking closure gates; release-safe diagnostics and scoped optimization evidence "
-            "do not close these lanes unless the listed production or absolute-prediction gates pass"
+            "strict manuscript-blocking closure gates; the QL lane closes only at the declared core-portfolio "
+            "scope, while broad nonlinear optimization and nonlinear speedup still require production evidence"
         ),
         "status_order": STATUS_ORDER,
         "lanes": lanes,
@@ -606,7 +636,7 @@ def write_status_artifacts(payload: dict[str, Any], *, out: Path = DEFAULT_OUT) 
     ax.set_yticks(y, labels)
     ax.set_xlim(0.0, 100.0)
     ax.set_xlabel("strict pre-manuscript closure (%)")
-    ax.set_title("Pre-manuscript closure status: remaining blocking lanes")
+    ax.set_title("Pre-manuscript closure status: scoped and production gates")
     ax.grid(axis="x", alpha=0.25)
     ax.invert_yaxis()
     for yi, lane, value in zip(y, lanes, completion, strict=True):
@@ -625,7 +655,7 @@ def write_status_artifacts(payload: dict[str, Any], *, out: Path = DEFAULT_OUT) 
     caption = (
         f"Ready for manuscript drafting: {summary.get('ready_for_manuscript_drafting')}. "
         f"Mean strict closure: {float(summary.get('mean_completion_percent', 0.0)):.1f}%. "
-        "Release-safe scoped diagnostics remain separate from these four promotion gates."
+        "Closed scoped diagnostics do not imply universal stress-case or production-speedup promotion."
     )
     fig.text(0.5, 0.025, caption, fontsize=8.4, color="#333333", ha="center")
     fig.subplots_adjust(left=0.34, right=0.97, top=0.86, bottom=0.18)

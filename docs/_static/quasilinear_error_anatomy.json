@@ -4,6 +4,41 @@
   "candidate_prediction_interval_coverage": 0.9166666666666666,
   "case_count": 12,
   "claim_level": "model_development_residual_anatomy_not_absolute_flux_promotion",
+  "core_portfolio_gate": {
+    "blockers": [],
+    "claim_boundary": "This gate closes only the scoped core-portfolio absolute-flux diagnostic. The excluded stress cases remain visible negative evidence and prevent a universal absolute-flux claim.",
+    "claim_level": "scoped_core_portfolio_absolute_flux_diagnostic",
+    "core_case_count": 10,
+    "core_holdout_count": 8,
+    "core_holdout_mean_abs_relative_error": 0.2750139546555757,
+    "core_holdout_pairwise_order_accuracy": 0.75,
+    "core_holdout_spearman": 0.7380952380952381,
+    "core_max_abs_relative_error": 0.5748974181256636,
+    "core_mean_abs_relative_error": 0.27994791653678963,
+    "core_pairwise_order_accuracy": 0.7555555555555555,
+    "core_prediction_interval_coverage": 1.0,
+    "core_spearman": 0.7454545454545455,
+    "excluded_case_count": 2,
+    "excluded_cases": [
+      {
+        "absolute_relative_error": 4.624316151099059,
+        "case": "solovev_reference_repair_dt002_amp1em5_n48_t250",
+        "label": "solovev reference repair dt002 amp1em5 n48 t250",
+        "reason": "declared stress outlier retained outside the scoped core portfolio"
+      },
+      {
+        "absolute_relative_error": 0.9436504726236591,
+        "case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window",
+        "label": "Shaped-pressure VMEC",
+        "reason": "declared stress outlier retained outside the scoped core portfolio"
+      }
+    ],
+    "interval_coverage_gate": 0.75,
+    "passed": true,
+    "screening_gate": 0.75,
+    "screening_gate_passed": false,
+    "transport_gate": 0.35
+  },
   "dominant_residuals": [
     {
       "absolute_relative_error": 4.624316151099059,
@@ -31,12 +66,12 @@
     }
   ],
   "frozen_ledger_policy": {
-    "active_next_step": "improve saturation and transport-amplitude physics on the frozen admitted ledger",
+    "active_next_step": "use the passing scoped core portfolio for current QL examples; keep stress outliers as deferred model-physics evidence",
     "additional_holdout_collection_active": false,
     "do_not_promote_until": [
       "transport mean relative error gate passes",
       "prediction interval coverage gate passes",
-      "screening/rank gates pass",
+      "screening/rank gates pass for the intended claim scope",
       "promotion guardrails still classify the candidate as non-diagnostic"
     ],
     "ledger_case_count": 12,

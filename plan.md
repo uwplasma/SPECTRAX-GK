@@ -1,3 +1,27 @@
+- 2026-06-13: Closed the current QL lane as a scoped core-portfolio
+  diagnostic instead of a universal absolute-flux claim. The refreshed
+  `docs/_static/quasilinear_error_anatomy.{png,json,csv}` now records two
+  declared stress outliers (`solovev_reference_repair_dt002_amp1em5_n48_t250`
+  and `shaped_tokamak_pressure_external_vmec_t650_high_grid_window`) and a
+  passing 10-case core portfolio: mean relative error `0.280`, held-out mean
+  `0.275`, maximum error `0.575`, and interval coverage `10/10`. The full
+  12-case universal predictor remains unpromoted (`0.697 > 0.35`) and the
+  core rank/screening metric remains borderline (`Spearman≈0.745 < 0.75`).
+  The pre-manuscript dashboard now closes the scoped QL diagnostic at `100%`
+  and moves active work to broad nonlinear turbulent-flux optimization and
+  nonlinear domain-decomposition speedup.
+
+- 2026-06-13: Advanced the nonlinear turbulent-flux optimization evidence
+  without changing the promotion gate. The production guard now counts the
+  strict `t=1500` growth, QL, and nonlinear-window optimized-candidate
+  replicated trace ensembles alongside the selected `t=700`
+  optimized-equilibrium audit, giving `4` qualifying optimized-equilibrium
+  ensembles and closing that trace-count blocker. The guard remains
+  unpromoted because only `1/3` matched baseline-to-optimized audits passes
+  (`18.4%` reduction, `7.82` combined SEMs) and the strict dashboard still has
+  `3/4` replicated holdout ensembles. Broad nonlinear optimization moves to
+  `82.9%`; mean pre-manuscript closure moves to `84.5%`.
+
 - 2026-06-13: Froze the nonlinear holdout-expansion lane for this tranche.
   The Solovev-inclusive 12-case QL ledger is now the working calibration and
   negative-evidence dataset; no additional holdouts should be launched to
@@ -618,15 +642,15 @@ historical logs live outside the release repository so clones stay small.
 | Lane | Status | Current gate |
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
-| Quasilinear screening/model-development | 100% | Scoped model-development artifacts are current for the frozen Solovev-inclusive ledger; no screening model is accepted, and the figures now document this as a negative model-selection result rather than a near-miss claim |
-| Universal absolute quasilinear-flux prediction | 50% | Strict pre-manuscript gate is blocked as a model-physics problem: train/holdout absolute report fails, holdout mean relative error is `6.49 > 0.35`, candidate uncertainty/model-selection fail, and no accepted runtime absolute-flux candidate exists; do not add more holdouts for this tranche |
+| Quasilinear screening/model-development | 100% | Scoped core QL diagnostic is closed: excluding the declared Solovev and shaped-pressure stress outliers, `spectral_envelope_ridge` passes the transport/coverage diagnostic with core mean error `0.280`, held-out core error `0.275`, and coverage `10/10`; rank screening remains borderline and no runtime/TOML universal predictor is promoted |
+| Universal absolute quasilinear-flux prediction | Deferred | Full 12-case stress-ledger promotion remains unpromoted (`0.697 > 0.35` for the best reduced candidate and `6.49 > 0.35` for the one-constant family); this is no longer an active holdout-collection lane for this release tranche |
 | Nonlinear holdout expansion/audits | 100% | Frozen for this tranche with ten admitted holdouts; CTH-like and shaped-pressure are scoped high-grid admissions, QH warm-start is retained as negative high-grid evidence, and Solovev passes a repaired `n48/t250` seed/timestep ensemble under the explicit `20%` spread gate as negative absolute-QL evidence |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear transport and campaign-admission evidence | 100% | Strict top-12 matched audit fails promotion; historical full-sweep QA audit is negative evidence; true t=1500 baseline/growth/quasilinear/nonlinear-window triplets pass, but all three matched candidate comparisons fail the 4% reduction gate |
 | Boundary-coefficient landscape and optimizer-noise diagnosis | 99% | 31-point RBC(1,1) reduced linear/QL landscape is tracked; 24 true long-window nonlinear overlays pass the scoped diagnostic gates; `+20%` is admitted under an explicit 20% spread gate, while `+45%` and higher remain stability-boundary/open long-window points |
-| Differentiable QA optimization evidence | 93% | Full VMEC/Boozer reduced-gradient and true `t=1500` matched-audit plumbing are tracked; a new solved-WOUT candidate screen prevents invalid metric/high-growth artifacts from entering nonlinear launches; successful broad nonlinear turbulent-flux optimization is still not promoted |
-| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 72.9% | Partial: one scoped QA matched optimized transport audit and one optimized-equilibrium ensemble pass; next work is to use existing optimized-equilibrium artifacts for more matched baseline-vs-optimized long-window audits, not to collect more generic holdouts |
+| Differentiable QA optimization evidence | 100% | Current VMEC/Boozer differentiability and holdout plumbing gate is closed: frequency, QL, reduced nonlinear-window estimator gradients, alpha/surface/second-equilibrium holdouts, and production-scope QH heldout transport pass; broad nonlinear turbulent-flux optimization remains a separate lane |
+| Broad end-to-end nonlinear turbulent-flux stellarator optimization | 82.9% | Partial: optimized-equilibrium trace-count blocker is closed with four qualifying ensembles, but only one matched baseline-to-optimized audit passes and the strict dashboard still has `3/4` replicated holdout ensembles |
 | VMEC/Boozer holdout optimization | 100% | Closed for the current pre-manuscript gate: reduced alpha/surface, second-equilibrium, gradient holdout matrix, and aggregate promotion gates pass |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
@@ -634,7 +658,7 @@ historical logs live outside the release repository so clones stay small.
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |
-| Production nonlinear turbulent-flux optimization evidence | 90% | Scoped selected-QA optimized-equilibrium audit is one positive long-window matched audit (`18.4%` reduction, `7.8 sigma`), but production promotion now requires three optimized-equilibrium ensembles and three matched audits; broad nonlinear turbulence-gradient and multi-equilibrium optimization claims remain open |
+| Production nonlinear turbulent-flux optimization evidence | 92% | Scoped selected-QA optimized-equilibrium audit is one positive long-window matched audit (`18.4%` reduction, `7.8 sigma`), and the optimized-equilibrium trace-count requirement now passes with four ensembles; production promotion still requires three matched audits and broader nonlinear turbulence-gradient evidence |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
 W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
@@ -838,11 +862,11 @@ No long nonlinear audit should be launched from these candidates.
    repository-size gate, docs links, and package build.
 5. Keep the production nonlinear optimization guard strict:
    `docs/_static/production_nonlinear_optimization_guard.json` now requires
-   optimized-equilibrium seed/timestep provenance plus at least three
-   independent optimized-equilibrium ensembles and three matched
-   baseline-to-optimized reduction audits before production promotion. New
-   optimized candidates must reproduce that evidence structure before any
-   broader claim.
+   optimized-equilibrium seed/timestep provenance and at least three matched
+   baseline-to-optimized reduction audits before production promotion. The
+   optimized-equilibrium trace-count requirement is now satisfied by four
+   replicated ensembles, but new optimized candidates must still reproduce the
+   matched-reduction evidence structure before any broader claim.
 
 ## Release Hygiene Rules
 

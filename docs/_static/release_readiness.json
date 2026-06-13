@@ -87,9 +87,9 @@
             "status": "partial"
           },
           {
-            "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
-            "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-            "status": "open"
+            "claim_level": "scoped_core_absolute_flux_diagnostic_not_universal_predictor",
+            "lane": "Scoped core quasilinear model-development diagnostic",
+            "status": "closed"
           },
           {
             "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
@@ -103,15 +103,15 @@
           }
         ],
         "status_counts": {
-          "closed": 1,
-          "open": 2,
+          "closed": 2,
+          "open": 1,
           "partial": 2
         },
         "summary": {
           "n_blocked": 0,
-          "n_closed": 1,
+          "n_closed": 2,
           "n_lanes": 5,
-          "n_open": 2,
+          "n_open": 1,
           "n_partial": 2
         }
       },

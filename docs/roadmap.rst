@@ -166,15 +166,17 @@ transport averages. The production guard at
 ``docs/_static/production_nonlinear_optimization_guard.png`` / ``.json`` records
 that D-shaped and circular long post-transient replicate ensembles now pass as
 holdout evidence, and the selected optimized QA equilibrium now has its own
-replicated ``t=[350,700]`` post-transient transport-window audit. A matched
+replicated ``t=[350,700]`` post-transient transport-window audit. The strict
+``t=1500`` growth/QL/nonlinear-window optimized-candidate traces close the
+optimized-equilibrium ensemble-count requirement. A matched
 finite-transform no-ESS reference from the same VMEC-JAX campaign now also
 passes the same ensemble protocol, and the optimized QA/ESS equilibrium reduces
 the audited late-window heat flux by ``18.4%``. This is one positive scoped
-audit. Production promotion remains blocked until three independent
-optimized-equilibrium ensembles and three matched baseline-to-optimized audits
-pass, along with local-gradient conditioning and converged long post-transient
-running-average heat-flux windows. Those are required before claiming a
-production nonlinear heat-flux stellarator optimizer.
+audit. Production promotion remains blocked until three matched
+baseline-to-optimized audits pass, along with the strict replicated-holdout
+breadth, local-gradient conditioning, and converged long post-transient
+running-average heat-flux windows required before claiming a production
+nonlinear heat-flux stellarator optimizer.
 The latest QL-seeded nonlinear-gradient control screen admits
 ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as internal VMEC-state
 controls. The first measured mapping response is a negative result:
@@ -205,19 +207,22 @@ dashboard is intentionally stricter than release readiness: a scoped diagnostic
 or one positive candidate audit does not close a broad manuscript claim.
 
 .. image:: _static/pre_manuscript_closure_status.png
-   :alt: Strict pre-manuscript closure status for remaining blocking lanes
+   :alt: Strict pre-manuscript closure status for scoped and production gates
 
-Current strict closure is ``61.8%`` on average, so manuscript drafting remains
-blocked. The required order is:
+Current strict closure is ``84.5%`` on average, so manuscript drafting remains
+blocked by broad nonlinear optimization and nonlinear domain speedup, not by
+the scoped QL diagnostic. The required order is:
 
-- universal absolute quasilinear heat-flux prediction: add independent
-  converged nonlinear holdouts and a saturation/amplitude model that passes
-  candidate uncertainty, model-selection, and absolute train/holdout transport
-  gates with mean relative error ``<= 0.35``;
+- scoped core quasilinear heat-flux diagnostic: closed for the declared
+  10-case core portfolio. The Solovev and shaped-pressure stress outliers
+  remain visible negative evidence, so universal runtime absolute-flux
+  promotion stays deferred;
 - broad end-to-end nonlinear turbulent-flux stellarator optimization: promote
   only after at least three independent matched baseline-vs-optimized
-  long-window transport audits, at least three optimized-equilibrium
-  ensembles, and at least four replicated nonlinear holdout ensembles;
+  long-window transport audits and at least four replicated nonlinear holdout
+  ensembles. The optimized-equilibrium trace-count requirement is closed by the
+  selected t700 optimized-equilibrium audit plus the strict t1500 growth/QL/
+  nonlinear-window candidate trace ensembles;
 - production nonlinear domain-decomposition speedup: implement a real
   communication-aware nonlinear decomposed RHS/integrator path and require
   serial-vs-decomposed transport-window identity plus large-grid CPU and

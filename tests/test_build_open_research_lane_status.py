@@ -308,26 +308,26 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json"
         in lanes["W7-X zonal long-window recurrence/damping"]["primary_artifacts"]
     )
-    assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+    assert lanes["Scoped core quasilinear model-development diagnostic"][
         "claim_level"
     ] == ("diagnostic_calibration_dataset_not_absolute_flux")
     assert lanes["W7-X fluctuation spectrum and TEM/multi-flux extension"][
         "key_metrics"
     ]["open_extension_rows"] == ["TEM / kinetic-electron linear parity"]
     assert (
-        lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+        lanes["Scoped core quasilinear model-development diagnostic"][
             "key_metrics"
         ]["cth_like_external_vmec_converged"]
         is False
     )
     assert (
-        lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+        lanes["Scoped core quasilinear model-development diagnostic"][
             "key_metrics"
         ]["cth_like_external_vmec_high_grid_admitted"]
         is False
     )
     holdout_metrics = lanes[
-        "Nonlinear holdouts for quasilinear absolute-flux promotion"
+        "Scoped core quasilinear model-development diagnostic"
     ]["key_metrics"]
     assert holdout_metrics["circular_external_vmec_t250_converged"] is False
     assert holdout_metrics["qh_external_vmec_low_to_mid_grid_converged"] is False
@@ -385,7 +385,7 @@ def test_build_status_payload_accepts_cth_like_high_grid_admission(tmp_path: Pat
 
     payload = mod.build_status_payload(tmp_path)
     lanes = {row["lane"]: row for row in payload["lanes"]}
-    metrics = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"][
+    metrics = lanes["Scoped core quasilinear model-development diagnostic"][
         "key_metrics"
     ]
 
@@ -459,7 +459,7 @@ def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> 
     }.issubset(open_rows)
     assert "docs/_static/w7x_tem_extension_status.json" in tem["primary_artifacts"]
 
-    holdouts = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]
+    holdouts = lanes["Scoped core quasilinear model-development diagnostic"]
     assert (
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json"
         in holdouts["primary_artifacts"]

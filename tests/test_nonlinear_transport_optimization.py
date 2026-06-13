@@ -349,6 +349,19 @@ def test_strict_matched_comparison_schema_is_counted_as_negative_evidence() -> N
     assert "insufficient_matched_optimized_uncertainty_separation" in report["blockers"]
 
 
+def test_strict_t1500_candidate_ensembles_count_as_optimized_trace_evidence() -> None:
+    report = optimized_equilibrium_transport_report(
+        "docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json",
+        _ensemble_payload(
+            case="vmec_qa_full_sweep_growth_from_strict_baseline_t1500_replicated_nonlinear_window"
+        ),
+    )
+
+    assert report["qualifies_as_long_post_transient_replicate"] is True
+    assert report["optimized_equilibrium_marker"] is True
+    assert report["qualifies_for_production_optimization"] is True
+
+
 def test_replicated_transport_report_fails_closed_on_unscoped_or_noisy_payloads() -> None:
     noisy = _ensemble_payload(mean=3.0)
     noisy["claim_level"] = "replicated nonlinear window without required scope"

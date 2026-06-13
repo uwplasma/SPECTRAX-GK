@@ -48,16 +48,15 @@ score.
        CTH-like and shaped-pressure external VMEC admitted only through
        explicit high-grid policies. Simple one-scalar saturation rules are
        rejected on the expanded sweep. The ``spectral_envelope_ridge``
-       candidate is the least-bad reduced model, but it misses the strict
-       transport and rank/correlation screening gates after the QP holdout is
-       added. It is retained only as a scoped manuscript
-       model-development result. The failed
-       ``quasilinear_model_selection_status.json`` gate does not promote a
-       runtime/TOML absolute-flux predictor, universal nonlinear transport
-       model, or user-facing saturation law. Any future absolute-flux
-       promotion additionally requires finite passed nonlinear late-window
-       convergence metadata for every holdout: transient cutoff, running-mean
-       drift, block/bootstrap SEM, finite sample count, and source provenance.
+       candidate closes the declared core portfolio after excluding the
+       Solovev and shaped-pressure stress outliers from that scoped claim:
+       core mean relative error is about ``0.280``, held-out core error is
+       about ``0.275``, and interval coverage is ``10/10``. It is retained as
+       a scoped model-development and optimization-screening result. The full
+       12-case universal predictor remains unpromoted because the stress cases
+       and rank/correlation gates do not pass. No runtime/TOML absolute-flux
+       predictor, universal nonlinear transport model, or user-facing
+       saturation law is promoted.
        Electromagnetic quasilinear field-channel normalization and KBM
        calibration remain future gates.
    * - Differentiable geometry
@@ -321,11 +320,13 @@ Quasilinear model-selection state:
   safety because reduced/startup estimators are blocked and three long
   post-transient replicated holdout ensembles pass: D-shaped VMEC, circular
   VMEC, and QH VMEC/Boozer. The selected optimized QA equilibrium contributes
-  one accepted ``t=[350,700]`` seed/timestep replicated transport-window audit.
-  Production promotion remains blocked until three independent
-  optimized-equilibrium ensembles and three matched baseline-to-optimized
-  audits pass; the current selected audit is scoped
-  candidate evidence, not a broad nonlinear transport-optimization claim.
+  one accepted ``t=[350,700]`` seed/timestep replicated transport-window audit,
+  and the strict ``t=1500`` growth/QL/nonlinear-window candidates now close the
+  optimized-equilibrium trace-count requirement with four qualifying
+  ensembles. Production promotion remains blocked because only one matched
+  baseline-to-optimized audit has a positive uncertainty-separated heat-flux
+  reduction; the current selected audit is scoped candidate evidence, not a
+  broad nonlinear transport-optimization claim.
 - ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
   QA no-ESS reference to optimized QA/ESS comparison. The tracked
   ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
@@ -448,10 +449,13 @@ Quasilinear model-selection state:
   relative error about ``4.42``; the positive-growth mixing-length rule is
   about ``6.49`` and the training-mean null is about ``1.80``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
-  no candidate is accepted by the uncertainty gate on the expanded 12-case
-  electrostatic-compatible candidate portfolio. ``spectral_envelope_ridge`` is
-  the best near miss with mean relative error about ``0.697`` and interval
-  coverage ``11/12``, but it remains above the ``0.35`` transport gate.
+  no candidate is accepted as a universal runtime absolute-flux predictor on
+  the expanded 12-case electrostatic-compatible candidate portfolio.
+  ``spectral_envelope_ridge`` has full-ledger mean relative error about
+  ``0.697`` and interval coverage ``11/12``; with the declared Solovev and
+  shaped-pressure stress outliers outside the scoped claim, its core-portfolio
+  mean relative error is about ``0.280`` and held-out core error is about
+  ``0.275``.
 - ``docs/_static/quasilinear_candidate_regularization_sweep.json``:
   the ridge-penalty sensitivity audit does not rescue that near miss. The best
   tested setting is now ``lambda = 0.5`` with mean relative error about
@@ -473,9 +477,9 @@ Quasilinear model-selection state:
   portfolio. The least-bad ``spectral_envelope_ridge`` candidate has
   full/held-out Spearman correlations about ``0.636``/``0.624`` and pairwise
   order accuracies about ``0.697``/``0.689``, below the ``0.75`` gates. The
-  mean-error gate and ``accepted_absolute_flux_models`` remain empty. Screening
-  skill is therefore not promoted as a runtime saturation law or universal
-  absolute-flux predictor.
+  declared core portfolio passes the transport/coverage diagnostic but remains
+  just below the strict rank gate. Screening skill is therefore not promoted as
+  a runtime saturation law or universal absolute-flux predictor.
 - ``docs/_static/quasilinear_holdout_gap_report.json``:
   absolute-flux promotion remains explicitly blocked. The
   ``absolute_flux_promotion_requirements`` and
