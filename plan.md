@@ -14,6 +14,16 @@
   metrics; those tests were updated to assert the current fail-closed
   Solovev-inclusive metrics without loosening any scientific promotion gate.
 
+- 2026-06-13: Converted the QL residual-anatomy artifact into an explicit
+  frozen-ledger model-development diagnostic. The refreshed
+  `docs/_static/quasilinear_error_anatomy.{png,json,csv}` keeps absolute-flux
+  promotion failed (`0.697 > 0.35`) but now records programmatic policy fields:
+  additional holdout collection is inactive for this tranche, the active next
+  step is saturation/transport-amplitude physics on the admitted 12-case
+  ledger, and the dominant residuals are Solovev, shaped-pressure VMEC, and
+  ITERModel VMEC. This gives the next QL work a concrete target without
+  changing any promotion gate or adding data.
+
 - 2026-06-12: Harvested the Solovev repaired external-VMEC holdout and used it
   to harden the quasilinear claim boundary. The original CPU `dt=0.01`
   duplicate remained too slow, but the office GPU duplicate completed the
