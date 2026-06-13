@@ -13,6 +13,7 @@ from spectraxgk.nonlinear_parallel import (
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
+    NonlinearSpectralDomainWorkModel,
     NonlinearSpectralRHSIdentityReport,
     classify_nonlinear_parallel_strategy,
     nonlinear_parallel_strategies,
@@ -28,6 +29,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "NonlinearDomainTransportWindowReport",
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
+        "NonlinearSpectralDomainWorkModel",
         "NonlinearSpectralRHSIdentityReport",
         "build_nonlinear_domain_decomposition_plan",
         "classify_nonlinear_parallel_strategy",
@@ -41,6 +43,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "nonlinear_parallel_strategy",
         "nonlinear_spectral_communication_identity_gate",
         "nonlinear_spectral_communication_identity_report",
+        "nonlinear_spectral_domain_work_model",
         "nonlinear_spectral_rhs_identity_gate",
         "nonlinear_spectral_rhs_identity_report",
         "prototype_nonlinear_domain_decomposed_step",
@@ -60,6 +63,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert (
         NonlinearSpectralCommunicationReport
         is nonlinear_parallel.NonlinearSpectralCommunicationReport
+    )
+    assert (
+        NonlinearSpectralDomainWorkModel
+        is nonlinear_parallel.NonlinearSpectralDomainWorkModel
     )
     assert (
         NonlinearSpectralRHSIdentityReport
@@ -107,6 +114,32 @@ def test_logical_decomposed_spectral_integrator_routes_after_identity_gate() -> 
     assert routed.shape == state.shape
     assert jnp.allclose(routed, serial, atol=5.0e-6, rtol=5.0e-6)
     assert "no production distributed FFT" in report.claim_scope
+
+
+def test_nonlinear_spectral_domain_work_model_blocks_global_reconstruction_speedup() -> None:
+    model = nonlinear_parallel.nonlinear_spectral_domain_work_model(
+        (2, 4, 32, 32, 4),
+        y_chunks=(16, 16),
+        x_chunks=(16, 16),
+    )
+
+    assert isinstance(model, NonlinearSpectralDomainWorkModel)
+    assert model.num_tiles == 4
+    assert model.state_elements == 32768
+    assert model.field_elements == 4096
+    assert model.owned_state_elements_per_step == model.state_elements
+    assert model.state_allgather_elements_per_step == 3 * model.state_elements
+    assert model.bracket_allgather_elements_per_step == 3 * model.state_elements
+    assert model.field_broadcast_elements_per_step == 3 * model.field_elements
+    assert model.total_communication_elements_per_step == 208896
+    assert model.communication_to_owned_work_ratio == pytest.approx(6.375)
+    assert model.parallel_efficiency_ceiling == pytest.approx(1.0 / 7.375)
+    assert model.production_speedup_feasible is False
+    assert model.feasibility_blockers == (
+        "global_reconstruction_communication_dominates_owned_work",
+    )
+    assert "not a distributed FFT performance claim" in model.claim_scope
+    assert model.to_dict()["production_speedup_feasible"] is False
 
 
 def test_whole_state_kx_ky_is_diagnostic_only() -> None:

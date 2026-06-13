@@ -565,6 +565,14 @@ the diagnostic local stencil only. They do not validate production conservation,
 distributed FFT routing, field solves, benchmark transport windows, or any
 speedup claim.
 
+The tracked spectral-domain routing profile adds a work model for the current
+global-reconstruction diagnostic route. It passes serial-vs-routed identity,
+but the four-tile profile reports communication/owned-work ratio ``6.375``, a
+parallel-efficiency ceiling ``0.136``, and measured warm timing ``0.94x``. This
+is negative performance evidence for the current route and points to the
+actual implementation target: avoid global state/bracket reconstruction by
+using a communication-aware distributed FFT and fused nonlinear-bracket route.
+
 The same independent-worker policy is also gated on a quasilinear/UQ-style
 ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
 sample, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2 steps per

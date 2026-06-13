@@ -224,6 +224,17 @@ fixed-step dataflow instead of only layout round trips. They remain fail-closed
 and diagnostic-only: logical tiles are reconstructed for identity validation,
 not executed through a production ``pjit``/``shard_map`` distributed FFT path.
 
+The routed spectral-domain timing artifact
+``docs/_static/nonlinear_spectral_domain_routing_profile.json`` makes that
+claim boundary quantitative. The current logical route is identity-clean, but
+its global-reconstruction work model gives a communication/owned-work ratio
+``6.375`` and a parallel-efficiency ceiling ``0.136`` for the tracked
+``(N_l,N_m,N_y,N_x,N_z)=(2,4,32,32,4)`` four-tile profile; the observed warm
+timing is below unity, ``0.94x`` relative to the serial route in the tracked
+artifact. The next production step is
+therefore a true distributed-FFT/fused-bracket route, not more timing of the
+global-reconstruction diagnostic.
+
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
 workload family that appears in the speedup figure:

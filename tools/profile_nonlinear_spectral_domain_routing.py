@@ -100,9 +100,15 @@ def build_profile(
     from spectraxgk.nonlinear_parallel import (
         deterministic_nonlinear_spectral_state,
         integrate_logical_decomposed_nonlinear_spectral,
+        nonlinear_spectral_domain_work_model,
     )
 
     state = deterministic_nonlinear_spectral_state(shape)
+    work_model = nonlinear_spectral_domain_work_model(
+        shape,
+        y_chunks=y_chunks,
+        x_chunks=x_chunks,
+    )
     routed_state, identity_report = integrate_logical_decomposed_nonlinear_spectral(
         state,
         y_chunks=y_chunks,
@@ -185,6 +191,11 @@ def build_profile(
             "identity_passed": bool(identity_report.identity_passed),
             "decomposed_path_enabled": bool(identity_report.decomposed_path_enabled),
             "identity_report": identity_report.to_dict(),
+            "work_model": work_model.to_dict(),
+            "communication_to_owned_work_ratio": work_model.communication_to_owned_work_ratio,
+            "parallel_efficiency_ceiling": work_model.parallel_efficiency_ceiling,
+            "work_model_speedup_feasible": work_model.production_speedup_feasible,
+            "work_model_blockers": work_model.feasibility_blockers,
             "timing_identity_max_abs_error": routed_abs,
             "timing_identity_max_rel_error": routed_rel,
             "atol": float(atol),
@@ -237,12 +248,12 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         },
     ]
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=tuple(rows[0]))
+        writer = csv.DictWriter(fh, fieldnames=tuple(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
     set_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(8.8, 3.4), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(11.4, 3.4), constrained_layout=True)
     labels = [row["route"].replace("_", "\n") for row in rows]
     medians = np.asarray([float(row["median_s"]) for row in rows])
     axes[0].bar(labels, medians, color=["#495057", "#2a9d8f"])
@@ -264,6 +275,21 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[1].set_ylabel("max error")
     axes[1].legend(frameon=False, fontsize=8)
     axes[1].grid(True, axis="y", alpha=0.25)
+
+    ratio = float(summary["communication_to_owned_work_ratio"])
+    efficiency = float(summary["parallel_efficiency_ceiling"])
+    axes[2].bar(["comm/\nowned"], [ratio], color="#d88c39")
+    axes[2].axhline(
+        float(summary["work_model"]["max_communication_to_owned_work_ratio"]),
+        color="0.25",
+        ls=":",
+        lw=1.1,
+        label="feasible gate",
+    )
+    axes[2].set_ylabel("ratio")
+    axes[2].set_title(f"Work model ceiling {efficiency:.2f}")
+    axes[2].grid(True, axis="y", alpha=0.25)
+    axes[2].legend(frameon=False, fontsize=8)
 
     speedup = float(summary["strong_speedup_vs_serial"])
     status = str(summary["status"]).replace("_", " ")

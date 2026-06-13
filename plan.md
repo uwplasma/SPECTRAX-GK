@@ -27,12 +27,15 @@
   the strict closure dashboard. The new
   `docs/_static/nonlinear_spectral_domain_routing_profile.{png,json,csv}`
   verifies serial-vs-logical routed identity on the deterministic nonlinear
-  spectral RHS and records warm timing (`1.04x` locally), but it explicitly
-  does not permit a production speedup claim. The production nonlinear
-  domain-decomposition lane therefore moves from `55.0%` to `65.0%` on
-  identity/timing diagnostics while retaining the CPU/GPU `>=1.5x`
-  strong-scaling blockers. Mean strict pre-manuscript closure moves to
-  `87.9%`.
+  spectral RHS and records warm timing (`0.94x` locally), but it explicitly
+  does not permit a production speedup claim. The same artifact now includes a
+  communication/work model for the current global-reconstruction route:
+  communication/owned-work ratio `6.375`, efficiency ceiling `0.136`, and
+  blocker `global_reconstruction_communication_dominates_owned_work`. The
+  production nonlinear domain-decomposition lane therefore moves from `55.0%`
+  to `70.0%` on identity/timing/model diagnostics while retaining the CPU/GPU
+  `>=1.5x` strong-scaling blockers. Mean strict pre-manuscript closure moves
+  to `89.2%`.
 
 - 2026-06-13: Froze the nonlinear holdout-expansion lane for this tranche.
   The Solovev-inclusive 12-case QL ledger is now the working calibration and
@@ -109,7 +112,7 @@
   gives a true one-device identity row and a safe four-device skip row. This is
   negative evidence for current whole-state CPU nonlinear speedup, not a
   promotion; the production nonlinear domain-decomposition speedup lane moves
-  to `65.0%` after adding a routed spectral-domain identity/timing profile,
+  to `70.0%` after adding a routed spectral-domain identity/timing/profile model,
   but remains blocked pending a communication-complete decomposed RHS/integrator with
   CPU/GPU identity, transport-window, and profiler-backed speedup gates. The
   office QA growth-candidate `t=1500` `dt=0.04` run has now completed and the
@@ -667,7 +670,7 @@ historical logs live outside the release repository so clones stay small.
 | VMEC/Boozer holdout optimization | 100% | Closed for the current pre-manuscript gate: reduced alpha/surface, second-equilibrium, gradient holdout matrix, and aggregate promotion gates pass |
 | Docs/readme/release hygiene | 100% | Public wording separates reduced linear/QL landscape metrics from true nonlinear heat-flux evidence; strict-QA t1500, CTH high-grid, and QL holdout-gap artifacts are tracked |
 | Performance/parallelization release lane | 96% | Independent-work parallel paths are release-ready; nonlinear sharding profiler provenance is versioned and checker-gated, while whole-state/domain speedup remains diagnostic |
-| Production nonlinear domain-decomposition speedup | 65% | Strict pre-manuscript gate remains partial: local, spectral, combined, and routed timing identity pass, but routed timing is only `1.04x`; combined strong-scaling and production-speedup gates fail, and CPU/GPU speedup remain below `1.5x` |
+| Production nonlinear domain-decomposition speedup | 70% | Strict pre-manuscript gate remains partial: local, spectral, combined, and routed timing identity pass, but routed timing is only `0.94x`; the current global-reconstruction route has communication/owned-work ratio `6.375` and efficiency ceiling `0.136`, so combined strong-scaling and production-speedup gates fail, and CPU/GPU speedup remain below `1.5x` |
 | QA optimization optimizer-comparison metadata | 100% | Public examples emit strict nonlinear audit manifests; optimizer/full-sweep generators now separate restart-ladder and direct full-horizon commands, add output gates, and admit only completed true t=1500 replicated ensembles; the matched QL comparison is closed and non-promoted |
 | External-VMEC high-grid holdout policy | 100% | CTH-like modified-protocol launch, horizon gates, `n80` seed/timestep long-window replicate gate, and explicit high-grid admission policy are reproducible; full `n48/n64/n80` remains non-claimable |
 | Optimizer comparison campaign execution | 76% | Metadata/generators, strategy report, and solved-WOUT prelaunch metric gate are ready; actual multistart/continuation/SPSA-CMA-BO campaign remains planned unless promoted to a new run tranche |

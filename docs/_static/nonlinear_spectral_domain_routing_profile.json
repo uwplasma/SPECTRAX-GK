@@ -2,6 +2,7 @@
   "atol": 5e-06,
   "backend": "cpu",
   "claim_scope": "diagnostic serial-vs-logical nonlinear spectral-domain timing; identity-gated local route only, not production distributed FFT or GPU speedup",
+  "communication_to_owned_work_ratio": 6.375,
   "decomposed_path_enabled": true,
   "device_count": 1,
   "dt": 0.001,
@@ -107,42 +108,43 @@
   },
   "kind": "nonlinear_spectral_domain_routing_profile",
   "logical_domain_stats_s": {
-    "max": 0.0006402920698747039,
-    "mean": 0.0005133020167704672,
-    "median": 0.0004988545551896095,
-    "min": 0.00046616606414318085,
-    "std": 5.061114756861274e-05
+    "max": 0.0006542500341311097,
+    "mean": 0.0005549218913074583,
+    "median": 0.0005594374961219728,
+    "min": 0.00046250002924352884,
+    "std": 6.416245428588174e-05
   },
   "logical_domain_times_s": [
-    0.0006402920698747039,
-    0.0005228749942034483,
-    0.0004994170740246773,
-    0.0004955410258844495,
-    0.00047770794481039047,
-    0.0004982920363545418,
-    0.00046616606414318085,
-    0.0005061249248683453
+    0.0004950000438839197,
+    0.00046250002924352884,
+    0.000495416927151382,
+    0.0006032920209690928,
+    0.0005908750463277102,
+    0.0005279999459162354,
+    0.0006542500341311097,
+    0.0006100410828366876
   ],
   "min_speedup": 1.5,
+  "parallel_efficiency_ceiling": 0.13559322033898305,
   "production_speedup_claim_allowed": false,
   "repeats": 8,
   "rtol": 5e-06,
   "serial_stats_s": {
-    "max": 0.0007308329222723842,
-    "mean": 0.0005512392526725307,
-    "median": 0.0005181040032766759,
-    "min": 0.0004960410296916962,
-    "std": 7.741365532151171e-05
+    "max": 0.0006085420027375221,
+    "mean": 0.0005380831134971231,
+    "median": 0.0005253119743429124,
+    "min": 0.0004967909771949053,
+    "std": 3.695281714631674e-05
   },
   "serial_times_s": [
-    0.0005172080127522349,
-    0.0005189999938011169,
-    0.0005059579852968454,
-    0.0007308329222723842,
-    0.0006203330121934414,
-    0.0004987911088392138,
-    0.0004960410296916962,
-    0.0005217499565333128
+    0.0005301659693941474,
+    0.000514333019964397,
+    0.0006085420027375221,
+    0.0005204579792916775,
+    0.0005891670007258654,
+    0.0005332910222932696,
+    0.0004967909771949053,
+    0.0005119169363752007
   ],
   "shape": [
     2,
@@ -154,10 +156,81 @@
   "speedup_gate_passed": false,
   "status": "identity_timed_no_production_speedup",
   "steps": 2,
-  "strong_speedup_vs_serial": 1.0385872954086786,
-  "timing_identity_max_abs_error": 0.0,
-  "timing_identity_max_rel_error": 0.0,
+  "strong_speedup_vs_serial": 0.9390002958049489,
+  "timing_identity_max_abs_error": 2.3283064365386963e-10,
+  "timing_identity_max_rel_error": 2.7393165078348135e-10,
   "warmups": 2,
+  "work_model": {
+    "bracket_allgather_elements_per_step": 98304,
+    "claim_scope": "diagnostic communication/work model for the current global-reconstruction logical spectral route; not a distributed FFT performance claim",
+    "communication_to_owned_work_ratio": 6.375,
+    "feasibility_blockers": [
+      "global_reconstruction_communication_dominates_owned_work"
+    ],
+    "field_broadcast_elements_per_step": 12288,
+    "field_elements": 4096,
+    "max_communication_to_owned_work_ratio": 0.5,
+    "num_tiles": 4,
+    "owned_state_elements_per_step": 32768,
+    "parallel_efficiency_ceiling": 0.13559322033898305,
+    "production_speedup_feasible": false,
+    "state_allgather_elements_per_step": 98304,
+    "state_elements": 32768,
+    "state_shape": [
+      2,
+      4,
+      32,
+      32,
+      4
+    ],
+    "tile_bounds": [
+      [
+        0,
+        16,
+        0,
+        16
+      ],
+      [
+        0,
+        16,
+        16,
+        32
+      ],
+      [
+        16,
+        32,
+        0,
+        16
+      ],
+      [
+        16,
+        32,
+        16,
+        32
+      ]
+    ],
+    "total_communication_elements_per_step": 208896,
+    "x_chunks": [
+      16,
+      16
+    ],
+    "x_offsets": [
+      0,
+      16
+    ],
+    "y_chunks": [
+      16,
+      16
+    ],
+    "y_offsets": [
+      0,
+      16
+    ]
+  },
+  "work_model_blockers": [
+    "global_reconstruction_communication_dominates_owned_work"
+  ],
+  "work_model_speedup_feasible": false,
   "x_chunks": [
     16,
     16

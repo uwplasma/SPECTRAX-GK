@@ -90,7 +90,7 @@
         "production_speedup_gate_not_passed"
       ],
       "claim_level": "identity_and_profiler_diagnostic_not_production_speedup",
-      "completion_percent": 65.0,
+      "completion_percent": 70.0,
       "key_metrics": {
         "combined_identity_passed": true,
         "cpu_best_speedup": null,
@@ -100,9 +100,13 @@
         "gpu_speedup_gate": 1.5,
         "parallel_decomposition_contract_passed": true,
         "production_gate_passed": false,
+        "routed_domain_communication_to_owned_work_ratio": 6.375,
+        "routed_domain_parallel_efficiency_ceiling": 0.13559322033898305,
         "routed_domain_timing_identity_passed": true,
-        "routed_domain_timing_speedup": 1.0385872954086786,
+        "routed_domain_timing_speedup": 0.9390002958049489,
         "routed_domain_timing_speedup_gate_passed": false,
+        "routed_domain_work_model_present": true,
+        "routed_domain_work_model_speedup_feasible": false,
         "spectral_identity_passed": true,
         "strong_scaling_speedup_passed": false
       },
@@ -171,7 +175,7 @@
       "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 87.9,
+    "mean_completion_percent": 89.2,
     "n_blocked": 0,
     "n_closed": 2,
     "n_lanes": 4,

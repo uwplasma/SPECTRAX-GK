@@ -209,7 +209,7 @@ or one positive candidate audit does not close a broad manuscript claim.
 .. image:: _static/pre_manuscript_closure_status.png
    :alt: Strict pre-manuscript closure status for scoped and production gates
 
-Current strict closure is ``87.9%`` on average, so manuscript drafting remains
+Current strict closure is ``89.2%`` on average, so manuscript drafting remains
 blocked by broad nonlinear optimization and nonlinear domain speedup, not by
 the scoped QL diagnostic. The required order is:
 

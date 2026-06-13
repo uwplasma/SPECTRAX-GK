@@ -389,6 +389,17 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
     routed_profile_identity_passed = bool((routed_profile or {}).get("identity_passed", False))
     routed_profile_speedup = _finite_float((routed_profile or {}).get("strong_speedup_vs_serial"))
     routed_profile_speedup_passed = bool((routed_profile or {}).get("speedup_gate_passed", False))
+    routed_profile_work_model = _as_dict((routed_profile or {}).get("work_model"))
+    routed_profile_work_model_present = bool(routed_profile_work_model)
+    routed_profile_work_model_feasible = bool(
+        routed_profile_work_model.get("production_speedup_feasible", False)
+    )
+    routed_profile_communication_ratio = _finite_float(
+        routed_profile_work_model.get("communication_to_owned_work_ratio")
+    )
+    routed_profile_efficiency_ceiling = _finite_float(
+        routed_profile_work_model.get("parallel_efficiency_ceiling")
+    )
     decomposition_contract_passed = bool((decomposition_status or {}).get("passed", False))
     cpu_speedup_passed = cpu_speedup is not None and cpu_speedup >= MIN_DOMAIN_CPU_SPEEDUP
     gpu_speedup_passed = gpu_speedup is not None and gpu_speedup >= MIN_DOMAIN_GPU_SPEEDUP
@@ -409,9 +420,10 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
         + _bool_score(spectral_identity_passed, 15.0)
         + _bool_score(identity_passed, 15.0)
         + _bool_score(routed_profile_identity_passed, 10.0)
+        + _bool_score(routed_profile_work_model_present, 5.0)
         + _bool_score(decomposition_contract_passed, 10.0)
-        + _bool_score(cpu_speedup_passed, 12.5)
-        + _bool_score(gpu_speedup_passed, 12.5)
+        + _bool_score(cpu_speedup_passed, 10.0)
+        + _bool_score(gpu_speedup_passed, 10.0)
         + _bool_score(strong_scaling_speedup_passed, 7.5)
         + _bool_score(production_passed, 2.5)
     )
@@ -447,6 +459,10 @@ def _domain_decomposition_lane(root: Path) -> dict[str, Any]:
             "routed_domain_timing_identity_passed": routed_profile_identity_passed,
             "routed_domain_timing_speedup": routed_profile_speedup,
             "routed_domain_timing_speedup_gate_passed": routed_profile_speedup_passed,
+            "routed_domain_work_model_present": routed_profile_work_model_present,
+            "routed_domain_work_model_speedup_feasible": routed_profile_work_model_feasible,
+            "routed_domain_communication_to_owned_work_ratio": routed_profile_communication_ratio,
+            "routed_domain_parallel_efficiency_ceiling": routed_profile_efficiency_ceiling,
             "parallel_decomposition_contract_passed": decomposition_contract_passed,
             "cpu_best_speedup": cpu_speedup,
             "cpu_speedup_gate": MIN_DOMAIN_CPU_SPEEDUP,

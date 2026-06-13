@@ -43,6 +43,10 @@ def test_profile_nonlinear_spectral_domain_routing_builds_identity_payload() -> 
     assert payload["timing_identity_max_abs_error"] <= payload["atol"]
     assert payload["timing_identity_max_rel_error"] <= payload["rtol"]
     assert payload["production_speedup_claim_allowed"] is False
+    assert payload["work_model"]["num_tiles"] == 4
+    assert payload["work_model"]["production_speedup_feasible"] is False
+    assert payload["communication_to_owned_work_ratio"] > 1.0
+    assert payload["parallel_efficiency_ceiling"] < 0.5
     assert payload["serial_stats_s"]["median"] > 0.0
     assert payload["logical_domain_stats_s"]["median"] > 0.0
     assert payload["strong_speedup_vs_serial"] is not None
@@ -68,3 +72,4 @@ def test_profile_nonlinear_spectral_domain_routing_writes_artifacts(tmp_path: Pa
         assert Path(path).exists()
     saved = json.loads((tmp_path / "domain_profile.json").read_text(encoding="utf-8"))
     assert saved["identity_passed"] is True
+    assert saved["work_model_speedup_feasible"] is False

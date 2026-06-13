@@ -139,6 +139,11 @@ def _write_all_pass_fixture(root: Path) -> None:
             "strong_speedup_vs_serial": 1.8,
             "speedup_gate_passed": True,
             "production_speedup_claim_allowed": False,
+            "work_model": {
+                "production_speedup_feasible": True,
+                "communication_to_owned_work_ratio": 0.25,
+                "parallel_efficiency_ceiling": 0.8,
+            },
         },
     )
     _write_json(root, "docs/_static/parallel_decomposition_status.json", {"passed": True})
@@ -190,9 +195,11 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
         in lanes["Production nonlinear domain-decomposition speedup"]["blockers"]
     )
     domain_lane = lanes["Production nonlinear domain-decomposition speedup"]
-    assert domain_lane["completion_percent"] == 65.0
+    assert domain_lane["completion_percent"] == 70.0
     assert domain_lane["key_metrics"]["routed_domain_timing_identity_passed"] is True
     assert domain_lane["key_metrics"]["routed_domain_timing_speedup_gate_passed"] is False
+    assert domain_lane["key_metrics"]["routed_domain_work_model_present"] is True
+    assert domain_lane["key_metrics"]["routed_domain_work_model_speedup_feasible"] is False
 
 
 def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> None:
