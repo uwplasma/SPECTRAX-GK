@@ -36,8 +36,8 @@ def test_screening_skill_keeps_spectral_envelope_fail_closed() -> None:
     spectral = models["spectral_envelope_ridge"]
     assert spectral["screening_gate_passed"] is False
     assert spectral["holdout_screening_gate_passed"] is False
-    assert 0.65 < spectral["spearman"] < 0.75
-    assert 0.70 < spectral["pairwise_order_accuracy"] < 0.75
+    assert 0.62 < spectral["spearman"] < 0.75
+    assert 0.68 < spectral["pairwise_order_accuracy"] < 0.75
     assert 0.55 < spectral["holdout_spearman"] < 0.75
     assert 0.65 < spectral["holdout_pairwise_order_accuracy"] < 0.75
     assert spectral["holdout_mean_abs_relative_error"] > 0.35

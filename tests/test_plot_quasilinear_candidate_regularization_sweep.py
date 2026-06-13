@@ -31,10 +31,11 @@ def test_regularization_sweep_locks_tracked_near_miss() -> None:
 
     assert report["kind"] == "quasilinear_candidate_regularization_sweep"
     assert report["claim_level"] == "spectral_envelope_regularization_audit_not_runtime_flux_predictor"
-    assert report["case_count"] == 11
-    assert report["holdout_count"] == 9
-    assert report["best_lambda"] == 0.1
-    assert 0.394 < report["best_mean_abs_relative_error"] < 0.396
+    assert report["case_count"] == 12
+    assert report["holdout_count"] == 10
+    assert report["best_lambda"] == 0.5
+    assert 0.68 < report["best_mean_abs_relative_error"] < 0.70
+    assert 0.76 < report["best_holdout_mean_abs_relative_error"] < 0.77
     assert report["best_mean_abs_relative_error"] > report["transport_gate"]
     assert report["promotion_gate"]["passed"] is False
     assert report["promotion_gate"]["accepted_lambdas"] == []

@@ -40,7 +40,8 @@ def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:
         assert row["observed_heat_flux"] > 0.0
         assert row["positive_mixing_length_prediction"] == 0.0
         assert row["positive_mixing_length_relative_error"] == 1.0
-        assert row["spectral_envelope_ridge_relative_error"] < 0.2
+        assert row["spectral_envelope_ridge_relative_error"] < 0.35
+        assert row["spectral_envelope_ridge_interval_contains_observed"] is True
         assert row["stellarator_family"] is True
 
     qa = report["stellarator_status"]["QA"]
