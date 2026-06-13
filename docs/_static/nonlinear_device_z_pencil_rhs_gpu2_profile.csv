@@ -1,0 +1,3 @@
+device_count,active,identity_passed,rhs_max_abs_error,rhs_max_rel_error,median_s,speedup_vs_serial,speedup_gate_passed,blocked_reasons
+1,True,True,0.0,0.0,0.011141438968479633,1.0,False,[]
+2,True,False,0.001947126118466258,6.177282921271399e-05,,,False,['device_z_pencil_rhs_identity_failed']

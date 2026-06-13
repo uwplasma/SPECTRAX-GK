@@ -1,0 +1,65 @@
+{
+  "atol": 5e-06,
+  "backend": "gpu",
+  "claim_scope": "device z-sharded fused pencil nonlinear RHS timing; FFT axes are local per z shard, no global spectral reconstruction is used, and no production speedup claim is allowed unless the speedup gate passes",
+  "device_count_available": 2,
+  "kind": "nonlinear_device_z_pencil_rhs_profile",
+  "min_speedup": 1.5,
+  "repeats": 5,
+  "rows": [
+    {
+      "active": true,
+      "blocked_reasons": [],
+      "device_count": 1,
+      "identity_passed": true,
+      "median_s": 0.011141438968479633,
+      "rhs_max_abs_error": 0.0,
+      "rhs_max_rel_error": 0.0,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": 1.0,
+      "stats": {
+        "max": 0.011417703703045845,
+        "mean": 0.01102830097079277,
+        "median": 0.011141438968479633,
+        "min": 0.010600504465401173,
+        "std": 0.000311777048280287
+      }
+    },
+    {
+      "active": true,
+      "blocked_reasons": [
+        "device_z_pencil_rhs_identity_failed"
+      ],
+      "device_count": 2,
+      "identity_passed": false,
+      "median_s": null,
+      "rhs_max_abs_error": 0.001947126118466258,
+      "rhs_max_rel_error": 6.177282921271399e-05,
+      "speedup_gate_passed": false,
+      "speedup_vs_serial": null,
+      "stats": {}
+    }
+  ],
+  "rtol": 0.0001,
+  "serial_stats_s": {
+    "max": 0.011417703703045845,
+    "mean": 0.01102830097079277,
+    "median": 0.011141438968479633,
+    "min": 0.010600504465401173,
+    "std": 0.000311777048280287
+  },
+  "shape": [
+    4,
+    16,
+    96,
+    96,
+    32
+  ],
+  "summary": {
+    "all_active_identity_passed": false,
+    "max_speedup_vs_serial": 1.0,
+    "production_speedup_claim_allowed": false,
+    "status": "identity_failed_no_production_speedup"
+  },
+  "warmups": 2
+}

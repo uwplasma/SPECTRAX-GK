@@ -253,7 +253,11 @@ serial-vs-sharded RHS identity on two and four CPU devices for a
 ``(4,16,96,96,32)`` nonlinear bracket workload, with maximum absolute RHS error
 ``7.4e-10``. It is still slower than serial on this machine (``0.45x`` on two
 logical CPU devices and ``0.41x`` on four), so it is a correctness/profiling
-milestone rather than a production speedup claim.
+milestone rather than a production speedup claim. The matching two-GPU office
+artifact ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` is
+stricter negative evidence: the route is active, but the two-GPU RHS comparison
+fails the absolute identity gate (``max_abs_error=1.95e-3``), so the GPU row is
+not timed and cannot support any speedup claim.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same

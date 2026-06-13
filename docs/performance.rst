@@ -58,7 +58,11 @@ identity on a ``(4,16,96,96,32)`` bracket workload with maximum absolute error
 ``7.4e-10``, but the logical-CPU timing is slower than serial (best observed
 speedup ``0.45x``). This is intentionally recorded as negative profiler
 evidence: production nonlinear domain speedup remains open until the same route
-or a better one clears the ``1.5x`` gate on CPU/GPU hardware.
+or a better one clears the ``1.5x`` gate on CPU/GPU hardware. The two-GPU office
+artifact ``docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json`` is
+also negative: the active two-GPU route fails the strict absolute RHS identity
+gate (``max_abs_error=1.95e-3``), so GPU timing is not used for any speedup
+claim.
 
 Nonlinear profiling
 -------------------

@@ -86,7 +86,7 @@ def build_profile(
     rtol: float,
     min_speedup: float,
 ) -> dict[str, Any]:
-    from spectraxgk.nonlinear_parallel import (
+    from spectraxgk.nonlinear_parallel import (  # type: ignore[import-untyped]
         _pencil_nonlinear_spectral_rhs,
         _serial_nonlinear_spectral_rhs,
         deterministic_nonlinear_spectral_state,
@@ -194,10 +194,20 @@ def build_profile(
         )
 
     active_rows = [row for row in rows if row["active"] and row["device_count"] > 1]
-    max_speedup = max((float(row["speedup_vs_serial"]) for row in active_rows), default=1.0)
+    measured_speedups = [
+        float(row["speedup_vs_serial"])
+        for row in active_rows
+        if row.get("speedup_vs_serial") is not None
+    ]
+    max_speedup = max(measured_speedups, default=1.0)
     all_active_identity = all(bool(row["identity_passed"]) for row in active_rows)
     speedup_gate = any(bool(row["speedup_gate_passed"]) for row in active_rows)
-    status = "production_speedup_candidate" if speedup_gate else "identity_timed_no_production_speedup"
+    if speedup_gate:
+        status = "production_speedup_candidate"
+    elif active_rows and not all_active_identity:
+        status = "identity_failed_no_production_speedup"
+    else:
+        status = "identity_timed_no_production_speedup"
     if not active_rows:
         status = "skipped_no_multidevice"
 
@@ -235,7 +245,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     out_json = out_prefix.with_suffix(".json")
@@ -258,6 +268,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
                 "speedup_gate_passed",
                 "blocked_reasons",
             ],
+            lineterminator="\n",
         )
         writer.writeheader()
         for row in rows:
