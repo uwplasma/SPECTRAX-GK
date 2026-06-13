@@ -24,6 +24,18 @@
   ITERModel VMEC. This gives the next QL work a concrete target without
   changing any promotion gate or adding data.
 
+- 2026-06-13: Tightened the production nonlinear turbulent-flux optimization
+  guard without launching new runs. The default guard now ingests the existing
+  strict `t=1500` matched baseline-to-growth, baseline-to-QL, and
+  baseline-to-nonlinear-window comparison artifacts as negative evidence, in
+  addition to the positive QA no-ESS matched audit. The refreshed
+  `docs/_static/production_nonlinear_optimization_guard.{png,json,csv}`
+  remains release-safe but not production-promoted: `4` matched audits are
+  present, only `1` qualifies, and the three strict objective-specific audits
+  fail reduction/uncertainty gates. This shifts the next optimization work
+  toward better optimizer candidates and additional optimized-equilibrium
+  evidence, not holdout expansion.
+
 - 2026-06-12: Harvested the Solovev repaired external-VMEC holdout and used it
   to harden the quasilinear claim boundary. The original CPU `dt=0.01`
   duplicate remained too slow, but the office GPU duplicate completed the

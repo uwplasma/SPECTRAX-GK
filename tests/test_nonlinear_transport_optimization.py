@@ -114,6 +114,34 @@ def _matched_audit_payload(
     }
 
 
+def _strict_matched_comparison_payload(
+    *,
+    relative_reduction: float = 0.006,
+    sigma: float = 0.26,
+    passed: bool = False,
+) -> dict[str, object]:
+    return {
+        "kind": "matched_nonlinear_transport_comparison",
+        "case": "strict_t1500_growth_comparison",
+        "claim_level": "matched_replicated_late_window_transport_comparison",
+        "passed": passed,
+        "baseline": {"passed": True, "raw_passed": True, "ensemble_mean": 11.58},
+        "candidate": {"passed": True, "raw_passed": True, "ensemble_mean": 11.51},
+        "statistics": {
+            "relative_reduction": relative_reduction,
+            "uncertainty_z_score": sigma,
+        },
+        "gates": [
+            {"metric": "baseline_ensemble_passed", "passed": True},
+            {"metric": "candidate_ensemble_passed", "passed": True},
+            {
+                "metric": "relative_transport_reduction",
+                "passed": relative_reduction >= 0.04,
+            },
+        ],
+    }
+
+
 def test_production_nonlinear_guard_is_release_safe_but_blocks_optimization_promotion() -> None:
     report = production_nonlinear_optimization_guard_report(
         optimization_artifact=_optimization_payload(),
@@ -200,6 +228,8 @@ def test_production_nonlinear_guard_requires_three_matched_optimized_audits() ->
     assert one_audit["safe_to_release"] is True
     assert one_audit["production_nonlinear_optimization_promoted"] is False
     assert one_audit["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+    assert one_audit["summary"]["total_matched_optimized_transport_audits"] == 1
+    assert one_audit["evidence_gap"]["required_additional_matched_optimized_audits"] == 2
     assert one_audit["promotion_gate"]["blockers"] == [
         "optimized_equilibrium_replicated_transport_window",
         "matched_baseline_to_optimized_transport_reduction",
@@ -283,6 +313,8 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
     assert payload["safe_to_release"] is True
     assert payload["production_nonlinear_optimization_promoted"] is False
     assert payload["summary"]["qualifying_matched_optimized_transport_audits"] == 1
+    assert payload["summary"]["total_matched_optimized_transport_audits"] >= 4
+    assert payload["summary"]["failed_matched_optimized_transport_audits"] >= 3
     assert "matched_baseline_to_optimized_transport_reduction" in payload["promotion_gate"]["blockers"]
 
 
@@ -301,6 +333,20 @@ def test_matched_optimized_transport_report_requires_reduction_and_uncertainty()
     assert "insufficient_matched_optimized_reduction" in weak["blockers"]
     assert "insufficient_matched_optimized_uncertainty_separation" in weak["blockers"]
     assert spectraxgk.matched_optimized_transport_report is matched_optimized_transport_report
+
+
+def test_strict_matched_comparison_schema_is_counted_as_negative_evidence() -> None:
+    report = matched_optimized_transport_report(
+        "strict_t1500.json",
+        _strict_matched_comparison_payload(),
+    )
+
+    assert report["baseline_ensemble_qualified"] is True
+    assert report["optimized_ensemble_qualified"] is True
+    assert report["selected_optimized_audit_closed"] is True
+    assert report["qualifies_for_production_optimization"] is False
+    assert "insufficient_matched_optimized_reduction" in report["blockers"]
+    assert "insufficient_matched_optimized_uncertainty_separation" in report["blockers"]
 
 
 def test_replicated_transport_report_fails_closed_on_unscoped_or_noisy_payloads() -> None:

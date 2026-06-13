@@ -35,6 +35,7 @@ DEFAULT_REDUCED_ARTIFACTS = (
 DEFAULT_REPLICATED_ENSEMBLES = (
     ROOT / "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
     ROOT / "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+    ROOT / "docs/_static/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout_ensemble_gate.json",
 )
 DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
     ROOT
@@ -42,6 +43,9 @@ DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
 )
 DEFAULT_MATCHED_OPTIMIZED_AUDITS = (
     ROOT / "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+    ROOT / "docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json",
+    ROOT / "docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json",
+    ROOT / "docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json",
 )
 DEFAULT_OUT_JSON = ROOT / "docs/_static/production_nonlinear_optimization_guard.json"
 DEFAULT_OUT_PNG = ROOT / "docs/_static/production_nonlinear_optimization_guard.png"
@@ -141,6 +145,19 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
     axs[1].set_ylabel("qualifying artifacts")
     axs[1].set_title("Evidence available for nonlinear optimization")
     axs[1].grid(axis="y", alpha=0.25)
+    axs[1].text(
+        0.03,
+        0.95,
+        (
+            f"matched audits total: {summaries.get('total_matched_optimized_transport_audits', 0)}\n"
+            f"strict negatives: {summaries.get('failed_matched_optimized_transport_audits', 0)}"
+        ),
+        transform=axs[1].transAxes,
+        ha="left",
+        va="top",
+        fontsize=8.5,
+        bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.75", "alpha": 0.9},
+    )
 
     status = (
         "production promoted"
