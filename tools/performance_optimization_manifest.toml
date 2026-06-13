@@ -247,6 +247,7 @@ metrics = [
   "nonlinear_state_sharding_identity_error",
   "device_z_pencil_rhs_identity_error",
   "device_z_pencil_transport_window_identity_error",
+  "device_z_pencil_observable_gate_overhead",
   "parallel_scaling_artifact_contract_status",
   "production_parallelization_completion_percent",
 ]
@@ -329,6 +330,9 @@ artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json",
   "docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.csv",
   "docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.png",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png",
   ]
 bottleneck_hypotheses = [
   "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",

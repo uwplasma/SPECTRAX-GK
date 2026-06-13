@@ -499,7 +499,17 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
             writer.writerow({key: row.get(key) for key in writer.fieldnames})
 
     set_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.6), constrained_layout=True)
+    has_observable_timing = any(
+        row.get("observable_gate_overhead_vs_compute") is not None for row in rows
+    )
+    ncols = 3 if has_observable_timing else 2
+    fig, axes_arr = plt.subplots(
+        1,
+        ncols,
+        figsize=(13.2 if has_observable_timing else 9.2, 3.6),
+        constrained_layout=True,
+    )
+    axes = list(np.ravel(axes_arr))
     counts = [int(row["device_count"]) for row in rows]
     speedups = [float(row["speedup_vs_serial"] or 0.0) for row in rows]
     errors = [float(row["final_state_max_abs_error"] or 0.0) for row in rows]
@@ -519,6 +529,31 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     axes[1].set_title("transport-window identity")
     axes[1].legend(frameon=False, fontsize=8)
     axes[1].grid(True, alpha=0.25, axis="y")
+
+    if has_observable_timing:
+        observable_counts = [
+            int(row["device_count"])
+            for row in rows
+            if row.get("observable_gate_overhead_vs_compute") is not None
+        ]
+        observable_overheads = [
+            float(row["observable_gate_overhead_vs_compute"])
+            for row in rows
+            if row.get("observable_gate_overhead_vs_compute") is not None
+        ]
+        axes[2].bar(
+            [str(count) for count in observable_counts],
+            observable_overheads,
+            color="#6a7f3f",
+        )
+        if observable_overheads and max(observable_overheads) > 10.0:
+            axes[2].set_yscale("log")
+        axes[2].axhline(1.0, color="0.25", ls=":", lw=1.2, label="compute parity")
+        axes[2].set_xlabel("local devices")
+        axes[2].set_ylabel("observable gate / compute")
+        axes[2].set_title("diagnostic overhead")
+        axes[2].legend(frameon=False, fontsize=8, loc="lower right")
+        axes[2].grid(True, alpha=0.25, axis="y")
     fig.savefig(out_png, dpi=220)
     plt.close(fig)
 

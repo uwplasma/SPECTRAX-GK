@@ -288,6 +288,12 @@ next optimization target is the sharded compute route or the scalar
 diagnostic/host-gather path. The timed speedup row remains compute-only; the
 ``observable_gate_*`` fields are a separate bottleneck split and do not promote
 nonlinear domain decomposition by themselves.
+The tracked two-GPU split artifact
+``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``
+passes identity on the auto-chunked ``96x96x64`` diagnostic, but still records
+only ``1.19x`` compute speedup and a large observable-gate overhead. This keeps
+the nonlinear decomposition lane diagnostic until an end-to-end solver route
+passes identity and speedup with streamed diagnostics.
 
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
