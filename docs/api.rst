@@ -285,6 +285,12 @@ Parallelization
 .. automodule:: spectraxgk.parallel
    :members:
 
+Nonlinear Parallel Contracts
+----------------------------
+
+.. automodule:: spectraxgk.nonlinear_parallel_contracts
+   :members:
+
 Velocity Sharding Plans
 -----------------------
 

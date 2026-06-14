@@ -437,6 +437,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear_parallel"
 path = "src/spectraxgk/nonlinear_parallel.py"
+owned_modules = [
+  "spectraxgk.nonlinear_parallel_contracts",
+]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
 coverage_priority = "high"

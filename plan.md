@@ -1,3 +1,12 @@
+- 2026-06-14: Continued the behavior-preserving refactor lane by splitting
+  nonlinear parallelization contracts and JSON-ready reports into
+  `spectraxgk.nonlinear_parallel_contracts`. The public
+  `spectraxgk.nonlinear_parallel` facade remains the import surface for
+  examples and downstream users, while focused tests now assert that facade
+  exports are identical to the underlying contract objects. This advances the
+  refactor/testability lane without changing nonlinear RHS, transport-window,
+  sharding, or speedup claims.
+
 - 2026-06-13: Closed the current QL lane as a scoped core-portfolio
   diagnostic instead of a universal absolute-flux claim. The refreshed
   `docs/_static/quasilinear_error_anatomy.{png,json,csv}` now records two
