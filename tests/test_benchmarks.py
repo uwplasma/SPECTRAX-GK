@@ -10,6 +10,7 @@ import jax.numpy as jnp
 
 import spectraxgk.benchmark_helpers as benchmark_helpers
 import spectraxgk.benchmark_kbm as benchmark_kbm
+import spectraxgk.benchmark_kinetic as benchmark_kinetic
 import spectraxgk.benchmark_tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
@@ -1596,8 +1597,8 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KineticElectronBaseCase(grid=grid)
@@ -1630,9 +1631,9 @@ def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition)
+    monkeypatch.setattr(benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KineticElectronBaseCase(grid=grid)
@@ -1659,9 +1660,9 @@ def test_kinetic_linear_respects_explicit_user_seed(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition)
+    monkeypatch.setattr(benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     custom_init = InitializationConfig(init_field="density", init_amp=1.0e-7, gaussian_init=True)

@@ -1,3 +1,10 @@
+- 2026-06-14: Split the kinetic-electron benchmark-family runners
+  (`run_kinetic_linear` and `run_kinetic_scan`) into
+  `spectraxgk.benchmark_kinetic`, preserving the GX-reference hypercollision,
+  end-damping, and legacy density-seed policies behind the unchanged
+  `spectraxgk.benchmarks` public facade. Focused kinetic branch tests now
+  patch the implementation module directly.
+
 - 2026-06-14: Split the TEM benchmark-family runners (`run_tem_linear` and
   `run_tem_scan`) into `spectraxgk.benchmark_tem` using the same
   behavior-preserving facade pattern as the KBM split. TEM branch tests now

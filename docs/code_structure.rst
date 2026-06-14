@@ -99,7 +99,7 @@ Physics / Numerics / IO Map
      - ``runtime_artifacts.py``, ``plotting.py``
      - serialization, reload, restart append schema, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_kbm.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
+     - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_kbm.py``, ``benchmark_kinetic.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -197,6 +197,8 @@ moved. The KBM benchmark family runner now lives in
 public compatibility facade for ``run_kbm_linear``, ``run_kbm_scan``, and
 ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.benchmark_tem`` for ``run_tem_linear`` and ``run_tem_scan``.
+Kinetic-electron ITG/TEM runners are in ``spectraxgk.benchmark_kinetic`` with
+the same public facade guarantees.
 
 The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public compatibility facade while
