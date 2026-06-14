@@ -780,6 +780,7 @@ module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
   "spectraxgk.benchmarking",
+  "spectraxgk.benchmark_kbm",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"

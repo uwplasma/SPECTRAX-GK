@@ -1,3 +1,11 @@
+- 2026-06-14: Continued the behavior-preserving benchmark refactor by moving
+  the KBM benchmark-family runners (`run_kbm_linear`, `run_kbm_scan`, and
+  `run_kbm_beta_scan`) into `spectraxgk.benchmark_kbm` behind the existing
+  `spectraxgk.benchmarks` public facade. KBM-specific regression tests now
+  patch the implementation module directly, preserving public imports while
+  making the largest benchmark file smaller and the KBM lane easier to test
+  independently.
+
 - 2026-06-14: Continued the behavior-preserving refactor lane by splitting
   nonlinear parallelization contracts, JSON-ready reports, and local
   state-domain identity gates into `spectraxgk.nonlinear_parallel_contracts`

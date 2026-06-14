@@ -9,6 +9,7 @@ import pytest
 import jax.numpy as jnp
 
 import spectraxgk.benchmark_helpers as benchmark_helpers
+import spectraxgk.benchmark_kbm as benchmark_kbm
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
@@ -949,9 +950,9 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
         calls["fit_signal_len"] = str(np.asarray(signal).shape[0])
         return 0.25, 1.5, 0.0, 0.0
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1019,9 +1020,9 @@ def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", _fake_build_linear_cache)
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm, "build_linear_cache", _fake_build_linear_cache)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1064,7 +1065,7 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1105,7 +1106,7 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1156,7 +1157,7 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1197,10 +1198,10 @@ def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatc
     def _fake_integrate(*_args, **_kwargs):
         return np.array([0.0]), np.zeros((1, 1, 1, 4), dtype=np.complex64)
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(benchmarks, "integrate_linear", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0))
+    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0))
 
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
     cfg = KBMBaseCase(grid=grid)
@@ -1258,9 +1259,9 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         calls.append("fit:auto")
         return 0.15, 0.9, 0.0, 0.0
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1324,9 +1325,9 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(benchmark_kbm, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmarks,
         "gx_growth_rate_from_phi",
@@ -1363,8 +1364,8 @@ def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch)
         del cache, params, terms
         return SimpleNamespace(phi=np.zeros(np.asarray(vec).shape[-3:], dtype=np.complex64))
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_kbm, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kbm, "compute_fields_cached", _fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KBMBaseCase(grid=grid)
@@ -1405,7 +1406,7 @@ def test_run_kbm_beta_scan_krylov_explicit_shift_bypasses_multi_target(monkeypat
         calls.append(kwargs)
         return 0.2 - 1.1j, np.zeros_like(np.asarray(v0))
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kbm, "dominant_eigenpair", _fake_dominant_eigenpair)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KBMBaseCase(grid=grid)

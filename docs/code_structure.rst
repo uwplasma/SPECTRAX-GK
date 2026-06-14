@@ -99,7 +99,7 @@ Physics / Numerics / IO Map
      - ``runtime_artifacts.py``, ``plotting.py``
      - serialization, reload, restart append schema, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``, ``validation_gates.py``, ``zonal_validation.py``
+     - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_kbm.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -192,7 +192,10 @@ solver-selection policies live in ``spectraxgk.benchmark_fit_signals``,
 ``spectraxgk.benchmark_batching``, and
 ``spectraxgk.benchmark_solver_policy``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are
-moved.
+moved. The KBM benchmark family runner now lives in
+``spectraxgk.benchmark_kbm`` while ``spectraxgk.benchmarks`` remains the
+public compatibility facade for ``run_kbm_linear``, ``run_kbm_scan``, and
+``run_kbm_beta_scan``.
 
 The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public compatibility facade while
