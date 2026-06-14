@@ -1,3 +1,12 @@
+- 2026-06-14: Continued the differentiable-objective refactor by moving the
+  implicit dominant-eigenvalue custom VJP and branch-locality finite-difference
+  report into `spectraxgk.solver_eigen_objectives`. The legacy
+  `spectraxgk.solver_objective_gradients` facade still re-exports
+  `dominant_real_eigenvalue` and
+  `dominant_eigenvalue_branch_locality_report`, preserving package-level and
+  tool imports while separating the eigen-AD gate from VMEC/Boozer objective
+  plumbing.
+
 - 2026-06-14: Split the Cyclone benchmark-family runners
   (`run_cyclone_linear` and `run_cyclone_scan`) into
   `spectraxgk.benchmark_cyclone` behind the unchanged

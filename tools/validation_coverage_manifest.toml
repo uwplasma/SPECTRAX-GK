@@ -1422,6 +1422,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_eigen_objectives"
+path = "src/spectraxgk/solver_eigen_objectives.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "implicit left/right non-Hermitian eigenpair sensitivity theory",
+  "finite-difference branch-continuity validation for eigenvalue objectives",
+]
+physics_contracts = [
+  "dominant-growth derivatives are valid only on locally isolated eigenvalue branches",
+  "branch-locality diagnostics must distinguish max-real branch switching from nearest-branch local finite differences",
+]
+numerics_contracts = [
+  "implicit eigenpair sensitivities use a biorthogonal left/right normalization",
+  "dominant real eigenvalue VJP matches central finite differences on isolated non-Hermitian branches",
+  "branch gap, slope difference, and finite eigenvalue guards fail closed before optimization promotion",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add multi-root branch-near-degeneracy stress tests before using new objective families in optimization",
+  "record branch-gap statistics in every promoted VMEC/Boozer optimizer artifact",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [

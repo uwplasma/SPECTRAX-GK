@@ -86,6 +86,9 @@ Physics / Numerics / IO Map
    * - Linear operators and fields
      - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
+   * - Solver objectives and eigen-AD gates
+     - ``solver_objective_gradients.py``, ``solver_eigen_objectives.py``
+     - implicit eigenpair VJP, branch-locality, finite-difference, and VMEC/Boozer gradient tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``terms/nonlinear.py``
      - fixed-mode, diagnostics, collision-split, transport-window tests
@@ -123,6 +126,8 @@ Completed extractions:
   ``validation_gates.py``
 - zonal-response reference/trace normalization helpers:
   ``zonal_validation.py``
+- dominant-eigenvalue custom VJP and branch-locality diagnostics:
+  ``solver_eigen_objectives.py``
 - nonlinear parallelization policy metadata:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``
 - runtime artifact read/write and restart-append schema coverage:

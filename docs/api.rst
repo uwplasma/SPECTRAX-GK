@@ -377,6 +377,12 @@ Quasilinear Model Selection
 .. automodule:: spectraxgk.quasilinear_model_selection
    :members:
 
+Solver Eigen Objectives
+-----------------------
+
+.. automodule:: spectraxgk.solver_eigen_objectives
+   :members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

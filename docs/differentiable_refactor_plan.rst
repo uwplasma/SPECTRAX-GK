@@ -129,6 +129,9 @@ High-Risk Module Split Plan
   objectives, nonlinear-window objectives, VMEC/Boozer objective plumbing, and
   gradient gates. Required gates: branch-locality, spectral-gap guards,
   finite-difference/JVP/VJP checks, UQ covariance, and objective conditioning.
+  The dominant-growth implicit eigenpair VJP and branch-locality report now
+  live in ``solver_eigen_objectives.py`` and remain re-exported by the legacy
+  solver-objective facade.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.

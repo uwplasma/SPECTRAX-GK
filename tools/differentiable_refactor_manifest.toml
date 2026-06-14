@@ -397,6 +397,19 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.solver_eigen_objectives"
+source_path = "src/spectraxgk/solver_eigen_objectives.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "implicit dominant-eigenvalue custom VJP and finite-difference branch-locality diagnostics for solver-objective gradient gates"
+moved_exports = [
+  "dominant_eigenvalue_branch_locality_report",
+  "dominant_real_eigenvalue",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
