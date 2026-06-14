@@ -1,3 +1,10 @@
+- 2026-06-14: Split the ETG benchmark-family runners (`run_etg_linear` and
+  `run_etg_scan`) into `spectraxgk.benchmark_etg` behind the unchanged
+  `spectraxgk.benchmarks` public facade. ETG branch tests now patch the
+  implementation module directly, and the stale ETG branch-test monkeypatch
+  against a Cyclone-only helper was removed rather than re-exporting unused
+  implementation symbols.
+
 - 2026-06-14: Split the kinetic-electron benchmark-family runners
   (`run_kinetic_linear` and `run_kinetic_scan`) into
   `spectraxgk.benchmark_kinetic`, preserving the GX-reference hypercollision,
