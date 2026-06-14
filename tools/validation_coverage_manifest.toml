@@ -1098,6 +1098,36 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.geometry.core"
+path = "src/spectraxgk/geometry/core.py"
+owner_lane = "analytic, slab, sampled, and imported flux-tube geometry contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone s-alpha geometry metric and drift conventions",
+  "GX-style imported eik/NetCDF flux-tube geometry arrays",
+]
+physics_contracts = [
+  "analytic and imported geometry paths expose the same solver-facing FluxTubeGeometryData contract",
+  "zero-shear promotion and twist-shift defaults preserve the intended boundary condition semantics",
+]
+numerics_contracts = [
+  "periodic spectral bgrad reconstruction is shape-checked and finite",
+  "sampled theta grids reject mismatched solver coordinates and trim closed imported intervals only when appropriate",
+]
+fast_tests = [
+  "tests/test_geometry.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_parity_matrix.png",
+]
+next_tests = [
+  "add analytic Miller-like sampled geometry parity checks in the core facade shard",
+  "add imported-geometry cache stress tests after VMEC/eik backend split completion",
+]
+
+[[modules]]
 module = "spectraxgk.from_gx.vmec"
 path = "src/spectraxgk/from_gx/vmec.py"
 owned_modules = [

@@ -81,7 +81,7 @@ Physics / Numerics / IO Map
      - ``basis.py``, ``grids.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry.py``, ``miller_eik.py``, ``vmec_eik.py``, ``from_gx/vmec.py``
+     - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``from_gx/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
      - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
@@ -205,6 +205,10 @@ interpolation, radial derivative, Boozer half-mesh, Fourier field-line, and
 periodic sampling helpers live in ``spectraxgk.geometry.numerics``. This
 separates import-side effects, validation-report plumbing, public contract
 validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
+Analytic, slab, sampled, imported-NetCDF, twist-shift, and grid-default
+geometry contracts live in ``spectraxgk.geometry.core``. The
+``spectraxgk.geometry`` package remains a thin compatibility facade that
+re-exports the same classes and functions for existing user code.
 Geometry sensitivity, inverse-design, and local UQ reports live in
 ``spectraxgk.geometry.sensitivity`` so backend bridge modules can depend on
 the report contract without importing the compatibility facade. Bounded VMEC

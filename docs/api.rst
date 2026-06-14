@@ -30,6 +30,14 @@ Geometry
 
 .. automodule:: spectraxgk.geometry
    :members:
+   :no-index:
+
+Geometry Core
+-------------
+
+.. automodule:: spectraxgk.geometry.core
+   :members:
+   :private-members:
 
 Differentiable Geometry
 -----------------------

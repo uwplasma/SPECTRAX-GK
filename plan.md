@@ -1807,3 +1807,9 @@ No long nonlinear audit should be launched from these candidates.
   backend discovery, flux-tube mapping, Boozer equal-arc core, sensitivity, and
   parity-metric hooks into the focused report implementation so public
   monkeypatch seams and optional-backend tests remain stable.
+- Split the main geometry package into ``spectraxgk.geometry.core`` plus a
+  thin ``spectraxgk.geometry`` compatibility facade. The core module now owns
+  analytic s-alpha/slab geometry, sampled ``FluxTubeGeometryData``, imported
+  NetCDF/eik loading, twist-shift defaults, and grid-default policy, while the
+  package facade re-exports all public and test-visible symbols with identity
+  checks.

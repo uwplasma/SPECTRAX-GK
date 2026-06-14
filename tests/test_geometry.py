@@ -6,6 +6,8 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig
+import spectraxgk.geometry as geometry_pkg
+import spectraxgk.geometry.core as geometry_core
 from spectraxgk.geometry import (
     ZERO_SHAT_THRESHOLD,
     FluxTubeGeometryData,
@@ -22,6 +24,27 @@ from spectraxgk.geometry import (
 )
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
+
+
+def test_geometry_package_facade_preserves_core_symbol_identity() -> None:
+    """The geometry package should remain a compatibility facade."""
+
+    assert geometry_pkg.SAlphaGeometry is geometry_core.SAlphaGeometry
+    assert geometry_pkg.SlabGeometry is geometry_core.SlabGeometry
+    assert geometry_pkg.FluxTubeGeometryData is geometry_core.FluxTubeGeometryData
+    assert (
+        geometry_pkg.sample_flux_tube_geometry
+        is geometry_core.sample_flux_tube_geometry
+    )
+    assert geometry_pkg.load_gx_geometry_netcdf is geometry_core.load_gx_geometry_netcdf
+    assert (
+        geometry_pkg.build_flux_tube_geometry is geometry_core.build_flux_tube_geometry
+    )
+    assert (
+        geometry_pkg.apply_geometry_grid_defaults
+        is geometry_core.apply_geometry_grid_defaults
+    )
+    assert geometry_pkg._gx_bgrad_from_bmag is geometry_core._gx_bgrad_from_bmag
 
 
 def test_kperp2_matches_s_alpha():
@@ -81,7 +104,9 @@ def test_slab_geometry_matches_gx_contract():
     kx = jnp.array([0.0, 0.2])
     ky = jnp.array([0.1, 0.3])
     assert geom.kx_effective(kx, ky, theta[:2]).shape == (2,)
-    assert geom.k_perp2(kx[None, :, None], ky[:, None, None], theta[None, None, :]).shape == (2, 2, 3)
+    assert geom.k_perp2(
+        kx[None, :, None], ky[:, None, None], theta[None, None, :]
+    ).shape == (2, 2, 3)
     cv_d, gb_d = geom.drift_components(kx, ky, theta)
     assert cv_d.shape == (2, 2, 3)
     assert gb_d.shape == (2, 2, 3)
@@ -98,7 +123,9 @@ def test_slab_geometry_pytree_roundtrip_and_z0_default() -> None:
 
 
 def test_zero_shat_slab_geometry_matches_gx_override():
-    geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=0.8, zero_shat=True))
+    geom = SlabGeometry.from_config(
+        GeometryConfig(model="slab", s_hat=0.8, zero_shat=True)
+    )
     theta = jnp.array([-1.0, 0.0, 1.0])
     gds2, gds21, gds22 = geom.metric_coeffs(theta)
 
@@ -173,14 +200,28 @@ def test_kx_effective_shear_shift():
     assert jnp.isclose(kx_eff[0], kx0[0] - shear[0] * ky[0])
 
 
-def test_twist_shift_params_for_analytic_geometry_avoids_metric_coeffs(monkeypatch: pytest.MonkeyPatch):
+def test_twist_shift_params_for_analytic_geometry_avoids_metric_coeffs(
+    monkeypatch: pytest.MonkeyPatch,
+):
     """Analytic twist/shift defaults should stay on host scalars."""
 
     geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.0, alpha=0.2)
-    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=4,
+        Ny=4,
+        Nz=16,
+        Lx=6.28,
+        Ly=6.28,
+        boundary="linked",
+        y0=10.0,
+        ntheta=16,
+        nperiod=2,
+    )
 
     def _fail(self, _theta):
-        raise AssertionError("metric_coeffs should not be called for analytic twist-shift defaults")
+        raise AssertionError(
+            "metric_coeffs should not be called for analytic twist-shift defaults"
+        )
 
     monkeypatch.setattr(SAlphaGeometry, "metric_coeffs", _fail)
 
@@ -188,7 +229,12 @@ def test_twist_shift_params_for_analytic_geometry_avoids_metric_coeffs(monkeypat
 
     theta_min = -np.pi * (2 * int(grid.nperiod) - 1)
     shear = float(geom.s_hat) * theta_min - float(geom.alpha) * np.sin(theta_min)
-    expected_fac = 2.0 * float(geom.s_hat) * (-float(geom.s_hat) * shear) / (float(geom.s_hat) ** 2)
+    expected_fac = (
+        2.0
+        * float(geom.s_hat)
+        * (-float(geom.s_hat) * shear)
+        / (float(geom.s_hat) ** 2)
+    )
     expected_jtwist = int(round(expected_fac))
     if expected_jtwist == 0:
         expected_jtwist = 1
@@ -295,7 +341,9 @@ def test_ensure_flux_tube_geometry_data_trims_closed_theta_interval():
 
 
 def test_sampled_geometry_rejects_mismatched_theta_and_trim_too_short() -> None:
-    geom = sample_flux_tube_geometry(SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), jnp.asarray([0.0]))
+    geom = sample_flux_tube_geometry(
+        SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), jnp.asarray([0.0])
+    )
 
     with pytest.raises(ValueError, match="fewer than two"):
         geom.trim_terminal_theta_point()
@@ -307,7 +355,9 @@ def test_sampled_geometry_rejects_mismatched_theta_and_trim_too_short() -> None:
 
 def test_sampled_geometry_broadcasts_profiles_on_batched_theta() -> None:
     theta = jnp.linspace(-jnp.pi, jnp.pi, 5)
-    geom = sample_flux_tube_geometry(SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), theta)
+    geom = sample_flux_tube_geometry(
+        SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), theta
+    )
     theta_batched = jnp.stack([theta, theta], axis=0)
 
     bmag = geom.bmag(theta_batched)
@@ -324,7 +374,10 @@ def test_periodic_derivative_and_bgrad_validation_paths() -> None:
         _gx_bgrad_from_bmag(np.ones((2, 2)), np.ones(2), 1.0, closed=False)
     with pytest.raises(ValueError, match="same shape"):
         _gx_bgrad_from_bmag(np.ones(3), np.ones(2), 1.0, closed=False)
-    assert np.allclose(_gx_bgrad_from_bmag(np.asarray([0.0]), np.asarray([1.0]), 1.0, closed=False), [0.0])
+    assert np.allclose(
+        _gx_bgrad_from_bmag(np.asarray([0.0]), np.asarray([1.0]), 1.0, closed=False),
+        [0.0],
+    )
 
 
 def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
@@ -407,7 +460,9 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
         root.createVariable("gbdrift", "f8", ("z",))[:] = cvdrift
         root.createVariable("cvdrift0", "f8", ("z",))[:] = cvdrift0
         root.createVariable("gbdrift0", "f8", ("z",))[:] = cvdrift0
-        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(
+            2.0, 3.0, theta.size
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
         root.createVariable("drhodpsi", "f8", ())[:] = drhodpsi
@@ -451,13 +506,25 @@ def test_load_gx_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = bmag
         root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(
+            -0.2, 0.2, theta.size
+        )
         root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(
+            0.3, 0.5, theta.size
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(
+            0.3, 0.5, theta.size
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(
+            -0.1, 0.1, theta.size
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(
+            -0.1, 0.1, theta.size
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(
+            2.0, 3.0, theta.size
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
         root.createVariable("drhodpsi", "f8", ())[:] = drhodpsi
@@ -493,16 +560,34 @@ def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
     with Dataset(path, "w") as root:
         root.createDimension("z", theta_closed.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta_closed
-        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled_closed.bmag_profile)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled_closed.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled_closed.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled_closed.gds22_profile)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.gb0_profile)
+        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(
+            sampled_closed.bmag_profile
+        )
+        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(
+            sampled_closed.gds2_profile
+        )
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled_closed.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled_closed.gds22_profile
+        )
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled_closed.cv_profile
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled_closed.gb_profile
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled_closed.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled_closed.gb0_profile
+        )
         root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta_closed.size, 7.0)
-        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled_closed.grho_profile)
+        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(
+            sampled_closed.grho_profile
+        )
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
             theta_closed.size, sampled_closed.gradpar_value
         )
@@ -522,19 +607,42 @@ def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
 
     assert loaded.theta_closed_interval is True
     assert jnp.allclose(loaded_open.theta, sampled_open.theta)
-    assert jnp.allclose(loaded_open.bmag_profile, sampled_open.bmag_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.gds2_profile, sampled_open.gds2_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.gds21_profile, sampled_open.gds21_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.gds22_profile, sampled_open.gds22_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.cv_profile, sampled_open.cv_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.gb_profile, sampled_open.gb_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.cv0_profile, sampled_open.cv0_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.gb0_profile, sampled_open.gb0_profile, rtol=1.0e-6, atol=1.0e-6)
     assert jnp.allclose(
-        loaded_open.jacobian_profile, sampled_open.jacobian_profile, rtol=1.0e-6, atol=1.0e-6
+        loaded_open.bmag_profile, sampled_open.bmag_profile, rtol=1.0e-6, atol=1.0e-6
     )
-    assert jnp.allclose(loaded_open.grho_profile, sampled_open.grho_profile, rtol=1.0e-6, atol=1.0e-6)
-    assert jnp.allclose(loaded_open.bgrad_profile, sampled_open.bgrad_profile, rtol=1.0e-4, atol=1.0e-4)
+    assert jnp.allclose(
+        loaded_open.gds2_profile, sampled_open.gds2_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.gds21_profile, sampled_open.gds21_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.gds22_profile, sampled_open.gds22_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.cv_profile, sampled_open.cv_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.gb_profile, sampled_open.gb_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.cv0_profile, sampled_open.cv0_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.gb0_profile, sampled_open.gb0_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.jacobian_profile,
+        sampled_open.jacobian_profile,
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    assert jnp.allclose(
+        loaded_open.grho_profile, sampled_open.grho_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(
+        loaded_open.bgrad_profile, sampled_open.bgrad_profile, rtol=1.0e-4, atol=1.0e-4
+    )
 
 
 def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
@@ -568,12 +676,16 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
         geom.createVariable("rmaj", "f8", ())[:] = 5.0
         geom.createVariable("aminor", "f8", ())[:] = 1.0
 
-    loaded = build_flux_tube_geometry(GeometryConfig(model="gx-netcdf", geometry_file=str(path)))
+    loaded = build_flux_tube_geometry(
+        GeometryConfig(model="gx-netcdf", geometry_file=str(path))
+    )
 
     assert loaded.source_model == "gx-netcdf"
 
 
-def test_build_flux_tube_geometry_rejects_missing_import_file_and_unknown_model() -> None:
+def test_build_flux_tube_geometry_rejects_missing_import_file_and_unknown_model() -> (
+    None
+):
     with pytest.raises(ValueError, match="geometry_file"):
         build_flux_tube_geometry(GeometryConfig(model="gx-netcdf"))
     with pytest.raises(ValueError, match="geometry.model"):
@@ -582,7 +694,9 @@ def test_build_flux_tube_geometry_rejects_missing_import_file_and_unknown_model(
 
 def test_twist_shift_params_slab_and_imported_geometry_branches() -> None:
     slab = SlabGeometry(s_hat=0.0)
-    jtwist, x0 = twist_shift_params(slab, GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, jtwist=0))
+    jtwist, x0 = twist_shift_params(
+        slab, GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, jtwist=0)
+    )
     assert jtwist == 1
     assert x0 == pytest.approx(6.0 / (2.0 * np.pi))
 
@@ -625,16 +739,34 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
     with Dataset(path, "w") as root:
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.array([1.0, 1.1, 1.2, 1.1, 1.0])
-        root.createVariable("gds2", "f8", ("z",))[:] = np.array([1.0, 1.5, 2.0, 1.5, 1.0])
-        root.createVariable("gds21", "f8", ("z",))[:] = np.array([-0.2, 0.0, 0.2, 0.0, -0.2])
+        root.createVariable("bmag", "f8", ("z",))[:] = np.array(
+            [1.0, 1.1, 1.2, 1.1, 1.0]
+        )
+        root.createVariable("gds2", "f8", ("z",))[:] = np.array(
+            [1.0, 1.5, 2.0, 1.5, 1.0]
+        )
+        root.createVariable("gds21", "f8", ("z",))[:] = np.array(
+            [-0.2, 0.0, 0.2, 0.0, -0.2]
+        )
         root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.4, 0.3])
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.4, 0.3])
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array([-0.1, 0.0, 0.1, 0.0, -0.1])
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array([-0.1, 0.0, 0.1, 0.0, -0.1])
-        root.createVariable("jacob", "f8", ("z",))[:] = np.array([2.0, 2.5, 3.0, 2.5, 2.0])
-        root.createVariable("grho", "f8", ("z",))[:] = np.array([1.0, 1.2, 1.4, 1.2, 1.0])
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array(
+            [0.3, 0.4, 0.5, 0.4, 0.3]
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array(
+            [0.3, 0.4, 0.5, 0.4, 0.3]
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array(
+            [-0.1, 0.0, 0.1, 0.0, -0.1]
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array(
+            [-0.1, 0.0, 0.1, 0.0, -0.1]
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.array(
+            [2.0, 2.5, 3.0, 2.5, 2.0]
+        )
+        root.createVariable("grho", "f8", ("z",))[:] = np.array(
+            [1.0, 1.2, 1.4, 1.2, 1.0]
+        )
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
         root.createVariable("drhodpsi", "f8", ())[:] = 1.0
         root.createVariable("q", "f8", ())[:] = 1.7
@@ -644,7 +776,9 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
         root.createVariable("scale", "f8", ())[:] = 2.0
         root.createVariable("nfp", "f8", ())[:] = 5.0
 
-    loaded = build_flux_tube_geometry(GeometryConfig(model=model, geometry_file=str(path)))
+    loaded = build_flux_tube_geometry(
+        GeometryConfig(model=model, geometry_file=str(path))
+    )
 
     assert not isinstance(loaded, (SAlphaGeometry, SlabGeometry))
     assert loaded.source_model == "gx-netcdf"
@@ -666,13 +800,25 @@ def test_ensure_flux_tube_geometry_data_trims_closed_imported_vmec_grid(tmp_path
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = bmag_val
-        root.createVariable("gds2", "f8", ("z",))[:] = np.array([1.0, 1.2, 1.4, 1.6, 1.8, 1.6, 1.4, 1.2, 1.0])
-        root.createVariable("gds21", "f8", ("z",))[:] = np.array([-0.2, -0.1, 0.0, 0.1, 0.2, 0.1, 0.0, -0.1, -0.2])
+        root.createVariable("gds2", "f8", ("z",))[:] = np.array(
+            [1.0, 1.2, 1.4, 1.6, 1.8, 1.6, 1.4, 1.2, 1.0]
+        )
+        root.createVariable("gds21", "f8", ("z",))[:] = np.array(
+            [-0.2, -0.1, 0.0, 0.1, 0.2, 0.1, 0.0, -0.1, -0.2]
+        )
         root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3])
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3])
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array([-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1])
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array([-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1])
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array(
+            [0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3]
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array(
+            [0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3]
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array(
+            [-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1]
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array(
+            [-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1]
+        )
         root.createVariable("jacob", "f8", ("z",))[:] = jacob_val
         root.createVariable("grho", "f8", ("z",))[:] = grho_val
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
@@ -682,7 +828,9 @@ def test_ensure_flux_tube_geometry_data_trims_closed_imported_vmec_grid(tmp_path
         root.createVariable("scale", "f8", ())[:] = 2.0
         root.createVariable("nfp", "f8", ())[:] = 5.0
 
-    geom = build_flux_tube_geometry(GeometryConfig(model="vmec-eik", geometry_file=str(path)))
+    geom = build_flux_tube_geometry(
+        GeometryConfig(model="vmec-eik", geometry_file=str(path))
+    )
     grid_cfg = apply_geometry_grid_defaults(
         geom,
         GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0),
@@ -765,7 +913,9 @@ def test_apply_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_pat
         root.createVariable("kxfac", "f8", ())[:] = 1.0
 
     geom = load_gx_geometry_netcdf(path)
-    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0)
+    grid = GridConfig(
+        Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0
+    )
     adjusted = apply_geometry_grid_defaults(geom, grid)
     jtwist, x0 = twist_shift_params(geom, adjusted)
 
@@ -775,7 +925,9 @@ def test_apply_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_pat
 
 def test_apply_geometry_grid_defaults_promotes_near_zero_shat_to_periodic():
     geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=1.0e-8))
-    grid = GridConfig(Nx=1, Ny=4, Nz=16, Lx=62.8, Ly=2.0 * np.pi * 100.0, boundary="linked", y0=100.0)
+    grid = GridConfig(
+        Nx=1, Ny=4, Nz=16, Lx=62.8, Ly=2.0 * np.pi * 100.0, boundary="linked", y0=100.0
+    )
 
     adjusted = apply_geometry_grid_defaults(geom, grid)
 
@@ -783,7 +935,9 @@ def test_apply_geometry_grid_defaults_promotes_near_zero_shat_to_periodic():
     assert adjusted.jtwist is None
 
 
-def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(tmp_path):
+def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(
+    tmp_path,
+):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
