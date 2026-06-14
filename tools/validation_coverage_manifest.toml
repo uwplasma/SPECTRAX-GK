@@ -1454,6 +1454,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_objective_core"
+path = "src/spectraxgk/solver_objective_core.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear gyrokinetic eigenvalue growth-rate and frequency objectives",
+  "mixing-length and quasilinear proxy construction from linear eigenmodes",
+]
+physics_contracts = [
+  "solver-objective vectors expose growth, frequency, effective kperp, heat/particle weights, and an explicitly scoped mixing-length proxy",
+  "growth-rate objectives use the same linear RHS operator materialized for branch-locality and finite-difference gates",
+]
+numerics_contracts = [
+  "linear operator materialization must match the growth-rate path exactly",
+  "selected ky rows and moment counts fail closed when outside the resolved grid",
+  "scalar objective aliases map to canonical objective-vector entries with length validation",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add objective-vector regression rows for additional ky and moment resolutions",
+  "add branch-audited quasilinear objective-vector checks before broad optimizer promotion",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_sampling"
 path = "src/spectraxgk/solver_objective_sampling.py"
 owner_lane = "production solver-objective geometry-gradient validation"

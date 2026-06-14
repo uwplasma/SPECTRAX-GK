@@ -15,6 +15,18 @@
   used by existing tests, while the new module isolates deterministic sampling
   contracts from gradient-report orchestration.
 
+- 2026-06-14: Continued the solver-objective refactor by moving core
+  linear/quasilinear objective constants and value evaluators into
+  `spectraxgk.solver_objective_core`. The unchanged
+  `spectraxgk.solver_objective_gradients` facade still re-exports
+  `SOLVER_OBJECTIVE_NAMES`, `SolverScalarObjective`,
+  `solver_growth_rate_from_geometry`,
+  `solver_linear_operator_matrix_from_geometry`,
+  `solver_objective_vector_from_geometry`, and
+  `solver_scalar_objective_from_vector`, preserving optimizer, tool, and
+  package-level imports while separating forward observables from VMEC/Boozer
+  finite-difference report orchestration.
+
 - 2026-06-14: Split the Cyclone benchmark-family runners
   (`run_cyclone_linear` and `run_cyclone_scan`) into
   `spectraxgk.benchmark_cyclone` behind the unchanged

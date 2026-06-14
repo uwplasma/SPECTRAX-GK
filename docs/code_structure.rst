@@ -87,8 +87,8 @@ Physics / Numerics / IO Map
      - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
-     - ``solver_objective_gradients.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``
-     - implicit eigenpair VJP, branch-locality, sampling-axis, finite-difference, and VMEC/Boozer gradient tests
+     - ``solver_objective_gradients.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``
+     - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, finite-difference, and VMEC/Boozer gradient tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``terms/nonlinear.py``
      - fixed-mode, diagnostics, collision-split, transport-window tests
@@ -128,6 +128,9 @@ Completed extractions:
   ``zonal_validation.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:
   ``solver_eigen_objectives.py``
+- core solver-objective constants plus value-level linear/quasilinear
+  observables:
+  ``solver_objective_core.py``
 - solver-objective sampling axes, physical-``ky`` grid mapping, and aggregate
   weights:
   ``solver_objective_sampling.py``

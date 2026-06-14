@@ -411,6 +411,23 @@ fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solver_objective_core"
+source_path = "src/spectraxgk/solver_objective_core.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "core solver-objective constants plus value-level linear growth, frequency, quasilinear weight, and mixing-length proxy evaluators"
+moved_exports = [
+  "SOLVER_OBJECTIVE_NAMES",
+  "SolverScalarObjective",
+  "solver_growth_rate_from_geometry",
+  "solver_linear_operator_matrix_from_geometry",
+  "solver_objective_vector_from_geometry",
+  "solver_scalar_objective_from_vector",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solver_objective_sampling"
 source_path = "src/spectraxgk/solver_objective_sampling.py"
 facade_module = "spectraxgk.solver_objective_gradients"

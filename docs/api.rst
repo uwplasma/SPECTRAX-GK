@@ -383,6 +383,12 @@ Solver Eigen Objectives
 .. automodule:: spectraxgk.solver_eigen_objectives
    :members:
 
+Solver Objective Core
+---------------------
+
+.. automodule:: spectraxgk.solver_objective_core
+   :members:
+
 Solver Objective Sampling
 -------------------------
 

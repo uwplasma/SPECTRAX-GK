@@ -133,7 +133,10 @@ High-Risk Module Split Plan
   live in ``solver_eigen_objectives.py`` and remain re-exported by the legacy
   solver-objective facade. Solver-objective sampling axes, physical-``ky`` grid
   construction, and aggregate weights now live in
-  ``solver_objective_sampling.py`` behind the same facade.
+  ``solver_objective_sampling.py`` behind the same facade. Core
+  linear/quasilinear objective constants, scalar selectors, operator
+  materialization, growth-rate, and objective-vector evaluators now live in
+  ``solver_objective_core.py``.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
