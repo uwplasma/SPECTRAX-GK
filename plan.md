@@ -1,3 +1,11 @@
+- 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
+  follow-up configuration dataclasses, JSON-safe metric parsing, replicate
+  metadata extraction, coefficient/control labeling, and paired-seed/control-
+  variate statistics helpers into `spectraxgk.nonlinear_gradient_followup_core`.
+  The existing `spectraxgk.nonlinear_gradient_followup` planner facade still
+  re-exports the moved names, and tests now assert object identity for the core
+  compatibility seam.
+
 - 2026-06-14: Continued the large-module refactor by moving nonlinear spectral
   parallelization primitives into `spectraxgk.nonlinear_parallel_spectral_core`.
   The split module now owns deterministic spectral test states, chunk/layout

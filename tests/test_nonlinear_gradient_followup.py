@@ -21,10 +21,35 @@ from spectraxgk.nonlinear_gradient_followup import (
     nonlinear_gradient_followup_plan,
     nonlinear_gradient_variance_reduction_plan,
 )
+import spectraxgk.nonlinear_gradient_followup as nonlinear_gradient_followup
+import spectraxgk.nonlinear_gradient_followup_core as nonlinear_gradient_followup_core
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "plan_nonlinear_gradient_followup.py"
+
+
+def test_nonlinear_gradient_followup_facade_reexports_core_helpers() -> None:
+    core_names = (
+        "NonlinearGradientCandidateDesignConfig",
+        "NonlinearGradientCompositeControlConfig",
+        "NonlinearGradientControlMeanGateConfig",
+        "NonlinearGradientControlVariateCampaignConfig",
+        "NonlinearGradientFollowupConfig",
+        "NonlinearGradientVarianceReductionConfig",
+        "_finite_float",
+        "_json_number",
+        "_metric",
+        "_nested_metric",
+        "_artifact_passed",
+        "_control_variate_candidate",
+    )
+
+    for name in core_names:
+        assert getattr(nonlinear_gradient_followup, name) is getattr(
+            nonlinear_gradient_followup_core,
+            name,
+        )
 
 
 def _load_tool_module():

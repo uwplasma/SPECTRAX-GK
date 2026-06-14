@@ -142,6 +142,9 @@ Completed extractions:
   spectral-core work models/RHS primitives:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,
   ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``
+- nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
+  variance-reduction helpers:
+  ``nonlinear_gradient_followup_core.py``
 - runtime artifact read/write and restart-append schema coverage:
   ``runtime_artifacts.py``
 

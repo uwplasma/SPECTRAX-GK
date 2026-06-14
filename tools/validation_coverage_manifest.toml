@@ -1455,6 +1455,40 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_core"
+path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "paired-seed and control-variate variance-reduction planning for finite-difference turbulence gradients",
+]
+physics_contracts = [
+  "follow-up core helpers classify nonlinear gradient artifacts for campaign planning only, not as production gradient evidence",
+  "replicate parsing and coefficient labeling preserve explicit state/control metadata for long-window turbulent-transport audits",
+]
+numerics_contracts = [
+  "JSON-safe metric extraction rejects nonfinite values before gate arithmetic",
+  "variance-reduction statistics require enough common samples and fail closed when control or response variance is degenerate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+  "docs/_static/nonlinear_gradient_composite_control_design.json",
+  "docs/_static/nonlinear_gradient_state_control_runbook.json",
+]
+next_tests = [
+  "add direct invalid-artifact tests for helper functions as more planners move out of the facade",
+  "record control-variate conditioning metadata in every promoted nonlinear-gradient campaign plan",
+]
+
+[[modules]]
 module = "spectraxgk.solver_eigen_objectives"
 path = "src/spectraxgk/solver_eigen_objectives.py"
 owner_lane = "production solver-objective geometry-gradient validation"

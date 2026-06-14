@@ -510,6 +510,28 @@ moved_exports = [
 fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_followup_core"
+source_path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
+facade_module = "spectraxgk.nonlinear_gradient_followup"
+status = "active"
+responsibility = "nonlinear turbulence-gradient follow-up configuration, JSON-safe metric parsing, replicate metadata extraction, and variance-reduction statistics helpers"
+moved_exports = [
+  "NonlinearGradientFollowupConfig",
+  "NonlinearGradientCandidateDesignConfig",
+  "NonlinearGradientVarianceReductionConfig",
+  "NonlinearGradientControlVariateCampaignConfig",
+  "_finite_float",
+  "_metric",
+  "_control_variate_candidate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

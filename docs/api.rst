@@ -200,6 +200,13 @@ Nonlinear Gradient Follow-Up
 .. automodule:: spectraxgk.nonlinear_gradient_followup
    :members:
 
+Nonlinear Gradient Follow-Up Core
+---------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_core
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 
