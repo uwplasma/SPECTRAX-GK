@@ -44,6 +44,15 @@ REQUIRED_LAYER_FIELDS = (
     "planned_packages",
     "extension_points",
 )
+REQUIRED_CONTRACT_MODULE_FIELDS = (
+    "module",
+    "source_path",
+    "status",
+    "responsibility",
+    "public_exports",
+    "fast_tests",
+    "doc_pages",
+)
 
 
 def _repo_path(raw: str) -> Path:
@@ -154,6 +163,47 @@ def _validate_layers(data: dict[str, Any]) -> list[dict[str, Any]]:
     return validated
 
 
+def _validate_phase1_contract_modules(data: dict[str, Any]) -> list[dict[str, Any]]:
+    contract_modules = data.get("phase1_contract_modules")
+    if not isinstance(contract_modules, list) or not contract_modules:
+        raise ValueError("manifest must contain [[phase1_contract_modules]] entries")
+    seen: set[str] = set()
+    validated: list[dict[str, Any]] = []
+    for raw in contract_modules:
+        if not isinstance(raw, dict):
+            raise ValueError("phase1 contract module entries must be TOML tables")
+        for field in REQUIRED_CONTRACT_MODULE_FIELDS:
+            if field not in raw:
+                module = raw.get("module", "<unknown>")
+                raise ValueError(f"{module}: missing required phase1 field {field}")
+        module = _as_nonempty_string(raw.get("module"), "module", "phase1_contract_modules")
+        if module in seen:
+            raise ValueError(f"duplicate phase1 contract module: {module}")
+        seen.add(module)
+        if not module.startswith("spectraxgk."):
+            raise ValueError(f"{module}: module must start with spectraxgk.")
+        source_path = _as_nonempty_string(raw.get("source_path"), "source_path", module)
+        source = _repo_path(source_path)
+        if not source.exists() or not source.is_file():
+            raise ValueError(f"{module}: source path does not exist: {source_path}")
+        status = _as_nonempty_string(raw.get("status"), "status", module)
+        if status not in ALLOWED_STATUSES:
+            raise ValueError(f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}")
+        _as_nonempty_string(raw.get("responsibility"), "responsibility", module)
+        for field in ("public_exports", "fast_tests", "doc_pages"):
+            _as_nonempty_list(raw.get(field), field, module)
+        for test_path in raw["fast_tests"]:
+            test = _repo_path(test_path)
+            if not test.exists() or not test.is_file():
+                raise ValueError(f"{module}: fast test does not exist: {test_path}")
+        for doc_page in raw["doc_pages"]:
+            doc = _repo_path(doc_page)
+            if not doc.exists() or not doc.is_file():
+                raise ValueError(f"{module}: doc page does not exist: {doc_page}")
+        validated.append(raw)
+    return validated
+
+
 def _validate_hotspots(data: dict[str, Any]) -> list[dict[str, Any]]:
     hotspots = data.get("hotspots")
     if not isinstance(hotspots, list) or not hotspots:
@@ -217,6 +267,7 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
     acceptance = _validate_global_acceptance(data)
     _validate_validation_policy(data)
     layers = _validate_layers(data)
+    contract_modules = _validate_phase1_contract_modules(data)
     hotspots = _validate_hotspots(data)
     high_risk_modules = {row["module"] for row in hotspots}
     required_hotspots = {
@@ -238,7 +289,9 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
         "status": metadata["status"],
         "required_package_coverage_percent": float(acceptance["required_package_coverage_percent"]),
         "n_architecture_layers": len(layers),
+        "n_phase1_contract_modules": len(contract_modules),
         "n_hotspots": len(hotspots),
+        "phase1_contract_modules": sorted(row["module"] for row in contract_modules),
         "hotspot_modules": sorted(high_risk_modules),
     }
 

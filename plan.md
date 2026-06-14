@@ -1709,3 +1709,12 @@ No long nonlinear audit should be launched from these candidates.
   page that freezes the target package layout, extension points, public
   compatibility facade policy, JAX autodiff policy, parity/literature gates, and
   acceptance criteria before behavior-changing refactors begin.
+- Began Phase 1 of that refactor with behavior-preserving core contracts:
+  ``spectraxgk.core.contracts`` declares shape, differentiability,
+  validation-gate, extension-point, and module-refactor contracts, while
+  ``spectraxgk.core.extension_points`` declares structural protocols for basis,
+  geometry, collision, field-solver, RHS, diagnostic, objective, and artifact
+  writer extensions. The validation coverage manifest now owns these modules,
+  the differentiable refactor manifest validates them explicitly, and
+  ``tests/test_core_contracts.py`` exercises both valid and invalid metadata
+  paths with 99% coverage for the new core package.

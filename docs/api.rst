@@ -1,6 +1,18 @@
 API Reference
 =============
 
+Core Refactor Contracts
+-----------------------
+
+.. automodule:: spectraxgk.core.contracts
+   :members:
+
+Core Extension Points
+---------------------
+
+.. automodule:: spectraxgk.core.extension_points
+   :members:
+
 Basis
 -----
 

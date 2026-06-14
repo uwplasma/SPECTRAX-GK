@@ -10,10 +10,44 @@ require_all_package_modules_owned = true
 excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
+  "spectraxgk.core.__init__",
   "spectraxgk.from_gx.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
+]
+
+[[modules]]
+module = "spectraxgk.core.contracts"
+path = "src/spectraxgk/core/contracts.py"
+owned_modules = [
+  "spectraxgk.core.extension_points",
+]
+owner_lane = "differentiable refactor contracts and community extension-point protocols"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "JAX PyTree/static-dynamic transform contracts",
+  "PEP 257 and scientific-code public API documentation conventions",
+]
+physics_contracts = [
+  "extension points make physics model boundaries explicit before adding new collisions, bases, field solvers, geometry providers, or diagnostics",
+  "refactor contracts preserve validation gates and public facades before numerical kernels are moved",
+]
+numerics_contracts = [
+  "differentiability contracts separate static model choices from traced array arguments",
+  "validation-gate contracts require evidence paths before refactor claims are promoted",
+]
+fast_tests = [
+  "tests/test_core_contracts.py",
+]
+artifact_paths = [
+  "tools/differentiable_refactor_manifest.toml",
+]
+next_tests = [
+  "instantiate contracts from the differentiable refactor manifest rows",
+  "add import-identity tests when the first compatibility facade starts forwarding to split modules",
 ]
 
 [[modules]]

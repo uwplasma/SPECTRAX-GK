@@ -177,6 +177,11 @@ The next differentiable architecture refactor has a separate executable plan in
 points, public compatibility facades, and physics/autodiff/parity gates that
 must be declared before large modules are split.
 
+The first behavior-preserving contract modules are ``spectraxgk.core.contracts``
+and ``spectraxgk.core.extension_points``. They introduce typed refactor,
+validation-gate, differentiability, and extension-point protocols without
+moving solver kernels or changing public numerical behavior.
+
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append
 contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted

@@ -161,7 +161,9 @@ Phase 0: freeze contracts
 Phase 1: introduce protocols and containers
   Add small protocol/dataclass modules for basis families, geometry providers,
   collision operators, field solvers, RHS assembly, diagnostics, objective
-  reports, and artifact schemas. Avoid behavior changes.
+  reports, and artifact schemas. Avoid behavior changes. The first Phase-1
+  tranche now lives in ``spectraxgk.core.contracts`` and
+  ``spectraxgk.core.extension_points``.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and

@@ -76,6 +76,40 @@ responsibility = "runtime, scans, optimization scripts, plotting, CLI command pl
 planned_packages = ["spectraxgk.workflows", "spectraxgk.cli"]
 extension_points = ["RuntimeWorkflow", "OptimizationWorkflow", "PlotWorkflow", "ProgressReporter"]
 
+[[phase1_contract_modules]]
+module = "spectraxgk.core.contracts"
+source_path = "src/spectraxgk/core/contracts.py"
+status = "active"
+responsibility = "typed refactor, validation-gate, JAX-transform, shape, and extension-point contracts"
+public_exports = [
+  "ShapeContract",
+  "DifferentiabilityContract",
+  "ValidationGateContract",
+  "ExtensionPointContract",
+  "ModuleRefactorContract",
+]
+fast_tests = ["tests/test_core_contracts.py"]
+doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
+
+[[phase1_contract_modules]]
+module = "spectraxgk.core.extension_points"
+source_path = "src/spectraxgk/core/extension_points.py"
+status = "active"
+responsibility = "structural protocols for basis, geometry, collision, field-solver, RHS, diagnostic, objective, and artifact extension points"
+public_exports = [
+  "BasisFamily",
+  "GeometryProvider",
+  "CollisionOperator",
+  "FieldSolver",
+  "LinearRHS",
+  "NonlinearRHS",
+  "Diagnostic",
+  "Objective",
+  "ArtifactWriter",
+]
+fast_tests = ["tests/test_core_contracts.py"]
+doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
