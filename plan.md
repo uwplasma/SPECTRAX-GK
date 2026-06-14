@@ -1,3 +1,11 @@
+- 2026-06-14: Split the Cyclone benchmark-family runners
+  (`run_cyclone_linear` and `run_cyclone_scan`) into
+  `spectraxgk.benchmark_cyclone` behind the unchanged
+  `spectraxgk.benchmarks` public facade. This turns `benchmarks.py` into a
+  small compatibility facade for benchmark constants, helper exports, config
+  classes, and public runners while preserving legacy imports such as
+  `ModeSelection`, `ExplicitTimeConfig`, and `KrylovConfig`.
+
 - 2026-06-14: Split the ETG benchmark-family runners (`run_etg_linear` and
   `run_etg_scan`) into `spectraxgk.benchmark_etg` behind the unchanged
   `spectraxgk.benchmarks` public facade. ETG branch tests now patch the
