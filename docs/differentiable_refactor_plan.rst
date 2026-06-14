@@ -169,7 +169,11 @@ Phase 1: introduce protocols and containers
   construction and ``spectraxgk.benchmark_reference`` owns reference containers
   and CSV loaders. ``spectraxgk.benchmark_species`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
-  with ``spectraxgk.benchmark_helpers`` retaining object-identical re-exports.
+  ``spectraxgk.benchmark_fit_signals`` owns fit-signal and diagnostic
+  normalization policies, ``spectraxgk.benchmark_batching`` owns scan batching
+  and streaming windows, and ``spectraxgk.benchmark_solver_policy`` owns
+  branch-selection policies. ``spectraxgk.benchmark_helpers`` retains
+  object-identical re-exports.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and

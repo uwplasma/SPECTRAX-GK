@@ -1732,3 +1732,10 @@ No long nonlinear audit should be launched from these candidates.
   linked-end damping policy. ``spectraxgk.benchmark_helpers`` continues to
   provide object-identical re-exports, and the manifest now tracks three
   implemented Phase-1 split modules for benchmark helpers.
+- Completed the benchmark-helper Phase-1 split by reducing
+  ``spectraxgk.benchmark_helpers`` to a compatibility facade. Fit-signal and
+  normalization policies now live in ``spectraxgk.benchmark_fit_signals``, scan
+  batching/window helpers live in ``spectraxgk.benchmark_batching``, and
+  solver-selection/KBM branch policies live in
+  ``spectraxgk.benchmark_solver_policy``. Import-identity tests now cover every
+  moved helper symbol before any benchmark-family runner is extracted.

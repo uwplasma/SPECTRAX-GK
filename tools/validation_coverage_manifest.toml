@@ -813,8 +813,11 @@ next_tests = [
 module = "spectraxgk.benchmark_helpers"
 path = "src/spectraxgk/benchmark_helpers.py"
 owned_modules = [
+  "spectraxgk.benchmark_batching",
+  "spectraxgk.benchmark_fit_signals",
   "spectraxgk.benchmark_initialization",
   "spectraxgk.benchmark_reference",
+  "spectraxgk.benchmark_solver_policy",
   "spectraxgk.benchmark_species",
 ]
 owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"

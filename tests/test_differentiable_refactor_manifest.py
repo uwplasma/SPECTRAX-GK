@@ -25,13 +25,16 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     assert summary["required_package_coverage_percent"] >= 95.0
     assert summary["n_architecture_layers"] >= 8
     assert summary["n_phase1_contract_modules"] >= 2
-    assert summary["n_phase1_split_modules"] >= 3
+    assert summary["n_phase1_split_modules"] >= 6
     assert summary["n_hotspots"] >= 9
     assert "spectraxgk.core.contracts" in summary["phase1_contract_modules"]
     assert "spectraxgk.core.extension_points" in summary["phase1_contract_modules"]
     assert "spectraxgk.benchmark_initialization" in summary["phase1_split_modules"]
     assert "spectraxgk.benchmark_reference" in summary["phase1_split_modules"]
     assert "spectraxgk.benchmark_species" in summary["phase1_split_modules"]
+    assert "spectraxgk.benchmark_fit_signals" in summary["phase1_split_modules"]
+    assert "spectraxgk.benchmark_batching" in summary["phase1_split_modules"]
+    assert "spectraxgk.benchmark_solver_policy" in summary["phase1_split_modules"]
     for module in (
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",

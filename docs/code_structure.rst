@@ -187,8 +187,12 @@ The first benchmark-helper split keeps ``spectraxgk.benchmark_helpers`` and
 responsibilities into ``spectraxgk.benchmark_initialization`` and
 ``spectraxgk.benchmark_reference``. Benchmark species-to-``LinearParams``
 construction and reference hypercollision/end-damping policy live in
-``spectraxgk.benchmark_species``. Import-identity tests pin the old helper
-symbols to the new modules before larger benchmark-family runners are moved.
+``spectraxgk.benchmark_species``. Fit-signal selection, scan batching, and
+solver-selection policies live in ``spectraxgk.benchmark_fit_signals``,
+``spectraxgk.benchmark_batching``, and
+``spectraxgk.benchmark_solver_policy``. Import-identity tests pin the old
+helper symbols to the new modules before larger benchmark-family runners are
+moved.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

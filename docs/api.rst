@@ -135,6 +135,27 @@ Benchmark Initialization
    :members:
    :private-members:
 
+Benchmark Fit Signals
+---------------------
+
+.. automodule:: spectraxgk.benchmark_fit_signals
+   :members:
+   :private-members:
+
+Benchmark Batching
+------------------
+
+.. automodule:: spectraxgk.benchmark_batching
+   :members:
+   :private-members:
+
+Benchmark Solver Policies
+-------------------------
+
+.. automodule:: spectraxgk.benchmark_solver_policy
+   :members:
+   :private-members:
+
 Benchmark Reference Data
 ------------------------
 
