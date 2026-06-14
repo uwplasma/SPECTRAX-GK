@@ -182,6 +182,12 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
+The first benchmark-helper split keeps ``spectraxgk.benchmark_helpers`` and
+``spectraxgk.benchmarks`` as compatibility facades while moving narrow helper
+responsibilities into ``spectraxgk.benchmark_initialization`` and
+``spectraxgk.benchmark_reference``. Import-identity tests pin the old helper
+symbols to the new modules before larger benchmark-family runners are moved.
+
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append
 contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted

@@ -128,6 +128,20 @@ Benchmarks
 .. automodule:: spectraxgk.benchmarks
    :members:
 
+Benchmark Initialization
+------------------------
+
+.. automodule:: spectraxgk.benchmark_initialization
+   :members:
+   :private-members:
+
+Benchmark Reference Data
+------------------------
+
+.. automodule:: spectraxgk.benchmark_reference
+   :members:
+   :private-members:
+
 Benchmark Defaults
 ------------------
 

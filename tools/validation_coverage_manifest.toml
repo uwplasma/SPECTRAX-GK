@@ -812,6 +812,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.benchmark_helpers"
 path = "src/spectraxgk/benchmark_helpers.py"
+owned_modules = [
+  "spectraxgk.benchmark_initialization",
+  "spectraxgk.benchmark_reference",
+]
 owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"
 status = "active"
 coverage_priority = "medium"

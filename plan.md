@@ -1718,3 +1718,11 @@ No long nonlinear audit should be launched from these candidates.
   the differentiable refactor manifest validates them explicitly, and
   ``tests/test_core_contracts.py`` exercises both valid and invalid metadata
   paths with 99% coverage for the new core package.
+- Continued Phase 1 of the differentiable architecture refactor with the first
+  behavior-preserving benchmark-helper split. ``spectraxgk.benchmark_initialization``
+  now owns benchmark Gaussian/moment initial-condition builders and the kinetic
+  reference seed policy; ``spectraxgk.benchmark_reference`` now owns benchmark
+  result containers, reference-table loaders, and reference comparison records.
+  ``spectraxgk.benchmark_helpers`` remains the compatibility facade with
+  object-identical re-exports, and the refactor manifest now validates these
+  implemented split modules with source paths, moved exports, tests, and docs.

@@ -110,6 +110,44 @@ public_exports = [
 fast_tests = ["tests/test_core_contracts.py"]
 doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.benchmark_initialization"
+source_path = "src/spectraxgk/benchmark_initialization.py"
+facade_module = "spectraxgk.benchmark_helpers"
+status = "active"
+responsibility = "benchmark Gaussian and moment initial-condition builders plus kinetic-reference seed policy"
+moved_exports = [
+  "_build_gaussian_profile",
+  "_build_initial_condition",
+  "_kinetic_reference_init_cfg",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.benchmark_reference"
+source_path = "src/spectraxgk/benchmark_reference.py"
+facade_module = "spectraxgk.benchmark_helpers"
+status = "active"
+responsibility = "benchmark result containers, reference-table loaders, and reference comparison records"
+moved_exports = [
+  "CycloneComparison",
+  "CycloneReference",
+  "CycloneRunResult",
+  "CycloneScanResult",
+  "LinearRunResult",
+  "LinearScanResult",
+  "_load_reference_with_header",
+  "compare_cyclone_to_reference",
+  "load_cyclone_reference",
+  "load_cyclone_reference_kinetic",
+  "load_etg_reference",
+  "load_kbm_reference",
+  "load_tem_reference",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

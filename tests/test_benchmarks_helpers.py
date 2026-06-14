@@ -6,6 +6,9 @@ import numpy as np
 import pytest
 
 from spectraxgk.analysis import ModeSelection
+import spectraxgk.benchmark_helpers as benchmark_helpers
+import spectraxgk.benchmark_initialization as benchmark_initialization
+import spectraxgk.benchmark_reference as benchmark_reference
 from spectraxgk.benchmark_helpers import (
     CycloneReference,
     CycloneRunResult,
@@ -102,6 +105,34 @@ def test_reference_loaders_return_data() -> None:
         assert ref.gamma.shape == ref.omega.shape == ref.ky.shape
 
 
+def test_split_benchmark_helper_reexports_preserve_public_import_identity() -> None:
+    assert (
+        benchmark_helpers._build_gaussian_profile
+        is benchmark_initialization._build_gaussian_profile
+    )
+    assert (
+        benchmark_helpers._build_initial_condition
+        is benchmark_initialization._build_initial_condition
+    )
+    assert (
+        benchmark_helpers._kinetic_reference_init_cfg
+        is benchmark_initialization._kinetic_reference_init_cfg
+    )
+    assert benchmark_helpers.CycloneReference is benchmark_reference.CycloneReference
+    assert benchmark_helpers.CycloneRunResult is benchmark_reference.CycloneRunResult
+    assert benchmark_helpers.CycloneScanResult is benchmark_reference.CycloneScanResult
+    assert benchmark_helpers.LinearRunResult is benchmark_reference.LinearRunResult
+    assert benchmark_helpers.LinearScanResult is benchmark_reference.LinearScanResult
+    assert (
+        benchmark_helpers.load_cyclone_reference
+        is benchmark_reference.load_cyclone_reference
+    )
+    assert (
+        benchmark_helpers.compare_cyclone_to_reference
+        is benchmark_reference.compare_cyclone_to_reference
+    )
+
+
 def test_checked_in_references_keep_literature_scale_and_sign_conventions() -> None:
     cyclone = load_cyclone_reference()
     kinetic = load_cyclone_reference_kinetic()
@@ -149,7 +180,7 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
             return data_dir / parts[-1]
 
     monkeypatch.setattr(
-        "spectraxgk.benchmark_helpers.resources.files", lambda _pkg: FakeFiles()
+        "spectraxgk.benchmark_reference.resources.files", lambda _pkg: FakeFiles()
     )
     ref = _load_reference_with_header("demo.csv")
     np.testing.assert_allclose(ref.ky, [0.1])
@@ -270,8 +301,12 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
             return 0.1, 0.2, 0.3
         return 0.4, 0.5, 0.8
 
-    monkeypatch.setattr("spectraxgk.benchmark_helpers.extract_mode_time_series", fake_extract)
-    monkeypatch.setattr("spectraxgk.benchmark_helpers._score_fit_signal_auto", fake_score)
+    monkeypatch.setattr(
+        "spectraxgk.benchmark_helpers.extract_mode_time_series", fake_extract
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmark_helpers._score_fit_signal_auto", fake_score
+    )
     signal, name, gamma, omega = _select_fit_signal_auto(
         np.array([0.0, 1.0, 2.0]),
         phi_t,

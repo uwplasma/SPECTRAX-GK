@@ -53,6 +53,16 @@ REQUIRED_CONTRACT_MODULE_FIELDS = (
     "fast_tests",
     "doc_pages",
 )
+REQUIRED_SPLIT_MODULE_FIELDS = (
+    "module",
+    "source_path",
+    "facade_module",
+    "status",
+    "responsibility",
+    "moved_exports",
+    "fast_tests",
+    "doc_pages",
+)
 
 
 def _repo_path(raw: str) -> Path:
@@ -112,10 +122,14 @@ def _validate_global_acceptance(data: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("manifest must contain [global_acceptance]")
     coverage = acceptance.get("required_package_coverage_percent")
     if not isinstance(coverage, (int, float)) or not 0 < float(coverage) <= 100:
-        raise ValueError("global_acceptance.required_package_coverage_percent must be in (0, 100]")
+        raise ValueError(
+            "global_acceptance.required_package_coverage_percent must be in (0, 100]"
+        )
     budget = acceptance.get("max_fast_test_budget_seconds")
     if not isinstance(budget, int) or budget <= 0:
-        raise ValueError("global_acceptance.max_fast_test_budget_seconds must be positive")
+        raise ValueError(
+            "global_acceptance.max_fast_test_budget_seconds must be positive"
+        )
     for field in (
         "require_public_api_facades",
         "require_reference_adapter_isolation",
@@ -176,7 +190,9 @@ def _validate_phase1_contract_modules(data: dict[str, Any]) -> list[dict[str, An
             if field not in raw:
                 module = raw.get("module", "<unknown>")
                 raise ValueError(f"{module}: missing required phase1 field {field}")
-        module = _as_nonempty_string(raw.get("module"), "module", "phase1_contract_modules")
+        module = _as_nonempty_string(
+            raw.get("module"), "module", "phase1_contract_modules"
+        )
         if module in seen:
             raise ValueError(f"duplicate phase1 contract module: {module}")
         seen.add(module)
@@ -188,9 +204,61 @@ def _validate_phase1_contract_modules(data: dict[str, Any]) -> list[dict[str, An
             raise ValueError(f"{module}: source path does not exist: {source_path}")
         status = _as_nonempty_string(raw.get("status"), "status", module)
         if status not in ALLOWED_STATUSES:
-            raise ValueError(f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}")
+            raise ValueError(
+                f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}"
+            )
         _as_nonempty_string(raw.get("responsibility"), "responsibility", module)
         for field in ("public_exports", "fast_tests", "doc_pages"):
+            _as_nonempty_list(raw.get(field), field, module)
+        for test_path in raw["fast_tests"]:
+            test = _repo_path(test_path)
+            if not test.exists() or not test.is_file():
+                raise ValueError(f"{module}: fast test does not exist: {test_path}")
+        for doc_page in raw["doc_pages"]:
+            doc = _repo_path(doc_page)
+            if not doc.exists() or not doc.is_file():
+                raise ValueError(f"{module}: doc page does not exist: {doc_page}")
+        validated.append(raw)
+    return validated
+
+
+def _validate_phase1_split_modules(data: dict[str, Any]) -> list[dict[str, Any]]:
+    split_modules = data.get("phase1_split_modules", [])
+    if not isinstance(split_modules, list):
+        raise ValueError("phase1_split_modules must be a TOML array when present")
+    seen: set[str] = set()
+    validated: list[dict[str, Any]] = []
+    for raw in split_modules:
+        if not isinstance(raw, dict):
+            raise ValueError("phase1 split module entries must be TOML tables")
+        for field in REQUIRED_SPLIT_MODULE_FIELDS:
+            if field not in raw:
+                module = raw.get("module", "<unknown>")
+                raise ValueError(
+                    f"{module}: missing required phase1 split field {field}"
+                )
+        module = _as_nonempty_string(
+            raw.get("module"), "module", "phase1_split_modules"
+        )
+        if module in seen:
+            raise ValueError(f"duplicate phase1 split module: {module}")
+        seen.add(module)
+        if not module.startswith("spectraxgk."):
+            raise ValueError(f"{module}: module must start with spectraxgk.")
+        source_path = _as_nonempty_string(raw.get("source_path"), "source_path", module)
+        source = _repo_path(source_path)
+        if not source.exists() or not source.is_file():
+            raise ValueError(f"{module}: source path does not exist: {source_path}")
+        facade = _as_nonempty_string(raw.get("facade_module"), "facade_module", module)
+        if not facade.startswith("spectraxgk."):
+            raise ValueError(f"{module}: facade_module must start with spectraxgk.")
+        status = _as_nonempty_string(raw.get("status"), "status", module)
+        if status not in ALLOWED_STATUSES:
+            raise ValueError(
+                f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}"
+            )
+        _as_nonempty_string(raw.get("responsibility"), "responsibility", module)
+        for field in ("moved_exports", "fast_tests", "doc_pages"):
             _as_nonempty_list(raw.get(field), field, module)
         for test_path in raw["fast_tests"]:
             test = _repo_path(test_path)
@@ -229,15 +297,21 @@ def _validate_hotspots(data: dict[str, Any]) -> list[dict[str, Any]]:
             raise ValueError(f"{module}: source path does not exist: {source_path}")
         if not resolved_source.is_file():
             raise ValueError(f"{module}: source path must be a file: {source_path}")
-        public_facade = _as_nonempty_string(raw.get("public_facade"), "public_facade", module)
+        public_facade = _as_nonempty_string(
+            raw.get("public_facade"), "public_facade", module
+        )
         if public_facade != module:
-            raise ValueError(f"{module}: public_facade must match module for compatibility planning")
+            raise ValueError(
+                f"{module}: public_facade must match module for compatibility planning"
+            )
         line_target = raw.get("line_target")
         if not isinstance(line_target, int) or line_target <= 0:
             raise ValueError(f"{module}: line_target must be a positive integer")
         status = _as_nonempty_string(raw.get("status"), "status", module)
         if status not in ALLOWED_STATUSES:
-            raise ValueError(f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}")
+            raise ValueError(
+                f"{module}: status must be one of {sorted(ALLOWED_STATUSES)}"
+            )
         for field in (
             "target_packages",
             "existing_fast_tests",
@@ -251,11 +325,15 @@ def _validate_hotspots(data: dict[str, Any]) -> list[dict[str, Any]]:
         for test_path in raw["existing_fast_tests"]:
             resolved_test = _repo_path(test_path)
             if not resolved_test.exists() or not resolved_test.is_file():
-                raise ValueError(f"{module}: existing fast test does not exist: {test_path}")
+                raise ValueError(
+                    f"{module}: existing fast test does not exist: {test_path}"
+                )
             try:
                 resolved_test.relative_to((REPO_ROOT / "tests").resolve())
             except ValueError as exc:
-                raise ValueError(f"{module}: existing fast test must live under tests/: {test_path}") from exc
+                raise ValueError(
+                    f"{module}: existing fast test must live under tests/: {test_path}"
+                ) from exc
         validated.append(raw)
     return validated
 
@@ -268,6 +346,7 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
     _validate_validation_policy(data)
     layers = _validate_layers(data)
     contract_modules = _validate_phase1_contract_modules(data)
+    split_modules = _validate_phase1_split_modules(data)
     hotspots = _validate_hotspots(data)
     high_risk_modules = {row["module"] for row in hotspots}
     required_hotspots = {
@@ -287,11 +366,15 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "title": metadata["title"],
         "status": metadata["status"],
-        "required_package_coverage_percent": float(acceptance["required_package_coverage_percent"]),
+        "required_package_coverage_percent": float(
+            acceptance["required_package_coverage_percent"]
+        ),
         "n_architecture_layers": len(layers),
         "n_phase1_contract_modules": len(contract_modules),
+        "n_phase1_split_modules": len(split_modules),
         "n_hotspots": len(hotspots),
         "phase1_contract_modules": sorted(row["module"] for row in contract_modules),
+        "phase1_split_modules": sorted(row["module"] for row in split_modules),
         "hotspot_modules": sorted(high_risk_modules),
     }
 
@@ -303,7 +386,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     summary = validate_manifest(load_manifest(args.manifest))
     if args.out_json:
-        args.out_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.out_json.write_text(
+            json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     else:
         print(json.dumps(summary, indent=2, sort_keys=True))
     return 0

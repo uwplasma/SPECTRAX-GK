@@ -9,7 +9,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def _load_tool_module():
     path = REPO_ROOT / "tools" / "check_differentiable_refactor_manifest.py"
-    spec = importlib.util.spec_from_file_location("check_differentiable_refactor_manifest", path)
+    spec = importlib.util.spec_from_file_location(
+        "check_differentiable_refactor_manifest", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -23,9 +25,12 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     assert summary["required_package_coverage_percent"] >= 95.0
     assert summary["n_architecture_layers"] >= 8
     assert summary["n_phase1_contract_modules"] >= 2
+    assert summary["n_phase1_split_modules"] >= 2
     assert summary["n_hotspots"] >= 9
     assert "spectraxgk.core.contracts" in summary["phase1_contract_modules"]
     assert "spectraxgk.core.extension_points" in summary["phase1_contract_modules"]
+    assert "spectraxgk.benchmark_initialization" in summary["phase1_split_modules"]
+    assert "spectraxgk.benchmark_reference" in summary["phase1_split_modules"]
     for module in (
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",
@@ -40,7 +45,9 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
         assert module in summary["hotspot_modules"]
 
 
-def test_differentiable_refactor_manifest_main_writes_summary_json(tmp_path: Path) -> None:
+def test_differentiable_refactor_manifest_main_writes_summary_json(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     out_json = tmp_path / "summary.json"
     assert mod.main(["--out-json", str(out_json)]) == 0
