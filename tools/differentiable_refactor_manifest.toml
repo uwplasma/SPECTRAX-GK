@@ -333,6 +333,18 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_tensor_mapping"
+source_path = "src/spectraxgk/geometry/vmec_tensor_mapping.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "direct vmec_jax tensor sampling and conversion into the solver-ready flux-tube mapping contract"
+moved_exports = [
+  "vmec_jax_flux_tube_mapping_from_state",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

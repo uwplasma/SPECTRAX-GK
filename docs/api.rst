@@ -79,6 +79,13 @@ Differentiable VMEC-State Sensitivity
    :members:
    :private-members:
 
+Differentiable VMEC Tensor Mapping
+----------------------------------
+
+.. automodule:: spectraxgk.geometry.vmec_tensor_mapping
+   :members:
+   :private-members:
+
 Differentiable Geometry Numerics
 --------------------------------
 

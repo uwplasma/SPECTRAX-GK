@@ -1787,3 +1787,10 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.geometry.differentiable`` keeps public wrappers that preserve
   facade-level monkeypatch hooks for backend discovery, finite-difference
   checks, geometry sensitivity reports, Boozer mapping, and periodic sampling.
+- Continued the differentiable-geometry split by moving direct ``vmec_jax``
+  tensor sampling into ``spectraxgk.geometry.vmec_tensor_mapping``. The new
+  module owns ``vmec_jax_flux_tube_mapping_from_state`` and converts raw VMEC
+  metric, magnetic-field, shear, drift, and Jacobian tensors into the
+  solver-ready flux-tube mapping contract. The compatibility facade retains a
+  wrapper that forwards the facade-level periodic sampler hook into the focused
+  implementation.
