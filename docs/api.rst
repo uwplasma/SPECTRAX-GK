@@ -207,6 +207,13 @@ Nonlinear Gradient Follow-Up Core
    :members:
    :private-members:
 
+Nonlinear Gradient Evidence Core
+--------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_evidence_core
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 

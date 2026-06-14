@@ -1,4 +1,12 @@
 - 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
+  the claim-boundary scope markers, acceptance config dataclasses, JSON-safe
+  metric parsing, replicated finite-difference helpers, and gradient
+  conditioning summary into `spectraxgk.nonlinear_gradient_evidence_core`.
+  The public `spectraxgk.nonlinear_gradient_evidence` facade still re-exports
+  the moved names used by existing tools, and tests now assert facade/core
+  object identity for the production-scope and finite-difference gate seams.
+
+- 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
   follow-up configuration dataclasses, JSON-safe metric parsing, replicate
   metadata extraction, coefficient/control labeling, and paired-seed/control-
   variate statistics helpers into `spectraxgk.nonlinear_gradient_followup_core`.

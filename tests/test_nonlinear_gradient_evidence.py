@@ -8,6 +8,8 @@ import sys
 import numpy as np
 import pytest
 
+import spectraxgk.nonlinear_gradient_evidence as evidence
+import spectraxgk.nonlinear_gradient_evidence_core as evidence_core
 from spectraxgk.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
@@ -35,6 +37,25 @@ CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign
 RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py"
 BRACKET_SCRIPT = ROOT / "tools" / "summarize_nonlinear_gradient_bracket_sweep.py"
 
+
+
+
+def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
+    assert evidence.NON_PRODUCTION_SCOPE_MARKERS is evidence_core.NON_PRODUCTION_SCOPE_MARKERS
+    assert (
+        evidence.NonlinearTurbulenceGradientEvidenceConfig
+        is evidence_core.NonlinearTurbulenceGradientEvidenceConfig
+    )
+    assert (
+        evidence.NonlinearTurbulenceGradientFiniteDifferenceConfig
+        is evidence_core.NonlinearTurbulenceGradientFiniteDifferenceConfig
+    )
+    assert evidence._gate is evidence_core._gate
+    assert evidence._json_number is evidence_core._json_number
+    assert (
+        evidence._gradient_conditioning_summary
+        is evidence_core._gradient_conditioning_summary
+    )
 
 def _load_tool_module():
     spec = importlib.util.spec_from_file_location("check_nonlinear_turbulence_gradient_evidence", SCRIPT)

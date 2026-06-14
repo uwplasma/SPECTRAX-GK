@@ -532,6 +532,29 @@ fast_tests = [
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_core"
+source_path = "src/spectraxgk/nonlinear_gradient_evidence_core.py"
+facade_module = "spectraxgk.nonlinear_gradient_evidence"
+status = "active"
+responsibility = "nonlinear turbulence-gradient evidence scope markers, acceptance config dataclasses, JSON-safe metric parsing, and finite-difference conditioning helpers"
+moved_exports = [
+  "NON_PRODUCTION_SCOPE_MARKERS",
+  "PRODUCTION_SCOPE_MARKERS",
+  "NonlinearTurbulenceGradientEvidenceConfig",
+  "NonlinearTurbulenceGradientGapConfig",
+  "NonlinearTurbulenceGradientFiniteDifferenceConfig",
+  "NonlinearTurbulenceGradientCandidateRankingConfig",
+  "NonlinearTurbulenceGradientBracketSweepConfig",
+  "_json_number",
+  "_finite_float",
+  "_gate",
+  "_artifact_passed",
+  "_gradient_conditioning_summary",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

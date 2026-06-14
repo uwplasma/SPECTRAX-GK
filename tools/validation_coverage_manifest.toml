@@ -1455,6 +1455,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_core"
+path = "src/spectraxgk/nonlinear_gradient_evidence_core.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "finite-difference conditioning checks for nonlinear turbulence-gradient claims",
+]
+physics_contracts = [
+  "non-production markers classify startup, pilot, reduced-window, and estimator artifacts as non-promotable evidence",
+  "production nonlinear turbulence-gradient evidence requires explicit long-window scope before downstream reports can promote it",
+]
+numerics_contracts = [
+  "JSON-safe metric extraction rejects booleans, missing values, and nonfinite values before gate arithmetic",
+  "finite-difference conditioning summaries require finite response, asymmetry, condition number, and uncertainty metrics before passing",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add direct core-only tests for malformed gradient payloads with nonfinite JSON-compatible values",
+  "add a regression that production markers plus non-production blockers fail closed when both appear in one artifact",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_gradient_followup_core"
 path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"

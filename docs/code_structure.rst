@@ -145,6 +145,9 @@ Completed extractions:
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   variance-reduction helpers:
   ``nonlinear_gradient_followup_core.py``
+- nonlinear turbulence-gradient evidence scope markers, acceptance config
+  dataclasses, JSON-safe parsing, and finite-difference conditioning gates:
+  ``nonlinear_gradient_evidence_core.py``
 - runtime artifact read/write and restart-append schema coverage:
   ``runtime_artifacts.py``
 
