@@ -51,6 +51,13 @@ Differentiable Geometry AD Checks
    :members:
    :private-members:
 
+Differentiable Geometry Numerics
+--------------------------------
+
+.. automodule:: spectraxgk.geometry.numerics
+   :members:
+   :private-members:
+
 Grids
 -----
 

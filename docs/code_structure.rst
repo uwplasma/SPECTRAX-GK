@@ -198,9 +198,12 @@ The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public compatibility facade while
 moving optional backend lookup and strict AD/finite-difference gate utilities
 into ``spectraxgk.geometry.backend_discovery`` and
-``spectraxgk.geometry.autodiff_checks``. This separates import-side effects and
-validation-report plumbing from the VMEC/Boozer field-line bridge, while
-preserving object identity for existing imports.
+``spectraxgk.geometry.autodiff_checks``. Pure parity metrics, interpolation,
+radial derivative, Boozer half-mesh, Fourier field-line, and periodic sampling
+helpers live in ``spectraxgk.geometry.numerics``. This separates import-side
+effects, validation-report plumbing, and small numerical kernels from the
+VMEC/Boozer field-line bridge, while preserving object identity for existing
+imports.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

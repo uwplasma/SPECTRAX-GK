@@ -178,6 +178,9 @@ Phase 1: introduce protocols and containers
   optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and
   ``spectraxgk.geometry.autodiff_checks`` owns finite-difference Jacobians,
   AD/FD reports, conditioning metadata, and strict JSON sanitation.
+  ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
+  radial derivative, Boozer half-mesh, Fourier field-line, and periodic
+  sampling helpers.
   ``spectraxgk.geometry.differentiable`` retains object-identical re-exports.
 
 Phase 2: split pure kernels
@@ -187,8 +190,8 @@ Phase 2: split pure kernels
 Phase 3: split differentiable geometry
   Move the remaining VMEC/Boozer bridge and parity routines behind in-memory
   geometry contracts. Optional backend discovery and geometry AD/FD gate
-  utilities are already split into Phase-1 support modules. Keep same-WOUT and
-  finite-difference gates mandatory.
+  utilities plus pure numerical helpers are already split into Phase-1 support
+  modules. Keep same-WOUT and finite-difference gates mandatory.
 
 Phase 4: split objectives and AD policies
   Separate linear, quasilinear, nonlinear-window, and VMEC/Boozer objectives.

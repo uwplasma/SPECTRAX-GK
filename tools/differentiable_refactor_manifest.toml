@@ -247,6 +247,27 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.numerics"
+source_path = "src/spectraxgk/geometry/numerics.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "pure parity metrics, radial and equal-arc interpolation, Boozer half-mesh grids, derivative stencils, Fourier field-line evaluation, and periodic sampling helpers"
+moved_exports = [
+  "_array_parity_metrics",
+  "_boozer_half_mesh_s_grid",
+  "_cumulative_trapezoid",
+  "_evaluate_boozer_cosine_series_on_field_line",
+  "_interp_equal_arc_profile",
+  "_interp_radial",
+  "_periodic_bilinear_sample_2d",
+  "_radial_derivative_array",
+  "_radial_derivative_profile",
+  "_scalar_parity_metrics",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

@@ -13,6 +13,7 @@ import spectraxgk
 import spectraxgk.geometry.autodiff_checks as diff_autodiff
 import spectraxgk.geometry.backend_discovery as backend_discovery
 import spectraxgk.geometry.differentiable as diff_geom
+import spectraxgk.geometry.numerics as geom_numerics
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
     _boozer_half_mesh_s_grid,
@@ -91,6 +92,22 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom.observable_gradient_validation_report
         is diff_autodiff.observable_gradient_validation_report
+    )
+    assert diff_geom._array_parity_metrics is geom_numerics._array_parity_metrics
+    assert diff_geom._scalar_parity_metrics is geom_numerics._scalar_parity_metrics
+    assert diff_geom._interp_radial is geom_numerics._interp_radial
+    assert (
+        diff_geom._interp_equal_arc_profile is geom_numerics._interp_equal_arc_profile
+    )
+    assert diff_geom._boozer_half_mesh_s_grid is geom_numerics._boozer_half_mesh_s_grid
+    assert (
+        diff_geom._radial_derivative_profile is geom_numerics._radial_derivative_profile
+    )
+    assert diff_geom._radial_derivative_array is geom_numerics._radial_derivative_array
+    assert diff_geom._cumulative_trapezoid is geom_numerics._cumulative_trapezoid
+    assert (
+        diff_geom._periodic_bilinear_sample_2d
+        is geom_numerics._periodic_bilinear_sample_2d
     )
 
 

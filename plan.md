@@ -1750,3 +1750,11 @@ No long nonlinear audit should be launched from these candidates.
   VMEC/Boozer bridge and parity routines remain the next geometry refactor
   tranche and still require the existing same-WOUT, field-line, and gradient
   gates before movement.
+- Continued the differentiable-geometry support split by moving pure numerical
+  helpers into ``spectraxgk.geometry.numerics``. The new module owns parity
+  metrics, radial and equal-arc interpolation, Boozer half-mesh coordinates,
+  radial derivative stencils, Boozer Fourier field-line evaluation, cumulative
+  trapezoids, and periodic bilinear sampling. ``spectraxgk.geometry.differentiable``
+  keeps object-identical re-exports so existing bridge tests, tools, and hidden
+  diagnostics continue to use the old import path while the remaining VMEC/Boozer
+  bridge split is prepared.
