@@ -1,0 +1,360 @@
+[metadata]
+schema_version = 1
+title = "Differentiable architecture refactor plan"
+owner_lane = "research-grade differentiable SPECTRAX-GK architecture"
+status = "planned"
+created = "2026-06-14"
+compatibility_policy = "public behavior and numerical parity must be preserved behind compatibility facades"
+max_public_module_lines_target = 800
+max_internal_module_lines_target = 1200
+
+[global_acceptance]
+required_package_coverage_percent = 95.0
+max_fast_test_budget_seconds = 300
+require_public_api_facades = true
+require_reference_adapter_isolation = true
+require_jax_transform_contracts = true
+require_docstring_policy = true
+
+[validation_policy]
+parity_reference_scope = "GX and other independent-code artifacts are validation inputs only; solver code must not depend on comparison adapters."
+literature_gate_scope = "Cyclone, shaped tokamak, W7-X/HSX, KBM/TEM/ETG, Rosenbluth-Hinton/Merlo, and quasilinear/nonlinear transport gates stay artifact-backed."
+autodiff_gate_scope = "Finite-difference, JVP/VJP, branch-locality, conditioning, and UQ covariance checks are required before differentiable claims are promoted."
+performance_gate_scope = "No speedup claim without identity gates, profiler artifacts, and matched CPU/GPU measurements."
+
+[[architecture_layers]]
+name = "core"
+responsibility = "array typing, pytrees, precision policy, units, normalization, static/dynamic argument helpers"
+planned_packages = ["spectraxgk.core"]
+extension_points = ["PyTree containers", "dtype/precision policy", "normalization contracts"]
+
+[[architecture_layers]]
+name = "basis"
+responsibility = "orthogonal velocity-space bases and recurrence rules"
+planned_packages = ["spectraxgk.basis"]
+extension_points = ["BasisFamily", "HermiteLaguerreBasis", "OrthaxBasisAdapter", "custom basis recurrence tests"]
+
+[[architecture_layers]]
+name = "geometry"
+responsibility = "analytic, VMEC, vmec_jax, booz_xform_jax, and sampled flux-tube geometry providers"
+planned_packages = ["spectraxgk.geometry", "spectraxgk.geometry.backends"]
+extension_points = ["GeometryProvider", "FieldLineSampler", "BoozerTransformProvider", "GeometryParityReport"]
+
+[[architecture_layers]]
+name = "physics"
+responsibility = "species, fields, closures, collision models, drives, and model configuration"
+planned_packages = ["spectraxgk.physics"]
+extension_points = ["SpeciesModel", "CollisionOperator", "ClosureModel", "FieldSolveModel"]
+
+[[architecture_layers]]
+name = "operators"
+responsibility = "pure linear and nonlinear RHS kernels with explicit caches and field solves"
+planned_packages = ["spectraxgk.operators"]
+extension_points = ["LinearTerm", "NonlinearBracket", "FieldSolver", "RHSAssembly"]
+
+[[architecture_layers]]
+name = "solvers"
+responsibility = "linear eigen/time solvers, nonlinear integrators, adjoints, checkpoint policies, and objective solvers"
+planned_packages = ["spectraxgk.solvers"]
+extension_points = ["TimeStepper", "EigenSolver", "AdjointPolicy", "ObjectiveSolver"]
+
+[[architecture_layers]]
+name = "diagnostics"
+responsibility = "growth/frequency, transport, spectra, windows, UQ, and artifact schemas"
+planned_packages = ["spectraxgk.diagnostics"]
+extension_points = ["Diagnostic", "TransportWindow", "SpectrumExtractor", "GateReport"]
+
+[[architecture_layers]]
+name = "validation"
+responsibility = "literature gates, reference-code comparison adapters, manifests, and benchmark families"
+planned_packages = ["spectraxgk.validation"]
+extension_points = ["BenchmarkFamily", "ReferenceAdapter", "PhysicsGate", "ArtifactLedger"]
+
+[[architecture_layers]]
+name = "workflows"
+responsibility = "runtime, scans, optimization scripts, plotting, CLI command plumbing, and provenance"
+planned_packages = ["spectraxgk.workflows", "spectraxgk.cli"]
+extension_points = ["RuntimeWorkflow", "OptimizationWorkflow", "PlotWorkflow", "ProgressReporter"]
+
+[[hotspots]]
+module = "spectraxgk.benchmarks"
+source_path = "src/spectraxgk/benchmarks.py"
+current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
+target_packages = [
+  "spectraxgk.validation.benchmarks.cyclone",
+  "spectraxgk.validation.benchmarks.etg",
+  "spectraxgk.validation.benchmarks.kbm",
+  "spectraxgk.validation.benchmarks.tem",
+  "spectraxgk.validation.reference_data",
+  "spectraxgk.validation.fit_policies",
+]
+public_facade = "spectraxgk.benchmarks"
+line_target = 800
+status = "planned"
+existing_fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmark_scan.py"]
+planned_tests = [
+  "case-family import identity tests",
+  "reference-data schema tests",
+  "late-window fit-policy tests",
+  "Cyclone/ETG/KBM/TEM smoke-free benchmark gate tests",
+]
+parity_gates = [
+  "Cyclone linear growth/frequency and eigenfunction overlap",
+  "KBM branch-continuity growth jump gate",
+  "ETG and TEM scoped branch-following gates",
+]
+literature_anchors = [
+  "Cyclone Base Case / Dimits benchmark tradition",
+  "linear multispecies shaped tokamak GENE/GKW/GS2 benchmarks",
+  "W7-X stella/GENE benchmark when stellarator cases are dispatched",
+]
+autodiff_gates = ["benchmark fit functions remain differentiable where used by optimization objectives"]
+extension_points = ["BenchmarkFamily", "ReferenceDataLoader", "FitPolicy"]
+
+[[hotspots]]
+module = "spectraxgk.geometry.differentiable"
+source_path = "src/spectraxgk/geometry/differentiable.py"
+current_reason = "single file owns optional backend discovery, sampled geometry conversion, VMEC/Boozer parity, sensitivity, inverse-design, and finite-difference reports"
+target_packages = [
+  "spectraxgk.geometry.contracts",
+  "spectraxgk.geometry.backends.discovery",
+  "spectraxgk.geometry.backends.vmec_jax",
+  "spectraxgk.geometry.backends.booz_xform_jax",
+  "spectraxgk.geometry.equal_arc",
+  "spectraxgk.geometry.sensitivity",
+  "spectraxgk.geometry.parity",
+]
+public_facade = "spectraxgk.geometry.differentiable"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+planned_tests = [
+  "optional-backend discovery without import side effects",
+  "sampled geometry PyTree round-trip tests",
+  "VMEC/Boozer array parity tests",
+  "geometry JVP/VJP/finite-difference gradient tests",
+]
+parity_gates = [
+  "VMEC/Boozer equal-arc flux-tube geometry parity",
+  "mboz=nboz>=21 stellarator geometry matrix gate",
+  "same-WOUT provenance gate for held-out transport artifacts",
+]
+literature_anchors = [
+  "stellarator flux-tube geometry conventions from stella/GENE W7-X benchmarks",
+  "VMEC/Boozer coordinate usage in stellarator gyrokinetics",
+]
+autodiff_gates = [
+  "finite-difference versus JAX Jacobian for geometry observables",
+  "state-coefficient to field-line tensor sensitivity",
+  "conditioning and rank diagnostics for inverse/UQ examples",
+]
+extension_points = ["GeometryProvider", "BoozerTransformProvider", "GeometrySensitivityReport"]
+
+[[hotspots]]
+module = "spectraxgk.nonlinear_parallel"
+source_path = "src/spectraxgk/nonlinear_parallel.py"
+current_reason = "mixes decomposition metadata, communication models, sharded RHS routes, observable reductions, profiler reports, and policy text"
+target_packages = [
+  "spectraxgk.parallel.domain_plan",
+  "spectraxgk.parallel.spectral_comm",
+  "spectraxgk.parallel.device_z_pencil",
+  "spectraxgk.parallel.observable_reduce",
+  "spectraxgk.parallel.profiling",
+]
+public_facade = "spectraxgk.nonlinear_parallel"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
+planned_tests = [
+  "serial-vs-decomposed RHS identity tests",
+  "physical transport-window identity tests",
+  "communication-model preflight tests",
+  "CPU/GPU profiler artifact schema tests",
+]
+parity_gates = [
+  "serial transport-window identity before speedup claims",
+  "free-energy, field-energy, physical-flux, and bracket-RMS identity gates",
+]
+literature_anchors = [
+  "gyrokinetic nonlinear transport-window comparison practice",
+  "distributed spectral-method decomposition practice for flux-tube solvers",
+]
+autodiff_gates = ["parallel routes preserve JAX transformability or fail with explicit diagnostics"]
+extension_points = ["DomainDecomposition", "SpectralCommunicator", "ObservableReducer"]
+
+[[hotspots]]
+module = "spectraxgk.solver_objective_gradients"
+source_path = "src/spectraxgk/solver_objective_gradients.py"
+current_reason = "combines eigenvalue derivative rules, solver objectives, VMEC/Boozer objectives, finite-difference gates, line-search reports, and reduced nonlinear windows"
+target_packages = [
+  "spectraxgk.objectives.eigen",
+  "spectraxgk.objectives.linear_growth",
+  "spectraxgk.objectives.quasilinear_flux",
+  "spectraxgk.objectives.nonlinear_window",
+  "spectraxgk.objectives.vmec_boozer",
+  "spectraxgk.objectives.gradient_gates",
+]
+public_facade = "spectraxgk.solver_objective_gradients"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_stellarator_optimization.py"]
+planned_tests = [
+  "eigenvalue branch-locality and spectral-gap tests",
+  "JVP/VJP/finite-difference objective consistency tests",
+  "UQ covariance rank/conditioning tests",
+  "objective registry tests for adding new transport models",
+]
+parity_gates = [
+  "linear growth/frequency objective matches late-time/eigensolver diagnostics",
+  "quasilinear objective preserves calibrated screening claim scope",
+  "nonlinear-window objectives remain guardrailed until long-window transport gates pass",
+]
+literature_anchors = [
+  "gyrokinetic stellarator optimization by linear and transport proxies",
+  "quasilinear screening versus nonlinear transport validation literature",
+]
+autodiff_gates = [
+  "custom JVP/VJP only after finite-difference and tangent tests pass",
+  "branch-local eigenvalue gap guard",
+  "Gauss-Newton covariance and sensitivity-map conditioning",
+]
+extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationReport"]
+
+[[hotspots]]
+module = "spectraxgk.nonlinear"
+source_path = "src/spectraxgk/nonlinear.py"
+current_reason = "owns nonlinear RHS, integration policy, diagnostics, fixed-mode comparison conventions, and output assembly"
+target_packages = [
+  "spectraxgk.solvers.nonlinear.rhs",
+  "spectraxgk.solvers.nonlinear.integrators",
+  "spectraxgk.solvers.nonlinear.diagnostics",
+  "spectraxgk.solvers.nonlinear.imex",
+]
+public_facade = "spectraxgk.nonlinear"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+planned_tests = [
+  "RHS component identity tests",
+  "IMEX/fixed-step/adaptive path equivalence tests",
+  "windowed transport statistics tests",
+  "nonlinear artifact schema tests",
+]
+parity_gates = [
+  "Cyclone/KBM/HSX/W7-X nonlinear window statistics",
+  "spectral resolved HeatFlux and Wphi diagnostic comparisons",
+]
+literature_anchors = [
+  "Cyclone nonlinear transport benchmark tradition",
+  "stellarator ITG nonlinear W7-X stella/GENE benchmark observables",
+]
+autodiff_gates = ["reduced differentiable nonlinear-window estimator stays separate from production long-window transport claim"]
+extension_points = ["NonlinearRHS", "TimeStepper", "TransportDiagnostic"]
+
+[[hotspots]]
+module = "spectraxgk.runtime"
+source_path = "src/spectraxgk/runtime.py"
+current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration compatibility code"
+target_packages = [
+  "spectraxgk.workflows.runtime.linear",
+  "spectraxgk.workflows.runtime.nonlinear",
+  "spectraxgk.workflows.runtime.scans",
+  "spectraxgk.workflows.runtime.output",
+  "spectraxgk.workflows.progress",
+]
+public_facade = "spectraxgk.runtime"
+line_target = 700
+status = "planned"
+existing_fast_tests = ["tests/test_runtime_config.py", "tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+planned_tests = [
+  "default executable run contract tests",
+  "progress/ETA reporter tests",
+  "input/output provenance tests",
+  "scan dispatch import identity tests",
+]
+parity_gates = ["runtime TOML parity gate for benchmark-sensitive examples"]
+literature_anchors = ["runtime examples remain tied to documented validation matrices"]
+autodiff_gates = ["runtime wrappers do not hide nondifferentiable side effects inside objective functions"]
+extension_points = ["RuntimeWorkflow", "ProgressReporter", "ArtifactWriter"]
+
+[[hotspots]]
+module = "spectraxgk.runtime_artifacts"
+source_path = "src/spectraxgk/runtime_artifacts.py"
+current_reason = "large artifact serialization, restart, diagnostics, and schema-normalization surface"
+target_packages = [
+  "spectraxgk.io.artifacts.schema",
+  "spectraxgk.io.artifacts.netcdf",
+  "spectraxgk.io.artifacts.restart",
+  "spectraxgk.io.artifacts.provenance",
+]
+public_facade = "spectraxgk.runtime_artifacts"
+line_target = 700
+status = "planned"
+existing_fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart.py"]
+planned_tests = [
+  "NetCDF round-trip schema tests",
+  "restart append normalization tests",
+  "artifact provenance tests",
+  "plot reload contract tests",
+]
+parity_gates = ["saved artifact diagnostics reproduce runtime comparison metrics"]
+literature_anchors = ["validation artifacts remain replayable and traceable to benchmark protocols"]
+autodiff_gates = ["objective functions use in-memory arrays, not artifact side effects, unless explicitly detached"]
+extension_points = ["ArtifactSchema", "ArtifactWriter", "RestartPolicy"]
+
+[[hotspots]]
+module = "spectraxgk.linear"
+source_path = "src/spectraxgk/linear.py"
+current_reason = "public linear API still combines field solves, RHS assembly, integrators, diagnostics, and compatibility exports"
+target_packages = [
+  "spectraxgk.solvers.linear.rhs",
+  "spectraxgk.solvers.linear.fields",
+  "spectraxgk.solvers.linear.integrators",
+  "spectraxgk.solvers.linear.diagnostics",
+]
+public_facade = "spectraxgk.linear"
+line_target = 800
+status = "planned"
+existing_fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_terms_assembly.py"]
+planned_tests = [
+  "field-solve contract tests",
+  "RHS assembly identity tests",
+  "growth/frequency late-window tests",
+  "eigenfunction phase-insensitive overlap tests",
+]
+parity_gates = [
+  "Cyclone, Cyclone Miller, KBM, HSX, and W7-X linear benchmark gates",
+  "branch-continuity and near-marginal tolerance policy gates",
+]
+literature_anchors = [
+  "Cyclone Base Case linear ITG",
+  "linear multispecies shaped tokamak benchmarks",
+  "W7-X stella/GENE linear ITG/TEM benchmark",
+]
+autodiff_gates = ["linear RHS and objective kernels pass JVP/VJP/finite-difference consistency where used by optimization"]
+extension_points = ["LinearRHS", "FieldSolver", "EigenDiagnostic"]
+
+[[hotspots]]
+module = "spectraxgk.cli"
+source_path = "src/spectraxgk/cli.py"
+current_reason = "executable argument parsing, default demo, plotting, validation helpers, and runtime dispatch live in one public module"
+target_packages = [
+  "spectraxgk.cli.commands.run",
+  "spectraxgk.cli.commands.plot",
+  "spectraxgk.cli.commands.validate",
+  "spectraxgk.cli.default_demo",
+]
+public_facade = "spectraxgk.cli"
+line_target = 500
+status = "planned"
+existing_fast_tests = ["tests/test_cli.py", "tests/test_runtime_runner.py"]
+planned_tests = [
+  "spectraxgk default-run progress output test",
+  "spectraxgk --plot artifact test",
+  "TOML provenance output test",
+  "command module import identity test",
+]
+parity_gates = ["CLI examples reproduce documented runtime artifacts"]
+literature_anchors = ["pedagogical examples map to documented validation cases"]
+autodiff_gates = ["CLI remains outside differentiable objective paths"]
+extension_points = ["Command", "PlotCommand", "DemoWorkflow"]

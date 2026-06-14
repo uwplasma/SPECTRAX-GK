@@ -170,6 +170,13 @@ source module with at least 2,000 non-comment source lines to have a direct
 manifest row, so large modules cannot be hidden under another owner's
 ``owned_modules`` list.
 
+The next differentiable architecture refactor has a separate executable plan in
+``tools/differentiable_refactor_manifest.toml`` and
+``tools/check_differentiable_refactor_manifest.py``. See
+:doc:`differentiable_refactor_plan` for the target package layout, extension
+points, public compatibility facades, and physics/autodiff/parity gates that
+must be declared before large modules are split.
+
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append
 contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted
