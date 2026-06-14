@@ -58,6 +58,13 @@ Differentiable Geometry AD Checks
    :members:
    :private-members:
 
+Differentiable Geometry Sensitivity
+-----------------------------------
+
+.. automodule:: spectraxgk.geometry.sensitivity
+   :members:
+   :private-members:
+
 Differentiable Geometry Numerics
 --------------------------------
 

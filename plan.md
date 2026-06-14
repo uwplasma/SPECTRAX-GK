@@ -1765,3 +1765,9 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.geometry.differentiable`` keeps object-identical re-exports so
   public imports and package-level ``spectraxgk`` exports remain stable while
   the remaining VMEC/Boozer bridge routines are prepared for later extraction.
+- Continued the differentiable-geometry split by moving geometry sensitivity,
+  inverse-design, conditioning, and local UQ report routines into
+  ``spectraxgk.geometry.sensitivity``. This gives future VMEC/Boozer bridge
+  modules a direct dependency on the report contract instead of depending on
+  the compatibility facade. ``spectraxgk.geometry.differentiable`` preserves
+  object-identical re-exports for existing public imports and tests.

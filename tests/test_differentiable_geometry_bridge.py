@@ -15,6 +15,7 @@ import spectraxgk.geometry.backend_discovery as backend_discovery
 import spectraxgk.geometry.differentiable as diff_geom
 import spectraxgk.geometry.flux_tube_contract as geom_contract
 import spectraxgk.geometry.numerics as geom_numerics
+import spectraxgk.geometry.sensitivity as geom_sensitivity
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
     _boozer_half_mesh_s_grid,
@@ -130,6 +131,14 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom.vmec_field_line_tensor_observable_names
         is geom_contract.vmec_field_line_tensor_observable_names
+    )
+    assert (
+        diff_geom.geometry_sensitivity_report
+        is geom_sensitivity.geometry_sensitivity_report
+    )
+    assert (
+        diff_geom.geometry_inverse_design_report
+        is geom_sensitivity.geometry_inverse_design_report
     )
 
 

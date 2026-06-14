@@ -180,6 +180,8 @@ Phase 1: introduce protocols and containers
   AD/FD reports, conditioning metadata, and strict JSON sanitation.
   ``spectraxgk.geometry.flux_tube_contract`` owns solver-ready in-memory
   flux-tube mapping validation and geometry-observable reductions.
+  ``spectraxgk.geometry.sensitivity`` owns geometry sensitivity,
+  inverse-design, conditioning, and local UQ reports for solver-ready mappings.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.
@@ -192,9 +194,9 @@ Phase 2: split pure kernels
 Phase 3: split differentiable geometry
   Move the remaining VMEC/Boozer bridge and parity routines behind in-memory
   geometry contracts. Optional backend discovery and geometry AD/FD gate
-  utilities, the in-memory flux-tube contract, and pure numerical helpers are
-  already split into Phase-1 support modules. Keep same-WOUT and
-  finite-difference gates mandatory.
+  utilities, the in-memory flux-tube contract, sensitivity reports, and pure
+  numerical helpers are already split into Phase-1 support modules. Keep
+  same-WOUT and finite-difference gates mandatory.
 
 Phase 4: split objectives and AD policies
   Separate linear, quasilinear, nonlinear-window, and VMEC/Boozer objectives.

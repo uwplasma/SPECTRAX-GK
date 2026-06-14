@@ -290,6 +290,19 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.sensitivity"
+source_path = "src/spectraxgk/geometry/sensitivity.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "geometry observable sensitivity reports, Gauss-Newton inverse-design diagnostics, and local UQ covariance reporting for solver-ready mappings"
+moved_exports = [
+  "geometry_inverse_design_report",
+  "geometry_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

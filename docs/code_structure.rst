@@ -204,8 +204,11 @@ mapping and geometry-observable contract lives in
 interpolation, radial derivative, Boozer half-mesh, Fourier field-line, and
 periodic sampling helpers live in ``spectraxgk.geometry.numerics``. This
 separates import-side effects, validation-report plumbing, public contract
-validation, and small numerical kernels from the VMEC/Boozer field-line bridge,
-while preserving object identity for existing imports.
+validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
+Geometry sensitivity, inverse-design, and local UQ reports live in
+``spectraxgk.geometry.sensitivity`` so backend bridge modules can depend on
+the report contract without importing the compatibility facade. Existing
+imports retain object identity.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

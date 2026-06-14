@@ -1149,6 +1149,7 @@ owned_modules = [
   "spectraxgk.geometry.flux_tube_contract",
   "spectraxgk.geometry.miller",
   "spectraxgk.geometry.numerics",
+  "spectraxgk.geometry.sensitivity",
   "spectraxgk.geometry.vmec",
 ]
 owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
