@@ -217,6 +217,19 @@ fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.benchmark_etg"
+source_path = "src/spectraxgk/benchmark_etg.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "ETG benchmark-family linear and ky-scan runners behind the public benchmarks facade"
+moved_exports = [
+  "run_etg_linear",
+  "run_etg_scan",
+]
+fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.backend_discovery"
 source_path = "src/spectraxgk/geometry/backend_discovery.py"
 facade_module = "spectraxgk.geometry.differentiable"

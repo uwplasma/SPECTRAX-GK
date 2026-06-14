@@ -1836,7 +1836,7 @@ def test_etg_scan_with_params():
 
 def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     from types import SimpleNamespace
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.benchmark_etg as benchmark_etg
 
     captured = {}
 
@@ -1847,8 +1847,8 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     def fake_compute_fields_cached(vec, cache, params, terms=None):
         return SimpleNamespace(phi=jnp.zeros(vec.shape[-3:], dtype=jnp.complex64))
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_etg, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_etg, "compute_fields_cached", fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(
@@ -1870,7 +1870,7 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.benchmark_etg as benchmark_etg
 
     captured = {}
 
@@ -1881,7 +1881,7 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
         eig = jnp.asarray((0.1 + idx) - 0.2j, dtype=jnp.complex64)
         return eig, jnp.zeros_like(G0)
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_etg, "dominant_eigenpair", fake_dominant_eigenpair)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(
@@ -1907,7 +1907,7 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.benchmark_etg as benchmark_etg
 
     calls: list[dict[str, object]] = []
 
@@ -1917,7 +1917,7 @@ def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkey
         vec = jnp.ones_like(G0) * (1.0 + 0.0j)
         return eig, vec
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_etg, "dominant_eigenpair", fake_dominant_eigenpair)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(

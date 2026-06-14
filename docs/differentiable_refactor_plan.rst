@@ -172,9 +172,13 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.benchmark_fit_signals`` owns fit-signal and diagnostic
   normalization policies, ``spectraxgk.benchmark_batching`` owns scan batching
   and streaming windows, and ``spectraxgk.benchmark_solver_policy`` owns
-  branch-selection policies. ``spectraxgk.benchmark_helpers`` retains
-  object-identical re-exports. The first differentiable-geometry support split
-  also lives in this phase: ``spectraxgk.geometry.backend_discovery`` owns
+  branch-selection policies. ``spectraxgk.benchmark_kbm``,
+  ``spectraxgk.benchmark_tem``, ``spectraxgk.benchmark_kinetic``, and
+  ``spectraxgk.benchmark_etg`` own the extracted family runners while
+  ``spectraxgk.benchmarks`` remains the public compatibility facade.
+  ``spectraxgk.benchmark_helpers`` retains object-identical re-exports. The
+  first differentiable-geometry support split also lives in this phase:
+  ``spectraxgk.geometry.backend_discovery`` owns
   optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and
   ``spectraxgk.geometry.autodiff_checks`` owns finite-difference Jacobians,
   AD/FD reports, conditioning metadata, and strict JSON sanitation.

@@ -780,6 +780,7 @@ module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
   "spectraxgk.benchmarking",
+  "spectraxgk.benchmark_etg",
   "spectraxgk.benchmark_kbm",
   "spectraxgk.benchmark_kinetic",
   "spectraxgk.benchmark_tem",
