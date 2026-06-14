@@ -79,6 +79,13 @@ Differentiable VMEC-State Sensitivity
    :members:
    :private-members:
 
+Differentiable VMEC Boozer Core
+-------------------------------
+
+.. automodule:: spectraxgk.geometry.vmec_boozer_core
+   :members:
+   :private-members:
+
 Differentiable VMEC Tensor Mapping
 ----------------------------------
 

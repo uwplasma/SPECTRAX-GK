@@ -216,8 +216,10 @@ so existing monkeypatch-based optional-backend tests still target
 ``spectraxgk.geometry.differentiable``. VMEC-state-to-Boozer, VMEC metric
 tensor, and VMEC field-line tensor AD/FD sensitivity reports live in
 ``spectraxgk.geometry.vmec_state_sensitivity``; the public facade uses the
-same hook-preserving wrapper pattern. Direct ``vmec_jax`` tensor sampling and
-conversion into the solver-ready flux-tube mapping contract lives in
+same hook-preserving wrapper pattern. Boozer equal-arc constants, cache
+prewarm, and core profile construction live in
+``spectraxgk.geometry.vmec_boozer_core``. Direct ``vmec_jax`` tensor sampling
+and conversion into the solver-ready flux-tube mapping contract lives in
 ``spectraxgk.geometry.vmec_tensor_mapping``.
 
 Release-scope synchronization for refactors is tracked separately in

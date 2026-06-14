@@ -17,6 +17,7 @@ import spectraxgk.geometry.differentiable as diff_geom
 import spectraxgk.geometry.flux_tube_contract as geom_contract
 import spectraxgk.geometry.numerics as geom_numerics
 import spectraxgk.geometry.sensitivity as geom_sensitivity
+import spectraxgk.geometry.vmec_boozer_core as vmec_boozer_core
 import spectraxgk.geometry.vmec_state_sensitivity as vmec_state_sensitivity
 import spectraxgk.geometry.vmec_tensor_mapping as vmec_tensor_mapping
 from spectraxgk.geometry.differentiable import (
@@ -166,6 +167,16 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom.vmec_jax_flux_tube_mapping_from_state
         is not vmec_tensor_mapping.vmec_jax_flux_tube_mapping_from_state
+    )
+    assert callable(diff_geom.prewarm_vmec_boozer_equal_arc_cache)
+    assert callable(diff_geom.vmec_jax_boozer_equal_arc_core_profiles_from_state)
+    assert (
+        diff_geom.prewarm_vmec_boozer_equal_arc_cache
+        is not vmec_boozer_core.prewarm_vmec_boozer_equal_arc_cache
+    )
+    assert (
+        diff_geom.vmec_jax_boozer_equal_arc_core_profiles_from_state
+        is not vmec_boozer_core.vmec_jax_boozer_equal_arc_core_profiles_from_state
     )
     assert (
         diff_geom.vmec_field_line_tensor_observable_names

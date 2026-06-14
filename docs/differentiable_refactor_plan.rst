@@ -188,6 +188,9 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.vmec_state_sensitivity`` owns optional-backend
   ``VMECState`` sensitivity reports for VMEC-to-Boozer, VMEC metric tensor, and
   VMEC field-line tensor AD/FD gates.
+  ``spectraxgk.geometry.vmec_boozer_core`` owns the ``vmec_jax`` state to
+  ``booz_xform_jax`` equal-arc core-profile bridge, including Boozer constants
+  cache/prewarm and solver-facing core arrays.
   ``spectraxgk.geometry.vmec_tensor_mapping`` owns direct ``vmec_jax`` tensor
   sampling and conversion into the solver-ready flux-tube mapping contract.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
