@@ -1,3 +1,10 @@
+- 2026-06-14: Split the TEM benchmark-family runners (`run_tem_linear` and
+  `run_tem_scan`) into `spectraxgk.benchmark_tem` using the same
+  behavior-preserving facade pattern as the KBM split. TEM branch tests now
+  patch the implementation module directly, while public examples and
+  downstream code can continue importing the runners from
+  `spectraxgk.benchmarks`.
+
 - 2026-06-14: Continued the behavior-preserving benchmark refactor by moving
   the KBM benchmark-family runners (`run_kbm_linear`, `run_kbm_scan`, and
   `run_kbm_beta_scan`) into `spectraxgk.benchmark_kbm` behind the existing

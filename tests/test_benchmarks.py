@@ -10,6 +10,7 @@ import jax.numpy as jnp
 
 import spectraxgk.benchmark_helpers as benchmark_helpers
 import spectraxgk.benchmark_kbm as benchmark_kbm
+import spectraxgk.benchmark_tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
@@ -1681,8 +1682,8 @@ def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_tem, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_tem, "compute_fields_cached", _fake_compute_fields_cached)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = TEMBaseCase(grid=grid)
