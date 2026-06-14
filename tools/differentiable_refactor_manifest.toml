@@ -347,6 +347,19 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_flux_tube_reports"
+source_path = "src/spectraxgk/geometry/vmec_flux_tube_reports.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "VMEC flux-tube sensitivity and array parity reports that compare direct tensor and Boozer equal-arc paths against solver-facing geometry contracts"
+moved_exports = [
+  "vmec_jax_flux_tube_array_parity_report",
+  "vmec_jax_flux_tube_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.vmec_tensor_mapping"
 source_path = "src/spectraxgk/geometry/vmec_tensor_mapping.py"
 facade_module = "spectraxgk.geometry.differentiable"

@@ -220,7 +220,9 @@ same hook-preserving wrapper pattern. Boozer equal-arc constants, cache
 prewarm, and core profile construction live in
 ``spectraxgk.geometry.vmec_boozer_core``. Direct ``vmec_jax`` tensor sampling
 and conversion into the solver-ready flux-tube mapping contract lives in
-``spectraxgk.geometry.vmec_tensor_mapping``.
+``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
+array-parity report orchestration lives in
+``spectraxgk.geometry.vmec_flux_tube_reports``.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

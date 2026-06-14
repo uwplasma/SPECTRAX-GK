@@ -193,6 +193,9 @@ Phase 1: introduce protocols and containers
   cache/prewarm and solver-facing core arrays.
   ``spectraxgk.geometry.vmec_tensor_mapping`` owns direct ``vmec_jax`` tensor
   sampling and conversion into the solver-ready flux-tube mapping contract.
+  ``spectraxgk.geometry.vmec_flux_tube_reports`` owns VMEC flux-tube
+  sensitivity and array-parity report orchestration that combines the direct
+  tensor, Boozer equal-arc, and imported-geometry comparison paths.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.

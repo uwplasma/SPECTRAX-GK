@@ -1801,3 +1801,9 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.geometry.differentiable`` keeps hook-preserving wrappers so
   existing optional-backend and monkeypatch tests still target the public
   facade.
+- Continued the differentiable-geometry split by moving VMEC flux-tube
+  sensitivity and array-parity reports into
+  ``spectraxgk.geometry.vmec_flux_tube_reports``. The facade now forwards
+  backend discovery, flux-tube mapping, Boozer equal-arc core, sensitivity, and
+  parity-metric hooks into the focused report implementation so public
+  monkeypatch seams and optional-backend tests remain stable.

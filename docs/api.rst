@@ -86,6 +86,13 @@ Differentiable VMEC Boozer Core
    :members:
    :private-members:
 
+Differentiable VMEC Flux-Tube Reports
+-------------------------------------
+
+.. automodule:: spectraxgk.geometry.vmec_flux_tube_reports
+   :members:
+   :private-members:
+
 Differentiable VMEC Tensor Mapping
 ----------------------------------
 
