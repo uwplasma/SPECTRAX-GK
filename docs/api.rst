@@ -37,6 +37,20 @@ Differentiable Geometry
 .. automodule:: spectraxgk.geometry.differentiable
    :members:
 
+Differentiable Geometry Backend Discovery
+-----------------------------------------
+
+.. automodule:: spectraxgk.geometry.backend_discovery
+   :members:
+   :private-members:
+
+Differentiable Geometry AD Checks
+---------------------------------
+
+.. automodule:: spectraxgk.geometry.autodiff_checks
+   :members:
+   :private-members:
+
 Grids
 -----
 

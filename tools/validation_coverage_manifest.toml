@@ -1144,6 +1144,8 @@ next_tests = [
 module = "spectraxgk.geometry.differentiable"
 path = "src/spectraxgk/geometry/differentiable.py"
 owned_modules = [
+  "spectraxgk.geometry.autodiff_checks",
+  "spectraxgk.geometry.backend_discovery",
   "spectraxgk.geometry.miller",
   "spectraxgk.geometry.vmec",
 ]

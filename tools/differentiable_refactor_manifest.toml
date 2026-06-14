@@ -216,6 +216,37 @@ moved_exports = [
 fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.backend_discovery"
+source_path = "src/spectraxgk/geometry/backend_discovery.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "optional vmec_jax and booz_xform_jax checkout discovery, import precedence, JAX dtype, and tracer-safety helpers"
+moved_exports = [
+  "_candidate_paths",
+  "_find_importable_module",
+  "_is_traced",
+  "_jax_float_dtype",
+  "discover_differentiable_geometry_backends",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.autodiff_checks"
+source_path = "src/spectraxgk/geometry/autodiff_checks.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "central finite-difference Jacobians, AD/FD observable gradient reports, conditioning metadata, and strict JSON sanitization for geometry gates"
+moved_exports = [
+  "_json_ready",
+  "_sensitivity_conditioning_metadata",
+  "finite_difference_jacobian",
+  "observable_gradient_validation_report",
+]
+fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

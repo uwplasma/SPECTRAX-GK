@@ -194,6 +194,14 @@ solver-selection policies live in ``spectraxgk.benchmark_fit_signals``,
 helper symbols to the new modules before larger benchmark-family runners are
 moved.
 
+The first differentiable-geometry split keeps
+``spectraxgk.geometry.differentiable`` as the public compatibility facade while
+moving optional backend lookup and strict AD/finite-difference gate utilities
+into ``spectraxgk.geometry.backend_discovery`` and
+``spectraxgk.geometry.autodiff_checks``. This separates import-side effects and
+validation-report plumbing from the VMEC/Boozer field-line bridge, while
+preserving object identity for existing imports.
+
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append
 contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted

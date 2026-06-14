@@ -173,15 +173,22 @@ Phase 1: introduce protocols and containers
   normalization policies, ``spectraxgk.benchmark_batching`` owns scan batching
   and streaming windows, and ``spectraxgk.benchmark_solver_policy`` owns
   branch-selection policies. ``spectraxgk.benchmark_helpers`` retains
-  object-identical re-exports.
+  object-identical re-exports. The first differentiable-geometry support split
+  also lives in this phase: ``spectraxgk.geometry.backend_discovery`` owns
+  optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and
+  ``spectraxgk.geometry.autodiff_checks`` owns finite-difference Jacobians,
+  AD/FD reports, conditioning metadata, and strict JSON sanitation.
+  ``spectraxgk.geometry.differentiable`` retains object-identical re-exports.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and
   diagnostic kernels first. These have the clearest unit and numerical tests.
 
 Phase 3: split differentiable geometry
-  Move optional backend discovery and VMEC/Boozer bridges behind in-memory
-  geometry contracts. Keep same-WOUT and finite-difference gates mandatory.
+  Move the remaining VMEC/Boozer bridge and parity routines behind in-memory
+  geometry contracts. Optional backend discovery and geometry AD/FD gate
+  utilities are already split into Phase-1 support modules. Keep same-WOUT and
+  finite-difference gates mandatory.
 
 Phase 4: split objectives and AD policies
   Separate linear, quasilinear, nonlinear-window, and VMEC/Boozer objectives.

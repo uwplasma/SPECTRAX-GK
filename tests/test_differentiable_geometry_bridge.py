@@ -10,6 +10,8 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.geometry.autodiff_checks as diff_autodiff
+import spectraxgk.geometry.backend_discovery as backend_discovery
 import spectraxgk.geometry.differentiable as diff_geom
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
@@ -71,6 +73,27 @@ def _sample_mapping() -> dict[str, object]:
     }
 
 
+def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> None:
+    """The legacy geometry bridge remains a compatibility facade."""
+
+    assert diff_geom._candidate_paths is backend_discovery._candidate_paths
+    assert (
+        diff_geom._find_importable_module is backend_discovery._find_importable_module
+    )
+    assert diff_geom._is_traced is backend_discovery._is_traced
+    assert (
+        diff_geom.discover_differentiable_geometry_backends
+        is backend_discovery.discover_differentiable_geometry_backends
+    )
+    assert (
+        diff_geom.finite_difference_jacobian is diff_autodiff.finite_difference_jacobian
+    )
+    assert (
+        diff_geom.observable_gradient_validation_report
+        is diff_autodiff.observable_gradient_validation_report
+    )
+
+
 def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
     assert (
@@ -102,7 +125,9 @@ def test_equal_arc_interpolation_keeps_value_gradients_finite() -> None:
     def remapped_mean(scale: jnp.ndarray) -> jnp.ndarray:
         theta_equal_arc = theta_base + 0.05 * scale * jnp.sin(theta_base)
         values = (1.0 + scale) * jnp.cos(theta_base)
-        return jnp.mean(_interp_equal_arc_profile(theta_uniform, theta_equal_arc, values))
+        return jnp.mean(
+            _interp_equal_arc_profile(theta_uniform, theta_equal_arc, values)
+        )
 
     scale = jnp.asarray(0.2)
     step = jnp.asarray(1.0e-3)
@@ -830,7 +855,10 @@ def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitiviti
     assert conditioning["finite_fd_jacobian"] is True
     assert conditioning["sensitivity_map_rank"] == 2
     assert np.all(np.isfinite(conditioning["jacobian_singular_values"]))
-    assert conditioning["worst_abs_error"]["observable_name"] in geometry_observable_names()
+    assert (
+        conditioning["worst_abs_error"]["observable_name"]
+        in geometry_observable_names()
+    )
     assert conditioning["finite_difference_step_by_parameter"][0]["absolute_step"] == (
         pytest.approx(fd_step)
     )

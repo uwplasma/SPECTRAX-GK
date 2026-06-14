@@ -1739,3 +1739,14 @@ No long nonlinear audit should be launched from these candidates.
   solver-selection/KBM branch policies live in
   ``spectraxgk.benchmark_solver_policy``. Import-identity tests now cover every
   moved helper symbol before any benchmark-family runner is extracted.
+- Continued Phase 1 of the differentiable architecture refactor with the first
+  behavior-preserving differentiable-geometry support split. Optional backend
+  discovery, local-checkout import precedence, JAX dtype selection, and tracer
+  detection now live in ``spectraxgk.geometry.backend_discovery``. Finite-
+  difference Jacobians, observable AD/FD gradient reports, conditioning
+  metadata, and strict JSON sanitation now live in
+  ``spectraxgk.geometry.autodiff_checks``. ``spectraxgk.geometry.differentiable``
+  remains the compatibility facade with object-identical re-exports; the larger
+  VMEC/Boozer bridge and parity routines remain the next geometry refactor
+  tranche and still require the existing same-WOUT, field-line, and gradient
+  gates before movement.
