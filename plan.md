@@ -1758,3 +1758,10 @@ No long nonlinear audit should be launched from these candidates.
   keeps object-identical re-exports so existing bridge tests, tools, and hidden
   diagnostics continue to use the old import path while the remaining VMEC/Boozer
   bridge split is prepared.
+- Continued the differentiable-geometry support split by moving the solver-ready
+  in-memory geometry contract into ``spectraxgk.geometry.flux_tube_contract``.
+  The new module owns mapping validation, scalar/array finite checks,
+  observable-name contracts, and differentiable geometry-observable reductions.
+  ``spectraxgk.geometry.differentiable`` keeps object-identical re-exports so
+  public imports and package-level ``spectraxgk`` exports remain stable while
+  the remaining VMEC/Boozer bridge routines are prepared for later extraction.

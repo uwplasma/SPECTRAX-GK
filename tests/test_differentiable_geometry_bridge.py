@@ -13,6 +13,7 @@ import spectraxgk
 import spectraxgk.geometry.autodiff_checks as diff_autodiff
 import spectraxgk.geometry.backend_discovery as backend_discovery
 import spectraxgk.geometry.differentiable as diff_geom
+import spectraxgk.geometry.flux_tube_contract as geom_contract
 import spectraxgk.geometry.numerics as geom_numerics
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
@@ -108,6 +109,27 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom._periodic_bilinear_sample_2d
         is geom_numerics._periodic_bilinear_sample_2d
+    )
+    assert diff_geom._array is geom_contract._array
+    assert diff_geom._scalar is geom_contract._scalar
+    assert (
+        diff_geom.flux_tube_geometry_from_mapping
+        is geom_contract.flux_tube_geometry_from_mapping
+    )
+    assert (
+        diff_geom.flux_tube_geometry_observables
+        is geom_contract.flux_tube_geometry_observables
+    )
+    assert (
+        diff_geom.geometry_observable_names is geom_contract.geometry_observable_names
+    )
+    assert (
+        diff_geom.vmec_metric_tensor_observable_names
+        is geom_contract.vmec_metric_tensor_observable_names
+    )
+    assert (
+        diff_geom.vmec_field_line_tensor_observable_names
+        is geom_contract.vmec_field_line_tensor_observable_names
     )
 
 

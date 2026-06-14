@@ -44,6 +44,13 @@ Differentiable Geometry Backend Discovery
    :members:
    :private-members:
 
+Differentiable Flux-Tube Contract
+---------------------------------
+
+.. automodule:: spectraxgk.geometry.flux_tube_contract
+   :members:
+   :private-members:
+
 Differentiable Geometry AD Checks
 ---------------------------------
 
