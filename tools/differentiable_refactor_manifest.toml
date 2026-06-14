@@ -410,6 +410,25 @@ moved_exports = [
 fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.solver_objective_sampling"
+source_path = "src/spectraxgk/solver_objective_sampling.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "physical ky scan mapping, VMEC/Boozer sample-axis construction, and aggregate weights for solver-objective validation gates"
+moved_exports = [
+  "solver_grid_options_from_ky_values",
+  "_aggregate_sample_metadata",
+  "_aggregate_weights",
+  "_float_tuple",
+  "_int_tuple",
+  "_ky_sample_axis",
+  "_surface_index_tuple",
+  "_surface_sample_axis",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

@@ -383,6 +383,12 @@ Solver Eigen Objectives
 .. automodule:: spectraxgk.solver_eigen_objectives
    :members:
 
+Solver Objective Sampling
+-------------------------
+
+.. automodule:: spectraxgk.solver_objective_sampling
+   :members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

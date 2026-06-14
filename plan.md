@@ -7,6 +7,14 @@
   tool imports while separating the eigen-AD gate from VMEC/Boozer objective
   plumbing.
 
+- 2026-06-14: Continued the solver-objective refactor by moving physical
+  `ky` scan mapping, VMEC/Boozer sample-axis helpers, and aggregate objective
+  weights into `spectraxgk.solver_objective_sampling`. The legacy
+  `spectraxgk.solver_objective_gradients` facade still exposes the public
+  `solver_grid_options_from_ky_values` helper and private compatibility seams
+  used by existing tests, while the new module isolates deterministic sampling
+  contracts from gradient-report orchestration.
+
 - 2026-06-14: Split the Cyclone benchmark-family runners
   (`run_cyclone_linear` and `run_cyclone_scan`) into
   `spectraxgk.benchmark_cyclone` behind the unchanged

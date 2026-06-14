@@ -131,7 +131,9 @@ High-Risk Module Split Plan
   finite-difference/JVP/VJP checks, UQ covariance, and objective conditioning.
   The dominant-growth implicit eigenpair VJP and branch-locality report now
   live in ``solver_eigen_objectives.py`` and remain re-exported by the legacy
-  solver-objective facade.
+  solver-objective facade. Solver-objective sampling axes, physical-``ky`` grid
+  construction, and aggregate weights now live in
+  ``solver_objective_sampling.py`` behind the same facade.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
