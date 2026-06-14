@@ -87,8 +87,8 @@ Physics / Numerics / IO Map
      - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
-     - ``solver_objective_gradients.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``
-     - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, finite-difference, and VMEC/Boozer gradient tests
+     - ``solver_objective_gradients.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``
+     - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready geometry gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, finite-difference, and VMEC/Boozer gradient tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``terms/nonlinear.py``
      - fixed-mode, diagnostics, collision-split, transport-window tests
@@ -134,6 +134,10 @@ Completed extractions:
 - solver-objective sampling axes, physical-``ky`` grid mapping, and aggregate
   weights:
   ``solver_objective_sampling.py``
+- solver-ready geometry objective gates, reduced nonlinear-window metrics, and
+  VMEC/Boozer state coefficient helpers:
+  ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
+  ``solver_vmec_state.py``
 - nonlinear parallelization policy metadata:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``
 - runtime artifact read/write and restart-append schema coverage:

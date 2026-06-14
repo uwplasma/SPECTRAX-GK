@@ -395,6 +395,27 @@ Solver Objective Sampling
 .. automodule:: spectraxgk.solver_objective_sampling
    :members:
 
+Solver Geometry Objectives
+--------------------------
+
+.. automodule:: spectraxgk.solver_geometry_objectives
+   :members:
+   :private-members:
+
+Solver Nonlinear-Window Objective
+---------------------------------
+
+.. automodule:: spectraxgk.solver_nonlinear_window_objective
+   :members:
+   :private-members:
+
+Solver VMEC-State Helpers
+-------------------------
+
+.. automodule:: spectraxgk.solver_vmec_state
+   :members:
+   :private-members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

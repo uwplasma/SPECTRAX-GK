@@ -1518,6 +1518,99 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_geometry_objectives"
+path = "src/spectraxgk/solver_geometry_objectives.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "finite-difference validation for geometry-parameter transport objectives",
+  "solver-ready flux-tube geometry contract used by differentiable optimization gates",
+]
+physics_contracts = [
+  "tiny solver-ready objective gates validate geometry-observable AD/FD plumbing without claiming VMEC/Boozer or nonlinear transport promotion",
+  "objective-gate rows expose per-objective and per-parameter pass/fail metadata for downstream artifact promotion policies",
+]
+numerics_contracts = [
+  "solver-ready geometry design vectors are length checked before any traced computation",
+  "finite-difference and AD Jacobian rows are compared with explicit absolute and relative tolerances",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add direct regression rows for non-default tiny geometry parameter values",
+  "promote additional solver-ready objective gates only when each observable has an explicit physics scope",
+]
+
+[[modules]]
+module = "spectraxgk.solver_nonlinear_window_objective"
+path = "src/spectraxgk/solver_nonlinear_window_objective.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "reduced nonlinear-window differentiability gates for stellarator optimization plumbing",
+  "late-window transport diagnostics require separate long-running nonlinear validation before promotion",
+]
+physics_contracts = [
+  "reduced nonlinear-window metrics are explicitly scoped as smooth estimator gates, not converged nonlinear heat-flux averages",
+  "window mean, coefficient of variation, and normalized trend are derived from linear observables and used only for bounded differentiability checks",
+]
+numerics_contracts = [
+  "RK2 logistic envelope propagation rejects too-short windows and invalid tail fractions",
+  "late-window trend normalization is finite and differentiable for near-zero but positive regularized flux scales",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png",
+]
+next_tests = [
+  "add parameterized invalid-window tests for steps and tail_fraction guards",
+  "keep reduced-window gates separate from production nonlinear transport-window admission artifacts",
+]
+
+[[modules]]
+module = "spectraxgk.solver_vmec_state"
+path = "src/spectraxgk/solver_vmec_state.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-JAX state coefficient perturbations for Boozer and solver objective gates",
+  "mode-index naming conventions used by finite-difference gradient artifacts",
+]
+physics_contracts = [
+  "state coefficient helpers expose explicit VMEC/Boozer Fourier families instead of implicit string mutation in solver-objective gates",
+  "parameter names distinguish mid-surface defaults from radial-index-specific perturbations in optimization artifacts",
+]
+numerics_contracts = [
+  "state arrays must be two-dimensional and expose at least one non-axisymmetric mode before perturbation",
+  "coefficient replacement preserves the state pytree/dataclass structure while applying a single indexed perturbation",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+]
+next_tests = [
+  "add direct negative tests for invalid coefficient families and undersized arrays",
+  "record coefficient-family and mode-index metadata in every promoted VMEC/Boozer finite-difference artifact",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [

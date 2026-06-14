@@ -446,6 +446,51 @@ moved_exports = [
 fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.solver_geometry_objectives"
+source_path = "src/spectraxgk/solver_geometry_objectives.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "solver-ready geometry objective mapping, tiny differentiable objective AD/FD gate, and objective-gate row formatting"
+moved_exports = [
+  "SOLVER_GEOMETRY_PARAMETER_NAMES",
+  "TINY_OBJECTIVE_NAMES",
+  "_objective_gate_rows",
+  "default_solver_geometry_design_params",
+  "solver_ready_geometry_mapping",
+  "tiny_differentiable_objective_gradient_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solver_nonlinear_window_objective"
+source_path = "src/spectraxgk/solver_nonlinear_window_objective.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "smooth reduced nonlinear-window estimator metrics used by differentiability gates without promoting converged nonlinear transport claims"
+moved_exports = [
+  "_reduced_nonlinear_window_metrics_from_linear_observables",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solver_vmec_state"
+source_path = "src/spectraxgk/solver_vmec_state.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "VMEC/Boozer state coefficient array access, perturbation replacement, and parameter-name helpers for solver-objective gates"
+moved_exports = [
+  "VMEC_BOOZER_STATE_PARAMETER_FAMILIES",
+  "VMEC_BOOZER_STATE_PARAMETER_NAMES",
+  "_replace_vmec_boozer_state_coefficient",
+  "_vmec_boozer_state_array",
+  "_vmec_boozer_state_parameter_name",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

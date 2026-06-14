@@ -1,3 +1,13 @@
+- 2026-06-14: Continued the solver-objective refactor with a larger
+  three-module split. Solver-ready geometry objective gates moved into
+  `spectraxgk.solver_geometry_objectives`, reduced nonlinear-window estimator
+  metrics moved into `spectraxgk.solver_nonlinear_window_objective`, and
+  VMEC/Boozer state coefficient helpers moved into
+  `spectraxgk.solver_vmec_state`. The unchanged
+  `spectraxgk.solver_objective_gradients` facade still re-exports the public
+  and test-visible names, while the manifest/docs now track the moved physics,
+  numerics, and differentiability contracts directly.
+
 - 2026-06-14: Continued the differentiable-objective refactor by moving the
   implicit dominant-eigenvalue custom VJP and branch-locality finite-difference
   report into `spectraxgk.solver_eigen_objectives`. The legacy
