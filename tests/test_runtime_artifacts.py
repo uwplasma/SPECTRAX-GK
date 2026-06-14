@@ -13,6 +13,9 @@ from spectraxgk.config import GridConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
+import spectraxgk.runtime_artifacts as runtime_artifacts
+import spectraxgk.runtime_artifact_gx_layout as gx_layout
+import spectraxgk.runtime_artifact_io as artifact_io
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
     _ensure_parent,
@@ -74,6 +77,22 @@ from spectraxgk.runtime_orchestration import (
     run_runtime_nonlinear_artifact_handoff,
 )
 
+
+
+
+def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
+    assert runtime_artifacts._artifact_base is artifact_io._artifact_base
+    assert runtime_artifacts._write_json is artifact_io._write_json
+    assert runtime_artifacts._write_csv is artifact_io._write_csv
+    assert runtime_artifacts._write_state is artifact_io._write_state
+    assert runtime_artifacts._gx_bundle_base is artifact_io._gx_bundle_base
+    assert runtime_artifacts._is_gx_netcdf_target is artifact_io._is_gx_netcdf_target
+    assert runtime_artifacts._gx_active_kx_indices is gx_layout._gx_active_kx_indices
+    assert runtime_artifacts._gx_active_ky_indices is gx_layout._gx_active_ky_indices
+    assert runtime_artifacts._condense_kykx_for_output is gx_layout._condense_kykx_for_output
+    assert runtime_artifacts._spectral_to_ri is gx_layout._spectral_to_ri
+    assert runtime_artifacts._restart_to_gx_layout is gx_layout._restart_to_gx_layout
+    assert runtime_artifacts._write_runtime_root_metadata is gx_layout._write_runtime_root_metadata
 
 def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     result = RuntimeLinearResult(

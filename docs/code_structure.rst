@@ -99,8 +99,8 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
-     - ``runtime_artifacts.py``, ``plotting.py``
-     - serialization, reload, restart append schema, plotting contract tests
+     - ``runtime_artifacts.py``, ``runtime_artifact_io.py``, ``runtime_artifact_gx_layout.py``, ``plotting.py``
+     - serialization, reload, restart append schema, GX-layout axis contracts, plotting contract tests
    * - Benchmark harness
      - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_cyclone.py``, ``benchmark_etg.py``, ``benchmark_kbm.py``, ``benchmark_kinetic.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
@@ -148,8 +148,10 @@ Completed extractions:
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, and finite-difference conditioning gates:
   ``nonlinear_gradient_evidence_core.py``
-- runtime artifact read/write and restart-append schema coverage:
-  ``runtime_artifacts.py``
+- runtime artifact read/write, generic I/O helpers, GX-style active-axis layout,
+  and restart-append schema coverage:
+  ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
+  ``runtime_artifact_gx_layout.py``
 
 Next planned extractions:
 

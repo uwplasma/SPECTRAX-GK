@@ -555,6 +555,47 @@ moved_exports = [
 fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_io"
+source_path = "src/spectraxgk/runtime_artifact_io.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
+moved_exports = [
+  "_artifact_base",
+  "_is_gx_netcdf_target",
+  "_gx_bundle_base",
+  "_ensure_parent",
+  "_flatten_series",
+  "_write_json",
+  "_write_csv",
+  "_write_state",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_gx_layout"
+source_path = "src/spectraxgk/runtime_artifact_gx_layout.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "GX-style NetCDF active-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
+moved_exports = [
+  "_require_netcdf4",
+  "_real_space_axis",
+  "_gx_active_kx_count",
+  "_gx_active_ky_count",
+  "_gx_active_kx_indices",
+  "_gx_active_ky_indices",
+  "_spectral_to_ri",
+  "_complex_to_ri",
+  "_restart_to_gx_layout",
+  "_state_basis_moments",
+  "_condense_kykx_for_output",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

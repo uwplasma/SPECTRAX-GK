@@ -1,3 +1,12 @@
+- 2026-06-14: Continued the runtime artifact refactor by moving generic
+  artifact path/file I/O helpers into `spectraxgk.runtime_artifact_io` and
+  pure GX-style active-axis, real/imag packing, restart-layout, species-matrix,
+  and diagnostic-condense helpers into
+  `spectraxgk.runtime_artifact_gx_layout`. The public
+  `spectraxgk.runtime_artifacts` facade still re-exports the moved names used
+  by existing tests and tools, while geometry/cache-dependent artifact helpers
+  remain in the facade to preserve monkeypatch seams.
+
 - 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
   the claim-boundary scope markers, acceptance config dataclasses, JSON-safe
   metric parsing, replicated finite-difference helpers, and gradient

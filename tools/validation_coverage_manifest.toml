@@ -1304,6 +1304,68 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_artifact_io"
+path = "src/spectraxgk/runtime_artifact_io.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication panel scripts and docs artifact refresh workflow",
+  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
+]
+physics_contracts = [
+  "artifact path normalization preserves documented output bundles for linear, nonlinear, and quasilinear runs",
+  "state arrays are persisted next to summary/time-series artifacts without changing solver results",
+]
+numerics_contracts = [
+  "CSV writers preserve column order and finite numeric arrays used by plotting reload tests",
+  "series flattening preserves scalar time traces and averages higher-rank diagnostic channels only along non-time axes",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add backward-compatible reload tests for older linear summary and quasilinear spectrum bundles",
+  "add a direct malformed-shape flattening test for multi-channel diagnostic CSV output",
+]
+
+[[modules]]
+module = "spectraxgk.runtime_artifact_gx_layout"
+path = "src/spectraxgk/runtime_artifact_gx_layout.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style active spectral-axis output conventions used by comparison artifacts",
+  "restart append and nonlinear resolved-diagnostic schema tests",
+]
+physics_contracts = [
+  "active kx/ky axis selection preserves the resolved nonlinear fields used in benchmark comparison plots",
+  "restart and field real/imag packing preserves species, Laguerre, Hermite, theta, kx, and ky axis semantics",
+]
+numerics_contracts = [
+  "condensed kx, ky, and ky-kx output helpers reject ambiguous full-vs-active axis lengths",
+  "spectral complex arrays are converted to deterministic float32 real/imag layout before NetCDF writes",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add a restart-layout roundtrip test for multispecies non-square kx/ky grids",
+  "add a direct active-axis regression using a known dealiased spectrum fixture",
+]
+
+[[modules]]
 module = "spectraxgk.sharding"
 path = "src/spectraxgk/sharding.py"
 owned_modules = [
