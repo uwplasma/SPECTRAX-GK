@@ -1771,3 +1771,11 @@ No long nonlinear audit should be launched from these candidates.
   modules a direct dependency on the report contract instead of depending on
   the compatibility facade. ``spectraxgk.geometry.differentiable`` preserves
   object-identical re-exports for existing public imports and tests.
+- Continued the differentiable-geometry split by moving bounded VMEC boundary
+  and Boozer bridge helpers into ``spectraxgk.geometry.booz_xform_bridge``.
+  The new module owns boundary aspect sensitivity, Boozer spectral sensitivity,
+  Boozer field-line ``|B|`` evaluation, Boozer-to-flux-tube mapping, and the
+  bounded Boozer flux-tube sensitivity report. ``spectraxgk.geometry.differentiable``
+  remains the compatibility facade with object-identical pure-helper re-exports
+  and thin wrappers for optional-backend discovery hooks; the larger VMEC-state,
+  equal-arc, and parity routines remain the next geometry tranche.

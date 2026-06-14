@@ -12,6 +12,7 @@ import pytest
 import spectraxgk
 import spectraxgk.geometry.autodiff_checks as diff_autodiff
 import spectraxgk.geometry.backend_discovery as backend_discovery
+import spectraxgk.geometry.booz_xform_bridge as booz_bridge
 import spectraxgk.geometry.differentiable as diff_geom
 import spectraxgk.geometry.flux_tube_contract as geom_contract
 import spectraxgk.geometry.numerics as geom_numerics
@@ -127,6 +128,22 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom.vmec_metric_tensor_observable_names
         is geom_contract.vmec_metric_tensor_observable_names
+    )
+    assert callable(diff_geom.vmec_boundary_aspect_sensitivity_report)
+    assert callable(diff_geom.booz_xform_spectral_sensitivity_report)
+    assert callable(diff_geom.booz_xform_flux_tube_mapping_from_inputs)
+    assert callable(diff_geom.booz_xform_flux_tube_sensitivity_report)
+    assert (
+        diff_geom.evaluate_boozer_bmag_on_field_line
+        is booz_bridge.evaluate_boozer_bmag_on_field_line
+    )
+    assert (
+        diff_geom.vmec_boundary_aspect_sensitivity_report
+        is not booz_bridge.vmec_boundary_aspect_sensitivity_report
+    )
+    assert (
+        diff_geom.booz_xform_spectral_sensitivity_report
+        is not booz_bridge.booz_xform_spectral_sensitivity_report
     )
     assert (
         diff_geom.vmec_field_line_tensor_observable_names
@@ -1024,6 +1041,30 @@ def test_optional_vmec_boundary_report_unavailable_path(monkeypatch) -> None:
     assert report["available"] is False
     assert report["aspect"] is None
     assert report["grad_ad"] is None
+
+
+def test_evaluate_boozer_bmag_on_field_line_matches_axisymmetric_series() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 16, endpoint=False)
+    bmag, dbmag = diff_geom.evaluate_boozer_bmag_on_field_line(
+        theta,
+        bmnc_b=jnp.asarray([1.0, 0.2]),
+        ixm_b=jnp.asarray([0, 1]),
+        ixn_b=jnp.asarray([0, 0]),
+        iota=0.41,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(bmag),
+        np.asarray(1.0 + 0.2 * jnp.cos(theta)),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(dbmag),
+        np.asarray(-0.2 * jnp.sin(theta)),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
 
 
 def test_geometry_sensitivity_report_rejects_nondesign_parameter_array() -> None:

@@ -182,10 +182,15 @@ Phase 1: introduce protocols and containers
   flux-tube mapping validation and geometry-observable reductions.
   ``spectraxgk.geometry.sensitivity`` owns geometry sensitivity,
   inverse-design, conditioning, and local UQ reports for solver-ready mappings.
+  ``spectraxgk.geometry.booz_xform_bridge`` owns bounded VMEC boundary and
+  Boozer-spectrum bridge checks, Boozer field-line ``|B|`` evaluation, and
+  Boozer-to-flux-tube sensitivity diagnostics.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.
-  ``spectraxgk.geometry.differentiable`` retains object-identical re-exports.
+  ``spectraxgk.geometry.differentiable`` retains object-identical re-exports
+  for pure helpers and thin wrappers for optional-backend bridge functions whose
+  legacy tests patch facade-level backend discovery.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and

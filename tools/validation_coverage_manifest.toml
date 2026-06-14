@@ -1146,6 +1146,7 @@ path = "src/spectraxgk/geometry/differentiable.py"
 owned_modules = [
   "spectraxgk.geometry.autodiff_checks",
   "spectraxgk.geometry.backend_discovery",
+  "spectraxgk.geometry.booz_xform_bridge",
   "spectraxgk.geometry.flux_tube_contract",
   "spectraxgk.geometry.miller",
   "spectraxgk.geometry.numerics",

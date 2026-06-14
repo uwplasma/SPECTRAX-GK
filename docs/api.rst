@@ -65,6 +65,13 @@ Differentiable Geometry Sensitivity
    :members:
    :private-members:
 
+Differentiable Boozer Bridge
+----------------------------
+
+.. automodule:: spectraxgk.geometry.booz_xform_bridge
+   :members:
+   :private-members:
+
 Differentiable Geometry Numerics
 --------------------------------
 

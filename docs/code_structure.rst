@@ -207,8 +207,13 @@ separates import-side effects, validation-report plumbing, public contract
 validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
 Geometry sensitivity, inverse-design, and local UQ reports live in
 ``spectraxgk.geometry.sensitivity`` so backend bridge modules can depend on
-the report contract without importing the compatibility facade. Existing
-imports retain object identity.
+the report contract without importing the compatibility facade. Bounded VMEC
+boundary and Boozer-spectrum bridge checks, Boozer ``|B|`` field-line
+evaluation, and Boozer-to-flux-tube sensitivity diagnostics live in
+``spectraxgk.geometry.booz_xform_bridge``. Pure helper imports retain object
+identity; backend-discovery-dependent bridge functions use thin facade wrappers
+so existing monkeypatch-based optional-backend tests still target
+``spectraxgk.geometry.differentiable``.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

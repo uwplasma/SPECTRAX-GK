@@ -303,6 +303,22 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.booz_xform_bridge"
+source_path = "src/spectraxgk/geometry/booz_xform_bridge.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "bounded VMEC boundary and Boozer-spectrum bridge checks, Boozer field-line |B| evaluation, and Boozer-to-flux-tube sensitivity diagnostics"
+moved_exports = [
+  "booz_xform_flux_tube_mapping_from_inputs",
+  "booz_xform_flux_tube_sensitivity_report",
+  "booz_xform_spectral_sensitivity_report",
+  "evaluate_boozer_bmag_on_field_line",
+  "vmec_boundary_aspect_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
