@@ -167,8 +167,9 @@ Phase 1: introduce protocols and containers
   benchmark split also lives in this phase:
   ``spectraxgk.benchmark_initialization`` owns benchmark initial-condition
   construction and ``spectraxgk.benchmark_reference`` owns reference containers
-  and CSV loaders, with ``spectraxgk.benchmark_helpers`` retaining object-
-  identical re-exports.
+  and CSV loaders. ``spectraxgk.benchmark_species`` owns benchmark
+  species-to-``LinearParams`` construction and reference hypercollision policy,
+  with ``spectraxgk.benchmark_helpers`` retaining object-identical re-exports.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and

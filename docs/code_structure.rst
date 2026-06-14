@@ -185,7 +185,9 @@ moving solver kernels or changing public numerical behavior.
 The first benchmark-helper split keeps ``spectraxgk.benchmark_helpers`` and
 ``spectraxgk.benchmarks`` as compatibility facades while moving narrow helper
 responsibilities into ``spectraxgk.benchmark_initialization`` and
-``spectraxgk.benchmark_reference``. Import-identity tests pin the old helper
+``spectraxgk.benchmark_reference``. Benchmark species-to-``LinearParams``
+construction and reference hypercollision/end-damping policy live in
+``spectraxgk.benchmark_species``. Import-identity tests pin the old helper
 symbols to the new modules before larger benchmark-family runners are moved.
 
 Release-scope synchronization for refactors is tracked separately in

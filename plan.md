@@ -1726,3 +1726,9 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.benchmark_helpers`` remains the compatibility facade with
   object-identical re-exports, and the refactor manifest now validates these
   implemented split modules with source paths, moved exports, tests, and docs.
+- Extended the same benchmark-helper refactor tranche with
+  ``spectraxgk.benchmark_species``. The new module owns benchmark
+  species-to-``LinearParams`` builders plus reference hypercollision and
+  linked-end damping policy. ``spectraxgk.benchmark_helpers`` continues to
+  provide object-identical re-exports, and the manifest now tracks three
+  implemented Phase-1 split modules for benchmark helpers.

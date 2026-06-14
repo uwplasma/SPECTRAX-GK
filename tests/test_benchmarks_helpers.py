@@ -9,6 +9,7 @@ from spectraxgk.analysis import ModeSelection
 import spectraxgk.benchmark_helpers as benchmark_helpers
 import spectraxgk.benchmark_initialization as benchmark_initialization
 import spectraxgk.benchmark_reference as benchmark_reference
+import spectraxgk.benchmark_species as benchmark_species
 from spectraxgk.benchmark_helpers import (
     CycloneReference,
     CycloneRunResult,
@@ -130,6 +131,22 @@ def test_split_benchmark_helper_reexports_preserve_public_import_identity() -> N
     assert (
         benchmark_helpers.compare_cyclone_to_reference
         is benchmark_reference.compare_cyclone_to_reference
+    )
+    assert benchmark_helpers._gx_p_hyper_m is benchmark_species._gx_p_hyper_m
+    assert (
+        benchmark_helpers._apply_gx_hypercollisions
+        is benchmark_species._apply_gx_hypercollisions
+    )
+    assert (
+        benchmark_helpers._gx_linked_end_damping
+        is benchmark_species._gx_linked_end_damping
+    )
+    assert (
+        benchmark_helpers._two_species_params is benchmark_species._two_species_params
+    )
+    assert (
+        benchmark_helpers._electron_only_params
+        is benchmark_species._electron_only_params
     )
 
 

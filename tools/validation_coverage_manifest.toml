@@ -815,6 +815,7 @@ path = "src/spectraxgk/benchmark_helpers.py"
 owned_modules = [
   "spectraxgk.benchmark_initialization",
   "spectraxgk.benchmark_reference",
+  "spectraxgk.benchmark_species",
 ]
 owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"
 status = "active"

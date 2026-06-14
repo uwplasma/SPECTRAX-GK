@@ -142,6 +142,13 @@ Benchmark Reference Data
    :members:
    :private-members:
 
+Benchmark Species Policies
+--------------------------
+
+.. automodule:: spectraxgk.benchmark_species
+   :members:
+   :private-members:
+
 Benchmark Defaults
 ------------------
 

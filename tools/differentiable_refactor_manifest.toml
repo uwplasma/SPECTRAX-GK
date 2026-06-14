@@ -148,6 +148,28 @@ moved_exports = [
 fast_tests = ["tests/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.benchmark_species"
+source_path = "src/spectraxgk/benchmark_species.py"
+facade_module = "spectraxgk.benchmark_helpers"
+status = "active"
+responsibility = "benchmark species-to-LinearParams construction and reference hypercollision/end-damping policy"
+moved_exports = [
+  "REFERENCE_DAMP_ENDS_AMP",
+  "REFERENCE_DAMP_ENDS_WIDTHFRAC",
+  "REFERENCE_NU_HYPER_L",
+  "REFERENCE_NU_HYPER_M",
+  "REFERENCE_P_HYPER_L",
+  "REFERENCE_P_HYPER_M",
+  "_apply_gx_hypercollisions",
+  "_electron_only_params",
+  "_gx_linked_end_damping",
+  "_gx_p_hyper_m",
+  "_two_species_params",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
