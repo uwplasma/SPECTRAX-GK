@@ -72,6 +72,13 @@ Differentiable Boozer Bridge
    :members:
    :private-members:
 
+Differentiable VMEC-State Sensitivity
+-------------------------------------
+
+.. automodule:: spectraxgk.geometry.vmec_state_sensitivity
+   :members:
+   :private-members:
+
 Differentiable Geometry Numerics
 --------------------------------
 

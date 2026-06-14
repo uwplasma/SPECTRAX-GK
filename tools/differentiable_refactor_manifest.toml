@@ -319,6 +319,20 @@ moved_exports = [
 fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_state_sensitivity"
+source_path = "src/spectraxgk/geometry/vmec_state_sensitivity.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "VMECState-to-Boozer and VMEC metric/field-line tensor AD/FD sensitivity reports for optional vmec_jax and booz_xform_jax backends"
+moved_exports = [
+  "vmec_jax_boozer_flux_tube_sensitivity_report",
+  "vmec_jax_field_line_tensor_sensitivity_report",
+  "vmec_jax_metric_tensor_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

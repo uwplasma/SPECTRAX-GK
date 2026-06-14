@@ -185,6 +185,9 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.booz_xform_bridge`` owns bounded VMEC boundary and
   Boozer-spectrum bridge checks, Boozer field-line ``|B|`` evaluation, and
   Boozer-to-flux-tube sensitivity diagnostics.
+  ``spectraxgk.geometry.vmec_state_sensitivity`` owns optional-backend
+  ``VMECState`` sensitivity reports for VMEC-to-Boozer, VMEC metric tensor, and
+  VMEC field-line tensor AD/FD gates.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.

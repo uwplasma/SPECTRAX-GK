@@ -1779,3 +1779,11 @@ No long nonlinear audit should be launched from these candidates.
   remains the compatibility facade with object-identical pure-helper re-exports
   and thin wrappers for optional-backend discovery hooks; the larger VMEC-state,
   equal-arc, and parity routines remain the next geometry tranche.
+- Continued the differentiable-geometry split by moving optional-backend
+  ``VMECState`` sensitivity reports into
+  ``spectraxgk.geometry.vmec_state_sensitivity``. The new module owns the
+  VMEC-state-to-Boozer flux-tube sensitivity report, the VMEC metric tensor
+  sensitivity report, and the VMEC field-line tensor sensitivity report.
+  ``spectraxgk.geometry.differentiable`` keeps public wrappers that preserve
+  facade-level monkeypatch hooks for backend discovery, finite-difference
+  checks, geometry sensitivity reports, Boozer mapping, and periodic sampling.

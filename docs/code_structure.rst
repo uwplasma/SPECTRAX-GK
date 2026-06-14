@@ -213,7 +213,10 @@ evaluation, and Boozer-to-flux-tube sensitivity diagnostics live in
 ``spectraxgk.geometry.booz_xform_bridge``. Pure helper imports retain object
 identity; backend-discovery-dependent bridge functions use thin facade wrappers
 so existing monkeypatch-based optional-backend tests still target
-``spectraxgk.geometry.differentiable``.
+``spectraxgk.geometry.differentiable``. VMEC-state-to-Boozer, VMEC metric
+tensor, and VMEC field-line tensor AD/FD sensitivity reports live in
+``spectraxgk.geometry.vmec_state_sensitivity``; the public facade uses the
+same hook-preserving wrapper pattern.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

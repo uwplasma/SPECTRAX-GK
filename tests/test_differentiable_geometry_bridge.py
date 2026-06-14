@@ -17,6 +17,7 @@ import spectraxgk.geometry.differentiable as diff_geom
 import spectraxgk.geometry.flux_tube_contract as geom_contract
 import spectraxgk.geometry.numerics as geom_numerics
 import spectraxgk.geometry.sensitivity as geom_sensitivity
+import spectraxgk.geometry.vmec_state_sensitivity as vmec_state_sensitivity
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
     _boozer_half_mesh_s_grid,
@@ -144,6 +145,21 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     assert (
         diff_geom.booz_xform_spectral_sensitivity_report
         is not booz_bridge.booz_xform_spectral_sensitivity_report
+    )
+    assert callable(diff_geom.vmec_jax_boozer_flux_tube_sensitivity_report)
+    assert callable(diff_geom.vmec_jax_metric_tensor_sensitivity_report)
+    assert callable(diff_geom.vmec_jax_field_line_tensor_sensitivity_report)
+    assert (
+        diff_geom.vmec_jax_boozer_flux_tube_sensitivity_report
+        is not vmec_state_sensitivity.vmec_jax_boozer_flux_tube_sensitivity_report
+    )
+    assert (
+        diff_geom.vmec_jax_metric_tensor_sensitivity_report
+        is not vmec_state_sensitivity.vmec_jax_metric_tensor_sensitivity_report
+    )
+    assert (
+        diff_geom.vmec_jax_field_line_tensor_sensitivity_report
+        is not vmec_state_sensitivity.vmec_jax_field_line_tensor_sensitivity_report
     )
     assert (
         diff_geom.vmec_field_line_tensor_observable_names
