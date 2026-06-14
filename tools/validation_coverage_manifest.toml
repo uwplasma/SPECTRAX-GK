@@ -481,6 +481,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_parallel_spectral_core"
+path = "src/spectraxgk/nonlinear_parallel_spectral_core.py"
+owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "communication-aware pseudo-spectral nonlinear bracket decomposition",
+  "serial-vs-decomposed RHS identity gates for nonlinear transport windows",
+]
+physics_contracts = [
+  "local spectral-core routes are diagnostic primitives that must reproduce serial nonlinear RHS before any decomposed route is enabled",
+  "work models and batch-pressure estimates are preflight blockers, not standalone nonlinear speedup claims",
+]
+numerics_contracts = [
+  "deterministic spectral states, pencil FFT staging, and z-chunked bracket kernels preserve serial pseudo-spectral outputs within explicit tolerances",
+  "host-staged sharding and allclose-style tolerance helpers keep device-routing artifacts fail-closed and reproducible",
+]
+fast_tests = [
+  "tests/test_nonlinear_parallel.py",
+  "tests/test_nonlinear_spectral_communication_gate.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+]
+next_tests = [
+  "add direct spectral-core import-identity and invalid-shape tests as more helpers leave the facade",
+  "promote only profiler-backed speedup claims after a physical transport-window identity artifact passes",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_diagnostics"
 path = "src/spectraxgk/nonlinear_diagnostics.py"
 owner_lane = "resolved nonlinear diagnostic packing and time-sample retention"

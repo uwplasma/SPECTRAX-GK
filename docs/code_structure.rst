@@ -93,8 +93,8 @@ Physics / Numerics / IO Map
      - ``nonlinear.py``, ``terms/nonlinear.py``
      - fixed-mode, diagnostics, collision-split, transport-window tests
    * - Parallelization policy and helpers
-     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``
-     - identity gates, one-device fallback, diagnostic-only nonlinear sharding policy
+     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``
+     - identity gates, one-device fallback, spectral-core work models, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
@@ -138,8 +138,10 @@ Completed extractions:
   VMEC/Boozer state coefficient helpers:
   ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
   ``solver_vmec_state.py``
-- nonlinear parallelization policy metadata:
-  ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``
+- nonlinear parallelization policy metadata, local domain prototypes, and
+  spectral-core work models/RHS primitives:
+  ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,
+  ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``
 - runtime artifact read/write and restart-append schema coverage:
   ``runtime_artifacts.py``
 

@@ -285,6 +285,13 @@ Parallelization
 .. automodule:: spectraxgk.parallel
    :members:
 
+Nonlinear Parallel Spectral Core
+--------------------------------
+
+.. automodule:: spectraxgk.nonlinear_parallel_spectral_core
+   :members:
+   :private-members:
+
 Nonlinear Parallel Contracts
 ----------------------------
 

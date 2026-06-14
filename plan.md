@@ -1,3 +1,12 @@
+- 2026-06-14: Continued the large-module refactor by moving nonlinear spectral
+  parallelization primitives into `spectraxgk.nonlinear_parallel_spectral_core`.
+  The split module now owns deterministic spectral test states, chunk/layout
+  utilities, communication/work models, pencil FFT/bracket kernels, RHS
+  micro-routes, z-chunked bracket helpers, host-staged sharding preparation,
+  and tolerance helpers. The public `spectraxgk.nonlinear_parallel` facade
+  still re-exports the moved public and test-visible helpers, with an
+  import-identity regression guarding downstream compatibility.
+
 - 2026-06-14: Continued the solver-objective refactor with a larger
   three-module split. Solver-ready geometry objective gates moved into
   `spectraxgk.solver_geometry_objectives`, reduced nonlinear-window estimator

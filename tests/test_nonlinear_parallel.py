@@ -10,6 +10,7 @@ import pytest
 import spectraxgk
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
 import spectraxgk.nonlinear_parallel_contracts as nonlinear_parallel_contracts
+import spectraxgk.nonlinear_parallel_spectral_core as nonlinear_parallel_spectral_core
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,
     NonlinearDomainIdentityReport,
@@ -150,6 +151,29 @@ def test_nonlinear_parallel_facade_reexports_contract_objects() -> None:
     for name in contract_names:
         assert getattr(nonlinear_parallel, name) is getattr(
             nonlinear_parallel_contracts,
+            name,
+        )
+
+
+def test_nonlinear_parallel_facade_reexports_spectral_core_helpers() -> None:
+    spectral_core_names = (
+        "deterministic_nonlinear_spectral_state",
+        "device_z_pencil_fft_batch_pressure_model",
+        "nonlinear_spectral_domain_work_model",
+        "nonlinear_spectral_pencil_work_model",
+        "_field_from_state",
+        "_host_staged_array_for_sharding",
+        "_pencil_fft2",
+        "_pencil_ifft2",
+        "_pencil_spectral_bracket",
+        "_pencil_spectral_bracket_z_chunked",
+        "_serial_nonlinear_spectral_rhs",
+        "_within_abs_or_rel_tolerance",
+    )
+
+    for name in spectral_core_names:
+        assert getattr(nonlinear_parallel, name) is getattr(
+            nonlinear_parallel_spectral_core,
             name,
         )
 
