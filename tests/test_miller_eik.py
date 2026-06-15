@@ -4,13 +4,18 @@ from pathlib import Path
 import pytest
 from unittest.mock import MagicMock
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.miller_eik import (
     build_miller_geometry_request,
     build_gx_miller_geometry_request,
     generate_runtime_miller_eik,
 )
-from spectraxgk.from_gx.miller import _request_attr
+from spectraxgk.geometry_backends.miller import _request_attr
 from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -19,7 +24,9 @@ from spectraxgk.runtime_config import (
 )
 
 
-def _miller_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> RuntimeConfig:
+def _miller_runtime_cfg(
+    tmp_path: Path, *, geometry_file: str | None = None
+) -> RuntimeConfig:
     return RuntimeConfig(
         grid=GridConfig(
             Nx=32,
@@ -32,7 +39,9 @@ def _miller_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> 
             ntheta=24,
             nperiod=1,
         ),
-        time=TimeConfig(t_max=1.0, dt=0.1, method="rk3", use_diffrax=False, fixed_dt=True),
+        time=TimeConfig(
+            t_max=1.0, dt=0.1, method="rk3", use_diffrax=False, fixed_dt=True
+        ),
         geometry=GeometryConfig(
             model="miller",
             geometry_file=geometry_file,
@@ -49,7 +58,11 @@ def _miller_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> 
             betaprim=0.0,
         ),
         init=InitializationConfig(init_field="density", init_amp=1.0e-6),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, mass=1.0, tprim=2.49, fprim=0.8),),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, mass=1.0, tprim=2.49, fprim=0.8
+            ),
+        ),
         physics=RuntimePhysicsConfig(
             linear=False,
             nonlinear=True,
@@ -60,14 +73,16 @@ def _miller_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> 
             beta=0.0,
             collisions=False,
         ),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="gx"
+        ),
     )
 
 
 def test_build_miller_geometry_request_creates_expected_request(tmp_path: Path) -> None:
     cfg = _miller_runtime_cfg(tmp_path)
     request = build_miller_geometry_request(cfg)
-    
+
     assert request.q == 1.4
     assert request.s_hat == 0.8
     assert request.rhoc == 0.5
@@ -87,10 +102,12 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
 ) -> None:
     out_path = tmp_path / "geom.eiknc.nc"
     cfg = _miller_runtime_cfg(tmp_path, geometry_file=str(out_path))
-    
+
     mock_gen = MagicMock(return_value=out_path.resolve())
     monkeypatch.setattr("spectraxgk.miller_eik.generate_miller_eik_internal", mock_gen)
-    monkeypatch.setattr("spectraxgk.miller_eik.internal_miller_backend_available", lambda: True)
+    monkeypatch.setattr(
+        "spectraxgk.miller_eik.internal_miller_backend_available", lambda: True
+    )
 
     out = generate_runtime_miller_eik(cfg)
 

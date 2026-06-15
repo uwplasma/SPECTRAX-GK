@@ -1,3 +1,15 @@
+- 2026-06-15: Completed the internal imported-geometry backend package rename
+  tranche. The implementation moved from `spectraxgk.from_gx.*` to
+  `spectraxgk.geometry_backends.*`; `spectraxgk.from_gx` now contains thin
+  compatibility shims for older scripts and archived comparison tooling. New
+  source, profiler utilities, validation gates, coverage manifests, and backend
+  tests use the canonical backend package plus neutral imported-geometry names
+  (`load_imported_geometry_netcdf`, `apply_imported_geometry_grid_defaults`,
+  `imported-netcdf`, `imported-eik`). The Miller helper kernels now expose
+  descriptive finite-difference/extension names while retaining old aliases
+  only for compatibility. Targeted backend, runtime/config/artifact, manifest,
+  lint, format, and compile checks passed locally.
+
 - 2026-06-15: Continued the naming-governance refactor by making
   `explicit_time` the canonical runtime and benchmark solver key. The old
   `gx_time` spelling is now retained only as a normalization alias for legacy

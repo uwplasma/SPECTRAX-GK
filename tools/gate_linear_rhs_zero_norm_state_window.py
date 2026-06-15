@@ -19,7 +19,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
@@ -191,9 +191,16 @@ def _build_summary(
             "safe_to_disable_over_window": bool(max_skip_error <= identity_threshold),
         }
 
-    collisions_identity_pass = bool(candidates["collisions"]["safe_to_disable_over_window"])
-    hyper_initial_zero = bool(candidates["hypercollisions"]["initial_relative_skip_error"] <= identity_threshold)
-    hyper_rejected = bool(candidates["hypercollisions"]["max_relative_skip_error"] > activation_threshold)
+    collisions_identity_pass = bool(
+        candidates["collisions"]["safe_to_disable_over_window"]
+    )
+    hyper_initial_zero = bool(
+        candidates["hypercollisions"]["initial_relative_skip_error"]
+        <= identity_threshold
+    )
+    hyper_rejected = bool(
+        candidates["hypercollisions"]["max_relative_skip_error"] > activation_threshold
+    )
     return {
         "kind": "linear_rhs_zero_norm_state_window_gate",
         "case": Path(config).stem,
@@ -228,14 +235,16 @@ def _build_summary(
 
 def _write_json(payload: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def main() -> int:
     args = _parse_args()
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg)
@@ -265,8 +274,12 @@ def main() -> int:
         amplitude=float(args.z_wave_amplitude),
         z_mode=int(args.z_mode),
     )
-    rhs0, _ = assemble_rhs_cached(state0, cache, params, terms=term_cfg, use_custom_vjp=False)
-    rhs_wave, _ = assemble_rhs_cached(z_wave, cache, params, terms=term_cfg, use_custom_vjp=False)
+    rhs0, _ = assemble_rhs_cached(
+        state0, cache, params, terms=term_cfg, use_custom_vjp=False
+    )
+    rhs_wave, _ = assemble_rhs_cached(
+        z_wave, cache, params, terms=term_cfg, use_custom_vjp=False
+    )
     _block_tree((rhs0, rhs_wave))
     states = [
         ("initial", state0),

@@ -130,7 +130,7 @@ def main() -> None:
     import numpy as np
     from jax import profiler
     from spectraxgk.geometry import (
-        apply_gx_geometry_grid_defaults,
+        apply_imported_geometry_grid_defaults,
         ensure_flux_tube_geometry_data,
     )
     from spectraxgk.grids import build_spectral_grid
@@ -171,7 +171,7 @@ def main() -> None:
         grid_cfg = _time_phase(
             timings,
             "apply_geometry_grid_defaults",
-            lambda: apply_gx_geometry_grid_defaults(geom, cfg.grid),
+            lambda: apply_imported_geometry_grid_defaults(geom, cfg.grid),
         )
         grid = _time_phase(
             timings, "build_spectral_grid", lambda: build_spectral_grid(grid_cfg)

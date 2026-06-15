@@ -34,7 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig  # noqa: E402
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)  # noqa: E402
 from spectraxgk.plotting import set_plot_style  # noqa: E402
 from spectraxgk.runtime import run_runtime_nonlinear  # noqa: E402
 from spectraxgk.runtime_config import (  # noqa: E402
@@ -106,31 +111,39 @@ def geometry_response_metrics(base_geom: Any, perturbed_geom: Any) -> dict[str, 
         base = base_profiles[name]
         perturbed = perturbed_profiles[name]
         if base.shape != perturbed.shape:
-            raise ValueError(f"geometry profile {name!r} shape changed under perturbation")
+            raise ValueError(
+                f"geometry profile {name!r} shape changed under perturbation"
+            )
         scale = max(float(np.max(np.abs(base))), 1.0)
         per_profile[name] = float(np.max(np.abs(perturbed - base)) / scale)
     scalar_values = {
         "gradpar": abs(float(perturbed_geom.gradpar()) - float(base_geom.gradpar()))
         / max(abs(float(base_geom.gradpar())), 1.0),
-        "q": abs(float(perturbed_geom.q) - float(base_geom.q)) / max(abs(float(base_geom.q)), 1.0),
-        "s_hat": abs(float(perturbed_geom.s_hat) - float(base_geom.s_hat)) / max(abs(float(base_geom.s_hat)), 1.0),
+        "q": abs(float(perturbed_geom.q) - float(base_geom.q))
+        / max(abs(float(base_geom.q)), 1.0),
+        "s_hat": abs(float(perturbed_geom.s_hat) - float(base_geom.s_hat))
+        / max(abs(float(base_geom.s_hat)), 1.0),
     }
     return {
         "max_profile_relative_change": float(max(per_profile.values())),
         "max_scalar_relative_change": float(max(scalar_values.values())),
-        "max_relative_change": float(max(max(per_profile.values()), max(scalar_values.values()))),
+        "max_relative_change": float(
+            max(max(per_profile.values()), max(scalar_values.values()))
+        ),
         "per_profile": per_profile,
         "per_scalar": scalar_values,
     }
 
 
 def write_flux_tube_geometry_netcdf(geom: Any, path: Path) -> None:
-    """Write ``FluxTubeGeometryData`` as a grouped GX-style geometry NetCDF."""
+    """Write ``FluxTubeGeometryData`` as a grouped imported-geometry NetCDF."""
 
     try:
         from netCDF4 import Dataset
     except ImportError as exc:  # pragma: no cover - optional dependency
-        raise ImportError("netCDF4 is required for VMEC/Boozer nonlinear-window FD audits") from exc
+        raise ImportError(
+            "netCDF4 is required for VMEC/Boozer nonlinear-window FD audits"
+        ) from exc
 
     path.parent.mkdir(parents=True, exist_ok=True)
     theta = np.asarray(geom.theta, dtype=np.float64)
@@ -142,7 +155,9 @@ def write_flux_tube_geometry_netcdf(geom: Any, path: Path) -> None:
         geometry.createDimension("theta", theta.size)
         grids.createVariable("theta", "f8", ("theta",))[:] = theta
         for name, profile in profiles.items():
-            geometry.createVariable(name, "f8", ("theta",))[:] = np.asarray(profile, dtype=np.float64)
+            geometry.createVariable(name, "f8", ("theta",))[:] = np.asarray(
+                profile, dtype=np.float64
+            )
         scalars = {
             "gradpar": float(geom.gradpar()),
             "q": float(geom.q),
@@ -173,7 +188,9 @@ def vmec_boozer_runtime_config(
     """Return a compact imported-geometry nonlinear startup-audit configuration."""
 
     return RuntimeConfig(
-        grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"),
+        grid=GridConfig(
+            Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"
+        ),
         time=TimeConfig(
             t_max=float(dt),
             dt=float(dt),
@@ -183,7 +200,9 @@ def vmec_boozer_runtime_config(
             sample_stride=1,
             diagnostics_stride=1,
         ),
-        geometry=GeometryConfig(model="gx-netcdf", geometry_file=str(Path(geometry_file))),
+        geometry=GeometryConfig(
+            model="imported-netcdf", geometry_file=str(Path(geometry_file))
+        ),
         init=InitializationConfig(
             init_field="density",
             init_amp=float(init_amp),
@@ -191,8 +210,12 @@ def vmec_boozer_runtime_config(
             random_seed=int(random_seed),
             init_single=False,
         ),
-        species=(RuntimeSpeciesConfig(name="ion", tprim=float(tprim), fprim=float(fprim)),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="gx"),
+        species=(
+            RuntimeSpeciesConfig(name="ion", tprim=float(tprim), fprim=float(fprim)),
+        ),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="gx"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
         terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
     )
@@ -301,21 +324,27 @@ def build_vmec_boozer_audit_payload(
     max_trend = max(float(run["window"]["trend"]) for run in runs)
     derivative_asymmetry = abs(forward - backward) / max(abs(central), 1.0e-300)
     geom_changes = [
-        float(by_label[label]["geometry_response"]["max_relative_change"]) for label in ("minus", "plus")
+        float(by_label[label]["geometry_response"]["max_relative_change"])
+        for label in ("minus", "plus")
     ]
     min_geom_change = min(geom_changes)
 
     gates = {
         "finite_outputs": all(
             np.all(np.isfinite(np.asarray(run["heat_flux"], dtype=float)))
-            and all(math.isfinite(float(run["window"][key])) for key in ("mean", "cv", "trend", "slope"))
+            and all(
+                math.isfinite(float(run["window"][key]))
+                for key in ("mean", "cv", "trend", "slope")
+            )
             for run in runs
         ),
         "repeatability": bool(repeat_rel <= float(repeatability_rtol)),
         "window_cv": bool(max_cv <= float(max_window_cv)),
         "window_trend": bool(max_trend <= float(max_window_trend)),
         "resolved_fd_response": bool(response_fraction >= float(min_response_fraction)),
-        "geometry_perturbation_resolved": bool(min_geom_change >= float(min_geometry_relative_change)),
+        "geometry_perturbation_resolved": bool(
+            min_geom_change >= float(min_geometry_relative_change)
+        ),
     }
     startup_gate = bool(all(gates.values()))
     transport_gate = late_transport_requirements(runs)
@@ -352,7 +381,10 @@ def build_vmec_boozer_audit_payload(
         },
         "diagnostics": {
             "observable_ordered_response": bool(plus > base > minus),
-            "forward_backward_same_sign": bool((forward >= 0.0 and backward >= 0.0) or (forward <= 0.0 and backward <= 0.0)),
+            "forward_backward_same_sign": bool(
+                (forward >= 0.0 and backward >= 0.0)
+                or (forward <= 0.0 and backward <= 0.0)
+            ),
         },
         "gates": gates,
         "transport_average_requirements": transport_gate,
@@ -371,8 +403,18 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
 
     set_plot_style()
     runs = list(payload["runs"])
-    colors = {"minus": "#457b9d", "base": "#1b4332", "plus": "#d1495b", "base_repeat": "#6c757d"}
-    labels = {"minus": "base - step", "base": "base", "plus": "base + step", "base_repeat": "base repeat"}
+    colors = {
+        "minus": "#457b9d",
+        "base": "#1b4332",
+        "plus": "#d1495b",
+        "base_repeat": "#6c757d",
+    }
+    labels = {
+        "minus": "base - step",
+        "base": "base",
+        "plus": "base + step",
+        "base_repeat": "base repeat",
+    }
     fig, axes = plt.subplots(1, 2, figsize=(12.8, 4.8), constrained_layout=True)
     ax0, ax1 = axes
     for run in runs:
@@ -380,8 +422,19 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         t = np.asarray(run["time"], dtype=float)
         q = np.asarray(run["heat_flux"], dtype=float)
         window = run["window"]
-        ax0.plot(t, q, linewidth=2.0, color=colors.get(label, "#333333"), label=labels.get(label, label))
-        ax0.axvspan(float(window["t_min"]), float(window["t_max"]), color=colors.get(label, "#333333"), alpha=0.055)
+        ax0.plot(
+            t,
+            q,
+            linewidth=2.0,
+            color=colors.get(label, "#333333"),
+            label=labels.get(label, label),
+        )
+        ax0.axvspan(
+            float(window["t_min"]),
+            float(window["t_max"]),
+            color=colors.get(label, "#333333"),
+            alpha=0.055,
+        )
     ax0.set_title("VMEC/Boozer-perturbed startup windows")
     ax0.set_xlabel("time")
     ax0.set_ylabel("heat flux")
@@ -390,9 +443,23 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
 
     order = ["minus", "base", "plus", "base_repeat"]
     x = np.arange(len(order), dtype=float)
-    means = [float(next(run for run in runs if str(run["label"]) == label)["window"]["mean"]) for label in order]
-    stds = [float(next(run for run in runs if str(run["label"]) == label)["window"]["std"]) for label in order]
-    ax1.bar(x, means, yerr=stds, capsize=4, color=[colors[label] for label in order], edgecolor="#222222", linewidth=0.7)
+    means = [
+        float(next(run for run in runs if str(run["label"]) == label)["window"]["mean"])
+        for label in order
+    ]
+    stds = [
+        float(next(run for run in runs if str(run["label"]) == label)["window"]["std"])
+        for label in order
+    ]
+    ax1.bar(
+        x,
+        means,
+        yerr=stds,
+        capsize=4,
+        color=[colors[label] for label in order],
+        edgecolor="#222222",
+        linewidth=0.7,
+    )
     ax1.set_xticks(x, [labels[label] for label in order], rotation=18, ha="right")
     ax1.set_ylabel("startup-window heat-flux mean")
     ax1.set_title("VMEC-state FD conditioning")
@@ -418,9 +485,19 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         ha="right",
         va="bottom",
         fontsize=8.6,
-        bbox={"facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.9, "boxstyle": "round,pad=0.35"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cccccc",
+            "alpha": 0.9,
+            "boxstyle": "round,pad=0.35",
+        },
     )
-    fig.suptitle("VMEC/Boozer nonlinear startup finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
+    fig.suptitle(
+        "VMEC/Boozer nonlinear startup finite-difference audit",
+        y=1.04,
+        fontsize=14,
+        fontweight="bold",
+    )
     return fig
 
 
@@ -431,7 +508,11 @@ def write_audit_artifacts(payload: dict[str, Any], out: Path) -> dict[str, str]:
     json_path = out.with_suffix(".json")
     csv_path = out.with_suffix(".csv")
     pdf_path = out.with_suffix(".pdf")
-    json_path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False)
+        + "\n",
+        encoding="utf-8",
+    )
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
         fieldnames = [
             "label",
@@ -453,14 +534,21 @@ def write_audit_artifacts(payload: dict[str, Any], out: Path) -> dict[str, str]:
                     "window_std": run["window"]["std"],
                     "window_cv": run["window"]["cv"],
                     "window_trend": run["window"]["trend"],
-                    "geometry_max_relative_change": run["geometry_response"]["max_relative_change"],
+                    "geometry_max_relative_change": run["geometry_response"][
+                        "max_relative_change"
+                    ],
                 }
             )
     fig = audit_figure(payload)
     fig.savefig(out, dpi=220, bbox_inches="tight")
     fig.savefig(pdf_path, bbox_inches="tight")
     plt.close(fig)
-    return {"png": str(out), "pdf": str(pdf_path), "csv": str(csv_path), "json": str(json_path)}
+    return {
+        "png": str(out),
+        "pdf": str(pdf_path),
+        "csv": str(csv_path),
+        "json": str(json_path),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -511,7 +599,9 @@ def main(argv: list[str] | None = None) -> int:
         ntheta=int(args.ntheta),
         mboz=int(args.mboz),
         nboz=int(args.nboz),
-        surface_stencil_width=None if int(args.surface_stencil_width) <= 0 else int(args.surface_stencil_width),
+        surface_stencil_width=None
+        if int(args.surface_stencil_width) <= 0
+        else int(args.surface_stencil_width),
         n_laguerre=int(args.nl),
         n_hermite=int(args.nm),
     )
@@ -536,10 +626,18 @@ def main(argv: list[str] | None = None) -> int:
     with tempfile.TemporaryDirectory(prefix="spectrax_vmec_boozer_nl_fd_") as tmp:
         workdir = Path(tmp)
         runs = [
-            run_vmec_boozer_window(label="minus", perturbation=-step, workdir=workdir, **run_kwargs),
-            run_vmec_boozer_window(label="base", perturbation=0.0, workdir=workdir, **run_kwargs),
-            run_vmec_boozer_window(label="plus", perturbation=step, workdir=workdir, **run_kwargs),
-            run_vmec_boozer_window(label="base_repeat", perturbation=0.0, workdir=workdir, **run_kwargs),
+            run_vmec_boozer_window(
+                label="minus", perturbation=-step, workdir=workdir, **run_kwargs
+            ),
+            run_vmec_boozer_window(
+                label="base", perturbation=0.0, workdir=workdir, **run_kwargs
+            ),
+            run_vmec_boozer_window(
+                label="plus", perturbation=step, workdir=workdir, **run_kwargs
+            ),
+            run_vmec_boozer_window(
+                label="base_repeat", perturbation=0.0, workdir=workdir, **run_kwargs
+            ),
         ]
     payload = build_vmec_boozer_audit_payload(
         runs,
@@ -554,7 +652,9 @@ def main(argv: list[str] | None = None) -> int:
         min_geometry_relative_change=float(args.min_geometry_relative_change),
     )
     paths = write_audit_artifacts(payload, Path(args.out))
-    print(f"passed={payload['passed']} response_fraction={payload['metrics']['response_fraction']:.6g}")
+    print(
+        f"passed={payload['passed']} response_fraction={payload['metrics']['response_fraction']:.6g}"
+    )
     for path in paths.values():
         print(f"Wrote {path}")
     return 0 if bool(payload["passed"]) else 1

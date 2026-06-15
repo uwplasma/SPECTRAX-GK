@@ -34,7 +34,7 @@ remain unchanged:
 - ``spectraxgk.runtime_diagnostics``
 - ``spectraxgk.runtime_chunks``
 - ``spectraxgk.runtime_results``
-- ``spectraxgk.from_gx.*``
+- ``spectraxgk.geometry_backends.*``
 - low-level geometry adapters and import bridges
 
 Large refactor status for this push: the split runtime, diagnostics,
@@ -81,7 +81,7 @@ Physics / Numerics / IO Map
      - ``basis.py``, ``grids.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``from_gx/vmec.py``
+     - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``geometry_backends/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
      - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``

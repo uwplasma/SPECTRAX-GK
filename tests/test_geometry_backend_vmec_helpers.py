@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.from_gx.vmec import (
+from spectraxgk.geometry_backends.vmec import (
     _apply_flux_tube_cut,
     _booz_read_wout_square_layout_failure,
     _booz_xform_jax_search_paths,
@@ -22,6 +22,7 @@ from spectraxgk.from_gx.vmec import (
     nperiod_set,
     write_vmec_eik_netcdf,
 )
+from spectraxgk.from_gx import vmec as legacy_vmec_backend
 
 
 def test_booz_search_paths_include_env_and_src(monkeypatch, tmp_path: Path) -> None:
@@ -31,6 +32,15 @@ def test_booz_search_paths_include_env_and_src(monkeypatch, tmp_path: Path) -> N
     paths = _booz_xform_jax_search_paths()
     assert checkout.resolve() in paths
     assert (checkout / "src").resolve() in paths
+
+
+def test_legacy_vmec_backend_shim_exposes_private_helpers() -> None:
+    assert (
+        legacy_vmec_backend.internal_vmec_backend_available
+        is internal_vmec_backend_available
+    )
+    assert legacy_vmec_backend._vmec_fieldlines is _vmec_fieldlines
+    assert legacy_vmec_backend._apply_flux_tube_cut is _apply_flux_tube_cut
 
 
 def test_import_module_with_search_paths_loads_temp_module(tmp_path: Path) -> None:
@@ -53,7 +63,9 @@ def test_import_module_with_search_paths_replaces_namespace_without_backend(
     monkeypatch.setitem(
         sys.modules,
         "booz_xform_jax",
-        SimpleNamespace(__name__="booz_xform_jax", __path__=[str(tmp_path / "namespace")]),
+        SimpleNamespace(
+            __name__="booz_xform_jax", __path__=[str(tmp_path / "namespace")]
+        ),
     )
 
     mod = _import_module_with_search_paths(
@@ -71,10 +83,14 @@ def test_import_module_with_search_paths_raises_on_missing(tmp_path: Path) -> No
 
 
 def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._booz_xform_jax_search_paths", lambda: [])
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_module_with_search_paths",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError("jax backend missing")),
+        "spectraxgk.geometry_backends.vmec._booz_xform_jax_search_paths", lambda: []
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_module_with_search_paths",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ImportError("jax backend missing")
+        ),
     )
 
     marker = SimpleNamespace(name="fallback", Booz_xform=object)
@@ -84,17 +100,23 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
             return marker
         raise ImportError(name)
 
-    monkeypatch.setattr("spectraxgk.from_gx.vmec.importlib.import_module", _import_module)
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec.importlib.import_module", _import_module
+    )
     assert _import_booz_backend() is marker
 
 
 def test_import_booz_backend_honors_fortran_override(monkeypatch) -> None:
     marker = SimpleNamespace(name="forced-fortran", Booz_xform=object)
     monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "fortran")
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_xform_backend", lambda: marker)
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_booz_xform_jax_backend",
-        lambda: (_ for _ in ()).throw(AssertionError("jax backend should not be imported")),
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_backend", lambda: marker
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_jax_backend",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("jax backend should not be imported")
+        ),
     )
 
     assert _import_booz_backend() is marker
@@ -102,23 +124,32 @@ def test_import_booz_backend_honors_fortran_override(monkeypatch) -> None:
 
 def test_square_layout_failure_matcher_is_specific() -> None:
     assert _booz_read_wout_square_layout_failure(
-        ValueError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
+        ValueError(
+            "rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50"
+        )
     )
     assert not _booz_read_wout_square_layout_failure(
         ValueError("rmnc0 has unexpected shape (50, 49)")
     )
     assert not _booz_read_wout_square_layout_failure(
-        RuntimeError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
+        RuntimeError(
+            "rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50"
+        )
     )
 
 
 def test_import_booz_backend_honors_jax_override(monkeypatch) -> None:
     marker = SimpleNamespace(name="forced-jax", Booz_xform=object)
     monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "jax")
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_xform_jax_backend", lambda: marker)
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_booz_xform_backend",
-        lambda: (_ for _ in ()).throw(AssertionError("booz_xform should not be imported")),
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_jax_backend",
+        lambda: marker,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_backend",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("booz_xform should not be imported")
+        ),
     )
 
     assert _import_booz_backend() is marker
@@ -134,23 +165,27 @@ def test_import_booz_backend_rejects_unknown_override(monkeypatch) -> None:
 def test_import_booz_backend_reports_missing_backends(monkeypatch) -> None:
     monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_booz_xform_jax_backend",
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_jax_backend",
         lambda: (_ for _ in ()).throw(ImportError("jax missing")),
     )
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_booz_xform_backend",
+        "spectraxgk.geometry_backends.vmec._import_booz_xform_backend",
         lambda: (_ for _ in ()).throw(ImportError("booz missing")),
     )
 
-    with pytest.raises(ImportError, match="booz_xform_jax/booz_xform backend unavailable"):
+    with pytest.raises(
+        ImportError, match="booz_xform_jax/booz_xform backend unavailable"
+    ):
         _import_booz_backend()
 
 
 def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None:
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: object())
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_backend", lambda: object()
+    )
     assert internal_vmec_backend_available() is True
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec._import_booz_backend",
+        "spectraxgk.geometry_backends.vmec._import_booz_backend",
         lambda: (_ for _ in ()).throw(ImportError("missing")),
     )
     assert internal_vmec_backend_available() is False
@@ -158,10 +193,12 @@ def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None
 
 def test_nperiod_set_and_dermv(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.from_gx.vmec.nperiod_contract",
+        "spectraxgk.geometry_backends.vmec.nperiod_contract",
         lambda values, theta, npol: (values[1:-1], theta[1:-1]),
     )
-    values, theta = nperiod_set(np.array([0.0, 1.0, 2.0]), np.array([-2.0, 0.0, 2.0]), 1.0)
+    values, theta = nperiod_set(
+        np.array([0.0, 1.0, 2.0]), np.array([-2.0, 0.0, 2.0]), 1.0
+    )
     np.testing.assert_allclose(values, [1.0])
     np.testing.assert_allclose(theta, [0.0])
 
@@ -242,8 +279,16 @@ def test_equal_arc_remap_returns_constant_gradpar() -> None:
         "grho": np.linspace(0.8, 1.2, theta.size),
         "Rplot": np.linspace(5.0, 6.0, theta.size),
         "Zplot": np.linspace(-1.0, 1.0, theta.size),
-        "grad_x": np.vstack([np.ones(theta.size), 2.0 * np.ones(theta.size), 3.0 * np.ones(theta.size)]),
-        "grad_y": np.vstack([4.0 * np.ones(theta.size), 5.0 * np.ones(theta.size), 6.0 * np.ones(theta.size)]),
+        "grad_x": np.vstack(
+            [np.ones(theta.size), 2.0 * np.ones(theta.size), 3.0 * np.ones(theta.size)]
+        ),
+        "grad_y": np.vstack(
+            [
+                4.0 * np.ones(theta.size),
+                5.0 * np.ones(theta.size),
+                6.0 * np.ones(theta.size),
+            ]
+        ),
     }
 
     gradpar_eqarc, out = _equal_arc_remap(theta, arrays, ntheta=9)
@@ -255,10 +300,17 @@ def test_equal_arc_remap_returns_constant_gradpar() -> None:
     assert np.isfinite(out["scale"])
 
 
-def _mock_geo_for_cut(theta: np.ndarray, *, gds21: np.ndarray | None = None, gbdrift0: np.ndarray | None = None) -> SimpleNamespace:
+def _mock_geo_for_cut(
+    theta: np.ndarray,
+    *,
+    gds21: np.ndarray | None = None,
+    gbdrift0: np.ndarray | None = None,
+) -> SimpleNamespace:
     base = np.linspace(1.0, 2.0, theta.size)
     gds21_arr = gds21 if gds21 is not None else np.linspace(-1.0, 1.0, theta.size)
-    gbdrift0_arr = gbdrift0 if gbdrift0 is not None else np.linspace(-1.0, 1.0, theta.size)
+    gbdrift0_arr = (
+        gbdrift0 if gbdrift0 is not None else np.linspace(-1.0, 1.0, theta.size)
+    )
     return SimpleNamespace(
         bmag=base[None, None, :],
         gradpar_theta_b=np.abs(base)[None, None, :],
@@ -336,7 +388,9 @@ class _FakeBoozXform:
 class _SquareLayoutFailingBoozXform(_FakeBoozXform):
     def read_wout(self, path: str) -> None:
         self.read_path = path
-        raise ValueError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
+        raise ValueError(
+            "rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50"
+        )
 
 
 def _const_callable(value: float):
@@ -377,9 +431,30 @@ def _fake_vmec_spline_struct() -> SimpleNamespace:
 @pytest.mark.parametrize(
     ("flux_tube_cut", "geo", "expected_cut", "jtwist_in"),
     [
-        ("gds21", _mock_geo_for_cut(np.linspace(-2.0, 2.0, 9), gds21=np.linspace(-2.0, 2.0, 9) - 0.5), 0.5, None),
-        ("gbdrift0", _mock_geo_for_cut(np.linspace(-2.0, 2.0, 9), gbdrift0=np.linspace(-2.0, 2.0, 9) - 0.75), 0.75, None),
-        ("aspect", _mock_geo_for_cut(np.linspace(-2.0, 2.0, 9), gds21=np.linspace(-2.0, 2.0, 9)), 1.0, 1),
+        (
+            "gds21",
+            _mock_geo_for_cut(
+                np.linspace(-2.0, 2.0, 9), gds21=np.linspace(-2.0, 2.0, 9) - 0.5
+            ),
+            0.5,
+            None,
+        ),
+        (
+            "gbdrift0",
+            _mock_geo_for_cut(
+                np.linspace(-2.0, 2.0, 9), gbdrift0=np.linspace(-2.0, 2.0, 9) - 0.75
+            ),
+            0.75,
+            None,
+        ),
+        (
+            "aspect",
+            _mock_geo_for_cut(
+                np.linspace(-2.0, 2.0, 9), gds21=np.linspace(-2.0, 2.0, 9)
+            ),
+            1.0,
+            1,
+        ),
     ],
 )
 def test_apply_flux_tube_cut_branch_specific_roots(
@@ -464,9 +539,19 @@ def test_write_vmec_eik_netcdf_writes_expected_variables(tmp_path: Path) -> None
         "cvdrift0": np.linspace(0.4, 0.5, theta.size),
         "Rplot": np.linspace(5.0, 6.0, theta.size),
         "Zplot": np.linspace(-1.0, 1.0, theta.size),
-        "grad_x": np.vstack([np.ones(theta.size), 2.0 * np.ones(theta.size), 3.0 * np.ones(theta.size)]),
-        "grad_y": np.vstack([4.0 * np.ones(theta.size), 5.0 * np.ones(theta.size), 6.0 * np.ones(theta.size)]),
-        "b_vec": np.vstack([np.ones(theta.size), np.zeros(theta.size), np.zeros(theta.size)]),
+        "grad_x": np.vstack(
+            [np.ones(theta.size), 2.0 * np.ones(theta.size), 3.0 * np.ones(theta.size)]
+        ),
+        "grad_y": np.vstack(
+            [
+                4.0 * np.ones(theta.size),
+                5.0 * np.ones(theta.size),
+                6.0 * np.ones(theta.size),
+            ]
+        ),
+        "b_vec": np.vstack(
+            [np.ones(theta.size), np.zeros(theta.size), np.zeros(theta.size)]
+        ),
         "dpsidrho": 2.0,
         "kxfac": 1.7,
         "Rmaj": 5.5,
@@ -489,7 +574,9 @@ def test_write_vmec_eik_netcdf_writes_expected_variables(tmp_path: Path) -> None
         assert float(ds.variables["kxfac"].getValue()) == pytest.approx(1.7)
         assert float(ds.variables["Rmaj"].getValue()) == pytest.approx(5.5)
         assert int(ds.variables["nfp"].getValue()) == 5
-        expected_jacob = 1.0 / abs((1.0 / abs(profiles["dpsidrho"])) * gradpar[0] * bmag)
+        expected_jacob = 1.0 / abs(
+            (1.0 / abs(profiles["dpsidrho"])) * gradpar[0] * bmag
+        )
         np.testing.assert_allclose(ds.variables["jacob"][:], expected_jacob)
 
 
@@ -540,13 +627,24 @@ def test_vmec_splines_builds_interpolants_and_metadata() -> None:
     assert out.d_iota_d_s(0.5) == pytest.approx(0.4, abs=1.0e-10)
 
 
-def test_vmec_fieldlines_respects_overrides_and_closes_dataset(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_vmec_fieldlines_respects_overrides_and_closes_dataset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fake_nc = _FakeNCDataset(mpol=3, ntor=2)
     fake_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
 
-    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: fake_backend)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", lambda _nc, _booz: _fake_vmec_spline_struct())
+    monkeypatch.setitem(
+        sys.modules,
+        "netCDF4",
+        SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_backend", lambda: fake_backend
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._vmec_splines",
+        lambda _nc, _booz: _fake_vmec_spline_struct(),
+    )
 
     out = _vmec_fieldlines(
         vmec_fname="dummy.nc",
@@ -598,9 +696,17 @@ def test_vmec_fieldlines_falls_back_for_square_vmec_jax_wout(
         return _fake_vmec_spline_struct()
 
     monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
-    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", _fake_import_backend)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", _fake_splines)
+    monkeypatch.setitem(
+        sys.modules,
+        "netCDF4",
+        SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_backend", _fake_import_backend
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._vmec_splines", _fake_splines
+    )
 
     out = _vmec_fieldlines(
         vmec_fname="square-vmec-jax.nc",
@@ -634,8 +740,14 @@ def test_vmec_fieldlines_does_not_fallback_when_booz_backend_is_forced(
         return jax_backend
 
     monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "jax")
-    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", _fake_import_backend)
+    monkeypatch.setitem(
+        sys.modules,
+        "netCDF4",
+        SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_backend", _fake_import_backend
+    )
 
     with pytest.raises(ValueError, match="rmnc0 has unexpected shape"):
         _vmec_fieldlines(
@@ -655,15 +767,25 @@ def test_vmec_fieldlines_does_not_fallback_when_booz_backend_is_forced(
     assert fake_nc.closed is True
 
 
-def test_vmec_fieldlines_rejects_degenerate_reference_length(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_vmec_fieldlines_rejects_degenerate_reference_length(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fake_nc = _FakeNCDataset(mpol=3, ntor=2)
     fake_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
     bad_vs = _fake_vmec_spline_struct()
     bad_vs.Aminor_p = 0.0
 
-    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: fake_backend)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", lambda _nc, _booz: bad_vs)
+    monkeypatch.setitem(
+        sys.modules,
+        "netCDF4",
+        SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._import_booz_backend", lambda: fake_backend
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._vmec_splines", lambda _nc, _booz: bad_vs
+    )
 
     with pytest.raises(ValueError, match="Aminor_p"):
         _vmec_fieldlines(
@@ -704,9 +826,27 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
         "grho": np.full(theta_out.size, 1.1),
         "Rplot": np.linspace(4.0, 6.0, theta_out.size),
         "Zplot": np.linspace(-1.0, 1.0, theta_out.size),
-        "grad_x": np.vstack([np.ones(theta_out.size), 2.0 * np.ones(theta_out.size), 3.0 * np.ones(theta_out.size)]),
-        "grad_y": np.vstack([4.0 * np.ones(theta_out.size), 5.0 * np.ones(theta_out.size), 6.0 * np.ones(theta_out.size)]),
-        "b_vec": np.vstack([np.ones(theta_out.size), np.zeros(theta_out.size), np.zeros(theta_out.size)]),
+        "grad_x": np.vstack(
+            [
+                np.ones(theta_out.size),
+                2.0 * np.ones(theta_out.size),
+                3.0 * np.ones(theta_out.size),
+            ]
+        ),
+        "grad_y": np.vstack(
+            [
+                4.0 * np.ones(theta_out.size),
+                5.0 * np.ones(theta_out.size),
+                6.0 * np.ones(theta_out.size),
+            ]
+        ),
+        "b_vec": np.vstack(
+            [
+                np.ones(theta_out.size),
+                np.zeros(theta_out.size),
+                np.zeros(theta_out.size),
+            ]
+        ),
         "scale": 1.0,
     }
 
@@ -729,14 +869,24 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
         calls["remap"] = kwargs
         return 0.5, arrays_gx
 
-    def _mock_write(path: Path, profiles: dict[str, object], *, request: object) -> None:
+    def _mock_write(
+        path: Path, profiles: dict[str, object], *, request: object
+    ) -> None:
         calls["write"] = {"path": path, "profiles": profiles, "request": request}
         Path(path).write_bytes(b"mock eik data")
 
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_fieldlines", _mock_fieldlines)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._apply_flux_tube_cut", _mock_cut)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec._equal_arc_remap", _mock_remap)
-    monkeypatch.setattr("spectraxgk.from_gx.vmec.write_vmec_eik_netcdf", _mock_write)
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._vmec_fieldlines", _mock_fieldlines
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._apply_flux_tube_cut", _mock_cut
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec._equal_arc_remap", _mock_remap
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry_backends.vmec.write_vmec_eik_netcdf", _mock_write
+    )
 
     request = SimpleNamespace(
         vmec_file=str(tmp_path / "wout_test.nc"),
@@ -762,10 +912,14 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
         jtwist=3,
     )
 
-    out = generate_vmec_eik_internal(output_path=tmp_path / "out.eik.nc", request=request)
+    out = generate_vmec_eik_internal(
+        output_path=tmp_path / "out.eik.nc", request=request
+    )
 
     assert out == (tmp_path / "out.eik.nc").resolve()
-    assert calls["fieldlines"]["betaprim"] == pytest.approx(-0.02 * (2.0 * 3.0 * (4.0 + 6.0) + 1.0 * 0.5 * (5.0 + 7.0)))
+    assert calls["fieldlines"]["betaprim"] == pytest.approx(
+        -0.02 * (2.0 * 3.0 * (4.0 + 6.0) + 1.0 * 0.5 * (5.0 + 7.0))
+    )
     assert calls["cut"]["flux_tube_cut"] == "aspect"
     assert calls["cut"]["which_crossing"] == -1
     assert calls["cut"]["ntheta"] == 9

@@ -12,6 +12,10 @@ excluded_modules = [
   "spectraxgk._version",
   "spectraxgk.core.__init__",
   "spectraxgk.from_gx.__init__",
+  "spectraxgk.from_gx.kernels",
+  "spectraxgk.from_gx.miller",
+  "spectraxgk.from_gx.vmec",
+  "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
@@ -1202,11 +1206,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.from_gx.vmec"
-path = "src/spectraxgk/from_gx/vmec.py"
+module = "spectraxgk.geometry_backends.vmec"
+path = "src/spectraxgk/geometry_backends/vmec.py"
 owned_modules = [
-  "spectraxgk.from_gx.kernels",
-  "spectraxgk.from_gx.miller",
+  "spectraxgk.geometry_backends.kernels",
+  "spectraxgk.geometry_backends.miller",
   "spectraxgk.miller_eik",
   "spectraxgk.vmec_eik",
 ]
@@ -1228,7 +1232,7 @@ numerics_contracts = [
   "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
 ]
 fast_tests = [
-  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_geometry_backend_vmec_helpers.py",
   "tests/test_vmec_eik.py",
   "tests/test_vmec_roundtrip_gate.py",
   "tests/test_run_vmec_roundtrip_gate.py",
@@ -1281,7 +1285,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
   "tests/test_build_vmec_boozer_parity_matrix.py",
-  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_geometry_backend_vmec_helpers.py",
   "tests/test_vmec_eik.py",
 ]
 artifact_paths = [

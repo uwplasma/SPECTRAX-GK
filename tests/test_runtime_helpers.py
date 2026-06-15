@@ -503,7 +503,7 @@ def test_runtime_build_geometry_vmec_and_miller_branches(
     build_runtime_geometry(replace(cfg, geometry=GeometryConfig(model="miller")))
     build_runtime_geometry(cfg)
     assert captured[0] == ("vmec-eik", str(vmec_path))
-    assert captured[1] == ("gx-eik", str(miller_path))
+    assert captured[1] == ("imported-eik", str(miller_path))
     assert captured[2][0] == cfg.geometry.model
 
 

@@ -90,7 +90,7 @@ The remaining work should be closed in this order.
    The active blockers are ``runtime.py``, ``linear.py``, ``nonlinear.py``,
    ``benchmarks.py``, ``diagnostics.py``, ``runtime_artifacts.py``,
    ``validation_gates.py``, ``zonal_validation.py``, and
-   ``from_gx/vmec.py``. Each slice should land with targeted tests and no
+   ``geometry_backends/vmec.py``. Each slice should land with targeted tests and no
    physics-model change.
 
 3. **Turn open or deferred physics lanes into explicit gates.**

@@ -12,7 +12,7 @@ from typing import Any
 
 import numpy as np
 
-from spectraxgk.geometry import load_gx_geometry_netcdf
+from spectraxgk.geometry import load_imported_geometry_netcdf
 from spectraxgk.io import load_runtime_from_toml, load_toml
 from spectraxgk.vmec_eik import generate_runtime_vmec_eik
 
@@ -32,8 +32,15 @@ FIELDS = (
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--manifest", type=Path, required=True, help="TOML manifest describing each VMEC roundtrip lane.")
-    p.add_argument("--lane", type=str, default=None, help="Optional single lane key to run.")
+    p.add_argument(
+        "--manifest",
+        type=Path,
+        required=True,
+        help="TOML manifest describing each VMEC roundtrip lane.",
+    )
+    p.add_argument(
+        "--lane", type=str, default=None, help="Optional single lane key to run."
+    )
     p.add_argument(
         "--outdir",
         type=Path,
@@ -94,7 +101,9 @@ def _array_metrics(a: np.ndarray, b: np.ndarray) -> dict[str, float]:
     }
 
 
-def _run_lane(cfg_path: Path, lane_cfg: dict[str, Any], *, out_dir: Path) -> dict[str, Any]:
+def _run_lane(
+    cfg_path: Path, lane_cfg: dict[str, Any], *, out_dir: Path
+) -> dict[str, Any]:
     env_cfg = lane_cfg.get("env")
     env_updates = (
         {str(key): _expand_env_value(value) for key, value in env_cfg.items()}
@@ -107,11 +116,14 @@ def _run_lane(cfg_path: Path, lane_cfg: dict[str, Any], *, out_dir: Path) -> dic
         out2 = out_dir / "geom2.eik.nc"
         generate_runtime_vmec_eik(cfg, output_path=out1, force=True)
         generate_runtime_vmec_eik(cfg, output_path=out2, force=True)
-        g1 = load_gx_geometry_netcdf(out1)
-        g2 = load_gx_geometry_netcdf(out2)
+        g1 = load_imported_geometry_netcdf(out1)
+        g2 = load_imported_geometry_netcdf(out2)
 
         field_metrics = {
-            name: _array_metrics(np.asarray(getattr(g1, name)), np.asarray(getattr(g2, name))) for name in FIELDS
+            name: _array_metrics(
+                np.asarray(getattr(g1, name)), np.asarray(getattr(g2, name))
+            )
+            for name in FIELDS
         }
         ok = all(values["max_abs"] == 0.0 for values in field_metrics.values())
         return {
@@ -140,17 +152,23 @@ def main() -> None:
         lane_cfg = lanes.get(lane_key)
         if not isinstance(lane_cfg, dict):
             raise SystemExit(f"Lane config must be a table: lane.{lane_key}")
-        config_path = _resolve_manifest_path(lane_cfg["config"], manifest_dir=manifest_dir)
+        config_path = _resolve_manifest_path(
+            lane_cfg["config"], manifest_dir=manifest_dir
+        )
         lane_out = out_root / lane_key
         lane_out.mkdir(parents=True, exist_ok=True)
         lane_summary = _run_lane(config_path, lane_cfg, out_dir=lane_out)
         summary["lanes"][lane_key] = lane_summary
-        (lane_out / "summary.json").write_text(json.dumps(lane_summary, indent=2, sort_keys=True), encoding="utf-8")
+        (lane_out / "summary.json").write_text(
+            json.dumps(lane_summary, indent=2, sort_keys=True), encoding="utf-8"
+        )
         if not bool(lane_summary["ok"]):
             failed.append(lane_key)
 
     summary_path = out_root / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(f"saved {summary_path}")
     if failed:
         raise SystemExit(f"VMEC roundtrip gate failed for lanes: {', '.join(failed)}")
