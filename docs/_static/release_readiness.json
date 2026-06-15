@@ -251,6 +251,12 @@
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py"
   ],
+  "required_codecov_snippets": [
+    "after_n_builds: 2",
+    "wait_for_ci: true",
+    "flags:",
+    "- wide-package"
+  ],
   "required_readme_snippets": [
     "pip install spectraxgk",
     "spectraxgk",

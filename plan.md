@@ -1,3 +1,9 @@
+- 2026-06-15: Fixed the Codecov project-status policy on the
+  differentiable-refactor branch. Codecov now waits for both CI coverage
+  uploads and evaluates the required project status only against the
+  `wide-package` report, so the release coverage check mirrors the
+  package-wide 95% gate instead of the earlier fast diagnostic subset. The
+  release-readiness checker and tests now guard this policy.
 - 2026-06-15: Removed the old comparison-code-named compatibility shims from
   package source. The deleted package paths are `spectraxgk.from_gx.*`,
   `spectraxgk.gx_legacy_output`, and `spectraxgk.gx_reduced_models`; callers

@@ -35,6 +35,12 @@ REQUIRED_CI_SNIPPETS = (
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
 )
+REQUIRED_CODECOV_SNIPPETS = (
+    "after_n_builds: 2",
+    "wait_for_ci: true",
+    "flags:",
+    "- wide-package",
+)
 REQUIRED_RELEASE_SNIPPETS = (
     "name: Release",
     "gh-action-pypi-publish",
@@ -508,6 +514,11 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     if missing_ci:
         failures.append(f"ci.yml missing release checks: {missing_ci}")
 
+    codecov_text = _read(root / "codecov.yml")
+    missing_codecov = _missing_snippets(codecov_text, REQUIRED_CODECOV_SNIPPETS)
+    if missing_codecov:
+        failures.append(f"codecov.yml missing wide-coverage status policy: {missing_codecov}")
+
     release_text = _read(root / ".github" / "workflows" / "release.yml")
     missing_release = _missing_snippets(release_text, REQUIRED_RELEASE_SNIPPETS)
     if missing_release:
@@ -596,6 +607,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         "lane_status": lane_status,
         "optimization_status": optimization_status,
         "required_ci_snippets": list(REQUIRED_CI_SNIPPETS),
+        "required_codecov_snippets": list(REQUIRED_CODECOV_SNIPPETS),
         "required_release_snippets": list(REQUIRED_RELEASE_SNIPPETS),
         "required_readme_snippets": list(REQUIRED_README_SNIPPETS),
         "required_static_artifacts": list(REQUIRED_STATIC_ARTIFACTS),
