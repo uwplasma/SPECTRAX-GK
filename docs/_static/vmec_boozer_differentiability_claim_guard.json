@@ -2,6 +2,7 @@
   "artifacts": {
     "differentiable_geometry_bridge": "docs/_static/differentiable_geometry_bridge.json",
     "finite_beta_frequency_gate": "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+    "finite_beta_quasilinear_gate": "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
     "gradient_holdout_matrix": "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
     "nonlinear_fd_audit": "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
     "parity_matrix": "docs/_static/vmec_boozer_parity_matrix.json"
@@ -39,6 +40,31 @@
       "quasilinear_weight_gradient_gate": false,
       "required_objectives": [
         "gamma",
+        "omega"
+      ],
+      "source_scope": "mode21_vmec_boozer_state",
+      "surface_stencil_width": 3
+    },
+    "finite_beta_quasilinear_gate": {
+      "case_name": "shaped_tokamak_pressure",
+      "failed_objectives": [],
+      "kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "linear_frequency_gradient_gate": true,
+      "linear_growth_gradient_gate": true,
+      "max_rel_error": 0.00020478622264174398,
+      "max_rel_error_threshold": 0.02,
+      "mboz": 21,
+      "missing_objectives": [],
+      "nboz": 21,
+      "nonlinear_window_gradient_gate": false,
+      "objective_error_failures": {},
+      "passed": true,
+      "quasilinear_weight_gradient_gate": true,
+      "required_objectives": [
+        "gamma",
+        "kperp_eff2",
+        "linear_heat_flux_weight",
+        "mixing_length_heat_flux_proxy",
         "omega"
       ],
       "source_scope": "mode21_vmec_boozer_state",
@@ -149,5 +175,5 @@
   "minimum_gradient_cases": 2,
   "passed": true,
   "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
-  "scope": "Passes only the release-level reduced differentiability claim: VMEC/Boozer equal-arc parity and AD/finite-difference gradients for linear, quasilinear, and nonlinear-window estimator objectives, plus a finite-beta shaped-pressure eigenfrequency gradient. Direct VMEC tensor-vs-imported-EIK parity, finite-beta quasilinear gradients, and converged nonlinear transport-gradient optimization remain explicitly out of scope."
+  "scope": "Passes only the release-level reduced differentiability claim: VMEC/Boozer equal-arc parity and AD/finite-difference gradients for linear, quasilinear, and nonlinear-window estimator objectives, plus finite-beta shaped-pressure eigenfrequency and quasilinear gradients. Direct VMEC tensor-vs-imported-EIK parity and converged nonlinear transport-gradient optimization remain explicitly out of scope."
 }

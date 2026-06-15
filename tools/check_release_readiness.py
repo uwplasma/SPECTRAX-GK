@@ -63,6 +63,7 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/quasilinear_promotion_guardrails.json",
     "docs/_static/vmec_boozer_differentiability_claim_guard.json",
     "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+    "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
     "docs/_static/technical_release_status.json",
     "docs/_static/manuscript_readiness_status.json",
     "docs/_static/open_research_lane_status.json",

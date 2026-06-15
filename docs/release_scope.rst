@@ -67,10 +67,11 @@ score.
        The fixed-resolution QI row now passes after the Boozer half-mesh
        convention fix, with drift mismatch about ``7.13e-2`` against the
        ``8e-2`` tolerance, and the evaluated QI ``ntheta=8,16`` variants pass.
-       The shaped-pressure finite-beta eigenfrequency-gradient gate also
-       passes with max relative AD/finite-difference error about ``6.4e-11``.
-       This is still not a broad QI transport, finite-beta quasilinear or
-       nonlinear transport-gradient, or optimization claim. Reduced frequency,
+       The shaped-pressure finite-beta eigenfrequency-gradient and
+       quasilinear-gradient gates also pass with max relative
+       AD/finite-difference errors about ``6.4e-11`` and ``2.1e-4``.
+       This is still not a broad QI transport, finite-beta nonlinear
+       transport-gradient, or optimization claim. Reduced frequency,
        quasilinear, and nonlinear-window-estimator gradients pass
        AD/finite-difference gates on QH and Li383. The actual nonlinear
        finite-difference audits are startup plumbing checks with false

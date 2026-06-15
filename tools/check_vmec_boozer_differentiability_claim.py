@@ -27,6 +27,9 @@ DEFAULT_NONLINEAR_FD_AUDIT = "docs/_static/vmec_boozer_nonlinear_window_fd_audit
 DEFAULT_FINITE_BETA_FREQUENCY_GATE = (
     "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json"
 )
+DEFAULT_FINITE_BETA_QUASILINEAR_GATE = (
+    "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json"
+)
 
 REQUIRED_GRADIENT_GATE_TYPES = {
     "frequency",
@@ -426,6 +429,68 @@ def _finite_beta_frequency_checks(gate: dict[str, Any]) -> tuple[dict[str, Any],
     return checks, blockers
 
 
+def _finite_beta_quasilinear_checks(gate: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    case_name = str(gate.get("case_name", ""))
+    kind = str(gate.get("kind", ""))
+    source_scope = str(gate.get("source_scope", ""))
+    objectives = _as_dict(
+        {row.get("objective"): row.get("passed") for row in _as_rows(gate.get("objective_gates"))}
+    )
+    objective_rel_errors = _as_dict(
+        {row.get("objective"): row.get("rel_error") for row in _as_rows(gate.get("objective_gates"))}
+    )
+    required = REQUIRED_OBJECTIVES_BY_GATE_TYPE["quasilinear"]
+    missing = sorted(required - set(objectives))
+    failed = sorted(objective for objective in required if objectives.get(objective) is not True)
+    max_rel_error = _finite_float_or_none(_as_dict(gate.get("eigenpair_gate")).get("max_rel_error"))
+    threshold = MAX_REL_ERROR_BY_GATE_TYPE["quasilinear"]
+    objective_error_failures = {
+        objective: _finite_float_or_none(objective_rel_errors.get(objective))
+        for objective in required
+        if _finite_float_or_none(objective_rel_errors.get(objective)) is None
+        or float(_finite_float_or_none(objective_rel_errors.get(objective))) > threshold
+    }
+    checks = {
+        "passed": _bool(gate.get("passed")),
+        "case_name": case_name,
+        "kind": kind,
+        "source_scope": source_scope,
+        "mboz": gate.get("mboz"),
+        "nboz": gate.get("nboz"),
+        "surface_stencil_width": gate.get("surface_stencil_width"),
+        "linear_frequency_gradient_gate": _bool(gate.get("linear_frequency_gradient_gate")),
+        "linear_growth_gradient_gate": _bool(gate.get("linear_growth_gradient_gate")),
+        "quasilinear_weight_gradient_gate": _bool(gate.get("quasilinear_weight_gradient_gate")),
+        "nonlinear_window_gradient_gate": _bool(gate.get("nonlinear_window_gradient_gate")),
+        "required_objectives": sorted(required),
+        "missing_objectives": missing,
+        "failed_objectives": failed,
+        "max_rel_error": max_rel_error,
+        "max_rel_error_threshold": threshold,
+        "objective_error_failures": objective_error_failures,
+    }
+    blockers: list[str] = []
+    if not checks["passed"] or not checks["quasilinear_weight_gradient_gate"]:
+        blockers.append("finite_beta_quasilinear_gate_failed")
+    if case_name != "shaped_tokamak_pressure":
+        blockers.append("finite_beta_quasilinear_gate_wrong_case")
+    if kind != "mode21_vmec_boozer_quasilinear_gradient_gate":
+        blockers.append("finite_beta_quasilinear_gate_wrong_kind")
+    if source_scope != REQUIRED_SOURCE_SCOPE:
+        blockers.append("finite_beta_quasilinear_gate_wrong_source_scope")
+    if min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT:
+        blockers.append("finite_beta_quasilinear_gate_mode_floor_failed")
+    if missing:
+        blockers.append("finite_beta_quasilinear_gate_missing_objective")
+    if failed:
+        blockers.append("finite_beta_quasilinear_gate_objective_failed")
+    if max_rel_error is None or max_rel_error > threshold or objective_error_failures:
+        blockers.append("finite_beta_quasilinear_gate_error_threshold_failed")
+    if checks["nonlinear_window_gradient_gate"]:
+        blockers.append("finite_beta_quasilinear_gate_attempts_nonlinear_gradient_claim")
+    return checks, blockers
+
+
 def build_vmec_boozer_differentiability_claim_guard(
     root: Path = REPO_ROOT,
     *,
@@ -434,6 +499,7 @@ def build_vmec_boozer_differentiability_claim_guard(
     bridge_path: str = DEFAULT_BRIDGE,
     nonlinear_fd_audit_path: str = DEFAULT_NONLINEAR_FD_AUDIT,
     finite_beta_frequency_gate_path: str = DEFAULT_FINITE_BETA_FREQUENCY_GATE,
+    finite_beta_quasilinear_gate_path: str = DEFAULT_FINITE_BETA_QUASILINEAR_GATE,
 ) -> dict[str, Any]:
     """Return a machine-checkable VMEC/Boozer differentiability claim guard."""
 
@@ -444,6 +510,7 @@ def build_vmec_boozer_differentiability_claim_guard(
         "differentiable_geometry_bridge": bridge_path,
         "nonlinear_fd_audit": nonlinear_fd_audit_path,
         "finite_beta_frequency_gate": finite_beta_frequency_gate_path,
+        "finite_beta_quasilinear_gate": finite_beta_quasilinear_gate_path,
     }
     checks: dict[str, Any] = {}
     blockers: list[str] = []
@@ -489,6 +556,16 @@ def build_vmec_boozer_differentiability_claim_guard(
         checks["finite_beta_frequency_gate"] = {"error": str(exc)}
         blockers.append("finite_beta_frequency_gate_unreadable")
 
+    try:
+        finite_beta_quasilinear = _read_json(root, finite_beta_quasilinear_gate_path)
+        checks["finite_beta_quasilinear_gate"], finite_beta_ql_blockers = _finite_beta_quasilinear_checks(
+            finite_beta_quasilinear
+        )
+        blockers.extend(finite_beta_ql_blockers)
+    except ValueError as exc:
+        checks["finite_beta_quasilinear_gate"] = {"error": str(exc)}
+        blockers.append("finite_beta_quasilinear_gate_unreadable")
+
     unique_blockers = sorted(set(blockers))
     return {
         "kind": "vmec_boozer_differentiability_claim_guard",
@@ -505,9 +582,9 @@ def build_vmec_boozer_differentiability_claim_guard(
             "Passes only the release-level reduced differentiability claim: "
             "VMEC/Boozer equal-arc parity and AD/finite-difference gradients for "
             "linear, quasilinear, and nonlinear-window estimator objectives, plus "
-            "a finite-beta shaped-pressure eigenfrequency gradient. Direct VMEC "
-            "tensor-vs-imported-EIK parity, finite-beta quasilinear gradients, and "
-            "converged nonlinear transport-gradient optimization remain explicitly "
+            "finite-beta shaped-pressure eigenfrequency and quasilinear gradients. "
+            "Direct VMEC tensor-vs-imported-EIK parity and converged nonlinear "
+            "transport-gradient optimization remain explicitly "
             "out of scope."
         ),
         "root": str(root),
@@ -522,6 +599,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bridge", default=DEFAULT_BRIDGE)
     parser.add_argument("--nonlinear-fd-audit", default=DEFAULT_NONLINEAR_FD_AUDIT)
     parser.add_argument("--finite-beta-frequency-gate", default=DEFAULT_FINITE_BETA_FREQUENCY_GATE)
+    parser.add_argument("--finite-beta-quasilinear-gate", default=DEFAULT_FINITE_BETA_QUASILINEAR_GATE)
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
     return parser
 
@@ -539,6 +617,7 @@ def main(argv: list[str] | None = None) -> int:
         bridge_path=args.bridge,
         nonlinear_fd_audit_path=args.nonlinear_fd_audit,
         finite_beta_frequency_gate_path=args.finite_beta_frequency_gate,
+        finite_beta_quasilinear_gate_path=args.finite_beta_quasilinear_gate,
     )
     if out_json is None:
         print(json.dumps(report, indent=2, sort_keys=True))

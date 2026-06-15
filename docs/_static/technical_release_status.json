@@ -382,6 +382,14 @@
         },
         {
           "exists": true,
+          "name": "finite-beta VMEC/Boozer quasilinear gradient gate",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+          "required": true,
+          "snippet": "shaped_tokamak_pressure"
+        },
+        {
+          "exists": true,
           "name": "manuscript readiness",
           "passed": true,
           "path": "docs/_static/manuscript_readiness_status.json",
@@ -415,8 +423,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 8,
-      "required": 8
+      "passed_required": 9,
+      "required": 9
     }
   },
   "passed": true,
