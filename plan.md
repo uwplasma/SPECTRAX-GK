@@ -1,3 +1,16 @@
+- 2026-06-15: Cleaned another native-source terminology slice on the
+  differentiable-refactor branch. CLI help, runtime errors, initialization
+  comments, dealiased-grid comments, transport-mode weights, and
+  Hermite-Laguerre field-transform comments now describe the implemented
+  physics/numerics directly rather than naming comparison-code conventions.
+  Focused Ruff and grid/runtime/operator/CLI tests passed locally; CI was
+  green before this tranche and was relaunched after the push.
+- 2026-06-15: Tightened executable-facing output wording. README quickstart,
+  output docs, CLI `--out`/`--ql-output` help, and `spectraxgk --plot`
+  docstrings/errors now use "saved output" / "output path" language for normal
+  user workflows, while validation/release ledgers keep "artifact" where they
+  explicitly mean a versioned evidence object. Focused CLI/plot/runtime-output
+  tests, docs build with warnings-as-errors, and package build passed locally.
 - 2026-06-15: Cleaned additional user-facing docs wording so normal
   SPECTRAX-GK slab geometry, imported-geometry, initialization, restart, RNG,
   and explicit-time contracts are described by physics/numerics semantics
