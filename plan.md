@@ -8,6 +8,17 @@
   reruns, but SPECTRAX-GK internals should stay named after the implemented
   algorithm or physical quantity.
 
+- 2026-06-15: Completed the diagnostics/transport-observable naming tranche.
+  Runtime diagnostic APIs now use physical names such as
+  `fieldline_quadrature_weights`, `distribution_free_energy`,
+  `electrostatic_field_energy`, `magnetic_vector_potential_energy`,
+  `heat_flux_species`, `particle_flux_species`, `turbulent_heating_species`,
+  and `zonal_phi_mode_kxt`. The old diagnostic dataclass aliases were removed
+  from the public package surface, the diagnostics test was renamed to
+  `tests/test_runtime_diagnostics.py`, and comparison tools were updated to
+  import the neutral package APIs while retaining explicit comparison wording
+  where appropriate.
+
 - 2026-06-15: Continued the naming/refactor cleanup by renaming the nonlinear
   NetCDF writer and spectral-layout helpers from reference-code-oriented names
   to `spectraxgk.nonlinear_output_netcdf` and

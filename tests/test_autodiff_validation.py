@@ -25,7 +25,7 @@ from spectraxgk.linear import (
     build_linear_cache,
     linear_rhs_cached,
 )
-from spectraxgk.diagnostics import gx_volume_factors
+from spectraxgk.diagnostics import fieldline_quadrature_weights
 from spectraxgk.quasilinear import (
     effective_kperp2,
     quasilinear_feature_objective,
@@ -412,7 +412,7 @@ def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
         fapar=0.0,
     )
     cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     terms = LinearTerms(
         streaming=1.0,
         mirror=1.0,
@@ -569,7 +569,7 @@ def test_actual_linear_rhs_branch_objective_implicit_derivative_gate() -> None:
         fapar=0.0,
     )
     cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     terms = LinearTerms(
         streaming=1.0,
         mirror=1.0,

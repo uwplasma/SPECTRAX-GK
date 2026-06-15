@@ -64,7 +64,7 @@ def _read_diag_series(group, name: str, ky_idx: int) -> np.ndarray:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Compare GX diagnostics vs SPECTRAX-GK.")
+    parser = argparse.ArgumentParser(description="Compare runtime diagnostics vs SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
     parser.add_argument("--ky", type=float, default=0.55, help="ky to compare")
     parser.add_argument("--Nl", type=int, default=16)
@@ -82,9 +82,9 @@ def main() -> None:
     ky_val = float(ky_all[ky_idx])
 
     diag = root.groups["Diagnostics"]
-    gx_Wg = _read_diag_series(diag, "Wg_kyst", ky_idx)
-    gx_Wphi = _read_diag_series(diag, "Wphi_kyst", ky_idx)
-    gx_Wapar = _read_diag_series(diag, "Wapar_kyst", ky_idx)
+    distribution_free_energy = _read_diag_series(diag, "Wg_kyst", ky_idx)
+    electrostatic_field_energy = _read_diag_series(diag, "Wphi_kyst", ky_idx)
+    magnetic_vector_potential_energy = _read_diag_series(diag, "Wapar_kyst", ky_idx)
     gx_heat = _read_diag_series(diag, "HeatFlux_kyst", ky_idx)
     gx_pflux = _read_diag_series(diag, "ParticleFlux_kyst", ky_idx)
     root.close()
@@ -137,7 +137,7 @@ def main() -> None:
         phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
     )
 
-    gx_energy = gx_Wg + gx_Wphi + gx_Wapar
+    gx_energy = distribution_free_energy + electrostatic_field_energy + magnetic_vector_potential_energy
     sp_energy = np.asarray(diag_spec.energy_t)
 
     def _drift(arr: np.ndarray) -> float:

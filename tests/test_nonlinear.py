@@ -211,7 +211,7 @@ def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
 
 
 def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
-    """Adaptive nonlinear GX diagnostics should clamp dt to dt when dt_max is unset."""
+    """Adaptive nonlinear runtime diagnostics should clamp dt to dt when dt_max is unset."""
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -346,7 +346,7 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
 
 
 def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
-    """IMEX GX diagnostics should keep the scan state dtype aligned with the implicit operator."""
+    """IMEX runtime diagnostics should keep the scan state dtype aligned with the implicit operator."""
 
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)

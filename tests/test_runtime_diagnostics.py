@@ -15,40 +15,40 @@ from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
     ResolvedDiagnostics,
     SimulationDiagnostics,
-    _gx_fac_mask_cached,
+    _cached_hermitian_mode_weight,
     _jl_family,
-    _gx_fac_mask_nonzero,
-    _gx_heat_flux_channel_contrib_species,
-    _gx_particle_flux_channel_contrib_species,
-    _gx_turbulent_heating_contrib_species,
+    _transport_mode_weight,
+    _heat_flux_channel_contrib_species,
+    _particle_flux_channel_contrib_species,
+    _turbulent_heating_contrib_species,
     _reduce_scalar_kykxz,
     _reduce_species_kykxz,
-    gx_Wapar,
-    gx_Wapar_krehm,
-    gx_Wg,
-    gx_Wg_resolved,
-    gx_Wphi,
-    gx_Wphi_krehm,
-    gx_Wphi_resolved,
+    magnetic_vector_potential_energy,
+    magnetic_vector_potential_energy_krehm,
+    distribution_free_energy,
+    distribution_free_energy_resolved,
+    electrostatic_field_energy,
+    electrostatic_field_energy_krehm,
+    electrostatic_field_energy_resolved,
     total_energy,
-    gx_Wapar_resolved,
-    gx_heat_flux,
-    gx_heat_flux_resolved_species,
-    gx_heat_flux_split_resolved_species,
-    gx_heat_flux_split_species,
-    gx_heat_flux_species,
-    gx_particle_flux,
-    gx_particle_flux_resolved_species,
-    gx_particle_flux_split_resolved_species,
-    gx_particle_flux_split_species,
-    gx_particle_flux_species,
-    gx_phi2_resolved,
-    gx_phi_zonal_line_kxt,
-    gx_phi_zonal_mode_kxt,
-    gx_volume_factors,
-    gx_turbulent_heating,
-    gx_turbulent_heating_resolved_species,
-    gx_turbulent_heating_species,
+    magnetic_vector_potential_energy_resolved,
+    heat_flux_total,
+    heat_flux_resolved_species,
+    heat_flux_channel_resolved_species,
+    heat_flux_channel_species,
+    heat_flux_species,
+    particle_flux_total,
+    particle_flux_resolved_species,
+    particle_flux_channel_resolved_species,
+    particle_flux_channel_species,
+    particle_flux_species,
+    phi2_resolved,
+    zonal_phi_line_kxt,
+    zonal_phi_mode_kxt,
+    fieldline_quadrature_weights,
+    turbulent_heating_total,
+    turbulent_heating_resolved_species,
+    turbulent_heating_species,
 )
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
@@ -93,33 +93,33 @@ def test_diagnostics_refactor_preserves_legacy_import_identities() -> None:
         diagnostics_module.SimulationDiagnostics
         is diagnostics_metadata.SimulationDiagnostics
     )
-    assert diagnostics_module.GXDiagnostics is diagnostics_metadata.GXDiagnostics
+    assert diagnostics_module.SimulationDiagnostics is diagnostics_metadata.SimulationDiagnostics
     assert (
-        diagnostics_module.GXResolvedDiagnostics
-        is diagnostics_metadata.GXResolvedDiagnostics
+        diagnostics_module.ResolvedDiagnostics
+        is diagnostics_metadata.ResolvedDiagnostics
     )
-    assert diagnostics_module.gx_volume_factors is diagnostics_weights.gx_volume_factors
-    assert diagnostics_module._gx_fac_mask is diagnostics_weights._gx_fac_mask
+    assert diagnostics_module.fieldline_quadrature_weights is diagnostics_weights.fieldline_quadrature_weights
+    assert diagnostics_module._hermitian_mode_weight is diagnostics_weights._hermitian_mode_weight
     assert (
-        diagnostics_module._gx_fac_mask_cached
-        is diagnostics_weights._gx_fac_mask_cached
+        diagnostics_module._cached_hermitian_mode_weight
+        is diagnostics_weights._cached_hermitian_mode_weight
     )
     assert (
-        diagnostics_module._gx_fac_mask_nonzero
-        is diagnostics_weights._gx_fac_mask_nonzero
+        diagnostics_module._transport_mode_weight
+        is diagnostics_weights._transport_mode_weight
     )
     assert diagnostics_module._jl_family is diagnostics_weights._jl_family
     assert (
-        diagnostics_module._gx_heat_flux_channel_contrib_species
-        is diagnostics_channels._gx_heat_flux_channel_contrib_species
+        diagnostics_module._heat_flux_channel_contrib_species
+        is diagnostics_channels._heat_flux_channel_contrib_species
     )
     assert (
-        diagnostics_module._gx_particle_flux_channel_contrib_species
-        is diagnostics_channels._gx_particle_flux_channel_contrib_species
+        diagnostics_module._particle_flux_channel_contrib_species
+        is diagnostics_channels._particle_flux_channel_contrib_species
     )
     assert (
-        diagnostics_module._gx_turbulent_heating_contrib_species
-        is diagnostics_channels._gx_turbulent_heating_contrib_species
+        diagnostics_module._turbulent_heating_contrib_species
+        is diagnostics_channels._turbulent_heating_contrib_species
     )
 
 
@@ -141,17 +141,17 @@ def test_jl_family_accepts_four_dimensional_arrays_and_rejects_bad_ranks() -> No
         _jl_family(SimpleNamespace(Jl=cache_4d.Jl, JlB=jnp.ones((2, 3, 4))))
 
 
-def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
+def test_flux_fac_nonzero_matches_positive_ky_convention() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))
-    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False))
+    fac = np.asarray(_transport_mode_weight(grid, use_dealias=False))
     ky = np.asarray(grid.ky, dtype=float)
     pos = ky > 0.0
     assert np.allclose(fac[pos], 1.0)
     assert np.allclose(fac[~pos], 0.0)
 
 
-def test_gx_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> None:
+def test_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> None:
     cache = SimpleNamespace(
         ky=jnp.asarray([0.0, 0.25], dtype=jnp.float32),
         kx=jnp.asarray([0.0, 0.5], dtype=jnp.float32),
@@ -232,7 +232,7 @@ def test_validate_finite_runtime_diagnostics_covers_optional_and_resolved_schema
         validate_finite_runtime_diagnostics(bad_resolved, label="bounded")
 
 
-def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
+def test_cached_hermitian_mode_weight_matches_full_and_one_sided_conventions() -> None:
     dealias = jnp.asarray([[1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], dtype=jnp.float32)
     full_cache = SimpleNamespace(
         ky=jnp.asarray([-0.25, 0.0, 0.25], dtype=jnp.float32),
@@ -246,16 +246,16 @@ def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
     )
 
     np.testing.assert_allclose(
-        np.asarray(_gx_fac_mask_cached(full_cache, use_dealias=True)),
+        np.asarray(_cached_hermitian_mode_weight(full_cache, use_dealias=True)),
         np.asarray(dealias),
     )
     np.testing.assert_allclose(
-        np.asarray(_gx_fac_mask_cached(one_sided_cache, use_dealias=False)),
+        np.asarray(_cached_hermitian_mode_weight(one_sided_cache, use_dealias=False)),
         np.asarray([[1.0, 1.0], [2.0, 2.0], [2.0, 2.0]], dtype=np.float32),
     )
 
 
-def test_gx_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> None:
+def test_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> None:
     grid = SimpleNamespace(
         kx=jnp.asarray([-1.0, 0.0, 1.0], dtype=jnp.float32),
         ky=jnp.asarray([-0.3], dtype=jnp.float32),
@@ -274,7 +274,7 @@ def test_gx_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> Non
     ) == pytest.approx(1.0)
 
 
-def test_gx_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
+def test_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
     assert _gx_eta_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(
         1.0e6
     )
@@ -353,14 +353,14 @@ def _multispecies_setup(*, Nl: int = 3, Nm: int = 4):
         kpar_scale=float(geom.gradpar()),
     )
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
-    vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
     return cfg, grid, geom, params, cache, vol_fac, flux_fac
 
 
-def test_gx_volume_and_flux_weights_are_finite_positive_and_normalized() -> None:
+def test_volume_and_flux_weights_are_finite_positive_and_normalized() -> None:
     _cfg, grid, geom, _params, _cache = _small_setup()
 
-    vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
 
     assert np.all(np.isfinite(np.asarray(vol_fac)))
     assert np.all(np.isfinite(np.asarray(flux_fac)))
@@ -372,7 +372,7 @@ def test_gx_volume_and_flux_weights_are_finite_positive_and_normalized() -> None
     )
 
 
-def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
+def test_resolved_energy_reductions_sum_to_scalar_totals() -> None:
     _cfg, grid, _geom, params, cache, vol_fac, _flux_fac = _multispecies_setup(
         Nl=3, Nm=4
     )
@@ -385,8 +385,8 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
     phi = jnp.asarray(field_base + 1.0j * (field_base + 0.5), dtype=jnp.complex64)
     apar = (0.2 - 0.1j) * phi
 
-    Wg = gx_Wg(G, grid, params, vol_fac, use_dealias=False)
-    Wg_st, Wg_kxst, Wg_kyst, Wg_kxkyst, Wg_zst, Wg_lmst = gx_Wg_resolved(
+    Wg = distribution_free_energy(G, grid, params, vol_fac, use_dealias=False)
+    Wg_st, Wg_kxst, Wg_kyst, Wg_kxkyst, Wg_zst, Wg_lmst = distribution_free_energy_resolved(
         G, grid, params, vol_fac, use_dealias=False
     )
     np.testing.assert_allclose(
@@ -406,8 +406,8 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
             atol=1.0e-5,
         )
 
-    Wphi = gx_Wphi(phi, cache, params, vol_fac, use_dealias=False)
-    Wphi_st, Wphi_kxst, Wphi_kyst, Wphi_kxkyst, Wphi_zst = gx_Wphi_resolved(
+    Wphi = electrostatic_field_energy(phi, cache, params, vol_fac, use_dealias=False)
+    Wphi_st, Wphi_kxst, Wphi_kyst, Wphi_kxkyst, Wphi_zst = electrostatic_field_energy_resolved(
         phi, cache, params, vol_fac, use_dealias=False
     )
     np.testing.assert_allclose(
@@ -426,8 +426,8 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
             atol=1.0e-6,
         )
 
-    Wapar = gx_Wapar(apar, cache, vol_fac, use_dealias=False)
-    Wapar_st, Wapar_kxst, Wapar_kyst, Wapar_kxkyst, Wapar_zst = gx_Wapar_resolved(
+    Wapar = magnetic_vector_potential_energy(apar, cache, vol_fac, use_dealias=False)
+    Wapar_st, Wapar_kxst, Wapar_kyst, Wapar_kxkyst, Wapar_zst = magnetic_vector_potential_energy_resolved(
         apar, cache, vol_fac, nspecies=2, use_dealias=False
     )
     np.testing.assert_allclose(
@@ -446,7 +446,7 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
             atol=1.0e-6,
         )
 
-    phi2_t, phi2_kxt, phi2_kyt, phi2_kxkyt, phi2_zt, *_zonal = gx_phi2_resolved(
+    phi2_t, phi2_kxt, phi2_kyt, phi2_kxkyt, phi2_zt, *_zonal = phi2_resolved(
         phi, grid, vol_fac, use_dealias=False
     )
     for spectrum, axes in (
@@ -463,7 +463,7 @@ def test_gx_resolved_energy_reductions_sum_to_scalar_totals() -> None:
         )
 
 
-def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> None:
+def test_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> None:
     _cfg, grid, _geom, params, cache, vol_fac, flux_fac = _multispecies_setup(
         Nl=2, Nm=2
     )
@@ -493,12 +493,12 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
     apar_clean[ky_idx, kx_idx, :] = 0.0
     bpar_clean[ky_idx, kx_idx, :] = 0.0
 
-    wg = gx_Wg(jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True)
-    wg_clean = gx_Wg(jnp.asarray(clean), grid, params, vol_fac, use_dealias=True)
-    resolved = gx_Wg_resolved(
+    wg = distribution_free_energy(jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True)
+    wg_clean = distribution_free_energy(jnp.asarray(clean), grid, params, vol_fac, use_dealias=True)
+    resolved = distribution_free_energy_resolved(
         jnp.asarray(contaminated), grid, params, vol_fac, use_dealias=True
     )
-    resolved_clean = gx_Wg_resolved(
+    resolved_clean = distribution_free_energy_resolved(
         jnp.asarray(clean), grid, params, vol_fac, use_dealias=True
     )
 
@@ -510,14 +510,14 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
 
     energy_pairs = [
         (
-            gx_Wphi(
+            electrostatic_field_energy(
                 jnp.asarray(phi_contaminated), cache, params, vol_fac, use_dealias=True
             ),
-            gx_Wphi(jnp.asarray(phi_clean), cache, params, vol_fac, use_dealias=True),
+            electrostatic_field_energy(jnp.asarray(phi_clean), cache, params, vol_fac, use_dealias=True),
         ),
         (
-            gx_Wapar(jnp.asarray(apar_contaminated), cache, vol_fac, use_dealias=True),
-            gx_Wapar(jnp.asarray(apar_clean), cache, vol_fac, use_dealias=True),
+            magnetic_vector_potential_energy(jnp.asarray(apar_contaminated), cache, vol_fac, use_dealias=True),
+            magnetic_vector_potential_energy(jnp.asarray(apar_clean), cache, vol_fac, use_dealias=True),
         ),
     ]
     for got, expected in energy_pairs:
@@ -526,26 +526,26 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
 
     resolved_pairs = [
         (
-            gx_Wphi_resolved(
+            electrostatic_field_energy_resolved(
                 jnp.asarray(phi_contaminated),
                 cache,
                 params,
                 vol_fac,
                 use_dealias=True,
             ),
-            gx_Wphi_resolved(
+            electrostatic_field_energy_resolved(
                 jnp.asarray(phi_clean), cache, params, vol_fac, use_dealias=True
             ),
         ),
         (
-            gx_Wapar_resolved(
+            magnetic_vector_potential_energy_resolved(
                 jnp.asarray(apar_contaminated),
                 cache,
                 vol_fac,
                 nspecies=2,
                 use_dealias=True,
             ),
-            gx_Wapar_resolved(
+            magnetic_vector_potential_energy_resolved(
                 jnp.asarray(apar_clean),
                 cache,
                 vol_fac,
@@ -554,11 +554,11 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
             ),
         ),
         (
-            gx_phi2_resolved(jnp.asarray(phi_contaminated), grid, vol_fac),
-            gx_phi2_resolved(jnp.asarray(phi_clean), grid, vol_fac),
+            phi2_resolved(jnp.asarray(phi_contaminated), grid, vol_fac),
+            phi2_resolved(jnp.asarray(phi_clean), grid, vol_fac),
         ),
         (
-            gx_heat_flux_resolved_species(
+            heat_flux_resolved_species(
                 jnp.asarray(contaminated),
                 jnp.asarray(phi_contaminated),
                 jnp.asarray(apar_contaminated),
@@ -569,7 +569,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
                 flux_fac,
                 use_dealias=True,
             ),
-            gx_heat_flux_resolved_species(
+            heat_flux_resolved_species(
                 jnp.asarray(clean),
                 jnp.asarray(phi_clean),
                 jnp.asarray(apar_clean),
@@ -589,7 +589,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
 
     channel_pairs = [
         (
-            gx_heat_flux_species(
+            heat_flux_species(
                 jnp.asarray(contaminated),
                 jnp.asarray(phi_contaminated),
                 jnp.asarray(apar_contaminated),
@@ -600,7 +600,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
                 flux_fac,
                 use_dealias=True,
             ),
-            gx_heat_flux_species(
+            heat_flux_species(
                 jnp.asarray(clean),
                 jnp.asarray(phi_clean),
                 jnp.asarray(apar_clean),
@@ -613,7 +613,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
             ),
         ),
         (
-            gx_particle_flux_species(
+            particle_flux_species(
                 jnp.asarray(contaminated),
                 jnp.asarray(phi_contaminated),
                 jnp.asarray(apar_contaminated),
@@ -624,7 +624,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
                 flux_fac,
                 use_dealias=True,
             ),
-            gx_particle_flux_species(
+            particle_flux_species(
                 jnp.asarray(clean),
                 jnp.asarray(phi_clean),
                 jnp.asarray(apar_clean),
@@ -637,7 +637,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
             ),
         ),
         (
-            gx_turbulent_heating_species(
+            turbulent_heating_species(
                 jnp.asarray(contaminated),
                 0.9 * jnp.asarray(contaminated),
                 jnp.asarray(phi_contaminated),
@@ -653,7 +653,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
                 0.1,
                 use_dealias=True,
             ),
-            gx_turbulent_heating_species(
+            turbulent_heating_species(
                 jnp.asarray(clean),
                 0.9 * jnp.asarray(clean),
                 jnp.asarray(phi_clean),
@@ -676,7 +676,7 @@ def test_gx_diagnostics_mask_dealiased_nonfinite_modes_before_reduction() -> Non
         np.testing.assert_allclose(np.asarray(got), np.asarray(expected))
 
 
-def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
+def test_zero_field_state_has_zero_transport_and_heating() -> None:
     _cfg, grid, _geom, params, cache, vol_fac, flux_fac = _multispecies_setup(
         Nl=3, Nm=4
     )
@@ -687,19 +687,19 @@ def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
     apar = jnp.zeros_like(phi)
     bpar = jnp.zeros_like(phi)
 
-    heat_species = gx_heat_flux_species(
+    heat_species = heat_flux_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    heat_split = gx_heat_flux_split_species(
+    heat_split = heat_flux_channel_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    particle_species = gx_particle_flux_species(
+    particle_species = particle_flux_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    particle_split = gx_particle_flux_split_species(
+    particle_split = particle_flux_channel_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    turbulent_heating_species = gx_turbulent_heating_species(
+    turbulent_heating_by_species = turbulent_heating_species(
         G,
         G,
         phi,
@@ -718,22 +718,22 @@ def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
 
     np.testing.assert_allclose(np.asarray(heat_species), 0.0)
     np.testing.assert_allclose(
-        np.asarray(gx_heat_flux(G, phi, apar, bpar, cache, grid, params, flux_fac)),
+        np.asarray(heat_flux_total(G, phi, apar, bpar, cache, grid, params, flux_fac)),
         0.0,
     )
     for channel in heat_split:
         np.testing.assert_allclose(np.asarray(channel), 0.0)
     np.testing.assert_allclose(np.asarray(particle_species), 0.0)
     np.testing.assert_allclose(
-        np.asarray(gx_particle_flux(G, phi, apar, bpar, cache, grid, params, flux_fac)),
+        np.asarray(particle_flux_total(G, phi, apar, bpar, cache, grid, params, flux_fac)),
         0.0,
     )
     for channel in particle_split:
         np.testing.assert_allclose(np.asarray(channel), 0.0)
-    np.testing.assert_allclose(np.asarray(turbulent_heating_species), 0.0)
+    np.testing.assert_allclose(np.asarray(turbulent_heating_by_species), 0.0)
     np.testing.assert_allclose(
         np.asarray(
-            gx_turbulent_heating(
+            turbulent_heating_total(
                 G,
                 G,
                 phi,
@@ -754,7 +754,7 @@ def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
     )
 
 
-def test_gx_krehm_field_energies_match_manual_formulas() -> None:
+def test_krehm_field_energies_match_manual_formulas() -> None:
     kx = np.asarray([-0.5, 0.5], dtype=np.float32)
     ky = np.asarray([-0.25, 0.0, 0.25], dtype=np.float32)
     mask = np.asarray([[1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], dtype=np.float32)
@@ -785,20 +785,20 @@ def test_gx_krehm_field_energies_match_manual_formulas() -> None:
     )
 
     np.testing.assert_allclose(
-        np.asarray(gx_Wphi_krehm(phi, grid, params, vol_fac, use_dealias=True)),
+        np.asarray(electrostatic_field_energy_krehm(phi, grid, params, vol_fac, use_dealias=True)),
         wphi_expected,
         rtol=1.0e-6,
         atol=1.0e-6,
     )
     np.testing.assert_allclose(
-        np.asarray(gx_Wapar_krehm(apar, grid, use_dealias=True)),
+        np.asarray(magnetic_vector_potential_energy_krehm(apar, grid, use_dealias=True)),
         wapar_expected,
         rtol=1.0e-6,
         atol=1.0e-6,
     )
 
 
-def test_gx_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> None:
+def test_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> None:
     kx = np.asarray([-0.5, 0.5], dtype=np.float32)
     ky = np.asarray([0.0, 0.25, 0.5], dtype=np.float32)
     mask = np.asarray([[1.0, 1.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
@@ -828,7 +828,7 @@ def test_gx_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> Non
 
     np.testing.assert_allclose(
         np.asarray(
-            gx_Wphi_krehm(
+            electrostatic_field_energy_krehm(
                 phi, grid, params, vol_fac, use_dealias=True, gx_real_fft=True
             )
         ),
@@ -838,9 +838,9 @@ def test_gx_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> Non
     )
 
 
-def test_gx_energy_components_finite():
+def test_energy_components_finite():
     cfg, grid, geom, params, cache = _small_setup()
-    vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
     )
@@ -853,11 +853,11 @@ def test_gx_energy_components_finite():
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
 
-    Wg = gx_Wg(G0, grid, params, vol_fac)
-    Wphi = gx_Wphi(phi, cache, params, vol_fac)
-    Wapar = gx_Wapar(apar, cache, vol_fac)
-    heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
-    pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    Wg = distribution_free_energy(G0, grid, params, vol_fac)
+    Wphi = electrostatic_field_energy(phi, cache, params, vol_fac)
+    Wapar = magnetic_vector_potential_energy(apar, cache, vol_fac)
+    heat = heat_flux_total(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux = particle_flux_total(G0, phi, apar, bpar, cache, grid, params, flux_fac)
     energy = total_energy(Wg, Wphi, Wapar)
 
     assert np.isfinite(np.asarray(Wg))
@@ -869,18 +869,18 @@ def test_gx_energy_components_finite():
     assert energy == Wg + Wphi + Wapar
 
 
-def test_gx_volume_factors_accept_sampled_geometry_contract():
+def test_fieldline_quadrature_weights_accept_sampled_geometry_contract():
     _cfg, grid, geom, _params, _cache = _small_setup()
     sampled = sample_flux_tube_geometry(geom, grid.z)
 
-    vol_ref, flux_ref = gx_volume_factors(geom, grid)
-    vol_s, flux_s = gx_volume_factors(sampled, grid)
+    vol_ref, flux_ref = fieldline_quadrature_weights(geom, grid)
+    vol_s, flux_s = fieldline_quadrature_weights(sampled, grid)
 
     assert np.allclose(np.asarray(vol_s), np.asarray(vol_ref))
     assert np.allclose(np.asarray(flux_s), np.asarray(flux_ref))
 
 
-def test_gx_volume_factors_trim_closed_sampled_geometry_contract():
+def test_fieldline_quadrature_weights_trim_closed_sampled_geometry_contract():
     _cfg, grid, geom, _params, _cache = _small_setup()
     sampled = sample_flux_tube_geometry(geom, grid.z)
     closed = replace(
@@ -908,24 +908,24 @@ def test_gx_volume_factors_trim_closed_sampled_geometry_contract():
         theta_closed_interval=True,
     )
 
-    vol_ref, flux_ref = gx_volume_factors(sampled, grid)
-    vol_closed, flux_closed = gx_volume_factors(closed, grid)
+    vol_ref, flux_ref = fieldline_quadrature_weights(sampled, grid)
+    vol_closed, flux_closed = fieldline_quadrature_weights(closed, grid)
 
     assert np.allclose(np.asarray(vol_closed), np.asarray(vol_ref))
     assert np.allclose(np.asarray(flux_closed), np.asarray(flux_ref))
 
 
-def test_gx_phi_zonal_mode_kxt_recovers_signed_zonal_average() -> None:
+def test_zonal_phi_mode_kxt_recovers_signed_zonal_average() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     phi = jnp.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
     zonal_profile = (0.3 - 0.1j) + (0.2 + 0.05j) * jnp.cos(grid.z)
     phi = phi.at[0, 1, :].set(zonal_profile)
 
-    out = gx_phi_zonal_mode_kxt(phi, grid, vol_fac)
-    out_line = gx_phi_zonal_line_kxt(phi, grid)
+    out = zonal_phi_mode_kxt(phi, grid, vol_fac)
+    out_line = zonal_phi_line_kxt(phi, grid)
 
     expected = jnp.sum(zonal_profile * vol_fac)
     expected_line = jnp.mean(zonal_profile)
@@ -935,7 +935,7 @@ def test_gx_phi_zonal_mode_kxt_recovers_signed_zonal_average() -> None:
     assert np.allclose(np.asarray(out_line[0]), 0.0)
 
 
-def test_gx_volume_factors_use_grho_for_flux_weights():
+def test_fieldline_quadrature_weights_use_grho_for_flux_weights():
     _cfg, grid, geom, _params, _cache = _small_setup()
     sampled = sample_flux_tube_geometry(geom, grid.z)
     sampled = replace(
@@ -946,7 +946,7 @@ def test_gx_volume_factors_use_grho_for_flux_weights():
     )
     grid_small = replace(grid, z=grid.z[:4])
 
-    vol_fac, flux_fac = gx_volume_factors(sampled, grid_small)
+    vol_fac, flux_fac = fieldline_quadrature_weights(sampled, grid_small)
 
     jac = np.array([1.0, 2.0, 3.0, 4.0])
     grho = np.array([1.0, 2.0, 1.0, 2.0])
@@ -954,9 +954,9 @@ def test_gx_volume_factors_use_grho_for_flux_weights():
     assert np.allclose(np.asarray(flux_fac), jac / np.sum(jac * grho))
 
 
-def test_gx_standard_field_energies_match_geometry_weighted_formula():
+def test_standard_field_energies_match_geometry_weighted_formula():
     _cfg, grid, geom, params, cache = _small_setup()
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     phi = jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
     apar = (1.0 + 2.0j) * jnp.ones_like(phi)
 
@@ -981,8 +981,8 @@ def test_gx_standard_field_energies_match_geometry_weighted_formula():
         apar2 * np.asarray(cache.kperp2, dtype=float) * bmag2 * weight
     )
 
-    assert np.allclose(np.asarray(gx_Wphi(phi, cache, params, vol_fac)), wphi_expected)
-    assert np.allclose(np.asarray(gx_Wapar(apar, cache, vol_fac)), wapar_expected)
+    assert np.allclose(np.asarray(electrostatic_field_energy(phi, cache, params, vol_fac)), wphi_expected)
+    assert np.allclose(np.asarray(magnetic_vector_potential_energy(apar, cache, vol_fac)), wapar_expected)
 
 
 def test_reduce_scalar_and_species_kykxz_preserve_manual_sums() -> None:
@@ -1023,9 +1023,9 @@ def test_reduce_scalar_and_species_kykxz_preserve_manual_sums() -> None:
     )
 
 
-def test_gx_species_flux_sums_to_total():
+def test_species_flux_sums_to_total():
     cfg, grid, geom, params, cache = _small_setup()
-    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    _vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
     )
@@ -1036,12 +1036,12 @@ def test_gx_species_flux_sums_to_total():
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
 
-    heat_s = gx_heat_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
-    pflux_s = gx_particle_flux_species(
+    heat_s = heat_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux_s = particle_flux_species(
         G0, phi, apar, bpar, cache, grid, params, flux_fac
     )
-    heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
-    pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    heat = heat_flux_total(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux = particle_flux_total(G0, phi, apar, bpar, cache, grid, params, flux_fac)
 
     assert heat_s.shape == (1,)
     assert pflux_s.shape == (1,)
@@ -1049,7 +1049,7 @@ def test_gx_species_flux_sums_to_total():
     assert np.allclose(np.asarray(jnp.sum(pflux_s)), np.asarray(pflux))
 
 
-def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
+def test_heat_flux_total_channel_helper_matches_public_split_reductions() -> None:
     _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(
         Nl=3, Nm=4
     )
@@ -1063,7 +1063,7 @@ def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
     apar = 0.3 * phi
     bpar = -0.2 * phi
 
-    es_contrib, apar_contrib, bpar_contrib = _gx_heat_flux_channel_contrib_species(
+    es_contrib, apar_contrib, bpar_contrib = _heat_flux_channel_contrib_species(
         G,
         phi,
         apar,
@@ -1075,7 +1075,7 @@ def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
         use_dealias=False,
         flux_scale=1.0,
     )
-    es_resolved, apar_resolved, bpar_resolved = gx_heat_flux_split_resolved_species(
+    es_resolved, apar_resolved, bpar_resolved = heat_flux_channel_resolved_species(
         G,
         phi,
         apar,
@@ -1099,7 +1099,7 @@ def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
             )
 
 
-def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> None:
+def test_particle_flux_total_channel_helper_matches_public_split_reductions() -> None:
     _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(
         Nl=3, Nm=3
     )
@@ -1113,7 +1113,7 @@ def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> No
     apar = 0.1 * phi
     bpar = -0.3 * phi
 
-    es_contrib, apar_contrib, bpar_contrib = _gx_particle_flux_channel_contrib_species(
+    es_contrib, apar_contrib, bpar_contrib = _particle_flux_channel_contrib_species(
         G,
         phi,
         apar,
@@ -1125,7 +1125,7 @@ def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> No
         use_dealias=False,
         flux_scale=1.0,
     )
-    es_resolved, apar_resolved, bpar_resolved = gx_particle_flux_split_resolved_species(
+    es_resolved, apar_resolved, bpar_resolved = particle_flux_channel_resolved_species(
         G,
         phi,
         apar,
@@ -1149,11 +1149,11 @@ def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> No
             )
 
 
-def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero() -> (
+def test_particle_flux_total_channel_helper_single_species_short_circuits_to_zero() -> (
     None
 ):
     cfg, grid, geom, params, cache = _small_setup()
-    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    _vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
     G = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
     )
@@ -1162,7 +1162,7 @@ def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero()
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
 
-    es_contrib, apar_contrib, bpar_contrib = _gx_particle_flux_channel_contrib_species(
+    es_contrib, apar_contrib, bpar_contrib = _particle_flux_channel_contrib_species(
         G,
         phi,
         apar,
@@ -1180,7 +1180,7 @@ def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero()
     np.testing.assert_allclose(np.asarray(bpar_contrib), 0.0)
 
 
-def test_gx_jl_family_preserves_species_axis() -> None:
+def test_jl_family_preserves_species_axis() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
         replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
@@ -1212,7 +1212,7 @@ def test_gx_jl_family_preserves_species_axis() -> None:
     assert np.allclose(np.asarray(JlB), np.asarray(cache.JlB))
 
 
-def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
+def test_particle_flux_species_matches_manual_multispecies_formula() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
         replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
@@ -1235,7 +1235,7 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
         kpar_scale=float(geom.gradpar()),
     )
     cache = build_linear_cache(grid, geom, params, 3, 3)
-    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    _vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
 
     shape = (2, 3, 3, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
@@ -1248,7 +1248,7 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
     bpar = -0.2 * phi
 
     got = np.asarray(
-        gx_particle_flux_species(
+        particle_flux_species(
             G,
             phi,
             apar,
@@ -1261,7 +1261,7 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
         )
     )
 
-    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False), dtype=np.float32)[
+    fac = np.asarray(_transport_mode_weight(grid, use_dealias=False), dtype=np.float32)[
         :, :, None
     ]
     flx = np.asarray(flux_fac, dtype=np.float32)[None, None, :]
@@ -1293,7 +1293,7 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
     assert np.allclose(got, np.asarray(expected), rtol=1.0e-6, atol=1.0e-6)
 
 
-def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
+def test_flux_channel_splits_sum_to_total_multispecies() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
         replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
@@ -1316,7 +1316,7 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
         kpar_scale=float(geom.gradpar()),
     )
     cache = build_linear_cache(grid, geom, params, 3, 4)
-    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    _vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
 
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
@@ -1329,13 +1329,13 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
     bpar = -0.2 * phi
 
     heat = np.asarray(
-        gx_heat_flux_species(
+        heat_flux_species(
             G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
         )
     )
     heat_es, heat_apar, heat_bpar = (
         np.asarray(arr)
-        for arr in gx_heat_flux_split_species(
+        for arr in heat_flux_channel_species(
             G,
             phi,
             apar,
@@ -1348,13 +1348,13 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
         )
     )
     pflux = np.asarray(
-        gx_particle_flux_species(
+        particle_flux_species(
             G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
         )
     )
     pflux_es, pflux_apar, pflux_bpar = (
         np.asarray(arr)
-        for arr in gx_particle_flux_split_species(
+        for arr in particle_flux_channel_species(
             G,
             phi,
             apar,
@@ -1374,16 +1374,16 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
         pflux, pflux_es + pflux_apar + pflux_bpar, rtol=1.0e-6, atol=1.0e-6
     )
 
-    heat_total = gx_heat_flux_resolved_species(
+    heat_total = heat_flux_resolved_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    heat_split = gx_heat_flux_split_resolved_species(
+    heat_split = heat_flux_channel_resolved_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    pflux_total = gx_particle_flux_resolved_species(
+    pflux_total = particle_flux_resolved_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
-    pflux_split = gx_particle_flux_split_resolved_species(
+    pflux_split = particle_flux_channel_resolved_species(
         G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
     )
 
@@ -1399,7 +1399,7 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
             )
 
 
-def test_gx_turbulent_heating_zero_for_steady_state() -> None:
+def test_turbulent_heating_total_zero_for_steady_state() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
         replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
@@ -1422,7 +1422,7 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
         kpar_scale=float(geom.gradpar()),
     )
     cache = build_linear_cache(grid, geom, params, 3, 4)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
 
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
@@ -1434,7 +1434,7 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
     apar = 0.2 * phi
     bpar = -0.1 * phi
 
-    heat_species = gx_turbulent_heating_species(
+    heat_species = turbulent_heating_species(
         G,
         G,
         phi,
@@ -1450,7 +1450,7 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
         0.05,
         use_dealias=False,
     )
-    heat_total = gx_turbulent_heating(
+    heat_total = turbulent_heating_total(
         G,
         G,
         phi,
@@ -1471,7 +1471,7 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
     np.testing.assert_allclose(np.asarray(heat_total), 0.0, atol=1.0e-7)
 
 
-def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
+def test_turbulent_heating_total_resolved_sums_to_species_total() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
         replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
@@ -1494,7 +1494,7 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
         kpar_scale=float(geom.gradpar()),
     )
     cache = build_linear_cache(grid, geom, params, 3, 4)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
 
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
@@ -1510,7 +1510,7 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
     bpar_old = -0.1 * phi_old
     bpar = -0.1 * phi + (0.01 - 0.02j)
 
-    heat_species = gx_turbulent_heating_species(
+    heat_species = turbulent_heating_species(
         G,
         G_old,
         phi,
@@ -1527,7 +1527,7 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
         use_dealias=False,
     )
     heat_st, heat_kxst, heat_kyst, heat_kxkyst, heat_zst = (
-        gx_turbulent_heating_resolved_species(
+        turbulent_heating_resolved_species(
             G,
             G_old,
             phi,
@@ -1575,7 +1575,7 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
     assert np.max(np.abs(np.asarray(heat_species))) > 0.0
 
 
-def test_gx_turbulent_heating_helper_zero_dt_guard_returns_zero_for_changed_state() -> (
+def test_turbulent_heating_total_helper_zero_dt_guard_returns_zero_for_changed_state() -> (
     None
 ):
     _cfg, grid, _geom, params, cache, vol_fac, _flux_fac = _multispecies_setup(
@@ -1595,7 +1595,7 @@ def test_gx_turbulent_heating_helper_zero_dt_guard_returns_zero_for_changed_stat
     bpar_old = -0.1 * phi_old
     bpar = -0.1 * phi + (0.01 - 0.02j)
 
-    contrib = _gx_turbulent_heating_contrib_species(
+    contrib = _turbulent_heating_contrib_species(
         G,
         G_old,
         phi,
@@ -1616,7 +1616,7 @@ def test_gx_turbulent_heating_helper_zero_dt_guard_returns_zero_for_changed_stat
     np.testing.assert_allclose(np.asarray(contrib), 0.0, atol=1.0e-7)
 
 
-def test_gx_init_all_scaling_matches_reference():
+def test_init_all_scaling_matches_reference():
     cfg = CycloneBaseCase()
     grid_full = build_spectral_grid(cfg.grid)
     ky_index = select_ky_index(np.asarray(grid_full.ky), float(grid_full.ky[1]))
@@ -1699,7 +1699,7 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
     assert set(calls) == {"rk3"}
 
 
-def test_gx_term_config_and_rk3_wrapper_delegate_to_linear_step(
+def test_term_config_and_rk3_wrapper_delegate_to_linear_step(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     terms = LinearTerms(apar=0.0, bpar=1.0, hyperdiffusion=1.0)
@@ -1772,7 +1772,7 @@ def test_linear_explicit_step_applies_gx_post_step_mask(
     assert np.allclose(np.asarray(fields.phi), expected)
 
 
-def test_gx_energy_drift_small_no_drive():
+def test_energy_drift_small_no_drive():
     cfg, grid, geom, params, cache = _small_setup()
     params = replace(params, R_over_Ln=0.0, R_over_LTi=0.0, R_over_LTe=0.0, nu=0.0)
     G0 = _build_initial_condition(
@@ -1808,7 +1808,7 @@ def test_gx_energy_drift_small_no_drive():
         assert rel < 0.05
 
 
-def test_gx_growth_rate_step_matches_real_imag_validity_mask():
+def test_growth_rate_step_matches_real_imag_validity_mask():
     """GX growth-rate kernel should require non-zero real and imaginary parts."""
 
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 1.0 + 1.0j]]], dtype=jnp.complex64)
@@ -1829,7 +1829,7 @@ def test_gx_growth_rate_step_matches_real_imag_validity_mask():
     assert not np.allclose(np.asarray(gamma_ok), 0.0)
 
 
-def test_gx_growth_rate_step_validity_depends_on_current_phi_only():
+def test_growth_rate_step_validity_depends_on_current_phi_only():
     """GX kernel checks real/imag nonzero on current phi only."""
 
     phi_prev = jnp.asarray([[[1.0 + 0.0j, 1.0 + 0.0j]]], dtype=jnp.complex64)
@@ -1841,7 +1841,7 @@ def test_gx_growth_rate_step_validity_depends_on_current_phi_only():
     assert not np.allclose(np.asarray(gamma), 0.0)
 
 
-def test_gx_growth_rate_step_max_uses_per_step_peak():
+def test_growth_rate_step_max_uses_per_step_peak():
     """GX max-mode diagnostics should follow each step's peak-z sample."""
 
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 8.0 + 8.0j]]], dtype=jnp.complex64)
@@ -1860,7 +1860,7 @@ def test_gx_growth_rate_step_max_uses_per_step_peak():
     assert np.allclose(np.asarray(omega), -np.angle(ratio) / 0.1)
 
 
-def test_gx_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
+def test_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
     mask = _gx_growth_mask(
         jnp.asarray([-0.01]),
         jnp.asarray([0.0]),
@@ -1869,7 +1869,7 @@ def test_gx_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
     assert np.asarray(mask).item() is True
 
 
-def test_gx_growth_mask_keeps_single_selected_zonal_slice_masked() -> None:
+def test_growth_mask_keeps_single_selected_zonal_slice_masked() -> None:
     mask = _gx_growth_mask(
         jnp.asarray([0.0]),
         jnp.asarray([0.0]),
@@ -1955,7 +1955,7 @@ def test_linear_gx_adaptive_default_dt_max_matches_gx():
     assert np.nanmax(dt_t) <= float(time_cfg.dt) + 1.0e-12
 
 
-def test_gx_linear_omega_max_preserves_selected_ky_mode():
+def test_linear_omega_max_preserves_selected_ky_mode():
     cfg = CycloneBaseCase()
     grid_full = build_spectral_grid(cfg.grid)
     ky_index = select_ky_index(np.asarray(grid_full.ky), 0.2)

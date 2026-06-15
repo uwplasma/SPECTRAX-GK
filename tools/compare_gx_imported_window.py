@@ -32,7 +32,7 @@ from tools.compare_gx_runtime_diag_state import (
 )
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
-from spectraxgk.diagnostics import gx_Wapar, gx_Wg, gx_Wphi, gx_volume_factors
+from spectraxgk.diagnostics import magnetic_vector_potential_energy, distribution_free_energy, electrostatic_field_energy, fieldline_quadrature_weights
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
 from spectraxgk.gx_integrators import GXTimeConfig, _gx_linear_omega_max, _linear_explicit_step
@@ -237,13 +237,13 @@ def main() -> None:
     if gx_bpar_stop is not None or fields.bpar is not None:
         _summary("stop_bpar", gx_bpar_stop_use.astype(np.complex64), sp_bpar_stop)
 
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
-    gx_Wg_stop = float(gx_Wg(jnp.asarray(gx_G_stop), grid, params, vol_fac))
-    sp_Wg_stop = float(gx_Wg(jnp.asarray(sp_G_stop), grid, params, vol_fac))
-    gx_Wphi_stop = float(gx_Wphi(jnp.asarray(gx_phi_stop), cache, params, vol_fac))
-    sp_Wphi_stop = float(gx_Wphi(jnp.asarray(sp_phi_stop), cache, params, vol_fac))
-    gx_Wapar_stop = float(gx_Wapar(jnp.asarray(gx_apar_stop_use), cache, vol_fac))
-    sp_Wapar_stop = float(gx_Wapar(jnp.asarray(sp_apar_stop), cache, vol_fac))
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
+    distribution_free_energy_stop = float(distribution_free_energy(jnp.asarray(gx_G_stop), grid, params, vol_fac))
+    sp_Wg_stop = float(distribution_free_energy(jnp.asarray(sp_G_stop), grid, params, vol_fac))
+    electrostatic_field_energy_stop = float(electrostatic_field_energy(jnp.asarray(gx_phi_stop), cache, params, vol_fac))
+    sp_Wphi_stop = float(electrostatic_field_energy(jnp.asarray(sp_phi_stop), cache, params, vol_fac))
+    magnetic_vector_potential_energy_stop = float(magnetic_vector_potential_energy(jnp.asarray(gx_apar_stop_use), cache, vol_fac))
+    sp_Wapar_stop = float(magnetic_vector_potential_energy(jnp.asarray(sp_apar_stop), cache, vol_fac))
     gx_Phi2_stop = _gx_phi2_total(jnp.asarray(gx_phi_stop), vol_fac)
     sp_Phi2_stop = _gx_phi2_total(jnp.asarray(sp_phi_stop), vol_fac)
 
@@ -252,9 +252,9 @@ def main() -> None:
         {"metric": "phi", "rel": _rel_err(sp_phi_stop, gx_phi_stop)},
         {"metric": "apar", "rel": _rel_err(sp_apar_stop, gx_apar_stop_use)},
         {"metric": "bpar", "rel": _rel_err(sp_bpar_stop, gx_bpar_stop_use)},
-        {"metric": "Wg", "gx_stop": gx_Wg_stop, "spectrax": sp_Wg_stop, "rel": abs(sp_Wg_stop - gx_Wg_stop) / max(abs(gx_Wg_stop), 1.0e-30)},
-        {"metric": "Wphi", "gx_stop": gx_Wphi_stop, "spectrax": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - gx_Wphi_stop) / max(abs(gx_Wphi_stop), 1.0e-30)},
-        {"metric": "Wapar", "gx_stop": gx_Wapar_stop, "spectrax": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - gx_Wapar_stop) / max(abs(gx_Wapar_stop), 1.0e-30)},
+        {"metric": "Wg", "gx_stop": distribution_free_energy_stop, "spectrax": sp_Wg_stop, "rel": abs(sp_Wg_stop - distribution_free_energy_stop) / max(abs(distribution_free_energy_stop), 1.0e-30)},
+        {"metric": "Wphi", "gx_stop": electrostatic_field_energy_stop, "spectrax": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - electrostatic_field_energy_stop) / max(abs(electrostatic_field_energy_stop), 1.0e-30)},
+        {"metric": "Wapar", "gx_stop": magnetic_vector_potential_energy_stop, "spectrax": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - magnetic_vector_potential_energy_stop) / max(abs(magnetic_vector_potential_energy_stop), 1.0e-30)},
         {"metric": "Phi2", "gx_stop": gx_Phi2_stop, "spectrax": sp_Phi2_stop, "rel": abs(sp_Phi2_stop - gx_Phi2_stop) / max(abs(gx_Phi2_stop), 1.0e-30)},
     ]
     print("metric     rel")

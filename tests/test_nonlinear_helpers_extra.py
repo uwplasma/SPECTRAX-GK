@@ -689,7 +689,7 @@ def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
 
     with pytest.raises(
         ValueError,
-        match="Final-state GX diagnostics helper only supports explicit methods",
+        match="Final-state runtime diagnostics helper only supports explicit methods",
     ):
         _integrate_nonlinear_gx_diagnostics_impl(
             jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64),
@@ -855,7 +855,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         "spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_volume_factors",
+        "spectraxgk.nonlinear.fieldline_quadrature_weights",
         lambda geom, grid: (
             jnp.ones((grid.z.size,), dtype=jnp.float32),
             jnp.asarray(1.0),
@@ -886,11 +886,11 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
 
     monkeypatch.setattr("spectraxgk.nonlinear._gx_growth_rate_step", _fake_growth)
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_phi2_resolved",
+        "spectraxgk.nonlinear.phi2_resolved",
         lambda *args, **kwargs: _resolved_tuple(),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wg_resolved",
+        "spectraxgk.nonlinear.distribution_free_energy_resolved",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -901,7 +901,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wphi_resolved",
+        "spectraxgk.nonlinear.electrostatic_field_energy_resolved",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -911,7 +911,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wapar_resolved",
+        "spectraxgk.nonlinear.magnetic_vector_potential_energy_resolved",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -921,7 +921,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_heat_flux_resolved_species",
+        "spectraxgk.nonlinear.heat_flux_resolved_species",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -931,7 +931,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_heat_flux_split_resolved_species",
+        "spectraxgk.nonlinear.heat_flux_channel_resolved_species",
         lambda *args, **kwargs: (
             _split_flux_tuple(),
             _split_flux_tuple(),
@@ -939,7 +939,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_particle_flux_resolved_species",
+        "spectraxgk.nonlinear.particle_flux_resolved_species",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -949,7 +949,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_particle_flux_split_resolved_species",
+        "spectraxgk.nonlinear.particle_flux_channel_resolved_species",
         lambda *args, **kwargs: (
             _split_flux_tuple(),
             _split_flux_tuple(),
@@ -957,7 +957,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_turbulent_heating_resolved_species",
+        "spectraxgk.nonlinear.turbulent_heating_resolved_species",
         lambda *args, **kwargs: (
             jnp.ones((1,), dtype=jnp.float32),
             jnp.ones((1, 1), dtype=jnp.float32),
@@ -1079,7 +1079,7 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         "spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_volume_factors",
+        "spectraxgk.nonlinear.fieldline_quadrature_weights",
         lambda geom, grid: (
             jnp.ones((grid.z.size,), dtype=jnp.float32),
             jnp.asarray(1.0),
@@ -1110,35 +1110,35 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_phi2_resolved",
+        "spectraxgk.nonlinear.phi2_resolved",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(100, 108)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_phi_zonal_mode_kxt",
+        "spectraxgk.nonlinear.zonal_phi_mode_kxt",
         lambda *args, **kwargs: _marker(108),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_phi_zonal_line_kxt",
+        "spectraxgk.nonlinear.zonal_phi_line_kxt",
         lambda *args, **kwargs: _marker(109),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wg_resolved",
+        "spectraxgk.nonlinear.distribution_free_energy_resolved",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(110, 116)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wphi_resolved",
+        "spectraxgk.nonlinear.electrostatic_field_energy_resolved",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(116, 121)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wapar_resolved",
+        "spectraxgk.nonlinear.magnetic_vector_potential_energy_resolved",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(121, 126)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_heat_flux_resolved_species",
+        "spectraxgk.nonlinear.heat_flux_resolved_species",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(126, 131)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_heat_flux_split_resolved_species",
+        "spectraxgk.nonlinear.heat_flux_channel_resolved_species",
         lambda *args, **kwargs: (
             _split_flux_tuple(130),
             _split_flux_tuple(134),
@@ -1146,11 +1146,11 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_particle_flux_resolved_species",
+        "spectraxgk.nonlinear.particle_flux_resolved_species",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(143, 148)),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_particle_flux_split_resolved_species",
+        "spectraxgk.nonlinear.particle_flux_channel_resolved_species",
         lambda *args, **kwargs: (
             _split_flux_tuple(147),
             _split_flux_tuple(151),
@@ -1158,7 +1158,7 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_turbulent_heating_resolved_species",
+        "spectraxgk.nonlinear.turbulent_heating_resolved_species",
         lambda *args, **kwargs: tuple(_marker(v) for v in range(160, 165)),
     )
 
@@ -1233,7 +1233,7 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         "spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_volume_factors",
+        "spectraxgk.nonlinear.fieldline_quadrature_weights",
         lambda geom, grid: (
             jnp.ones((grid.z.size,), dtype=jnp.float32),
             jnp.asarray(1.0),
@@ -1253,27 +1253,27 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         "spectraxgk.nonlinear.compute_fields_cached", _fields_from_state
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wg",
+        "spectraxgk.nonlinear.distribution_free_energy",
         lambda *args, **kwargs: jnp.asarray(0.0, dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wphi",
+        "spectraxgk.nonlinear.electrostatic_field_energy",
         lambda *args, **kwargs: jnp.asarray(0.0, dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_Wapar",
+        "spectraxgk.nonlinear.magnetic_vector_potential_energy",
         lambda *args, **kwargs: jnp.asarray(0.0, dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_heat_flux_species",
+        "spectraxgk.nonlinear.heat_flux_species",
         lambda *args, **kwargs: jnp.zeros((1,), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_particle_flux_species",
+        "spectraxgk.nonlinear.particle_flux_species",
         lambda *args, **kwargs: jnp.zeros((1,), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.gx_turbulent_heating_species",
+        "spectraxgk.nonlinear.turbulent_heating_species",
         lambda *args, **kwargs: jnp.zeros((1,), dtype=jnp.float32),
     )
 

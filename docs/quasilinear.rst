@@ -293,9 +293,9 @@ density moment
 
 but it is zero for the one-ion adiabatic-electron cases because there is no
 kinetic electron species carrying particle transport. The implemented formulas
-live in :func:`spectraxgk.diagnostics.gx_heat_flux_species`,
-:func:`spectraxgk.diagnostics.gx_particle_flux_species`, and
-``_gx_heat_flux_channel_contrib_species`` in
+live in :func:`spectraxgk.diagnostics.heat_flux_species`,
+:func:`spectraxgk.diagnostics.particle_flux_species`, and
+``_heat_flux_channel_contrib_species`` in
 :mod:`spectraxgk.diagnostics`.
 
 Amplitude normalization and effective scale

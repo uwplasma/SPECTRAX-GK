@@ -1001,7 +1001,7 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX exact-state diagnostics for scalar and resolved W7-X nonlinear quantities",
+  "reference-code exact-state diagnostics for scalar and resolved W7-X nonlinear quantities",
   "W7-X stella/GENE zonal-flow benchmark observable definitions",
 ]
 physics_contracts = [
@@ -1013,7 +1013,7 @@ numerics_contracts = [
   "resolved diagnostic reductions preserve shape and mode indexing",
 ]
 fast_tests = [
-  "tests/test_gx_diagnostics.py",
+  "tests/test_runtime_diagnostics.py",
   "tests/test_compare_gx_nonlinear_diagnostics.py",
   "tests/test_compare_gx_runtime_diag_state.py",
   "tests/test_plot_zonal_flow_response_from_output.py",

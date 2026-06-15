@@ -473,7 +473,7 @@ def _select_gx_kx_index(gx_kx: np.ndarray, gx_contract: GXInputContract | None) 
     return int(np.argmin(np.abs(gx_kx_arr)))
 
 
-def _gx_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
+def _cached_hermitian_mode_weight(cache, *, use_dealias: bool) -> jnp.ndarray:
     ky = jnp.asarray(cache.ky)
     has_negative = jnp.any(ky < 0.0)
     fac = jnp.where(has_negative, 1.0, jnp.where(ky == 0.0, 1.0, 2.0))
@@ -507,7 +507,7 @@ def _species_array(val: float | jnp.ndarray, ns: int) -> jnp.ndarray:
     return arr
 
 
-def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _distribution_free_energy_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     Gs = G if G.ndim == 6 else G[None, ...]
     ns = Gs.shape[0]
     nt = _species_array(params.density, ns) * _species_array(params.temp, ns)
@@ -518,7 +518,7 @@ def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dea
     return jnp.sum(contrib, axis=(0, 1, 2, 4, 5))
 
 
-def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _electrostatic_field_energy_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     rho = jnp.asarray(params.rho)
@@ -533,7 +533,7 @@ def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use
     return wphi
 
 
-def _gx_Wapar_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _magnetic_vector_potential_energy_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     bmag2 = cache.bmag[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
@@ -674,9 +674,9 @@ def _integrate_target_mode_series(
                     mask=mask,
                     mode_method=mode_method,
                 )
-            Wg = _gx_Wg_by_ky(G, cache, params, vol_fac)
-            Wphi = _gx_Wphi_by_ky(phi, cache, params, vol_fac)
-            Wapar = _gx_Wapar_by_ky(apar, cache, vol_fac)
+            Wg = _distribution_free_energy_by_ky(G, cache, params, vol_fac)
+            Wphi = _electrostatic_field_energy_by_ky(phi, cache, params, vol_fac)
+            Wapar = _magnetic_vector_potential_energy_by_ky(apar, cache, vol_fac)
             Phi2 = _gx_Phi2_by_ky(phi, vol_fac)
             gamma_list.append(float(np.asarray(gamma)[ky_index, kx_index]))
             omega_list.append(float(np.asarray(omega)[ky_index, kx_index]))
@@ -1024,7 +1024,7 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar, gx_Phi2 = _load_gx_reference(args.gx)
+    gx_time, gx_ky, gx_kx, gx_omega, distribution_free_energy, electrostatic_field_energy, magnetic_vector_potential_energy, gx_Phi2 = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
     sample_steps = _build_sample_steps(
@@ -1236,12 +1236,12 @@ def main() -> None:
             "mean_rel_gamma": _mean_rel_error(
                 gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
             ),
-            "mean_abs_Wg": float(np.mean(np.abs(Wg - gx_Wg[sample_steps, ky_idx]))),
-            "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
-            "mean_abs_Wphi": float(np.mean(np.abs(Wphi - gx_Wphi[sample_steps, ky_idx]))),
-            "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
-            "mean_abs_Wapar": float(np.mean(np.abs(Wapar - gx_Wapar[sample_steps, ky_idx]))),
-            "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wg": float(np.mean(np.abs(Wg - distribution_free_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wg": _mean_rel_error(Wg, distribution_free_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wphi": float(np.mean(np.abs(Wphi - electrostatic_field_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wphi": _mean_rel_error(Wphi, electrostatic_field_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wapar": float(np.mean(np.abs(Wapar - magnetic_vector_potential_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wapar": _mean_rel_error(Wapar, magnetic_vector_potential_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
             "omega_last": float(omega[-1]),
             "omega_ref_last": float(omega_ref[-1]),
             "gamma_last": float(gamma[-1]),

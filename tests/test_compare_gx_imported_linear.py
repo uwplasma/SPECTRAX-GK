@@ -25,7 +25,7 @@ from compare_gx_imported_linear import (
     _resolve_imported_boundary,
     _infer_gx_linear_dt,
     _integrate_target_mode_series,
-    _gx_Wg_by_ky,
+    _distribution_free_energy_by_ky,
     _gx_kyst_fac_mask_cached,
     _load_gx_input_contract,
     _match_local_kx_index,
@@ -678,7 +678,7 @@ def test_gx_kyst_fac_mask_cached_uses_positive_half_storage_on_full_ky_grid() ->
     )
 
 
-def test_gx_Wg_by_ky_matches_gx_positive_ky_storage_contract() -> None:
+def test_distribution_free_energy_by_ky_matches_gx_positive_ky_storage_contract() -> None:
     cache = SimpleNamespace(
         ky=np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
         kx=np.asarray([0.0], dtype=np.float32),
@@ -687,7 +687,7 @@ def test_gx_Wg_by_ky_matches_gx_positive_ky_storage_contract() -> None:
     params = SimpleNamespace(density=1.0, temp=1.0)
     vol_fac = jnp.asarray([1.0], dtype=jnp.float32)
     G = jnp.ones((1, 1, 1, 3, 1, 1), dtype=jnp.complex64)
-    Wg = np.asarray(_gx_Wg_by_ky(G, cache, params, vol_fac), dtype=float)
+    Wg = np.asarray(_distribution_free_energy_by_ky(G, cache, params, vol_fac), dtype=float)
     assert np.allclose(Wg, np.asarray([0.0, 0.5, 1.0], dtype=float))
 
 
@@ -833,9 +833,9 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
             jnp.full((2, 2), 2.0, dtype=jnp.float32),
         ),
     )
-    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
+    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]))
+    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]))
+    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
     monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
 
     gamma, omega, Wg, Wphi, Wapar, Phi2 = _integrate_target_mode_series(
@@ -887,9 +887,9 @@ def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_
             jnp.asarray([[0.0]], dtype=float),
         ),
     )
-    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
 
     analytic = SAlphaGeometry.from_config(
         imported_linear.GeometryConfig(model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=1.0)
@@ -959,9 +959,9 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         return jnp.ones((1, 1), dtype=jnp.float32), jnp.ones((1, 1), dtype=jnp.float32)
 
     monkeypatch.setattr(imported_linear, "_gx_growth_rate_step", _fake_growth)
-    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
     monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
 
     _integrate_target_mode_series(
@@ -1026,9 +1026,9 @@ def test_integrate_target_mode_series_downsamples_output_without_sparsifying_gro
         )
 
     monkeypatch.setattr(imported_linear, "_gx_growth_rate_step", _fake_growth)
-    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
     monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
 
     gamma, omega, *_rest = _integrate_target_mode_series(

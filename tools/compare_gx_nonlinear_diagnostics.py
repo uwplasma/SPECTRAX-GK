@@ -342,7 +342,7 @@ def main() -> int:
     parser.add_argument(
         "--summary-source",
         type=str,
-        default="GX diagnostics",
+        default="runtime diagnostics",
         help="Reference/source label stored in --summary-json gate metadata.",
     )
     parser.add_argument(

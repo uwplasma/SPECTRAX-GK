@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a nonlinear Cyclone case with GX-style diagnostics."""
+"""Run a nonlinear Cyclone case with runtime diagnostics."""
 
 from __future__ import annotations
 

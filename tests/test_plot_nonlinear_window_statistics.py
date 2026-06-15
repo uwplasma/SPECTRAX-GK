@@ -26,7 +26,7 @@ def _write_summary(
 ) -> None:
     payload = {
         "case": case,
-        "source": "synthetic GX diagnostics",
+        "source": "synthetic runtime diagnostics",
         "gate_mean_rel": 0.10,
         "gate_passed": True,
         "summary": [

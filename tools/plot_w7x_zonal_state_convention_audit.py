@@ -18,7 +18,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.diagnostics import gx_phi_zonal_line_kxt, gx_phi_zonal_mode_kxt, gx_volume_factors  # noqa: E402
+from spectraxgk.diagnostics import zonal_phi_line_kxt, zonal_phi_mode_kxt, fieldline_quadrature_weights  # noqa: E402
 from spectraxgk.geometry import apply_geometry_grid_defaults, ensure_flux_tube_geometry_data  # noqa: E402
 from spectraxgk.grids import SpectralGrid, build_spectral_grid  # noqa: E402
 from spectraxgk.io import load_runtime_from_toml  # noqa: E402
@@ -141,10 +141,10 @@ def build_state_audit(
     phi = np.asarray(fields.phi)
     target_phi = np.asarray(phi[ky_index, kx_index, :])
     expected = _expected_paper_phi(cfg, np.asarray(grid.z, dtype=float))
-    vol_fac, _flux_fac = gx_volume_factors(geom_eff, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom_eff, grid)
     vol_np = np.asarray(vol_fac, dtype=float)
-    line_helper = np.asarray(gx_phi_zonal_line_kxt(jnp.asarray(phi), grid))
-    mode_helper = np.asarray(gx_phi_zonal_mode_kxt(jnp.asarray(phi), grid, vol_fac))
+    line_helper = np.asarray(zonal_phi_line_kxt(jnp.asarray(phi), grid))
+    mode_helper = np.asarray(zonal_phi_mode_kxt(jnp.asarray(phi), grid, vol_fac))
     manual_line = complex(np.mean(target_phi))
     manual_mode = complex(np.sum(target_phi * vol_np))
     line_value = complex(line_helper[kx_index])

@@ -14,14 +14,14 @@ from netCDF4 import Dataset
 
 from tools.compare_gx_rhs_terms import _infer_y0, _load_field, _reshape_gx, _summary
 from spectraxgk.diagnostics import (
-    gx_Wapar,
-    gx_Wg,
-    gx_Wphi,
-    gx_heat_flux,
-    gx_heat_flux_species,
-    gx_particle_flux,
-    gx_particle_flux_species,
-    gx_volume_factors,
+    magnetic_vector_potential_energy,
+    distribution_free_energy,
+    electrostatic_field_energy,
+    heat_flux_total,
+    heat_flux_species,
+    particle_flux_total,
+    particle_flux_species,
+    fieldline_quadrature_weights,
 )
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
 from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
@@ -128,15 +128,15 @@ def _diag_row(
     apar_j = jnp.asarray(apar)
     bpar_j = jnp.asarray(bpar)
     return {
-        "Wg": float(gx_Wg(G_j, grid, params, vol_fac)),
-        "Wphi": float(gx_Wphi(phi_j, cache, params, vol_fac, wphi_scale=wphi_scale)),
-        "Wapar": float(gx_Wapar(apar_j, cache, vol_fac)),
-        "heat": float(gx_heat_flux(G_j, phi_j, apar_j, bpar_j, cache, grid, params, flux_fac, flux_scale=flux_scale)),
+        "Wg": float(distribution_free_energy(G_j, grid, params, vol_fac)),
+        "Wphi": float(electrostatic_field_energy(phi_j, cache, params, vol_fac, wphi_scale=wphi_scale)),
+        "Wapar": float(magnetic_vector_potential_energy(apar_j, cache, vol_fac)),
+        "heat": float(heat_flux_total(G_j, phi_j, apar_j, bpar_j, cache, grid, params, flux_fac, flux_scale=flux_scale)),
         "pflux": float(
-            gx_particle_flux(G_j, phi_j, apar_j, bpar_j, cache, grid, params, flux_fac, flux_scale=flux_scale)
+            particle_flux_total(G_j, phi_j, apar_j, bpar_j, cache, grid, params, flux_fac, flux_scale=flux_scale)
         ),
         "heat_s": np.asarray(
-            gx_heat_flux_species(
+            heat_flux_species(
                 G_j,
                 phi_j,
                 apar_j,
@@ -150,7 +150,7 @@ def _diag_row(
             dtype=float,
         ),
         "pflux_s": np.asarray(
-            gx_particle_flux_species(
+            particle_flux_species(
                 G_j,
                 phi_j,
                 apar_j,
@@ -254,7 +254,7 @@ def main() -> None:
     term_cfg = build_runtime_term_config(cfg_use)
     sp_fields = compute_fields_cached(jnp.asarray(gx_G), cache, params, terms=term_cfg)
 
-    vol_fac, flux_fac = gx_volume_factors(geom_eff, grid)
+    vol_fac, flux_fac = fieldline_quadrature_weights(geom_eff, grid)
 
     sp_phi = np.asarray(sp_fields.phi, dtype=np.complex64)
     sp_apar = (

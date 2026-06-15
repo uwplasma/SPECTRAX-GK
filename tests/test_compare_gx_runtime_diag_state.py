@@ -128,14 +128,14 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
         "compute_fields_cached",
         lambda *_args, **_kwargs: SimpleNamespace(phi=np.arange(4, dtype=np.complex64).reshape(2, 1, 2), apar=None, bpar=None),
     )
-    monkeypatch.setattr(mod, "gx_volume_factors", lambda *_args, **_kwargs: (np.array([0.4, 0.6]), np.array([0.0, 1.0])))
-    monkeypatch.setattr(mod, "gx_Wg", lambda *_args, **_kwargs: 1.5)
-    monkeypatch.setattr(mod, "gx_Wphi", lambda *_args, **_kwargs: 2.5)
-    monkeypatch.setattr(mod, "gx_Wapar", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(mod, "gx_heat_flux", lambda *_args, **_kwargs: 3.5)
-    monkeypatch.setattr(mod, "gx_particle_flux", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(mod, "gx_heat_flux_species", lambda *_args, **_kwargs: np.array([3.5]))
-    monkeypatch.setattr(mod, "gx_particle_flux_species", lambda *_args, **_kwargs: np.array([0.0]))
+    monkeypatch.setattr(mod, "fieldline_quadrature_weights", lambda *_args, **_kwargs: (np.array([0.4, 0.6]), np.array([0.0, 1.0])))
+    monkeypatch.setattr(mod, "distribution_free_energy", lambda *_args, **_kwargs: 1.5)
+    monkeypatch.setattr(mod, "electrostatic_field_energy", lambda *_args, **_kwargs: 2.5)
+    monkeypatch.setattr(mod, "magnetic_vector_potential_energy", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(mod, "heat_flux_total", lambda *_args, **_kwargs: 3.5)
+    monkeypatch.setattr(mod, "particle_flux_total", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(mod, "heat_flux_species", lambda *_args, **_kwargs: np.array([3.5]))
+    monkeypatch.setattr(mod, "particle_flux_species", lambda *_args, **_kwargs: np.array([0.0]))
 
     summaries: list[str] = []
     monkeypatch.setattr(mod, "_summary", lambda name, *_args, **_kwargs: summaries.append(name))
