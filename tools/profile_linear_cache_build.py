@@ -89,7 +89,9 @@ def _time_phase(
     with profiler.TraceAnnotation(phase):
         out = fn()
         _block_tree(out)
-    timings.append(CachePhaseTiming(phase=phase, seconds=time.perf_counter() - t0, note=note))
+    timings.append(
+        CachePhaseTiming(phase=phase, seconds=time.perf_counter() - t0, note=note)
+    )
     return out
 
 
@@ -102,7 +104,9 @@ def _write_csv(path: Path, timings: list[CachePhaseTiming]) -> None:
             writer.writerow(asdict(row))
 
 
-def _write_json(path: Path, timings: list[CachePhaseTiming], metadata: dict[str, Any]) -> None:
+def _write_json(
+    path: Path, timings: list[CachePhaseTiming], metadata: dict[str, Any]
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
@@ -125,9 +129,12 @@ def main() -> None:
     import jax.numpy as jnp
     import numpy as np
     from jax import profiler
-    from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
+    from spectraxgk.geometry import (
+        apply_gx_geometry_grid_defaults,
+        ensure_flux_tube_geometry_data,
+    )
     from spectraxgk.grids import build_spectral_grid
-    from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
+    from spectraxgk.gyroaverage import bessel_j0, bessel_j1, laguerre_transform
     from spectraxgk.io import load_runtime_from_toml
     from spectraxgk.linear import (
         _build_end_damping_profile_array,
@@ -158,17 +165,31 @@ def main() -> None:
             lambda: load_runtime_from_toml(args.config),
             note=str(args.config),
         )
-        geom = _time_phase(timings, "build_runtime_geometry", lambda: build_runtime_geometry(cfg))
-        grid_cfg = _time_phase(timings, "apply_geometry_grid_defaults", lambda: apply_gx_geometry_grid_defaults(geom, cfg.grid))
-        grid = _time_phase(timings, "build_spectral_grid", lambda: build_spectral_grid(grid_cfg))
-        params = _time_phase(timings, "build_runtime_linear_params", lambda: build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom))
+        geom = _time_phase(
+            timings, "build_runtime_geometry", lambda: build_runtime_geometry(cfg)
+        )
+        grid_cfg = _time_phase(
+            timings,
+            "apply_geometry_grid_defaults",
+            lambda: apply_gx_geometry_grid_defaults(geom, cfg.grid),
+        )
+        grid = _time_phase(
+            timings, "build_spectral_grid", lambda: build_spectral_grid(grid_cfg)
+        )
+        params = _time_phase(
+            timings,
+            "build_runtime_linear_params",
+            lambda: build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom),
+        )
 
         ctx: dict[str, Any] = {}
 
         def _grid_scalars():
             real_dtype = jnp.float64 if _x64_enabled() else jnp.float32
             dz = jnp.asarray(grid.z[1] - grid.z[0], dtype=real_dtype)
-            kz = jnp.asarray(2.0 * jnp.pi * jnp.fft.fftfreq(grid.z.size, d=dz), dtype=real_dtype)
+            kz = jnp.asarray(
+                2.0 * jnp.pi * jnp.fft.fftfreq(grid.z.size, d=dz), dtype=real_dtype
+            )
             rho_star = jnp.asarray(params.rho_star, dtype=real_dtype)
             kx_raw = jnp.asarray(grid.kx, dtype=real_dtype)
             ky_raw = jnp.asarray(grid.ky, dtype=real_dtype)
@@ -234,7 +255,11 @@ def main() -> None:
             use_ntft = bool(getattr(grid, "non_twist", False))
             y0 = getattr(grid, "y0", None)
             if y0 is None:
-                y0 = float(1.0 / float(grid.ky[1] - grid.ky[0])) if grid.ky.size > 1 else 1.0
+                y0 = (
+                    float(1.0 / float(grid.ky[1] - grid.ky[0]))
+                    if grid.ky.size > 1
+                    else 1.0
+                )
             shat = float(geom_data.s_hat)
             x0_eff = float(getattr(grid, "x0", 1.0))
             jtwist = 0
@@ -242,9 +267,17 @@ def main() -> None:
             kx_eff = ctx["kx_eff"]
             kx_grid = ctx["kx_grid"]
             if use_twist_shift:
-                gds21_min = float(ctx["gds21"][0]) if ctx["gds21"].ndim else float(ctx["gds21"])
-                gds22_min = float(ctx["gds22"][0]) if ctx["gds22"].ndim else float(ctx["gds22"])
-                twist_shift_geo_fac = 0.0 if gds22_min == 0.0 else float(2.0 * shat * gds21_min / gds22_min)
+                gds21_min = (
+                    float(ctx["gds21"][0]) if ctx["gds21"].ndim else float(ctx["gds21"])
+                )
+                gds22_min = (
+                    float(ctx["gds22"][0]) if ctx["gds22"].ndim else float(ctx["gds22"])
+                )
+                twist_shift_geo_fac = (
+                    0.0
+                    if gds22_min == 0.0
+                    else float(2.0 * shat * gds21_min / gds22_min)
+                )
                 if twist_shift_geo_fac != 0.0:
                     jtwist = int(np.round(twist_shift_geo_fac))
                     if jtwist == 0:
@@ -255,7 +288,9 @@ def main() -> None:
                 else:
                     jtwist = 1
                 if use_ntft and float(getattr(grid, "x0", x0_eff)) != 0.0:
-                    kx_eff = kx_eff * (float(getattr(grid, "x0", x0_eff)) / float(x0_eff))
+                    kx_eff = kx_eff * (
+                        float(getattr(grid, "x0", x0_eff)) / float(x0_eff)
+                    )
                 if not use_ntft and x0_target != 0.0 and x0_target != x0_eff:
                     scale = float(x0_eff) / float(x0_target)
                     kx_eff = kx_eff * scale
@@ -263,7 +298,9 @@ def main() -> None:
                     x0_eff = x0_target
             kperp2_bmag = bool(getattr(geom_data, "kperp2_bmag", True))
             if use_ntft:
-                ftwist = (geom_data.s_hat * ctx["gds21"] / ctx["gds22_arr"]).astype(ctx["real_dtype"])
+                ftwist = (geom_data.s_hat * ctx["gds21"] / ctx["gds22_arr"]).astype(
+                    ctx["real_dtype"]
+                )
                 delta = jnp.asarray(0.01313, dtype=ctx["real_dtype"])
                 ftwist_next = jnp.roll(ftwist, -1)
                 mid_idx = int(grid.z.size // 2)
@@ -281,31 +318,57 @@ def main() -> None:
                 )
                 m0 = m0.astype(ctx["real_dtype"])
                 shat_inv = 1.0 / shat
-                delta_kx = ctx["ky_eff"][:, None] * ftwist[None, :] + (ctx["rho_star"] * m0 / float(x0_eff))
+                delta_kx = ctx["ky_eff"][:, None] * ftwist[None, :] + (
+                    ctx["rho_star"] * m0 / float(x0_eff)
+                )
                 term_ky = ctx["ky_eff"][:, None, None] ** 2 * (
                     ctx["gds2"][None, None, :]
-                    - 2.0 * ftwist[None, None, :] * ctx["gds21"][None, None, :] * shat_inv
-                    + (ftwist[None, None, :] ** 2) * ctx["gds22_arr"][None, None, :] * shat_inv * shat_inv
+                    - 2.0
+                    * ftwist[None, None, :]
+                    * ctx["gds21"][None, None, :]
+                    * shat_inv
+                    + (ftwist[None, None, :] ** 2)
+                    * ctx["gds22_arr"][None, None, :]
+                    * shat_inv
+                    * shat_inv
                 )
-                term_kx = (kx_eff[None, :, None] + delta_kx[:, None, :]) ** 2 * ctx["gds22_arr"][None, None, :] * shat_inv * shat_inv
+                term_kx = (
+                    (kx_eff[None, :, None] + delta_kx[:, None, :]) ** 2
+                    * ctx["gds22_arr"][None, None, :]
+                    * shat_inv
+                    * shat_inv
+                )
                 bmag_inv = 1.0 / ctx["bmag"]
                 kperp2 = term_ky + term_kx
                 if kperp2_bmag:
                     kperp2 = kperp2 * (bmag_inv[None, None, :] ** 2)
-                kx_shift = kx_eff[None, :, None] + (ctx["rho_star"] * m0 / float(x0_eff))[:, None, :]
-                cv_d = ctx["ky_eff"][:, None, None] * ctx["cv"][None, None, :] + shat_inv * kx_shift * ctx["cv0"][None, None, :]
-                gb_d = ctx["ky_eff"][:, None, None] * ctx["gb"][None, None, :] + shat_inv * kx_shift * ctx["gb0"][None, None, :]
+                kx_shift = (
+                    kx_eff[None, :, None]
+                    + (ctx["rho_star"] * m0 / float(x0_eff))[:, None, :]
+                )
+                cv_d = (
+                    ctx["ky_eff"][:, None, None] * ctx["cv"][None, None, :]
+                    + shat_inv * kx_shift * ctx["cv0"][None, None, :]
+                )
+                gb_d = (
+                    ctx["ky_eff"][:, None, None] * ctx["gb"][None, None, :]
+                    + shat_inv * kx_shift * ctx["gb0"][None, None, :]
+                )
                 omega_d = cv_d + gb_d
             else:
                 kx0 = kx_eff[None, :, None]
                 ky0 = ctx["ky_eff"][:, None, None]
                 theta_b = ctx["theta"][None, None, :]
                 kperp2 = geom_data.k_perp2(kx0, ky0, theta_b).astype(ctx["real_dtype"])
-                cv_d, gb_d = geom_data.drift_components(kx_eff, ctx["ky_eff"], ctx["theta"])
+                cv_d, gb_d = geom_data.drift_components(
+                    kx_eff, ctx["ky_eff"], ctx["theta"]
+                )
                 cv_d = cv_d.astype(ctx["real_dtype"])
                 gb_d = gb_d.astype(ctx["real_dtype"])
                 omega_d = (cv_d + gb_d).astype(ctx["real_dtype"])
-            apply_dealias_mask = ctx["dealias_mask"] is not None and int(grid.ky.size) > 1
+            apply_dealias_mask = (
+                ctx["dealias_mask"] is not None and int(grid.ky.size) > 1
+            )
             if apply_dealias_mask:
                 mask = ctx["dealias_mask"][:, :, None]
                 kperp2 = kperp2 * mask
@@ -336,8 +399,12 @@ def main() -> None:
             rho = jnp.asarray(params.rho, dtype=ctx["real_dtype"])
             if rho.ndim == 0:
                 rho = rho[None]
-            b = (rho[:, None, None, None] * rho[:, None, None, None]) * ctx["kperp2"][None, ...]
-            bessel_bmag_power = float(getattr(ctx["geom_data"], "bessel_bmag_power", 0.0))
+            b = (rho[:, None, None, None] * rho[:, None, None, None]) * ctx["kperp2"][
+                None, ...
+            ]
+            bessel_bmag_power = float(
+                getattr(ctx["geom_data"], "bessel_bmag_power", 0.0)
+            )
             if bessel_bmag_power != 0.0:
                 bmag_factor = ctx["bmag"][None, None, None, :] ** (-bessel_bmag_power)
                 b = b * bmag_factor
@@ -348,19 +415,23 @@ def main() -> None:
         _time_phase(timings, "gyro_bessel_cache", _gyro_cache)
 
         def _laguerre_cache():
-            lag_to_grid_np, lag_to_spec_np, lag_roots_np = gx_laguerre_transform(args.Nl)
+            lag_to_grid_np, lag_to_spec_np, lag_roots_np = laguerre_transform(args.Nl)
             laguerre_to_grid = jnp.asarray(lag_to_grid_np, dtype=ctx["real_dtype"])
             laguerre_to_spectral = jnp.asarray(lag_to_spec_np, dtype=ctx["real_dtype"])
             laguerre_roots = jnp.asarray(lag_roots_np, dtype=ctx["real_dtype"])
             alpha = jnp.sqrt(
                 jnp.maximum(
                     0.0,
-                    2.0 * laguerre_roots[None, :, None, None, None] * ctx["b"][:, None, ...],
+                    2.0
+                    * laguerre_roots[None, :, None, None, None]
+                    * ctx["b"][:, None, ...],
                 )
             )
             laguerre_j0 = bessel_j0(alpha).astype(ctx["real_dtype"])
             laguerre_j1 = bessel_j1(alpha)
-            laguerre_j1_over_alpha = jnp.where(alpha < 1.0e-8, 0.5, laguerre_j1 / alpha).astype(ctx["real_dtype"])
+            laguerre_j1_over_alpha = jnp.where(
+                alpha < 1.0e-8, 0.5, laguerre_j1 / alpha
+            ).astype(ctx["real_dtype"])
             ctx.update(
                 dict(
                     laguerre_to_grid=laguerre_to_grid,
@@ -424,7 +495,9 @@ def main() -> None:
                             nx=int(grid.kx.size),
                             nz=int(grid.z.size),
                             widthfrac=float(params.damp_ends_widthfrac),
-                            ky_mode=None if ky_mode is None else np.asarray(ky_mode, dtype=np.int32),
+                            ky_mode=None
+                            if ky_mode is None
+                            else np.asarray(ky_mode, dtype=np.int32),
                         ),
                         dtype=ctx["real_dtype"],
                     )

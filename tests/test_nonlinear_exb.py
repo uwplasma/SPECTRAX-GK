@@ -2,7 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
-from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
+from spectraxgk.gyroaverage import bessel_j0, bessel_j1, laguerre_transform
 from spectraxgk.grids import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms import nonlinear as nonlinear_terms_module
 from spectraxgk.terms.nonlinear import (
@@ -740,7 +740,7 @@ def test_laguerre_precompute_matches_direct():
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
     b = np.full((Ns, grid.ky.size, grid.kx.size, grid.z.size), 0.05, dtype=np.float64)
-    lag_to_grid, lag_to_spec, lag_roots = gx_laguerre_transform(Nl)
+    lag_to_grid, lag_to_spec, lag_roots = laguerre_transform(Nl)
     laguerre_to_grid = jnp.asarray(lag_to_grid, dtype=jnp.float64)
     laguerre_to_spectral = jnp.asarray(lag_to_spec, dtype=jnp.float64)
     laguerre_roots = jnp.asarray(lag_roots, dtype=jnp.float64)
@@ -859,7 +859,7 @@ def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
-    lag_to_grid, lag_to_spec, lag_roots = gx_laguerre_transform(Nl)
+    lag_to_grid, lag_to_spec, lag_roots = laguerre_transform(Nl)
     b = jnp.full((Ns, grid.ky.size, grid.kx.size, grid.z.size), 0.04, dtype=jnp.float32)
     laguerre_roots = jnp.asarray(lag_roots, dtype=jnp.float32)
     alpha = jnp.sqrt(

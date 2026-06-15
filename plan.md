@@ -17,6 +17,12 @@
   naming tranches are the real-FFT nonlinear option, diagnostic-weight helper
   names, geometry-import adapters, and benchmark-only comparison tooling.
 
+- 2026-06-15: Continued the naming cleanup in velocity-space numerics by
+  renaming gyroaverage helper functions from reference-code names to
+  `single_precision_factorial`, `laguerre_quadrature_count`, and
+  `laguerre_transform`. The implementation and focused nonlinear bracket tests
+  are unchanged; comparison tooling now imports the neutral helper names.
+
 - 2026-06-15: Completed the main runtime artifact facade reduction by moving
   nonlinear NetCDF output schema writing, artifact geometry resolution,
   particle-moment output helpers, and geometry/input metadata group writers into

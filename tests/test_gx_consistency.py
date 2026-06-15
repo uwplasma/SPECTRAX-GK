@@ -3,7 +3,7 @@ import math
 import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.gyroaverage import J_l_all, gx_factorial
+from spectraxgk.gyroaverage import J_l_all, single_precision_factorial
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
     diamagnetic_contribution,
@@ -18,7 +18,11 @@ from spectraxgk.terms.linear_terms import (
 def _gx_jflr(ell: int, b: jnp.ndarray) -> jnp.ndarray:
     """GX Jflr: exp(-b/2) * (-b/2)^ell / ell!."""
 
-    return jnp.exp(-0.5 * b) * ((-0.5 * b) ** ell) / jnp.asarray(math.factorial(ell), dtype=b.dtype)
+    return (
+        jnp.exp(-0.5 * b)
+        * ((-0.5 * b) ** ell)
+        / jnp.asarray(math.factorial(ell), dtype=b.dtype)
+    )
 
 
 def test_gyroaverage_matches_gx_jflr():
@@ -29,22 +33,31 @@ def test_gyroaverage_matches_gx_jflr():
         assert jnp.allclose(Jl[ell], expected, rtol=1.0e-6, atol=1.0e-7)
 
 
-def test_gx_factorial_matches_stirling_branch():
+def test_single_precision_factorial_matches_stirling_branch():
     m = jnp.asarray([7.0, 8.0, 12.0], dtype=jnp.float32)
     expected = jnp.asarray(
         [
-            math.sqrt(2.0 * math.pi * x) * (x**x) * math.exp(-x) * (1.0 + 1.0 / (12.0 * x) + 1.0 / (288.0 * x * x))
+            math.sqrt(2.0 * math.pi * x)
+            * (x**x)
+            * math.exp(-x)
+            * (1.0 + 1.0 / (12.0 * x) + 1.0 / (288.0 * x * x))
             for x in (7.0, 8.0, 12.0)
         ],
         dtype=jnp.float32,
     )
-    assert jnp.allclose(gx_factorial(m), expected, rtol=1.0e-7, atol=1.0e-7)
+    assert jnp.allclose(
+        single_precision_factorial(m), expected, rtol=1.0e-7, atol=1.0e-7
+    )
 
 
 def test_gyroaverage_matches_gx_jflr_stirling_branch():
     b = jnp.asarray([0.3, 1.0, 2.5], dtype=jnp.float32)
     ell = 7
-    expected = jnp.exp(-0.5 * b) * ((-0.5 * b) ** ell) / gx_factorial(jnp.asarray(float(ell), dtype=b.dtype))
+    expected = (
+        jnp.exp(-0.5 * b)
+        * ((-0.5 * b) ** ell)
+        / single_precision_factorial(jnp.asarray(float(ell), dtype=b.dtype))
+    )
     Jl = J_l_all(b, l_max=ell)
     assert jnp.allclose(Jl[ell], expected, rtol=1.0e-7, atol=1.0e-8)
 
@@ -101,7 +114,9 @@ def test_salpha_geometry_matches_gx_formulas():
 
 def test_salpha_geometry_kperp2_matches_alternate_formula():
     """Alternate kperp2 convention omits the bmag^{-2} factor."""
-    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0, kperp2_bmag=False)
+    geom = SAlphaGeometry(
+        q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0, kperp2_bmag=False
+    )
     theta = jnp.linspace(-jnp.pi, jnp.pi, 8, endpoint=False)
     shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
     gds2 = 1.0 + shear * shear
@@ -112,9 +127,10 @@ def test_salpha_geometry_kperp2_matches_alternate_formula():
     ky0 = jnp.asarray([0.2])
     kx_hat = kx0 / geom.s_hat
     kperp2 = geom.k_perp2(kx0, ky0, theta)
-    kperp2_expected = ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx_hat[:, None] * gds21) + (
-        kx_hat[:, None] ** 2
-    ) * gds22
+    kperp2_expected = (
+        ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx_hat[:, None] * gds21)
+        + (kx_hat[:, None] ** 2) * gds22
+    )
     # Allow one-ulp level differences from mixed float32/float64 intermediates.
     assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-8, atol=5.0e-10)
 
@@ -138,7 +154,7 @@ def test_hypercollisions_matches_gx_formula():
     ratio_lm = ((2.0 * ell + m) / (2.0 * float(Nl) + float(Nm))) ** p_hyper_lm
     mask_const = (m > 2.0) | (ell > 1.0)
     mask_kz = jnp.zeros_like(mask_const)
-    m_pow = m ** p_hyper_m
+    m_pow = m**p_hyper_m
     m_norm_kz = float(max(Nm - 1, 1))
     m_norm_kz_factor = (p_hyper_m + 0.5) / (m_norm_kz ** (p_hyper_m + 0.5))
     kz = jnp.asarray([0.0], dtype=jnp.float32)
@@ -170,9 +186,11 @@ def test_hypercollisions_matches_gx_formula():
     m_norm = float(Nm)
     scaled_nu_l = l_norm * nu_hyper_l
     scaled_nu_m = m_norm * nu_hyper_m
-    hyper_term = -vth[:, None, None, None, None, None] * (
-        scaled_nu_l * ratio_l + scaled_nu_m * ratio_m
-    ) - nu_hyper_lm * ratio_lm
+    hyper_term = (
+        -vth[:, None, None, None, None, None]
+        * (scaled_nu_l * ratio_l + scaled_nu_m * ratio_m)
+        - nu_hyper_lm * ratio_lm
+    )
     expected = jnp.where(mask_const, hyper_term, 0.0) * G
 
     assert jnp.allclose(out, expected, rtol=1.0e-6, atol=1.0e-7)
@@ -180,7 +198,9 @@ def test_hypercollisions_matches_gx_formula():
 
 def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch):
     def _fail(*args, **kwargs):
-        raise AssertionError("abs_z_linked_fft should not run when hypercollisions_kz is zero")
+        raise AssertionError(
+            "abs_z_linked_fft should not run when hypercollisions_kz is zero"
+        )
 
     monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
 
@@ -224,7 +244,9 @@ def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch)
 
 def test_hypercollisions_static_zero_operator_skips_linked_abs_kz(monkeypatch):
     def _fail(*args, **kwargs):
-        raise AssertionError("abs_z_linked_fft should not run for an exactly zero hypercollision operator")
+        raise AssertionError(
+            "abs_z_linked_fft should not run for an exactly zero hypercollision operator"
+        )
 
     monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
 
@@ -307,10 +329,14 @@ def test_linked_kz_hypercollisions_activate_for_z_varying_state():
 
 def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
     def _fail_streaming(*args, **kwargs):
-        raise AssertionError("streaming_term should not run when streaming weight is zero")
+        raise AssertionError(
+            "streaming_term should not run when streaming weight is zero"
+        )
 
     def _fail_grad(*args, **kwargs):
-        raise AssertionError("grad_z_periodic should not run when GX streaming weight is zero")
+        raise AssertionError(
+            "grad_z_periodic should not run when GX streaming weight is zero"
+        )
 
     monkeypatch.setattr(linear_terms_module, "streaming_term", _fail_streaming)
     monkeypatch.setattr(linear_terms_module, "grad_z_periodic", _fail_grad)
@@ -373,8 +399,12 @@ def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagne
         kz=jnp.asarray([0.0, 1.0, -1.0], dtype=jnp.float32),
         dz=jnp.asarray(1.0, dtype=jnp.float32),
     )
-    explicit_streaming = streaming_contribution_gx(apar=zero_field, bpar=zero_field, **common_streaming)
-    pruned_streaming = streaming_contribution_gx(apar=None, bpar=None, **common_streaming)
+    explicit_streaming = streaming_contribution_gx(
+        apar=zero_field, bpar=zero_field, **common_streaming
+    )
+    pruned_streaming = streaming_contribution_gx(
+        apar=None, bpar=None, **common_streaming
+    )
     assert jnp.allclose(pruned_streaming, explicit_streaming, rtol=1.0e-6, atol=1.0e-7)
 
     l4 = jnp.arange(2, dtype=jnp.float32)[:, None, None, None]
@@ -393,9 +423,15 @@ def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagne
         imag=jnp.asarray(1j, dtype=jnp.complex64),
         weight=jnp.asarray(1.0, dtype=jnp.float32),
     )
-    explicit_diamagnetic = diamagnetic_contribution(apar=zero_field, bpar=zero_field, **common_diamagnetic)
-    pruned_diamagnetic = diamagnetic_contribution(apar=None, bpar=None, **common_diamagnetic)
-    assert jnp.allclose(pruned_diamagnetic, explicit_diamagnetic, rtol=1.0e-6, atol=1.0e-7)
+    explicit_diamagnetic = diamagnetic_contribution(
+        apar=zero_field, bpar=zero_field, **common_diamagnetic
+    )
+    pruned_diamagnetic = diamagnetic_contribution(
+        apar=None, bpar=None, **common_diamagnetic
+    )
+    assert jnp.allclose(
+        pruned_diamagnetic, explicit_diamagnetic, rtol=1.0e-6, atol=1.0e-7
+    )
 
 
 def test_static_zero_damping_guards_return_zero_without_profiles():
