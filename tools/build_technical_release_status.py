@@ -104,6 +104,11 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "docs/_static/vmec_boozer_differentiability_claim_guard.json",
             "not_full_nonlinear_transport_optimization",
         ),
+        EvidenceCheck(
+            "finite-beta VMEC/Boozer frequency gradient gate",
+            "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+            "shaped_tokamak_pressure",
+        ),
         EvidenceCheck("manuscript readiness", "docs/_static/manuscript_readiness_status.json"),
         EvidenceCheck("open lane status", "docs/_static/open_research_lane_status.json"),
         EvidenceCheck("stellarator optimization docs", "docs/stellarator_optimization.rst", "finite-difference"),

@@ -374,6 +374,14 @@
         },
         {
           "exists": true,
+          "name": "finite-beta VMEC/Boozer frequency gradient gate",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+          "required": true,
+          "snippet": "shaped_tokamak_pressure"
+        },
+        {
+          "exists": true,
           "name": "manuscript readiness",
           "passed": true,
           "path": "docs/_static/manuscript_readiness_status.json",
@@ -407,8 +415,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 7,
-      "required": 7
+      "passed_required": 8,
+      "required": 8
     }
   },
   "passed": true,

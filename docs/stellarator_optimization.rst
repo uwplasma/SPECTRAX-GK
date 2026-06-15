@@ -2344,7 +2344,12 @@ the following pass:
    all-surface QH fixture. The multi-equilibrium reduced linear/quasilinear
    and nonlinear-window estimator holdout gate is closed by
    ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` for QH and
-   Li383 at ``mboz=nboz=21``. Larger QI/QA nonlinear-window transport holdouts
+   Li383 at ``mboz=nboz=21``. The finite-beta shaped-pressure
+   eigenfrequency-gradient gate is closed separately by
+   ``docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json``
+   with max relative AD/finite-difference error about ``6.4e-11``; this does
+   not promote finite-beta quasilinear or nonlinear transport gradients.
+   Larger QI/QA nonlinear-window transport holdouts
    are still promotion work: QI is currently conditioning-limited when forced
    through the narrow diagnostic stencil, while the QA low-resolution
    all-surface Boozer transform exceeds the available office GPU memory at

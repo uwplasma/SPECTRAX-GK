@@ -158,6 +158,36 @@ def _minimal_artifacts(root: Path) -> None:
             "vmec_boozer_production_nonlinear_observable_fd_path_gate": False,
         },
     )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+        {
+            "case_name": "shaped_tokamak_pressure",
+            "eigenpair_gate": {"max_rel_error": 1.0e-8},
+            "kind": "mode21_vmec_boozer_linear_frequency_gradient_gate",
+            "linear_frequency_gradient_gate": True,
+            "linear_growth_gradient_gate": True,
+            "mboz": 21,
+            "nboz": 21,
+            "nonlinear_window_gradient_gate": False,
+            "objective_gates": [
+                {
+                    "objective": "gamma",
+                    "passed": True,
+                    "rel_error": 0.0,
+                },
+                {
+                    "objective": "omega",
+                    "passed": True,
+                    "rel_error": 1.0e-8,
+                },
+            ],
+            "passed": True,
+            "quasilinear_weight_gradient_gate": False,
+            "source_scope": "mode21_vmec_boozer_state",
+            "surface_stencil_width": 3,
+        },
+    )
 
 
 def test_vmec_boozer_differentiability_claim_guard_accepts_scoped_artifacts(
@@ -182,6 +212,9 @@ def test_vmec_boozer_differentiability_claim_guard_accepts_scoped_artifacts(
     assert report["checks"]["parity_matrix"]["finite_beta_pressure_equal_arc_rows"] == [
         "shaped_tokamak_pressure"
     ]
+    assert report["checks"]["finite_beta_frequency_gate"]["case_name"] == (
+        "shaped_tokamak_pressure"
+    )
 
 
 def test_vmec_boozer_differentiability_claim_guard_rejects_hidden_direct_gap(
@@ -247,6 +280,29 @@ def test_vmec_boozer_differentiability_claim_guard_requires_mode21_gradient_scop
 
     assert report["passed"] is False
     assert "gradient_holdout_wrong_source_scope" in report["blockers"]
+
+
+def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_frequency_gate(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gate_path = tmp_path / "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json"
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    gate["case_name"] = "nfp4_QH_warm_start"
+    gate["quasilinear_weight_gradient_gate"] = True
+    gate["objective_gates"][1]["rel_error"] = 0.2
+    gate["eigenpair_gate"]["max_rel_error"] = 0.2
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "finite_beta_frequency_gate_wrong_case" in report["blockers"]
+    assert "finite_beta_frequency_gate_error_threshold_failed" in report["blockers"]
+    assert (
+        "finite_beta_frequency_gate_attempts_transport_gradient_claim"
+        in report["blockers"]
+    )
 
 
 def test_vmec_boozer_differentiability_claim_guard_requires_ql_objectives(

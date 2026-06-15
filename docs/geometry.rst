@@ -504,8 +504,10 @@ those contents directly: it requires the equal-arc parity matrix, the QH/Li383
 mode-21 frequency/quasilinear/nonlinear-window gradient holdouts, explicit
 ``diagnostic_open`` status for the direct VMEC tensor-vs-imported-EIK
 convention gap, a passing finite-beta/pressure equal-arc parity row, and a
-startup-only label for the nonlinear finite-difference audit. A tagged release
-must fail if these artifacts try to promote a direct
+startup-only label for the nonlinear finite-difference audit. It now also
+requires the shaped-pressure finite-beta eigenfrequency-gradient gate in
+``docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json``.
+A tagged release must fail if these artifacts try to promote a direct
 tensor-parity failure or a startup nonlinear-window response into a converged
 nonlinear transport-gradient claim.
 The same guard also checks the solver-objective content of each QH/Li383
@@ -519,14 +521,16 @@ AD/finite-difference consistency gates, not nonlinear turbulence-gradient
 accuracy claims.
 
 For release claims, the differentiable-geometry lane is closed only for
-artifact-passing zero-beta equal-arc parity rows and reduced
-AD/finite-difference objectives. The fixed-resolution QI row and evaluated QI
+artifact-passing equal-arc parity rows, reduced QH/Li383
+AD/finite-difference objectives, and the shaped-pressure finite-beta
+eigenfrequency-gradient gate. The fixed-resolution QI row and evaluated QI
 ``ntheta`` variants now pass, but production nonlinear heat-flux optimization
-is still open. The active publication wording must keep these levels separate:
-the current bridge starts at real ``vmec_jax`` state coefficients and reaches
-SPECTRAX-GK solver observables, but it has not yet validated converged
-nonlinear turbulence gradients, broad QI transport behavior, or nonlinear
-audits of optimized equilibria.
+and finite-beta quasilinear/nonlinear transport-gradient gates are still open.
+The active publication wording must keep these levels separate: the current
+bridge starts at real ``vmec_jax`` state coefficients and reaches SPECTRAX-GK
+solver observables, but it has not yet validated converged nonlinear
+turbulence gradients, broad QI transport behavior, or nonlinear audits of
+optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 The shipped portable runtime TOMLs now point to relative ``wout_*.nc`` paths
 under ``examples/vmec``. Generate those WOUT files locally from the bundled

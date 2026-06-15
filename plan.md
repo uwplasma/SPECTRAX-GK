@@ -1,3 +1,12 @@
+- 2026-06-15: Added the first finite-beta VMEC/Boozer solver-objective
+  gradient artifact. The shaped-tokamak-pressure frequency gate runs from
+  `vmec_jax` state coefficients through `booz_xform_jax` mode-21 equal-arc
+  geometry into the SPECTRAX-GK eigenfrequency objective, passes in a bounded
+  local run (~27 s), and records max AD-vs-finite-difference relative error
+  about `6.4e-11`. The differentiability guard now requires this artifact but
+  still blocks finite-beta quasilinear/nonlinear transport-gradient claims
+  until those gates are run and pass.
+
 - 2026-06-15: Tightened the VMEC/Boozer differentiability guard from a
   matrix-level gradient check to an objective-level solver contract. Each QH
   and Li383 row must now include the required frequency, quasilinear, and
