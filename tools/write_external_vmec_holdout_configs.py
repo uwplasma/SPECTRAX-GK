@@ -71,10 +71,14 @@ def _parse_grid(raw: str) -> GridSpec:
     try:
         values = tuple(int(item) for item in (nx, ny, nz, ntheta))
     except ValueError as exc:
-        raise ValueError(f"grid spec {raw!r} contains a non-integer resolution") from exc
+        raise ValueError(
+            f"grid spec {raw!r} contains a non-integer resolution"
+        ) from exc
     if any(value <= 0 for value in values):
         raise ValueError(f"grid spec {raw!r} must contain positive resolutions")
-    return GridSpec(label=label, nx=values[0], ny=values[1], nz=values[2], ntheta=values[3])
+    return GridSpec(
+        label=label, nx=values[0], ny=values[1], nz=values[2], ntheta=values[3]
+    )
 
 
 def _parse_horizons(raw: str) -> tuple[float, ...]:
@@ -157,7 +161,9 @@ def _build_variants(
 ) -> tuple[VariantSpec | None, ...]:
     seed_values = tuple(int(value) for value in (seed_variants or ()))
     dt_values = tuple(float(value) for value in (dt_variants or ()))
-    seed_dt_values = tuple((int(seed), float(dt_value)) for seed, dt_value in (seed_dt_variants or ()))
+    seed_dt_values = tuple(
+        (int(seed), float(dt_value)) for seed, dt_value in (seed_dt_variants or ())
+    )
     if not seed_values and not dt_values and not seed_dt_values:
         return (None,)
     variants: list[VariantSpec] = []
@@ -313,7 +319,7 @@ damp_ends_widthfrac = 0.125
 
 [normalization]
 contract = "kinetic"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [terms]
 streaming = 1.0
@@ -432,7 +438,9 @@ def write_configs(
                         sample_stride=sample_stride,
                         diagnostics_stride=diagnostics_stride,
                         progress_bar=progress_bar,
-                        random_seed=int(baseline_seed if variant is None else variant.random_seed),
+                        random_seed=int(
+                            baseline_seed if variant is None else variant.random_seed
+                        ),
                         variant=variant,
                     ),
                     encoding="utf-8",
@@ -581,7 +589,9 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
         launch_commands.append(segment_command)
         direct_full_horizon_launch_commands.append(direct_command)
         output_base = _bundle_base(item.output_path)
-        launch_skip_existing_commands.append(_skip_existing_bundle_command(output_base, segment_command))
+        launch_skip_existing_commands.append(
+            _skip_existing_bundle_command(output_base, segment_command)
+        )
         direct_full_horizon_skip_existing_launch_commands.append(
             _skip_existing_bundle_command(output_base, direct_command)
         )
@@ -604,7 +614,9 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             staged_ladder_commands.append(restart_command)
             staged_ladder_skip_existing_commands.append(restart_skip)
         staged_ladder_commands.append(segment_command)
-        staged_ladder_skip_existing_commands.append(_skip_existing_bundle_command(output_base, segment_command))
+        staged_ladder_skip_existing_commands.append(
+            _skip_existing_bundle_command(output_base, segment_command)
+        )
         previous_by_grid[previous_key] = item
     _write_command_script(
         out_dir / str(manifest["staged_ladder_skip_existing_script"]),
@@ -617,15 +629,28 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
         title="external-VMEC direct full-horizon launches",
     )
     path = out_dir / "run_manifest.json"
-    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return path
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", required=True, help="Short slug used in file names, e.g. circular or itermodel")
-    parser.add_argument("--vmec-file", required=True, type=Path, help="External VMEC wout file")
-    parser.add_argument("--out-dir", required=True, type=Path, help="Directory for generated TOMLs and manifest")
+    parser.add_argument(
+        "--case",
+        required=True,
+        help="Short slug used in file names, e.g. circular or itermodel",
+    )
+    parser.add_argument(
+        "--vmec-file", required=True, type=Path, help="External VMEC wout file"
+    )
+    parser.add_argument(
+        "--out-dir",
+        required=True,
+        type=Path,
+        help="Directory for generated TOMLs and manifest",
+    )
     parser.add_argument("--ky", type=float, default=0.47619047619047616)
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--Nl", type=int, default=4)
@@ -668,8 +693,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Joint seed/timestep replicate encoded as SEED:DT. Repeat for multiple cross variants.",
     )
-    parser.add_argument("--horizons", default=",".join(str(v).rstrip("0").rstrip(".") for v in DEFAULT_HORIZONS))
-    parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
+    parser.add_argument(
+        "--horizons",
+        default=",".join(str(v).rstrip("0").rstrip(".") for v in DEFAULT_HORIZONS),
+    )
+    parser.add_argument(
+        "--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta"
+    )
     return parser
 
 
@@ -702,7 +732,9 @@ def main(argv: list[str] | None = None) -> int:
         baseline_seed=int(args.baseline_seed),
         seed_variants=args.seed_variant,
         dt_variants=args.dt_variant,
-        seed_dt_variants=tuple(_parse_seed_dt_variant(raw) for raw in (args.seed_dt_variant or ())),
+        seed_dt_variants=tuple(
+            _parse_seed_dt_variant(raw) for raw in (args.seed_dt_variant or ())
+        ),
     )
     manifest = write_manifest(args.out_dir, written)
     print(f"wrote {len(written)} configs")

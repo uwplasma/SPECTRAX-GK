@@ -86,7 +86,7 @@ damp_ends_widthfrac = 0.125
 
 [normalization]
 contract = "kbm"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [terms]
 streaming = 1.0

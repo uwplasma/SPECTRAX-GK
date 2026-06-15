@@ -89,7 +89,7 @@ damp_ends_widthfrac = 0.0
 
 [normalization]
 contract = "etg"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [terms]
 streaming = 1.0

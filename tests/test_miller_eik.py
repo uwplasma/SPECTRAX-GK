@@ -74,7 +74,7 @@ def _miller_runtime_cfg(
             collisions=False,
         ),
         normalization=RuntimeNormalizationConfig(
-            contract="cyclone", diagnostic_norm="gx"
+            contract="cyclone", diagnostic_norm="rho_star"
         ),
     )
 

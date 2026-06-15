@@ -73,7 +73,7 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
             collisions=False,
         ),
         normalization=RuntimeNormalizationConfig(
-            contract="kinetic", diagnostic_norm="gx"
+            contract="kinetic", diagnostic_norm="rho_star"
         ),
     )
 

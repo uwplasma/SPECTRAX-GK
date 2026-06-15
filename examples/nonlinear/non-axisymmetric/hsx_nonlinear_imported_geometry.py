@@ -85,7 +85,7 @@ def build_hsx_nonlinear_cfg(
             D_hyper=0.05,
         ),
         normalization=RuntimeNormalizationConfig(
-            contract="kinetic", diagnostic_norm="gx"
+            contract="kinetic", diagnostic_norm="rho_star"
         ),
         terms=RuntimeTermsConfig(
             apar=0.0,

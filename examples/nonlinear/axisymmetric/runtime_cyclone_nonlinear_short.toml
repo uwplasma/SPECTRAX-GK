@@ -83,7 +83,7 @@ nonlinear = 1.0
 
 [normalization]
 contract = "cyclone"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [run]
 ky = 0.03546099290780142

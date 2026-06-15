@@ -2136,3 +2136,10 @@ No long nonlinear audit should be launched from these candidates.
   roundtrip tests now use canonical helper names. Legacy ``gx_*`` constructor
   and TOML aliases remain accepted so existing inputs do not break, but
   serialization emits only the neutral helper-field names.
+- Continued the source-name cleanup by replacing the runtime diagnostic
+  normalization spelling ``diagnostic_norm = \"gx\"`` with the physics-based
+  ``diagnostic_norm = \"rho_star\"`` across shipped examples, docs, runtime
+  defaults, and focused tests. The runtime config canonicalizes legacy ``gx``
+  inputs to ``rho_star``, and the low-level diagnostic normalization helper
+  still accepts the old spelling as a compatibility alias with identical
+  scaling.

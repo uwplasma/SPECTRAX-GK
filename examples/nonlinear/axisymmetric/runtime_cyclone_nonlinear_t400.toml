@@ -73,7 +73,7 @@ end_damping = 1.0
 
 [normalization]
 contract = "cyclone"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [run]
 ky = 0.3

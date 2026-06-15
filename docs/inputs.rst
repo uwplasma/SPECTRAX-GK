@@ -38,7 +38,7 @@ Minimal runtime TOML example
 
    [normalization]
    contract = "cyclone"
-   diagnostic_norm = "gx"
+   diagnostic_norm = "rho_star"
 
    [terms]
    streaming = 1.0

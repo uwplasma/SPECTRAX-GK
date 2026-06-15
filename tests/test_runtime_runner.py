@@ -223,7 +223,7 @@ def test_runtime_terms_and_params_follow_toggles() -> None:
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
         normalization=RuntimeNormalizationConfig(
-            contract="cyclone", diagnostic_norm="gx"
+            contract="cyclone", diagnostic_norm="rho_star"
         ),
         physics=RuntimePhysicsConfig(
             electrostatic=False,
@@ -3324,7 +3324,7 @@ def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(
         ),
         species=(RuntimeSpeciesConfig(name="ion", tprim=3.0, fprim=1.0, nu=0.01),),
         normalization=RuntimeNormalizationConfig(
-            contract="kinetic", diagnostic_norm="gx"
+            contract="kinetic", diagnostic_norm="rho_star"
         ),
         physics=RuntimePhysicsConfig(
             linear=False,

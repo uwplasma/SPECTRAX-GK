@@ -75,7 +75,7 @@ def _vmec_runtime_cfg(
             collisions=False,
         ),
         normalization=RuntimeNormalizationConfig(
-            contract="kinetic", diagnostic_norm="gx"
+            contract="kinetic", diagnostic_norm="rho_star"
         ),
     )
 

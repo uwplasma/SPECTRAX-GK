@@ -59,18 +59,27 @@ from spectraxgk.config import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, integrate_linear_diagnostics
+from spectraxgk.linear import (
+    LinearParams,
+    LinearTerms,
+    build_linear_cache,
+    integrate_linear_diagnostics,
+)
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Hermite/Laguerre evolution diagnostics.")
+    parser = argparse.ArgumentParser(
+        description="Hermite/Laguerre evolution diagnostics."
+    )
     parser.add_argument(
         "--case",
         required=True,
         choices=["cyclone", "kinetic", "etg", "kbm", "tem"],
         help="Benchmark case to run.",
     )
-    parser.add_argument("--ky", type=float, default=None, help="Target ky (default per case).")
+    parser.add_argument(
+        "--ky", type=float, default=None, help="Target ky (default per case)."
+    )
     parser.add_argument(
         "--beta",
         type=float,
@@ -81,7 +90,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--Nm", type=int, default=None, help="Laguerre resolution.")
     parser.add_argument("--dt", type=float, default=None, help="Time step.")
     parser.add_argument("--steps", type=int, default=None, help="Number of steps.")
-    parser.add_argument("--method", type=str, default="imex2", help="Time integration method.")
+    parser.add_argument(
+        "--method", type=str, default="imex2", help="Time integration method."
+    )
     parser.add_argument(
         "--sample-stride",
         type=int,
@@ -339,7 +350,9 @@ def _build_problem(
                 )
             )
         else:
-            G0 = np.zeros((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+            G0 = np.zeros(
+                (Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+            )
             G0[0, 0, 0, 0, :] = 1e-3 + 0.0j
     else:
         if init_cfg is not None:
@@ -354,10 +367,16 @@ def _build_problem(
                     init_cfg=init_cfg,
                 )
             )
-            G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+            G0 = np.zeros(
+                (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size),
+                dtype=np.complex64,
+            )
             G0[electron_index] = G0_single
         else:
-            G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+            G0 = np.zeros(
+                (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size),
+                dtype=np.complex64,
+            )
             G0[electron_index, 0, 0, 0, 0, :] = 1e-3 + 0.0j
 
     if omega_star_scale is not None:
@@ -418,7 +437,7 @@ def _plot_hl_imshow(
 ):
     hl_vals = np.nan_to_num(hl_energy, nan=0.0, posinf=0.0, neginf=0.0)
     hl_vals = np.maximum(hl_vals, 1e-300)
-    if diagnostic_norm in {"time", "gx"}:
+    if diagnostic_norm in {"time", "rho_star", "gx"}:
         total = np.sum(hl_vals, axis=(1, 2), keepdims=True)
         total = np.where(np.isfinite(total) & (total > 0), total, 1.0)
         hl_vals = hl_vals / total
@@ -465,7 +484,9 @@ def _log_energy(series: np.ndarray) -> np.ndarray:
     scaled = abs_val / scale
     mean_scaled = np.mean(scaled**2, axis=axes)
     with np.errstate(divide="ignore", invalid="ignore"):
-        log_energy = np.log(mean_scaled + eps) + 2.0 * np.log(np.squeeze(scale, axis=axes))
+        log_energy = np.log(mean_scaled + eps) + 2.0 * np.log(
+            np.squeeze(scale, axis=axes)
+        )
     return log_energy
 
 
@@ -518,7 +539,9 @@ def _default_fit_signal(case: str) -> str:
     return "phi"
 
 
-def _reference_value(case: str, ky: float, beta: float | None) -> tuple[float | None, float | None]:
+def _reference_value(
+    case: str, ky: float, beta: float | None
+) -> tuple[float | None, float | None]:
     if case == "cyclone":
         ref = load_cyclone_reference()
         idx = int(np.argmin(np.abs(ref.ky - ky)))
@@ -681,8 +704,14 @@ def main() -> int:
         phi_base = 0.0
     if not np.isfinite(dens_base):
         dens_base = 0.0
-    np.save(outdir / f"{prefix}_phi_energy.npy", np.exp(np.clip(phi_log_norm - phi_base, -200.0, 0.0)))
-    np.save(outdir / f"{prefix}_density_energy.npy", np.exp(np.clip(dens_log_norm - dens_base, -200.0, 0.0)))
+    np.save(
+        outdir / f"{prefix}_phi_energy.npy",
+        np.exp(np.clip(phi_log_norm - phi_base, -200.0, 0.0)),
+    )
+    np.save(
+        outdir / f"{prefix}_density_energy.npy",
+        np.exp(np.clip(dens_log_norm - dens_base, -200.0, 0.0)),
+    )
     np.save(outdir / f"{prefix}_phi_log_energy.npy", phi_log_norm)
     np.save(outdir / f"{prefix}_density_log_energy.npy", dens_log_norm)
     title = (

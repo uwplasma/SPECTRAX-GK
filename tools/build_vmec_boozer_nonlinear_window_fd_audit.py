@@ -214,7 +214,7 @@ def vmec_boozer_runtime_config(
             RuntimeSpeciesConfig(name="ion", tprim=float(tprim), fprim=float(fprim)),
         ),
         normalization=RuntimeNormalizationConfig(
-            contract="cyclone", diagnostic_norm="gx"
+            contract="cyclone", diagnostic_norm="rho_star"
         ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
         terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),

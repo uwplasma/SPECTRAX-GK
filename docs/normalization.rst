@@ -182,11 +182,12 @@ Benchmark runners expose ``diagnostic_norm`` and route it through
 ``spectraxgk.normalization.apply_diagnostic_normalization``:
 
 - ``none``: return raw solver ``(gamma, omega)``.
-- ``gx`` / ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
+- ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
+- ``gx``: legacy alias for ``rho_star`` accepted for older input files.
 
 This affects reporting only; it does not alter the RHS/operator.
 
-The unified runtime schema defaults to ``diagnostic_norm = "gx"`` so that
+The unified runtime schema defaults to ``diagnostic_norm = "rho_star"`` so that
 out-of-the-box reports match the tracked benchmark normalization. Set
 ``diagnostic_norm = "none"`` in the TOML or runtime config to recover raw
 solver outputs.

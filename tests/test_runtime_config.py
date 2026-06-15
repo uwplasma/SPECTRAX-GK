@@ -12,6 +12,7 @@ import pytest
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime_config import (
     RuntimeConfig,
+    RuntimeNormalizationConfig,
     RuntimeParallelConfig,
     RuntimeQuasilinearConfig,
 )
@@ -46,16 +47,22 @@ def test_runtime_config_to_dict_contains_sections() -> None:
     assert len(d["species"]) == 1
 
 
-def test_runtime_defaults_match_gx_reference() -> None:
+def test_runtime_defaults_match_reference_contract() -> None:
     cfg = RuntimeConfig()
     assert cfg.geometry.drift_scale == 1.0
-    assert cfg.normalization.diagnostic_norm == "gx"
+    assert cfg.normalization.diagnostic_norm == "rho_star"
     assert cfg.normalization.flux_scale == 1.0
     assert cfg.collisions.p_hyper_m is None
     assert cfg.collisions.damp_ends_amp == pytest.approx(0.1)
     assert cfg.collisions.damp_ends_widthfrac == pytest.approx(0.125)
     assert cfg.parallel.strategy == "serial"
     assert cfg.parallel.axis == "ky"
+
+
+def test_runtime_normalization_canonicalizes_legacy_alias() -> None:
+    cfg = RuntimeNormalizationConfig(diagnostic_norm="gx")
+    assert cfg.diagnostic_norm == "rho_star"
+    assert cfg.to_dict()["diagnostic_norm"] == "rho_star"
 
 
 def test_runtime_config_to_dict_is_json_roundtrippable_with_serial_aliases() -> None:
@@ -389,7 +396,7 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.init.init_field == "density"
     assert cfg.physics.adiabatic_electrons is True
-    assert cfg.normalization.diagnostic_norm == "gx"
+    assert cfg.normalization.diagnostic_norm == "rho_star"
 
 
 def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
