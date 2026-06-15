@@ -1111,7 +1111,7 @@ performance claims:
 - ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
   helper semantics, including deterministic padding, one-device fallback, and
   pytree outputs used by UQ and sensitivity workflows.
-- ``tests/test_velocity_sharding.py`` locks the GX-inspired species/Hermite
+- ``tests/test_velocity_sharding.py`` locks the species/Hermite
   velocity-decomposition planner. These tests verify load balance metadata,
   Hermite ghost-exchange flags, and field-reduction axes before any production
   ``shard_map`` implementation can use that layout. The same test file also
@@ -1424,7 +1424,7 @@ the nonlinear ETG operator. GX reads ``init_single`` from ``[Expert]`` rather
 than ``[Initialization]``, so the audited GX pilot was actually using the
 Gaussian startup branch. The shipped runtime ETG pilot now matches that
 contract with ``gaussian_init = true``, ``init_single = false``,
-``Lx = 1.25``, and GX-style ``kz`` hypercollisions. On the matched
+``Lx = 1.25``, and ``kz``-proportional hypercollisions. On the matched
 ``Nx=10``, ``Ny=22``, ``ntheta=16``, ``Nl=4``, ``Nm=4``, ``dt=1e-4``,
 ``t_max=0.001`` pilot, the refreshed short-window comparison lands at
 ``mean_rel_abs(Wg) ~= 1.31e-2`` and ``mean_rel_abs(Wphi) ~= 5.18e-3``, with

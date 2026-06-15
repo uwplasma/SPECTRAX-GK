@@ -124,8 +124,8 @@ with ``x0 = Lx / (2π)`` and ``y0 = Ly / (2π)``. The parallel wave number is
 where :math:`Z_p` sets the field-line length
 (:math:`z \in [-\pi Z_p, \pi Z_p)`), and :math:`k_z` is defined *without* the
 ``gradpar`` factor. These definitions are implemented by
-``spectraxgk.grids.build_spectral_grid`` and are consistent with GX’s
-``kInit`` kernel.
+``spectraxgk.grids.build_spectral_grid`` and are consistent with the
+audited reference-grid convention.
 
 The midplane index used by the reference growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the audited benchmark kernel logic when ``Nz > 1``.

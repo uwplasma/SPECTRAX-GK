@@ -23,7 +23,7 @@ linear operator is
 with :math:`J_\ell^B = J_\ell + J_{\ell-1}`.
 
 In the explicit-time reference-compatible path, streaming is applied to the
-GX-compatible streamed variable built from the same field terms before the
+field-coupled streamed variable built from the same field terms before the
 Hermite ladder is taken.
 
 Source mapping:

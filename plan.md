@@ -2153,3 +2153,9 @@ No long nonlinear audit should be launched from these candidates.
   ``linked_streaming_contribution``. RHS assembly and profiling now use the
   algorithmic name; the old symbol remains an object-identical compatibility
   alias for explicit comparison tests and older tools.
+- Continued the cleanup of provenance-oriented wording in source docstrings and
+  docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
+  species/Hermite sharding, field-coupled streaming, linked-boundary ordering,
+  and ``kz``-proportional hypercollision descriptions now use physics/numerics
+  names. Explicit benchmark/comparison mentions remain where they describe
+  validation evidence or legacy artifact formats.

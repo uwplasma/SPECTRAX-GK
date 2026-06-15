@@ -691,7 +691,7 @@ gate for quasilinear calibration grids, finite-difference checks, sensitivity
 sweeps, and UQ ensembles that can be decomposed into independent solver calls.
 
 The future nonlinear-decomposition promotion plan follows the same conservative
-rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
+rule. ``spectraxgk.build_velocity_sharding_plan`` records a species/Hermite
 species-first, Hermite-second velocity-space layout, including which axes need
 Hermite ghost exchange and which axes need field-solve reductions and
 broadcasts. This is planning metadata, not yet a nonlinear speedup path. It is
