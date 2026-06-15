@@ -2159,3 +2159,8 @@ No long nonlinear audit should be launched from these candidates.
   and ``kz``-proportional hypercollision descriptions now use physics/numerics
   names. Explicit benchmark/comparison mentions remain where they describe
   validation evidence or legacy artifact formats.
+- Continued the cleanup of tool defaults by switching validation figure/table
+  generators from the legacy diagnostic normalization spelling to
+  ``rho_star``. The Hermite-Laguerre evolution diagnostic now defaults to the
+  descriptive ``time_initial`` normalization mode while retaining ``gx`` as a
+  CLI alias with identical behavior.

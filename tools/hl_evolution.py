@@ -122,9 +122,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--diagnostic-norm",
         type=str,
-        choices=["none", "initial", "max", "time", "gx"],
-        default="gx",
-        help="Normalize diagnostics (GX-style uses time-normalized spectra + initial energy).",
+        choices=["none", "initial", "max", "time", "time_initial", "gx"],
+        default="time_initial",
+        help="Normalize diagnostics; time_initial uses time-normalized spectra plus initial energy.",
     )
     parser.add_argument(
         "--omega-star-scale",
@@ -437,7 +437,7 @@ def _plot_hl_imshow(
 ):
     hl_vals = np.nan_to_num(hl_energy, nan=0.0, posinf=0.0, neginf=0.0)
     hl_vals = np.maximum(hl_vals, 1e-300)
-    if diagnostic_norm in {"time", "rho_star", "gx"}:
+    if diagnostic_norm in {"time", "rho_star", "time_initial", "gx"}:
         total = np.sum(hl_vals, axis=(1, 2), keepdims=True)
         total = np.where(np.isfinite(total) & (total > 0), total, 1.0)
         hl_vals = hl_vals / total
@@ -493,7 +493,7 @@ def _log_energy(series: np.ndarray) -> np.ndarray:
 def _norm_base(log_energy: np.ndarray, mode: str) -> float:
     if mode == "none":
         return 0.0
-    if mode in {"initial", "gx"}:
+    if mode in {"initial", "time_initial", "gx"}:
         base = float(log_energy[0]) if log_energy.size else 0.0
         if not np.isfinite(base):
             finite = log_energy[np.isfinite(log_energy)]
@@ -583,7 +583,9 @@ def main() -> int:
     fit_signal = args.fit_signal
     if fit_signal == "auto":
         fit_signal = _default_fit_signal(args.case)
-    diagnostic_norm = args.diagnostic_norm
+    diagnostic_norm = (
+        "time_initial" if args.diagnostic_norm == "gx" else args.diagnostic_norm
+    )
 
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)

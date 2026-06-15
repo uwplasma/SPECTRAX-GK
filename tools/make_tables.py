@@ -81,7 +81,7 @@ KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "time"
 KBM_SOLVER = "time"
 TEM_SOLVER = "time"
-DIAGNOSTIC_NORM = "gx"
+DIAGNOSTIC_NORM = "rho_star"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 
 ETG_GX_MISMATCH_NL = 16
