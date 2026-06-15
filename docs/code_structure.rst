@@ -150,12 +150,14 @@ Completed extractions:
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central
-  finite-difference report assembly, and candidate/bracket screening reports:
+  finite-difference report assembly, candidate/bracket screening reports, and
+  production evidence-gap report orchestration:
   ``nonlinear_gradient_evidence_core.py``,
   ``nonlinear_gradient_evidence_classification.py``,
   ``nonlinear_gradient_evidence_windows.py``,
   ``nonlinear_gradient_evidence_fd.py``,
-  ``nonlinear_gradient_evidence_screening.py``
+  ``nonlinear_gradient_evidence_screening.py``,
+  ``nonlinear_gradient_evidence_gap.py``
 - runtime artifact read/write, generic I/O helpers, GX-style active-axis layout,
   and restart-append schema coverage:
   ``runtime_artifacts.py``, ``runtime_artifact_io.py``,

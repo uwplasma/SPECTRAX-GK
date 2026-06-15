@@ -1706,6 +1706,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_gap"
+path = "src/spectraxgk/nonlinear_gradient_evidence_gap.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "production nonlinear turbulence-gradient evidence requires matched baseline/plus/minus post-transient heat-flux windows",
+  "missing-evidence reports must distinguish planning gaps from promoted turbulent-transport-gradient claims",
+]
+physics_contracts = [
+  "standalone passed nonlinear transport windows are necessary but not sufficient for a production turbulence-gradient claim",
+  "production evidence reports require both a passing production gradient artifact and replicated long-window uncertainty evidence",
+]
+numerics_contracts = [
+  "required campaign rows preserve identical numerics except for the perturbed parameter and record analysis-window bounds",
+  "gap reports enumerate failed gradient gates and required central finite-difference metrics before any promotion can be considered",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+]
+next_tests = [
+  "add a gap-report regression for production-candidate artifacts that fail only uncertainty gates",
+  "add a custom gap-config regression that verifies required-run paths and analysis windows are stable",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_gradient_followup_core"
 path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"

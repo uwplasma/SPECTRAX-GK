@@ -249,6 +249,13 @@ Nonlinear Gradient Evidence Screening
    :members:
    :private-members:
 
+Nonlinear Gradient Evidence Gap Reports
+---------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_evidence_gap
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 

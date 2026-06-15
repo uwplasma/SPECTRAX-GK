@@ -1,3 +1,11 @@
+- 2026-06-15: Completed the nonlinear-gradient evidence facade split by moving
+  production evidence report assembly and missing-campaign gap reports into
+  `spectraxgk.nonlinear_gradient_evidence_gap`. The legacy
+  `spectraxgk.nonlinear_gradient_evidence` module is now a compatibility
+  facade plus JSON artifact loader, while the direct implementation modules
+  own classification, replicated windows, central finite differences,
+  candidate/bracket screening, and gap-report orchestration.
+
 - 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
   artifact claim classification into
   `spectraxgk.nonlinear_gradient_evidence_classification` and campaign

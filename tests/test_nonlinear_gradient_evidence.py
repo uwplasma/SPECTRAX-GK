@@ -12,6 +12,7 @@ import spectraxgk.nonlinear_gradient_evidence as evidence
 import spectraxgk.nonlinear_gradient_evidence_classification as evidence_classification
 import spectraxgk.nonlinear_gradient_evidence_core as evidence_core
 import spectraxgk.nonlinear_gradient_evidence_fd as evidence_fd
+import spectraxgk.nonlinear_gradient_evidence_gap as evidence_gap
 import spectraxgk.nonlinear_gradient_evidence_screening as evidence_screening
 import spectraxgk.nonlinear_gradient_evidence_windows as evidence_windows
 from spectraxgk.nonlinear_gradient_evidence import (
@@ -85,6 +86,15 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
     assert (
         evidence.nonlinear_turbulence_gradient_finite_difference_report
         is evidence_fd.nonlinear_turbulence_gradient_finite_difference_report
+    )
+    assert evidence._required_run_rows is evidence_gap._required_run_rows
+    assert (
+        evidence.nonlinear_turbulence_gradient_evidence_gap_report
+        is evidence_gap.nonlinear_turbulence_gradient_evidence_gap_report
+    )
+    assert (
+        evidence.nonlinear_turbulence_gradient_evidence_report
+        is evidence_gap.nonlinear_turbulence_gradient_evidence_report
     )
 
 

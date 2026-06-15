@@ -649,6 +649,20 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_gap"
+source_path = "src/spectraxgk/nonlinear_gradient_evidence_gap.py"
+facade_module = "spectraxgk.nonlinear_gradient_evidence"
+status = "active"
+responsibility = "production nonlinear turbulence-gradient evidence report assembly and fail-closed missing-campaign gap reports"
+moved_exports = [
+  "_required_run_rows",
+  "nonlinear_turbulence_gradient_evidence_gap_report",
+  "nonlinear_turbulence_gradient_evidence_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_artifact_io"
 source_path = "src/spectraxgk/runtime_artifact_io.py"
 facade_module = "spectraxgk.runtime_artifacts"
