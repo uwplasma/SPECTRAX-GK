@@ -28,7 +28,9 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
     if not vmec_file:
         pytest.skip("Set SPECTRAXGK_VMEC_FILE to enable VMEC roundtrip parity gate.")
 
-    gx_repo = os.environ.get("SPECTRAXGK_GX_REPO", "").strip() or None
+    geometry_helper_repo = (
+        os.environ.get("SPECTRAXGK_GEOMETRY_HELPER_REPO", "").strip() or None
+    )
 
     cfg = RuntimeConfig(
         grid=GridConfig(
@@ -52,7 +54,7 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
             torflux=0.64,
             npol=1.0,
             alpha=0.0,
-            gx_repo=gx_repo,
+            geometry_helper_repo=geometry_helper_repo,
         ),
         init=InitializationConfig(init_field="density", init_amp=1.0e-6),
         species=(

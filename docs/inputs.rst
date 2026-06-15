@@ -212,8 +212,8 @@ matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the VMEC examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output path for the generated ``*.eik.nc`` file, and
-``gx_repo`` can point to a non-default helper checkout if needed. The preferred
-VMEC path is the internal ``booz_xform_jax`` backend, discovered from
+``geometry_helper_repo`` can point to a non-default helper checkout if needed.
+The preferred VMEC path is the internal ``booz_xform_jax`` backend, discovered from
 ``BOOZ_XFORM_JAX_PATH`` or ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` when it is not
 installed into the active Python environment. This is now the recommended
 imported-geometry route for new stellarator cases. The shipped VMEC TOMLs
@@ -222,6 +222,9 @@ with ``vmec_jax input.<case>`` before running the examples.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
 against the TOML directory first. Command-line overrides are resolved from the
 shell working directory.
+Older ``gx_repo`` and ``gx_python`` input keys are still accepted as aliases,
+but new inputs should use ``geometry_helper_repo`` and
+``geometry_helper_python``.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and
@@ -236,8 +239,8 @@ Set the Miller inputs directly in ``[geometry]``:
 ``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
 ``akappa``, ``akappri``, ``tri``, ``tripri``, and ``betaprim``.
 ``geometry_file`` can be used as an explicit output path for the generated
-Miller ``*.eiknc.nc`` file, and ``gx_python`` applies here as well when the GX
-helper must run in a different Python environment.
+Miller ``*.eiknc.nc`` file, and ``geometry_helper_python`` applies here as well
+when the geometry helper must run in a different Python environment.
 
 Executable path overrides
 ^^^^^^^^^^^^^^^^^^^^^^^^^

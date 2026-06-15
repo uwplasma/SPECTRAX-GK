@@ -2129,3 +2129,10 @@ No long nonlinear audit should be launched from these candidates.
   ``_reference_hypercollision_power``, and
   ``_linked_boundary_end_damping``. Benchmark facades, comparison tools,
   manifests, and focused benchmark tests were updated and passed.
+- Continued the source-name cleanup by renaming imported-geometry helper config
+  fields from provenance-oriented ``gx_python``/``gx_repo`` to
+  ``geometry_helper_python``/``geometry_helper_repo``. Runtime TOML loading,
+  VMEC/Miller docs, the HSX VMEC example, the Miller geometry generator, and
+  roundtrip tests now use canonical helper names. Legacy ``gx_*`` constructor
+  and TOML aliases remain accepted so existing inputs do not break, but
+  serialization emits only the neutral helper-field names.

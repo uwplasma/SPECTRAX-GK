@@ -1462,7 +1462,7 @@ The bridge auto-discovers ``booz_xform_jax`` from
 ``BOOZ_XFORM_JAX_PATH`` / ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` or from a checkout placed
 next to the SPECTRAX-GK workspace. When a specific
 Python environment is needed for the helper subprocesses, set
-``geometry.gx_python`` in the runtime TOML. On ``office``, the normal audited
+``geometry.geometry_helper_python`` in the runtime TOML. On ``office``, the normal audited
 path is:
 
 For differentiable VMEC/Boozer gradient audits, the ``booz_xform_jax`` checkout
@@ -1549,7 +1549,7 @@ tracked W7-X and HSX VMEC lanes:
      --manifest tools/vmec_roundtrip_lanes.office.toml \
      --outdir tools_out/vmec_roundtrip_office
 
-If the helper must be forced to another interpreter, set ``geometry.gx_python``
+If the helper must be forced to another interpreter, set ``geometry.geometry_helper_python``
 in the runtime TOML used by the audit and rerun the same command. The old
 environment-variable override is no longer documented because the preferred
 path is the internal ``booz_xform_jax`` backend.
