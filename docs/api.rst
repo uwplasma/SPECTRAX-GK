@@ -556,6 +556,13 @@ Solver Nonlinear-Window Objective
    :members:
    :private-members:
 
+Solver Gradient Gates
+---------------------
+
+.. automodule:: spectraxgk.solver_gradient_gates
+   :members:
+   :private-members:
+
 Solver VMEC-State Helpers
 -------------------------
 

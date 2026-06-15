@@ -2244,6 +2244,41 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_gradient_gates"
+path = "src/spectraxgk/solver_gradient_gates.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "implicit non-Hermitian eigenpair sensitivities for solver-ready geometry objectives",
+  "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates",
+]
+physics_contracts = [
+  "solver-ready gates validate actual linear-RHS growth, frequency, and quasilinear-weight observables without claiming full VMEC/Boozer optimization",
+  "mode-21 VMEC/Boozer gradient gates must keep frequency, quasilinear, and reduced nonlinear-window estimator claims distinct",
+  "reduced nonlinear-window estimator reports must remain separate from converged nonlinear transport heat-flux optimization claims",
+]
+numerics_contracts = [
+  "eigenpair sensitivities must be compared with nearest-branch finite differences using explicit gap, absolute, and relative tolerances",
+  "VMEC/Boozer state-gradient reports must record mode resolution, surface stencil, state size, and objective-specific gate rows",
+  "facade wrappers must preserve dependency-injected context hooks so artifact builders can audit alternate geometry plumbing",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+]
+next_tests = [
+  "add direct hook-injection tests for mode-21 context and nonlinear-window metric seams",
+  "add multi-equilibrium mode-21 gradient fixtures before broad stellarator optimization claims",
+]
+
+[[modules]]
 module = "spectraxgk.solver_vmec_state"
 path = "src/spectraxgk/solver_vmec_state.py"
 owner_lane = "production solver-objective geometry-gradient validation"
