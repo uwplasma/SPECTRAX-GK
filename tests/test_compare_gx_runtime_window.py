@@ -148,7 +148,7 @@ def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> No
         ),
     )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.1]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     monkeypatch.setattr(mod, "select_real_fft_ky_grid", lambda grid, _ky: grid)

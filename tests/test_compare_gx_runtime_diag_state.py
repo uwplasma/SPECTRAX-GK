@@ -107,7 +107,7 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
     )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
     monkeypatch.setattr(mod, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     grid_pos = SimpleNamespace(ky=np.array([0.1, 0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))

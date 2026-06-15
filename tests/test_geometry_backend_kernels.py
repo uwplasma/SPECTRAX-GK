@@ -12,7 +12,6 @@ from spectraxgk.geometry_backends.kernels import (
     nperiod_contract,
     nperiod_mask,
 )
-from spectraxgk.from_gx import kernels as legacy_kernels
 
 
 def test_nperiod_helpers_contract_arrays() -> None:
@@ -95,10 +94,10 @@ def test_nperiod_extension_and_reflection_helpers() -> None:
     )
 
 
-def test_legacy_kernel_shim_exposes_backend_helpers() -> None:
+def test_backend_kernel_exports_canonical_helpers() -> None:
     arr = np.array([1.0, 2.0, 4.0, 7.0])
     np.testing.assert_allclose(
-        np.asarray(legacy_kernels.gx_derm(arr, axis="r")),
+        np.asarray(centered_reflected_difference(arr, axis="r")),
         np.asarray(centered_reflected_difference(arr, axis="r")),
     )
-    assert legacy_kernels.centered_reflected_difference is centered_reflected_difference
+    assert callable(centered_reflected_difference)

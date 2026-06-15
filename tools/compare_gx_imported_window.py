@@ -33,7 +33,7 @@ from tools.compare_gx_runtime_diag_state import (
 from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.diagnostics import magnetic_vector_potential_energy, distribution_free_energy, electrostatic_field_energy, fieldline_quadrature_weights
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid
 from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
 from spectraxgk.linear import build_linear_cache
@@ -123,11 +123,11 @@ def main() -> None:
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
         )
     else:
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
 
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
     lx = 2.0 * np.pi * y0 if boundary_eff == "periodic" else 62.8
-    grid_cfg = apply_gx_geometry_grid_defaults(
+    grid_cfg = apply_imported_geometry_grid_defaults(
         geom,
         GridConfig(
             Nx=int(nx),

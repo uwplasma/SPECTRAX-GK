@@ -165,7 +165,7 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypat
         return "geom"
 
     monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_obj = type("GridObj", (), {"ky": np.array([0.0, 0.2, -0.2]), "kx": np.array([0.0])})()
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")

@@ -102,7 +102,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
         lambda _path: (SimpleNamespace(grid=SimpleNamespace(Nx=1, Ny=4, Nz=2, y0=10.0), species=[object()]), None),
     )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object())

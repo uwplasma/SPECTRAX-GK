@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from tools.compare_gx_rhs_terms import _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data
 from spectraxgk.grids import build_spectral_grid, real_fft_unique_ky, select_real_fft_ky_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
@@ -253,7 +253,7 @@ def main() -> None:
         grid=replace(cfg.grid, Nx=int(nx), Ny=int(ny_full), Nz=int(nz)),
     )
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
     grid = select_real_fft_ky_grid(grid_full, real_fft_unique_ky(grid_full.ky))
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)

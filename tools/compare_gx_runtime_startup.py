@@ -12,7 +12,7 @@ import numpy as np
 from netCDF4 import Dataset
 
 from tools.compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
@@ -97,7 +97,7 @@ def main() -> None:
     )
 
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     kx_index = int(np.argmin(np.abs(np.asarray(grid_full.kx, dtype=float) - float(args.kx_target))))

@@ -27,7 +27,7 @@ from spectraxgk.benchmarks import (
     _two_species_params,
 )
 from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import (
@@ -403,7 +403,7 @@ def _build_runtime_compare_context(
         ),
     )
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     term_cfg = replace(build_runtime_term_config(cfg_use), hypercollisions=0.0, end_damping=0.0)
@@ -443,7 +443,7 @@ def _build_imported_compare_context(
     else:
         if geometry_file is None:
             raise ValueError("--geometry-file is required with --gx-input for non-slab imported cases")
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=geometry_file, runtime_config=None))
 
     lx = 2.0 * np.pi * y0_use if boundary_eff == "periodic" else 62.8
     grid_cfg = GridConfig(
@@ -457,7 +457,7 @@ def _build_imported_compare_context(
         nperiod=max(1, int(gx_contract.nperiod)),
         ntheta=max(1, int(gx_contract.ntheta)),
     )
-    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    grid_full = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, grid_cfg))
     params = build_linear_params(
         gx_contract.species,
         tau_e=float(gx_contract.tau_e),

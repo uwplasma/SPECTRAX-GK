@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 
 from tools.compare_gx_rhs_terms import _summary
 from spectraxgk.cetg import build_cetg_model_params, cetg_fields
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
 from spectraxgk.legacy_cetg_output import LegacyCetgRestart, load_legacy_cetg_restart
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
 def _runtime_initial_state(config_path: Path) -> tuple[np.ndarray, np.ndarray]:
     cfg, _data = load_runtime_from_toml(config_path)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     g0 = np.asarray(
         _build_initial_condition(
@@ -109,7 +109,7 @@ def main() -> None:
     _summary("g_state", gx_restart.state_active.astype(np.complex64), sp_active)
 
     geom = build_runtime_geometry(cfg)
-    grid = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, cfg.grid))
+    grid = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, cfg.grid))
     kx_idx = _match_output_kx_indices(np.asarray(grid.kx, dtype=float), gx_kx)
     sp_phi_sorted = sp_phi0[: gx_phi.shape[0], kx_idx, :]
     _summary("phi", gx_phi.astype(np.complex64), sp_phi_sorted)

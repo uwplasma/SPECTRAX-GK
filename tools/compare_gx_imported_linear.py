@@ -20,10 +20,10 @@ from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
 from spectraxgk.geometry import (
     SlabGeometry,
-    apply_gx_geometry_grid_defaults,
+    apply_imported_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
-    gx_zero_shat_enabled,
-    load_gx_geometry_netcdf,
+    zero_shear_enabled,
+    load_imported_geometry_netcdf,
 )
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
@@ -262,7 +262,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     kpar_init = float(init["ikpar_init"]) if "ikpar_init" in init else float(init.get("kpar_init", 0.0))
 
     s_hat = float(geometry.get("shat", 0.0))
-    zero_shat = gx_zero_shat_enabled(
+    zero_shat = zero_shear_enabled(
         s_hat,
         zero_shat=bool(geometry.get("zero_shat", False)),
         threshold=float(geometry.get("zero_shat_threshold", 1.0e-5)),
@@ -1092,7 +1092,7 @@ def main() -> None:
             runtime_config=args.runtime_config,
             gx_contract=gx_contract,
         )
-        geom = load_gx_geometry_netcdf(geometry_source)
+        geom = load_imported_geometry_netcdf(geometry_source)
         nz = int(np.asarray(geom.theta).size)
     if ntheta <= 0:
         ntheta = nz
@@ -1116,7 +1116,7 @@ def main() -> None:
         nperiod=nperiod,
         ntheta=ntheta,
     )
-    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    grid_full = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, grid_cfg))
 
     nl_use = int(args.Nl) if args.Nl is not None else int(gx_contract.nlaguerre if gx_contract is not None else 8)
     nm_use = int(args.Nm) if args.Nm is not None else int(gx_contract.nhermite if gx_contract is not None else 16)

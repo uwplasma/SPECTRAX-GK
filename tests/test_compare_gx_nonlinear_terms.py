@@ -60,7 +60,7 @@ def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> 
         return "geom"
 
     monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_obj = SimpleNamespace(ky=np.array([0.0, 0.2, -0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")

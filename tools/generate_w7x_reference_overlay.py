@@ -39,7 +39,7 @@ from spectraxgk.benchmarking import (  # noqa: E402
 )
 from spectraxgk.benchmarks import _apply_reference_hypercollisions  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf  # noqa: E402
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf  # noqa: E402
 from spectraxgk.grids import build_spectral_grid  # noqa: E402
 from spectraxgk.explicit_time_integrators import ExplicitTimeConfig  # noqa: E402
 from spectraxgk.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
@@ -146,7 +146,7 @@ def _load_finite_reference(bundle_path: Path):
 def _run_w7x_spectrax_mode(args: argparse.Namespace, *, reference_times: np.ndarray, output_steps: np.ndarray):
     gx_contract = _load_gx_input_contract(args.gx_input)
     gx_time, gx_ky, gx_kx, _gx_omega, _gx_wg, _gx_wphi, _gx_wapar, _gx_phi2 = _load_gx_reference(args.gx)
-    geom = load_gx_geometry_netcdf(args.geometry_file.expanduser().resolve())
+    geom = load_imported_geometry_netcdf(args.geometry_file.expanduser().resolve())
 
     ny = _resolve_imported_real_fft_ny(gx_ky, gx_contract)
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
@@ -163,7 +163,7 @@ def _run_w7x_spectrax_mode(args: argparse.Namespace, *, reference_times: np.ndar
         nperiod=max(1, int(gx_contract.nperiod)),
         ntheta=int(gx_contract.ntheta),
     )
-    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    grid_full = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, grid_cfg))
     nl_use = int(args.Nl) if args.Nl is not None else int(gx_contract.nlaguerre)
     nm_use = int(args.Nm) if args.Nm is not None else int(gx_contract.nhermite)
 

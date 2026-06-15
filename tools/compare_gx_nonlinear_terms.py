@@ -26,7 +26,7 @@ from spectraxgk.benchmarks import (
     _two_species_params,
 )
 from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
+from spectraxgk.geometry import SAlphaGeometry, apply_imported_geometry_grid_defaults
 from spectraxgk.gyroaverage import laguerre_quadrature_count
 from spectraxgk.grids import build_spectral_grid, twothirds_mask
 from spectraxgk.io import load_runtime_from_toml
@@ -467,7 +467,7 @@ def _build_runtime_compare_context(
         ),
     )
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg_use)
