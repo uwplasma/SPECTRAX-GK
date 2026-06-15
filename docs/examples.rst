@@ -436,7 +436,7 @@ Miller inputs when the external helper scripts are available:
    python tools/generate_gx_vmec_eik.py \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
-   python tools/generate_gx_miller_eik.py \
+   python tools/generate_miller_eik.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers

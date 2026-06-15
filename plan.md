@@ -2143,3 +2143,8 @@ No long nonlinear audit should be launched from these candidates.
   inputs to ``rho_star``, and the low-level diagnostic normalization helper
   still accepts the old spelling as a compatibility alias with identical
   scaling.
+- Continued the source-name cleanup by moving the Miller geometry generator from
+  ``tools/generate_gx_miller_eik.py`` to the neutral
+  ``tools/generate_miller_eik.py``. Documentation now points to the canonical
+  script, while the old path remains a tiny compatibility wrapper for existing
+  automation.
