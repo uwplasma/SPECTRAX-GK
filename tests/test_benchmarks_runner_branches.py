@@ -605,7 +605,7 @@ def test_run_etg_linear_explicit_time_config_phi_path_uses_config_integrator(
     assert result.omega == -0.12
 
 
-def test_run_kbm_linear_gx_time_uses_omega_series_fallback(monkeypatch) -> None:
+def test_run_kbm_linear_explicit_time_uses_omega_series_fallback(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm.build_flux_tube_geometry",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
@@ -652,7 +652,7 @@ def test_run_kbm_linear_gx_time_uses_omega_series_fallback(monkeypatch) -> None:
 
     result = run_kbm_linear(
         cfg=KBMBaseCase(),
-        solver="gx_time",
+        solver="explicit_time",
         params=SimpleNamespace(rho_star=1.0),
         terms=LinearTerms(),
         mode_method="z_index",
@@ -1238,7 +1238,7 @@ def test_run_tem_linear_rejects_invalid_fit_signal_and_time_density(
     assert result.omega == -0.1
 
 
-def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None:
+def test_run_cyclone_scan_auto_explicit_time_falls_back_to_krylov(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.benchmark_cyclone.build_spectral_grid", lambda cfg: _grid_full()
     )
@@ -1299,7 +1299,7 @@ def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None
     np.testing.assert_allclose(scan.omega, [0.4])
 
 
-def test_run_cyclone_scan_gx_time_reselects_branch_with_previous_frequency(
+def test_run_cyclone_scan_explicit_time_reselects_branch_with_previous_frequency(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -1355,7 +1355,7 @@ def test_run_cyclone_scan_gx_time_reselects_branch_with_previous_frequency(
     scan = run_cyclone_scan(
         np.array([0.2, 0.3, 0.4]),
         cfg=CycloneBaseCase(),
-        solver="gx_time",
+        solver="explicit_time",
         gx_reference=True,
         params=SimpleNamespace(rho_star=1.0),
         terms=LinearTerms(),
@@ -1369,7 +1369,7 @@ def test_run_cyclone_scan_gx_time_reselects_branch_with_previous_frequency(
     np.testing.assert_allclose(scan.gamma, [0.10, 0.12, 0.13])
 
 
-def test_run_cyclone_scan_empty_gx_time_returns_empty(monkeypatch) -> None:
+def test_run_cyclone_scan_empty_explicit_time_returns_empty(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.benchmark_cyclone.build_spectral_grid", lambda cfg: _grid_full()
     )
@@ -1381,7 +1381,7 @@ def test_run_cyclone_scan_empty_gx_time_returns_empty(monkeypatch) -> None:
     scan = run_cyclone_scan(
         np.asarray([]),
         cfg=CycloneBaseCase(),
-        solver="gx_time",
+        solver="explicit_time",
         params=SimpleNamespace(rho_star=1.0),
         terms=LinearTerms(),
     )
@@ -1575,7 +1575,7 @@ def test_run_kbm_beta_scan_auto_krylov_invalid_growth_falls_back_to_time(
     np.testing.assert_allclose(scan.omega, [-0.07])
 
 
-def test_run_kbm_beta_scan_gx_time_diagnostic_fallback_ladder(monkeypatch) -> None:
+def test_run_kbm_beta_scan_explicit_time_diagnostic_fallback_ladder(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm.build_spectral_grid", lambda cfg: _grid_full()
     )
@@ -1600,7 +1600,7 @@ def test_run_kbm_beta_scan_gx_time_diagnostic_fallback_ladder(monkeypatch) -> No
     )
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm.select_kbm_solver_auto",
-        lambda *args, **kwargs: "gx_time",
+        lambda *args, **kwargs: "explicit_time",
     )
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm._normalize_growth_rate",
@@ -1699,7 +1699,7 @@ def test_run_kbm_beta_scan_gx_time_diagnostic_fallback_ladder(monkeypatch) -> No
         current["case"] = case
         scan = run_kbm_beta_scan(
             np.array([1.0e-4]),
-            solver="gx_time",
+            solver="explicit_time",
             fit_signal="phi",
             mode_method=case["method"],
             gx_reference=True,

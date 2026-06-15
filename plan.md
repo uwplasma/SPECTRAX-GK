@@ -1,3 +1,11 @@
+- 2026-06-15: Continued the naming-governance refactor by making
+  `explicit_time` the canonical runtime and benchmark solver key. The old
+  `gx_time` spelling is now retained only as a normalization alias for legacy
+  inputs and in benchmark/comparison artifacts that explicitly refer to
+  external reference data. KBM solver-lock constants, example solver choices,
+  and focused runtime/benchmark tests now use the numerics-based
+  `explicit_time` name.
+
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
   names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart

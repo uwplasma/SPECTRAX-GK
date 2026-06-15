@@ -525,7 +525,7 @@ def test_runtime_linear_progress_with_sample_stride_gt_one() -> None:
     assert np.isfinite(res.omega)
 
 
-def test_runtime_linear_gx_time_rejects_return_state() -> None:
+def test_runtime_linear_explicit_time_rejects_return_state() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
@@ -539,7 +539,7 @@ def test_runtime_linear_gx_time_rejects_return_state() -> None:
             ky_target=0.1,
             Nl=3,
             Nm=4,
-            solver="gx_time",
+            solver="explicit_time",
             method="rk4",
             dt=0.01,
             steps=2,
@@ -3046,7 +3046,7 @@ def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
 
 
-def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(
+def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_reference(
     tmp_path,
 ) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
@@ -3125,9 +3125,9 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(
         cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path))
     )
 
-    analytic_out = run_runtime_linear(cfg, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+    analytic_out = run_runtime_linear(cfg, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time")
     imported_out = run_runtime_linear(
-        cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="gx_time"
+        cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
     )
 
     assert imported_out.gamma == pytest.approx(
@@ -3138,7 +3138,7 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(
     )
 
 
-def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference_from_toml(
+def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_reference_from_toml(
     tmp_path,
 ) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
@@ -3266,10 +3266,10 @@ diagnostic_norm = "none"
     )
 
     loaded_out = run_runtime_linear(
-        cfg_loaded, ky_target=0.2, Nl=4, Nm=6, solver="gx_time"
+        cfg_loaded, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
     )
     analytic_out = run_runtime_linear(
-        cfg_ref, ky_target=0.2, Nl=4, Nm=6, solver="gx_time"
+        cfg_ref, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
     )
 
     assert loaded_out.gamma == pytest.approx(analytic_out.gamma, rel=2.0e-3, abs=1.0e-6)
@@ -4404,7 +4404,7 @@ def test_run_runtime_scan_batch_empty_raises(monkeypatch: pytest.MonkeyPatch) ->
         run_runtime_scan(cfg, ky_values=[], solver="time", batch_ky=True)
 
 
-def test_runtime_linear_gx_time_rejects_return_state_before_setup(
+def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cfg = replace(
@@ -4448,5 +4448,5 @@ def test_runtime_linear_gx_time_rejects_return_state_before_setup(
 
     with pytest.raises(ValueError):
         run_runtime_linear(
-            cfg, ky_target=0.2, Nl=2, Nm=2, solver="gx_time", return_state=True
+            cfg, ky_target=0.2, Nl=2, Nm=2, solver="explicit_time", return_state=True
         )

@@ -164,7 +164,7 @@ def test_benchmark_small_policy_helpers_cover_branch_contracts() -> None:
     assert benchmarks._linked_boundary_end_damping(False) == (0.0, 0.0)
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(1))) == 0
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(4))) == 3
-    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=True) == "explicit_time"
 
     batches = list(benchmarks._iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True))
     assert batches[0][0] == 0
@@ -664,7 +664,7 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
     assert np.isfinite(result.omega)
 
 
-def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable(monkeypatch):
+def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_gx_growth_is_unavailable(monkeypatch):
     import spectraxgk.benchmark_cyclone as benchmark_cyclone
 
     monkeypatch.setattr(benchmark_cyclone, "build_linear_cache", lambda *_args, **_kwargs: object())
@@ -825,7 +825,7 @@ def test_kbm_ky_scan_shapes():
         dt=0.02,
         steps=40,
         method="rk2",
-        solver="gx_time",
+        solver="explicit_time",
     )
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
@@ -834,7 +834,7 @@ def test_kbm_ky_scan_shapes():
 
 
 @pytest.mark.slow
-def test_run_kbm_linear_gx_time_history():
+def test_run_kbm_linear_explicit_time_history():
     """Single-point KBM runs should return a usable field history."""
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
     cfg = KBMBaseCase(grid=grid)
@@ -845,7 +845,7 @@ def test_run_kbm_linear_gx_time_history():
         Nm=6,
         dt=0.02,
         steps=40,
-        solver="gx_time",
+        solver="explicit_time",
         sample_stride=2,
     )
     assert result.t.ndim == 1
@@ -904,7 +904,7 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
         Nm=8,
         dt=0.01,
         steps=40,
-        solver="gx_time",
+        solver="explicit_time",
         sample_stride=2,
     )
     assert result.t.ndim == 1
@@ -914,8 +914,8 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     assert np.isfinite(result.omega)
 
 
-def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
-    """GX-time KBM runs should honor the requested post-processing extractor."""
+def test_run_kbm_linear_explicit_time_uses_requested_mode_extractor(monkeypatch):
+    """explicit-time KBM runs should honor the requested post-processing extractor."""
 
     calls: dict[str, str] = {}
 
@@ -970,7 +970,7 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
         mode_method="project",
     )
 
@@ -1033,13 +1033,13 @@ def test_run_kbm_linear_uses_linked_boundary_end_damping_by_default(monkeypatch)
 
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
     cfg = KBMBaseCase(grid=grid)
-    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
+    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="explicit_time")
 
     assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
     assert captured["width"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
 
 
-def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
+def test_run_kbm_linear_explicit_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1075,12 +1075,12 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
     )
 
     cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2))
-    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
+    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="explicit_time")
 
     assert captured["cfl_fac"] == pytest.approx(benchmarks.ExplicitTimeConfig.cfl_fac)
 
 
-def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
+def test_run_kbm_linear_explicit_time_preserves_explicit_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1125,13 +1125,13 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["cfl_fac"] == pytest.approx(1.25)
 
 
-def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
+def test_run_kbm_linear_explicit_time_uses_method_default_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1176,7 +1176,7 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["cfl_fac"] == pytest.approx(1.73)
@@ -1223,8 +1223,8 @@ def test_run_kbm_linear_disables_linked_boundary_end_damping_when_requested(monk
     assert captured["width"] == pytest.approx(0.0)
 
 
-def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
-    """KBM scan helpers should not downgrade project mode on the GX-time path."""
+def test_run_kbm_beta_scan_explicit_time_keeps_project_mode(monkeypatch):
+    """KBM scan helpers should not downgrade project mode on the explicit-time path."""
 
     calls: list[str] = []
 
@@ -1280,7 +1280,7 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
         mode_method="project",
     )
 
@@ -1346,7 +1346,7 @@ def test_run_kbm_beta_scan_uses_linked_boundary_end_damping_by_default(monkeypat
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
@@ -1498,10 +1498,10 @@ def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
 
 
 def test_select_kbm_solver_auto_lock():
-    """KBM auto solver lock should be deterministic at GX-reference anchor ky."""
-    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_reference=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_reference=True) == "gx_time"
+    """KBM auto solver lock should be deterministic at reference-aligned anchor ky."""
+    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_reference=True) == "explicit_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "explicit_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_reference=True) == "explicit_time"
     assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=False) == "time"
     assert select_kbm_solver_auto("krylov", ky_target=0.3, gx_reference=True) == "krylov"
 
@@ -1617,7 +1617,7 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
 
 
 def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
-    """Default kinetic GX-reference helpers should restore the historical density seed."""
+    """Default kinetic reference-aligned helpers should restore the historical density seed."""
 
     captured: dict[str, object] = {}
 

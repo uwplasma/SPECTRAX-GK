@@ -267,7 +267,7 @@ def test_linked_boundary_end_damping_and_midplane_index() -> None:
 
 def test_select_kbm_solver_auto() -> None:
     assert select_kbm_solver_auto("time", ky_target=0.2, gx_reference=True) == "time"
-    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "explicit_time"
     assert select_kbm_solver_auto("auto", ky_target=0.7, gx_reference=False) == "time"
 
 

@@ -130,7 +130,8 @@ def test_runtime_small_helper_functions() -> None:
     cfg = _base_cfg()
     grid = build_spectral_grid(cfg.grid)
 
-    assert _normalize_linear_solver_name(" explicit_time ") == "gx_time"
+    assert _normalize_linear_solver_name(" explicit_time ") == "explicit_time"
+    assert _normalize_linear_solver_name(" gx_time ") == "explicit_time"
     assert _normalize_linear_solver_name("krylov") == "krylov"
     assert _midplane_index(grid) == min(grid.z.size // 2 + 1, grid.z.size - 1)
     assert _midplane_index(type("Grid", (), {"z": np.asarray([0.0])})()) == 0
