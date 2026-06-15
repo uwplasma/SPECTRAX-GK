@@ -481,6 +481,55 @@ def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_nonlinea
     )
 
 
+def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_nonlinear_window_artifact(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gate_path = (
+        tmp_path
+        / "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json"
+    )
+    gate_path.unlink()
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "finite_beta_nonlinear_window_gate_unreadable" in report["blockers"]
+
+
+def test_vmec_boozer_differentiability_claim_guard_blocks_malformed_finite_beta_nonlinear_window_gate(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gate_path = (
+        tmp_path
+        / "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json"
+    )
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    gate["kind"] = "mode21_vmec_boozer_quasilinear_gradient_gate"
+    gate["source_scope"] = "reduced_fixture"
+    gate["mboz"] = 19
+    gate["nboz"] = 21
+    gate["passed"] = False
+    gate["nonlinear_window_gradient_gate"] = False
+    gate["objective_gates"][0]["passed"] = False
+    gate["eigenpair_gate"].pop("max_rel_error")
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "finite_beta_nonlinear_window_gate_failed" in report["blockers"]
+    assert "finite_beta_nonlinear_window_gate_wrong_kind" in report["blockers"]
+    assert "finite_beta_nonlinear_window_gate_wrong_source_scope" in report["blockers"]
+    assert "finite_beta_nonlinear_window_gate_mode_floor_failed" in report["blockers"]
+    assert "finite_beta_nonlinear_window_gate_objective_failed" in report["blockers"]
+    assert (
+        "finite_beta_nonlinear_window_gate_error_threshold_failed"
+        in report["blockers"]
+    )
+
+
 def test_vmec_boozer_differentiability_claim_guard_requires_ql_objectives(
     tmp_path: Path,
 ) -> None:
