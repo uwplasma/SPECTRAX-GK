@@ -792,6 +792,19 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_nonlinear"
+source_path = "src/spectraxgk/runtime_artifact_nonlinear.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "generic nonlinear JSON summaries, diagnostic CSV tables, and state-array artifact writing for non-NetCDF outputs"
+moved_exports = [
+  "_nonlinear_summary",
+  "write_runtime_nonlinear_table_artifacts",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
 source_path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
 facade_module = "spectraxgk.runtime_artifacts"

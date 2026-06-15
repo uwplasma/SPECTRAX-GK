@@ -1398,6 +1398,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_artifact_nonlinear"
+path = "src/spectraxgk/runtime_artifact_nonlinear.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime examples for nonlinear CSV/JSON output and plotting from saved output",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "nonlinear summaries preserve selected kx/ky, sample counts, energies, and late-time transport channels",
+  "species-resolved heat, particle, and turbulent-heating channels are serialized without changing solver reductions",
+]
+numerics_contracts = [
+  "higher-rank diagnostic channels flatten deterministically for CSV table output",
+  "scalar phi2-only nonlinear results still emit finite JSON summaries when diagnostics are disabled",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add plot reload regression for saved nonlinear CSV diagnostics",
+  "add malformed species-channel shape rejection tests before publication artifact regeneration",
+]
+
+[[modules]]
 module = "spectraxgk.runtime_artifact_gx_layout"
 path = "src/spectraxgk/runtime_artifact_gx_layout.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"

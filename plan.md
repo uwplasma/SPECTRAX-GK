@@ -1,3 +1,10 @@
+- 2026-06-15: Continued the runtime artifact refactor by moving generic
+  nonlinear JSON/CSV/NPY summary and diagnostic table writing into
+  `spectraxgk.runtime_artifact_nonlinear`. The legacy
+  `spectraxgk.runtime_artifacts` module keeps the public nonlinear artifact
+  dispatcher and GX-style NetCDF writer, preserving monkeypatch seams while
+  reducing the facade to the remaining NetCDF schema hotspot.
+
 - 2026-06-15: Continued the runtime artifact refactor by moving linear scan,
   linear single-run, and quasilinear artifact writers into
   `spectraxgk.runtime_artifact_linear`. The public

@@ -478,6 +478,13 @@ Runtime Artifact Linear Writers
    :members:
    :private-members:
 
+Runtime Artifact Nonlinear Writers
+----------------------------------
+
+.. automodule:: spectraxgk.runtime_artifact_nonlinear
+   :members:
+   :private-members:
+
 Runtime Artifact GX Layout
 --------------------------
 
