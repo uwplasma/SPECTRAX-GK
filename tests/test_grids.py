@@ -104,8 +104,8 @@ def test_select_real_fft_ky_grid_uses_explicit_positive_dump_values():
     assert jnp.allclose(gx_grid.ky_grid[:, 0], gx_ky)
 
 
-def test_twothirds_mask_matches_gx_strict_cutoff():
-    """GX excludes the |k| = 1/3 shell on the padded nonlinear grid."""
+def test_twothirds_mask_matches_strict_twothirds_cutoff():
+    """The nonlinear two-thirds mask excludes the |k| = 1/3 shell."""
 
     cfg = GridConfig(Nx=96, Ny=96, Nz=4, Lx=2.0 * jnp.pi, Ly=96.0)
     grid = build_spectral_grid(cfg)
