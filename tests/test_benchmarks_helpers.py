@@ -135,7 +135,10 @@ def test_split_benchmark_helper_reexports_preserve_public_import_identity() -> N
         benchmark_helpers.compare_cyclone_to_reference
         is benchmark_reference.compare_cyclone_to_reference
     )
-    assert benchmark_helpers._reference_hypercollision_power is benchmark_species._reference_hypercollision_power
+    assert (
+        benchmark_helpers._reference_hypercollision_power
+        is benchmark_species._reference_hypercollision_power
+    )
     assert (
         benchmark_helpers._apply_reference_hypercollisions
         is benchmark_species._apply_reference_hypercollisions
@@ -266,9 +269,16 @@ def test_linked_boundary_end_damping_and_midplane_index() -> None:
 
 
 def test_select_kbm_solver_auto() -> None:
-    assert select_kbm_solver_auto("time", ky_target=0.2, gx_reference=True) == "time"
-    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "explicit_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.7, gx_reference=False) == "time"
+    assert (
+        select_kbm_solver_auto("time", ky_target=0.2, reference_aligned=True) == "time"
+    )
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.3, reference_aligned=True)
+        == "explicit_time"
+    )
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.7, reference_aligned=False) == "time"
+    )
 
 
 def test_select_fit_signal_and_auto(monkeypatch) -> None:
@@ -875,12 +885,15 @@ def test_build_initial_condition_field_map_and_zonal_mode_safety() -> None:
 
 def test_kinetic_init_and_kbm_target_helpers() -> None:
     default_init = KineticBaseConfig().init
-    replaced = _kinetic_reference_init_cfg(default_init, gx_reference=True)
+    replaced = _kinetic_reference_init_cfg(default_init, reference_aligned=True)
     assert replaced.init_amp == pytest.approx(1.0e-3)
     assert replaced.gaussian_init is False
-    assert _kinetic_reference_init_cfg(default_init, gx_reference=False) == default_init
+    assert (
+        _kinetic_reference_init_cfg(default_init, reference_aligned=False)
+        == default_init
+    )
     custom = InitializationConfig(init_field="upar", init_amp=2.0)
-    assert _kinetic_reference_init_cfg(custom, gx_reference=True) == custom
+    assert _kinetic_reference_init_cfg(custom, reference_aligned=True) == custom
 
     kcfg = KrylovConfig(
         method="shift_invert", mode_family="kbm", shift_selection="target"

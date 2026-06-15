@@ -110,7 +110,7 @@ Minimal TOML example
 .. code-block:: toml
 
    case = "cyclone"
-   gx_reference = true
+   reference_alignment = true
 
    [grid]
    Nx = 1
@@ -357,7 +357,7 @@ Supported sections include:
 * ``[run]`` (single-ky run settings)
 * ``[scan]`` (ky scan settings)
 * ``[fit]`` (growth-rate windowing options)
-* ``gx_reference`` (top-level flag or ``[gx_reference] enabled = true`` to
+* ``reference_alignment`` (top-level flag or ``[reference_alignment] enabled = true`` to
   enforce the tracked comparison defaults)
 * ``[terms]`` (toggle linear terms)
 * ``[krylov]`` (Krylov solver settings)

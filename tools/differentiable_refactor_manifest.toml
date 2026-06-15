@@ -207,8 +207,8 @@ facade_module = "spectraxgk.benchmark_helpers"
 status = "active"
 responsibility = "benchmark solver-selection, KBM branch policy, and mode-index helpers"
 moved_exports = [
-  "KBM_GX_SOLVER_LOCK",
-  "KBM_GX_SOLVER_LOCK_TOL",
+  "KBM_EXPLICIT_SOLVER_LOCK",
+  "KBM_EXPLICIT_SOLVER_LOCK_TOL",
   "_kbm_use_multi_target_krylov",
   "_midplane_index",
   "select_kbm_solver_auto",

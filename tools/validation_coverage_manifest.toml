@@ -974,7 +974,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "shift-invert and propagator defaults remain immutable dataclass policies",
-  "GX-reference kinetic-electron default differs only by documented shift source",
+  "reference-aligned kinetic-electron default differs only by documented shift source",
 ]
 fast_tests = [
   "tests/test_normalization.py",

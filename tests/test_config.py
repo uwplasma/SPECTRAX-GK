@@ -22,12 +22,19 @@ def test_config_to_dict():
     """All config dataclasses should serialize to dictionaries."""
     cfg = CycloneBaseCase()
     d = cfg.to_dict()
-    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init", "gx_reference"}
+    assert set(d.keys()) == {
+        "grid",
+        "time",
+        "geometry",
+        "model",
+        "init",
+        "reference_alignment",
+    }
     assert d["geometry"]["q"] == cfg.geometry.q
     assert d["grid"]["y0"] == 20.0
     assert d["grid"]["ntheta"] == 32
     assert d["grid"]["nperiod"] == 2
-    assert d["gx_reference"]["enabled"] is True
+    assert d["reference_alignment"]["enabled"] is True
 
 
 def test_config_override():
@@ -61,8 +68,8 @@ def test_kinetic_config_to_dict():
     assert d["model"]["R_over_LTi"] == cfg.model.R_over_LTi
 
 
-def test_gx_reference_mass_ratio_defaults() -> None:
-    """GX-aligned benchmark defaults should use the conventional GX electron mass."""
+def test_reference_aligned_mass_ratio_defaults() -> None:
+    """Reference-aligned benchmark defaults should use the tracked electron mass."""
 
     for cfg in (ETGBaseCase(), KineticElectronBaseCase(), KBMBaseCase()):
         assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)

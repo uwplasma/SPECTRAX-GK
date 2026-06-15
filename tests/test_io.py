@@ -7,30 +7,30 @@ from pathlib import Path
 from spectraxgk.io import load_case_from_toml, load_linear_terms_from_toml
 
 
-def test_load_case_from_toml_gx_reference_flag(tmp_path: Path) -> None:
+def test_load_case_from_toml_reference_alignment_flag(tmp_path: Path) -> None:
     toml = """
 case = "cyclone"
-gx_reference = true
+reference_alignment = true
 """
     path = tmp_path / "case.toml"
     path.write_text(toml, encoding="utf-8")
     case_name, cfg, _data = load_case_from_toml(path)
     assert case_name == "cyclone"
-    assert getattr(cfg, "gx_reference", False) is True
+    assert cfg.reference_aligned is True
 
 
-def test_load_case_from_toml_gx_reference_table(tmp_path: Path) -> None:
+def test_load_case_from_toml_reference_alignment_table(tmp_path: Path) -> None:
     toml = """
 case = "cyclone"
 
-[gx_reference]
+[reference_alignment]
 enabled = false
 """
     path = tmp_path / "case.toml"
     path.write_text(toml, encoding="utf-8")
     case_name, cfg, _data = load_case_from_toml(path)
     assert case_name == "cyclone"
-    assert getattr(cfg, "gx_reference", True) is False
+    assert cfg.reference_aligned is False
 
 
 def test_load_linear_terms_ignores_nonlinear_only_keys() -> None:

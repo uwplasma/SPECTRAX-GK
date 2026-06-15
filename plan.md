@@ -6,6 +6,15 @@
   and focused runtime/benchmark tests now use the numerics-based
   `explicit_time` name.
 
+- 2026-06-15: Continued benchmark/config naming cleanup by replacing the
+  legacy top-level `gx_reference` TOML/config spelling with
+  `reference_alignment` / `reference_aligned`. The neutral name now appears in
+  Cyclone, KBM, and kinetic benchmark APIs, config serialization, input docs,
+  and refactor manifests. Old-name compatibility is bounded to explicit
+  benchmark/comparison runner keyword handling, while comparison tools keep
+  direct reference-code names only where they operate on external reference
+  files.
+
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
   names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart

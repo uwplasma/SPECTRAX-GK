@@ -28,7 +28,7 @@ from spectraxgk.benchmarks import (
     ETG_RHO_STAR,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
-    KINETIC_KRYLOV_GX_REFERENCE,
+    KINETIC_KRYLOV_REFERENCE_ALIGNED,
     ETG_KRYLOV_DEFAULT,
     KBM_KRYLOV_DEFAULT,
     TEM_KRYLOV_DEFAULT,
@@ -62,7 +62,10 @@ from spectraxgk.config import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, integrate_linear_explicit
+from spectraxgk.explicit_time_integrators import (
+    ExplicitTimeConfig,
+    integrate_linear_explicit,
+)
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.analysis import (
@@ -87,7 +90,7 @@ ETG_GX_MISMATCH_DT = 0.01
 ETG_GX_MISMATCH_STEPS = 800
 
 CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
-KINETIC_KRYLOV = KINETIC_KRYLOV_GX_REFERENCE
+KINETIC_KRYLOV = KINETIC_KRYLOV_REFERENCE_ALIGNED
 ETG_KRYLOV = ETG_KRYLOV_DEFAULT
 ETG_KRYLOV_LOW = KrylovConfig(
     method="propagator",
@@ -105,7 +108,6 @@ ETG_KRYLOV_LOW = KrylovConfig(
 )
 KBM_KRYLOV = KBM_KRYLOV_DEFAULT
 TEM_KRYLOV = TEM_KRYLOV_DEFAULT
-
 
 
 def _build_rows(scan, ref):
@@ -139,7 +141,9 @@ def _rows_from_reference_columns(
     return rows
 
 
-def _kbm_public_rows_from_gx_mismatch(csv_path: Path, lowky_ckpt_path: Path | None = None) -> list[str]:
+def _kbm_public_rows_from_gx_mismatch(
+    csv_path: Path, lowky_ckpt_path: Path | None = None
+) -> list[str]:
     with csv_path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         rows = list(reader)
@@ -154,8 +158,12 @@ def _kbm_public_rows_from_gx_mismatch(csv_path: Path, lowky_ckpt_path: Path | No
             current = by_ky.get(ky_val)
             if current is None:
                 continue
-            current_score = abs(float(current["rel_gamma"])) + abs(float(current["rel_omega"]))
-            candidate_score = abs(float(row["rel_gamma"])) + abs(float(row["rel_omega"]))
+            current_score = abs(float(current["rel_gamma"])) + abs(
+                float(current["rel_omega"])
+            )
+            candidate_score = abs(float(row["rel_gamma"])) + abs(
+                float(row["rel_omega"])
+            )
             if candidate_score + 1.0e-12 >= current_score:
                 continue
             by_ky[ky_val] = {
@@ -199,7 +207,11 @@ def _write_kbm_public_mismatch_table(
     kbm_lowky_ckpt = outdir / "kbm_probe_lowky_ckpt.csv"
     if kbm_gx_mismatch.exists():
         kbm_table.write_text(
-            "\n".join(_kbm_public_rows_from_gx_mismatch(kbm_gx_mismatch, lowky_ckpt_path=kbm_lowky_ckpt))
+            "\n".join(
+                _kbm_public_rows_from_gx_mismatch(
+                    kbm_gx_mismatch, lowky_ckpt_path=kbm_lowky_ckpt
+                )
+            )
             + "\n",
             encoding="utf-8",
         )
@@ -209,7 +221,9 @@ def _write_kbm_public_mismatch_table(
     kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
     kbm_cfg = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(
+            Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2
+        )
     )
     kbm_time_cfg = TimeConfig(
         t_max=3.0,
@@ -233,7 +247,11 @@ def _write_kbm_public_mismatch_table(
         tmin=None,
         tmax=None,
         auto_window=True,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": kbm_time_cfg},
+        run_kwargs={
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+            "time_cfg": kbm_time_cfg,
+        },
         label="KBM mismatch",
         ref=kbm_ref,
         verbose=verbose,
@@ -245,13 +263,17 @@ def _write_kbm_public_mismatch_table(
         stiff_spot_check_replace=stiff_spot_replace,
     )
     kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
-    kbm_table.write_text("\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8")
+    kbm_table.write_text(
+        "\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8"
+    )
 
 
 def _cyclone_refresh_grid(ref: LinearScanResult) -> GridConfig:
     nky = int(np.asarray(ref.ky).size)
     if nky < 2:
-        raise ValueError("Cyclone reference must contain at least two positive ky points")
+        raise ValueError(
+            "Cyclone reference must contain at least two positive ky points"
+        )
     return GridConfig(
         Nx=1,
         Ny=3 * (nky - 1) + 1,
@@ -396,7 +418,9 @@ def _scan_linear_verbose(
     if run_kwargs:
         _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
     if tmin is not None or tmax is not None:
-        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+        _log(
+            f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress
+        )
 
     gammas: list[float] = []
     omegas: list[float] = []
@@ -417,12 +441,14 @@ def _scan_linear_verbose(
         tmin_i = _window_value(tmin, i)
         tmax_i = _window_value(tmax, i)
         _log(
-            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i * steps_i:.4g}",
             verbose=verbose,
             use_tqdm=progress,
         )
         extra = dict(base_extra)
-        krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
+        krylov_cfg_use = (
+            krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
+        )
         try:
             result = run_linear_fn(
                 ky_target=float(ky),
@@ -456,8 +482,12 @@ def _scan_linear_verbose(
             idx = int(np.argmin(np.abs(ref.ky - ky_val)))
             gamma_ref = float(ref.gamma[idx])
             omega_ref = float(ref.omega[idx])
-            rel_gamma = (gamma_val - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-            rel_omega = (omega_val - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            rel_gamma = (
+                (gamma_val - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+            )
+            rel_omega = (
+                (omega_val - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            )
             mismatch_scores.append(float(np.nanmax(np.abs([rel_gamma, rel_omega]))))
             ref_pairs.append((gamma_ref, omega_ref))
             msg += (
@@ -523,10 +553,26 @@ def _scan_linear_verbose(
                 )
                 gamma_i = float(spot.gamma)
                 omega_i = float(spot.omega)
-                rel_k = abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-                rel_i = abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-                relw_k = abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
-                relw_i = abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+                rel_k = (
+                    abs((gamma_k - gamma_ref) / gamma_ref)
+                    if gamma_ref != 0.0
+                    else np.inf
+                )
+                rel_i = (
+                    abs((gamma_i - gamma_ref) / gamma_ref)
+                    if gamma_ref != 0.0
+                    else np.inf
+                )
+                relw_k = (
+                    abs((omega_k - omega_ref) / omega_ref)
+                    if omega_ref != 0.0
+                    else np.inf
+                )
+                relw_i = (
+                    abs((omega_i - omega_ref) / omega_ref)
+                    if omega_ref != 0.0
+                    else np.inf
+                )
                 _log(
                     f"[{label}] ky={ky_val:.4g} krylov(g={gamma_k:.4g}, w={omega_k:.4g}) "
                     f"implicit(g={gamma_i:.4g}, w={omega_i:.4g}) "
@@ -584,7 +630,9 @@ def _scan_kbm_verbose(
     if run_kwargs:
         _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
     if tmin is not None or tmax is not None:
-        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+        _log(
+            f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress
+        )
 
     gammas: list[float] = []
     omegas: list[float] = []
@@ -601,7 +649,7 @@ def _scan_kbm_verbose(
         tmin_i = _window_value(tmin, i)
         tmax_i = _window_value(tmax, i)
         _log(
-            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i * steps_i:.4g}",
             verbose=verbose,
             use_tqdm=progress,
         )
@@ -628,7 +676,9 @@ def _scan_kbm_verbose(
         gammas.append(gamma)
         omegas.append(omega)
         beta_out.append(float(beta))
-        msg = f"[{label}] done beta={float(beta):.4g} gamma={gamma:.6g} omega={omega:.6g}"
+        msg = (
+            f"[{label}] done beta={float(beta):.4g} gamma={gamma:.6g} omega={omega:.6g}"
+        )
         if ref is not None:
             idx = int(np.argmin(np.abs(ref.ky - beta)))
             gamma_ref = float(ref.gamma[idx])
@@ -699,10 +749,18 @@ def _scan_kbm_verbose(
             )
             gamma_i = float(spot.gamma[0])
             omega_i = float(spot.omega[0])
-            rel_k = abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-            rel_i = abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-            relw_k = abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
-            relw_i = abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+            rel_k = (
+                abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+            )
+            rel_i = (
+                abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+            )
+            relw_k = (
+                abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+            )
+            relw_i = (
+                abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+            )
             _log(
                 f"[{label}] beta={beta_val:.4g} krylov(g={gamma_k:.4g}, w={omega_k:.4g}) "
                 f"implicit(g={gamma_i:.4g}, w={omega_i:.4g}) "
@@ -948,7 +1006,9 @@ def _cyclone_gx_scan(
         ky_out.append(ky_val)
         gammas.append(float(gamma))
         omegas.append(float(omega))
-    return LinearScanResult(ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas))
+    return LinearScanResult(
+        ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas)
+    )
 
 
 def _cyclone_reference_mismatch_scan(
@@ -966,7 +1026,9 @@ def _cyclone_reference_mismatch_scan(
         use_tqdm=progress,
     )
     _log(f"Window params: {WINDOWS['cyclone']}", verbose=verbose, use_tqdm=progress)
-    steps = _scale_steps(np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000)
+    steps = _scale_steps(
+        np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000
+    )
     scan = run_cyclone_scan(
         np.asarray(ref.ky),
         cfg=cfg,
@@ -981,8 +1043,12 @@ def _cyclone_reference_mismatch_scan(
         idx = int(np.argmin(np.abs(ref.ky - ky_val)))
         gamma_ref = float(ref.gamma[idx])
         omega_ref = float(ref.omega[idx])
-        rel_gamma = (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-        rel_omega = (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        rel_gamma = (
+            (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        )
+        rel_omega = (
+            (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        )
         _log(
             f"[Cyclone mismatch] done ky={float(ky_val):.4g} gamma={float(gamma_val):.6g} omega={float(omega_val):.6g}"
             f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
@@ -990,7 +1056,11 @@ def _cyclone_reference_mismatch_scan(
             verbose=verbose,
             use_tqdm=progress,
         )
-    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
+    return LinearScanResult(
+        ky=np.asarray(scan.ky),
+        gamma=np.asarray(scan.gamma),
+        omega=np.asarray(scan.omega),
+    )
 
 
 def _etg_reference_mismatch_scan(
@@ -1027,8 +1097,12 @@ def _etg_reference_mismatch_scan(
         idx = int(np.argmin(np.abs(ref.ky - ky_val)))
         gamma_ref = float(ref.gamma[idx])
         omega_ref = float(ref.omega[idx])
-        rel_gamma = (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-        rel_omega = (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        rel_gamma = (
+            (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        )
+        rel_omega = (
+            (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        )
         _log(
             f"[ETG mismatch] done ky={float(ky_val):.4g} gamma={float(gamma_val):.6g} omega={float(omega_val):.6g}"
             f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
@@ -1043,7 +1117,9 @@ def _etg_reference_mismatch_scan(
     )
 
 
-def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
+def _scale_steps(
+    ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int
+) -> np.ndarray:
     scale = ky_ref / np.maximum(ky, 1.0e-6)
     steps = base_steps * np.maximum(1.0, scale)
     return np.clip(steps.astype(int), base_steps, max_steps)
@@ -1137,7 +1213,9 @@ def _run_etg_gx_growth(
     charge = np.atleast_1d(np.asarray(params.charge_sign))
     ns = int(charge.size)
     electron_index = int(np.argmin(charge))
-    G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0 = np.zeros(
+        (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+    )
     G0[electron_index] = np.asarray(G0_single, dtype=np.complex64)
     t, phi_t, _gamma_t, _omega_t = integrate_linear_explicit(
         G0,
@@ -1145,7 +1223,9 @@ def _run_etg_gx_growth(
         cache,
         params,
         geom,
-        ExplicitTimeConfig(dt=dt, t_max=dt * float(steps), sample_stride=max(1, sample_stride)),
+        ExplicitTimeConfig(
+            dt=dt, t_max=dt * float(steps), sample_stride=max(1, sample_stride)
+        ),
         terms=LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
         mode_method="z_index",
     )
@@ -1300,7 +1380,9 @@ def _run_kinetic_tables(
 ) -> None:
     kinetic_ref = load_cyclone_reference_kinetic()
     kinetic_ny = 2 * int(kinetic_ref.ky.size) + 1
-    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
+    kinetic_steps = _scale_steps(
+        kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000
+    )
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_ttotal = kinetic_dt * kinetic_steps
     kinetic_tmin = 0.6 * kinetic_ttotal
