@@ -1772,6 +1772,163 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_candidate"
+path = "src/spectraxgk/nonlinear_gradient_followup_candidate.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "bounded follow-up planning after failed long-window nonlinear turbulence-gradient finite-difference gates",
+  "post-transient turbulent-transport uncertainty reduction should target only local and response-resolved candidates",
+]
+physics_contracts = [
+  "candidate-design reports are campaign planning artifacts and never promote nonlinear-gradient evidence",
+  "extra replicas are recommended only for local response-resolved candidates; nonlocal or unresolved responses require bracket/control redesign",
+]
+numerics_contracts = [
+  "replicate estimates use explicit 1/sqrt(N) SEM scaling with safety factors and locality-capped bracket scales",
+  "malformed metadata, failed spread states, and impossible bracket scales produce explicit blockers rather than launch commands",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.png",
+]
+next_tests = [
+  "add a direct candidate-design regression for locality-safe bracket scaling with zero asymmetry",
+  "add a malformed source-ensemble regression where variance spread blocks replica-only follow-up",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_composite"
+path = "src/spectraxgk/nonlinear_gradient_followup_composite.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-control VMEC-boundary follow-up directions for nonlinear turbulence-gradient campaigns",
+  "finite-difference candidate screening before composite profile-direction launches",
+]
+physics_contracts = [
+  "composite controls require resolved, local, uncertainty-bounded, sign-robust finite-difference candidates",
+  "single-control or zero-gradient candidates cannot be silently promoted into a multi-coefficient nonlinear-gradient launch",
+]
+numerics_contracts = [
+  "control weights are normalized by the largest admissible descent-gradient magnitude",
+  "coefficient parsing, paired-sign robustness, and finite metric gates all fail closed with row-level blockers",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_composite_control_design.json",
+  "docs/_static/nonlinear_gradient_composite_control_design.png",
+]
+next_tests = [
+  "add a composite-control regression for mixed admissible and nonadmissible coefficients",
+  "add a zero-descent-gradient regression that blocks launch command generation",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_plan"
+path = "src/spectraxgk/nonlinear_gradient_followup_plan.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "matched seed/timestep replicate planning for nonlinear finite-difference turbulence gradients",
+  "bounded GPU campaign generation only after response and locality gates pass",
+]
+physics_contracts = [
+  "matched-replicate follow-up is allowed only for local but statistically unresolved long-window gradient candidates",
+  "passed candidates freeze provenance and nonlocal or unresolved candidates are redirected to bracket/control redesign",
+]
+numerics_contracts = [
+  "planned runs preserve baseline/plus/minus state matching and deterministic next-seed assignment",
+  "SEM-based replicate counts respect configured maximum extra replicates per state and fail closed without source replicate metadata",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.png",
+]
+next_tests = [
+  "add a matched-run planning regression that preserves existing timestep replicate labels",
+  "add a no-source-ensemble regression that blocks launching nominal seed replicas",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_ql_seed"
+path = "src/spectraxgk/nonlinear_gradient_followup_ql_seed.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "QL/linear sensitivity screens for selecting VMEC-state controls before nonlinear turbulence-gradient campaigns",
+  "AD/FD consistency and sign-robustness gates before spending nonlinear GPU runs",
+]
+physics_contracts = [
+  "QL/linear seed screens admit upstream VMEC-state controls only and do not claim nonlinear transport-gradient evidence",
+  "state controls require resolved primary-objective sensitivity with enough cross-case sign consistency before nonlinear launch planning",
+]
+numerics_contracts = [
+  "AD/FD relative-error gates, minimum absolute sensitivity, case coverage, and sign-consistency thresholds must all pass",
+  "primary objective membership and metadata length checks raise or fail closed before producing admitted controls",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_ql_seed_screen.json",
+  "docs/_static/nonlinear_gradient_ql_seed_screen.png",
+]
+next_tests = [
+  "add a QL seed-screen regression with conflicting sign across equal-magnitude artifacts",
+  "add a mixed-objective regression proving non-primary objectives cannot admit controls alone",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_state_runbook"
+path = "src/spectraxgk/nonlinear_gradient_followup_state_runbook.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-state to perturbable input-control mapping before nonlinear turbulence-gradient launches",
+  "conditioned state-to-input Jacobian gates for differentiable stellarator optimization campaigns",
+]
+physics_contracts = [
+  "a passed QL seed screen is upstream evidence only; nonlinear launch commands require explicit state-to-input mappings",
+  "mapped controls are launch-ready only when mapping artifacts pass condition-number, residual, and input-control availability gates",
+]
+numerics_contracts = [
+  "mapping condition number and relative residual are parsed as finite JSON-safe metrics before command fragments are emitted",
+  "failed parent artifacts, missing input controls, and missing mapping rows remain visible as row-level blockers",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_state_control_runbook.json",
+  "docs/_static/nonlinear_gradient_state_control_runbook.png",
+]
+next_tests = [
+  "add a state-runbook regression for two mapping artifacts where a later passing row supersedes a failed row",
+  "add a condition-number boundary regression for exact-threshold mapping acceptance",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_gradient_followup_variance"
 path = "src/spectraxgk/nonlinear_gradient_followup_variance.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"

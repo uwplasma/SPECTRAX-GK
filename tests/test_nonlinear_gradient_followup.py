@@ -22,7 +22,12 @@ from spectraxgk.nonlinear_gradient_followup import (
     nonlinear_gradient_variance_reduction_plan,
 )
 import spectraxgk.nonlinear_gradient_followup as nonlinear_gradient_followup
+import spectraxgk.nonlinear_gradient_followup_candidate as nonlinear_gradient_followup_candidate
+import spectraxgk.nonlinear_gradient_followup_composite as nonlinear_gradient_followup_composite
 import spectraxgk.nonlinear_gradient_followup_core as nonlinear_gradient_followup_core
+import spectraxgk.nonlinear_gradient_followup_plan as nonlinear_gradient_followup_plan_module
+import spectraxgk.nonlinear_gradient_followup_ql_seed as nonlinear_gradient_followup_ql_seed
+import spectraxgk.nonlinear_gradient_followup_state_runbook as nonlinear_gradient_followup_state_runbook
 import spectraxgk.nonlinear_gradient_followup_variance as nonlinear_gradient_followup_variance
 
 
@@ -53,8 +58,6 @@ def test_nonlinear_gradient_followup_facade_reexports_core_helpers() -> None:
         )
 
 
-
-
 def test_nonlinear_gradient_followup_facade_reexports_variance_reports() -> None:
     assert (
         nonlinear_gradient_followup.nonlinear_gradient_variance_reduction_plan
@@ -69,8 +72,54 @@ def test_nonlinear_gradient_followup_facade_reexports_variance_reports() -> None
         is nonlinear_gradient_followup_variance.nonlinear_gradient_control_mean_gate
     )
 
+
+def test_nonlinear_gradient_followup_facade_reexports_report_modules() -> None:
+    assert (
+        nonlinear_gradient_followup._design_row
+        is nonlinear_gradient_followup_candidate._design_row
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_candidate_design_report
+        is nonlinear_gradient_followup_candidate.nonlinear_gradient_candidate_design_report
+    )
+    assert (
+        nonlinear_gradient_followup._composite_control_row
+        is nonlinear_gradient_followup_composite._composite_control_row
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_composite_control_report
+        is nonlinear_gradient_followup_composite.nonlinear_gradient_composite_control_report
+    )
+    assert (
+        nonlinear_gradient_followup._required_replicates
+        is nonlinear_gradient_followup_plan_module._required_replicates
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_followup_plan
+        is nonlinear_gradient_followup_plan_module.nonlinear_gradient_followup_plan
+    )
+    assert (
+        nonlinear_gradient_followup._ql_seed_rows
+        is nonlinear_gradient_followup_ql_seed._ql_seed_rows
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_ql_seed_screen_report
+        is nonlinear_gradient_followup_ql_seed.nonlinear_gradient_ql_seed_screen_report
+    )
+    assert (
+        nonlinear_gradient_followup._mapping_control_rows
+        is nonlinear_gradient_followup_state_runbook._mapping_control_rows
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_state_control_runbook_report
+        is nonlinear_gradient_followup_state_runbook.nonlinear_gradient_state_control_runbook_report
+    )
+
+
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("plan_nonlinear_gradient_followup", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "plan_nonlinear_gradient_followup", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -79,7 +128,9 @@ def _load_tool_module():
     return module
 
 
-def _ensemble(state: str, means: tuple[float, float, float] = (1.0, 1.1, 0.9)) -> dict[str, object]:
+def _ensemble(
+    state: str, means: tuple[float, float, float] = (1.0, 1.1, 0.9)
+) -> dict[str, object]:
     return {
         "kind": "nonlinear_window_ensemble_report",
         "passed": True,
@@ -120,7 +171,9 @@ def _artifact(
     }
 
 
-def test_followup_plan_adds_only_targeted_replicates_for_local_noisy_candidate() -> None:
+def test_followup_plan_adds_only_targeted_replicates_for_local_noisy_candidate() -> (
+    None
+):
     report = nonlinear_gradient_followup_plan(
         [_artifact()],
         labels=["rbc"],
@@ -141,7 +194,9 @@ def test_followup_plan_adds_only_targeted_replicates_for_local_noisy_candidate()
     assert {row["variant_label"] for row in report["planned_runs"]} == {"seed33"}
 
 
-def test_followup_plan_does_not_add_replicates_for_nonlocal_or_unresolved_candidates() -> None:
+def test_followup_plan_does_not_add_replicates_for_nonlocal_or_unresolved_candidates() -> (
+    None
+):
     report = nonlinear_gradient_followup_plan(
         [
             _artifact(asymmetry=0.75, uncertainty=0.20),
@@ -151,7 +206,9 @@ def test_followup_plan_does_not_add_replicates_for_nonlocal_or_unresolved_candid
     )
 
     assert report["summary"]["planned_run_count"] == 0
-    assert report["candidate_actions"][0]["action"] == "shrink_bracket_or_replace_control"
+    assert (
+        report["candidate_actions"][0]["action"] == "shrink_bracket_or_replace_control"
+    )
     assert (
         report["candidate_actions"][1]["action"]
         == "replace_control_or_increase_checked_bracket"
@@ -195,10 +252,15 @@ def test_followup_plan_recovers_missing_replicate_metadata() -> None:
 
     assert report["summary"]["planned_run_count"] == 0
     assert report["candidate_actions"][0]["action"] == "recover_replicate_metadata"
-    assert report["candidate_actions"][0]["estimated_required_replicates_per_state"] is None
+    assert (
+        report["candidate_actions"][0]["estimated_required_replicates_per_state"]
+        is None
+    )
 
 
-def test_followup_plan_handles_scalar_pass_without_artifact_pass_and_empty_inputs() -> None:
+def test_followup_plan_handles_scalar_pass_without_artifact_pass_and_empty_inputs() -> (
+    None
+):
     scalar_ok = _artifact(response=0.08, asymmetry=0.3, uncertainty=0.2, passed=False)
 
     report = nonlinear_gradient_followup_plan([scalar_ok])
@@ -248,7 +310,10 @@ def test_followup_plan_covers_fallback_metadata_and_metric_sources() -> None:
     candidate = report["candidate_actions"][0]
     assert candidate["action"] == "add_matched_nominal_seed_replicates"
     assert candidate["current_replicates_per_state"] == 1
-    assert {row["state"] for row in candidate["planned_runs"]} == {"baseline", "plus_delta"}
+    assert {row["state"] for row in candidate["planned_runs"]} == {
+        "baseline",
+        "plus_delta",
+    }
     assert {row["variant_label"] for row in candidate["planned_runs"]} == {"seed31"}
 
 
@@ -295,7 +360,9 @@ def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> No
     assert payload["summary"]["planned_run_count"] == 3
 
 
-def test_plan_nonlinear_gradient_followup_tool_hydrates_compact_ensembles(tmp_path: Path) -> None:
+def test_plan_nonlinear_gradient_followup_tool_hydrates_compact_ensembles(
+    tmp_path: Path,
+) -> None:
     tool = _load_tool_module()
     artifact_payload = _artifact(uncertainty=0.56)
     for state in ("baseline", "plus", "minus"):
@@ -358,7 +425,9 @@ def test_candidate_design_reports_infeasible_rbc_like_followup() -> None:
     assert row["estimated_extra_replicates_at_locality_limit"] > 4
 
 
-def test_candidate_design_distinguishes_bracket_ready_replicate_ready_and_invalid() -> None:
+def test_candidate_design_distinguishes_bracket_ready_replicate_ready_and_invalid() -> (
+    None
+):
     bracket_ready = _artifact(response=0.08, asymmetry=0.20, uncertainty=0.60)
     replicate_ready = _artifact(response=0.08, asymmetry=0.48, uncertainty=0.54)
     promoted = _artifact(response=0.08, asymmetry=0.20, uncertainty=0.20, passed=True)
@@ -383,27 +452,55 @@ def test_candidate_design_distinguishes_bracket_ready_replicate_ready_and_invali
     with pytest.raises(ValueError, match="max_checked_bracket_scale"):
         nonlinear_gradient_candidate_design_report(
             [bracket_ready],
-            config=NonlinearGradientCandidateDesignConfig(max_checked_bracket_scale=0.9),
+            config=NonlinearGradientCandidateDesignConfig(
+                max_checked_bracket_scale=0.9
+            ),
         )
     with pytest.raises(ValueError, match="paths length"):
         nonlinear_gradient_candidate_design_report([bracket_ready], paths=[None, None])
 
     validation_cases = [
-        ("max_gradient_uncertainty_rel", NonlinearGradientCandidateDesignConfig(max_gradient_uncertainty_rel=0.0)),
-        ("max_fd_asymmetry_rel", NonlinearGradientCandidateDesignConfig(max_fd_asymmetry_rel=0.0)),
-        ("max_window_mean_rel_spread", NonlinearGradientCandidateDesignConfig(max_window_mean_rel_spread=0.0)),
-        ("max_window_sem_rel", NonlinearGradientCandidateDesignConfig(max_window_sem_rel=0.0)),
-        ("min_fd_response_fraction", NonlinearGradientCandidateDesignConfig(min_fd_response_fraction=0.0)),
-        ("sem_safety_factor", NonlinearGradientCandidateDesignConfig(sem_safety_factor=0.0)),
-        ("max_extra_replicates_per_state", NonlinearGradientCandidateDesignConfig(max_extra_replicates_per_state=-1)),
-        ("locality_safety_factor", NonlinearGradientCandidateDesignConfig(locality_safety_factor=0.0)),
+        (
+            "max_gradient_uncertainty_rel",
+            NonlinearGradientCandidateDesignConfig(max_gradient_uncertainty_rel=0.0),
+        ),
+        (
+            "max_fd_asymmetry_rel",
+            NonlinearGradientCandidateDesignConfig(max_fd_asymmetry_rel=0.0),
+        ),
+        (
+            "max_window_mean_rel_spread",
+            NonlinearGradientCandidateDesignConfig(max_window_mean_rel_spread=0.0),
+        ),
+        (
+            "max_window_sem_rel",
+            NonlinearGradientCandidateDesignConfig(max_window_sem_rel=0.0),
+        ),
+        (
+            "min_fd_response_fraction",
+            NonlinearGradientCandidateDesignConfig(min_fd_response_fraction=0.0),
+        ),
+        (
+            "sem_safety_factor",
+            NonlinearGradientCandidateDesignConfig(sem_safety_factor=0.0),
+        ),
+        (
+            "max_extra_replicates_per_state",
+            NonlinearGradientCandidateDesignConfig(max_extra_replicates_per_state=-1),
+        ),
+        (
+            "locality_safety_factor",
+            NonlinearGradientCandidateDesignConfig(locality_safety_factor=0.0),
+        ),
     ]
     for message, config in validation_cases:
         with pytest.raises(ValueError, match=message):
             nonlinear_gradient_candidate_design_report([bracket_ready], config=config)
 
     with pytest.raises(ValueError, match="labels length"):
-        nonlinear_gradient_candidate_design_report([bracket_ready], labels=["one", "two"])
+        nonlinear_gradient_candidate_design_report(
+            [bracket_ready], labels=["one", "two"]
+        )
 
 
 def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
@@ -413,9 +510,15 @@ def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
     nonlocal_artifact = _artifact(response=0.08, asymmetry=0.7, uncertainty=0.2)
     inspect = _artifact(response=0.08, asymmetry=0.2, uncertainty=0.2, passed=False)
 
-    assert nonlinear_gradient_candidate_design_report([bracket_ready])["next_action"].startswith("run a bounded")
-    assert nonlinear_gradient_candidate_design_report([replicate_ready])["next_action"].startswith("combine")
-    actions = nonlinear_gradient_candidate_design_report([unresolved, nonlocal_artifact, inspect])["candidates"]
+    assert nonlinear_gradient_candidate_design_report([bracket_ready])[
+        "next_action"
+    ].startswith("run a bounded")
+    assert nonlinear_gradient_candidate_design_report([replicate_ready])[
+        "next_action"
+    ].startswith("combine")
+    actions = nonlinear_gradient_candidate_design_report(
+        [unresolved, nonlocal_artifact, inspect]
+    )["candidates"]
     assert [row["action"] for row in actions] == [
         "increase_checked_bracket_or_replace_control",
         "shrink_or_replace_nonlocal_control",
@@ -423,16 +526,33 @@ def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
     ]
 
     zero_asymmetry = _artifact(response=0.08, asymmetry=0.0, uncertainty=0.6)
-    missing_asymmetry = {"metrics": {"response_fraction": 0.08, "gradient_uncertainty_rel": 0.6}}
-    edge_report = nonlinear_gradient_candidate_design_report([zero_asymmetry, missing_asymmetry])
+    missing_asymmetry = {
+        "metrics": {"response_fraction": 0.08, "gradient_uncertainty_rel": 0.6}
+    }
+    edge_report = nonlinear_gradient_candidate_design_report(
+        [zero_asymmetry, missing_asymmetry]
+    )
     assert edge_report["candidates"][0]["locality_safe_bracket_scale_limit"] is None
     assert edge_report["candidates"][1]["usable_bracket_scale_for_estimate"] == 1.2
-    assert nonlinear_gradient_candidate_design_report([])["next_action"].startswith("inspect")
+    assert nonlinear_gradient_candidate_design_report([])["next_action"].startswith(
+        "inspect"
+    )
 
     no_replicates = nonlinear_gradient_candidate_design_report(
-        [{"metrics": {"response_fraction": 0.08, "fd_asymmetry_rel": 0.2, "gradient_uncertainty_rel": 0.6}}]
+        [
+            {
+                "metrics": {
+                    "response_fraction": 0.08,
+                    "fd_asymmetry_rel": 0.2,
+                    "gradient_uncertainty_rel": 0.6,
+                }
+            }
+        ]
     )
-    assert no_replicates["candidates"][0]["estimated_required_replicates_no_bracket"] is None
+    assert (
+        no_replicates["candidates"][0]["estimated_required_replicates_no_bracket"]
+        is None
+    )
 
     no_runs = nonlinear_gradient_followup_plan(
         [_artifact()],
@@ -441,7 +561,9 @@ def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
     assert no_runs["candidate_actions"][0]["planned_run_count"] == 0
 
 
-def test_candidate_design_identifies_limiting_spread_state_for_variance_reduction() -> None:
+def test_candidate_design_identifies_limiting_spread_state_for_variance_reduction() -> (
+    None
+):
     artifact = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
     source_ensembles = artifact["source_ensembles"]
     assert isinstance(source_ensembles, dict)
@@ -455,7 +577,9 @@ def test_candidate_design_identifies_limiting_spread_state_for_variance_reductio
             "combined_sem_rel": 0.05,
         }
 
-    report = nonlinear_gradient_candidate_design_report([artifact], labels=["zbs10_rel7p5"])
+    report = nonlinear_gradient_candidate_design_report(
+        [artifact], labels=["zbs10_rel7p5"]
+    )
     row = report["candidates"][0]
 
     assert row["action"] == "design_variance_reduction_for_limiting_state"
@@ -502,7 +626,9 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
     assert report["summary"]["common_pair_count"] == 4
     assert report["summary"]["common_with_baseline_count"] == 4
     assert report["summary"]["paired_response_uncertainty_rel"] > 0.5
-    assert report["summary"]["best_control_variate"] == "plus_minus_midpoint_common_mode"
+    assert (
+        report["summary"]["best_control_variate"] == "plus_minus_midpoint_common_mode"
+    )
     midpoint = report["control_variate_candidates"][1]
     assert midpoint["adjusted_response_uncertainty_rel"] < 0.5
     assert midpoint["control_sample_std"] > 0.0
@@ -513,7 +639,9 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
 
     allowed = nonlinear_gradient_variance_reduction_plan(
         artifact,
-        config=NonlinearGradientVarianceReductionConfig(require_known_control_mean=False),
+        config=NonlinearGradientVarianceReductionConfig(
+            require_known_control_mean=False
+        ),
     )
     assert allowed["action"] == "use_control_variate_response_estimator"
     assert allowed["passed"] is True
@@ -521,19 +649,34 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
     validation_cases = [
         (
             "max_paired_response_uncertainty_rel",
-            NonlinearGradientVarianceReductionConfig(max_paired_response_uncertainty_rel=0.0),
+            NonlinearGradientVarianceReductionConfig(
+                max_paired_response_uncertainty_rel=0.0
+            ),
         ),
         (
             "max_control_variate_uncertainty_rel",
-            NonlinearGradientVarianceReductionConfig(max_control_variate_uncertainty_rel=0.0),
+            NonlinearGradientVarianceReductionConfig(
+                max_control_variate_uncertainty_rel=0.0
+            ),
         ),
         (
             "min_control_variate_sem_reduction",
-            NonlinearGradientVarianceReductionConfig(min_control_variate_sem_reduction=-0.1),
+            NonlinearGradientVarianceReductionConfig(
+                min_control_variate_sem_reduction=-0.1
+            ),
         ),
-        ("sem_safety_factor", NonlinearGradientVarianceReductionConfig(sem_safety_factor=0.0)),
-        ("min_common_pairs", NonlinearGradientVarianceReductionConfig(min_common_pairs=0)),
-        ("max_extra_paired_seeds", NonlinearGradientVarianceReductionConfig(max_extra_paired_seeds=-1)),
+        (
+            "sem_safety_factor",
+            NonlinearGradientVarianceReductionConfig(sem_safety_factor=0.0),
+        ),
+        (
+            "min_common_pairs",
+            NonlinearGradientVarianceReductionConfig(min_common_pairs=0),
+        ),
+        (
+            "max_extra_paired_seeds",
+            NonlinearGradientVarianceReductionConfig(max_extra_paired_seeds=-1),
+        ),
     ]
     for message, config in validation_cases:
         with pytest.raises(ValueError, match=message):
@@ -579,18 +722,28 @@ def test_control_variate_campaign_plan_requires_independent_control_mean() -> No
     validation_cases = [
         (
             "target_response_uncertainty_rel",
-            NonlinearGradientControlVariateCampaignConfig(target_response_uncertainty_rel=0.0),
+            NonlinearGradientControlVariateCampaignConfig(
+                target_response_uncertainty_rel=0.0
+            ),
         ),
-        ("sem_safety_factor", NonlinearGradientControlVariateCampaignConfig(sem_safety_factor=0.0)),
+        (
+            "sem_safety_factor",
+            NonlinearGradientControlVariateCampaignConfig(sem_safety_factor=0.0),
+        ),
         (
             "min_control_mean_pairs",
             NonlinearGradientControlVariateCampaignConfig(min_control_mean_pairs=0),
         ),
         (
             "max_control_mean_pairs",
-            NonlinearGradientControlVariateCampaignConfig(min_control_mean_pairs=4, max_control_mean_pairs=3),
+            NonlinearGradientControlVariateCampaignConfig(
+                min_control_mean_pairs=4, max_control_mean_pairs=3
+            ),
         ),
-        ("first_new_seed", NonlinearGradientControlVariateCampaignConfig(first_new_seed=-1)),
+        (
+            "first_new_seed",
+            NonlinearGradientControlVariateCampaignConfig(first_new_seed=-1),
+        ),
     ]
     for message, config in validation_cases:
         with pytest.raises(ValueError, match=message):
@@ -667,7 +820,10 @@ def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
             "target_response_uncertainty_rel",
             NonlinearGradientControlMeanGateConfig(target_response_uncertainty_rel=0.0),
         ),
-        ("min_control_mean_pairs", NonlinearGradientControlMeanGateConfig(min_control_mean_pairs=0)),
+        (
+            "min_control_mean_pairs",
+            NonlinearGradientControlMeanGateConfig(min_control_mean_pairs=0),
+        ),
     ]
     for message, config in validation_cases:
         with pytest.raises(ValueError, match=message):
@@ -681,7 +837,9 @@ def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
 
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "build_nonlinear_gradient_variance_reduction_plan.py"
-    spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_variance_reduction_plan", path)
+    spec = importlib.util.spec_from_file_location(
+        "build_nonlinear_gradient_variance_reduction_plan", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -712,25 +870,29 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
 
 def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "write_nonlinear_gradient_control_variate_campaign.py"
-    spec = importlib.util.spec_from_file_location("write_nonlinear_gradient_control_variate_campaign", path)
+    spec = importlib.util.spec_from_file_location(
+        "write_nonlinear_gradient_control_variate_campaign", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 
     out_prefix = tmp_path / "cv_campaign"
-    source = ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    source = (
+        ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    )
     assert module.main([str(source), "--out-prefix", str(out_prefix)]) == 0
 
     report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     rows = out_prefix.with_suffix(".csv").read_text(encoding="utf-8").splitlines()
-    assert report["kind"] == "nonlinear_turbulence_gradient_control_variate_campaign_plan"
+    assert (
+        report["kind"] == "nonlinear_turbulence_gradient_control_variate_campaign_plan"
+    )
     assert report["action"] == "launch_independent_control_mean_campaign"
     assert rows[0].startswith("pair_index,variant_label")
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
-
-
 
 
 def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
@@ -749,7 +911,9 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
         for row in ensemble["rows"]:
             row.pop("variant", None)
             row["source_artifact"] = f"/tmp/interim_seed34_42/{row['source_artifact']}"
-            row["summary_artifact"] = f"/tmp/interim_seed34_42/{row['summary_artifact']}"
+            row["summary_artifact"] = (
+                f"/tmp/interim_seed34_42/{row['summary_artifact']}"
+            )
 
     gate = nonlinear_gradient_control_mean_gate(
         variance,
@@ -764,7 +928,9 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
 
 def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "build_nonlinear_gradient_control_mean_gate.py"
-    spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_control_mean_gate", path)
+    spec = importlib.util.spec_from_file_location(
+        "build_nonlinear_gradient_control_mean_gate", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -774,7 +940,9 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     minus = tmp_path / "minus.json"
     plus.write_text(json.dumps(_control_ensemble("plus")), encoding="utf-8")
     minus.write_text(json.dumps(_control_ensemble("minus")), encoding="utf-8")
-    source = ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    source = (
+        ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    )
     out_prefix = tmp_path / "control_mean_gate"
 
     assert (
@@ -801,9 +969,13 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".pdf").exists()
 
 
-def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path: Path) -> None:
+def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(
+    tmp_path: Path,
+) -> None:
     path = ROOT / "tools" / "design_nonlinear_gradient_next_campaign.py"
-    spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_next_campaign", path)
+    spec = importlib.util.spec_from_file_location(
+        "design_nonlinear_gradient_next_campaign", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -811,7 +983,10 @@ def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path:
 
     artifact = tmp_path / "candidate.json"
     out_prefix = tmp_path / "design"
-    artifact.write_text(json.dumps(_artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)), encoding="utf-8")
+    artifact.write_text(
+        json.dumps(_artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)),
+        encoding="utf-8",
+    )
 
     assert module.main([str(artifact), "--out-prefix", str(out_prefix)]) == 0
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
@@ -823,7 +998,9 @@ def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path:
     assert out_prefix.with_suffix(".pdf").exists()
 
 
-def test_composite_control_report_builds_descent_direction_and_blocks_bad_controls() -> None:
+def test_composite_control_report_builds_descent_direction_and_blocks_bad_controls() -> (
+    None
+):
     rbc = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
     rbc["parameter_name"] = "rbc_1_1"
     rbc["metrics"]["central_gradient"] = -186.95
@@ -836,7 +1013,9 @@ def test_composite_control_report_builds_descent_direction_and_blocks_bad_contro
     zbs["metrics"]["central_gradient"] = 270.7
     zbs["paired_replicate_diagnostics"] = {"same_sign_fraction": 1.0}
 
-    report = nonlinear_gradient_composite_control_report([rbc, zbs], labels=["rbc", "zbs"])
+    report = nonlinear_gradient_composite_control_report(
+        [rbc, zbs], labels=["rbc", "zbs"]
+    )
 
     assert report["passed"] is False
     assert report["summary"]["admissible_control_count"] == 1
@@ -852,9 +1031,10 @@ def test_composite_control_report_builds_descent_direction_and_blocks_bad_contro
     assert ready["passed"] is True
     assert ready["controls"][0]["control_argument"] == "RBC(1,1):1"
     assert ready["controls"][1]["control_argument"] == "ZBS(1,1):-0.5"
-    assert "write_vmec_boundary_profile_perturbation_inputs.py" in ready[
-        "write_profile_direction_command_template"
-    ]
+    assert (
+        "write_vmec_boundary_profile_perturbation_inputs.py"
+        in ready["write_profile_direction_command_template"]
+    )
 
 
 def test_composite_control_report_validates_config_and_metadata() -> None:
@@ -865,17 +1045,37 @@ def test_composite_control_report_validates_config_and_metadata() -> None:
 
     report = nonlinear_gradient_composite_control_report([artifact])
     assert report["controls"] == []
-    assert "parameter_not_vmec_boundary_coefficient" in report["candidates"][0]["blockers"]
+    assert (
+        "parameter_not_vmec_boundary_coefficient" in report["candidates"][0]["blockers"]
+    )
     assert "paired_replicate_sign_not_robust" in report["candidates"][0]["blockers"]
 
     validation_cases = [
-        ("max_gradient_uncertainty_rel", NonlinearGradientCompositeControlConfig(max_gradient_uncertainty_rel=0.0)),
-        ("max_fd_asymmetry_rel", NonlinearGradientCompositeControlConfig(max_fd_asymmetry_rel=0.0)),
-        ("min_fd_response_fraction", NonlinearGradientCompositeControlConfig(min_fd_response_fraction=0.0)),
-        ("min_same_sign_fraction", NonlinearGradientCompositeControlConfig(min_same_sign_fraction=0.0)),
-        ("min_same_sign_fraction", NonlinearGradientCompositeControlConfig(min_same_sign_fraction=1.1)),
+        (
+            "max_gradient_uncertainty_rel",
+            NonlinearGradientCompositeControlConfig(max_gradient_uncertainty_rel=0.0),
+        ),
+        (
+            "max_fd_asymmetry_rel",
+            NonlinearGradientCompositeControlConfig(max_fd_asymmetry_rel=0.0),
+        ),
+        (
+            "min_fd_response_fraction",
+            NonlinearGradientCompositeControlConfig(min_fd_response_fraction=0.0),
+        ),
+        (
+            "min_same_sign_fraction",
+            NonlinearGradientCompositeControlConfig(min_same_sign_fraction=0.0),
+        ),
+        (
+            "min_same_sign_fraction",
+            NonlinearGradientCompositeControlConfig(min_same_sign_fraction=1.1),
+        ),
         ("min_controls", NonlinearGradientCompositeControlConfig(min_controls=0)),
-        ("default_relative_delta", NonlinearGradientCompositeControlConfig(default_relative_delta=0.0)),
+        (
+            "default_relative_delta",
+            NonlinearGradientCompositeControlConfig(default_relative_delta=0.0),
+        ),
         ("max_weight_abs", NonlinearGradientCompositeControlConfig(max_weight_abs=0.0)),
     ]
     for message, config in validation_cases:
@@ -888,9 +1088,13 @@ def test_composite_control_report_validates_config_and_metadata() -> None:
         nonlinear_gradient_composite_control_report([artifact], labels=["one", "two"])
 
 
-def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(tmp_path: Path) -> None:
+def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(
+    tmp_path: Path,
+) -> None:
     path = ROOT / "tools" / "design_nonlinear_gradient_composite_control.py"
-    spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_composite_control", path)
+    spec = importlib.util.spec_from_file_location(
+        "design_nonlinear_gradient_composite_control", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -903,7 +1107,18 @@ def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(tmp_p
     out_prefix = tmp_path / "composite"
     candidate_path.write_text(json.dumps(artifact), encoding="utf-8")
 
-    assert module.main([str(candidate_path), "--out-prefix", str(out_prefix), "--min-controls", "1"]) == 0
+    assert (
+        module.main(
+            [
+                str(candidate_path),
+                "--out-prefix",
+                str(out_prefix),
+                "--min-controls",
+                "1",
+            ]
+        )
+        == 0
+    )
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["kind"] == "nonlinear_turbulence_gradient_composite_control_design"
     assert payload["passed"] is True

@@ -1,3 +1,15 @@
+- 2026-06-15: Completed the nonlinear-gradient follow-up facade split by
+  moving candidate-design, composite-control, matched-replicate follow-up,
+  QL/linear seed-screen, and VMEC-state runbook reports into
+  `spectraxgk.nonlinear_gradient_followup_candidate`,
+  `spectraxgk.nonlinear_gradient_followup_composite`,
+  `spectraxgk.nonlinear_gradient_followup_plan`,
+  `spectraxgk.nonlinear_gradient_followup_ql_seed`, and
+  `spectraxgk.nonlinear_gradient_followup_state_runbook`. The legacy
+  `spectraxgk.nonlinear_gradient_followup` module is now a compatibility
+  facade over core, variance, and report modules, with tests asserting public
+  and test-visible facade identities.
+
 - 2026-06-15: Completed the nonlinear-gradient evidence facade split by moving
   production evidence report assembly and missing-campaign gap reports into
   `spectraxgk.nonlinear_gradient_evidence_gap`. The legacy

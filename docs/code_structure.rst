@@ -144,8 +144,14 @@ Completed extractions:
   ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``,
   ``nonlinear_parallel_device_z.py``
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
-  variance-reduction/control-variate report helpers:
+  candidate design, composite-control, matched-replicate, QL-seed,
+  state-runbook, and variance-reduction/control-variate report helpers:
   ``nonlinear_gradient_followup_core.py``,
+  ``nonlinear_gradient_followup_candidate.py``,
+  ``nonlinear_gradient_followup_composite.py``,
+  ``nonlinear_gradient_followup_plan.py``,
+  ``nonlinear_gradient_followup_ql_seed.py``,
+  ``nonlinear_gradient_followup_state_runbook.py``,
   ``nonlinear_gradient_followup_variance.py``
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,

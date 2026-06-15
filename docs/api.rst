@@ -214,6 +214,41 @@ Nonlinear Gradient Follow-Up Variance
    :members:
    :private-members:
 
+Nonlinear Gradient Follow-Up Candidate Design
+---------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_candidate
+   :members:
+   :private-members:
+
+Nonlinear Gradient Follow-Up Composite Controls
+-----------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_composite
+   :members:
+   :private-members:
+
+Nonlinear Gradient Follow-Up Matched Plans
+------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_plan
+   :members:
+   :private-members:
+
+Nonlinear Gradient Follow-Up QL Seed Screens
+--------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_ql_seed
+   :members:
+   :private-members:
+
+Nonlinear Gradient Follow-Up State Runbooks
+-------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup_state_runbook
+   :members:
+   :private-members:
+
 Nonlinear Gradient Evidence Core
 --------------------------------
 
