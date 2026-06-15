@@ -1,3 +1,12 @@
+- 2026-06-15: Tightened the VMEC/Boozer differentiability guard from a
+  matrix-level gradient check to an objective-level solver contract. Each QH
+  and Li383 row must now include the required frequency, quasilinear, and
+  nonlinear-window estimator objectives, every case must carry all three gate
+  types, and row/objective AD-vs-finite-difference errors must stay below the
+  documented release thresholds (`5e-2`, `2e-2`, and `7.5e-2`). Focused tests
+  now fail closed on missing quasilinear objectives and excessive
+  nonlinear-window estimator error.
+
 - 2026-06-15: Tightened the VMEC/Boozer differentiability guard to require
   family coverage in the parity matrix. The release claim now fails if the
   tracked equal-arc parity evidence drops the QH, QI, or

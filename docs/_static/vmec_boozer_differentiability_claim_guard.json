@@ -31,13 +31,21 @@
       ],
       "claim_level": "multi_equilibrium_reduced_linear_quasilinear_and_nonlinear_window_estimator_gradient_gate_not_production_nonlinear_optimization",
       "claim_scoped_not_production_nonlinear_optimization": true,
+      "failed_objectives": {},
       "failed_rows": [],
       "gate_types": [
         "frequency",
         "nonlinear-window estimator",
         "quasilinear"
       ],
+      "max_rel_error_by_gate_type": {
+        "frequency": 0.05,
+        "nonlinear-window estimator": 0.075,
+        "quasilinear": 0.02
+      },
       "missing_gate_types": [],
+      "missing_gate_types_by_case": {},
+      "missing_objectives": {},
       "mode_failures": [],
       "n_cases": 2,
       "passed": true,
@@ -46,6 +54,30 @@
         "nonlinear-window estimator",
         "quasilinear"
       ],
+      "required_objectives_by_gate_type": {
+        "frequency": [
+          "gamma",
+          "omega"
+        ],
+        "nonlinear-window estimator": [
+          "gamma",
+          "kperp_eff2",
+          "linear_heat_flux_weight",
+          "mixing_length_heat_flux_proxy",
+          "nonlinear_window_heat_flux_cv",
+          "nonlinear_window_heat_flux_mean",
+          "nonlinear_window_heat_flux_trend",
+          "omega"
+        ],
+        "quasilinear": [
+          "gamma",
+          "kperp_eff2",
+          "linear_heat_flux_weight",
+          "mixing_length_heat_flux_proxy",
+          "omega"
+        ]
+      },
+      "row_error_failures": {},
       "source_scope_failures": []
     },
     "nonlinear_fd_audit": {

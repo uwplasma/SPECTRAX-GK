@@ -508,6 +508,15 @@ startup-only label for the nonlinear finite-difference audit. A tagged release
 must fail if these artifacts try to promote a direct
 tensor-parity failure or a startup nonlinear-window response into a converged
 nonlinear transport-gradient claim.
+The same guard also checks the solver-objective content of each QH/Li383
+gradient row: frequency rows must carry ``gamma`` and ``omega``; quasilinear
+rows must additionally carry ``kperp_eff2``, ``linear_heat_flux_weight``, and
+``mixing_length_heat_flux_proxy``; nonlinear-window estimator rows must also
+carry the window mean, coefficient of variation, and trend metrics. The
+release thresholds are ``5e-2`` for frequency rows, ``2e-2`` for quasilinear
+rows, and ``7.5e-2`` for reduced nonlinear-window estimator rows. These are
+AD/finite-difference consistency gates, not nonlinear turbulence-gradient
+accuracy claims.
 
 For release claims, the differentiable-geometry lane is closed only for
 artifact-passing zero-beta equal-arc parity rows and reduced

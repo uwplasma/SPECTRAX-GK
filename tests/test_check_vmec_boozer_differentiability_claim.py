@@ -14,6 +14,36 @@ def _write_json(root: Path, rel_path: str, payload: dict) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+def _objectives_for_gate(gate_type: str) -> tuple[dict[str, bool], dict[str, float]]:
+    if gate_type == "frequency":
+        names = ("gamma", "omega")
+        rel_error = 1.0e-3
+    elif gate_type == "quasilinear":
+        names = (
+            "gamma",
+            "omega",
+            "kperp_eff2",
+            "linear_heat_flux_weight",
+            "mixing_length_heat_flux_proxy",
+        )
+        rel_error = 2.0e-3
+    elif gate_type == "nonlinear-window estimator":
+        names = (
+            "gamma",
+            "omega",
+            "kperp_eff2",
+            "linear_heat_flux_weight",
+            "mixing_length_heat_flux_proxy",
+            "nonlinear_window_heat_flux_mean",
+            "nonlinear_window_heat_flux_cv",
+            "nonlinear_window_heat_flux_trend",
+        )
+        rel_error = 2.5e-2
+    else:
+        raise AssertionError(f"unexpected gate_type: {gate_type}")
+    return {name: True for name in names}, {name: rel_error for name in names}
+
+
 def _minimal_artifacts(root: Path) -> None:
     _write_json(
         root,
@@ -67,12 +97,16 @@ def _minimal_artifacts(root: Path) -> None:
     gradient_rows = []
     for case_name in ("case_a", "case_b"):
         for gate_type in ("frequency", "quasilinear", "nonlinear-window estimator"):
+            objectives, objective_rel_error = _objectives_for_gate(gate_type)
             gradient_rows.append(
                 {
                     "case_name": case_name,
                     "gate_type": gate_type,
+                    "max_rel_error": max(objective_rel_error.values()),
                     "mboz": 21,
                     "nboz": 21,
+                    "objective_rel_error": objective_rel_error,
+                    "objectives": objectives,
                     "passed": True,
                     "source_scope": "mode21_vmec_boozer_state",
                     "path": f"{case_name}_{gate_type}.json",
@@ -213,3 +247,39 @@ def test_vmec_boozer_differentiability_claim_guard_requires_mode21_gradient_scop
 
     assert report["passed"] is False
     assert "gradient_holdout_wrong_source_scope" in report["blockers"]
+
+
+def test_vmec_boozer_differentiability_claim_guard_requires_ql_objectives(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gradient_path = tmp_path / "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
+    gradient = json.loads(gradient_path.read_text(encoding="utf-8"))
+    ql_row = next(row for row in gradient["rows"] if row["gate_type"] == "quasilinear")
+    ql_row["objectives"].pop("mixing_length_heat_flux_proxy")
+    ql_row["objective_rel_error"].pop("mixing_length_heat_flux_proxy")
+    gradient_path.write_text(json.dumps(gradient), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "gradient_holdout_missing_required_objective" in report["blockers"]
+
+
+def test_vmec_boozer_differentiability_claim_guard_rejects_large_objective_error(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gradient_path = tmp_path / "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
+    gradient = json.loads(gradient_path.read_text(encoding="utf-8"))
+    estimator_row = next(
+        row for row in gradient["rows"] if row["gate_type"] == "nonlinear-window estimator"
+    )
+    estimator_row["max_rel_error"] = 0.2
+    estimator_row["objective_rel_error"]["nonlinear_window_heat_flux_mean"] = 0.2
+    gradient_path.write_text(json.dumps(gradient), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "gradient_holdout_error_threshold_failed" in report["blockers"]

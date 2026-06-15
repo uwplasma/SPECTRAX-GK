@@ -30,6 +30,34 @@ REQUIRED_GRADIENT_GATE_TYPES = {
     "quasilinear",
     "nonlinear-window estimator",
 }
+REQUIRED_OBJECTIVES_BY_GATE_TYPE = {
+    "frequency": {
+        "gamma",
+        "omega",
+    },
+    "quasilinear": {
+        "gamma",
+        "omega",
+        "kperp_eff2",
+        "linear_heat_flux_weight",
+        "mixing_length_heat_flux_proxy",
+    },
+    "nonlinear-window estimator": {
+        "gamma",
+        "omega",
+        "kperp_eff2",
+        "linear_heat_flux_weight",
+        "mixing_length_heat_flux_proxy",
+        "nonlinear_window_heat_flux_mean",
+        "nonlinear_window_heat_flux_cv",
+        "nonlinear_window_heat_flux_trend",
+    },
+}
+MAX_REL_ERROR_BY_GATE_TYPE = {
+    "frequency": 5.0e-2,
+    "quasilinear": 2.0e-2,
+    "nonlinear-window estimator": 7.5e-2,
+}
 REQUIRED_SOURCE_SCOPE = "mode21_vmec_boozer_state"
 MINIMUM_BOOZER_MODE_COUNT = 21
 MINIMUM_GRADIENT_CASES = 2
@@ -65,6 +93,16 @@ def _as_rows(value: Any) -> list[dict[str, Any]]:
 
 def _bool(value: Any) -> bool:
     return bool(value) if isinstance(value, bool) else False
+
+
+def _finite_float_or_none(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number != number or number in {float("inf"), float("-inf")}:
+        return None
+    return number
 
 
 def _path_rel(root: Path, path: Path) -> str:
@@ -166,6 +204,47 @@ def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], l
         for row in rows
         if row.get("passed") is not True
     ]
+    gate_types_by_case: dict[str, set[str]] = {case: set() for case in cases}
+    missing_gate_types_by_case: dict[str, list[str]] = {}
+    missing_objectives: dict[str, list[str]] = {}
+    failed_objectives: dict[str, list[str]] = {}
+    row_error_failures: dict[str, dict[str, float | None]] = {}
+    for row in rows:
+        case = str(row.get("case_name", "<unknown>"))
+        gate_type = str(row.get("gate_type", "<unknown>"))
+        gate_types_by_case.setdefault(case, set()).add(gate_type)
+        required_objectives = REQUIRED_OBJECTIVES_BY_GATE_TYPE.get(gate_type, set())
+        objectives = _as_dict(row.get("objectives"))
+        objective_rel_error = _as_dict(row.get("objective_rel_error"))
+        row_id = f"{case}:{gate_type}"
+        missing = sorted(required_objectives - set(objectives))
+        failed = sorted(
+            objective
+            for objective in required_objectives
+            if objectives.get(objective) is not True
+        )
+        if missing:
+            missing_objectives[row_id] = missing
+        if failed:
+            failed_objectives[row_id] = failed
+        threshold = MAX_REL_ERROR_BY_GATE_TYPE.get(gate_type)
+        max_rel_error = _finite_float_or_none(row.get("max_rel_error"))
+        if threshold is not None and (max_rel_error is None or max_rel_error > threshold):
+            row_error_failures[row_id] = {
+                "max_rel_error": max_rel_error,
+                "threshold": threshold,
+            }
+        for objective in required_objectives:
+            rel_error = _finite_float_or_none(objective_rel_error.get(objective))
+            if rel_error is None or (threshold is not None and rel_error > threshold):
+                row_error_failures[f"{row_id}:{objective}"] = {
+                    "max_rel_error": rel_error,
+                    "threshold": threshold,
+                }
+    for case, case_gate_types in gate_types_by_case.items():
+        missing = sorted(REQUIRED_GRADIENT_GATE_TYPES - case_gate_types)
+        if missing:
+            missing_gate_types_by_case[case] = missing
     claim_level = str(gradient.get("claim_level", ""))
     claim_scoped = "not_production_nonlinear_optimization" in claim_level
     checks = {
@@ -178,6 +257,15 @@ def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], l
         "gate_types": sorted(gate_types),
         "required_gate_types": sorted(REQUIRED_GRADIENT_GATE_TYPES),
         "missing_gate_types": sorted(REQUIRED_GRADIENT_GATE_TYPES - gate_types),
+        "missing_gate_types_by_case": missing_gate_types_by_case,
+        "required_objectives_by_gate_type": {
+            gate_type: sorted(objectives)
+            for gate_type, objectives in REQUIRED_OBJECTIVES_BY_GATE_TYPE.items()
+        },
+        "max_rel_error_by_gate_type": MAX_REL_ERROR_BY_GATE_TYPE,
+        "missing_objectives": missing_objectives,
+        "failed_objectives": failed_objectives,
+        "row_error_failures": row_error_failures,
         "source_scope_failures": sorted(str(item) for item in source_scope_failures),
         "mode_failures": sorted(str(item) for item in mode_failures),
         "failed_rows": sorted(str(item) for item in failed_rows),
@@ -191,6 +279,14 @@ def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], l
         blockers.append("gradient_holdout_case_count_below_two")
     if checks["missing_gate_types"]:
         blockers.append("gradient_holdout_missing_required_gate_types")
+    if missing_gate_types_by_case:
+        blockers.append("gradient_holdout_missing_required_gate_type_for_case")
+    if missing_objectives:
+        blockers.append("gradient_holdout_missing_required_objective")
+    if failed_objectives:
+        blockers.append("gradient_holdout_objective_failed")
+    if row_error_failures:
+        blockers.append("gradient_holdout_error_threshold_failed")
     if source_scope_failures or not checks["all_mode21_source_scope"]:
         blockers.append("gradient_holdout_wrong_source_scope")
     if mode_failures or not checks["all_mboz_nboz_at_least_21"]:
