@@ -38,7 +38,7 @@ from spectraxgk.runtime import (
 )
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.nonlinear import (
-    _gx_j0_field,
+    _laguerre_j0_field,
     _laguerre_to_grid,
     nonlinear_em_components,
 )
@@ -1032,7 +1032,7 @@ def main() -> None:
         )
         g_mu = _laguerre_to_grid(jnp.asarray(g_np), cache.laguerre_to_grid)
         b_nyc = b_dump_local[None, ...] if b_dump_local is not None else b_nyc_local
-        chi_phi = _gx_j0_field(
+        chi_phi = _laguerre_j0_field(
             jnp.asarray(phi_np.astype(np.complex64)),
             b_nyc,
             roots_ref,
@@ -1169,14 +1169,14 @@ def main() -> None:
                 kx_pad=kx_vals_pad_ordered,
                 ky_pad=ky_vals_pad,
             )
-        chi_phi_nyc = _gx_j0_field(
+        chi_phi_nyc = _laguerre_j0_field(
             jnp.asarray(phi_pad_ord.astype(np.complex64)),
             b_pad,
             roots_ref,
             1.0,
         )
     else:
-        chi_phi_nyc = _gx_j0_field(
+        chi_phi_nyc = _laguerre_j0_field(
             jnp.asarray(phi_nyc_ord.astype(np.complex64)),
             b_nyc,
             roots_ref,
@@ -1231,14 +1231,14 @@ def main() -> None:
                     kx_pad=kx_vals_pad_ordered,
                     ky_pad=ky_vals_pad,
                 )
-            chi_phi_nyc = _gx_j0_field(
+            chi_phi_nyc = _laguerre_j0_field(
                 jnp.asarray(phi_pad_ord.astype(np.complex64)),
                 b_pad,
                 roots_ref,
                 1.0,
             )
         else:
-            chi_phi_nyc = _gx_j0_field(
+            chi_phi_nyc = _laguerre_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
                 b_nyc,
                 roots_ref,
@@ -1360,7 +1360,7 @@ def main() -> None:
                 b_dump_ord,
             ) = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
-            chi_phi_nyc = _gx_j0_field(
+            chi_phi_nyc = _laguerre_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
                 b_nyc,
                 roots_ref,
@@ -1384,7 +1384,7 @@ def main() -> None:
                 b_dump_ord,
             ) = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
-            chi_phi_nyc = _gx_j0_field(
+            chi_phi_nyc = _laguerre_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
                 b_nyc,
                 roots_ref,
@@ -1416,7 +1416,7 @@ def main() -> None:
                 b_dump_ord,
             ) = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
-            chi_apar_nyc = _gx_j0_field(
+            chi_apar_nyc = _laguerre_j0_field(
                 jnp.asarray(apar_nyc_ord.astype(np.complex64)),
                 b_nyc,
                 roots_ref,
@@ -1439,7 +1439,7 @@ def main() -> None:
                 b_dump_ord,
             ) = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
-            chi_apar_nyc = _gx_j0_field(
+            chi_apar_nyc = _laguerre_j0_field(
                 jnp.asarray(apar_nyc_ord.astype(np.complex64)),
                 b_nyc,
                 roots_ref,

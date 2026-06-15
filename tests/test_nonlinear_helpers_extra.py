@@ -18,8 +18,8 @@ from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
     _apply_collision_split,
     _collision_damping,
-    _gx_nonlinear_omega_components,
-    _gx_omega_mode_mask,
+    _nonlinear_cfl_frequency_components,
+    _diagnostic_omega_mode_mask,
     _integrate_nonlinear_explicit_diagnostics_impl,
     _make_fixed_mode_projector,
     _make_hermitian_projector,
@@ -280,12 +280,12 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         ),
     )
     cache = SimpleNamespace(ky=jnp.asarray(grid.ky))
-    mask = _gx_omega_mode_mask(grid, cache, compressed_real_fft=True)
+    mask = _diagnostic_omega_mode_mask(grid, cache, compressed_real_fft=True)
     assert mask.shape == (4, 2)
     assert bool(mask[0, 0]) is True
     assert bool(mask[3, 1]) is False
 
-    signed_mask = _gx_omega_mode_mask(grid, cache, compressed_real_fft=False)
+    signed_mask = _diagnostic_omega_mode_mask(grid, cache, compressed_real_fft=False)
     assert bool(signed_mask[1, 0]) is True
     assert bool(signed_mask[2, 0]) is False
 
@@ -295,7 +295,7 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         dealias_mask=np.array([[True, True], [True, False], [False, True]]),
     )
     positive_cache = SimpleNamespace(ky=jnp.asarray(positive_grid.ky))
-    positive_mask = _gx_omega_mode_mask(positive_grid, positive_cache, compressed_real_fft=True)
+    positive_mask = _diagnostic_omega_mode_mask(positive_grid, positive_cache, compressed_real_fft=True)
     np.testing.assert_array_equal(np.asarray(positive_mask), positive_grid.dealias_mask)
 
 
@@ -399,7 +399,7 @@ def test_build_nonlinear_imex_operator_forwards_preconditioner(monkeypatch) -> N
     assert op.shape == (1, 2, 2, 1, 1, 1)
 
 
-def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
+def test_nonlinear_cfl_frequency_components_zero_and_finite() -> None:
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
@@ -411,7 +411,7 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
         apar=None,
         bpar=None,
     )
-    ox, oy = _gx_nonlinear_omega_components(
+    ox, oy = _nonlinear_cfl_frequency_components(
         zeros,
         grid,
         cache,
@@ -431,7 +431,7 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
         .set(1.0 + 0.0j)
     )
     fields = FieldState(phi=phi, apar=0.5 * phi, bpar=0.25 * phi)
-    ox, oy = _gx_nonlinear_omega_components(
+    ox, oy = _nonlinear_cfl_frequency_components(
         fields,
         grid,
         cache,
@@ -448,8 +448,8 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
     assert float(oy) >= 0.0
 
 
-def test_gx_nonlinear_omega_components_recovers_spectral_gradient_cfl() -> None:
-    """GX CFL estimate should reduce to the pseudo-spectral derivative maximum."""
+def test_nonlinear_cfl_frequency_components_recovers_spectral_gradient_cfl() -> None:
+    """CFL estimate should reduce to the pseudo-spectral derivative maximum."""
 
     ny = nx = 4
     kx = jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32)
@@ -475,7 +475,7 @@ def test_gx_nonlinear_omega_components_recovers_spectral_gradient_cfl() -> None:
         bpar=_sin_x_hat(bpar_amp),
     )
 
-    omega_x, omega_y = _gx_nonlinear_omega_components(
+    omega_x, omega_y = _nonlinear_cfl_frequency_components(
         fields,
         grid,
         cache,
@@ -862,7 +862,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_omega_mode_mask",
+        "spectraxgk.nonlinear._diagnostic_omega_mode_mask",
         lambda grid, cache, **kwargs: jnp.ones((2, 1), dtype=bool),
     )
     monkeypatch.setattr(
@@ -1086,7 +1086,7 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_omega_mode_mask",
+        "spectraxgk.nonlinear._diagnostic_omega_mode_mask",
         lambda grid, cache, **kwargs: jnp.ones((2, 2), dtype=bool),
     )
     monkeypatch.setattr(
@@ -1240,7 +1240,7 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_omega_mode_mask",
+        "spectraxgk.nonlinear._diagnostic_omega_mode_mask",
         lambda grid, cache, **kwargs: jnp.ones((4, 2), dtype=bool),
     )
     monkeypatch.setattr(

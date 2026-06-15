@@ -587,7 +587,7 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "fixed-mode nonlinear diagnostics and GX real-FFT Hermitian projection",
+  "fixed-mode nonlinear diagnostics and compressed real-FFT Hermitian projection",
   "split collision/hypercollision nonlinear updates and reusable IMEX solves",
 ]
 physics_contracts = [

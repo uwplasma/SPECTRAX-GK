@@ -2069,3 +2069,8 @@ No long nonlinear audit should be launched from these candidates.
   ``instantaneous_growth_rate_from_phi`` and
   ``windowed_growth_rate_from_omega_series``. Benchmark runners, comparison
   tools, public exports, and tests now use the neutral diagnostic API names.
+- Continued the source-name cleanup in nonlinear helper internals. CFL-frequency
+  estimates, omega/gamma diagnostic masks, Laguerre ``J0`` field factors,
+  magnetic-compression corrections, and adiabatic quasineutrality helpers now
+  use physics/numerics names instead of legacy provenance names. Focused
+  nonlinear, cETG, runtime-diagnostic, lint, and manifest gates passed.

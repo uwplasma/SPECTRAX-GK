@@ -1830,7 +1830,7 @@ def test_growth_rate_step_matches_real_imag_validity_mask():
 
 
 def test_growth_rate_step_validity_depends_on_current_phi_only():
-    """GX kernel checks real/imag nonzero on current phi only."""
+    """Instantaneous kernel checks real/imag nonzero on current phi only."""
 
     phi_prev = jnp.asarray([[[1.0 + 0.0j, 1.0 + 0.0j]]], dtype=jnp.complex64)
     phi_now = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
@@ -1842,7 +1842,7 @@ def test_growth_rate_step_validity_depends_on_current_phi_only():
 
 
 def test_growth_rate_step_max_uses_per_step_peak():
-    """GX max-mode diagnostics should follow each step's peak-z sample."""
+    """Max-mode diagnostics should follow each step's peak-z sample."""
 
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 8.0 + 8.0j]]], dtype=jnp.complex64)
     phi_now = jnp.asarray([[[9.0 + 9.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
@@ -1926,7 +1926,7 @@ def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:
 
 
 def test_linear_gx_adaptive_default_dt_max_matches_gx():
-    """When dt_max is unset, adaptive GX path should clamp to dt."""
+    """When dt_max is unset, the adaptive explicit path should clamp to dt."""
 
     cfg, grid, geom, params, cache = _small_setup()
     G0 = _build_initial_condition(

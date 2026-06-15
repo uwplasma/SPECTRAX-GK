@@ -76,7 +76,7 @@ def test_grid_config_explicit_zp():
 
 
 def test_compressed_real_fft_wavenumbers_match_gx_native_layout():
-    """GX real-FFT helpers should expose positive Nyquist multipliers."""
+    """compressed real-FFT helpers should expose positive Nyquist multipliers."""
 
     cfg = GridConfig(Nx=4, Ny=10, Nz=4, Lx=2.0, Ly=20.0)
     grid = build_spectral_grid(cfg)

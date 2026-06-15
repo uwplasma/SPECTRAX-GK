@@ -14,10 +14,10 @@ from spectraxgk.terms.nonlinear import (
     _broadcast_grid,
     _broadcast_mask,
     _broadcast_to_G,
-    _gx_bpar_term,
-    _gx_bpar_term_precomputed,
-    _gx_j0_field,
-    _gx_j0_field_precomputed,
+    _laguerre_bpar_correction,
+    _laguerre_bpar_correction_precomputed,
+    _laguerre_j0_field,
+    _laguerre_j0_field_precomputed,
     _laguerre_to_grid,
     _laguerre_to_spectral,
     _spectral_bracket,
@@ -1078,7 +1078,7 @@ def test_gx_precomputed_bessel_helpers_match_direct():
     roots = jnp.asarray([0.0, 1.5], dtype=jnp.float32)
     tz = jnp.asarray([1.0], dtype=jnp.float32)
 
-    direct_j0 = _gx_j0_field(field, b, roots, 1.0)
+    direct_j0 = _laguerre_j0_field(field, b, roots, 1.0)
     b_species = b[None, ...]
     alpha = jnp.sqrt(
         jnp.maximum(
@@ -1090,18 +1090,18 @@ def test_gx_precomputed_bessel_helpers_match_direct():
     j0 = _b0(alpha)
     j1 = _b1(alpha)
     j1_over_alpha = jnp.where(alpha < 1.0e-8, 0.5, j1 / alpha)
-    cached_j0 = _gx_j0_field_precomputed(field, j0, 1.0)
+    cached_j0 = _laguerre_j0_field_precomputed(field, j0, 1.0)
     assert np.allclose(
         np.asarray(direct_j0), np.asarray(cached_j0), rtol=1.0e-6, atol=1.0e-6
     )
 
     bpar = jnp.asarray([[[0.3 + 0.1j]]], dtype=jnp.complex64)
-    direct_bpar = _gx_bpar_term(bpar, b, roots, tz, 1.0)
-    cached_bpar = _gx_bpar_term_precomputed(bpar, j1_over_alpha, roots, tz, 1.0)
+    direct_bpar = _laguerre_bpar_correction(bpar, b, roots, tz, 1.0)
+    cached_bpar = _laguerre_bpar_correction_precomputed(bpar, j1_over_alpha, roots, tz, 1.0)
     assert np.allclose(
         np.asarray(direct_bpar), np.asarray(cached_bpar), rtol=1.0e-6, atol=1.0e-6
     )
-    cached_scalar_tz = _gx_bpar_term_precomputed(
+    cached_scalar_tz = _laguerre_bpar_correction_precomputed(
         bpar,
         j1_over_alpha,
         roots,
@@ -1110,8 +1110,8 @@ def test_gx_precomputed_bessel_helpers_match_direct():
     )
     assert cached_scalar_tz.shape == cached_bpar.shape
 
-    scalar_j0 = _gx_j0_field(field, b, jnp.asarray(0.0, dtype=jnp.float32), 1.0)
-    scalar_bpar = _gx_bpar_term(
+    scalar_j0 = _laguerre_j0_field(field, b, jnp.asarray(0.0, dtype=jnp.float32), 1.0)
+    scalar_bpar = _laguerre_bpar_correction(
         bpar,
         b,
         jnp.asarray(0.0, dtype=jnp.float32),
