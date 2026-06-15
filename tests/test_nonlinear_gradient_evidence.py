@@ -10,6 +10,8 @@ import pytest
 
 import spectraxgk.nonlinear_gradient_evidence as evidence
 import spectraxgk.nonlinear_gradient_evidence_core as evidence_core
+import spectraxgk.nonlinear_gradient_evidence_fd as evidence_fd
+import spectraxgk.nonlinear_gradient_evidence_windows as evidence_windows
 from spectraxgk.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
@@ -38,10 +40,11 @@ RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py
 BRACKET_SCRIPT = ROOT / "tools" / "summarize_nonlinear_gradient_bracket_sweep.py"
 
 
-
-
 def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
-    assert evidence.NON_PRODUCTION_SCOPE_MARKERS is evidence_core.NON_PRODUCTION_SCOPE_MARKERS
+    assert (
+        evidence.NON_PRODUCTION_SCOPE_MARKERS
+        is evidence_core.NON_PRODUCTION_SCOPE_MARKERS
+    )
     assert (
         evidence.NonlinearTurbulenceGradientEvidenceConfig
         is evidence_core.NonlinearTurbulenceGradientEvidenceConfig
@@ -57,8 +60,22 @@ def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
         is evidence_core._gradient_conditioning_summary
     )
 
+
+def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
+    assert evidence._ensemble_row is evidence_windows._ensemble_row
+    assert (
+        evidence.summarize_window_evidence is evidence_windows.summarize_window_evidence
+    )
+    assert (
+        evidence.nonlinear_turbulence_gradient_finite_difference_report
+        is evidence_fd.nonlinear_turbulence_gradient_finite_difference_report
+    )
+
+
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("check_nonlinear_turbulence_gradient_evidence", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "check_nonlinear_turbulence_gradient_evidence", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -68,7 +85,9 @@ def _load_tool_module():
 
 
 def _load_fd_tool_module():
-    spec = importlib.util.spec_from_file_location("build_nonlinear_turbulence_gradient_fd_gate", FD_SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "build_nonlinear_turbulence_gradient_fd_gate", FD_SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -78,7 +97,9 @@ def _load_fd_tool_module():
 
 
 def _load_campaign_tool_module():
-    spec = importlib.util.spec_from_file_location("write_nonlinear_turbulence_gradient_campaign", CAMPAIGN_SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_nonlinear_turbulence_gradient_campaign", CAMPAIGN_SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -88,7 +109,9 @@ def _load_campaign_tool_module():
 
 
 def _load_rank_tool_module():
-    spec = importlib.util.spec_from_file_location("rank_nonlinear_turbulence_gradient_candidates", RANK_SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "rank_nonlinear_turbulence_gradient_candidates", RANK_SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -98,7 +121,9 @@ def _load_rank_tool_module():
 
 
 def _load_bracket_tool_module():
-    spec = importlib.util.spec_from_file_location("summarize_nonlinear_gradient_bracket_sweep", BRACKET_SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "summarize_nonlinear_gradient_bracket_sweep", BRACKET_SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -201,7 +226,11 @@ def test_reduced_estimator_gradient_does_not_promote_even_with_replicates() -> N
         "passed": True,
         "production_nonlinear_window_gradient_gate": False,
         "objective_gates": [
-            {"objective": "nonlinear_window_heat_flux_mean", "finite_difference": 1.0, "implicit": 1.0}
+            {
+                "objective": "nonlinear_window_heat_flux_mean",
+                "finite_difference": 1.0,
+                "implicit": 1.0,
+            }
         ],
         "conditioning": {
             "condition_number": 10.0,
@@ -212,7 +241,10 @@ def test_reduced_estimator_gradient_does_not_promote_even_with_replicates() -> N
             "gradient_sem_rel": 0.1,
         },
     }
-    windows = [_window_report(-0.01, case="seed_1"), _window_report(0.01, case="seed_2")]
+    windows = [
+        _window_report(-0.01, case="seed_1"),
+        _window_report(0.01, case="seed_2"),
+    ]
 
     report = nonlinear_turbulence_gradient_evidence_report(
         reduced_gradient,
@@ -221,15 +253,29 @@ def test_reduced_estimator_gradient_does_not_promote_even_with_replicates() -> N
 
     assert report["passed"] is False
     assert report["window_evidence"]["passed"] is True
-    assert report["gradient_artifact"]["qualifies_for_production_turbulence_gradient"] is False
+    assert (
+        report["gradient_artifact"]["qualifies_for_production_turbulence_gradient"]
+        is False
+    )
     assert report["blockers"] == ["production_gradient_artifact"]
     assert report["evidence_gap"]["promotion_blocked"] is True
     assert report["evidence_gap"]["current_window_evidence_passed"] is True
-    assert report["evidence_gap"]["required_campaign"]["required_runs"][0]["state"] == "minus_delta"
-    assert report["evidence_gap"]["required_campaign"]["required_runs"][1]["state"] == "baseline"
-    assert report["evidence_gap"]["required_campaign"]["required_runs"][2]["state"] == "plus_delta"
+    assert (
+        report["evidence_gap"]["required_campaign"]["required_runs"][0]["state"]
+        == "minus_delta"
+    )
+    assert (
+        report["evidence_gap"]["required_campaign"]["required_runs"][1]["state"]
+        == "baseline"
+    )
+    assert (
+        report["evidence_gap"]["required_campaign"]["required_runs"][2]["state"]
+        == "plus_delta"
+    )
     audit = report["evidence_gap"]["required_campaign"]["finite_difference_audit"]
-    assert audit["acceptance_gates"]["production_nonlinear_window_gradient_gate"] is True
+    assert (
+        audit["acceptance_gates"]["production_nonlinear_window_gradient_gate"] is True
+    )
     assert "central_gradient" in audit["required_metrics"]
 
 
@@ -249,8 +295,13 @@ def test_production_gradient_can_use_derived_replicated_window_summaries() -> No
     assert report["production_nonlinear_window_gradient_gate"] is True
     assert report["evidence_gap"]["passed"] is True
     assert report["evidence_gap"]["promotion_blocked"] is False
-    assert report["window_evidence"]["derived_ensemble"]["source"] == "derived_from_window_summaries"
-    assert report["gradient_artifact"]["conditioning"]["gradient_uncertainty_rel"] == 0.18
+    assert (
+        report["window_evidence"]["derived_ensemble"]["source"]
+        == "derived_from_window_summaries"
+    )
+    assert (
+        report["gradient_artifact"]["conditioning"]["gradient_uncertainty_rel"] == 0.18
+    )
 
 
 def test_gap_report_names_custom_paired_parameter_campaign() -> None:
@@ -303,7 +354,10 @@ def test_gap_report_names_custom_paired_parameter_campaign() -> None:
 def test_production_gradient_fails_closed_without_uncertainty() -> None:
     gradient = _production_gradient()
     gradient.pop("uncertainty")
-    windows = [_window_report(-0.02, case="seed_1"), _window_report(0.02, case="seed_2")]
+    windows = [
+        _window_report(-0.02, case="seed_1"),
+        _window_report(0.02, case="seed_2"),
+    ]
 
     report = nonlinear_turbulence_gradient_evidence_report(
         gradient,
@@ -311,8 +365,7 @@ def test_production_gradient_fails_closed_without_uncertainty() -> None:
     )
 
     gradient_gates = {
-        gate["metric"]: gate["passed"]
-        for gate in report["gradient_artifact"]["gates"]
+        gate["metric"]: gate["passed"] for gate in report["gradient_artifact"]["gates"]
     }
     assert report["passed"] is False
     assert gradient_gates["gradient_uncertainty_bounded"] is False
@@ -351,7 +404,9 @@ def test_explicit_nonlinear_turbulence_gradient_flag_can_promote_scope() -> None
     row = classify_gradient_artifact(artifact)
 
     assert row["explicit_production_scope"] is True
-    assert row["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
+    assert (
+        row["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
+    )
     assert row["qualifies_for_production_turbulence_gradient"] is True
 
 
@@ -449,7 +504,10 @@ def test_long_window_fd_gate_fails_when_response_is_buried_in_uncertainty() -> N
     assert gates["fd_response_resolved"] is False
     assert gates["gradient_uncertainty_bounded"] is False
     classified = classify_gradient_artifact(report)
-    assert classified["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
+    assert (
+        classified["evidence_class"]
+        == "production_long_window_turbulence_gradient_candidate"
+    )
     assert classified["qualifies_for_production_turbulence_gradient"] is False
 
 
@@ -536,7 +594,9 @@ def test_long_window_fd_gate_rejects_nonpositive_delta() -> None:
         )
 
 
-def test_candidate_ranking_selects_profile_gradient_when_failures_are_complementary() -> None:
+def test_candidate_ranking_selects_profile_gradient_when_failures_are_complementary() -> (
+    None
+):
     local_but_noisy = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(16.94, sem=0.67),
         baseline=_ensemble(16.31, sem=0.45),
@@ -615,9 +675,9 @@ def test_candidate_ranking_can_promote_a_passing_production_candidate() -> None:
 
 
 def test_candidate_ranking_handles_metadata_errors_and_empty_screens() -> None:
-    assert nonlinear_turbulence_gradient_candidate_ranking_report([])["recommendation"].startswith(
-        "screen new profile-gradient"
-    )
+    assert nonlinear_turbulence_gradient_candidate_ranking_report([])[
+        "recommendation"
+    ].startswith("screen new profile-gradient")
 
     with pytest.raises(ValueError, match="paths length"):
         nonlinear_turbulence_gradient_candidate_ranking_report(
@@ -650,7 +710,9 @@ def test_candidate_ranking_distinguishes_single_failure_modes() -> None:
         ),
     )
 
-    noisy_report = nonlinear_turbulence_gradient_candidate_ranking_report([local_but_noisy])
+    noisy_report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [local_but_noisy]
+    )
     nonlocal_report = nonlinear_turbulence_gradient_candidate_ranking_report(
         [quiet_but_nonlocal]
     )
@@ -693,8 +755,13 @@ def test_candidate_ranking_flags_bad_conditioning_and_unscoped_artifacts() -> No
     assert by_name["near_null_response"]["next_action"].startswith(
         "choose a better-conditioned"
     )
-    assert by_name["candidate_1"]["evidence_class"] == "unscoped_gradient_or_fd_artifact_not_production"
-    assert by_name["candidate_1"]["failed_gates"] == ["explicit_production_long_window_scope"]
+    assert (
+        by_name["candidate_1"]["evidence_class"]
+        == "unscoped_gradient_or_fd_artifact_not_production"
+    )
+    assert by_name["candidate_1"]["failed_gates"] == [
+        "explicit_production_long_window_scope"
+    ]
 
 
 def test_bracket_sweep_blocks_repeating_unstable_same_bracket() -> None:
@@ -805,7 +872,10 @@ def test_bracket_sweep_fail_closed_metadata_and_empty_inputs() -> None:
 
     assert report["passed"] is False
     assert report["promotion_ready_bracket_count"] == 0
-    assert "at least two matched plus/minus perturbation amplitudes" in report["recommendation"]
+    assert (
+        "at least two matched plus/minus perturbation amplitudes"
+        in report["recommendation"]
+    )
 
     with pytest.raises(ValueError, match="paths length"):
         nonlinear_turbulence_gradient_bracket_sweep_report(
@@ -839,7 +909,9 @@ def test_bracket_sweep_recommends_shrinking_nonlocal_quiet_bracket() -> None:
     assert "shrink the perturbation" in report["recommendation"]
 
 
-def test_bracket_sweep_recommends_profile_gradient_for_noisy_nonlocal_response() -> None:
+def test_bracket_sweep_recommends_profile_gradient_for_noisy_nonlocal_response() -> (
+    None
+):
     noisy_and_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.0, sem=5.0),
         baseline=_ensemble(9.6, sem=5.0),
@@ -896,7 +968,9 @@ def test_bracket_sweep_fail_closed_for_legacy_missing_delta_artifact() -> None:
 
     assert report["passed"] is False
     assert report["brackets"][0]["delta_parameter"] is None
-    assert "explicit_production_long_window_scope" in report["brackets"][0]["failed_gates"]
+    assert (
+        "explicit_production_long_window_scope" in report["brackets"][0]["failed_gates"]
+    )
     assert "production long-window scope" in report["recommendation"]
 
 
@@ -925,7 +999,9 @@ def test_bracket_sweep_rejects_mixed_controls() -> None:
     assert "mixed controls" in report["recommendation"]
 
 
-def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
+def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> (
+    None
+):
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
         baseline=_ensemble(10.0, sem=0.5),
@@ -945,7 +1021,10 @@ def test_gap_report_distinguishes_failed_production_candidate_from_missing_campa
     gap = evidence["evidence_gap"]
 
     assert evidence["passed"] is False
-    assert gap["claim_level"] == "fail_closed_production_candidate_gradient_gate_not_resolved"
+    assert (
+        gap["claim_level"]
+        == "fail_closed_production_candidate_gradient_gate_not_resolved"
+    )
     assert gap["current_gradient_candidate_present"] is True
     assert gap["missing_evidence"][0]["current_artifact_class"] == (
         "production_long_window_turbulence_gradient_candidate"
@@ -976,7 +1055,9 @@ def test_gap_report_handles_malformed_evidence_report_fail_closed() -> None:
     assert gap["missing_evidence"][1]["qualifying_window_ensembles"] == 0
 
 
-def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> None:
+def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> (
+    None
+):
     ensemble = {
         "kind": "nonlinear_window_ensemble_report",
         "passed": True,
@@ -991,7 +1072,10 @@ def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_misma
         "passed": True,
         "statistics": ["not", "a", "dict"],
     }
-    unsupported = {"kind": "single_trace_debug_artifact", "promotion_gate": {"passed": True}}
+    unsupported = {
+        "kind": "single_trace_debug_artifact",
+        "promotion_gate": {"passed": True},
+    }
 
     summary = summarize_window_evidence(
         [ensemble, malformed_ensemble, unsupported],
@@ -1104,7 +1188,9 @@ def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".pdf").exists()
 
 
-def test_candidate_ranking_cli_writes_fail_closed_campaign_recommendation(tmp_path: Path) -> None:
+def test_candidate_ranking_cli_writes_fail_closed_campaign_recommendation(
+    tmp_path: Path,
+) -> None:
     mod = _load_rank_tool_module()
     noisy = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(16.94, sem=0.67),
@@ -1182,7 +1268,9 @@ def test_bracket_sweep_cli_writes_json_csv_and_plot(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".pdf").exists()
 
 
-def test_bracket_sweep_cli_can_skip_pdf_for_tracked_docs_preview(tmp_path: Path) -> None:
+def test_bracket_sweep_cli_can_skip_pdf_for_tracked_docs_preview(
+    tmp_path: Path,
+) -> None:
     mod = _load_bracket_tool_module()
     small = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.4),
@@ -1212,7 +1300,9 @@ def test_bracket_sweep_cli_can_skip_pdf_for_tracked_docs_preview(tmp_path: Path)
     assert not out_prefix.with_suffix(".pdf").exists()
 
 
-def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: Path) -> None:
+def test_gradient_campaign_writer_creates_matched_state_run_contract(
+    tmp_path: Path,
+) -> None:
     mod = _load_campaign_tool_module()
     baseline = tmp_path / "wout_baseline.nc"
     plus = tmp_path / "wout_plus.nc"
@@ -1253,7 +1343,9 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
         ]
     )
 
-    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8")
+    )
     assert rc == 0
     assert manifest["configs_written"] == 12
     assert manifest["run_contract"]["same_numerics_except_parameter"] is True
@@ -1263,24 +1355,42 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
     assert manifest["vmec_file_preflight"]["vmec_paths_distinct"] is True
     assert manifest["vmec_file_preflight"]["vmec_contents_distinct"] is True
     assert manifest["vmec_file_preflight"]["allow_identical_vmec_content"] is False
-    assert set(manifest["vmec_file_preflight"]["files"]) == {"minus_delta", "baseline", "plus_delta"}
+    assert set(manifest["vmec_file_preflight"]["files"]) == {
+        "minus_delta",
+        "baseline",
+        "plus_delta",
+    }
     assert set(manifest["state_manifests"]) == {"minus_delta", "baseline", "plus_delta"}
-    assert "build_nonlinear_turbulence_gradient_fd_gate.py" in manifest["promotion_contract"]["central_fd_command"]
+    assert (
+        "build_nonlinear_turbulence_gradient_fd_gate.py"
+        in manifest["promotion_contract"]["central_fd_command"]
+    )
     central_fd_command = manifest["promotion_contract"]["central_fd_command"]
-    assert "--baseline docs/_static/qa_gradient_baseline_replicates" in central_fd_command
-    assert "--fail-on-blocked" in manifest["promotion_contract"]["evidence_check_command"]
+    assert (
+        "--baseline docs/_static/qa_gradient_baseline_replicates" in central_fd_command
+    )
+    assert (
+        "--fail-on-blocked" in manifest["promotion_contract"]["evidence_check_command"]
+    )
     baseline_commands = manifest["state_ensemble_commands"]["baseline"]
     assert baseline_commands["direct_full_horizon_step_counts"] == {
         "dt0p04": 50,
         "seed31": 40,
     }
-    assert any("--steps 40" in command for command in baseline_commands["direct_full_horizon_launch_commands"])
-    assert "check_nonlinear_runtime_outputs.py" in baseline_commands["output_gate_command"]
+    assert any(
+        "--steps 40" in command
+        for command in baseline_commands["direct_full_horizon_launch_commands"]
+    )
+    assert (
+        "check_nonlinear_runtime_outputs.py" in baseline_commands["output_gate_command"]
+    )
     assert "--tmin 1 --tmax 2" in baseline_commands["output_gate_command"]
     assert "restart-ladder segments" in baseline_commands["restart_ladder_note"]
 
 
-def test_gradient_campaign_writer_can_add_joint_seed_timestep_variants(tmp_path: Path) -> None:
+def test_gradient_campaign_writer_can_add_joint_seed_timestep_variants(
+    tmp_path: Path,
+) -> None:
     mod = _load_campaign_tool_module()
     baseline = tmp_path / "wout_baseline.nc"
     plus = tmp_path / "wout_plus.nc"
@@ -1323,16 +1433,25 @@ def test_gradient_campaign_writer_can_add_joint_seed_timestep_variants(tmp_path:
         ]
     )
 
-    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8")
+    )
     assert rc == 0
     assert manifest["configs_written"] == 9
-    assert manifest["run_contract"]["joint_seed_timestep_replicates"] == ["seed32_dt0p04"]
+    assert manifest["run_contract"]["joint_seed_timestep_replicates"] == [
+        "seed32_dt0p04"
+    ]
     baseline_commands = manifest["state_ensemble_commands"]["baseline"]
     assert "seed32_dt0p04" in baseline_commands["direct_full_horizon_step_counts"]
-    assert any("seed32_dt0p04.toml" in command for command in baseline_commands["direct_full_horizon_launch_commands"])
+    assert any(
+        "seed32_dt0p04.toml" in command
+        for command in baseline_commands["direct_full_horizon_launch_commands"]
+    )
 
 
-def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(tmp_path: Path) -> None:
+def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(
+    tmp_path: Path,
+) -> None:
     mod = _load_campaign_tool_module()
     vmec_file = tmp_path / "wout_same.nc"
     vmec_file.write_text("same-equilibrium", encoding="utf-8")
@@ -1352,7 +1471,9 @@ def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(tmp_path:
         )
 
 
-def test_gradient_campaign_writer_fails_closed_on_identical_vmec_content(tmp_path: Path) -> None:
+def test_gradient_campaign_writer_fails_closed_on_identical_vmec_content(
+    tmp_path: Path,
+) -> None:
     mod = _load_campaign_tool_module()
     baseline = tmp_path / "wout_baseline.nc"
     plus = tmp_path / "wout_plus.nc"
@@ -1375,7 +1496,9 @@ def test_gradient_campaign_writer_fails_closed_on_identical_vmec_content(tmp_pat
         )
 
 
-def test_gradient_campaign_writer_allows_identical_vmec_content_only_for_smoke_tests(tmp_path: Path) -> None:
+def test_gradient_campaign_writer_allows_identical_vmec_content_only_for_smoke_tests(
+    tmp_path: Path,
+) -> None:
     mod = _load_campaign_tool_module()
     baseline = tmp_path / "wout_baseline.nc"
     plus = tmp_path / "wout_plus.nc"
@@ -1404,7 +1527,9 @@ def test_gradient_campaign_writer_allows_identical_vmec_content_only_for_smoke_t
         ]
     )
 
-    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8")
+    )
     assert rc == 0
     assert manifest["vmec_file_preflight"]["allow_identical_vmec_content"] is True
     assert manifest["vmec_file_preflight"]["vmec_contents_distinct"] is False

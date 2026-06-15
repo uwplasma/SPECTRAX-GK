@@ -1,3 +1,12 @@
+- 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
+  replicated nonlinear-window evidence summaries into
+  `spectraxgk.nonlinear_gradient_evidence_windows` and central
+  finite-difference turbulence-gradient report assembly into
+  `spectraxgk.nonlinear_gradient_evidence_fd`. The public
+  `spectraxgk.nonlinear_gradient_evidence` facade still re-exports the moved
+  report builders and compatibility seam, while tests, API docs, and the
+  validation/refactor manifests now track the new modules directly.
+
 - 2026-06-14: Continued the nonlinear-gradient follow-up refactor by moving
   paired-seed variance-reduction planning, control-variate campaign design,
   and independent control-mean uncertainty gates into

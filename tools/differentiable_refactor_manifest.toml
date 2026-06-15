@@ -592,6 +592,31 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_windows"
+source_path = "src/spectraxgk/nonlinear_gradient_evidence_windows.py"
+facade_module = "spectraxgk.nonlinear_gradient_evidence"
+status = "active"
+responsibility = "replicated nonlinear-window evidence row classification and ensemble summary gates for nonlinear turbulence-gradient evidence"
+moved_exports = [
+  "_ensemble_row",
+  "summarize_window_evidence",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_fd"
+source_path = "src/spectraxgk/nonlinear_gradient_evidence_fd.py"
+facade_module = "spectraxgk.nonlinear_gradient_evidence"
+status = "active"
+responsibility = "central finite-difference nonlinear turbulence-gradient report assembly and paired-replicate diagnostics"
+moved_exports = [
+  "nonlinear_turbulence_gradient_finite_difference_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_artifact_io"
 source_path = "src/spectraxgk/runtime_artifact_io.py"
 facade_module = "spectraxgk.runtime_artifacts"

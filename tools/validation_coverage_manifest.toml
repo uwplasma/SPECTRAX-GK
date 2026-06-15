@@ -1580,6 +1580,69 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_windows"
+path = "src/spectraxgk/nonlinear_gradient_evidence_windows.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "replicated nonlinear heat-flux window convergence before turbulence-gradient promotion",
+]
+physics_contracts = [
+  "single nonlinear-window artifacts can document convergence but cannot alone promote production turbulence-gradient evidence",
+  "replicated long-window ensembles must pass uncertainty and spread limits before they qualify as transport-gradient support",
+]
+numerics_contracts = [
+  "derived ensembles require at least the configured minimum number of window reports",
+  "unsupported or malformed window artifacts fail closed and remain visible in the evidence rows",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add a direct malformed-window regression covering missing statistics and mismatched path lengths",
+  "add a derived-ensemble regression with one failed individual window to preserve fail-closed behavior",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_fd"
+path = "src/spectraxgk/nonlinear_gradient_evidence_fd.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "central finite-difference response conditioning for nonlinear turbulence-gradient claims",
+  "paired-replicate uncertainty diagnostics for post-transient nonlinear heat-flux gradients",
+]
+physics_contracts = [
+  "production nonlinear turbulence-gradient evidence must be assembled from matched minus, baseline, and plus long-window ensembles",
+  "finite-difference gradients remain blocked when the heat-flux response is unresolved relative to replicated-window uncertainty",
+]
+numerics_contracts = [
+  "central finite differences report forward/backward asymmetry, condition number, response fraction, and relative gradient uncertainty",
+  "nonfinite or nonpositive perturbation sizes raise before any report can be promoted",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
+]
+next_tests = [
+  "add a direct finite-difference report regression for nonfinite ensemble means and sem values",
+  "add a paired-replicate diagnostic regression that proves common-random-number seeds reduce gradient uncertainty when available",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_gradient_followup_core"
 path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"

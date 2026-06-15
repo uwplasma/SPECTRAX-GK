@@ -221,6 +221,20 @@ Nonlinear Gradient Evidence Core
    :members:
    :private-members:
 
+Nonlinear Gradient Evidence Windows
+-----------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_evidence_windows
+   :members:
+   :private-members:
+
+Nonlinear Gradient Evidence Finite Difference
+---------------------------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_evidence_fd
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 

@@ -148,8 +148,11 @@ Completed extractions:
   ``nonlinear_gradient_followup_core.py``,
   ``nonlinear_gradient_followup_variance.py``
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
-  dataclasses, JSON-safe parsing, and finite-difference conditioning gates:
-  ``nonlinear_gradient_evidence_core.py``
+  dataclasses, JSON-safe parsing, finite-difference conditioning gates,
+  replicated window summaries, and central finite-difference report assembly:
+  ``nonlinear_gradient_evidence_core.py``,
+  ``nonlinear_gradient_evidence_windows.py``,
+  ``nonlinear_gradient_evidence_fd.py``
 - runtime artifact read/write, generic I/O helpers, GX-style active-axis layout,
   and restart-append schema coverage:
   ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
