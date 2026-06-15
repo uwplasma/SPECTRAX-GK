@@ -22,7 +22,6 @@ from spectraxgk.runtime_config import (
 )
 from spectraxgk.vmec_eik import (
     build_vmec_geometry_request,
-    build_gx_vmec_geometry_request,
     default_vmec_eik_output_path,
     generate_runtime_vmec_eik,
 )
@@ -114,13 +113,6 @@ def test_build_vmec_geometry_request_expands_env_vmec_file(
     request = build_vmec_geometry_request(cfg)
 
     assert request.vmec_file == str(vmec_path.resolve())
-
-
-def test_build_gx_vmec_geometry_request_alias_still_resolves(tmp_path: Path) -> None:
-    cfg = _vmec_runtime_cfg(tmp_path)
-    request = build_gx_vmec_geometry_request(cfg)
-
-    assert request.torflux == pytest.approx(0.64)
 
 
 def test_build_vmec_geometry_request_infers_npol_from_nperiod(tmp_path: Path) -> None:
@@ -273,7 +265,6 @@ def test_generate_runtime_vmec_eik_uses_default_output_when_none(
 @pytest.mark.parametrize(
     ("backend", "expected_message"),
     [
-        ("gx", "geometry_backend='gx' is no longer supported"),
         ("mystery", "Unknown geometry backend"),
     ],
 )

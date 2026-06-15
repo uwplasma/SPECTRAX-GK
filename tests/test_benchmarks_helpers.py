@@ -691,7 +691,7 @@ def test_mode_signal_batch_and_window_helpers() -> None:
 
 
 def test_normalization_and_initial_profiles() -> None:
-    gamma, omega = _normalize_growth_rate(0.4, -0.2, _linear_params(), "gx")
+    gamma, omega = _normalize_growth_rate(0.4, -0.2, _linear_params(), "rho_star")
     assert np.isfinite(gamma)
     assert np.isfinite(omega)
 

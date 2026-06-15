@@ -22,7 +22,6 @@ from spectraxgk.geometry_backends.vmec import (
     nperiod_set,
     write_vmec_eik_netcdf,
 )
-from spectraxgk.from_gx import vmec as legacy_vmec_backend
 
 
 def test_booz_search_paths_include_env_and_src(monkeypatch, tmp_path: Path) -> None:
@@ -32,15 +31,6 @@ def test_booz_search_paths_include_env_and_src(monkeypatch, tmp_path: Path) -> N
     paths = _booz_xform_jax_search_paths()
     assert checkout.resolve() in paths
     assert (checkout / "src").resolve() in paths
-
-
-def test_legacy_vmec_backend_shim_exposes_private_helpers() -> None:
-    assert (
-        legacy_vmec_backend.internal_vmec_backend_available
-        is internal_vmec_backend_available
-    )
-    assert legacy_vmec_backend._vmec_fieldlines is _vmec_fieldlines
-    assert legacy_vmec_backend._apply_flux_tube_cut is _apply_flux_tube_cut
 
 
 def test_import_module_with_search_paths_loads_temp_module(tmp_path: Path) -> None:

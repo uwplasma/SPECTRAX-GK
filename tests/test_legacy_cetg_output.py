@@ -11,11 +11,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 from inspect_gx_legacy_cetg import build_parser
-from spectraxgk import gx_legacy_output as legacy_cetg_module
 from spectraxgk.legacy_cetg_output import (
     expand_legacy_positive_ky_state,
-    LegacyCetgOutput,
-    LegacyCetgRestart,
     load_legacy_cetg_output,
     load_legacy_cetg_restart,
 )
@@ -159,14 +156,3 @@ def test_expand_legacy_positive_ky_state_builds_full_hermitian_ky_grid() -> None
     assert full.shape == (1, 2, 1, 4, 4, 1)
     assert full[0, 0, 0, 1, 1, 0] == pytest.approx(1.0 + 2.0j)
     assert full[0, 0, 0, 3, 3, 0] == pytest.approx(1.0 - 2.0j)
-
-
-def test_legacy_cetg_output_module_aliases_still_resolve() -> None:
-    assert legacy_cetg_module.GXLegacyCetgOutput is LegacyCetgOutput
-    assert legacy_cetg_module.GXLegacyCetgRestart is LegacyCetgRestart
-    assert legacy_cetg_module.load_gx_legacy_cetg_output is load_legacy_cetg_output
-    assert legacy_cetg_module.load_gx_legacy_cetg_restart is load_legacy_cetg_restart
-    assert (
-        legacy_cetg_module.expand_gx_legacy_positive_ky_state
-        is expand_legacy_positive_ky_state
-    )

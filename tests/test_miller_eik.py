@@ -12,7 +12,6 @@ from spectraxgk.config import (
 )
 from spectraxgk.miller_eik import (
     build_miller_geometry_request,
-    build_gx_miller_geometry_request,
     generate_runtime_miller_eik,
 )
 from spectraxgk.geometry_backends.miller import _request_attr
@@ -88,13 +87,6 @@ def test_build_miller_geometry_request_creates_expected_request(tmp_path: Path) 
     assert request.rhoc == 0.5
     assert request.ntheta == 24
     assert request.nperiod == 1
-
-
-def test_build_gx_miller_geometry_request_alias_still_resolves(tmp_path: Path) -> None:
-    cfg = _miller_runtime_cfg(tmp_path)
-    request = build_gx_miller_geometry_request(cfg)
-
-    assert request.q == 1.4
 
 
 def test_generate_runtime_miller_eik_invokes_internal_generator(

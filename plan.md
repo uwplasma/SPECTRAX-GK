@@ -1,3 +1,15 @@
+- 2026-06-15: Removed the old comparison-code-named compatibility shims from
+  package source. The deleted package paths are `spectraxgk.from_gx.*`,
+  `spectraxgk.gx_legacy_output`, and `spectraxgk.gx_reduced_models`; callers
+  should use `spectraxgk.geometry_backends.*`,
+  `spectraxgk.legacy_cetg_output`, and
+  `spectraxgk.reduced_model_contracts` instead. Legacy input aliases for
+  helper paths, diagnostic normalization, imported-geometry model strings,
+  reduced-model names, and runtime `gx_time` solver spelling were also removed
+  from canonical runtime/config paths. Explicit benchmark/comparison tools keep
+  reference-code names only where they operate on external comparison data.
+  Focused cleanup tests, Ruff, docs build with warnings-as-errors, package
+  build, and wheel/sdist shim-exclusion checks passed locally.
 - 2026-06-15: Cleaned another native-source terminology slice on the
   differentiable-refactor branch. CLI help, runtime errors, initialization
   comments, dealiased-grid comments, transport-mode weights, and
@@ -76,31 +88,28 @@
 - 2026-06-15: Continued source naming cleanup by moving generic reduced-model
   and legacy cETG NetCDF helpers from old reference-code-named modules to
   `spectraxgk.reduced_model_contracts` and
-  `spectraxgk.legacy_cetg_output`. The old module paths remain as thin
-  compatibility shims, while implementation tests and comparison utilities now
-  import the canonical modules. Coverage ownership moved to the canonical
+  `spectraxgk.legacy_cetg_output`. Implementation tests and comparison
+  utilities now import the canonical modules. Coverage ownership moved to the canonical
   modules and the legacy shim modules are excluded from the wide-coverage
   ownership inventory. Focused reduced-model/cETG tests, manifest tests, lint,
   format, and compile checks passed locally.
 
 - 2026-06-15: Completed the internal imported-geometry backend package rename
   tranche. The implementation moved from `spectraxgk.from_gx.*` to
-  `spectraxgk.geometry_backends.*`; `spectraxgk.from_gx` now contains thin
-  compatibility shims for older scripts and archived comparison tooling. New
-  source, profiler utilities, validation gates, coverage manifests, and backend
-  tests use the canonical backend package plus neutral imported-geometry names
+  `spectraxgk.geometry_backends.*`. Source, profiler utilities, validation
+  gates, coverage manifests, and backend tests use the canonical backend
+  package plus neutral imported-geometry names
   (`load_imported_geometry_netcdf`, `apply_imported_geometry_grid_defaults`,
   `imported-netcdf`, `imported-eik`). The Miller helper kernels now expose
-  descriptive finite-difference/extension names while retaining old aliases
-  only for compatibility. Targeted backend, runtime/config/artifact, manifest,
-  lint, format, and compile checks passed locally.
+  descriptive finite-difference/extension names. Targeted backend,
+  runtime/config/artifact, manifest, lint, format, and compile checks passed
+  locally.
 
 - 2026-06-15: Continued the naming-governance refactor by making
   `explicit_time` the canonical runtime and benchmark solver key. The old
-  `gx_time` spelling is now retained only as a normalization alias for legacy
-  inputs and in benchmark/comparison artifacts that explicitly refer to
-  external reference data. KBM solver-lock constants, example solver choices,
-  and focused runtime/benchmark tests now use the numerics-based
+  `gx_time` spelling is retained only in benchmark/comparison artifacts that
+  explicitly refer to external reference data. KBM solver-lock constants,
+  example solver choices, and focused runtime/benchmark tests now use the numerics-based
   `explicit_time` name.
 
 - 2026-06-15: Continued benchmark/config naming cleanup by replacing the
@@ -117,10 +126,9 @@
   `load_imported_geometry_netcdf`,
   `apply_imported_geometry_grid_defaults`, `imported-netcdf`, and
   `imported-eik`. Runtime paths, imported-geometry examples, docs, and focused
-  geometry/runtime/benchmark tests now use the canonical names. Existing
-  `gx-*` geometry names remain bounded compatibility aliases for comparison
-  tools and older imported-geometry configurations; moving the
-  `spectraxgk.from_gx` backend package is the next larger geometry cleanup.
+  geometry/runtime/benchmark tests now use the canonical names. Later cleanup
+  tranches removed the old geometry-model aliases and backend-package shims
+  from canonical runtime/config paths.
 
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
@@ -2208,14 +2216,12 @@ No long nonlinear audit should be launched from these candidates.
   fields from provenance-oriented ``gx_python``/``gx_repo`` to
   ``geometry_helper_python``/``geometry_helper_repo``. Runtime TOML loading,
   VMEC/Miller docs, the HSX VMEC example, the Miller geometry generator, and
-  roundtrip tests now use canonical helper names. Legacy ``gx_*`` constructor
-  and TOML aliases remain accepted so existing inputs do not break, but
-  serialization emits only the neutral helper-field names.
+  roundtrip tests now use canonical helper names; serialization emits only the
+  neutral helper-field names.
 - Continued the source-name cleanup by replacing the runtime diagnostic
   normalization spelling ``diagnostic_norm = \"gx\"`` with the physics-based
   ``diagnostic_norm = \"rho_star\"`` across shipped examples, docs, runtime
-  defaults, and focused tests. The runtime config canonicalizes legacy ``gx``
-  inputs to ``rho_star``, and the low-level diagnostic normalization helper
+  defaults, and focused tests. The low-level diagnostic normalization helper
   still accepts the old spelling as a compatibility alias with identical
   scaling.
 - Continued the source-name cleanup by moving the Miller geometry generator from

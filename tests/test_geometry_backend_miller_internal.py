@@ -15,7 +15,6 @@ from spectraxgk.geometry_backends.miller import (
     generate_miller_eik_internal,
     internal_miller_backend_available,
 )
-from spectraxgk.from_gx import miller as legacy_miller_backend
 
 
 def _request() -> SimpleNamespace:
@@ -34,15 +33,6 @@ def _request() -> SimpleNamespace:
         tripri=0.0,
         betaprim=0.0,
     )
-
-
-def test_legacy_miller_backend_shim_exposes_private_helpers() -> None:
-    assert (
-        legacy_miller_backend.internal_miller_backend_available
-        is internal_miller_backend_available
-    )
-    assert legacy_miller_backend._request_attr is _request_attr
-    assert legacy_miller_backend._safe_denom is _safe_denom
 
 
 def test_safe_denom_and_request_attr() -> None:

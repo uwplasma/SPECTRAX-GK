@@ -229,7 +229,7 @@ def main() -> None:
                     solver="gx_time",
                     fit_signal="phi",
                     mode_method="z_index",
-                    diagnostic_norm="gx",
+                    diagnostic_norm="rho_star",
                     gx_reference=True,
                     auto_window=False,
                     tmin=args.tmin,

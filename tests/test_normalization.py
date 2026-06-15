@@ -30,12 +30,6 @@ def test_apply_diagnostic_normalization_modes() -> None:
     assert gamma == pytest.approx(0.1)
     assert omega == pytest.approx(-0.15)
 
-    gamma_alias, omega_alias = apply_diagnostic_normalization(
-        0.2, -0.3, rho_star=0.5, diagnostic_norm="gx"
-    )
-    assert gamma_alias == pytest.approx(gamma)
-    assert omega_alias == pytest.approx(omega)
-
     gamma_none, omega_none = apply_diagnostic_normalization(
         0.2, -0.3, rho_star=0.5, diagnostic_norm="none"
     )

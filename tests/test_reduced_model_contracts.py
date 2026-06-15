@@ -7,7 +7,6 @@ import sys
 
 import pytest
 
-from spectraxgk import gx_reduced_models as legacy_reduced_models
 from spectraxgk.reduced_model_contracts import load_reduced_model_contract
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
@@ -69,40 +68,6 @@ dealias_kz = true
     assert contract.zero_shat is True
     assert contract.dealias_kz is True
     assert contract.D_hyper == pytest.approx(5.0e-4)
-
-
-def test_legacy_reduced_model_module_alias_still_resolves(tmp_path: Path) -> None:
-    gx_input = tmp_path / "cetg.in"
-    gx_input.write_text(
-        """
-[Dimensions]
-ntheta = 4
-ny = 8
-nx = 8
-
-[Domain]
-x0 = 1.0
-y0 = 1.0
-boundary = "periodic"
-
-[Collisional_slab_ETG]
-cetg = true
-
-[Time]
-dt = 0.1
-
-[Initialization]
-init_field = "density"
-init_amp = 1.0e-3
-""",
-        encoding="utf-8",
-    )
-
-    contract = legacy_reduced_models.load_gx_reduced_model_contract(gx_input)
-    assert contract.model == "cetg"
-    assert (
-        legacy_reduced_models.load_reduced_model_contract is load_reduced_model_contract
-    )
 
 
 def test_load_reduced_model_contract_parses_krehm_and_serializes(

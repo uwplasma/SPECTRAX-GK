@@ -280,7 +280,7 @@ def main() -> None:
             method=args.method,
             solver=args.solver,
             fit_signal="auto",
-            diagnostic_norm="gx",
+            diagnostic_norm="rho_star",
             mode_follow=bool(args.mode_follow),
             krylov_cfg=krylov_cfg,
         )

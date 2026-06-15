@@ -222,9 +222,8 @@ with ``vmec_jax input.<case>`` before running the examples.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
 against the TOML directory first. Command-line overrides are resolved from the
 shell working directory.
-Older ``gx_repo`` and ``gx_python`` input keys are still accepted as aliases,
-but new inputs should use ``geometry_helper_repo`` and
-``geometry_helper_python``.
+Use ``geometry_helper_repo`` and ``geometry_helper_python`` when an imported
+geometry helper checkout or interpreter must be selected explicitly.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and

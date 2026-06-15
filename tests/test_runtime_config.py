@@ -12,7 +12,6 @@ import pytest
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime_config import (
     RuntimeConfig,
-    RuntimeNormalizationConfig,
     RuntimeParallelConfig,
     RuntimeQuasilinearConfig,
 )
@@ -57,12 +56,6 @@ def test_runtime_defaults_match_reference_contract() -> None:
     assert cfg.collisions.damp_ends_widthfrac == pytest.approx(0.125)
     assert cfg.parallel.strategy == "serial"
     assert cfg.parallel.axis == "ky"
-
-
-def test_runtime_normalization_canonicalizes_legacy_alias() -> None:
-    cfg = RuntimeNormalizationConfig(diagnostic_norm="gx")
-    assert cfg.diagnostic_norm == "rho_star"
-    assert cfg.to_dict()["diagnostic_norm"] == "rho_star"
 
 
 def test_runtime_config_to_dict_is_json_roundtrippable_with_serial_aliases() -> None:
@@ -675,7 +668,7 @@ geometry_helper_python = "python3"
     assert cfg.geometry.geometry_helper_python == "python3"
 
 
-def test_load_runtime_from_toml_accepts_legacy_geometry_helper_aliases(
+def test_load_runtime_from_toml_accepts_geometry_helper_fields(
     tmp_path: Path,
 ) -> None:
     toml = """
@@ -683,18 +676,16 @@ def test_load_runtime_from_toml_accepts_legacy_geometry_helper_aliases(
 model = "vmec"
 vmec_file = "/tmp/wout_test.nc"
 torflux = 0.64
-gx_python = "python3"
-gx_repo = "/tmp/helper"
+geometry_helper_python = "python3"
+geometry_helper_repo = "/tmp/helper"
 """
-    path = tmp_path / "runtime_vmec_legacy.toml"
+    path = tmp_path / "runtime_vmec_helper.toml"
     path.write_text(toml, encoding="utf-8")
 
     cfg, _ = load_runtime_from_toml(path)
 
     assert cfg.geometry.geometry_helper_python == "python3"
     assert cfg.geometry.geometry_helper_repo == str(Path("/tmp/helper"))
-    assert cfg.geometry.gx_python == cfg.geometry.geometry_helper_python
-    assert cfg.geometry.gx_repo == cfg.geometry.geometry_helper_repo
 
 
 def test_load_runtime_from_toml_accepts_miller_geometry_fields(tmp_path: Path) -> None:

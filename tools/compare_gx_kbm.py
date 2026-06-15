@@ -529,7 +529,7 @@ def _run_candidate(
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
         mode_method=mode_method_base,
-        diagnostic_norm="gx",
+        diagnostic_norm="rho_star",
         gx_reference=True,
         auto_window=not args.no_auto_window,
         tmin=args.tmin,
