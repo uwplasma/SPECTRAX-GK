@@ -48,18 +48,19 @@
     "spectraxgk.solver_nonlinear_window_objective",
     "spectraxgk.solver_vmec_state",
     "spectraxgk.solver_vmec_boozer_objectives",
+    "spectraxgk.solver_vmec_boozer_gates",
     "spectraxgk.solver_objective_gradients",
     "spectraxgk.qa_low_turbulence",
     "spectraxgk.stellarator_objective_portfolio",
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 68,
+  "n_direct_modules": 69,
   "n_excluded_modules": 7,
-  "n_high_priority_open": 53,
-  "n_modules": 68,
+  "n_high_priority_open": 54,
+  "n_modules": 69,
   "n_owned_modules": 82,
-  "n_package_modules": 157,
+  "n_package_modules": 158,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -224,6 +225,7 @@
       "spectraxgk.vmec_jax_transport_objective"
     ],
     "spectraxgk.solver_objective_sampling": [],
+    "spectraxgk.solver_vmec_boozer_gates": [],
     "spectraxgk.solver_vmec_boozer_objectives": [],
     "spectraxgk.solver_vmec_state": [],
     "spectraxgk.stellarator_objective_portfolio": [],
@@ -1099,6 +1101,20 @@
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solver_vmec_boozer_objectives.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.solver_vmec_boozer_gates",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 3,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 3,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/solver_vmec_boozer_gates.py",
       "status": "active"
     },
     {

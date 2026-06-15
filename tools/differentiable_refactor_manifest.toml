@@ -509,6 +509,24 @@ fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solver_vmec_boozer_gates"
+source_path = "src/spectraxgk/solver_vmec_boozer_gates.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "VMEC/Boozer finite-difference sensitivity gates, curvature-gated line searches, and held-out aggregate objective audits"
+moved_exports = [
+  "_load_vmec_jax_example_state_bundle",
+  "_report_float",
+  "vmec_boozer_scalar_objective_finite_difference_report",
+  "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+  "vmec_boozer_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_line_search_holdout_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.nonlinear_parallel_spectral_core"
 source_path = "src/spectraxgk/nonlinear_parallel_spectral_core.py"
 facade_module = "spectraxgk.nonlinear_parallel"

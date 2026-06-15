@@ -2308,6 +2308,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_vmec_boozer_gates"
+path = "src/spectraxgk/solver_vmec_boozer_gates.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "finite-difference validation of VMEC/Boozer state perturbations before optimization promotion",
+  "curvature-gated one-parameter line-search audits with held-out surface, field-line, and ky samples",
+]
+physics_contracts = [
+  "finite-difference reports must state that they are sensitivity gates, not full nonlinear transport or production AD claims",
+  "aggregate line-search reports must keep training samples and held-out samples separate before any optimizer claim is promoted",
+  "scalar and aggregate gate reports must record the perturbed VMEC family, radial index, and mode index",
+]
+numerics_contracts = [
+  "perturbation steps, update steps, and improvement tolerances must fail closed when non-positive or invalid",
+  "central-difference responses must be finite, resolved above response_atol, and curvature-bounded before a step can be accepted",
+  "held-out aggregate audits must recompute the initial and final held-out objectives at the accepted coefficient offset",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
+  "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+]
+next_tests = [
+  "add direct tests for finite-difference response_atol edge cases and no-response failures",
+  "add regression fixtures for line-search candidate rejection under noisy aggregate objectives",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [

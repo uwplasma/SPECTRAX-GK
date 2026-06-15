@@ -570,6 +570,13 @@ Solver VMEC/Boozer Objectives
    :members:
    :private-members:
 
+Solver VMEC/Boozer Gates
+------------------------
+
+.. automodule:: spectraxgk.solver_vmec_boozer_gates
+   :members:
+   :private-members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

@@ -142,10 +142,12 @@ High-Risk Module Split Plan
   materialization, growth-rate, and objective-vector evaluators now live in
   ``solver_objective_core.py``. Solver-ready geometry objective gates, reduced
   nonlinear-window estimator metrics, VMEC/Boozer state coefficient helpers,
-  and VMEC/Boozer objective-table plumbing now live in
+  VMEC/Boozer objective-table plumbing, and VMEC/Boozer finite-difference/
+  line-search gates now live in
   ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
-  ``solver_vmec_state.py``, and ``solver_vmec_boozer_objectives.py`` while the
-  legacy facade keeps re-exporting the public and test-visible names.
+  ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, and
+  ``solver_vmec_boozer_gates.py`` while the legacy facade keeps re-exporting
+  the public and test-visible names.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.

@@ -1,4 +1,13 @@
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
+  VMEC/Boozer finite-difference sensitivity reports, curvature-gated
+  line-search gates, and held-out aggregate objective audits into
+  `spectraxgk.solver_vmec_boozer_gates`. The legacy
+  `solver_objective_gradients` facade now delegates through dependency-injected
+  wrappers so public imports and monkeypatch-based validation tests keep
+  working. Focused solver-objective tests, refactor/coverage manifest tests,
+  Ruff, mypy, docs build with warnings-as-errors, and release-readiness checks
+  passed locally.
+- 2026-06-15: Continued the differentiable solver-objective refactor by moving
   VMEC/Boozer objective option splitting, objective-table construction, sample
   metadata, and scalar reductions into
   `spectraxgk.solver_vmec_boozer_objectives`. The legacy
