@@ -1,4 +1,13 @@
 - 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
+  artifact claim classification into
+  `spectraxgk.nonlinear_gradient_evidence_classification` and campaign
+  candidate/bracket screening reports into
+  `spectraxgk.nonlinear_gradient_evidence_screening`. The remaining
+  `spectraxgk.nonlinear_gradient_evidence` module is now a small evidence-gap
+  orchestration facade plus JSON loader, while compatibility tests assert that
+  public and test-visible facade names still resolve to the moved modules.
+
+- 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
   replicated nonlinear-window evidence summaries into
   `spectraxgk.nonlinear_gradient_evidence_windows` and central
   finite-difference turbulence-gradient report assembly into

@@ -9,8 +9,10 @@ import numpy as np
 import pytest
 
 import spectraxgk.nonlinear_gradient_evidence as evidence
+import spectraxgk.nonlinear_gradient_evidence_classification as evidence_classification
 import spectraxgk.nonlinear_gradient_evidence_core as evidence_core
 import spectraxgk.nonlinear_gradient_evidence_fd as evidence_fd
+import spectraxgk.nonlinear_gradient_evidence_screening as evidence_screening
 import spectraxgk.nonlinear_gradient_evidence_windows as evidence_windows
 from spectraxgk.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
@@ -62,9 +64,23 @@ def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:
 
 
 def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
+    assert (
+        evidence.classify_gradient_artifact
+        is evidence_classification.classify_gradient_artifact
+    )
+    assert evidence._metric_margin is evidence_screening._metric_margin
+    assert evidence._bracket_sweep_row is evidence_screening._bracket_sweep_row
     assert evidence._ensemble_row is evidence_windows._ensemble_row
     assert (
         evidence.summarize_window_evidence is evidence_windows.summarize_window_evidence
+    )
+    assert (
+        evidence.nonlinear_turbulence_gradient_candidate_ranking_report
+        is evidence_screening.nonlinear_turbulence_gradient_candidate_ranking_report
+    )
+    assert (
+        evidence.nonlinear_turbulence_gradient_bracket_sweep_report
+        is evidence_screening.nonlinear_turbulence_gradient_bracket_sweep_report
     )
     assert (
         evidence.nonlinear_turbulence_gradient_finite_difference_report

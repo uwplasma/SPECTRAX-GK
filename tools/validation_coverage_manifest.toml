@@ -1580,6 +1580,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_classification"
+path = "src/spectraxgk/nonlinear_gradient_evidence_classification.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "finite-difference conditioning checks for nonlinear turbulence-gradient claims",
+]
+physics_contracts = [
+  "startup, reduced-window, pilot, or estimator artifacts remain classified as non-production even when their local metrics pass",
+  "only explicitly scoped production long-window artifacts without blockers can qualify for nonlinear turbulence-gradient promotion",
+]
+numerics_contracts = [
+  "classification records every response, asymmetry, condition-number, and uncertainty gate before promotion",
+  "missing or malformed conditioning values fail closed through the shared core metric parser",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add a classification-only regression with mixed production and startup scope markers",
+  "add a malformed conditioning payload regression that proves missing uncertainty blocks promotion",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_gradient_evidence_windows"
 path = "src/spectraxgk/nonlinear_gradient_evidence_windows.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
@@ -1640,6 +1671,38 @@ artifact_paths = [
 next_tests = [
   "add a direct finite-difference report regression for nonfinite ensemble means and sem values",
   "add a paired-replicate diagnostic regression that proves common-random-number seeds reduce gradient uncertainty when available",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence_screening"
+path = "src/spectraxgk/nonlinear_gradient_evidence_screening.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "same-control nonlinear turbulence-gradient bracket sweeps for locality and amplitude selection",
+  "campaign planning reports that separate screening evidence from production turbulent-transport-gradient promotion",
+]
+physics_contracts = [
+  "candidate rankings and bracket sweeps are planning tools and cannot promote artifacts that fail the production long-window classification gate",
+  "same-control bracket sweeps must flag sign changes, nonlocal responses, unresolved responses, and paired-replicate instability before recommending more expensive nonlinear campaigns",
+]
+numerics_contracts = [
+  "screening scores use normalized margins across response, locality, conditioning, and uncertainty rather than a single scalar residual",
+  "metadata length mismatches, mixed-control sweeps, and missing perturbation amplitudes fail closed with explicit recommendations",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json",
+  "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
+  "docs/_static/qa_ess_rbc11_bracket_sweep.json",
+]
+next_tests = [
+  "add a direct screening regression for repeated-bracket sign instability with paired replicate diagnostics",
+  "add a mixed-control bracket sweep regression that preserves fail-closed recommendations and zero promotion count",
 ]
 
 [[modules]]
