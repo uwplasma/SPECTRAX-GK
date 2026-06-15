@@ -1258,7 +1258,7 @@ def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone._apply_gx_hypercollisions",
+        "spectraxgk.benchmark_cyclone._apply_reference_hypercollisions",
         lambda params, **kwargs: params,
     )
     monkeypatch.setattr(

@@ -154,14 +154,14 @@ def test_fit_growth_rate_invalid():
 def test_benchmark_small_policy_helpers_cover_branch_contracts() -> None:
     """Fast policy helpers should stay deterministic without launching solvers."""
 
-    params = benchmarks._apply_gx_hypercollisions(LinearParams(), nhermite=None)
+    params = benchmarks._apply_reference_hypercollisions(LinearParams(), nhermite=None)
     assert params.p_hyper_m == pytest.approx(benchmarks.REFERENCE_P_HYPER_M)
-    assert benchmarks._gx_p_hyper_m(1) == pytest.approx(1.0)
-    assert benchmarks._gx_linked_end_damping(True) == (
+    assert benchmarks._reference_hypercollision_power(1) == pytest.approx(1.0)
+    assert benchmarks._linked_boundary_end_damping(True) == (
         benchmarks.REFERENCE_DAMP_ENDS_AMP,
         benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC,
     )
-    assert benchmarks._gx_linked_end_damping(False) == (0.0, 0.0)
+    assert benchmarks._linked_boundary_end_damping(False) == (0.0, 0.0)
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(1))) == 0
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(4))) == 3
     assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=True) == "gx_time"
@@ -981,8 +981,8 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     assert np.isclose(result.omega, 1.5)
 
 
-def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
-    """GX-aligned KBM runs should inherit GX linked-end damping defaults."""
+def test_run_kbm_linear_uses_linked_boundary_end_damping_by_default(monkeypatch):
+    """Reference-aligned KBM runs should inherit linked-end damping defaults."""
 
     captured: dict[str, float] = {}
 
@@ -1182,8 +1182,8 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
     assert captured["cfl_fac"] == pytest.approx(1.73)
 
 
-def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatch):
-    """Non-GX KBM runs should keep linked-end damping disabled by default."""
+def test_run_kbm_linear_disables_linked_boundary_end_damping_when_requested(monkeypatch):
+    """Non-reference KBM runs should keep linked-end damping disabled by default."""
 
     captured: dict[str, float] = {}
 
@@ -1289,8 +1289,8 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     assert np.isclose(scan.omega[0], 0.9)
 
 
-def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
-    """GX-aligned KBM beta scans should inherit GX linked-end damping defaults."""
+def test_run_kbm_beta_scan_uses_linked_boundary_end_damping_by_default(monkeypatch):
+    """Reference-aligned KBM beta scans should inherit linked-end damping defaults."""
 
     captured: dict[str, float] = {}
 

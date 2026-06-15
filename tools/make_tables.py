@@ -32,7 +32,7 @@ from spectraxgk.benchmarks import (
     ETG_KRYLOV_DEFAULT,
     KBM_KRYLOV_DEFAULT,
     TEM_KRYLOV_DEFAULT,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
     _two_species_params,
@@ -892,7 +892,7 @@ def _cyclone_gx_scan(
             damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
             damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()
 
         ky_idx = select_ky_index(np.asarray(grid_full.ky), ky_val)

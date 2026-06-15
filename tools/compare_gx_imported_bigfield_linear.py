@@ -34,7 +34,7 @@ from spectraxgk.analysis import (
     instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid, select_ky_grid
@@ -297,7 +297,7 @@ def main() -> None:
     )
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=nm)
+        params = _apply_reference_hypercollisions(params, nhermite=nm)
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),

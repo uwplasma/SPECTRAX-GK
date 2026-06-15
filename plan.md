@@ -2074,3 +2074,9 @@ No long nonlinear audit should be launched from these candidates.
   magnetic-compression corrections, and adiabatic quasineutrality helpers now
   use physics/numerics names instead of legacy provenance names. Focused
   nonlinear, cETG, runtime-diagnostic, lint, and manifest gates passed.
+- Continued the source-name cleanup in benchmark species policies. Reference
+  hypercollision and linked-boundary damping helpers now use
+  ``_apply_reference_hypercollisions``,
+  ``_reference_hypercollision_power``, and
+  ``_linked_boundary_end_damping``. Benchmark facades, comparison tools,
+  manifests, and focused benchmark tests were updated and passed.

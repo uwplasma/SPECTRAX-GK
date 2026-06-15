@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
 from spectraxgk.geometry import (
     SlabGeometry,
@@ -1144,7 +1144,7 @@ def main() -> None:
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract is not None:
         if gx_contract.hypercollisions:
-            params = _apply_gx_hypercollisions(params, nhermite=nm_use)
+            params = _apply_reference_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             D_hyper=float(gx_contract.D_hyper),
@@ -1152,7 +1152,7 @@ def main() -> None:
             damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
         )
     else:
-        params = _apply_gx_hypercollisions(params, nhermite=nm_use)
+        params = _apply_reference_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             damp_ends_amp=float(args.damp_ends_amp),

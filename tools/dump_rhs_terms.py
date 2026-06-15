@@ -30,7 +30,7 @@ from spectraxgk.benchmarks import (
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _electron_only_params,
     _two_species_params,
@@ -72,7 +72,7 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
         return cfg, params, 0, CYCLONE_OMEGA_D_SCALE, CYCLONE_OMEGA_STAR_SCALE, CYCLONE_RHO_STAR
     if case == "etg":
         model = ETGModelConfig(R_over_LTe=args.R_over_LTe, adiabatic_ions=args.adiabatic_ions)

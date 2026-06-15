@@ -16,13 +16,13 @@ import spectraxgk.benchmark_species as benchmark_species
 from spectraxgk.benchmark_helpers import (
     CycloneReference,
     CycloneRunResult,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_gaussian_profile,
     _build_initial_condition,
     _electron_only_params,
     _extract_mode_only_signal,
-    _gx_linked_end_damping,
-    _gx_p_hyper_m,
+    _linked_boundary_end_damping,
+    _reference_hypercollision_power,
     _is_array_like,
     _iter_ky_batches,
     _kbm_use_multi_target_krylov,
@@ -135,14 +135,14 @@ def test_split_benchmark_helper_reexports_preserve_public_import_identity() -> N
         benchmark_helpers.compare_cyclone_to_reference
         is benchmark_reference.compare_cyclone_to_reference
     )
-    assert benchmark_helpers._gx_p_hyper_m is benchmark_species._gx_p_hyper_m
+    assert benchmark_helpers._reference_hypercollision_power is benchmark_species._reference_hypercollision_power
     assert (
-        benchmark_helpers._apply_gx_hypercollisions
-        is benchmark_species._apply_gx_hypercollisions
+        benchmark_helpers._apply_reference_hypercollisions
+        is benchmark_species._apply_reference_hypercollisions
     )
     assert (
-        benchmark_helpers._gx_linked_end_damping
-        is benchmark_species._gx_linked_end_damping
+        benchmark_helpers._linked_boundary_end_damping
+        is benchmark_species._linked_boundary_end_damping
     )
     assert (
         benchmark_helpers._two_species_params is benchmark_species._two_species_params
@@ -247,20 +247,20 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
     assert ref.ky.shape == ref.gamma.shape == ref.omega.shape == (1,)
 
 
-def test_gx_hypercollision_helpers() -> None:
-    params = _apply_gx_hypercollisions(_linear_params(), nhermite=12)
-    assert _gx_p_hyper_m(None) == 20.0
-    assert _gx_p_hyper_m(1) == 1.0
-    assert _gx_p_hyper_m(12) == 6.0
+def test_reference_hypercollision_helpers() -> None:
+    params = _apply_reference_hypercollisions(_linear_params(), nhermite=12)
+    assert _reference_hypercollision_power(None) == 20.0
+    assert _reference_hypercollision_power(1) == 1.0
+    assert _reference_hypercollision_power(12) == 6.0
     assert params.nu_hyper == 0.0
     assert params.nu_hyper_m == 1.0
     assert params.hypercollisions_kz == 1.0
     assert params.p_hyper_m == 6.0
 
 
-def test_gx_linked_end_damping_and_midplane_index() -> None:
-    assert _gx_linked_end_damping(True) == (0.1, 0.125)
-    assert _gx_linked_end_damping(False) == (0.0, 0.0)
+def test_linked_boundary_end_damping_and_midplane_index() -> None:
+    assert _linked_boundary_end_damping(True) == (0.1, 0.125)
+    assert _linked_boundary_end_damping(False) == (0.0, 0.0)
     assert _midplane_index(SimpleNamespace(z=np.array([0.0]))) == 0
     assert _midplane_index(SimpleNamespace(z=np.arange(6))) == 4
 

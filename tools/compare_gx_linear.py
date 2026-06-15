@@ -23,7 +23,7 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     CYCLONE_KRYLOV_DEFAULT,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
     run_cyclone_scan,
@@ -194,7 +194,7 @@ def main() -> None:
                 damp_ends_amp=0.1,
                 damp_ends_widthfrac=1.0 / 8.0,
             )
-            params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+            params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
             cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
             G0 = _build_initial_condition(
                 grid,

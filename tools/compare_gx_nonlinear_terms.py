@@ -18,7 +18,7 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     CycloneBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
@@ -892,7 +892,7 @@ def main() -> None:
                 damp_ends_amp=0.0,
                 damp_ends_widthfrac=0.0,
             )
-            params = _apply_gx_hypercollisions(params, nhermite=nm)
+            params = _apply_reference_hypercollisions(params, nhermite=nm)
             params = _slice_species_params(
                 params, nspec, species_index=args.species_index
             )

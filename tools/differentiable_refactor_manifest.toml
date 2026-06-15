@@ -161,10 +161,10 @@ moved_exports = [
   "REFERENCE_NU_HYPER_M",
   "REFERENCE_P_HYPER_L",
   "REFERENCE_P_HYPER_M",
-  "_apply_gx_hypercollisions",
+  "_apply_reference_hypercollisions",
   "_electron_only_params",
-  "_gx_linked_end_damping",
-  "_gx_p_hyper_m",
+  "_linked_boundary_end_damping",
+  "_reference_hypercollision_power",
   "_two_species_params",
 ]
 fast_tests = ["tests/test_benchmarks_helpers.py"]

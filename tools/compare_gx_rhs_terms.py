@@ -22,7 +22,7 @@ from spectraxgk.benchmarks import (
     KBM_RHO_STAR,
     CycloneBaseCase,
     KBMBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
 )
@@ -466,7 +466,7 @@ def _build_imported_compare_context(
         fapar=float(gx_contract.fapar),
     )
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=int(nm))
+        params = _apply_reference_hypercollisions(params, nhermite=int(nm))
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
@@ -598,7 +598,7 @@ def main() -> None:
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm_use)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm_use)
         grid_full = build_spectral_grid(cfg.grid)
         term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     else:

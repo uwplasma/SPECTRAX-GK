@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_gx_hypercollisions
+from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
@@ -97,7 +97,7 @@ def main() -> int:
         D_hyper=float(args.D_hyper) if hyperdiffusion_on else 0.0,
         p_hyper_kperp=float(args.p_hyper_kperp),
     )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+    params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
 
     rng = np.random.default_rng(args.seed)
     G0 = np.zeros((1, args.Nl, args.Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)

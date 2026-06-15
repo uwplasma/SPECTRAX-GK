@@ -38,7 +38,7 @@ from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
@@ -236,7 +236,7 @@ def _build_problem(
             damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
             damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
-        params = _apply_gx_hypercollisions(params)
+        params = _apply_reference_hypercollisions(params)
         terms = LinearTerms()
         electron_index = 0
         ns = 1

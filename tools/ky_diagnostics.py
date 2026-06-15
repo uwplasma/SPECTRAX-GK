@@ -40,7 +40,7 @@ from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _electron_only_params,
     _two_species_params,
@@ -215,7 +215,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
             damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()
     elif case == "kinetic":
         cfg = KineticElectronBaseCase()

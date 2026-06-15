@@ -36,7 +36,7 @@ from spectraxgk.benchmarks import (
     CYCLONE_RHO_STAR,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
     load_cyclone_reference,
@@ -549,7 +549,7 @@ def _run_cyclone_gx_case(
         damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
         damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
     )
-    params = _apply_gx_hypercollisions(params, nhermite=Nm)
+    params = _apply_reference_hypercollisions(params, nhermite=Nm)
     terms = LinearTerms()
 
     G0 = _build_initial_condition(

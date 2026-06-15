@@ -37,7 +37,7 @@ from spectraxgk.benchmarking import (  # noqa: E402
     load_eigenfunction_reference_bundle,
     save_eigenfunction_reference_bundle,
 )
-from spectraxgk.benchmarks import _apply_gx_hypercollisions  # noqa: E402
+from spectraxgk.benchmarks import _apply_reference_hypercollisions  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf  # noqa: E402
 from spectraxgk.grids import build_spectral_grid  # noqa: E402
@@ -175,7 +175,7 @@ def _run_w7x_spectrax_mode(args: argparse.Namespace, *, reference_times: np.ndar
         fapar=float(gx_contract.fapar),
     )
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=nm_use)
+        params = _apply_reference_hypercollisions(params, nhermite=nm_use)
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
