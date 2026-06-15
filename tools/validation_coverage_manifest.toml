@@ -1398,6 +1398,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
+path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style nonlinear diagnostic reload used by restart append and comparison artifacts",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "loaded nonlinear diagnostics preserve species-resolved heat, particle, turbulent-heating, and resolved spectral traces",
+  "restart-append diagnostics drop transient monitored-mode traces that are not persisted on disk",
+]
+numerics_contracts = [
+  "real/imag NetCDF variables reload as complex arrays before comparison metrics are computed",
+  "missing optional turbulent-heating channels are filled with finite zero traces rather than NaNs",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add a restart-append roundtrip test with multiple resolved diagnostic fields",
+  "add a malformed optional-variable schema rejection test for invalid real/imag dimensions",
+]
+
+[[modules]]
 module = "spectraxgk.sharding"
 path = "src/spectraxgk/sharding.py"
 owned_modules = [

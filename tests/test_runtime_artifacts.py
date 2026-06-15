@@ -16,6 +16,7 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.runtime_artifacts as runtime_artifacts
 import spectraxgk.runtime_artifact_gx_layout as gx_layout
 import spectraxgk.runtime_artifact_io as artifact_io
+import spectraxgk.runtime_artifact_nonlinear_diagnostics as artifact_nonlinear_diag
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
     _ensure_parent,
@@ -78,8 +79,6 @@ from spectraxgk.runtime_orchestration import (
 )
 
 
-
-
 def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert runtime_artifacts._artifact_base is artifact_io._artifact_base
     assert runtime_artifacts._write_json is artifact_io._write_json
@@ -89,10 +88,33 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert runtime_artifacts._is_gx_netcdf_target is artifact_io._is_gx_netcdf_target
     assert runtime_artifacts._gx_active_kx_indices is gx_layout._gx_active_kx_indices
     assert runtime_artifacts._gx_active_ky_indices is gx_layout._gx_active_ky_indices
-    assert runtime_artifacts._condense_kykx_for_output is gx_layout._condense_kykx_for_output
+    assert (
+        runtime_artifacts._condense_kykx_for_output
+        is gx_layout._condense_kykx_for_output
+    )
     assert runtime_artifacts._spectral_to_ri is gx_layout._spectral_to_ri
     assert runtime_artifacts._restart_to_gx_layout is gx_layout._restart_to_gx_layout
-    assert runtime_artifacts._write_runtime_root_metadata is gx_layout._write_runtime_root_metadata
+    assert (
+        runtime_artifacts._write_runtime_root_metadata
+        is gx_layout._write_runtime_root_metadata
+    )
+    assert (
+        runtime_artifacts._resolve_restart_path
+        is artifact_nonlinear_diag._resolve_restart_path
+    )
+    assert (
+        runtime_artifacts._read_optional_var
+        is artifact_nonlinear_diag._read_optional_var
+    )
+    assert (
+        runtime_artifacts._condense_gx_diagnostics_for_output
+        is artifact_nonlinear_diag._condense_gx_diagnostics_for_output
+    )
+    assert (
+        runtime_artifacts.load_runtime_nonlinear_gx_diagnostics
+        is artifact_nonlinear_diag.load_runtime_nonlinear_gx_diagnostics
+    )
+
 
 def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     result = RuntimeLinearResult(
@@ -1952,8 +1974,9 @@ def test_run_runtime_nonlinear_with_artifacts_history_and_restart_paths(
     )
     monkeypatch.setattr(
         "spectraxgk.runtime_artifacts.write_runtime_nonlinear_artifacts",
-        lambda *_args, **_kwargs: captured.__setitem__("writes", captured["writes"] + 1)
-        or {"out": str(out)},
+        lambda *_args, **_kwargs: (
+            captured.__setitem__("writes", captured["writes"] + 1) or {"out": str(out)}
+        ),
     )
 
     result, paths = run_runtime_nonlinear_with_artifacts(

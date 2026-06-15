@@ -777,6 +777,23 @@ moved_exports = [
 fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
+source_path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "GX-style nonlinear diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
+moved_exports = [
+  "_resolved_species_time",
+  "_read_optional_var",
+  "_resolve_restart_path",
+  "_condense_resolved_for_output",
+  "_condense_gx_diagnostics_for_output",
+  "load_runtime_nonlinear_gx_diagnostics",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

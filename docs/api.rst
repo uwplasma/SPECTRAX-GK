@@ -478,6 +478,13 @@ Runtime Artifact GX Layout
    :members:
    :private-members:
 
+Runtime Artifact Nonlinear Diagnostics
+--------------------------------------
+
+.. automodule:: spectraxgk.runtime_artifact_nonlinear_diagnostics
+   :members:
+   :private-members:
+
 Quasilinear Transport
 ---------------------
 

@@ -1,3 +1,11 @@
+- 2026-06-15: Continued the runtime artifact refactor by moving nonlinear
+  GX-style diagnostic reload, optional-variable parsing, restart-path
+  resolution, species-time condensation, and restart-append diagnostic schema
+  normalization into `spectraxgk.runtime_artifact_nonlinear_diagnostics`. The
+  public `spectraxgk.runtime_artifacts` facade still re-exports the moved
+  helpers used by tests and artifact handoff code, preserving restart and
+  NetCDF compatibility while reducing the remaining artifact hotspot.
+
 - 2026-06-15: Completed the nonlinear-gradient follow-up facade split by
   moving candidate-design, composite-control, matched-replicate follow-up,
   QL/linear seed-screen, and VMEC-state runbook reports into
