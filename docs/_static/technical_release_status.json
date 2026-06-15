@@ -366,6 +366,14 @@
         },
         {
           "exists": true,
+          "name": "VMEC/Boozer differentiability claim guard",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_differentiability_claim_guard.json",
+          "required": true,
+          "snippet": "not_full_nonlinear_transport_optimization"
+        },
+        {
+          "exists": true,
           "name": "manuscript readiness",
           "passed": true,
           "path": "docs/_static/manuscript_readiness_status.json",
@@ -399,8 +407,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 6,
-      "required": 6
+      "passed_required": 7,
+      "required": 7
     }
   },
   "passed": true,

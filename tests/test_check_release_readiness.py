@@ -44,6 +44,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/check_parallel_scaling_artifacts.py",
                 "tools/check_performance_optimization_manifest.py",
                 "tools/check_quasilinear_promotion_guardrails.py",
+                "tools/check_vmec_boozer_differentiability_claim.py",
                 "tools/build_parallelization_completion_status.py",
                 "tools/build_technical_release_status.py",
                 "tools/check_release_readiness.py",
@@ -59,6 +60,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "tools/check_performance_optimization_manifest.py\n"
         "tools/check_parallel_scaling_artifacts.py\n"
         "tools/check_quasilinear_promotion_guardrails.py\n"
+        "tools/check_vmec_boozer_differentiability_claim.py\n"
         "tools/build_parallelization_completion_status.py\n"
         "tools/build_technical_release_status.py\n"
         "tools/check_release_readiness.py\n"
@@ -76,6 +78,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "validation_gate_index.json",
         "validation_coverage_manifest_summary.json",
         "quasilinear_promotion_guardrails.json",
+        "vmec_boozer_differentiability_claim_guard.json",
         "technical_release_status.json",
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",

@@ -495,6 +495,15 @@ still tagged as ``not_full_transport_gradient_claim``. The gradient-holdout
 tests require the ``mode21_vmec_boozer_state`` source scope, ``mboz,nboz >= 21``,
 and explicitly track the nonlinear-window estimator objectives as a reduced
 differentiability gate rather than a production nonlinear-optimization gate.
+The release guard
+``docs/_static/vmec_boozer_differentiability_claim_guard.json`` now checks
+those contents directly: it requires the equal-arc parity matrix, the QH/Li383
+mode-21 frequency/quasilinear/nonlinear-window gradient holdouts, explicit
+``diagnostic_open`` status for the direct VMEC tensor-vs-imported-EIK
+convention gap, and a startup-only label for the nonlinear finite-difference
+audit. A tagged release must fail if these artifacts try to promote a direct
+tensor-parity failure or a startup nonlinear-window response into a converged
+nonlinear transport-gradient claim.
 
 For release claims, the differentiable-geometry lane is closed only for
 artifact-passing zero-beta equal-arc parity rows and reduced

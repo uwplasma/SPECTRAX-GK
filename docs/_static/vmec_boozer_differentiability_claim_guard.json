@@ -1,0 +1,84 @@
+{
+  "artifacts": {
+    "differentiable_geometry_bridge": "docs/_static/differentiable_geometry_bridge.json",
+    "gradient_holdout_matrix": "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+    "nonlinear_fd_audit": "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+    "parity_matrix": "docs/_static/vmec_boozer_parity_matrix.json"
+  },
+  "blockers": [],
+  "checks": {
+    "differentiable_geometry_bridge": {
+      "booz_xform_flux_tube_available": true,
+      "direct_interpretation_present": true,
+      "direct_production_parity_passed": false,
+      "direct_status": "diagnostic_open",
+      "direct_tensor_gap_explicitly_scoped": true,
+      "equal_arc_checks": {
+        "equal_arc_core_passed": true,
+        "equal_arc_derivative_passed": true,
+        "equal_arc_drift_passed": true,
+        "equal_arc_metric_passed": true
+      },
+      "vmec_jax_boozer_available": true
+    },
+    "gradient_holdout_matrix": {
+      "all_gates_passed": true,
+      "all_mboz_nboz_at_least_21": true,
+      "all_mode21_source_scope": true,
+      "cases": [
+        "li383_low_res",
+        "nfp4_QH_warm_start"
+      ],
+      "claim_level": "multi_equilibrium_reduced_linear_quasilinear_and_nonlinear_window_estimator_gradient_gate_not_production_nonlinear_optimization",
+      "claim_scoped_not_production_nonlinear_optimization": true,
+      "failed_rows": [],
+      "gate_types": [
+        "frequency",
+        "nonlinear-window estimator",
+        "quasilinear"
+      ],
+      "missing_gate_types": [],
+      "mode_failures": [],
+      "n_cases": 2,
+      "passed": true,
+      "required_gate_types": [
+        "frequency",
+        "nonlinear-window estimator",
+        "quasilinear"
+      ],
+      "source_scope_failures": []
+    },
+    "nonlinear_fd_audit": {
+      "claim_level": "vmec_boozer_geometry_perturbed_startup_plumbing_fd_audit_not_transport_average",
+      "claim_scoped_not_transport_average": true,
+      "passed": true,
+      "production_nonlinear_observable_fd_path_gate": false,
+      "production_nonlinear_window_gradient_gate": false,
+      "startup_plumbing_gate": true,
+      "transport_average_gate": false
+    },
+    "parity_matrix": {
+      "all_available": true,
+      "all_equal_arc_passed": true,
+      "claim_level": "multi_equilibrium_zero_beta_equal_arc_parity_gate_not_full_transport_gradient_claim",
+      "claim_scoped_not_full_transport_gradient": true,
+      "direct_tensor_parity_hidden_failures": [],
+      "direct_tensor_parity_open_rows": [
+        "nfp3_QI_fixed_resolution_final",
+        "nfp4_QH_warm_start",
+        "shaped_tokamak_pressure"
+      ],
+      "minimum_boozer_mode_count": 21,
+      "mode_floor_passed": true,
+      "n_cases": 3,
+      "n_equal_arc_passed": 3
+    }
+  },
+  "claim_level": "reduced_full_chain_differentiability_guard_not_full_nonlinear_transport_optimization",
+  "kind": "vmec_boozer_differentiability_claim_guard",
+  "minimum_boozer_mode_count": 21,
+  "minimum_gradient_cases": 2,
+  "passed": true,
+  "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "scope": "Passes only the release-level reduced differentiability claim: VMEC/Boozer equal-arc parity and AD/finite-difference gradients for linear, quasilinear, and nonlinear-window estimator objectives. Direct VMEC tensor-vs-imported-EIK parity and converged nonlinear transport-gradient optimization remain explicitly out of scope."
+}

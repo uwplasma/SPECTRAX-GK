@@ -202,6 +202,7 @@ README claims, or manuscript claims.
      - ``autodiff_inverse_growth.*``, ``autodiff_inverse_twomode.*``,
        ``differentiable_geometry_bridge.*``, ``vmec_boozer_parity_matrix.*``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
+       ``vmec_boozer_differentiability_claim_guard.*``,
        ``nonlinear_window_fd_audit.*``, and
        ``vmec_boozer_nonlinear_window_fd_audit.*``
      - Reduced AD/finite-difference gates are in scope. Production nonlinear

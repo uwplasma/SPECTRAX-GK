@@ -99,6 +99,11 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
     "scientific_gate_guardrails": (
         EvidenceCheck("validation gate index", "docs/_static/validation_gate_index.json"),
         EvidenceCheck("quasilinear guardrails", "docs/_static/quasilinear_promotion_guardrails.json"),
+        EvidenceCheck(
+            "VMEC/Boozer differentiability claim guard",
+            "docs/_static/vmec_boozer_differentiability_claim_guard.json",
+            "not_full_nonlinear_transport_optimization",
+        ),
         EvidenceCheck("manuscript readiness", "docs/_static/manuscript_readiness_status.json"),
         EvidenceCheck("open lane status", "docs/_static/open_research_lane_status.json"),
         EvidenceCheck("stellarator optimization docs", "docs/stellarator_optimization.rst", "finite-difference"),

@@ -1,3 +1,13 @@
+- 2026-06-15: Added a content-based VMEC/Boozer differentiability claim guard.
+  `tools/check_vmec_boozer_differentiability_claim.py` now validates the
+  tracked equal-arc parity matrix, mode-21 QH/Li383 frequency/quasilinear/
+  nonlinear-window gradient holdout matrix, explicit diagnostic-open status for
+  the direct VMEC tensor-vs-imported-EIK convention gap, and startup-only scope
+  for the nonlinear finite-difference audit. CI, release readiness, technical
+  release status, geometry docs, and release-scope docs now require the guard
+  so reduced AD claims stay separated from unpromoted full nonlinear
+  turbulence-gradient optimization claims.
+
 - 2026-06-15: Removed the remaining old imported-geometry facade aliases from
   the production geometry package surface (`apply_imported_geometry_grid_defaults`,
   `load_imported_geometry_netcdf`, `zero_shear_enabled`, `effective_boundary`,
