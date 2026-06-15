@@ -2148,3 +2148,8 @@ No long nonlinear audit should be launched from these candidates.
   ``tools/generate_miller_eik.py``. Documentation now points to the canonical
   script, while the old path remains a tiny compatibility wrapper for existing
   automation.
+- Continued the source-name cleanup by renaming the production Hermite-Laguerre
+  field-coupled streaming RHS helper from ``streaming_contribution_gx`` to
+  ``linked_streaming_contribution``. RHS assembly and profiling now use the
+  algorithmic name; the old symbol remains an object-identical compatibility
+  alias for explicit comparison tests and older tools.

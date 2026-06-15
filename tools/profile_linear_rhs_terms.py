@@ -39,7 +39,7 @@ from spectraxgk.terms.linear_terms import (
     hypercollisions_contribution,
     hyperdiffusion_contribution,
     mirror_contribution,
-    streaming_contribution_gx,
+    linked_streaming_contribution,
 )
 from spectraxgk.terms.operators import abs_z_linked_fft, grad_z_linked_fft, shift_axis
 
@@ -387,7 +387,7 @@ def main() -> None:
             )
         ),
         "streaming": jax.jit(
-            lambda: streaming_contribution_gx(
+            lambda: linked_streaming_contribution(
                 G0,
                 phi=fields.phi,
                 apar=h_apar,
