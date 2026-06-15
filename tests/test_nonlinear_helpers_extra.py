@@ -280,12 +280,12 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         ),
     )
     cache = SimpleNamespace(ky=jnp.asarray(grid.ky))
-    mask = _gx_omega_mode_mask(grid, cache, gx_real_fft=True)
+    mask = _gx_omega_mode_mask(grid, cache, compressed_real_fft=True)
     assert mask.shape == (4, 2)
     assert bool(mask[0, 0]) is True
     assert bool(mask[3, 1]) is False
 
-    signed_mask = _gx_omega_mode_mask(grid, cache, gx_real_fft=False)
+    signed_mask = _gx_omega_mode_mask(grid, cache, compressed_real_fft=False)
     assert bool(signed_mask[1, 0]) is True
     assert bool(signed_mask[2, 0]) is False
 
@@ -295,7 +295,7 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         dealias_mask=np.array([[True, True], [True, False], [False, True]]),
     )
     positive_cache = SimpleNamespace(ky=jnp.asarray(positive_grid.ky))
-    positive_mask = _gx_omega_mode_mask(positive_grid, positive_cache, gx_real_fft=True)
+    positive_mask = _gx_omega_mode_mask(positive_grid, positive_cache, compressed_real_fft=True)
     np.testing.assert_array_equal(np.asarray(positive_mask), positive_grid.dealias_mask)
 
 
@@ -415,7 +415,7 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
         zeros,
         grid,
         cache,
-        gx_real_fft=False,
+        compressed_real_fft=False,
         kx_max=1.0,
         ky_max=1.0,
         kxfac=1.0,
@@ -435,7 +435,7 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
         fields,
         grid,
         cache,
-        gx_real_fft=False,
+        compressed_real_fft=False,
         kx_max=1.0,
         ky_max=1.0,
         kxfac=1.0,
@@ -479,7 +479,7 @@ def test_gx_nonlinear_omega_components_recovers_spectral_gradient_cfl() -> None:
         fields,
         grid,
         cache,
-        gx_real_fft=False,
+        compressed_real_fft=False,
         kx_max=5.0,
         ky_max=3.0,
         kxfac=-2.0,
@@ -569,7 +569,7 @@ def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> Non
         dt=0.1,
         steps=2,
         method="rk2",
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     assert out_G.shape == (1, 4, 2, 2)
     assert captured["project_state"] is not None
@@ -1287,7 +1287,7 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         method="euler",
         cache=cache,
         terms=TermConfig(nonlinear=1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
         z_index=0,
         omega_ky_index=1,
         omega_kx_index=0,

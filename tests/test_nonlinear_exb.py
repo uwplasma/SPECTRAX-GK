@@ -170,7 +170,7 @@ def test_exb_bracket_respects_dealias_mask():
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert np.allclose(np.asarray(dG_zero), 0.0)
 
@@ -201,7 +201,7 @@ def test_exb_bracket_matches_finite_difference():
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     bracket_spec_hat = np.asarray(bracket_spec[0, 0, 0, :, :, 0])
     assert np.max(np.abs(bracket_spec_hat - bracket_ref)) < 5.0e-6
@@ -228,7 +228,7 @@ def test_spectral_bracket_is_antisymmetric_for_periodic_fields():
         ky_grid=grid.ky_grid,
         dealias_mask=full_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     bracket_gf = _spectral_bracket(
         jnp.asarray(g_hat[None, None, None, ...]),
@@ -237,7 +237,7 @@ def test_spectral_bracket_is_antisymmetric_for_periodic_fields():
         ky_grid=grid.ky_grid,
         dealias_mask=full_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     np.testing.assert_allclose(np.asarray(bracket_fg + bracket_gf), 0.0, atol=1.0e-6)
@@ -264,7 +264,7 @@ def test_exb_bracket_free_energy_inner_product_vanishes_for_periodic_scalar():
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     dG_real = np.fft.ifft2(np.asarray(dG_hat[0, 0, 0, :, :, 0])) * nxy
     free_energy_rate = np.mean(np.real(np.conj(G_real) * dG_real))
@@ -395,7 +395,7 @@ def test_em_weights_are_toggles():
     assert np.max(np.abs(np.asarray(dG_on))) > 0.0
 
 
-def test_gx_real_fft_bracket_match():
+def test_compressed_real_fft_bracket_match():
     grid = build_spectral_grid(
         GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
@@ -420,7 +420,7 @@ def test_gx_real_fft_bracket_match():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
 
     Nxy = nx * ny
@@ -448,7 +448,7 @@ def test_gx_real_fft_bracket_match():
     )
 
 
-def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
+def test_compressed_real_fft_toggle_matches_full_fft_for_hermitian():
     grid = build_spectral_grid(
         GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
@@ -473,7 +473,7 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     bracket_full = _spectral_bracket(
         jnp.asarray(G_full),
@@ -482,14 +482,14 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert bracket_gx.shape == bracket_full.shape
     assert np.all(np.isfinite(np.asarray(bracket_gx)))
     assert np.all(np.isfinite(np.asarray(bracket_full)))
 
 
-def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
+def test_compressed_real_fft_bracket_preserves_full_hermitian_symmetry():
     grid = build_spectral_grid(
         GridConfig(Nx=6, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
@@ -514,7 +514,7 @@ def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
             ky_grid=grid.ky_grid,
             dealias_mask=grid.dealias_mask,
             kxfac=jnp.asarray(1.0),
-            gx_real_fft=True,
+            compressed_real_fft=True,
         )
     )
 
@@ -525,7 +525,7 @@ def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
     assert np.allclose(bracket_hat[..., nyc:, :, :], neg_ref, rtol=1.0e-6, atol=1.0e-6)
 
 
-def test_gx_real_fft_bracket_match_odd_ny():
+def test_compressed_real_fft_bracket_match_odd_ny():
     grid = build_spectral_grid(
         GridConfig(Nx=6, Ny=7, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
@@ -549,7 +549,7 @@ def test_gx_real_fft_bracket_match_odd_ny():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
 
     Nxy = nx * ny
@@ -656,7 +656,7 @@ def test_bracket_multi_matches_separate():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     bracket_phi = _spectral_bracket(
         jnp.asarray(G),
@@ -665,7 +665,7 @@ def test_bracket_multi_matches_separate():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     bracket_bpar = _spectral_bracket(
         jnp.asarray(G),
@@ -674,7 +674,7 @@ def test_bracket_multi_matches_separate():
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert np.allclose(
         np.asarray(brackets[0]), np.asarray(bracket_phi), rtol=1.0e-6, atol=1.0e-6
@@ -697,7 +697,7 @@ def test_single_field_bracket_fast_path_matches_multi_reference():
     )
     chi_stack = _stack_fields(jnp.asarray(G), [jnp.asarray(chi)])
 
-    for gx_real_fft in (False, True):
+    for compressed_real_fft in (False, True):
         single = _spectral_bracket(
             jnp.asarray(G),
             jnp.asarray(chi),
@@ -705,7 +705,7 @@ def test_single_field_bracket_fast_path_matches_multi_reference():
             ky_grid=grid.ky_grid,
             dealias_mask=grid.dealias_mask,
             kxfac=jnp.asarray(1.0),
-            gx_real_fft=gx_real_fft,
+            compressed_real_fft=compressed_real_fft,
         )
         multi = _spectral_bracket_multi(
             jnp.asarray(G),
@@ -714,7 +714,7 @@ def test_single_field_bracket_fast_path_matches_multi_reference():
             ky_grid=grid.ky_grid,
             dealias_mask=grid.dealias_mask,
             kxfac=jnp.asarray(1.0),
-            gx_real_fft=gx_real_fft,
+            compressed_real_fft=compressed_real_fft,
         )[0]
         assert np.allclose(
             np.asarray(single), np.asarray(multi), rtol=1.0e-6, atol=1.0e-6
@@ -779,7 +779,7 @@ def test_laguerre_precompute_matches_direct():
         laguerre_to_spectral=laguerre_to_spectral,
         laguerre_roots=laguerre_roots,
         b=jnp.asarray(b),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     dG_direct = nonlinear_em_contribution(jnp.asarray(G), **common)
     dG_cached = nonlinear_em_contribution(
@@ -835,7 +835,7 @@ def test_laguerre_mode_spectral_matches_identity_grid():
         laguerre_j0=j0,
         laguerre_j1_over_alpha=j1_over_alpha,
         b=b,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     dG_grid = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
@@ -895,7 +895,7 @@ def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
         laguerre_j0=j0,
         laguerre_j1_over_alpha=None,
         b=b,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     contribution = nonlinear_em_contribution(
@@ -945,7 +945,7 @@ def test_nonlinear_components_total_matches_contribution():
         weight=jnp.asarray(1.0),
         apar_weight=1.0,
         bpar_weight=0.0,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     dG = nonlinear_em_contribution(jnp.asarray(G), **common)
     comps = nonlinear_em_components(jnp.asarray(G), laguerre_mode="spectral", **common)
@@ -1000,7 +1000,7 @@ def test_laguerre_components_total_matches_contribution():
         laguerre_j0=j0,
         laguerre_j1_over_alpha=j1_over_alpha,
         b=b,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     dG = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
     comps = nonlinear_em_components(jnp.asarray(G), laguerre_mode="grid", **common)
@@ -1026,7 +1026,7 @@ def test_exb_bracket_energy_conserves():
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert np.max(np.abs(np.asarray(dG))) < 1.0e-6
 
@@ -1167,7 +1167,7 @@ def test_spectral_bracket_explicit_fft_norm_and_single_ky_branch():
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
         fft_norm=norm,
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     bracket_full = _spectral_bracket_multi(
         jnp.asarray(G),
@@ -1177,7 +1177,7 @@ def test_spectral_bracket_explicit_fft_norm_and_single_ky_branch():
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
         fft_norm=norm,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert bracket_gx.shape == bracket_full.shape == (1,) + G.shape
 
@@ -1190,7 +1190,7 @@ def test_spectral_bracket_explicit_fft_norm_and_single_ky_branch():
         ky_grid=jnp.zeros((1, 2), dtype=jnp.float32),
         dealias_mask=jnp.ones((1, 2), dtype=bool),
         kxfac=jnp.asarray(1.0),
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     assert single_out.shape == (1, 1, 1, 1, 1, 2, 1)
 
@@ -1227,7 +1227,7 @@ def test_squeezed_em_components_match_contribution_with_4d_gyroaverages():
         weight=jnp.asarray(1.0),
         apar_weight=1.0,
         bpar_weight=1.0,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     contribution = nonlinear_em_contribution(jnp.asarray(G), **common)
@@ -1284,7 +1284,7 @@ def test_laguerre_components_without_precomputed_bessel_include_bpar_and_apar():
         laguerre_to_spectral=laguerre_to_spectral,
         laguerre_roots=jnp.asarray([0.0, 1.0], dtype=jnp.float32),
         b=jnp.zeros((1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     contribution = nonlinear_em_contribution(

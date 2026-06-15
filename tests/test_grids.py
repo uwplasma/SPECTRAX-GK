@@ -75,7 +75,7 @@ def test_grid_config_explicit_zp():
     assert jnp.isclose(grid.z[0], -jnp.pi * 3.0)
 
 
-def test_gx_real_fft_wavenumbers_match_gx_native_layout():
+def test_compressed_real_fft_wavenumbers_match_gx_native_layout():
     """GX real-FFT helpers should expose positive Nyquist multipliers."""
 
     cfg = GridConfig(Nx=4, Ny=10, Nz=4, Lx=2.0, Ly=20.0)
@@ -89,7 +89,7 @@ def test_gx_real_fft_wavenumbers_match_gx_native_layout():
     )
 
 
-def test_select_gx_real_fft_ky_grid_uses_explicit_positive_dump_values():
+def test_select_real_fft_ky_grid_uses_explicit_positive_dump_values():
     """GX dump grids should not inherit the negative Nyquist sign from fftfreq order."""
 
     cfg = GridConfig(Nx=4, Ny=6, Nz=4, Lx=2.0, Ly=6.0)

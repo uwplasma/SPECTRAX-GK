@@ -24,7 +24,7 @@ from spectraxgk.diagnostics import (
     fieldline_quadrature_weights,
 )
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
+from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import (
@@ -247,7 +247,7 @@ def main() -> None:
     geom = build_runtime_geometry(cfg_use)
     grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
     cache = build_linear_cache(grid, geom_eff, params, nl, nm)

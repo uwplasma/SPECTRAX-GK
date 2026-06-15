@@ -113,12 +113,12 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
     grid_pos = SimpleNamespace(ky=np.array([0.1, 0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     captured: dict[str, object] = {}
 
-    def _fake_select_gx_real_fft_ky_grid(grid, ky_vals):
+    def _fake_select_real_fft_ky_grid(grid, ky_vals):
         captured["grid"] = grid
         captured["ky_vals"] = np.asarray(ky_vals)
         return grid_pos
 
-    monkeypatch.setattr(mod, "select_gx_real_fft_ky_grid", _fake_select_gx_real_fft_ky_grid)
+    monkeypatch.setattr(mod, "select_real_fft_ky_grid", _fake_select_real_fft_ky_grid)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object())
     cache = SimpleNamespace(kperp2=np.arange(4, dtype=np.float32).reshape(2, 1, 2), bmag=np.ones(2), kperp2_bmag=False)
     monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: cache)

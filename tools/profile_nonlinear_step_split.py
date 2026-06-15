@@ -121,7 +121,7 @@ def main() -> None:
             laguerre_j0=cache.laguerre_j0,
             laguerre_j1_over_alpha=cache.laguerre_j1_over_alpha,
             b=cache.b,
-            gx_real_fft=bool(cfg.time.gx_real_fft),
+            compressed_real_fft=bool(cfg.time.compressed_real_fft),
             laguerre_mode=laguerre_mode,
         )
     )
@@ -133,7 +133,7 @@ def main() -> None:
             cache,
             params,
             term_cfg,
-            gx_real_fft=bool(cfg.time.gx_real_fft),
+            compressed_real_fft=bool(cfg.time.compressed_real_fft),
             laguerre_mode=laguerre_mode,
         )
     )

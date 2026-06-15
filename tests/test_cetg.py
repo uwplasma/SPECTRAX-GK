@@ -58,7 +58,7 @@ def _base_cetg_cfg() -> RuntimeConfig:
             fixed_dt=True,
             sample_stride=1,
             diagnostics_stride=1,
-            gx_real_fft=True,
+            compressed_real_fft=True,
             nonlinear_dealias=True,
         ),
         geometry=GeometryConfig(model="slab", z0=np.pi, zero_shat=True),
@@ -291,19 +291,19 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         dtype=np.complex64,
     )
 
-    G0 = _project_state(_to_internal_state(jnp.asarray(g0_state)), grid, gx_real_fft=True)
+    G0 = _project_state(_to_internal_state(jnp.asarray(g0_state)), grid, compressed_real_fft=True)
     fields0 = cetg_fields(G0, grid, params, apply_kz_dealias=False)
 
     def euler_step(G_state: jnp.ndarray, fields_state) -> jnp.ndarray:
-        rhs, _ = cetg_rhs(G_state, grid, params, terms, gx_real_fft=True, fields_override=fields_state)
-        return _project_state(G_state + (_SSPX3_ADT * float(cfg.time.dt)) * rhs, grid, gx_real_fft=True)
+        rhs, _ = cetg_rhs(G_state, grid, params, terms, compressed_real_fft=True, fields_override=fields_state)
+        return _project_state(G_state + (_SSPX3_ADT * float(cfg.time.dt)) * rhs, grid, compressed_real_fft=True)
 
     G1 = euler_step(G0, fields0)
     G2_euler = euler_step(G1, cetg_fields(G1, grid, params))
     G2 = _project_state(
         (1.0 - _SSPX3_W1) * G0 + (_SSPX3_W1 - 1.0) * G1 + G2_euler,
         grid,
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     G3 = euler_step(G2, cetg_fields(G2, grid, params))
     G_manual = _project_state(
@@ -312,7 +312,7 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         + (_SSPX3_W2 - 1.0) * G2
         + G3,
         grid,
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
 
     _t, diag, G_scan, _fields = integrate_cetg_explicit_diagnostics_state(
@@ -325,7 +325,7 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         method="sspx3",
         sample_stride=1,
         diagnostics_stride=1,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         omega_ky_index=1,
         omega_kx_index=0,
         fixed_dt=False,
@@ -377,7 +377,7 @@ def test_cetg_explicit_method_branches_return_finite_diagnostics(method: str) ->
         method=method,
         sample_stride=1,
         diagnostics_stride=1,
-        gx_real_fft=False,
+        compressed_real_fft=False,
         fixed_dt=True,
     )
 

@@ -73,7 +73,7 @@ def test_integrate_nonlinear_sharded_rejects_bad_options() -> None:
 def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     calls = {"rhs": 0, "shard": 0, "put": 0}
 
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         calls["rhs"] += 1
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
@@ -113,7 +113,7 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, 
 
     calls = {"rhs": 0}
 
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         calls["rhs"] += 1
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
@@ -128,7 +128,7 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, 
         dt=0.1,
         steps=1,
         method=method,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     assert G_final.shape == G0.shape
@@ -138,7 +138,7 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, 
 
 
 def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         return 2.0 * jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
     monkeypatch.setattr("spectraxgk.sharded_integrators.nonlinear_rhs_cached", fake_rhs)

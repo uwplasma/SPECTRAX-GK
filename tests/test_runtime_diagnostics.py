@@ -829,7 +829,7 @@ def test_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> None:
     np.testing.assert_allclose(
         np.asarray(
             electrostatic_field_energy_krehm(
-                phi, grid, params, vol_fac, use_dealias=True, gx_real_fft=True
+                phi, grid, params, vol_fac, use_dealias=True, compressed_real_fft=True
             )
         ),
         expected,

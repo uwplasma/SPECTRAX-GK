@@ -14,7 +14,6 @@ from spectraxgk.config import (
     TEMBaseCase,
     TimeConfig,
     explicit_method_default_cfl_fac,
-    gx_default_cfl_fac,
     resolve_cfl_fac,
 )
 
@@ -36,14 +35,14 @@ def test_config_override():
     grid = GridConfig(Nx=12, Ny=10, Nz=8)
     geom = GeometryConfig(q=1.7, s_hat=0.9, epsilon=0.2)
     model = ModelConfig(R_over_LTi=7.0, R_over_LTe=1.0, R_over_Ln=2.5)
-    time = TimeConfig(t_max=1.0, dt=0.05, gx_real_fft=False)
+    time = TimeConfig(t_max=1.0, dt=0.05, compressed_real_fft=False)
     cfg = CycloneBaseCase(grid=grid, time=time, geometry=geom, model=model)
     d = cfg.to_dict()
     assert d["grid"]["Nx"] == 12
     assert d["geometry"]["q"] == 1.7
     assert d["model"]["R_over_LTe"] == 1.0
     assert d["time"]["dt"] == 0.05
-    assert d["time"]["gx_real_fft"] is False
+    assert d["time"]["compressed_real_fft"] is False
 
 
 def test_etg_config_to_dict():
@@ -90,11 +89,11 @@ def test_explicit_method_default_cfl_fac_is_method_resolved() -> None:
     assert explicit_method_default_cfl_fac("rk4") == pytest.approx(2.82)
 
 
-def test_gx_default_cfl_fac_alias_is_method_resolved() -> None:
-    assert gx_default_cfl_fac("rk2") == pytest.approx(1.0)
-    assert gx_default_cfl_fac("rk3") == pytest.approx(1.73)
-    assert gx_default_cfl_fac("sspx3") == pytest.approx(1.73)
-    assert gx_default_cfl_fac("rk4") == pytest.approx(2.82)
+def test_explicit_method_default_cfl_fac_alias_is_method_resolved() -> None:
+    assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
+    assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("sspx3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("rk4") == pytest.approx(2.82)
 
 
 def test_resolve_cfl_fac_preserves_explicit_override() -> None:

@@ -2058,3 +2058,9 @@ No long nonlinear audit should be launched from these candidates.
   benchmark, and low-level tests now use explicit-time names for the Heun/RK4
   paths and diagnostic masks. External-reference comparison tools keep their
   comparison wording where they explicitly compare against another code.
+- Continued the source-name cleanup by renaming the optimized nonlinear
+  real-FFT path from the old ``gx_real_fft`` schema/API wording to
+  ``compressed_real_fft``. Runtime TOMLs, docs, nonlinear kernels, profiling
+  tools, and tests now describe this as a compressed Hermitian real-FFT
+  algorithm. Internal bracket helpers were renamed to real-FFT terminology,
+  while explicit external-code comparison tools keep comparison-specific names.

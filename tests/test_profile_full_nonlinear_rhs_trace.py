@@ -21,7 +21,7 @@ def test_build_summary_contains_nonlinear_trace_metadata() -> None:
         repeats=5,
         state="initial",
         laguerre_mode="grid",
-        gx_real_fft=True,
+        compressed_real_fft=True,
         z_variation_norm=0.0,
         compile_execute_seconds=2.0,
         warm_seconds=0.01,
@@ -40,7 +40,7 @@ def test_build_summary_contains_nonlinear_trace_metadata() -> None:
     assert payload["case"] == "runtime_cyclone_nonlinear_miller"
     assert payload["backend"] == "gpu"
     assert payload["laguerre_mode"] == "grid"
-    assert payload["gx_real_fft"] is True
+    assert payload["compressed_real_fft"] is True
     assert payload["hlo_token_counts"]["multiply"] >= 1
     assert payload["hlo_token_counts"]["fft"] >= 1
     assert payload["electrostatic_specialized"] is True

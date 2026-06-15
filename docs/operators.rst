@@ -299,7 +299,7 @@ and the electromagnetic flutter contribution couples adjacent Hermite moments:
 
 Controls:
 
-- ``TimeConfig.gx_real_fft``
+- ``TimeConfig.compressed_real_fft``
 - ``TimeConfig.laguerre_nonlinear_mode``
 - ``TimeConfig.nonlinear_dealias``
 - ``RuntimeTermsConfig.nonlinear``

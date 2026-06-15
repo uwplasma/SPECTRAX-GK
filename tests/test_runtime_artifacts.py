@@ -1312,7 +1312,7 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(
 
     cfg = RuntimeConfig(
         grid=GridConfig(Nx=8, Ny=8, Nz=6, Lx=1.0, Ly=1.0),
-        time=TimeConfig(gx_real_fft=True),
+        time=TimeConfig(compressed_real_fft=True),
     )
 
     paths = write_runtime_nonlinear_artifacts(tmp_path / "probe.out.nc", result, cfg)
@@ -1406,7 +1406,7 @@ def test_write_nonlinear_netcdf_outputs_requires_diagnostics(
     pytest.importorskip("netCDF4")
     cfg = RuntimeConfig(
         grid=GridConfig(Nx=4, Ny=4, Nz=4, Lx=1.0, Ly=1.0),
-        time=TimeConfig(gx_real_fft=True),
+        time=TimeConfig(compressed_real_fft=True),
     )
     result = RuntimeNonlinearResult(
         t=np.asarray([0.0]),

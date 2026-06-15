@@ -182,6 +182,6 @@ def test_nonlinear_placeholders() -> None:
         kx_grid=jnp.ones((3, 4), dtype=jnp.float32),
         ky_grid=jnp.ones((3, 4), dtype=jnp.float32),
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert exb.shape == G.shape

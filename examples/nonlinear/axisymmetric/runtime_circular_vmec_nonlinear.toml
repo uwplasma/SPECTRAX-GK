@@ -34,7 +34,7 @@ fixed_dt = false
 dt_max = 0.05
 cfl = 0.9
 cfl_fac = 1.0
-gx_real_fft = true
+compressed_real_fft = true
 laguerre_nonlinear_mode = "grid"
 
 [geometry]

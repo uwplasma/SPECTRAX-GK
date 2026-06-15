@@ -37,7 +37,7 @@ from spectraxgk.analysis import (
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid, select_ky_grid
+from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid, select_ky_grid
 from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, _linear_explicit_step, _diagnostic_midplane_index
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.species import build_linear_params
@@ -267,7 +267,7 @@ def main() -> None:
         ),
     )
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
     ky_idx_local = select_ky_index(np.asarray(grid.ky), float(args.ky))
     grid, ky_idx_local = _reduce_linear_grid_to_target_ky(
         grid,

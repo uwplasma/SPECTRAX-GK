@@ -223,7 +223,7 @@ def main() -> None:
                 cache,
                 params,
                 term_cfg,
-                gx_real_fft=bool(cfg.time.gx_real_fft),
+                compressed_real_fft=bool(cfg.time.compressed_real_fft),
                 laguerre_mode=laguerre_mode,
                 external_phi=external_phi,
             )
@@ -273,7 +273,7 @@ def main() -> None:
                 sample_stride=int(args.sample_stride),
                 diagnostics_stride=int(args.diagnostics_stride),
                 use_dealias_mask=bool(cfg.time.nonlinear_dealias),
-                gx_real_fft=bool(cfg.time.gx_real_fft),
+                compressed_real_fft=bool(cfg.time.compressed_real_fft),
                 laguerre_mode=laguerre_mode,
                 omega_ky_index=int(ky_index),
                 omega_kx_index=int(kx_index),

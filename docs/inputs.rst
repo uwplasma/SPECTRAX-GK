@@ -132,7 +132,7 @@ Minimal TOML example
    diffrax_rtol = 1.0e-6
    diffrax_atol = 1.0e-8
    state_sharding = "auto"
-   gx_real_fft = true
+   compressed_real_fft = true
 
    [run]
    ky = 0.3
@@ -146,8 +146,8 @@ Minimal TOML example
    window_method = "loglinear"
    fit_signal = "auto"
 
-The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
-select the compressed real-FFT nonlinear bracket. Set ``gx_real_fft = false`` to
+The ``[time]`` section also accepts ``compressed_real_fft`` (default ``true``) to
+select the compressed real-FFT nonlinear bracket. Set ``compressed_real_fft = false`` to
 use a full complex FFT for the nonlinear term. Diagnostics output can be
 decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics_stride`` (compute streaming diagnostics every ``N`` steps). Set
