@@ -245,7 +245,7 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Pa
             Nm=6,
             dt=0.01,
             steps=40,
-            solver="gx_time",
+            solver="explicit_time",
             sample_stride=2,
         )
         assert np.isfinite(result.gamma)

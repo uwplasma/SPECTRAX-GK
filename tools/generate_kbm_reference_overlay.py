@@ -217,7 +217,7 @@ def main() -> None:
         dt=float(args.dt),
         steps=int(steps),
         method="rk4",
-        solver="gx_time",
+        solver="explicit_time",
         fit_signal="phi",
         mode_method="project",
         diagnostic_norm="rho_star",

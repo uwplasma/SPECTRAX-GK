@@ -485,6 +485,12 @@ def _split_mode_method_policy(mode_method: str) -> tuple[str, str]:
     return mode_method, "default"
 
 
+def _benchmark_solver_for_candidate(solver_name: str) -> str:
+    """Map comparison-candidate labels to canonical SPECTRAX-GK solver keys."""
+
+    return "explicit_time" if solver_name == "gx_time" else solver_name
+
+
 def _run_candidate(
     args,
     cfg: KBMBaseCase,
@@ -497,6 +503,7 @@ def _run_candidate(
     gx_omega: float | None = None,
 ):
     fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
+    benchmark_solver = _benchmark_solver_for_candidate(solver_name)
     mode_method_use = str(mode_method_override or args.mode_method)
     mode_method_base, _fit_policy = _split_mode_method_policy(mode_method_use)
     krylov_cfg = None
@@ -525,7 +532,7 @@ def _run_candidate(
         steps=args.steps,
         method=args.method,
         cfg=cfg,
-        solver=solver_name,
+        solver=benchmark_solver,
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
         mode_method=mode_method_base,

@@ -19,6 +19,7 @@ from spectraxgk.linear import LinearParams
 
 def test_scan_policy_normalizes_keys_and_auto_fit_side_effects() -> None:
     assert normalize_solver_key(" Auto ") == "auto"
+    assert normalize_solver_key(" gx_time ") == "gx_time"
     assert normalize_fit_signal(" Density ") == "density"
     assert apply_auto_fit_scan_policy(
         "auto", streaming_fit=True, mode_only=True

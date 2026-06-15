@@ -226,7 +226,7 @@ def main() -> None:
                     steps=int(step_count),
                     method=str(args.method),
                     cfg=cfg,
-                    solver="gx_time",
+                    solver="explicit_time",
                     fit_signal="phi",
                     mode_method="z_index",
                     diagnostic_norm="rho_star",

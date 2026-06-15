@@ -10,6 +10,13 @@
   reference-code names only where they operate on external comparison data.
   Focused cleanup tests, Ruff, docs build with warnings-as-errors, package
   build, and wheel/sdist shim-exclusion checks passed locally.
+- 2026-06-15: Removed the remaining `gx_time` compatibility mapping from the
+  shared benchmark solver normalizer. External-reference comparison tools now
+  translate their `gx_time` candidate label to the canonical SPECTRAX-GK
+  `explicit_time` solver only at the benchmark API boundary, while preserving
+  the comparison label in CSVs, cache keys, and branch-selection reports.
+  Focused benchmark-scan, KBM comparison, extractor, overlay, RHS comparison,
+  and Ruff checks passed locally.
 - 2026-06-15: Cleaned another native-source terminology slice on the
   differentiable-refactor branch. CLI help, runtime errors, initialization
   comments, dealiased-grid comments, transport-mode weights, and

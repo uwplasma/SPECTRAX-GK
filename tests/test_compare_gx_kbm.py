@@ -208,6 +208,7 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch)
     )
 
     assert captured["krylov_cfg"] is None
+    assert captured["solver"] == "explicit_time"
 
 
 def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -> None:
@@ -254,6 +255,7 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
     )
 
     assert captured["mode_method"] == "max"
+    assert captured["solver"] == "explicit_time"
 
 
 def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> None:
@@ -300,6 +302,7 @@ def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> Non
     )
 
     assert captured["mode_method"] == "project"
+    assert captured["solver"] == "explicit_time"
 
 
 def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypatch) -> None:
