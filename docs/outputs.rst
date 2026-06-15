@@ -1,13 +1,13 @@
-Outputs and Restart Artifacts
-=============================
+Saved Outputs and Restart Files
+===============================
 
-SPECTRAX-GK supports two runtime artifact modes:
+SPECTRAX-GK supports two saved-output modes:
 
 - lightweight prefix-based JSON/CSV sidecars for quick solver runs,
 - nonlinear NetCDF restart bundles for parity, post-processing, and restart.
 
-Lightweight runtime artifacts
------------------------------
+Lightweight saved outputs
+-------------------------
 
 When ``[output].path`` or ``--out`` is a plain prefix such as
 ``tools_out/runtime_case``, the runtime writes small sidecar files:
