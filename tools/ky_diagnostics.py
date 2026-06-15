@@ -21,7 +21,7 @@ from spectraxgk.analysis import (
     extract_mode_time_series,
     fit_growth_rate_auto,
     fit_growth_rate_with_stats,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 from spectraxgk.benchmarks import (
@@ -473,7 +473,7 @@ def _run_time_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = gx_growth_rate_from_phi(
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
         phi_t_np,
         t,
         sel,
@@ -588,7 +588,7 @@ def _run_diffrax_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = gx_growth_rate_from_phi(
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
         phi_t_np,
         t,
         sel,

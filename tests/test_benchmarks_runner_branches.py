@@ -115,7 +115,7 @@ def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.3, -0.2, None, None, 0.5),
     )
     monkeypatch.setattr(
@@ -187,7 +187,7 @@ def test_run_cyclone_linear_krylov_uses_gx_seed_and_branch_guard(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.45, -0.25, None, None, 1.0),
     )
 
@@ -268,7 +268,7 @@ def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
             raise value
         return value
 
-    monkeypatch.setattr("spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi", _fake_growth)
+    monkeypatch.setattr("spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi", _fake_growth)
     monkeypatch.setattr(
         "spectraxgk.benchmark_cyclone.dominant_eigenpair",
         lambda *args, **kwargs: (
@@ -341,7 +341,7 @@ def test_run_cyclone_linear_gx_reference_time_path_uses_gx_contract(
         "spectraxgk.benchmark_cyclone.integrate_linear_explicit", _fake_gx_integrator
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.31, -0.17, None, None, 0.1),
     )
     monkeypatch.setattr(
@@ -638,11 +638,11 @@ def test_run_kbm_linear_gx_time_uses_omega_series_fallback(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_kbm.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no fit")),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.gx_growth_rate_from_omega_series",
+        "spectraxgk.benchmark_kbm.windowed_growth_rate_from_omega_series",
         lambda *args, **kwargs: (0.35, -0.22, None, None),
     )
     monkeypatch.setattr(
@@ -770,7 +770,7 @@ def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no seed")),
     )
     vals = iter(
@@ -1271,7 +1271,7 @@ def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no fit")),
     )
     monkeypatch.setattr(
@@ -1337,7 +1337,7 @@ def test_run_cyclone_scan_gx_time_reselects_branch_with_previous_frequency(
         ]
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
+        "spectraxgk.benchmark_cyclone.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: next(growth_values),
     )
     monkeypatch.setattr(
@@ -1682,10 +1682,10 @@ def test_run_kbm_beta_scan_gx_time_diagnostic_fallback_ladder(monkeypatch) -> No
         "spectraxgk.benchmark_kbm.integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.gx_growth_rate_from_phi", _fake_growth
+        "spectraxgk.benchmark_kbm.instantaneous_growth_rate_from_phi", _fake_growth
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.gx_growth_rate_from_omega_series", _fake_omega_series
+        "spectraxgk.benchmark_kbm.windowed_growth_rate_from_omega_series", _fake_omega_series
     )
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm.extract_mode_time_series",

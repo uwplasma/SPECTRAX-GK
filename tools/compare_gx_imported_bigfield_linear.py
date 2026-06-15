@@ -31,7 +31,7 @@ from spectraxgk.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
@@ -204,7 +204,7 @@ def _growth_rate_with_method_fallback(
     last_exc: Exception | None = None
     for method in ordered_methods:
         try:
-            gamma, omega, gamma_t, omega_t, t_mid = gx_growth_rate_from_phi(
+            gamma, omega, gamma_t, omega_t, t_mid = instantaneous_growth_rate_from_phi(
                 phi_t,
                 t,
                 sel,

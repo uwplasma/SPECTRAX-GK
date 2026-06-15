@@ -69,7 +69,7 @@ from spectraxgk.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 
@@ -1150,7 +1150,7 @@ def _run_etg_gx_growth(
         mode_method="z_index",
     )
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=grid.z.size // 2)
-    gamma, omega, _g_t, _w_t, _t_mid = gx_growth_rate_from_phi(
+    gamma, omega, _g_t, _w_t, _t_mid = instantaneous_growth_rate_from_phi(
         np.asarray(phi_t),
         np.asarray(t),
         sel,

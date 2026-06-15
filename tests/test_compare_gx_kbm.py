@@ -542,7 +542,7 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
     monkeypatch.setattr(mod, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
         mod,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
     )
 

@@ -15,7 +15,7 @@ from spectraxgk.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 from spectraxgk.benchmarks import (
@@ -231,20 +231,20 @@ def main() -> None:
             else:
                 sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
                 try:
-                    gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                    gamma, omega, _g, _o, _t_mid = instantaneous_growth_rate_from_phi(
                         phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
                     )
                 except ValueError:
                     print(
-                        "gx_growth_rate_from_phi: z_index failed; falling back to mode_method='max'"
+                        "instantaneous_growth_rate_from_phi: z_index failed; falling back to mode_method='max'"
                     )
                     try:
-                        gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                        gamma, omega, _g, _o, _t_mid = instantaneous_growth_rate_from_phi(
                             phi_t, t, sel, navg_fraction=0.5, mode_method="max"
                         )
                     except ValueError:
                         print(
-                            "gx_growth_rate_from_phi: max failed; falling back to loglinear fit"
+                            "instantaneous_growth_rate_from_phi: max failed; falling back to loglinear fit"
                         )
                         signal = extract_mode_time_series(phi_t, sel, method="max")
                         gamma, omega, *_ = fit_growth_rate_auto(

@@ -2064,3 +2064,8 @@ No long nonlinear audit should be launched from these candidates.
   tools, and tests now describe this as a compressed Hermitian real-FFT
   algorithm. Internal bracket helpers were renamed to real-FFT terminology,
   while explicit external-code comparison tools keep comparison-specific names.
+- Continued the source-name cleanup by renaming growth/frequency extraction
+  helpers from old provenance-oriented names to algorithmic names:
+  ``instantaneous_growth_rate_from_phi`` and
+  ``windowed_growth_rate_from_omega_series``. Benchmark runners, comparison
+  tools, public exports, and tests now use the neutral diagnostic API names.

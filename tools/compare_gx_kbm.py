@@ -19,8 +19,8 @@ from spectraxgk.analysis import (
     extract_mode_time_series,
     fit_growth_rate,
     fit_growth_rate_auto,
-    gx_growth_rate_from_phi,
-    gx_growth_rate_from_omega_series,
+    instantaneous_growth_rate_from_phi,
+    windowed_growth_rate_from_omega_series,
     select_ky_index,
 )
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
@@ -601,7 +601,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             pass
 
     try:
-        gamma, omega, _g_t, _o_t, _t_mid = gx_growth_rate_from_phi(
+        gamma, omega, _g_t, _o_t, _t_mid = instantaneous_growth_rate_from_phi(
             np.asarray(result.phi_t),
             t,
             result.selection,
@@ -684,7 +684,7 @@ def _recompute_time_history_growth_on_grid(
             t_dst = np.asarray(t_ref, dtype=float)
             gamma_arr = _interp_real_tseries(gamma_arr, t_src, t_dst)
             omega_arr = _interp_real_tseries(omega_arr, t_src, t_dst)
-        gamma, omega, _g_t, _o_t = gx_growth_rate_from_omega_series(
+        gamma, omega, _g_t, _o_t = windowed_growth_rate_from_omega_series(
             gamma_arr,
             omega_arr,
             result.selection,

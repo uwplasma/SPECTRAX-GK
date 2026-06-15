@@ -27,7 +27,7 @@ from spectraxgk.geometry import (
 )
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
+from spectraxgk.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
 from spectraxgk.explicit_time_integrators import (
     ExplicitTimeConfig,
     _instantaneous_growth_rate_step,
@@ -701,7 +701,7 @@ def _integrate_target_mode_series(
     if mode_method in {"project", "svd"}:
         phi_t = np.asarray(phi_samples, dtype=np.complex64)
         t_arr = np.asarray(phi_sample_times, dtype=float)
-        _gamma_avg, _omega_avg, gamma_t, omega_t, _t_mid = gx_growth_rate_from_phi(
+        _gamma_avg, _omega_avg, gamma_t, omega_t, _t_mid = instantaneous_growth_rate_from_phi(
             phi_t,
             t_arr,
             ModeSelection(ky_index=0, kx_index=0, z_index=z_index),

@@ -1809,7 +1809,7 @@ def test_energy_drift_small_no_drive():
 
 
 def test_growth_rate_step_matches_real_imag_validity_mask():
-    """GX growth-rate kernel should require non-zero real and imaginary parts."""
+    """Instantaneous growth-rate kernel should require non-zero real and imaginary parts."""
 
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 1.0 + 1.0j]]], dtype=jnp.complex64)
     phi_now_invalid = jnp.asarray([[[2.0 + 0.0j, 2.0 + 0.0j]]], dtype=jnp.complex64)

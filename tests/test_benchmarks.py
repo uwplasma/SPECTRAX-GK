@@ -680,8 +680,8 @@ def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable
     )
     monkeypatch.setattr(
         benchmark_cyclone,
-        "gx_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("No finite GX growth-rate samples available")),
+        "instantaneous_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("No finite instantaneous growth-rate samples available")),
     )
     monkeypatch.setattr(
         benchmark_cyclone,
@@ -957,7 +957,7 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
     )
 
@@ -1027,7 +1027,7 @@ def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
@@ -1070,7 +1070,7 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
@@ -1111,7 +1111,7 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
@@ -1162,7 +1162,7 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
@@ -1266,7 +1266,7 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
     )
 
@@ -1332,7 +1332,7 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
     monkeypatch.setattr(benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate)
     monkeypatch.setattr(
         benchmark_kbm,
-        "gx_growth_rate_from_phi",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 

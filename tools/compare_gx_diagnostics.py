@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import gx_growth_rate_from_phi, select_ky_index, ModeSelection
+from spectraxgk.analysis import instantaneous_growth_rate_from_phi, select_ky_index, ModeSelection
 from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
@@ -133,7 +133,7 @@ def main() -> None:
     )
 
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-    gamma, omega, *_ = gx_growth_rate_from_phi(
+    gamma, omega, *_ = instantaneous_growth_rate_from_phi(
         phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
     )
 
