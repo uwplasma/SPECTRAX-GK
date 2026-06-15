@@ -1,3 +1,11 @@
+- 2026-06-14: Continued the nonlinear parallelization refactor by moving the
+  device-z shard-map RHS route, z-sharding topology check, physical transport
+  observable reductions, and serial-vs-device transport-window identity gate
+  into `spectraxgk.nonlinear_parallel_device_z`. The public
+  `spectraxgk.nonlinear_parallel` facade still re-exports the release-visible
+  route and test-visible helper seams, preserving the fail-closed distinction
+  between identity-gated routing and profiler-backed speedup claims.
+
 - 2026-06-14: Continued the runtime artifact refactor by moving generic
   artifact path/file I/O helpers into `spectraxgk.runtime_artifact_io` and
   pure GX-style active-axis, real/imag packing, restart-layout, species-matrix,

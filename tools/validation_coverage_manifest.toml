@@ -514,6 +514,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_parallel_device_z"
+path = "src/spectraxgk/nonlinear_parallel_device_z.py"
+owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "device-z shard-map pseudo-spectral nonlinear RHS identity gates",
+  "serial-vs-device nonlinear transport-window observable gates",
+]
+physics_contracts = [
+  "device-z routes are enabled only when serial and sharded nonlinear RHS or transport-window observables match within explicit tolerances",
+  "device-z transport gates remain diagnostic and do not imply turbulent heat-flux or speedup promotion without separate profiler artifacts",
+]
+numerics_contracts = [
+  "z sharding preserves FFT-local ky/kx axes and fails closed when the z extent is not divisible by the active device count",
+  "observable reductions compare final state, free energy, field energy, physical-flux proxy, and bracket RMS before enabling decomposed routing",
+]
+fast_tests = [
+  "tests/test_nonlinear_parallel.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+]
+next_tests = [
+  "add a direct multi-device fixture test when CI has more than one local device available",
+  "add a profiler-backed physical transport-window speedup gate before changing release wording",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear_diagnostics"
 path = "src/spectraxgk/nonlinear_diagnostics.py"
 owner_lane = "resolved nonlinear diagnostic packing and time-sample retention"

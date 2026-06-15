@@ -306,6 +306,13 @@ Nonlinear Parallel Spectral Core
    :members:
    :private-members:
 
+Nonlinear Parallel Device-Z Core
+--------------------------------
+
+.. automodule:: spectraxgk.nonlinear_parallel_device_z
+   :members:
+   :private-members:
+
 Nonlinear Parallel Contracts
 ----------------------------
 

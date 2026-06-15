@@ -10,6 +10,7 @@ import pytest
 import spectraxgk
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
 import spectraxgk.nonlinear_parallel_contracts as nonlinear_parallel_contracts
+import spectraxgk.nonlinear_parallel_device_z as nonlinear_parallel_device_z
 import spectraxgk.nonlinear_parallel_spectral_core as nonlinear_parallel_spectral_core
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,
@@ -31,6 +32,26 @@ from spectraxgk.nonlinear_parallel import (
     release_ready_nonlinear_parallel_strategies,
 )
 
+
+
+
+def test_nonlinear_parallel_facade_reexports_device_z_core() -> None:
+    assert (
+        nonlinear_parallel.device_z_pencil_nonlinear_spectral_rhs
+        is nonlinear_parallel_device_z.device_z_pencil_nonlinear_spectral_rhs
+    )
+    assert (
+        nonlinear_parallel.device_z_pencil_nonlinear_spectral_transport_window_identity_gate
+        is nonlinear_parallel_device_z.device_z_pencil_nonlinear_spectral_transport_window_identity_gate
+    )
+    assert (
+        nonlinear_parallel._device_z_sharding_for_spectral_state
+        is nonlinear_parallel_device_z._device_z_sharding_for_spectral_state
+    )
+    assert (
+        nonlinear_parallel._spectral_physical_transport_observable_sums
+        is nonlinear_parallel_device_z._spectral_physical_transport_observable_sums
+    )
 
 def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     public_names = (

@@ -511,6 +511,25 @@ fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_parallel_device_z"
+source_path = "src/spectraxgk/nonlinear_parallel_device_z.py"
+facade_module = "spectraxgk.nonlinear_parallel"
+status = "active"
+responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window identity gates"
+moved_exports = [
+  "device_z_pencil_nonlinear_spectral_rhs",
+  "device_z_pencil_nonlinear_spectral_transport_window_identity_gate",
+  "_device_z_sharding_for_spectral_state",
+  "_device_z_pencil_shard_map_rhs_fn",
+  "_device_z_pencil_shard_map_observables_fn",
+  "_spectral_physical_transport_observable_sums",
+  "_spectral_physical_transport_observable_vector_from_sums",
+  "_spectral_physical_transport_observables",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.nonlinear_gradient_followup_core"
 source_path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
 facade_module = "spectraxgk.nonlinear_gradient_followup"
