@@ -198,7 +198,7 @@ For slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
 ``z0`` (sets ``gradpar = 1/z0`` when positive, matching the reference slab domain
 normalization) and ``zero_shat = true`` (forces the zero-shear slab metric
 ``gds2 = 1, gds21 = 0, gds22 = 1``).
-It also accepts ``model = "gx-netcdf"`` with
+It also accepts ``model = "imported-netcdf"`` with
 ``geometry_file = "external_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
 file can be a tracked benchmark ``*.out.nc`` or a root-level ``*.eik.nc`` geometry

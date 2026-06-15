@@ -1058,7 +1058,7 @@ def test_runtime_artifact_geometry_writer_applies_imported_grid_defaults(
         kxfac=1.25,
         nfp=5,
         theta_closed_interval=True,
-        source_model="gx-netcdf",
+        source_model="imported-netcdf",
     )
     cfg = SimpleNamespace(
         grid=GridConfig(Nx=4, Ny=4, Nz=17, Lx=6.28, Ly=6.28, boundary="periodic"),

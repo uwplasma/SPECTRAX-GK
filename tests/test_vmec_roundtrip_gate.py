@@ -6,8 +6,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.geometry import load_gx_geometry_netcdf
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
+from spectraxgk.geometry import load_imported_geometry_netcdf
 from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -37,7 +42,9 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
             ntheta=64,
             nperiod=1,
         ),
-        time=TimeConfig(t_max=1.0, dt=0.1, method="rk4", use_diffrax=False, fixed_dt=True),
+        time=TimeConfig(
+            t_max=1.0, dt=0.1, method="rk4", use_diffrax=False, fixed_dt=True
+        ),
         geometry=GeometryConfig(
             model="vmec",
             vmec_file=vmec_file,
@@ -48,7 +55,11 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
             gx_repo=gx_repo,
         ),
         init=InitializationConfig(init_field="density", init_amp=1.0e-6),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, mass=1.0, tprim=3.0, fprim=1.0),),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, mass=1.0, tprim=3.0, fprim=1.0
+            ),
+        ),
         physics=RuntimePhysicsConfig(
             linear=True,
             nonlinear=False,
@@ -59,7 +70,9 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
             beta=0.0,
             collisions=False,
         ),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="gx"
+        ),
     )
 
     out1 = tmp_path / "geom1.eik.nc"
@@ -67,8 +80,8 @@ def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
     generate_runtime_vmec_eik(cfg, output_path=out1, force=True)
     generate_runtime_vmec_eik(cfg, output_path=out2, force=True)
 
-    g1 = load_gx_geometry_netcdf(out1)
-    g2 = load_gx_geometry_netcdf(out2)
+    g1 = load_imported_geometry_netcdf(out1)
+    g2 = load_imported_geometry_netcdf(out2)
 
     # This is a determinism gate, not a physics gate: any drift here will break
     # VMEC-backed parity workflows in hard-to-debug ways.

@@ -136,8 +136,8 @@ VMEC-backed geometry model:
      --out tools_out/hsx_vmec_run
 
 Use ``--geometry-file`` only for advanced imported-geometry configs that
-already use ``model = "vmec-eik"``, ``model = "gx-eik"``, or
-``model = "gx-netcdf"``. This is not needed for the shipped VMEC examples:
+already use ``model = "vmec-eik"``, ``model = "imported-eik"``, or
+``model = "imported-netcdf"``. This is not needed for the shipped VMEC examples:
 
 .. code-block:: bash
 

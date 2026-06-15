@@ -345,7 +345,7 @@ Ny = 12
 Nz = 32
 
 [geometry]
-model = "gx-netcdf"
+model = "imported-netcdf"
 geometry_file = "/tmp/w7x.eik.nc"
 
 [physics]
@@ -364,7 +364,7 @@ solver = "explicit_time"
     cfg, data = load_runtime_from_toml(path)
 
     assert isinstance(data, dict)
-    assert cfg.geometry.model == "gx-netcdf"
+    assert cfg.geometry.model == "imported-netcdf"
     assert cfg.geometry.geometry_file == str(Path("/tmp/w7x.eik.nc").resolve())
     assert cfg.physics.adiabatic_electrons is True
 

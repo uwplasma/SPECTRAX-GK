@@ -13,12 +13,12 @@ from spectraxgk.geometry import (
     FluxTubeGeometryData,
     SAlphaGeometry,
     SlabGeometry,
-    _gx_bgrad_from_bmag,
+    _bgrad_from_bmag,
     _periodic_spectral_derivative,
     apply_geometry_grid_defaults,
     build_flux_tube_geometry,
     ensure_flux_tube_geometry_data,
-    load_gx_geometry_netcdf,
+    load_imported_geometry_netcdf,
     sample_flux_tube_geometry,
     twist_shift_params,
 )
@@ -36,7 +36,10 @@ def test_geometry_package_facade_preserves_core_symbol_identity() -> None:
         geometry_pkg.sample_flux_tube_geometry
         is geometry_core.sample_flux_tube_geometry
     )
-    assert geometry_pkg.load_gx_geometry_netcdf is geometry_core.load_gx_geometry_netcdf
+    assert (
+        geometry_pkg.load_imported_geometry_netcdf
+        is geometry_core.load_imported_geometry_netcdf
+    )
     assert (
         geometry_pkg.build_flux_tube_geometry is geometry_core.build_flux_tube_geometry
     )
@@ -44,7 +47,7 @@ def test_geometry_package_facade_preserves_core_symbol_identity() -> None:
         geometry_pkg.apply_geometry_grid_defaults
         is geometry_core.apply_geometry_grid_defaults
     )
-    assert geometry_pkg._gx_bgrad_from_bmag is geometry_core._gx_bgrad_from_bmag
+    assert geometry_pkg._bgrad_from_bmag is geometry_core._bgrad_from_bmag
 
 
 def test_kperp2_matches_s_alpha():
@@ -84,7 +87,7 @@ def test_build_flux_tube_geometry_slab_from_config():
     assert geom.gradpar() == pytest.approx(0.4)
 
 
-def test_slab_geometry_matches_gx_contract():
+def test_slab_geometry_matches_reference_contract():
     geom = SlabGeometry(s_hat=0.4, z0=3.0)
     theta = jnp.array([-jnp.pi, 0.0, jnp.pi / 2.0])
     gds2, gds21, gds22 = geom.metric_coeffs(theta)
@@ -122,7 +125,7 @@ def test_slab_geometry_pytree_roundtrip_and_z0_default() -> None:
     assert restored.gradpar() == pytest.approx(1.0)
 
 
-def test_zero_shat_slab_geometry_matches_gx_override():
+def test_zero_shat_slab_geometry_matches_zero_shear_override():
     geom = SlabGeometry.from_config(
         GeometryConfig(model="slab", s_hat=0.8, zero_shat=True)
     )
@@ -136,7 +139,7 @@ def test_zero_shat_slab_geometry_matches_gx_override():
     assert jnp.allclose(gds22, jnp.ones_like(theta))
 
 
-def test_slab_geometry_auto_zero_shat_threshold_matches_gx_default():
+def test_slab_geometry_auto_zero_shat_threshold_matches_reference_default():
     geom = SlabGeometry.from_config(
         GeometryConfig(model="slab", s_hat=0.1 * ZERO_SHAT_THRESHOLD, zero_shat=False)
     )
@@ -145,7 +148,7 @@ def test_slab_geometry_auto_zero_shat_threshold_matches_gx_default():
     assert geom.s_hat == pytest.approx(0.0)
 
 
-def test_salpha_geometry_auto_zero_shat_threshold_matches_gx_default():
+def test_salpha_geometry_auto_zero_shat_threshold_matches_reference_default():
     geom = SAlphaGeometry.from_config(
         GeometryConfig(s_hat=0.1 * ZERO_SHAT_THRESHOLD, zero_shat=False)
     )
@@ -325,7 +328,7 @@ def test_ensure_flux_tube_geometry_data_reuses_sampled_input():
 
 
 def test_ensure_flux_tube_geometry_data_trims_closed_theta_interval():
-    """Imported GX geometry should drop the terminal theta point for solver grids."""
+    """Imported geometry should drop the terminal theta point for solver grids."""
 
     geom = SAlphaGeometry(q=1.7, s_hat=0.9, epsilon=0.1)
     theta_closed = jnp.linspace(-jnp.pi, jnp.pi, 17)
@@ -371,17 +374,17 @@ def test_periodic_derivative_and_bgrad_validation_paths() -> None:
     with pytest.raises(ValueError, match="one-dimensional"):
         _periodic_spectral_derivative(np.ones((2, 2)), 1.0)
     with pytest.raises(ValueError, match="one-dimensional"):
-        _gx_bgrad_from_bmag(np.ones((2, 2)), np.ones(2), 1.0, closed=False)
+        _bgrad_from_bmag(np.ones((2, 2)), np.ones(2), 1.0, closed=False)
     with pytest.raises(ValueError, match="same shape"):
-        _gx_bgrad_from_bmag(np.ones(3), np.ones(2), 1.0, closed=False)
+        _bgrad_from_bmag(np.ones(3), np.ones(2), 1.0, closed=False)
     assert np.allclose(
-        _gx_bgrad_from_bmag(np.asarray([0.0]), np.asarray([1.0]), 1.0, closed=False),
+        _bgrad_from_bmag(np.asarray([0.0]), np.asarray([1.0]), 1.0, closed=False),
         [0.0],
     )
 
 
-def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
-    """GX-style NetCDF geometry output should map into the sampled contract."""
+def test_load_imported_geometry_netcdf_reads_sampled_contract(tmp_path):
+    """imported grouped NetCDF geometry output should map into the sampled contract."""
 
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
@@ -421,9 +424,9 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
         }.items():
             geom.createVariable(name, "f8", ())[:] = value
 
-    loaded = load_gx_geometry_netcdf(path)
+    loaded = load_imported_geometry_netcdf(path)
 
-    assert loaded.source_model == "gx-netcdf"
+    assert loaded.source_model == "imported-netcdf"
     assert loaded.theta_closed_interval is False
     assert jnp.allclose(loaded.theta, theta)
     assert jnp.allclose(loaded.jacobian_profile, jacobian)
@@ -434,8 +437,8 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     assert loaded.epsilon == pytest.approx(0.2)
 
 
-def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
-    """Root-level GX eik.nc geometry should map into the sampled contract."""
+def test_load_imported_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
+    """Root-level eik.nc geometry should map into the sampled contract."""
 
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
@@ -474,9 +477,9 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
         root.createVariable("nfp", "f8", ())[:] = 5.0
         root.createVariable("alpha", "f8", ())[:] = 0.2
 
-    loaded = load_gx_geometry_netcdf(path)
+    loaded = load_imported_geometry_netcdf(path)
 
-    assert loaded.source_model == "gx-netcdf"
+    assert loaded.source_model == "imported-netcdf"
     assert loaded.theta_closed_interval is True
     assert jnp.allclose(loaded.theta, theta)
     expected_jacobian = 1.0 / np.abs(drhodpsi * 0.4 * bmag)
@@ -491,8 +494,8 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
     assert np.all(np.isfinite(np.asarray(loaded.bgrad_profile)))
 
 
-def test_load_gx_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
-    """Root-level GX eik files can already be on the open solver grid."""
+def test_load_imported_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
+    """Root-level eik files can already be on the open solver grid."""
 
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
@@ -536,9 +539,9 @@ def test_load_gx_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
         root.createVariable("nfp", "f8", ())[:] = 5.0
         root.createVariable("alpha", "f8", ())[:] = 0.2
 
-    loaded = load_gx_geometry_netcdf(path)
+    loaded = load_imported_geometry_netcdf(path)
 
-    assert loaded.source_model == "gx-netcdf"
+    assert loaded.source_model == "imported-netcdf"
     assert loaded.theta_closed_interval is False
     assert jnp.allclose(loaded.theta, theta)
     expected_jacobian = 1.0 / np.abs(drhodpsi * 0.4 * bmag)
@@ -548,7 +551,7 @@ def test_load_gx_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
 
 
 def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
-    """VMEC-style closed-interval GX imports should recover the open solver contract."""
+    """VMEC-style closed-interval imported geometry should recover the open solver contract."""
 
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
@@ -600,7 +603,7 @@ def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
         root.createVariable("nfp", "f8", ())[:] = sampled_closed.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled_closed.alpha
 
-    loaded = load_gx_geometry_netcdf(path)
+    loaded = load_imported_geometry_netcdf(path)
     theta_solver = jnp.asarray(theta_closed[:-1])
     loaded_open = ensure_flux_tube_geometry_data(loaded, theta_solver)
     sampled_open = ensure_flux_tube_geometry_data(sampled_closed, theta_solver)
@@ -645,7 +648,7 @@ def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
     )
 
 
-def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
+def test_build_flux_tube_geometry_loads_imported_netcdf(tmp_path):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -677,17 +680,17 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
         geom.createVariable("aminor", "f8", ())[:] = 1.0
 
     loaded = build_flux_tube_geometry(
-        GeometryConfig(model="gx-netcdf", geometry_file=str(path))
+        GeometryConfig(model="imported-netcdf", geometry_file=str(path))
     )
 
-    assert loaded.source_model == "gx-netcdf"
+    assert loaded.source_model == "imported-netcdf"
 
 
 def test_build_flux_tube_geometry_rejects_missing_import_file_and_unknown_model() -> (
     None
 ):
     with pytest.raises(ValueError, match="geometry_file"):
-        build_flux_tube_geometry(GeometryConfig(model="gx-netcdf"))
+        build_flux_tube_geometry(GeometryConfig(model="imported-netcdf"))
     with pytest.raises(ValueError, match="geometry.model"):
         build_flux_tube_geometry(GeometryConfig(model="banana"))
 
@@ -729,7 +732,7 @@ def test_twist_shift_params_slab_and_imported_geometry_branches() -> None:
     assert x0 > 0.0
 
 
-@pytest.mark.parametrize("model", ["gx-eik", "vmec-eik", "desc-eik", "eik"])
+@pytest.mark.parametrize("model", ["imported-eik", "vmec-eik", "desc-eik", "eik"])
 def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: str):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
@@ -781,7 +784,7 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
     )
 
     assert not isinstance(loaded, (SAlphaGeometry, SlabGeometry))
-    assert loaded.source_model == "gx-netcdf"
+    assert loaded.source_model == "imported-netcdf"
     assert loaded.theta_closed_interval is True
     assert loaded.theta_scale == pytest.approx(2.0)
     assert loaded.nfp == 5
@@ -874,7 +877,7 @@ def test_apply_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path):
         root.createVariable("Rmaj", "f8", ())[:] = 5.0
         root.createVariable("kxfac", "f8", ())[:] = 1.7
 
-    geom = load_gx_geometry_netcdf(path)
+    geom = load_imported_geometry_netcdf(path)
     grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0)
     adjusted = apply_geometry_grid_defaults(geom, grid)
     jtwist, x0 = twist_shift_params(geom, adjusted)
@@ -912,7 +915,7 @@ def test_apply_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_pat
         root.createVariable("Rmaj", "f8", ())[:] = 5.0
         root.createVariable("kxfac", "f8", ())[:] = 1.0
 
-    geom = load_gx_geometry_netcdf(path)
+    geom = load_imported_geometry_netcdf(path)
     grid = GridConfig(
         Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0
     )
@@ -962,7 +965,7 @@ def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geomet
         root.createVariable("Rmaj", "f8", ())[:] = 5.0
         root.createVariable("kxfac", "f8", ())[:] = 1.0
 
-    geom = load_gx_geometry_netcdf(path)
+    geom = load_imported_geometry_netcdf(path)
     grid_cfg = apply_geometry_grid_defaults(
         geom,
         GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0),
@@ -1006,7 +1009,7 @@ def test_apply_geometry_grid_defaults_preserves_open_solver_theta(tmp_path):
         geom.createVariable("rmaj", "f8", ())[:] = 5.0
         geom.createVariable("kxfac", "f8", ())[:] = 1.7
 
-    geom = load_gx_geometry_netcdf(path)
+    geom = load_imported_geometry_netcdf(path)
     grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0)
     adjusted = apply_geometry_grid_defaults(geom, grid)
 

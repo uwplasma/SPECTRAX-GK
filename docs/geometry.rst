@@ -137,7 +137,7 @@ more of the codebase without rebuilding solver-specific side paths.
 
 The contract also preserves explicit ``jacobian`` and ``grho`` profiles when
 they are available from imported geometry. The helper
-``load_gx_geometry_netcdf`` reads both GX full-output NetCDF files with
+``load_imported_geometry_netcdf`` reads both GX full-output NetCDF files with
 ``Geometry``/``Grids`` groups and root-level GX ``eik.nc`` geometry files from
 the VMEC workflow. That is the intended short path to the GX W7-X examples:
 import the sampled field-line geometry first, prove solver/diagnostic parity on
@@ -145,7 +145,7 @@ that contract, and only then add a native VMEC path that generates the same
 contract inside SPECTRAX-GK.
 
 Runtime and executable paths can now construct that bridge directly from config with
-``geometry.model = "gx-netcdf"`` and
+``geometry.model = "imported-netcdf"`` and
 ``geometry.geometry_file = "external_geometry.nc"``. Analytic s-alpha remains
 the default with ``geometry.model = "s-alpha"``. For slab cases use
 ``geometry.model = "slab"`` with optional ``geometry.z0`` and
@@ -162,7 +162,7 @@ runtime now also adopts the file's ``theta`` extent, twist-shift
 ``kxfac`` metadata so the flux-tube grid is built from the same field-line
 domain GX used to generate the file.
 The same importer is also exposed under the aliases
-``geometry.model = "gx-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
+``geometry.model = "imported-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
 can reflect the provenance of a root-level ``*.eik.nc`` file without changing
 the solver-facing geometry contract.
 The linear KBM benchmark entry point now uses the same geometry builder, so

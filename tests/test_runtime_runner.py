@@ -325,7 +325,7 @@ def test_runtime_startup_model_and_geometry_branches(
     assert captured[-1].model == "vmec-eik"
     assert captured[-1].geometry_file.endswith("vmec.eik.nc")
     assert startup.build_runtime_geometry(miller_cfg).s_hat == pytest.approx(0.8)
-    assert captured[-1].model == "gx-eik"
+    assert captured[-1].model == "imported-eik"
     assert captured[-1].geometry_file.endswith("miller.eik.nc")
     assert startup.build_runtime_geometry(default_cfg).s_hat == pytest.approx(0.8)
     assert captured[-1].model == "s-alpha"
@@ -2203,7 +2203,8 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         return t, diag, np.asarray(G0) + 1.0, fields
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
     )
 
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=None)
@@ -2430,7 +2431,8 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
     )
 
     cfg = replace(
@@ -2516,7 +2518,8 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
     )
 
     cfg = replace(
@@ -2670,7 +2673,10 @@ def test_runtime_linear_accepts_gx_netcdf_geometry(tmp_path) -> None:
             geom.createVariable(name, "f8", ())[:] = value
 
     cfg_nc = replace(
-        cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path))
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
     )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
 
@@ -2729,7 +2735,10 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
     cfg_nc = replace(
-        cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path))
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
     )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
 
@@ -2791,7 +2800,10 @@ def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
     cfg_nc = replace(
-        cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path))
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
     )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time")
 
@@ -3122,10 +3134,15 @@ def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_refer
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
     cfg_nc = replace(
-        cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path))
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
     )
 
-    analytic_out = run_runtime_linear(cfg, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time")
+    analytic_out = run_runtime_linear(
+        cfg, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
+    )
     imported_out = run_runtime_linear(
         cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
     )
@@ -3216,7 +3233,7 @@ sample_stride = 1
 fixed_dt = true
 
 [geometry]
-model = "gx-netcdf"
+model = "imported-netcdf"
 geometry_file = "{path}"
 
 [physics]
@@ -3764,7 +3781,8 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
     )
     _res = run_runtime_nonlinear(cfg, ky_target=0.3, Nl=3, Nm=4, steps=1)
 
@@ -3862,7 +3880,8 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
     )
     _res = run_runtime_nonlinear(
         cfg, ky_target=0.1, kx_target=-1.1, Nl=3, Nm=4, steps=1

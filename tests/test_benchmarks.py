@@ -1005,7 +1005,9 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     cfg = KBMBaseCase(grid=grid)
     cfg_nc = replace(
         cfg,
-        geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(geom_path)),
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(geom_path)
+        ),
     )
     result = run_kbm_linear(
         ky_target=0.3,

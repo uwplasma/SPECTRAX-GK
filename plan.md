@@ -15,6 +15,16 @@
   direct reference-code names only where they operate on external reference
   files.
 
+- 2026-06-15: Started the geometry-import naming tranche by adding canonical
+  imported-geometry APIs and model strings:
+  `load_imported_geometry_netcdf`,
+  `apply_imported_geometry_grid_defaults`, `imported-netcdf`, and
+  `imported-eik`. Runtime paths, imported-geometry examples, docs, and focused
+  geometry/runtime/benchmark tests now use the canonical names. Existing
+  `gx-*` geometry names remain bounded compatibility aliases for comparison
+  tools and older imported-geometry configurations; moving the
+  `spectraxgk.from_gx` backend package is the next larger geometry cleanup.
+
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
   names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart
