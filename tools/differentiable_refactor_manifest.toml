@@ -486,6 +486,7 @@ moved_exports = [
   "VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES",
   "VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES",
   "linear_solver_geometry_gradient_report",
+  "solver_objective_branch_gradient_report",
   "_mode21_vmec_boozer_linear_context",
   "_mode21_vmec_boozer_quasilinear_features",
   "mode21_vmec_boozer_linear_frequency_gradient_report",

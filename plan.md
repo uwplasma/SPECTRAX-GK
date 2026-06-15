@@ -1,6 +1,7 @@
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
-  solver-ready geometry-gradient reports plus mode-21 VMEC/Boozer frequency,
-  quasilinear, and reduced nonlinear-window gradient reports into
+  solver-ready branch-continuity and geometry-gradient reports plus mode-21
+  VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient
+  reports into
   `spectraxgk.solver_gradient_gates`. The legacy
   `solver_objective_gradients` facade keeps the public exports and
   dependency-injected private context hooks, reducing the facade below one
