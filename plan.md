@@ -1,3 +1,11 @@
+- 2026-06-15: Removed the remaining old imported-geometry facade aliases from
+  the production geometry package surface (`apply_imported_geometry_grid_defaults`,
+  `load_imported_geometry_netcdf`, `zero_shear_enabled`, `effective_boundary`,
+  and `twist_shift_params` are now the canonical names). Comparison/debug tools
+  were switched to those canonical imports while keeping explicit comparison
+  filenames where they operate on external reference outputs. Focused geometry,
+  EIK, runtime-config, comparison-tool, lint, and compile checks passed locally.
+
 - 2026-06-15: Continued source naming cleanup by moving generic reduced-model
   and legacy cETG NetCDF helpers from old reference-code-named modules to
   `spectraxgk.reduced_model_contracts` and
