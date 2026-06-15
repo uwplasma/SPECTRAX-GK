@@ -2164,3 +2164,7 @@ No long nonlinear audit should be launched from these candidates.
   ``rho_star``. The Hermite-Laguerre evolution diagnostic now defaults to the
   descriptive ``time_initial`` normalization mode while retaining ``gx`` as a
   CLI alias with identical behavior.
+- Removed stale provenance and placeholder-style comments from standalone Miller
+  and VMEC geometry helpers. The comments now state the actual role of these
+  compact helpers and point production Miller generation to the runtime
+  ``spectraxgk.miller_eik`` path.
