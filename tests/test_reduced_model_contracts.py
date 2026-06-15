@@ -1,4 +1,4 @@
-"""Tests for GX reduced-model contract parsing."""
+"""Tests for reduced-model contract parsing."""
 
 from __future__ import annotations
 
@@ -7,10 +7,8 @@ import sys
 
 import pytest
 
-from spectraxgk.gx_reduced_models import (
-    load_gx_reduced_model_contract,
-    load_reduced_model_contract,
-)
+from spectraxgk import gx_reduced_models as legacy_reduced_models
+from spectraxgk.reduced_model_contracts import load_reduced_model_contract
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
@@ -73,7 +71,7 @@ dealias_kz = true
     assert contract.D_hyper == pytest.approx(5.0e-4)
 
 
-def test_load_gx_reduced_model_contract_alias_still_resolves(tmp_path: Path) -> None:
+def test_legacy_reduced_model_module_alias_still_resolves(tmp_path: Path) -> None:
     gx_input = tmp_path / "cetg.in"
     gx_input.write_text(
         """
@@ -100,11 +98,16 @@ init_amp = 1.0e-3
         encoding="utf-8",
     )
 
-    contract = load_gx_reduced_model_contract(gx_input)
+    contract = legacy_reduced_models.load_gx_reduced_model_contract(gx_input)
     assert contract.model == "cetg"
+    assert (
+        legacy_reduced_models.load_reduced_model_contract is load_reduced_model_contract
+    )
 
 
-def test_load_reduced_model_contract_parses_krehm_and_serializes(tmp_path: Path) -> None:
+def test_load_reduced_model_contract_parses_krehm_and_serializes(
+    tmp_path: Path,
+) -> None:
     gx_input = tmp_path / "krehm.in"
     gx_input.write_text(
         """
@@ -155,7 +158,7 @@ nx = 8
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="not a GX reduced-model input"):
+    with pytest.raises(ValueError, match="not a recognized reduced-model input"):
         load_reduced_model_contract(gx_input)
 
 

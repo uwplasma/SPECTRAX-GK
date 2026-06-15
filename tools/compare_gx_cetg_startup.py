@@ -13,7 +13,7 @@ from netCDF4 import Dataset
 from tools.compare_gx_rhs_terms import _summary
 from spectraxgk.cetg import build_cetg_model_params, cetg_fields
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.gx_legacy_output import GXLegacyCetgRestart, load_gx_legacy_cetg_restart
+from spectraxgk.legacy_cetg_output import LegacyCetgRestart, load_legacy_cetg_restart
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import _build_initial_condition, build_runtime_geometry
@@ -21,9 +21,15 @@ from spectraxgk.runtime import _build_initial_condition, build_runtime_geometry
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gx-nc", required=True, type=Path, help="Legacy GX cETG startup NetCDF file")
-    parser.add_argument("--gx-restart", required=True, type=Path, help="Legacy GX cETG restart file")
-    parser.add_argument("--config", required=True, type=Path, help="SPECTRAX cETG runtime config")
+    parser.add_argument(
+        "--gx-nc", required=True, type=Path, help="Legacy GX cETG startup NetCDF file"
+    )
+    parser.add_argument(
+        "--gx-restart", required=True, type=Path, help="Legacy GX cETG restart file"
+    )
+    parser.add_argument(
+        "--config", required=True, type=Path, help="SPECTRAX cETG runtime config"
+    )
     return parser
 
 
@@ -46,16 +52,23 @@ def _runtime_initial_state(config_path: Path) -> tuple[np.ndarray, np.ndarray]:
         dtype=np.complex64,
     )
     params = build_cetg_model_params(cfg, geom, Nl=2, Nm=1)
-    phi0 = np.asarray(cetg_fields(jnp.asarray(g0), grid, params, apply_kz_dealias=False).phi, dtype=np.complex64)
+    phi0 = np.asarray(
+        cetg_fields(jnp.asarray(g0), grid, params, apply_kz_dealias=False).phi,
+        dtype=np.complex64,
+    )
     return g0, phi0
 
 
-def _active_state_from_full_grid(full_state: np.ndarray, restart: GXLegacyCetgRestart) -> np.ndarray:
+def _active_state_from_full_grid(
+    full_state: np.ndarray, restart: LegacyCetgRestart
+) -> np.ndarray:
     state = np.asarray(full_state, dtype=np.complex64)
     nx_full = int(state.shape[-2])
     ny_active = int(restart.naky_active)
     nx_active = int(restart.nakx_active)
-    active = np.zeros((1, 2, 1, ny_active, nx_active, state.shape[-1]), dtype=np.complex64)
+    active = np.zeros(
+        (1, 2, 1, ny_active, nx_active, state.shape[-1]), dtype=np.complex64
+    )
     nx_pos = 1 + (nx_full - 1) // 3
     active[:, :, :, :, :nx_pos, :] = state[:, :, :, :ny_active, :nx_pos, :]
     for i in range(2 * nx_full // 3 + 1, nx_full):
@@ -84,7 +97,7 @@ def main() -> None:
     args = build_parser().parse_args()
 
     cfg, _data = load_runtime_from_toml(args.config)
-    gx_restart = load_gx_legacy_cetg_restart(
+    gx_restart = load_legacy_cetg_restart(
         args.gx_restart,
         nx_full=int(cfg.grid.Nx),
         ny_full=int(cfg.grid.Ny),

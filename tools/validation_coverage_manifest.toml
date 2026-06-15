@@ -15,6 +15,8 @@ excluded_modules = [
   "spectraxgk.from_gx.kernels",
   "spectraxgk.from_gx.miller",
   "spectraxgk.from_gx.vmec",
+  "spectraxgk.gx_legacy_output",
+  "spectraxgk.gx_reduced_models",
   "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.terms.__init__",
@@ -584,7 +586,7 @@ next_tests = [
 module = "spectraxgk.nonlinear_helpers"
 path = "src/spectraxgk/nonlinear_helpers.py"
 owned_modules = [
-  "spectraxgk.gx_reduced_models",
+  "spectraxgk.reduced_model_contracts",
 ]
 owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
 status = "active"
@@ -1305,7 +1307,7 @@ next_tests = [
 module = "spectraxgk.runtime_artifacts"
 path = "src/spectraxgk/runtime_artifacts.py"
 owned_modules = [
-  "spectraxgk.gx_legacy_output",
+  "spectraxgk.legacy_cetg_output",
   "spectraxgk.runtime_artifact_diagnostics",
 ]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"

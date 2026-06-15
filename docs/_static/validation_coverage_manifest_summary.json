@@ -54,11 +54,11 @@
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 67,
-  "n_excluded_modules": 11,
+  "n_excluded_modules": 13,
   "n_high_priority_open": 52,
   "n_modules": 67,
   "n_owned_modules": 82,
-  "n_package_modules": 160,
+  "n_package_modules": 162,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -155,7 +155,7 @@
     "spectraxgk.nonlinear_gradient_followup_state_runbook": [],
     "spectraxgk.nonlinear_gradient_followup_variance": [],
     "spectraxgk.nonlinear_helpers": [
-      "spectraxgk.gx_reduced_models"
+      "spectraxgk.reduced_model_contracts"
     ],
     "spectraxgk.nonlinear_output_netcdf": [],
     "spectraxgk.nonlinear_parallel": [
@@ -195,7 +195,7 @@
     "spectraxgk.runtime_artifact_nonlinear": [],
     "spectraxgk.runtime_artifact_nonlinear_diagnostics": [],
     "spectraxgk.runtime_artifacts": [
-      "spectraxgk.gx_legacy_output",
+      "spectraxgk.legacy_cetg_output",
       "spectraxgk.runtime_artifact_diagnostics"
     ],
     "spectraxgk.runtime_orchestration": [

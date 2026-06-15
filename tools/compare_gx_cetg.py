@@ -7,21 +7,36 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.gx_legacy_output import load_gx_legacy_cetg_output
+from spectraxgk.legacy_cetg_output import load_legacy_cetg_output
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import run_runtime_nonlinear
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gx-nc", required=True, type=Path, help="Legacy GX cETG NetCDF file")
-    parser.add_argument("--config", required=True, type=Path, help="SPECTRAX runtime TOML config")
-    parser.add_argument("--ky", type=float, default=None, help="Diagnostic ky target override")
-    parser.add_argument("--kx", type=float, default=0.0, help="Diagnostic kx target override")
+    parser.add_argument(
+        "--gx-nc", required=True, type=Path, help="Legacy GX cETG NetCDF file"
+    )
+    parser.add_argument(
+        "--config", required=True, type=Path, help="SPECTRAX runtime TOML config"
+    )
+    parser.add_argument(
+        "--ky", type=float, default=None, help="Diagnostic ky target override"
+    )
+    parser.add_argument(
+        "--kx", type=float, default=0.0, help="Diagnostic kx target override"
+    )
     parser.add_argument("--dt", type=float, default=None, help="Time step override")
     parser.add_argument("--steps", type=int, default=None, help="Step-count override")
-    parser.add_argument("--sample-stride", type=int, default=1, help="Runtime diagnostic stride override")
-    parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path")
+    parser.add_argument(
+        "--sample-stride",
+        type=int,
+        default=1,
+        help="Runtime diagnostic stride override",
+    )
+    parser.add_argument(
+        "--out", type=Path, default=None, help="Optional CSV output path"
+    )
     return parser
 
 
@@ -53,10 +68,14 @@ def _leading_finite_prefix_mask(*series: np.ndarray) -> np.ndarray:
 
 def main() -> int:
     args = build_parser().parse_args()
-    gx = load_gx_legacy_cetg_output(args.gx_nc)
+    gx = load_legacy_cetg_output(args.gx_nc)
     cfg, _data = load_runtime_from_toml(args.config)
 
-    ky = float(args.ky) if args.ky is not None else float(gx.ky[1] if gx.ky.size > 1 else gx.ky[0])
+    ky = (
+        float(args.ky)
+        if args.ky is not None
+        else float(gx.ky[1] if gx.ky.size > 1 else gx.ky[0])
+    )
     out = run_runtime_nonlinear(
         cfg,
         ky_target=ky,
@@ -72,7 +91,9 @@ def main() -> int:
     t_s = np.asarray(out.diagnostics.t, dtype=float)
     t_gx = np.asarray(gx.time, dtype=float)
     if t_s.size == 0 or t_gx.size == 0:
-        raise RuntimeError("both GX and SPECTRAX traces must contain at least one time sample")
+        raise RuntimeError(
+            "both GX and SPECTRAX traces must contain at least one time sample"
+        )
     t_max = min(float(t_s[-1]), float(t_gx[-1]))
     t_common = t_gx[(t_gx >= float(max(t_s[0], t_gx[0]))) & (t_gx <= t_max)]
     if t_common.size == 0:
@@ -80,9 +101,15 @@ def main() -> int:
 
     W_s = np.interp(t_common, t_s, np.asarray(out.diagnostics.Wg_t, dtype=float))
     Phi2_s = np.interp(t_common, t_s, np.asarray(out.diagnostics.Wphi_t, dtype=float))
-    qflux_s = np.interp(t_common, t_s, np.asarray(out.diagnostics.heat_flux_t, dtype=float))
-    pflux_s = np.interp(t_common, t_s, np.asarray(out.diagnostics.particle_flux_t, dtype=float))
-    phi_mode_s = _interp_complex(t_common, t_s, np.asarray(out.diagnostics.phi_mode_t, dtype=np.complex128))
+    qflux_s = np.interp(
+        t_common, t_s, np.asarray(out.diagnostics.heat_flux_t, dtype=float)
+    )
+    pflux_s = np.interp(
+        t_common, t_s, np.asarray(out.diagnostics.particle_flux_t, dtype=float)
+    )
+    phi_mode_s = _interp_complex(
+        t_common, t_s, np.asarray(out.diagnostics.phi_mode_t, dtype=np.complex128)
+    )
 
     W_gx = np.interp(t_common, t_gx, np.asarray(gx.W, dtype=float))
     Phi2_gx = np.interp(t_common, t_gx, np.asarray(gx.Phi2, dtype=float))
@@ -101,7 +128,9 @@ def main() -> int:
         pflux_gx,
     )
     if not np.any(finite_prefix):
-        raise RuntimeError("no leading finite overlap between GX and SPECTRAX cETG traces")
+        raise RuntimeError(
+            "no leading finite overlap between GX and SPECTRAX cETG traces"
+        )
     t_eval = t_common[finite_prefix]
     W_eval = W_s[finite_prefix]
     W_gx_eval = W_gx[finite_prefix]

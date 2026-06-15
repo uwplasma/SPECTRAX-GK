@@ -1,3 +1,13 @@
+- 2026-06-15: Continued source naming cleanup by moving generic reduced-model
+  and legacy cETG NetCDF helpers from old reference-code-named modules to
+  `spectraxgk.reduced_model_contracts` and
+  `spectraxgk.legacy_cetg_output`. The old module paths remain as thin
+  compatibility shims, while implementation tests and comparison utilities now
+  import the canonical modules. Coverage ownership moved to the canonical
+  modules and the legacy shim modules are excluded from the wide-coverage
+  ownership inventory. Focused reduced-model/cETG tests, manifest tests, lint,
+  format, and compile checks passed locally.
+
 - 2026-06-15: Completed the internal imported-geometry backend package rename
   tranche. The implementation moved from `spectraxgk.from_gx.*` to
   `spectraxgk.geometry_backends.*`; `spectraxgk.from_gx` now contains thin

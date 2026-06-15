@@ -38,7 +38,9 @@ def test_compare_gx_cetg_startup_parser_requires_core_args() -> None:
     assert args.config == Path("runtime.toml")
 
 
-def test_compare_gx_cetg_startup_match_output_kx_indices_tracks_sorted_active_grid() -> None:
+def test_compare_gx_cetg_startup_match_output_kx_indices_tracks_sorted_active_grid() -> (
+    None
+):
     mod = _load_module()
 
     kx_full = np.array([0.0, 0.5, 1.0, -1.0, -0.5], dtype=float)
@@ -57,7 +59,7 @@ def test_compare_gx_cetg_startup_active_state_uses_gx_memory_order() -> None:
     full[0, 0, 0, 1, 1, 0] = 2.0 + 0.0j
     full[0, 0, 0, 1, 6, 0] = 3.0 + 0.0j
     full[0, 0, 0, 1, 7, 0] = 4.0 + 0.0j
-    restart = mod.GXLegacyCetgRestart(
+    restart = mod.LegacyCetgRestart(
         time=0.0,
         state_active=np.zeros((1, 2, 1, 3, 5, 2), dtype=np.complex64),
         state_positive_ky=np.zeros((1, 2, 1, 3, 8, 2), dtype=np.complex64),

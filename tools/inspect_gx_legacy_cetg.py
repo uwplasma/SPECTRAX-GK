@@ -12,19 +12,23 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.gx_legacy_output import load_gx_legacy_cetg_output
+from spectraxgk.legacy_cetg_output import load_legacy_cetg_output
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("gx_nc", type=Path, help="Legacy GX cETG NetCDF file (e.g. cetg_smoke.nc)")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    parser.add_argument(
+        "gx_nc", type=Path, help="Legacy GX cETG NetCDF file (e.g. cetg_smoke.nc)"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit machine-readable JSON"
+    )
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    out = load_gx_legacy_cetg_output(args.gx_nc)
+    out = load_legacy_cetg_output(args.gx_nc)
     summary = {
         "samples": int(out.time.size),
         "ky": int(out.ky.size),

@@ -10,11 +10,16 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.cetg import _compute_cetg_diag, _diagnostic_midplane_index, build_cetg_model_params, cetg_fields
-from spectraxgk.gx_legacy_output import (
-    expand_gx_legacy_positive_ky_state,
-    load_gx_legacy_cetg_output,
-    load_gx_legacy_cetg_restart,
+from spectraxgk.cetg import (
+    _compute_cetg_diag,
+    _diagnostic_midplane_index,
+    build_cetg_model_params,
+    cetg_fields,
+)
+from spectraxgk.legacy_cetg_output import (
+    expand_legacy_positive_ky_state,
+    load_legacy_cetg_output,
+    load_legacy_cetg_restart,
 )
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
@@ -23,9 +28,18 @@ from spectraxgk.runtime import build_runtime_geometry
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gx-nc", required=True, type=Path, help="Legacy GX grouped cETG NetCDF file")
-    parser.add_argument("--gx-restart", required=True, type=Path, help="Legacy GX cETG restart NetCDF file")
-    parser.add_argument("--config", required=True, type=Path, help="SPECTRAX cETG runtime config")
+    parser.add_argument(
+        "--gx-nc", required=True, type=Path, help="Legacy GX grouped cETG NetCDF file"
+    )
+    parser.add_argument(
+        "--gx-restart",
+        required=True,
+        type=Path,
+        help="Legacy GX cETG restart NetCDF file",
+    )
+    parser.add_argument(
+        "--config", required=True, type=Path, help="SPECTRAX cETG runtime config"
+    )
     return parser
 
 
@@ -58,7 +72,10 @@ def _phi2_qflux_from_gx_active_state(
     fac = np.where(np.arange(ky_active.size) == 0, 1.0, 2.0)[:, None, None]
     phi2 = float(np.sum(0.5 * np.abs(phi) ** 2 * fac * vol[None, None, :]))
     vphi_r = -1j * ky_active[:, None, None] * phi
-    qflux = float(np.sum(np.real(np.conj(vphi_r) * temperature) * 2.0 * flux[None, None, :]) * pressure)
+    qflux = float(
+        np.sum(np.real(np.conj(vphi_r) * temperature) * 2.0 * flux[None, None, :])
+        * pressure
+    )
     return phi2, qflux, phi
 
 
@@ -82,10 +99,10 @@ def _rms_rel(ref: np.ndarray, test: np.ndarray) -> float:
 
 def main() -> int:
     args = build_parser().parse_args()
-    gx = load_gx_legacy_cetg_output(args.gx_nc)
+    gx = load_legacy_cetg_output(args.gx_nc)
     cfg, _data = load_runtime_from_toml(args.config)
 
-    restart = load_gx_legacy_cetg_restart(
+    restart = load_legacy_cetg_restart(
         args.gx_restart,
         nx_full=int(cfg.grid.Nx),
         ny_full=int(cfg.grid.Ny),
@@ -95,18 +112,24 @@ def main() -> int:
     grid = build_spectral_grid(cfg.grid)
     params = build_cetg_model_params(cfg, geom, Nl=2, Nm=1)
 
-    phi2_restart_raw, qflux_restart_raw, phi_restart_raw = _phi2_qflux_from_gx_active_state(
-        restart.state_active,
-        gx.ky,
-        tau_fac=params.tau_fac,
-        pressure=params.pressure,
-        dealias_kz=params.dealias_kz,
+    phi2_restart_raw, qflux_restart_raw, phi_restart_raw = (
+        _phi2_qflux_from_gx_active_state(
+            restart.state_active,
+            gx.ky,
+            tau_fac=params.tau_fac,
+            pressure=params.pressure,
+            dealias_kz=params.dealias_kz,
+        )
     )
 
-    state_full = expand_gx_legacy_positive_ky_state(restart.state_positive_ky, ny_full=int(cfg.grid.Ny))
+    state_full = expand_legacy_positive_ky_state(
+        restart.state_positive_ky, ny_full=int(cfg.grid.Ny)
+    )
     state_full_jax = jnp.asarray(state_full)
     fields = cetg_fields(state_full_jax, grid, params)
-    mask = jnp.broadcast_to(jnp.asarray(grid.dealias_mask, dtype=bool), (grid.ky.size, grid.kx.size))
+    mask = jnp.broadcast_to(
+        jnp.asarray(grid.dealias_mask, dtype=bool), (grid.ky.size, grid.kx.size)
+    )
     diag = _compute_cetg_diag(
         state_full_jax,
         fields,
@@ -130,13 +153,22 @@ def main() -> int:
         vol = np.ones((nz,), dtype=float) / float(nz)
         flux = np.ones((nz,), dtype=float) / float(nz)
         fac = np.where(np.arange(gx.ky.size) == 0, 1.0, 2.0)[:, None, None]
-        phi2_special = float(np.sum(0.5 * np.abs(phi_special) ** 2 * fac * vol[None, None, :]))
-        temp = np.asarray(restart.state_active[0, 1, 0, : gx.ky.size], dtype=np.complex128)
+        phi2_special = float(
+            np.sum(0.5 * np.abs(phi_special) ** 2 * fac * vol[None, None, :])
+        )
+        temp = np.asarray(
+            restart.state_active[0, 1, 0, : gx.ky.size], dtype=np.complex128
+        )
         vphi_r = -1j * gx.ky[:, None, None] * phi_special
-        qflux_special = float(np.sum(np.real(np.conj(vphi_r) * temp) * 2.0 * flux[None, None, :]) * params.pressure)
+        qflux_special = float(
+            np.sum(np.real(np.conj(vphi_r) * temp) * 2.0 * flux[None, None, :])
+            * params.pressure
+        )
         phi_special_vs_restart = _rms_rel(phi_special, phi_restart_raw)
 
-    print(f"gx_out_final:     W={float(gx.W[-1]):.9g} Phi2={float(gx.Phi2[-1]):.9g} qflux={float(gx.qflux[-1, 0]):.9g}")
+    print(
+        f"gx_out_final:     W={float(gx.W[-1]):.9g} Phi2={float(gx.Phi2[-1]):.9g} qflux={float(gx.qflux[-1, 0]):.9g}"
+    )
     print(
         "restart_raw:      "
         f"t={restart.time:.9g} Phi2={phi2_restart_raw:.9g} qflux={qflux_restart_raw:.9g}"
