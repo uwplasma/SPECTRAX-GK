@@ -1367,6 +1367,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_artifact_linear"
+path = "src/spectraxgk/runtime_artifact_linear.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime examples for linear scans, quasilinear spectra, and plotting from saved output",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "linear artifact summaries preserve fitted growth rates, frequencies, eigenfunction metadata, and selected mode indices",
+  "quasilinear spectra preserve mode ky, kperp, species weights, and saturated flux channels used by screening figures",
+]
+numerics_contracts = [
+  "complex linear signals are serialized as real, imaginary, and absolute-value columns in deterministic order",
+  "ky-scan and quasilinear-spectrum rows preserve solver ordering for serial and parallel scan comparisons",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/quasilinear_runtime_parallel_gate.png",
+]
+next_tests = [
+  "add a plot reload regression for a saved linear eigenfunction bundle",
+  "add a quasilinear-spectrum roundtrip test with missing optional saturation fields",
+]
+
+[[modules]]
 module = "spectraxgk.runtime_artifact_gx_layout"
 path = "src/spectraxgk/runtime_artifact_gx_layout.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"

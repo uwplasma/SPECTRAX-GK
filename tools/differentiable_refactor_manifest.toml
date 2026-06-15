@@ -778,6 +778,20 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_linear"
+source_path = "src/spectraxgk/runtime_artifact_linear.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "linear single-run artifacts, ky-scan artifacts, and quasilinear summary/species/spectrum CSV/JSON writers"
+moved_exports = [
+  "write_quasilinear_artifacts",
+  "write_runtime_linear_scan_artifacts",
+  "write_runtime_linear_artifacts",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
 source_path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
 facade_module = "spectraxgk.runtime_artifacts"

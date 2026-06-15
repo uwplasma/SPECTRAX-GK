@@ -164,9 +164,11 @@ Completed extractions:
   ``nonlinear_gradient_evidence_fd.py``,
   ``nonlinear_gradient_evidence_screening.py``,
   ``nonlinear_gradient_evidence_gap.py``
-- runtime artifact read/write, generic I/O helpers, GX-style active-axis layout,
-  nonlinear diagnostic reload helpers, and restart-append schema coverage:
+- runtime artifact read/write, generic I/O helpers, linear/quasilinear
+  artifact writers, GX-style active-axis layout, nonlinear diagnostic reload
+  helpers, and restart-append schema coverage:
   ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
+  ``runtime_artifact_linear.py``,
   ``runtime_artifact_gx_layout.py``,
   ``runtime_artifact_nonlinear_diagnostics.py``
 

@@ -1,3 +1,10 @@
+- 2026-06-15: Continued the runtime artifact refactor by moving linear scan,
+  linear single-run, and quasilinear artifact writers into
+  `spectraxgk.runtime_artifact_linear`. The public
+  `spectraxgk.runtime_artifacts` facade still re-exports these writer
+  functions, keeping the executable/runtime import contract stable while
+  separating pure linear CSV/JSON serialization from nonlinear NetCDF output.
+
 - 2026-06-15: Continued the runtime artifact refactor by moving nonlinear
   GX-style diagnostic reload, optional-variable parsing, restart-path
   resolution, species-time condensation, and restart-append diagnostic schema

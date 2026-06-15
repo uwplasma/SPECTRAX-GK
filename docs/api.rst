@@ -471,6 +471,13 @@ Runtime Artifact IO
    :members:
    :private-members:
 
+Runtime Artifact Linear Writers
+-------------------------------
+
+.. automodule:: spectraxgk.runtime_artifact_linear
+   :members:
+   :private-members:
+
 Runtime Artifact GX Layout
 --------------------------
 

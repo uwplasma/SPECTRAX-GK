@@ -16,6 +16,7 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.runtime_artifacts as runtime_artifacts
 import spectraxgk.runtime_artifact_gx_layout as gx_layout
 import spectraxgk.runtime_artifact_io as artifact_io
+import spectraxgk.runtime_artifact_linear as artifact_linear
 import spectraxgk.runtime_artifact_nonlinear_diagnostics as artifact_nonlinear_diag
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
@@ -113,6 +114,18 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert (
         runtime_artifacts.load_runtime_nonlinear_gx_diagnostics
         is artifact_nonlinear_diag.load_runtime_nonlinear_gx_diagnostics
+    )
+    assert (
+        runtime_artifacts.write_quasilinear_artifacts
+        is artifact_linear.write_quasilinear_artifacts
+    )
+    assert (
+        runtime_artifacts.write_runtime_linear_artifacts
+        is artifact_linear.write_runtime_linear_artifacts
+    )
+    assert (
+        runtime_artifacts.write_runtime_linear_scan_artifacts
+        is artifact_linear.write_runtime_linear_scan_artifacts
     )
 
 
