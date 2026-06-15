@@ -1,3 +1,11 @@
+- 2026-06-15: Tightened the VMEC/Boozer differentiability guard to require
+  family coverage in the parity matrix. The release claim now fails if the
+  tracked equal-arc parity evidence drops the QH, QI, or
+  shaped-tokamak-pressure finite-beta row, while still keeping finite-beta
+  solver-objective gradients and production nonlinear transport gradients out
+  of scope. Focused guard tests now include the finite-beta row and a failure
+  case for missing finite-beta coverage.
+
 - 2026-06-15: Added a content-based VMEC/Boozer differentiability claim guard.
   `tools/check_vmec_boozer_differentiability_claim.py` now validates the
   tracked equal-arc parity matrix, mode-21 QH/Li383 frequency/quasilinear/

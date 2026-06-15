@@ -24,12 +24,15 @@ def _minimal_artifacts(root: Path) -> None:
             "summary": {
                 "all_available": True,
                 "all_equal_arc_passed": True,
-                "n_cases": 2,
-                "n_equal_arc_passed": 2,
+                "n_cases": 3,
+                "n_equal_arc_passed": 3,
             },
             "rows": [
                 {
                     "case_name": "case_a",
+                    "available": True,
+                    "family": "quasi-helical",
+                    "equal_arc_all_passed": True,
                     "mboz": 21,
                     "nboz": 21,
                     "mode_floor_passed": True,
@@ -38,6 +41,20 @@ def _minimal_artifacts(root: Path) -> None:
                 },
                 {
                     "case_name": "case_b",
+                    "available": True,
+                    "family": "quasi-isodynamic",
+                    "equal_arc_all_passed": True,
+                    "mboz": 21,
+                    "nboz": 21,
+                    "mode_floor_passed": True,
+                    "production_parity_passed": False,
+                    "status": "diagnostic_open",
+                },
+                {
+                    "case_name": "shaped_tokamak_pressure",
+                    "available": True,
+                    "family": "axisymmetric finite-beta",
+                    "equal_arc_all_passed": True,
                     "mboz": 21,
                     "nboz": 21,
                     "mode_floor_passed": True,
@@ -128,6 +145,9 @@ def test_vmec_boozer_differentiability_claim_guard_accepts_scoped_artifacts(
         report["checks"]["nonlinear_fd_audit"]["production_nonlinear_window_gradient_gate"]
         is False
     )
+    assert report["checks"]["parity_matrix"]["finite_beta_pressure_equal_arc_rows"] == [
+        "shaped_tokamak_pressure"
+    ]
 
 
 def test_vmec_boozer_differentiability_claim_guard_rejects_hidden_direct_gap(
@@ -144,6 +164,24 @@ def test_vmec_boozer_differentiability_claim_guard_rejects_hidden_direct_gap(
 
     assert report["passed"] is False
     assert "direct_tensor_parity_gap_not_explicitly_scoped" in report["blockers"]
+
+
+def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_parity(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    parity_path = tmp_path / "docs/_static/vmec_boozer_parity_matrix.json"
+    parity = json.loads(parity_path.read_text(encoding="utf-8"))
+    parity["rows"] = [
+        row for row in parity["rows"] if row["case_name"] != "shaped_tokamak_pressure"
+    ]
+    parity_path.write_text(json.dumps(parity), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "parity_matrix_missing_required_family" in report["blockers"]
+    assert "parity_matrix_missing_finite_beta_pressure_row" in report["blockers"]
 
 
 def test_vmec_boozer_differentiability_claim_guard_rejects_unscoped_nonlinear_claim(

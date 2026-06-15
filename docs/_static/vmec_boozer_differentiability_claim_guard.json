@@ -68,10 +68,24 @@
         "nfp4_QH_warm_start",
         "shaped_tokamak_pressure"
       ],
+      "finite_beta_pressure_equal_arc_rows": [
+        "shaped_tokamak_pressure"
+      ],
       "minimum_boozer_mode_count": 21,
+      "missing_required_families": [],
       "mode_floor_passed": true,
       "n_cases": 3,
-      "n_equal_arc_passed": 3
+      "n_equal_arc_passed": 3,
+      "passed_families": [
+        "axisymmetric finite-beta",
+        "quasi-helical",
+        "quasi-isodynamic"
+      ],
+      "required_families": [
+        "axisymmetric finite-beta",
+        "quasi-helical",
+        "quasi-isodynamic"
+      ]
     }
   },
   "claim_level": "reduced_full_chain_differentiability_guard_not_full_nonlinear_transport_optimization",

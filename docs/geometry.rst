@@ -434,9 +434,12 @@ the Boozer half-mesh radial-index convention. The evaluated QI robustness
 variants at ``ntheta=8`` and ``ntheta=16`` also pass. The broader QI seed
 campaign is still artifact-limited because three input-only QI seeds have no
 bundled ``wout`` references, and none of this is broad random-seed nonlinear
-QI transport validation or QI optimization. Finite-beta drift parity,
-solver-objective geometry gradients beyond the tracked reduced gates, and
-nonlinear transport optimization remain explicitly scoped as follow-up work.
+QI transport validation or QI optimization. The release guard now requires the
+finite-beta/pressure ``shaped_tokamak_pressure`` equal-arc row, so the current
+claim cannot silently regress to zero-beta-only parity evidence. Finite-beta
+solver-objective geometry gradients, broader production-runtime
+pressure-correction drift audits, and nonlinear transport optimization remain
+explicitly scoped as follow-up work.
 
 .. figure:: _static/vmec_boozer_parity_matrix.png
    :width: 95%
@@ -500,8 +503,9 @@ The release guard
 those contents directly: it requires the equal-arc parity matrix, the QH/Li383
 mode-21 frequency/quasilinear/nonlinear-window gradient holdouts, explicit
 ``diagnostic_open`` status for the direct VMEC tensor-vs-imported-EIK
-convention gap, and a startup-only label for the nonlinear finite-difference
-audit. A tagged release must fail if these artifacts try to promote a direct
+convention gap, a passing finite-beta/pressure equal-arc parity row, and a
+startup-only label for the nonlinear finite-difference audit. A tagged release
+must fail if these artifacts try to promote a direct
 tensor-parity failure or a startup nonlinear-window response into a converged
 nonlinear transport-gradient claim.
 

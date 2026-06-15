@@ -62,12 +62,13 @@ score.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
-       for zero-beta equal-arc field-line parity where the current
-       ``mboz=nboz=21`` parity artifact passes. The fixed-resolution QI row
-       now passes after the Boozer half-mesh convention fix, with drift
-       mismatch about ``7.13e-2`` against the ``8e-2`` tolerance, and the
-       evaluated QI ``ntheta=8,16`` variants pass. This is still not a broad
-       QI transport or optimization claim. Reduced frequency, quasilinear, and
+       for equal-arc field-line parity where the current ``mboz=nboz=21``
+       parity artifact passes QH, QI, and shaped-pressure finite-beta rows.
+       The fixed-resolution QI row now passes after the Boozer half-mesh
+       convention fix, with drift mismatch about ``7.13e-2`` against the
+       ``8e-2`` tolerance, and the evaluated QI ``ntheta=8,16`` variants pass.
+       This is still not a broad QI transport, finite-beta transport-gradient,
+       or optimization claim. Reduced frequency, quasilinear, and
        nonlinear-window-estimator gradients pass AD/finite-difference gates on
        QH and Li383. The actual nonlinear
        finite-difference audits are startup plumbing checks with false

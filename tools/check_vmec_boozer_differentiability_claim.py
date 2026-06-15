@@ -33,6 +33,11 @@ REQUIRED_GRADIENT_GATE_TYPES = {
 REQUIRED_SOURCE_SCOPE = "mode21_vmec_boozer_state"
 MINIMUM_BOOZER_MODE_COUNT = 21
 MINIMUM_GRADIENT_CASES = 2
+REQUIRED_PARITY_ROW_FAMILIES = {
+    "axisymmetric finite-beta",
+    "quasi-helical",
+    "quasi-isodynamic",
+}
 
 
 def _read_json(root: Path, rel_path: str) -> dict[str, Any]:
@@ -90,6 +95,21 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
         for row in rows
         if row.get("production_parity_passed") is False and row.get("status") != "diagnostic_open"
     ]
+    passed_families = {
+        str(row.get("family", "")).strip()
+        for row in rows
+        if row.get("available") is not False and row.get("equal_arc_all_passed") is True
+    }
+    finite_beta_pressure_rows = [
+        row.get("case_name", "<unknown>")
+        for row in rows
+        if row.get("equal_arc_all_passed") is True
+        and (
+            "finite-beta" in str(row.get("family", "")).lower()
+            or "pressure" in str(row.get("family", "")).lower()
+            or "pressure" in str(row.get("case_name", "")).lower()
+        )
+    ]
     claim_level = str(parity.get("claim_level", ""))
     claim_scoped = "not_full_transport_gradient_claim" in claim_level
     checks = {
@@ -101,6 +121,10 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
         "n_equal_arc_passed": summary.get("n_equal_arc_passed"),
         "direct_tensor_parity_open_rows": sorted(str(item) for item in direct_open_rows),
         "direct_tensor_parity_hidden_failures": sorted(str(item) for item in hidden_direct_failures),
+        "passed_families": sorted(passed_families),
+        "required_families": sorted(REQUIRED_PARITY_ROW_FAMILIES),
+        "missing_required_families": sorted(REQUIRED_PARITY_ROW_FAMILIES - passed_families),
+        "finite_beta_pressure_equal_arc_rows": sorted(str(item) for item in finite_beta_pressure_rows),
         "claim_level": claim_level,
         "claim_scoped_not_full_transport_gradient": claim_scoped,
     }
@@ -113,6 +137,10 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
         blockers.append("boozer_mode_floor_failed")
     if hidden_direct_failures:
         blockers.append("direct_tensor_parity_failure_not_marked_diagnostic_open")
+    if checks["missing_required_families"]:
+        blockers.append("parity_matrix_missing_required_family")
+    if not finite_beta_pressure_rows:
+        blockers.append("parity_matrix_missing_finite_beta_pressure_row")
     if not claim_scoped:
         blockers.append("parity_matrix_claim_not_scoped")
     return checks, blockers
