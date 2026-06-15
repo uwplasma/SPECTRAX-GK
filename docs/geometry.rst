@@ -509,6 +509,9 @@ requires the shaped-pressure finite-beta eigenfrequency-gradient gate in
 ``docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json``
 and the shaped-pressure finite-beta quasilinear-gradient gate in
 ``docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json``.
+It also requires the shaped-pressure finite-beta reduced nonlinear-window
+estimator-gradient gate in
+``docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json``.
 A tagged release must fail if these artifacts try to promote a direct
 tensor-parity failure or a startup nonlinear-window response into a converged
 nonlinear transport-gradient claim.
@@ -525,9 +528,10 @@ accuracy claims.
 For release claims, the differentiable-geometry lane is closed only for
 artifact-passing equal-arc parity rows, reduced QH/Li383
 AD/finite-difference objectives, and the shaped-pressure finite-beta
-eigenfrequency/quasilinear-gradient gates. The fixed-resolution QI row and evaluated QI
-``ntheta`` variants now pass, but production nonlinear heat-flux optimization
-and finite-beta nonlinear-window/transport-gradient gates are still open.
+eigenfrequency/quasilinear/reduced nonlinear-window estimator-gradient gates.
+The fixed-resolution QI row and evaluated QI ``ntheta`` variants now pass, but
+production nonlinear heat-flux optimization and finite-beta converged
+transport-gradient gates are still open.
 The active publication wording must keep these levels separate: the current
 bridge starts at real ``vmec_jax`` state coefficients and reaches SPECTRAX-GK
 solver observables, but it has not yet validated converged nonlinear

@@ -233,6 +233,67 @@ def _minimal_artifacts(root: Path) -> None:
             "surface_stencil_width": 3,
         },
     )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
+        {
+            "case_name": "shaped_tokamak_pressure",
+            "eigenpair_gate": {"max_rel_error": 2.5e-4},
+            "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
+            "linear_frequency_gradient_gate": True,
+            "linear_growth_gradient_gate": True,
+            "mboz": 21,
+            "nboz": 21,
+            "nonlinear_window_gradient_gate": True,
+            "objective_gates": [
+                {
+                    "objective": "gamma",
+                    "passed": True,
+                    "rel_error": 1.0e-4,
+                },
+                {
+                    "objective": "omega",
+                    "passed": True,
+                    "rel_error": 1.0e-4,
+                },
+                {
+                    "objective": "kperp_eff2",
+                    "passed": True,
+                    "rel_error": 1.0e-4,
+                },
+                {
+                    "objective": "linear_heat_flux_weight",
+                    "passed": True,
+                    "rel_error": 1.0e-4,
+                },
+                {
+                    "objective": "mixing_length_heat_flux_proxy",
+                    "passed": True,
+                    "rel_error": 2.0e-4,
+                },
+                {
+                    "objective": "nonlinear_window_heat_flux_mean",
+                    "passed": True,
+                    "rel_error": 2.0e-4,
+                },
+                {
+                    "objective": "nonlinear_window_heat_flux_cv",
+                    "passed": True,
+                    "rel_error": 2.0e-4,
+                },
+                {
+                    "objective": "nonlinear_window_heat_flux_trend",
+                    "passed": True,
+                    "rel_error": 2.0e-4,
+                },
+            ],
+            "passed": True,
+            "production_nonlinear_window_gradient_gate": False,
+            "quasilinear_weight_gradient_gate": True,
+            "source_scope": "mode21_vmec_boozer_state",
+            "surface_stencil_width": 3,
+        },
+    )
 
 
 def test_vmec_boozer_differentiability_claim_guard_accepts_scoped_artifacts(
@@ -261,6 +322,9 @@ def test_vmec_boozer_differentiability_claim_guard_accepts_scoped_artifacts(
         "shaped_tokamak_pressure"
     )
     assert report["checks"]["finite_beta_quasilinear_gate"]["case_name"] == (
+        "shaped_tokamak_pressure"
+    )
+    assert report["checks"]["finite_beta_nonlinear_window_gate"]["case_name"] == (
         "shaped_tokamak_pressure"
     )
 
@@ -377,6 +441,42 @@ def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_ql_gate(
     assert "finite_beta_quasilinear_gate_error_threshold_failed" in report["blockers"]
     assert (
         "finite_beta_quasilinear_gate_attempts_nonlinear_gradient_claim"
+        in report["blockers"]
+    )
+
+
+def test_vmec_boozer_differentiability_claim_guard_requires_finite_beta_nonlinear_window_gate(
+    tmp_path: Path,
+) -> None:
+    _minimal_artifacts(tmp_path)
+    gate_path = (
+        tmp_path
+        / "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json"
+    )
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    gate["case_name"] = "nfp4_QH_warm_start"
+    gate["production_nonlinear_window_gradient_gate"] = True
+    gate["objective_gates"] = [
+        row
+        for row in gate["objective_gates"]
+        if row["objective"] != "nonlinear_window_heat_flux_trend"
+    ]
+    gate["eigenpair_gate"]["max_rel_error"] = 0.2
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+
+    report = build_vmec_boozer_differentiability_claim_guard(tmp_path)
+
+    assert report["passed"] is False
+    assert "finite_beta_nonlinear_window_gate_wrong_case" in report["blockers"]
+    assert (
+        "finite_beta_nonlinear_window_gate_missing_objective" in report["blockers"]
+    )
+    assert (
+        "finite_beta_nonlinear_window_gate_error_threshold_failed"
+        in report["blockers"]
+    )
+    assert (
+        "finite_beta_nonlinear_window_gate_attempts_production_transport_claim"
         in report["blockers"]
     )
 

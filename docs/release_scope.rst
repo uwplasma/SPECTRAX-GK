@@ -70,6 +70,8 @@ score.
        The shaped-pressure finite-beta eigenfrequency-gradient and
        quasilinear-gradient gates also pass with max relative
        AD/finite-difference errors about ``6.4e-11`` and ``2.1e-4``.
+       The shaped-pressure finite-beta reduced nonlinear-window estimator gate
+       also passes with max relative error about ``2.1e-4``.
        This is still not a broad QI transport, finite-beta nonlinear
        transport-gradient, or optimization claim. Reduced frequency,
        quasilinear, and nonlinear-window-estimator gradients pass

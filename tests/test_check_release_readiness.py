@@ -81,6 +81,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "vmec_boozer_differentiability_claim_guard.json",
         "vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
         "vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+        "vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
         "technical_release_status.json",
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",

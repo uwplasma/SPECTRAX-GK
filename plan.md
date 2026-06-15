@@ -5,9 +5,12 @@
   local run (~27 s), and records max AD-vs-finite-difference relative error
   about `6.4e-11`. The shaped-pressure finite-beta quasilinear-gradient gate
   also passes in a bounded local run (~50 s), with max relative error about
-  `2.1e-4`. The differentiability guard now requires both artifacts while
-  still blocking finite-beta nonlinear-window/transport-gradient claims until
-  those gates are run and pass.
+  `2.1e-4`. The shaped-pressure finite-beta reduced nonlinear-window
+  estimator-gradient gate also passes in a bounded local run (~43 s), with max
+  relative error about `2.1e-4` across the window mean, CV, and trend
+  observables. The differentiability guard now requires all three artifacts
+  while still blocking finite-beta converged nonlinear transport-gradient
+  claims until those gates are run and pass.
 
 - 2026-06-15: Tightened the VMEC/Boozer differentiability guard from a
   matrix-level gradient check to an objective-level solver contract. Each QH

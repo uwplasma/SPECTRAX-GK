@@ -2350,8 +2350,11 @@ the following pass:
    with max relative AD/finite-difference error about ``6.4e-11``. The
    finite-beta shaped-pressure quasilinear-gradient gate is closed by
    ``docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json``
-   with max relative error about ``2.1e-4``; this does not promote finite-beta
-   nonlinear transport gradients.
+   with max relative error about ``2.1e-4``. The finite-beta shaped-pressure
+   reduced nonlinear-window estimator-gradient gate is closed by
+   ``docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json``
+   with max relative error about ``2.1e-4``; this still does not promote
+   finite-beta converged nonlinear transport gradients.
    Larger QI/QA nonlinear-window transport holdouts
    are still promotion work: QI is currently conditioning-limited when forced
    through the narrow diagnostic stencil, while the QA low-resolution
