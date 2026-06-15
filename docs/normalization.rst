@@ -183,7 +183,6 @@ Benchmark runners expose ``diagnostic_norm`` and route it through
 
 - ``none``: return raw solver ``(gamma, omega)``.
 - ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
-- ``gx``: legacy alias for ``rho_star`` accepted for older input files.
 
 This affects reporting only; it does not alter the RHS/operator.
 
