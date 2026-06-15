@@ -107,7 +107,7 @@ def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     assert calls["shard"] >= 3
 
 
-@pytest.mark.parametrize("method", ["euler", "rk2", "rk3", "rk3_gx", "rk3_classic", "rk4", "sspx3"])
+@pytest.mark.parametrize("method", ["euler", "rk2", "rk3", "rk3_heun", "rk3_classic", "rk4", "sspx3"])
 def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, method: str) -> None:
     """All explicit nonlinear sharded methods should preserve a constant RHS update."""
 

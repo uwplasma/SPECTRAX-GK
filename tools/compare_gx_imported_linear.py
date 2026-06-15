@@ -28,12 +28,12 @@ from spectraxgk.geometry import (
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
-from spectraxgk.gx_integrators import (
-    GXTimeConfig,
-    _gx_growth_rate_step,
-    _gx_linear_omega_max,
-    _gx_midplane_index,
-    _gx_term_config,
+from spectraxgk.explicit_time_integrators import (
+    ExplicitTimeConfig,
+    _instantaneous_growth_rate_step,
+    _linear_frequency_bound,
+    _diagnostic_midplane_index,
+    _linear_term_config,
     _linear_explicit_step,
 )
 from spectraxgk.io import load_toml
@@ -553,7 +553,7 @@ def _integrate_target_mode_series(
     geom,
     cache,
     params,
-    time_cfg: GXTimeConfig,
+    time_cfg: ExplicitTimeConfig,
     terms: LinearTerms,
     mode_method: str,
     ky_index: int,
@@ -565,9 +565,9 @@ def _integrate_target_mode_series(
     if mode_method not in {"z_index", "max", "project", "svd"}:
         raise ValueError("mode_method must be one of {'z_index', 'max', 'project', 'svd'}")
 
-    term_cfg = _gx_term_config(terms)
+    term_cfg = _linear_term_config(terms)
     mask = jnp.asarray(grid.dealias_mask, dtype=bool)
-    z_index = _gx_midplane_index(grid.z.size)
+    z_index = _diagnostic_midplane_index(grid.z.size)
     dt = float(time_cfg.dt)
     dt_min = float(time_cfg.dt_min)
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
@@ -605,7 +605,7 @@ def _integrate_target_mode_series(
     step = 0
 
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
-    omega_max = _gx_linear_omega_max(grid, geom_eff, params, G.shape[-5], G.shape[-4])
+    omega_max = _linear_frequency_bound(grid, geom_eff, params, G.shape[-5], G.shape[-4])
     wmax = float(np.sum(omega_max))
     if not time_cfg.fixed_dt and wmax > 0.0:
         dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
@@ -666,7 +666,7 @@ def _integrate_target_mode_series(
                 gamma = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
                 omega = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
             else:
-                gamma, omega = _gx_growth_rate_step(
+                gamma, omega = _instantaneous_growth_rate_step(
                     phi,
                     phi_prev_sample,
                     dt_sample,
@@ -735,7 +735,7 @@ def _run_single_ky(
     geom,
     grid_full,
     params,
-    time_cfg: GXTimeConfig,
+    time_cfg: ExplicitTimeConfig,
     gx_contract: GXInputContract | None,
     species: tuple[Species, ...],
     Nl: int,
@@ -1158,7 +1158,7 @@ def main() -> None:
             damp_ends_amp=float(args.damp_ends_amp),
             damp_ends_widthfrac=float(args.damp_ends_widthfrac),
         )
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(gx_time[-1]),
         method=(gx_contract.scheme if gx_contract is not None else "rk4"),

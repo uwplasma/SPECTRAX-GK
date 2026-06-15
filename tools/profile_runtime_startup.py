@@ -131,7 +131,7 @@ def main() -> None:
     from spectraxgk.grids import build_spectral_grid
     from spectraxgk.io import load_runtime_from_toml
     from spectraxgk.linear import build_linear_cache
-    from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics_state, nonlinear_rhs_cached
+    from spectraxgk.nonlinear import integrate_nonlinear_explicit_diagnostics_state, nonlinear_rhs_cached
     from spectraxgk.runtime import (
         _build_initial_condition,
         _runtime_external_phi,
@@ -260,7 +260,7 @@ def main() -> None:
         integrator_out = _time_phase(
             timings,
             "compile_first_integrator_run",
-            lambda: integrate_nonlinear_gx_diagnostics_state(
+            lambda: integrate_nonlinear_explicit_diagnostics_state(
                 G0,
                 grid,
                 geom,

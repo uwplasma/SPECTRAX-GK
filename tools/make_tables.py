@@ -62,7 +62,7 @@ from spectraxgk.config import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, integrate_linear_explicit
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.analysis import (
@@ -907,7 +907,7 @@ def _cyclone_gx_scan(
             init_cfg=cfg.init,
         )
         cache = build_linear_cache(grid, geom, params, Nl, Nm)
-        time_cfg = GXTimeConfig(
+        time_cfg = ExplicitTimeConfig(
             t_max=tmax,
             dt=0.01,
             fixed_dt=False,
@@ -920,7 +920,7 @@ def _cyclone_gx_scan(
             verbose=verbose,
             use_tqdm=progress,
         )
-        t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+        t, phi_t, _gamma_t, _omega_t = integrate_linear_explicit(
             G0,
             grid,
             cache,
@@ -1139,13 +1139,13 @@ def _run_etg_gx_growth(
     electron_index = int(np.argmin(charge))
     G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
     G0[electron_index] = np.asarray(G0_single, dtype=np.complex64)
-    t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+    t, phi_t, _gamma_t, _omega_t = integrate_linear_explicit(
         G0,
         grid,
         cache,
         params,
         geom,
-        GXTimeConfig(dt=dt, t_max=dt * float(steps), sample_stride=max(1, sample_stride)),
+        ExplicitTimeConfig(dt=dt, t_max=dt * float(steps), sample_stride=max(1, sample_stride)),
         terms=LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
         mode_method="z_index",
     )

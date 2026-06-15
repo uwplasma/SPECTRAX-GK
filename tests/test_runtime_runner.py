@@ -973,7 +973,7 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(
     )
     monkeypatch.setattr(
         runtime,
-        "integrate_cetg_gx_diagnostics_state",
+        "integrate_cetg_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.1, 0.2, 0.3]),
             type(
@@ -1102,7 +1102,7 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(
     )
     monkeypatch.setattr(
         runtime,
-        "integrate_cetg_gx_diagnostics_state",
+        "integrate_cetg_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.1, 0.2]),
             type("Diag", (), {"t": np.asarray([0.1, 0.2])})(),
@@ -1189,7 +1189,7 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(
         return t, diag, np.asarray(args[0]) + 1.0, fields
 
     monkeypatch.setattr(
-        runtime, "integrate_cetg_gx_diagnostics_state", _fake_integrator
+        runtime, "integrate_cetg_explicit_diagnostics_state", _fake_integrator
     )
 
     out = run_runtime_nonlinear(
@@ -1646,7 +1646,7 @@ def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(
 
     monkeypatch.setattr(
         runtime,
-        "integrate_nonlinear_gx_diagnostics_state",
+        "integrate_nonlinear_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.0]),
             zero_diag,
@@ -2203,7 +2203,7 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         return t, diag, np.asarray(G0) + 1.0, fields
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
     )
 
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=None)
@@ -2430,7 +2430,7 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
     )
 
     cfg = replace(
@@ -2516,7 +2516,7 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
     )
 
     cfg = replace(
@@ -3764,7 +3764,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
     )
     _res = run_runtime_nonlinear(cfg, ky_target=0.3, Nl=3, Nm=4, steps=1)
 
@@ -3862,7 +3862,7 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         return t, diag, np.asarray(G0), None
 
     monkeypatch.setattr(
-        "spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state", _fake_integrator
     )
     _res = run_runtime_nonlinear(
         cfg, ky_target=0.1, kx_target=-1.1, Nl=3, Nm=4, steps=1

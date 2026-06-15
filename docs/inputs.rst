@@ -468,7 +468,7 @@ Notable runtime-only keys:
   relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
   families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
   ``rk3_classic`` keeps the older classical RK3 update if you need it for
-  controlled comparisons, and ``rk3_gx`` remains as a compatibility alias.
+  controlled comparisons, and ``rk3_heun`` remains as a compatibility alias.
 * ``[terms]``: each key is a pure multiplicative operator weight:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,

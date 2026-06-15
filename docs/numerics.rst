@@ -35,7 +35,7 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.linear.integrate_linear`.
 - **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
   :func:`spectraxgk.integrate_linear_explicit`
-  (compatibility alias: :func:`spectraxgk.gx_integrators.integrate_linear_gx`).
+  (compatibility alias: :func:`spectraxgk.explicit_time_integrators.integrate_linear_explicit`).
 - **Diffrax integration (explicit/implicit/IMEX)**:
   :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
   :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`.
@@ -76,7 +76,7 @@ The linear solver supports:
 - **Forward Euler** (``method="euler"``) and **RK2/RK4** explicit schemes for
   non-stiff runs.
 - **reference-compatible RK4 with CFL step control**
-  (``integrate_linear_gx``). The timestep is recomputed from the linear
+  (``integrate_linear_explicit``). The timestep is recomputed from the linear
   max-frequency estimate using the benchmark-locked CFL rule, and growth rates
   are extracted from the midplane ``phi`` ratio using the same diagnostic
   convention as the tracked comparison data.

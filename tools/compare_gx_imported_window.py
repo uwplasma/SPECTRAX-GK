@@ -16,7 +16,7 @@ from netCDF4 import Dataset
 from tools.compare_gx_imported_linear import (
     _build_imported_linear_terms,
     _gx_has_uniform_linear_dt,
-    _gx_term_config,
+    _linear_term_config,
     _infer_gx_linear_dt,
     _load_gx_input_contract,
     _resolve_imported_boundary,
@@ -35,7 +35,7 @@ from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.diagnostics import magnetic_vector_potential_energy, distribution_free_energy, electrostatic_field_energy, fieldline_quadrature_weights
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, _gx_linear_omega_max, _linear_explicit_step
+from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.species import build_linear_params
 
@@ -163,7 +163,7 @@ def main() -> None:
 
     cache = build_linear_cache(grid, geom, params, nl, nm)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(gx_time[args.time_index_stop] - gx_time[args.time_index_start]),
         method=str(gx_contract.scheme),
@@ -175,7 +175,7 @@ def main() -> None:
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else float(time_cfg.dt)
 
     G = jnp.asarray(gx_G_start, dtype=jnp.complex64)
-    omega_max = _gx_linear_omega_max(grid, geom, params, nl, nm)
+    omega_max = _linear_frequency_bound(grid, geom, params, nl, nm)
     wmax = float(np.sum(omega_max))
     t = 0.0
     target = float(time_cfg.t_max)
@@ -191,7 +191,7 @@ def main() -> None:
         )
 
     stepper = jax.jit(_step, donate_argnums=(0,))
-    term_cfg = _gx_term_config(terms)
+    term_cfg = _linear_term_config(terms)
     step_count = 0
     while t < target - 1.0e-12:
         dt_step = float(time_cfg.dt)

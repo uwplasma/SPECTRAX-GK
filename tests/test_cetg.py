@@ -17,7 +17,7 @@ from spectraxgk.cetg import (
     build_cetg_model_params,
     cetg_fields,
     cetg_rhs,
-    integrate_cetg_gx_diagnostics_state,
+    integrate_cetg_explicit_diagnostics_state,
     validate_cetg_runtime_config,
 )
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
@@ -315,7 +315,7 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         gx_real_fft=True,
     )
 
-    _t, diag, G_scan, _fields = integrate_cetg_gx_diagnostics_state(
+    _t, diag, G_scan, _fields = integrate_cetg_explicit_diagnostics_state(
         jnp.asarray(g0_state),
         grid,
         params,
@@ -367,7 +367,7 @@ def test_cetg_explicit_method_branches_return_finite_diagnostics(method: str) ->
     )
     g0 = jnp.ones((1, 2, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64) * 1.0e-5
 
-    t, diag, state, fields = integrate_cetg_gx_diagnostics_state(
+    t, diag, state, fields = integrate_cetg_explicit_diagnostics_state(
         g0,
         grid,
         params,

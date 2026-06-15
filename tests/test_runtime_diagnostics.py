@@ -3,7 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 from dataclasses import fields, replace
 import pytest
-import spectraxgk.gx_integrators as gx_integrators
+import spectraxgk.explicit_time_integrators as explicit_time_integrators
 import spectraxgk.diagnostics as diagnostics_module
 import spectraxgk.diagnostics_channels as diagnostics_channels
 import spectraxgk.diagnostics_metadata as diagnostics_metadata
@@ -60,23 +60,23 @@ from spectraxgk.linear import (
     LinearTerms,
     linear_terms_to_term_config,
 )
-from spectraxgk.gx_integrators import (
+from spectraxgk.explicit_time_integrators import (
     ExplicitTimeConfig,
-    _apply_gx_state_mask,
-    _gx_growth_mask,
-    _gx_linear_omega_max,
-    _gx_growth_rate_step,
-    _gx_eta_max,
-    _gx_geometry_maxima,
-    _gx_k_arrays,
-    _gx_m0_max_ntft,
-    _gx_midplane_index,
-    _gx_state_mask,
-    _gx_term_config,
-    _gx_zp_from_grid,
+    _apply_completed_step_state_mask,
+    _growth_rate_mode_mask,
+    _linear_frequency_bound,
+    _instantaneous_growth_rate_step,
+    _gradient_ratio_max,
+    _geometry_frequency_maxima,
+    _cfl_wavenumber_arrays,
+    _non_twist_shift_frequency_max,
+    _diagnostic_midplane_index,
+    _completed_step_state_mask,
+    _linear_term_config,
+    _parallel_periods_from_grid,
     _rk4_step,
-    _rk3_gx_step,
-    integrate_linear_gx_diagnostics,
+    _rk3_heun_step,
+    integrate_linear_explicit_diagnostics,
 )
 from spectraxgk.runtime_diagnostics import validate_finite_runtime_diagnostics
 from spectraxgk.species import Species, build_linear_params
@@ -84,7 +84,7 @@ from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import FieldState
 
 
-def test_diagnostics_refactor_preserves_legacy_import_identities() -> None:
+def test_diagnostics_refactor_preserves_runtime_import_identities() -> None:
     assert (
         diagnostics_module.ResolvedDiagnostics
         is diagnostics_metadata.ResolvedDiagnostics
@@ -162,11 +162,11 @@ def test_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> None:
         dtype=jnp.complex64,
     )
 
-    mask = np.asarray(_gx_state_mask(cache))
+    mask = np.asarray(_completed_step_state_mask(cache))
     expected_mask = np.asarray([[False, True], [False, True]])
     np.testing.assert_array_equal(mask, expected_mask)
 
-    masked = np.asarray(_apply_gx_state_mask(state, cache))
+    masked = np.asarray(_apply_completed_step_state_mask(state, cache))
     np.testing.assert_allclose(masked[0, 0], 0.0)
     np.testing.assert_allclose(masked[1, 0], 0.0)
     np.testing.assert_allclose(masked[0, 1], np.asarray(state[0, 1]))
@@ -263,23 +263,23 @@ def test_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> None:
         ky_mode=np.asarray([2], dtype=np.int32),
     )
 
-    assert _gx_zp_from_grid(grid) == pytest.approx(1.0)
-    kx, ky, kz = _gx_k_arrays(grid)
+    assert _parallel_periods_from_grid(grid) == pytest.approx(1.0)
+    kx, ky, kz = _cfl_wavenumber_arrays(grid)
     np.testing.assert_allclose(kx, [-1.0, 0.0, 1.0])
     np.testing.assert_allclose(ky, [0.3])
     np.testing.assert_allclose(kz, [0.0, 1.0, 2.0, -1.0])
 
-    assert _gx_zp_from_grid(
+    assert _parallel_periods_from_grid(
         SimpleNamespace(z=jnp.asarray([0.0], dtype=jnp.float32))
     ) == pytest.approx(1.0)
 
 
 def test_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
-    assert _gx_eta_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(
+    assert _gradient_ratio_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(
         1.0e6
     )
-    assert _gx_midplane_index(1) == 0
-    assert _gx_midplane_index(4) == 3
+    assert _diagnostic_midplane_index(1) == 0
+    assert _diagnostic_midplane_index(4) == 3
 
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(
@@ -290,7 +290,7 @@ def test_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
     cv_j, gb_j, cv0_j, gb0_j = geom.drift_coeffs(jnp.asarray(theta))
     bmag_j = geom.bmag(jnp.asarray(theta))
 
-    maxima = _gx_geometry_maxima(geom, theta)
+    maxima = _geometry_frequency_maxima(geom, theta)
     np.testing.assert_allclose(
         np.asarray(maxima),
         np.asarray(
@@ -305,7 +305,7 @@ def test_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
         ),
     )
 
-    m0_max, cv0_max, gb0_max = _gx_m0_max_ntft(
+    m0_max, cv0_max, gb0_max = _non_twist_shift_frequency_max(
         geom, grid, ky_max=0.0, vpar_max=2.0, muB_max=1.5
     )
     assert m0_max == pytest.approx(0.0)
@@ -1639,14 +1639,14 @@ def test_init_all_scaling_matches_reference():
     assert np.allclose(G0[0, 3, 0, 0, 0], base / np.sqrt(6.0))
 
 
-def test_integrate_linear_gx_diagnostics_shapes():
+def test_integrate_linear_explicit_diagnostics_shapes():
     cfg, grid, geom, params, cache = _small_setup()
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
     )
     time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.1, sample_stride=1, fixed_dt=True)
 
-    t, phi_t, gamma_t, omega_t, diag = integrate_linear_gx_diagnostics(
+    t, phi_t, gamma_t, omega_t, diag = integrate_linear_explicit_diagnostics(
         G0,
         grid,
         cache,
@@ -1665,7 +1665,7 @@ def test_integrate_linear_gx_diagnostics_shapes():
     assert diag.particle_flux_t.shape[0] == t.shape[0]
 
 
-def test_integrate_linear_gx_diagnostics_honors_rk3_method(
+def test_integrate_linear_explicit_diagnostics_honors_rk3_method(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cfg, grid, geom, params, cache = _small_setup()
@@ -1679,12 +1679,12 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
         _dG, fields = assemble_rhs_cached(G, cache, params, terms=term_cfg)
         return G, fields
 
-    monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
+    monkeypatch.setattr(explicit_time_integrators, "_linear_explicit_step", _fake_step)
 
     time_cfg = ExplicitTimeConfig(
         dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True
     )
-    integrate_linear_gx_diagnostics(
+    integrate_linear_explicit_diagnostics(
         G0,
         grid,
         cache,
@@ -1703,7 +1703,7 @@ def test_term_config_and_rk3_wrapper_delegate_to_linear_step(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     terms = LinearTerms(apar=0.0, bpar=1.0, hyperdiffusion=1.0)
-    assert _gx_term_config(terms) == linear_terms_to_term_config(terms)
+    assert _linear_term_config(terms) == linear_terms_to_term_config(terms)
 
     captured: dict[str, object] = {}
 
@@ -1716,14 +1716,14 @@ def test_term_config_and_rk3_wrapper_delegate_to_linear_step(
         captured["method"] = method
         return G, FieldState(phi=G[0, 0])
 
-    monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
+    monkeypatch.setattr(explicit_time_integrators, "_linear_explicit_step", _fake_step)
 
     G0 = jnp.ones((1, 1, 1, 1, 1), dtype=jnp.complex64)
     cache = SimpleNamespace()
     params = object()
     term_cfg = linear_terms_to_term_config(terms)
 
-    G_next, fields = _rk3_gx_step(G0, cache, params, term_cfg, 0.125)
+    G_next, fields = _rk3_heun_step(G0, cache, params, term_cfg, 0.125)
 
     assert captured["G"] is G0
     assert captured["cache"] is cache
@@ -1750,9 +1750,9 @@ def test_linear_explicit_step_applies_gx_post_step_mask(
         seen_states.append(np.asarray(state))
         return jnp.zeros_like(state), FieldState(phi=state[0, 0])
 
-    monkeypatch.setattr(gx_integrators, "assemble_rhs_cached", _fake_assemble_rhs)
+    monkeypatch.setattr(explicit_time_integrators, "assemble_rhs_cached", _fake_assemble_rhs)
 
-    G_next, fields = gx_integrators._linear_explicit_step(
+    G_next, fields = explicit_time_integrators._linear_explicit_step(
         G0,
         cache,
         object(),
@@ -1780,7 +1780,7 @@ def test_energy_drift_small_no_drive():
     )
     time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.2, sample_stride=1, fixed_dt=True)
 
-    _, _, _, _, diag = integrate_linear_gx_diagnostics(
+    _, _, _, _, diag = integrate_linear_explicit_diagnostics(
         G0,
         grid,
         cache,
@@ -1814,14 +1814,14 @@ def test_growth_rate_step_matches_real_imag_validity_mask():
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 1.0 + 1.0j]]], dtype=jnp.complex64)
     phi_now_invalid = jnp.asarray([[[2.0 + 0.0j, 2.0 + 0.0j]]], dtype=jnp.complex64)
     mask = jnp.asarray([[True]])
-    gamma_bad, omega_bad = _gx_growth_rate_step(
+    gamma_bad, omega_bad = _instantaneous_growth_rate_step(
         phi_now_invalid, phi_prev, 0.1, z_index=0, mask=mask
     )
     assert np.allclose(np.asarray(gamma_bad), 0.0)
     assert np.allclose(np.asarray(omega_bad), 0.0)
 
     phi_now_valid = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
-    gamma_ok, omega_ok = _gx_growth_rate_step(
+    gamma_ok, omega_ok = _instantaneous_growth_rate_step(
         phi_now_valid, phi_prev, 0.1, z_index=0, mask=mask
     )
     assert np.isfinite(np.asarray(gamma_ok)).all()
@@ -1835,7 +1835,7 @@ def test_growth_rate_step_validity_depends_on_current_phi_only():
     phi_prev = jnp.asarray([[[1.0 + 0.0j, 1.0 + 0.0j]]], dtype=jnp.complex64)
     phi_now = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
     mask = jnp.asarray([[True]])
-    gamma, omega = _gx_growth_rate_step(phi_now, phi_prev, 0.1, z_index=0, mask=mask)
+    gamma, omega = _instantaneous_growth_rate_step(phi_now, phi_prev, 0.1, z_index=0, mask=mask)
     assert np.isfinite(np.asarray(gamma)).all()
     assert np.isfinite(np.asarray(omega)).all()
     assert not np.allclose(np.asarray(gamma), 0.0)
@@ -1847,7 +1847,7 @@ def test_growth_rate_step_max_uses_per_step_peak():
     phi_prev = jnp.asarray([[[1.0 + 1.0j, 8.0 + 8.0j]]], dtype=jnp.complex64)
     phi_now = jnp.asarray([[[9.0 + 9.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
     mask = jnp.asarray([[True]])
-    gamma, omega = _gx_growth_rate_step(
+    gamma, omega = _instantaneous_growth_rate_step(
         phi_now,
         phi_prev,
         0.1,
@@ -1861,7 +1861,7 @@ def test_growth_rate_step_max_uses_per_step_peak():
 
 
 def test_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
-    mask = _gx_growth_mask(
+    mask = _growth_rate_mode_mask(
         jnp.asarray([-0.01]),
         jnp.asarray([0.0]),
         jnp.asarray([[False]]),
@@ -1870,7 +1870,7 @@ def test_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
 
 
 def test_growth_mask_keeps_single_selected_zonal_slice_masked() -> None:
-    mask = _gx_growth_mask(
+    mask = _growth_rate_mode_mask(
         jnp.asarray([0.0]),
         jnp.asarray([0.0]),
         jnp.asarray([[False]]),
@@ -1940,7 +1940,7 @@ def test_linear_gx_adaptive_default_dt_max_matches_gx():
         dt_max=None,
         cfl=10.0,
     )
-    _t, _phi_t, _gamma_t, _omega_t, diag = integrate_linear_gx_diagnostics(
+    _t, _phi_t, _gamma_t, _omega_t, diag = integrate_linear_explicit_diagnostics(
         G0,
         grid,
         cache,
@@ -1969,6 +1969,6 @@ def test_linear_omega_max_preserves_selected_ky_mode():
         nu=cfg.model.nu_i,
     )
 
-    omega_sel = _gx_linear_omega_max(grid, geom, params, 4, 4)
+    omega_sel = _linear_frequency_bound(grid, geom, params, 4, 4)
 
     assert omega_sel[1] > 0.0

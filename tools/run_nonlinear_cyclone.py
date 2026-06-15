@@ -13,12 +13,12 @@ from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_gx_hypercollisio
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics
+from spectraxgk.nonlinear import integrate_nonlinear_explicit_diagnostics
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 
 
-def _gx_zp_from_grid(z: np.ndarray) -> float:
+def _parallel_periods_from_grid(z: np.ndarray) -> float:
     if z.size < 2:
         return 1.0
     dz = float(z[1] - z[0])
@@ -106,7 +106,7 @@ def main() -> int:
     ra = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
     rb = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
     amp_complex = (ra + 1j * rb) * mask
-    zp = _gx_zp_from_grid(np.asarray(grid.z))
+    zp = _parallel_periods_from_grid(np.asarray(grid.z))
     if int(args.ikpar_init) == 0:
         phase = np.ones_like(grid.z)
     else:
@@ -121,7 +121,7 @@ def main() -> int:
         hyperdiffusion=1.0 if hyperdiffusion_on else 0.0,
     )
 
-    t, diag = integrate_nonlinear_gx_diagnostics(
+    t, diag = integrate_nonlinear_explicit_diagnostics(
         G0,
         grid,
         geom,

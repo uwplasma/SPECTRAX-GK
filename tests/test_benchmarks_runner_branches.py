@@ -106,7 +106,7 @@ def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
         lambda *args, **kwargs: (np.ones(3, dtype=np.complex64), "phi", -0.1, 0.2),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -178,7 +178,7 @@ def test_run_cyclone_linear_krylov_uses_gx_seed_and_branch_guard(monkeypatch) ->
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0, 2.0]),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
@@ -250,7 +250,7 @@ def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0, 2.0]),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
@@ -338,7 +338,7 @@ def test_run_cyclone_linear_gx_reference_time_path_uses_gx_contract(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx", _fake_gx_integrator
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit", _fake_gx_integrator
     )
     monkeypatch.setattr(
         "spectraxgk.benchmark_cyclone.gx_growth_rate_from_phi",
@@ -628,7 +628,7 @@ def test_run_kbm_linear_gx_time_uses_omega_series_fallback(monkeypatch) -> None:
         lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.integrate_linear_gx_diagnostics",
+        "spectraxgk.benchmark_kbm.integrate_linear_explicit_diagnostics",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -761,7 +761,7 @@ def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1262,7 +1262,7 @@ def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None
         lambda params, **kwargs: params,
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1321,7 +1321,7 @@ def test_run_cyclone_scan_gx_time_reselects_branch_with_previous_frequency(
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmark_cyclone.integrate_linear_gx",
+        "spectraxgk.benchmark_cyclone.integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1679,7 +1679,7 @@ def test_run_kbm_beta_scan_gx_time_diagnostic_fallback_ladder(monkeypatch) -> No
 
     current: dict[str, object] = {}
     monkeypatch.setattr(
-        "spectraxgk.benchmark_kbm.integrate_linear_gx_diagnostics", _fake_integrate
+        "spectraxgk.benchmark_kbm.integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
         "spectraxgk.benchmark_kbm.gx_growth_rate_from_phi", _fake_growth

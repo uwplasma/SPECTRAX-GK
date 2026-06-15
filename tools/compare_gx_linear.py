@@ -31,7 +31,7 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, integrate_linear_explicit
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 
 
@@ -205,13 +205,13 @@ def main() -> None:
                 Nm=args.Nm,
                 init_cfg=cfg.init,
             )
-            time_cfg = GXTimeConfig(
+            time_cfg = ExplicitTimeConfig(
                 dt=args.dt,
                 t_max=args.dt * float(args.steps),
                 sample_stride=1,
                 fixed_dt=args.gx_fixed_dt,
             )
-            t, phi_t, gamma_t, omega_t = integrate_linear_gx(
+            t, phi_t, gamma_t, omega_t = integrate_linear_explicit(
                 G0,
                 grid,
                 cache,

@@ -41,7 +41,7 @@ from spectraxgk.benchmarks import _apply_gx_hypercollisions  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf  # noqa: E402
 from spectraxgk.grids import build_spectral_grid  # noqa: E402
-from spectraxgk.gx_integrators import GXTimeConfig  # noqa: E402
+from spectraxgk.explicit_time_integrators import ExplicitTimeConfig  # noqa: E402
 from spectraxgk.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
 from spectraxgk.species import build_linear_params  # noqa: E402
 
@@ -182,7 +182,7 @@ def _run_w7x_spectrax_mode(args: argparse.Namespace, *, reference_times: np.ndar
         damp_ends_amp=float(gx_contract.damp_ends_amp),
         damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
     )
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=_infer_gx_linear_dt(gx_time, gx_contract),
         t_max=float(gx_time[-1]),
         method=gx_contract.scheme,

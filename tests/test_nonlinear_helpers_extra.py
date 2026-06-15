@@ -20,7 +20,7 @@ from spectraxgk.nonlinear import (
     _collision_damping,
     _gx_nonlinear_omega_components,
     _gx_omega_mode_mask,
-    _integrate_nonlinear_gx_diagnostics_impl,
+    _integrate_nonlinear_explicit_diagnostics_impl,
     _make_fixed_mode_projector,
     _make_hermitian_projector,
     _pack_resolved_diagnostics,
@@ -28,10 +28,10 @@ from spectraxgk.nonlinear import (
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_cached,
-    integrate_nonlinear_gx_diagnostics,
-    integrate_nonlinear_gx_diagnostics_state,
+    integrate_nonlinear_explicit_diagnostics,
+    integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
-    integrate_nonlinear_imex_gx_diagnostics,
+    integrate_nonlinear_imex_diagnostics,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -622,10 +622,10 @@ def test_integrate_nonlinear_builds_cache_and_rejects_bad_shape(monkeypatch) -> 
 
 def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.integrate_nonlinear_imex_gx_diagnostics",
+        "spectraxgk.nonlinear.integrate_nonlinear_imex_diagnostics",
         lambda *args, **kwargs: ("t_imex", "diag_imex"),
     )
-    assert integrate_nonlinear_gx_diagnostics(
+    assert integrate_nonlinear_explicit_diagnostics(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -636,7 +636,7 @@ def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> No
     ) == ("t_imex", "diag_imex")
 
     with pytest.raises(ValueError):
-        integrate_nonlinear_gx_diagnostics_state(
+        integrate_nonlinear_explicit_diagnostics_state(
             jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
             SimpleNamespace(),
             SimpleNamespace(),
@@ -647,16 +647,16 @@ def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> No
         )
 
 
-def test_integrate_nonlinear_gx_diagnostics_explicit_and_state_routes(
+def test_integrate_nonlinear_explicit_diagnostics_explicit_and_state_routes(
     monkeypatch,
 ) -> None:
     payload = ("t_explicit", "diag_explicit", "G_final", "fields_final")
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._integrate_nonlinear_gx_diagnostics_impl",
+        "spectraxgk.nonlinear._integrate_nonlinear_explicit_diagnostics_impl",
         lambda *args, **kwargs: payload,
     )
 
-    out = integrate_nonlinear_gx_diagnostics(
+    out = integrate_nonlinear_explicit_diagnostics(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -667,7 +667,7 @@ def test_integrate_nonlinear_gx_diagnostics_explicit_and_state_routes(
     )
     assert out == ("t_explicit", "diag_explicit")
 
-    out_state = integrate_nonlinear_gx_diagnostics_state(
+    out_state = integrate_nonlinear_explicit_diagnostics_state(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -691,7 +691,7 @@ def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
         ValueError,
         match="Final-state runtime diagnostics helper only supports explicit methods",
     ):
-        _integrate_nonlinear_gx_diagnostics_impl(
+        _integrate_nonlinear_explicit_diagnostics_impl(
             jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64),
             grid,
             object(),
@@ -703,7 +703,7 @@ def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
         )
 
     with pytest.raises(ValueError, match="G0 must have shape"):
-        _integrate_nonlinear_gx_diagnostics_impl(
+        _integrate_nonlinear_explicit_diagnostics_impl(
             jnp.zeros((2, 2), dtype=jnp.complex64),
             grid,
             object(),
@@ -715,7 +715,7 @@ def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
         )
 
 
-def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) -> None:
+def test_integrate_nonlinear_explicit_diagnostics_forwarding_contracts(monkeypatch) -> None:
     captured: dict[str, object] = {}
 
     def _fake_impl(*args, **kwargs):
@@ -723,10 +723,10 @@ def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) ->
         return ("t", "diag", "G_final", "fields_final")
 
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._integrate_nonlinear_gx_diagnostics_impl", _fake_impl
+        "spectraxgk.nonlinear._integrate_nonlinear_explicit_diagnostics_impl", _fake_impl
     )
 
-    out = integrate_nonlinear_gx_diagnostics(
+    out = integrate_nonlinear_explicit_diagnostics(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -753,7 +753,7 @@ def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) ->
     assert captured["fixed_mode_kx_index"] == 0
 
     captured.clear()
-    out_state = integrate_nonlinear_gx_diagnostics_state(
+    out_state = integrate_nonlinear_explicit_diagnostics_state(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -771,7 +771,7 @@ def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) ->
     assert captured["fixed_mode_kx_index"] == 1
 
 
-def test_integrate_nonlinear_gx_diagnostics_imex_forwarding_contracts(
+def test_integrate_nonlinear_explicit_diagnostics_imex_forwarding_contracts(
     monkeypatch,
 ) -> None:
     captured: dict[str, object] = {}
@@ -781,10 +781,10 @@ def test_integrate_nonlinear_gx_diagnostics_imex_forwarding_contracts(
         return ("t_imex", "diag_imex")
 
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.integrate_nonlinear_imex_gx_diagnostics", _fake_imex
+        "spectraxgk.nonlinear.integrate_nonlinear_imex_diagnostics", _fake_imex
     )
 
-    out = integrate_nonlinear_gx_diagnostics(
+    out = integrate_nonlinear_explicit_diagnostics(
         jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
         SimpleNamespace(),
         SimpleNamespace(),
@@ -866,10 +866,10 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         lambda grid, cache, **kwargs: jnp.ones((2, 1), dtype=bool),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_linear_omega_max",
+        "spectraxgk.nonlinear._linear_frequency_bound",
         lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float),
     )
-    monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
+    monkeypatch.setattr("spectraxgk.nonlinear._laguerre_velocity_max", lambda nl: 0.0)
     monkeypatch.setattr(
         "spectraxgk.nonlinear.nonlinear_rhs_cached",
         lambda G, cache, params, terms, **kwargs: (jnp.ones_like(G), fields),
@@ -884,7 +884,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
             jnp.ones((2, 1), dtype=jnp.float32) * -3.0,
         )
 
-    monkeypatch.setattr("spectraxgk.nonlinear._gx_growth_rate_step", _fake_growth)
+    monkeypatch.setattr("spectraxgk.nonlinear._instantaneous_growth_rate_step", _fake_growth)
     monkeypatch.setattr(
         "spectraxgk.nonlinear.phi2_resolved",
         lambda *args, **kwargs: _resolved_tuple(),
@@ -984,7 +984,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
 
     for method in ("rk3_classic", "rk4", "k10"):
         t_branch, diag_branch, G_branch, _fields_branch = (
-            _integrate_nonlinear_gx_diagnostics_impl(
+            _integrate_nonlinear_explicit_diagnostics_impl(
                 G0,
                 grid,
                 SimpleNamespace(),
@@ -1005,7 +1005,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
         assert G_branch.shape == G0.shape
 
     with pytest.raises(ValueError):
-        _integrate_nonlinear_gx_diagnostics_impl(
+        _integrate_nonlinear_explicit_diagnostics_impl(
             G0,
             grid,
             SimpleNamespace(),
@@ -1016,7 +1016,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
             cache=cache,
         )
 
-    t, diag, G_final, fields_final = _integrate_nonlinear_gx_diagnostics_impl(
+    t, diag, G_final, fields_final = _integrate_nonlinear_explicit_diagnostics_impl(
         G0,
         grid,
         SimpleNamespace(),
@@ -1090,10 +1090,10 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         lambda grid, cache, **kwargs: jnp.ones((2, 2), dtype=bool),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_linear_omega_max",
+        "spectraxgk.nonlinear._linear_frequency_bound",
         lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float),
     )
-    monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
+    monkeypatch.setattr("spectraxgk.nonlinear._laguerre_velocity_max", lambda nl: 0.0)
     monkeypatch.setattr(
         "spectraxgk.nonlinear.nonlinear_rhs_cached",
         lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields_state),
@@ -1103,7 +1103,7 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         lambda *args, **kwargs: fields_state,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_growth_rate_step",
+        "spectraxgk.nonlinear._instantaneous_growth_rate_step",
         lambda *args, **kwargs: (
             jnp.full((2, 2), 1.25, dtype=jnp.float32),
             jnp.full((2, 2), -0.75, dtype=jnp.float32),
@@ -1162,7 +1162,7 @@ def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) ->
         lambda *args, **kwargs: tuple(_marker(v) for v in range(160, 165)),
     )
 
-    t, diag, _G_final, _fields_final = _integrate_nonlinear_gx_diagnostics_impl(
+    t, diag, _G_final, _fields_final = _integrate_nonlinear_explicit_diagnostics_impl(
         jnp.zeros((1, 1, 1, 2, 2, 2), dtype=jnp.complex64),
         grid,
         SimpleNamespace(),
@@ -1244,10 +1244,10 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         lambda grid, cache, **kwargs: jnp.ones((4, 2), dtype=bool),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._gx_linear_omega_max",
+        "spectraxgk.nonlinear._linear_frequency_bound",
         lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float),
     )
-    monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
+    monkeypatch.setattr("spectraxgk.nonlinear._laguerre_velocity_max", lambda nl: 0.0)
     monkeypatch.setattr("spectraxgk.nonlinear.nonlinear_rhs_cached", _rhs)
     monkeypatch.setattr(
         "spectraxgk.nonlinear.compute_fields_cached", _fields_from_state
@@ -1277,7 +1277,7 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
         lambda *args, **kwargs: jnp.zeros((1,), dtype=jnp.float32),
     )
 
-    _t, diag, G_final, _fields_final = _integrate_nonlinear_gx_diagnostics_impl(
+    _t, diag, G_final, _fields_final = _integrate_nonlinear_explicit_diagnostics_impl(
         G0,
         grid,
         SimpleNamespace(),
@@ -1308,12 +1308,12 @@ def test_fixed_small_amplitude_mode_gamma_omega_are_finite(monkeypatch) -> None:
     )
 
 
-def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
+def test_integrate_nonlinear_imex_diagnostics_rejects_bad_shape(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom
     )
     with pytest.raises(ValueError):
-        integrate_nonlinear_imex_gx_diagnostics(
+        integrate_nonlinear_imex_diagnostics(
             jnp.zeros((2, 2), dtype=jnp.complex64),
             SimpleNamespace(z=np.array([0.0])),
             object(),

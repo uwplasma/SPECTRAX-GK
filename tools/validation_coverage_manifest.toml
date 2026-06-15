@@ -57,7 +57,7 @@ owned_modules = [
   "spectraxgk.cli",
   "spectraxgk.config",
   "spectraxgk.diffrax_integrators",
-  "spectraxgk.gx_integrators",
+  "spectraxgk.explicit_time_integrators",
   "spectraxgk.io",
   "spectraxgk.restart",
   "spectraxgk.runners",

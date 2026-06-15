@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.cetg import _compute_cetg_diag, _gx_midplane_index, build_cetg_model_params, cetg_fields
+from spectraxgk.cetg import _compute_cetg_diag, _diagnostic_midplane_index, build_cetg_model_params, cetg_fields
 from spectraxgk.gx_legacy_output import (
     expand_gx_legacy_positive_ky_state,
     load_gx_legacy_cetg_output,
@@ -115,7 +115,7 @@ def main() -> int:
         grid,
         params,
         mask=mask,
-        z_index=_gx_midplane_index(grid.z.size),
+        z_index=_diagnostic_midplane_index(grid.z.size),
         omega_ky_index=None,
         omega_kx_index=None,
     )

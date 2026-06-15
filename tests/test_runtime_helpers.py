@@ -1194,7 +1194,7 @@ def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(
@@ -1295,7 +1295,7 @@ def test_run_runtime_nonlinear_adaptive_chunk_requires_progress(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     with pytest.raises(RuntimeError, match="made no time-step progress"):
@@ -1366,7 +1366,7 @@ def test_run_runtime_nonlinear_phiext_source_uses_diagnostics_path(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=False)
@@ -1450,7 +1450,7 @@ def test_run_runtime_nonlinear_adaptive_chunk_forwards_fixed_mode_and_collision_
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(
