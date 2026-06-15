@@ -1,3 +1,11 @@
+- 2026-06-15: Continued the differentiable solver-objective refactor by moving
+  VMEC/Boozer objective option splitting, objective-table construction, sample
+  metadata, and scalar reductions into
+  `spectraxgk.solver_vmec_boozer_objectives`. The legacy
+  `solver_objective_gradients` facade now delegates through thin wrappers so
+  public imports and monkeypatch-based validation tests keep working. Focused
+  solver-objective tests, refactor/coverage manifest tests, Ruff, mypy, docs
+  build with warnings-as-errors, and release-readiness checks passed locally.
 - 2026-06-15: Fixed the Codecov project-status policy on the
   differentiable-refactor branch. Codecov now waits for both CI coverage
   uploads and evaluates the required project status only against the

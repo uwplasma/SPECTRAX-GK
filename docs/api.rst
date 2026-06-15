@@ -563,6 +563,13 @@ Solver VMEC-State Helpers
    :members:
    :private-members:
 
+Solver VMEC/Boozer Objectives
+-----------------------------
+
+.. automodule:: spectraxgk.solver_vmec_boozer_objectives
+   :members:
+   :private-members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

@@ -492,6 +492,23 @@ fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solver_vmec_boozer_objectives"
+source_path = "src/spectraxgk/solver_vmec_boozer_objectives.py"
+facade_module = "spectraxgk.solver_objective_gradients"
+status = "active"
+responsibility = "VMEC/Boozer objective option splitting, solver-objective table construction, sample metadata, and scalar reductions"
+moved_exports = [
+  "_split_vmec_boozer_objective_kwargs",
+  "vmec_boozer_solver_objective_vector_from_state",
+  "vmec_boozer_solver_objective_table_from_state",
+  "vmec_boozer_solver_objective_table_with_metadata_from_state",
+  "vmec_boozer_aggregate_scalar_objective_from_state",
+  "vmec_boozer_scalar_objective_from_state",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.nonlinear_parallel_spectral_core"
 source_path = "src/spectraxgk/nonlinear_parallel_spectral_core.py"
 facade_module = "spectraxgk.nonlinear_parallel"

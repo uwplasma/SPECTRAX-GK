@@ -2275,6 +2275,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_vmec_boozer_objectives"
+path = "src/spectraxgk/solver_vmec_boozer_objectives.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC/Boozer in-memory geometry bridge used by differentiable stellarator objectives",
+  "multi-surface, multi-field-line, and multi-ky objective aggregation for optimization gates",
+]
+physics_contracts = [
+  "VMEC/Boozer objective plumbing must separate geometry-bridge options from linear solver-objective options before expensive backend calls",
+  "sample metadata must record surface, toroidal flux, field-line alpha, and physical ky mappings used by aggregate optimization objectives",
+  "scalar reductions must keep smooth mean and weighted-mean paths distinct from nonsmooth max diagnostics",
+]
+numerics_contracts = [
+  "unknown VMEC/Boozer objective options fail closed before backend execution",
+  "physical ky table rows reuse the validated spectral-grid mapping and record resolved ky errors",
+  "weighted reductions normalize finite positive-sum weights before multiplying solver objective rows",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.png",
+]
+next_tests = [
+  "add direct module-level tests for dependency-injected backend and objective callables",
+  "extend aggregate-objective fixtures to multiple torflux samples and physical ky grids",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [
