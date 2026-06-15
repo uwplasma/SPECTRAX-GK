@@ -1,3 +1,11 @@
+- 2026-06-14: Continued the nonlinear-gradient follow-up refactor by moving
+  paired-seed variance-reduction planning, control-variate campaign design,
+  and independent control-mean uncertainty gates into
+  `spectraxgk.nonlinear_gradient_followup_variance`. The public
+  `spectraxgk.nonlinear_gradient_followup` facade still re-exports the moved
+  report builders and config/helper seams, keeping existing tools and tests
+  compatible while making the control-variate evidence path easier to test.
+
 - 2026-06-14: Continued the nonlinear parallelization refactor by moving the
   device-z shard-map RHS route, z-sharding topology check, physical transport
   observable reductions, and serial-vs-device transport-window identity gate

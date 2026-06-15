@@ -1614,6 +1614,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_followup_variance"
+path = "src/spectraxgk/nonlinear_gradient_followup_variance.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "paired-seed variance-reduction planning for nonlinear finite-difference gradients",
+  "control-variate uncertainty propagation for long-window turbulent-transport audits",
+]
+physics_contracts = [
+  "variance-reduction reports design follow-up campaigns only and do not promote nonlinear-gradient evidence",
+  "control-variate campaigns require independent control-mean evidence before uncertainty reduction can be used for production claims",
+]
+numerics_contracts = [
+  "paired plus/minus response uncertainty is computed from common seed labels and fails closed when labels or SEM estimates are missing",
+  "combined control-variate uncertainty includes residual SEM and beta-squared control-mean variance before passing gates",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+]
+next_tests = [
+  "add a direct regression for a control-variate candidate with unknown independent control mean",
+  "add a malformed campaign plan fixture where candidate blockers are propagated into launch blockers",
+]
+
+[[modules]]
 module = "spectraxgk.solver_eigen_objectives"
 path = "src/spectraxgk/solver_eigen_objectives.py"
 owner_lane = "production solver-objective geometry-gradient validation"

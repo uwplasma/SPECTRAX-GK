@@ -552,6 +552,23 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_gradient_followup_variance"
+source_path = "src/spectraxgk/nonlinear_gradient_followup_variance.py"
+facade_module = "spectraxgk.nonlinear_gradient_followup"
+status = "active"
+responsibility = "paired-seed variance-reduction, control-variate campaign planning, and independent control-mean gate reports for nonlinear turbulence-gradient follow-up"
+moved_exports = [
+  "nonlinear_gradient_variance_reduction_plan",
+  "nonlinear_gradient_control_variate_campaign_plan",
+  "nonlinear_gradient_control_mean_gate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.nonlinear_gradient_evidence_core"
 source_path = "src/spectraxgk/nonlinear_gradient_evidence_core.py"
 facade_module = "spectraxgk.nonlinear_gradient_evidence"

@@ -23,6 +23,7 @@ from spectraxgk.nonlinear_gradient_followup import (
 )
 import spectraxgk.nonlinear_gradient_followup as nonlinear_gradient_followup
 import spectraxgk.nonlinear_gradient_followup_core as nonlinear_gradient_followup_core
+import spectraxgk.nonlinear_gradient_followup_variance as nonlinear_gradient_followup_variance
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,6 +52,22 @@ def test_nonlinear_gradient_followup_facade_reexports_core_helpers() -> None:
             name,
         )
 
+
+
+
+def test_nonlinear_gradient_followup_facade_reexports_variance_reports() -> None:
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_variance_reduction_plan
+        is nonlinear_gradient_followup_variance.nonlinear_gradient_variance_reduction_plan
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_control_variate_campaign_plan
+        is nonlinear_gradient_followup_variance.nonlinear_gradient_control_variate_campaign_plan
+    )
+    assert (
+        nonlinear_gradient_followup.nonlinear_gradient_control_mean_gate
+        is nonlinear_gradient_followup_variance.nonlinear_gradient_control_mean_gate
+    )
 
 def _load_tool_module():
     spec = importlib.util.spec_from_file_location("plan_nonlinear_gradient_followup", SCRIPT)
