@@ -1,4 +1,4 @@
-"""Tests for the dedicated GX cETG reduced-model path."""
+"""Tests for the dedicated collisional-slab ETG reduced-model path."""
 
 from __future__ import annotations
 

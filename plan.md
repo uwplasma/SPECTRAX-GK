@@ -4,6 +4,12 @@
   rather than by another implementation. Benchmark/comparison references remain
   where they are actually validation sources. The docs build still passes with
   warnings-as-errors after this cleanup.
+- 2026-06-15: Cleaned a second source-level wording slice so cETG,
+  linked-boundary damping, linked-FFT operators, secondary diagnostics,
+  growth-rate extraction, and initialization scaling describe native
+  SPECTRAX-GK model/numerics contracts. Compatibility aliases and explicit
+  benchmark/comparison tools remain named as such. Targeted cETG/runtime/
+  secondary/operator tests and Ruff passed.
 
 - 2026-06-15: Added the first finite-beta VMEC/Boozer solver-objective
   gradient artifact. The shaped-tokamak-pressure frequency gate runs from
