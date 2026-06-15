@@ -85,11 +85,12 @@ is validated against Cyclone benchmarks.
 Slab Model
 ----------
 
-SPECTRAX-GK now also exposes GX's slab geometry contract directly with
-``geometry.model = "slab"``. This is the correct backend for GX's
-``secondary`` and ``cETG`` benchmarks; it is not an ``s-alpha`` approximation.
+SPECTRAX-GK exposes a slab flux-tube geometry contract directly with
+``geometry.model = "slab"``. This is the correct backend for slab secondary
+and collisional-ETG benchmark families; it is not an ``s-alpha``
+approximation.
 
-The slab overrides follow the audited GX implementation:
+The slab overrides are:
 
 - ``bmag = 1`` and ``bgrad = 0``
 - ``cvdrift = gbdrift = cvdrift0 = gbdrift0 = 0``
@@ -99,12 +100,12 @@ The slab overrides follow the audited GX implementation:
   ``gds21 = 0``, ``gds22 = 1`` and the effective solver shear is zero
 
 That contract is now locked by unit tests so future secondary/cETG work is
-built on the same geometry semantics GX uses.
+built on stable geometry semantics.
 It does not mean both benchmarks are solved already: ``secondary`` is a
-geometry-plus-runtime parity problem, while GX's ``cETG`` benchmark is a
-dedicated collisional reduced model with its own solver/RHS path. The slab
-backend is the correct prerequisite for both, but only ``secondary`` sits on
-the generic-runtime parity path today.
+geometry-plus-runtime parity problem, while collisional ETG is a dedicated
+reduced model with its own solver/RHS path. The slab backend is the correct
+prerequisite for both, but only ``secondary`` sits on the generic-runtime
+parity path today.
 
 Geometry Data Contract
 ----------------------
@@ -124,7 +125,7 @@ The linear cache now accepts either:
 - geometry metadata such as ``q``, ``s_hat``, ``R0``, and the
   ``kperp2_bmag`` / ``bessel_bmag_power`` switches.
 
-This is the insertion point for future VMEC/DESC or GX-imported field-line
+This is the insertion point for future VMEC/DESC or imported field-line
 geometry. The helper ``sample_flux_tube_geometry`` converts the analytic
 s-alpha model into the same contract, and ``ensure_flux_tube_geometry_data``
 normalizes analytic and sampled inputs onto one solver-facing representation.
@@ -137,12 +138,12 @@ more of the codebase without rebuilding solver-specific side paths.
 
 The contract also preserves explicit ``jacobian`` and ``grho`` profiles when
 they are available from imported geometry. The helper
-``load_imported_geometry_netcdf`` reads both GX full-output NetCDF files with
-``Geometry``/``Grids`` groups and root-level GX ``eik.nc`` geometry files from
-the VMEC workflow. That is the intended short path to the GX W7-X examples:
-import the sampled field-line geometry first, prove solver/diagnostic parity on
-that contract, and only then add a native VMEC path that generates the same
-contract inside SPECTRAX-GK.
+``load_imported_geometry_netcdf`` reads grouped NetCDF files with
+``Geometry``/``Grids`` groups and root-level ``*.eik.nc`` field-line geometry
+files from VMEC/DESC-style workflows. That is the intended short path for
+imported stellarator examples: import the sampled field-line geometry first,
+prove solver/diagnostic parity on that contract, and only then add a native
+VMEC path that generates the same contract inside SPECTRAX-GK.
 
 Runtime and executable paths can now construct that bridge directly from config with
 ``geometry.model = "imported-netcdf"`` and
@@ -150,17 +151,18 @@ Runtime and executable paths can now construct that bridge directly from config 
 the default with ``geometry.model = "s-alpha"``. For slab cases use
 ``geometry.model = "slab"`` with optional ``geometry.z0`` and
 ``geometry.zero_shat`` controls. In practice an imported geometry file
-can be either a GX ``*.out.nc`` file or a GX/VMEC-generated ``*.eik.nc`` file
-such as the W7-X examples in the GX benchmark tree. Root-level ``*.eik.nc``
+can be either a grouped diagnostic ``*.out.nc`` file or a VMEC/DESC-generated
+``*.eik.nc`` file such as the W7-X examples used in benchmark comparisons.
+Root-level ``*.eik.nc``
 files are no longer assumed to be closed-interval grids: the importer now
 infers whether the terminal theta point is present from the periodic endpoint
-content of the geometry profiles, so both VMEC-style closed grids and GX
-Miller's already-open ``*.eiknc.nc`` grids are mapped onto the correct solver
+content of the geometry profiles, so both VMEC-style closed grids and
+already-open Miller ``*.eiknc.nc`` grids are mapped onto the correct solver
 contract. For imported geometry, the
 runtime now also adopts the file's ``theta`` extent, twist-shift
 ``jtwist/x0`` defaults for both ``linked`` and ``fix aspect`` boundaries, and
 ``kxfac`` metadata so the flux-tube grid is built from the same field-line
-domain GX used to generate the file.
+domain encoded in the file.
 The same importer is also exposed under the aliases
 ``geometry.model = "imported-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
 can reflect the provenance of a root-level ``*.eik.nc`` file without changing
@@ -203,9 +205,9 @@ may already be present there.
 That keeps the native JAX geometry contract centered on ``FluxTubeGeometryData``
 while preserving reproducible imported-geometry workflows.
 For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
-GX so the helper chooses the same cut that GX would choose from ``y0`` and the
-geometry itself. SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the
-helper input, which was generating the wrong HSX/W7-X ``*.eik.nc`` files.
+the geometry helper so it chooses the cut from ``y0`` and the geometry itself.
+SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the helper input, which
+was generating the wrong HSX/W7-X ``*.eik.nc`` files.
 When ``booz_xform_jax`` is not installed into the active environment, point
 SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
 ``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy

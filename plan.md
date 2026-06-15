@@ -1,3 +1,10 @@
+- 2026-06-15: Cleaned additional user-facing docs wording so normal
+  SPECTRAX-GK slab geometry, imported-geometry, initialization, restart, RNG,
+  and explicit-time contracts are described by physics/numerics semantics
+  rather than by another implementation. Benchmark/comparison references remain
+  where they are actually validation sources. The docs build still passes with
+  warnings-as-errors after this cleanup.
+
 - 2026-06-15: Added the first finite-beta VMEC/Boozer solver-objective
   gradient artifact. The shaped-tokamak-pressure frequency gate runs from
   `vmec_jax` state coefficients through `booz_xform_jax` mode-21 equal-arc

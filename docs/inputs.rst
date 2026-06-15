@@ -397,9 +397,9 @@ Notable runtime-only keys:
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
   the reference-compatible ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
   default, constant hypercollisions off).
-* ``[collisions] p_hyper_m``: when omitted, the runtime path follows the GX
-  default ``min(20, Nm/2)`` instead of using a fixed exponent across Hermite
-  resolutions.
+* ``[collisions] p_hyper_m``: when omitted, the runtime path uses the
+  resolution-aware default ``min(20, Nm/2)`` instead of a fixed exponent across
+  Hermite resolutions.
 * ``[collisions] nu_hermite`` / ``nu_laguerre``: coefficients entering the
   Lenard-Bernstein collision eigenvalue used by the modular collision kernel.
 * ``[collisions] nu_hyper`` / ``p_hyper``: isotropic hypercollision amplitude
@@ -418,19 +418,18 @@ Notable runtime-only keys:
 * ``[normalization] omega_d_scale`` / ``omega_star_scale``: multiplicative
   normalization factors for magnetic-drift and diamagnetic-drive terms.
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
-  initialize a random perturbation across the exact GX startup loop
-  bounds in ``(ky,kx)``.
+  initialize a random perturbation across the configured startup-loop bounds in
+  ``(ky,kx)``.
 * ``[init] init_single`` with ``gaussian_init = true`` and ``init_single = false``:
-  initialize a Gaussian envelope across the same GX startup loop
-  bounds.
+  initialize a Gaussian envelope across the same startup-loop bounds.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode. When combined with
   ``init_field = "phi"`` and ``gaussian_init = true``, the selected
   electrostatic-potential mode is initialized with a Gaussian profile along the
   flux tube; this is the contract used by the W7-X zonal-flow response
   benchmark.
-* ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
-  scaling for this initializer, using reduced amplitudes for ``tpar``
+* ``[init] init_field = "all"``: the runtime/TOML path uses Hermite/Laguerre
+  moment-normalized scaling for this initializer, with reduced amplitudes for ``tpar``
   (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
 * ``[init] init_field = "phi"``: initialize a requested electrostatic
   potential profile by inverting the same quasineutrality solve used during
@@ -438,25 +437,22 @@ Notable runtime-only keys:
   literature tests that prescribe ``phi(t=0)`` rather than a density-moment
   perturbation; the masked ``ky=0, kx=0`` gauge mode remains unavailable.
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
-  only electron species (GX ``init_electrons_only`` behavior). If ``false``
-  (default), initialize all kinetic species.
-* ``[init] random_seed``: RNG seed used for reference-compatible random initial conditions
-  with the same glibc ``rand()`` sequence and startup mode ordering that GX
-  uses on Linux
-  (default ``22``, matching GX). The runtime now follows the Linux ``glibc``
-  ``rand()`` sequence used by GX together with GX's positive-``kx``-major loop
-  order and exact startup loop bounds, so random multi-mode perturbations are
-  host-platform independent and reproduce the same seeded pattern on macOS and
-  Linux.
+  only electron species. If ``false`` (default), initialize all kinetic
+  species.
+* ``[init] random_seed``: RNG seed used for reference-compatible random initial
+  conditions. The runtime follows a Linux ``glibc`` ``rand()`` sequence with
+  positive-``kx``-major loop order and exact startup loop bounds, so random
+  multi-mode perturbations are host-platform independent and reproduce the
+  same seeded pattern on macOS and Linux.
 * ``[init] init_file``: load a saved complex state from either the full-``ky``
-  SPECTRAX layout or GX's packed positive-``ky`` layout.
+  SPECTRAX layout or a packed positive-``ky`` interchange layout.
 * ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state
   and either ``replace`` the analytic seed (default) or ``add`` it to the
-  fresh perturbation. This is the general runtime equivalent of GX's
-  restart-scaling and ``restart_with_perturb`` workflows.
+  fresh perturbation. This is the general runtime equivalent of
+  restart-scaling and restart-with-perturb workflows.
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
-  mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
-  behavior used by the ``secondary`` benchmark.
+  mode exactly frozen during nonlinear evolution; this is the ``eqfix``-style
+  contract used by the ``secondary`` benchmark.
 * ``[expert] source`` / ``phi_ext``: runtime-only benchmark hooks for
   external electrostatic forcing. ``source = "phiext_full"`` with a small
   ``phi_ext`` injects the source into the solved ``phi`` field before the RHS is
@@ -467,9 +463,9 @@ Notable runtime-only keys:
 * ``[time] nstep_restart``: when writing a nonlinear NetCDF bundle,
   checkpoint every ``nstep_restart`` steps instead of waiting for the end of
   the run. This is useful for long adaptive runs and batch jobs.
-* ``[time] method = "sspx3"``: use the GX SSPx3 scheme directly. This is the
-  relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
-  families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
+* ``[time] method = "sspx3"``: use the SSPx3 explicit scheme directly. This is
+  the relevant explicit method for ``secondary`` and collisional-ETG benchmark
+  families. Plain ``rk3`` now follows the three-stage Heun-style timestepper;
   ``rk3_classic`` keeps the older classical RK3 update if you need it for
   controlled comparisons, and ``rk3_heun`` remains as a compatibility alias.
 * ``[terms]``: each key is a pure multiplicative operator weight:
