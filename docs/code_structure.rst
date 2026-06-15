@@ -99,8 +99,8 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
-     - ``runtime_artifacts.py``, ``runtime_artifact_io.py``, ``runtime_artifact_gx_layout.py``, ``plotting.py``
-     - serialization, reload, restart append schema, GX-layout axis contracts, plotting contract tests
+     - ``runtime_artifacts.py``, ``runtime_artifact_io.py``, ``netcdf_spectral_layout.py``, ``plotting.py``
+     - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
      - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_cyclone.py``, ``benchmark_etg.py``, ``benchmark_kbm.py``, ``benchmark_kinetic.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
@@ -116,9 +116,9 @@ Completed extractions:
 
 - startup/loading/initial-condition helpers:
   ``runtime_startup.py``
-- runtime diagnostic chunk helpers used by GX-comparison artifacts:
+- runtime diagnostic chunk helpers used by runtime and comparison artifacts:
   ``runtime_diagnostics.py``
-- adaptive chunk execution used by GX-comparison artifacts:
+- adaptive chunk execution used by runtime and comparison artifacts:
   ``runtime_chunks.py``
 - runtime result containers and nonlinear result assembly:
   ``runtime_results.py``
@@ -165,14 +165,14 @@ Completed extractions:
   ``nonlinear_gradient_evidence_screening.py``,
   ``nonlinear_gradient_evidence_gap.py``
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
-  artifact writers, generic nonlinear table writers, GX-style active-axis
-  layout, GX-style NetCDF schema writing, nonlinear diagnostic reload helpers,
+  artifact writers, generic nonlinear table writers, dealiased-axis
+  layout, NetCDF schema writing, nonlinear diagnostic reload helpers,
   and restart-append schema coverage:
   ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
   ``runtime_artifact_linear.py``,
   ``runtime_artifact_nonlinear.py``,
-  ``runtime_artifact_gx_layout.py``,
-  ``runtime_artifact_gx_netcdf.py``,
+  ``netcdf_spectral_layout.py``,
+  ``nonlinear_output_netcdf.py``,
   ``runtime_artifact_nonlinear_diagnostics.py``
 
 Next planned extractions:

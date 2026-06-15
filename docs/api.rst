@@ -485,17 +485,17 @@ Runtime Artifact Nonlinear Writers
    :members:
    :private-members:
 
-Runtime Artifact GX Layout
---------------------------
+NetCDF Spectral Layout
+----------------------
 
-.. automodule:: spectraxgk.runtime_artifact_gx_layout
+.. automodule:: spectraxgk.netcdf_spectral_layout
    :members:
    :private-members:
 
-Runtime Artifact GX NetCDF Writer
+Nonlinear Output NetCDF Writer
 ---------------------------------
 
-.. automodule:: spectraxgk.runtime_artifact_gx_netcdf
+.. automodule:: spectraxgk.nonlinear_output_netcdf
    :members:
    :private-members:
 

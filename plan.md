@@ -1,7 +1,26 @@
+- 2026-06-15: Added the naming-governance rule for the refactor: package
+  source, examples, README, and docs should use physics, numerics, and schema
+  names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart
+  layout`) rather than naming internals after comparison codes. Direct
+  reference-code names remain allowed only in benchmark/comparison tools,
+  parity notes, and validation artifacts whose purpose is explicitly a
+  comparison. Performance investigations may still use external source code and
+  reruns, but SPECTRAX-GK internals should stay named after the implemented
+  algorithm or physical quantity.
+
+- 2026-06-15: Continued the naming/refactor cleanup by renaming the nonlinear
+  NetCDF writer and spectral-layout helpers from reference-code-oriented names
+  to `spectraxgk.nonlinear_output_netcdf` and
+  `spectraxgk.netcdf_spectral_layout`. Runtime diagnostics, adaptive chunk
+  execution, restart IO, and startup randomization helpers now use
+  `runtime_*`, `NetCDF`, `dealiased`, and `glibc` vocabulary. The remaining
+  naming tranches are the real-FFT nonlinear option, diagnostic-weight helper
+  names, geometry-import adapters, and benchmark-only comparison tooling.
+
 - 2026-06-15: Completed the main runtime artifact facade reduction by moving
-  GX-style nonlinear NetCDF schema writing, artifact geometry resolution,
-  particle-moment output helpers, and GX geometry/input group writers into
-  `spectraxgk.runtime_artifact_gx_netcdf`. The legacy
+  nonlinear NetCDF output schema writing, artifact geometry resolution,
+  particle-moment output helpers, and geometry/input metadata group writers into
+  `spectraxgk.nonlinear_output_netcdf`. The legacy
   `spectraxgk.runtime_artifacts` module is now a small dispatch/orchestration
   facade that re-exports compatibility helpers for existing tests and tools.
 
@@ -9,7 +28,7 @@
   nonlinear JSON/CSV/NPY summary and diagnostic table writing into
   `spectraxgk.runtime_artifact_nonlinear`. The legacy
   `spectraxgk.runtime_artifacts` module keeps the public nonlinear artifact
-  dispatcher and GX-style NetCDF writer, preserving monkeypatch seams while
+  dispatcher and NetCDF output writer, preserving monkeypatch seams while
   reducing the facade to the remaining NetCDF schema hotspot.
 
 - 2026-06-15: Continued the runtime artifact refactor by moving linear scan,
@@ -20,7 +39,7 @@
   separating pure linear CSV/JSON serialization from nonlinear NetCDF output.
 
 - 2026-06-15: Continued the runtime artifact refactor by moving nonlinear
-  GX-style diagnostic reload, optional-variable parsing, restart-path
+  NetCDF diagnostic reload, optional-variable parsing, restart-path
   resolution, species-time condensation, and restart-append diagnostic schema
   normalization into `spectraxgk.runtime_artifact_nonlinear_diagnostics`. The
   public `spectraxgk.runtime_artifacts` facade still re-exports the moved
@@ -83,9 +102,9 @@
 
 - 2026-06-14: Continued the runtime artifact refactor by moving generic
   artifact path/file I/O helpers into `spectraxgk.runtime_artifact_io` and
-  pure GX-style active-axis, real/imag packing, restart-layout, species-matrix,
+  pure dealiased-axis, real/imag packing, restart-layout, species-matrix,
   and diagnostic-condense helpers into
-  `spectraxgk.runtime_artifact_gx_layout`. The public
+  `spectraxgk.netcdf_spectral_layout`. The public
   `spectraxgk.runtime_artifacts` facade still re-exports the moved names used
   by existing tests and tools, while geometry/cache-dependent artifact helpers
   remain in the facade to preserve monkeypatch seams.
@@ -641,7 +660,7 @@
 - 2026-06-11: The live shaped-tokamak-pressure `n80/t450` office run completed
   the integrator but failed artifact validation because `Wg_t` became
   non-finite at an early saved sample. Root cause is a diagnostic masking bug:
-  GX-style diagnostic reductions multiplied energy/flux factors by the dealias
+  Runtime diagnostic reductions multiplied energy/flux factors by the dealias
   mask after intermediate products, so `inf * 0` in a masked/dealiased mode
   could produce `NaN`. Patched free-energy, field-energy, `phi2`, heat-flux,
   particle-flux, and turbulent-heating reductions to zero masked modes before
@@ -1141,7 +1160,7 @@ No long nonlinear audit should be launched from these candidates.
   seed31 plus seed33 traces completed cleanly.
 - Restarted the refreshed 31-point nonlinear landscape campaign after removing
   a logging ambiguity from generated TOMLs: external/optimized VMEC nonlinear
-  configs now write ``[output].nsave = [run].steps`` so GX-style artifact
+  configs now write ``[output].nsave = [run].steps`` so NetCDF output artifact
   handoff does not split a ``t=700`` run into a misleading 10,000-step first
   chunk. The clean office logs now report 14,000 steps for ``dt=0.05`` and
   17,500 steps for the ``dt=0.04`` variants.

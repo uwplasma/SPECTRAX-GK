@@ -25,28 +25,28 @@ from spectraxgk.grids import build_spectral_grid
 from spectraxgk.runtime import (
     _build_initial_condition,
     _build_gaussian_profile,
-    _concat_gx_diagnostics,
+    _concat_runtime_diagnostics,
     _enforce_full_ky_hermitian,
     _expand_ky,
-    _gx_centered_random_pairs,
-    _gx_default_p_hyper_m,
-    _gx_init_mode_pairs,
-    _gx_periodic_zp,
+    _centered_glibc_random_pairs,
+    _default_hermite_hypercollision_exponent,
+    _dealiased_initial_mode_pairs,
+    _periodic_zp_from_grid,
     _infer_runtime_nonlinear_steps,
     _load_initial_state_from_file,
     _midplane_index,
     _normalize_linear_solver_name,
     _require_full_gk_runtime_model,
     _resolve_runtime_hl_dims,
-    _reshape_gx_state,
+    _reshape_netcdf_state,
     _runtime_external_phi,
     _runtime_default_krylov_config,
     _runtime_model_key,
     _select_nonlinear_mode_indices,
-    _slice_gx_diagnostics,
+    _slice_runtime_diagnostics,
     _species_to_linear,
-    _stride_gx_diagnostics,
-    _truncate_gx_diagnostics,
+    _stride_runtime_diagnostics,
+    _truncate_runtime_diagnostics,
     _zero_kx_index,
     _run_runtime_scan_batch,
     build_runtime_geometry,
@@ -135,12 +135,12 @@ def test_runtime_small_helper_functions() -> None:
     assert _midplane_index(grid) == min(grid.z.size // 2 + 1, grid.z.size - 1)
     assert _midplane_index(type("Grid", (), {"z": np.asarray([0.0])})()) == 0
     assert _zero_kx_index(grid) == int(np.argmin(np.abs(np.asarray(grid.kx))))
-    assert _gx_init_mode_pairs(grid)[0] == (0, 1)
-    assert _gx_periodic_zp(np.asarray([0.0])) == 1.0
-    assert _gx_periodic_zp(np.asarray([0.0, 0.0])) == 1.0
-    assert _gx_default_p_hyper_m(None) == 20.0
-    assert _gx_default_p_hyper_m(3) == 1.0
-    assert _gx_default_p_hyper_m(40) == 20.0
+    assert _dealiased_initial_mode_pairs(grid)[0] == (0, 1)
+    assert _periodic_zp_from_grid(np.asarray([0.0])) == 1.0
+    assert _periodic_zp_from_grid(np.asarray([0.0, 0.0])) == 1.0
+    assert _default_hermite_hypercollision_exponent(None) == 20.0
+    assert _default_hermite_hypercollision_exponent(3) == 1.0
+    assert _default_hermite_hypercollision_exponent(40) == 20.0
     assert _runtime_model_key(cfg) == "gyrokinetic"
 
 
@@ -224,11 +224,11 @@ def test_runtime_orchestration_progress_policy() -> None:
 
 
 def test_runtime_random_pair_edge_cases() -> None:
-    empty = _gx_centered_random_pairs(3, 0)
+    empty = _centered_glibc_random_pairs(3, 0)
     assert empty.shape == (0, 2)
 
-    seed_zero = _gx_centered_random_pairs(0, 3)
-    seed_one = _gx_centered_random_pairs(1, 3)
+    seed_zero = _centered_glibc_random_pairs(0, 3)
+    seed_one = _centered_glibc_random_pairs(1, 3)
     np.testing.assert_allclose(seed_zero, seed_one)
 
 
@@ -293,32 +293,32 @@ def test_runtime_mode_index_selection_and_step_inference() -> None:
 
 def test_runtime_diagnostic_slice_stride_truncate_concat() -> None:
     diag = _diag()
-    sliced = _slice_gx_diagnostics(diag, 1)
+    sliced = _slice_runtime_diagnostics(diag, 1)
     assert sliced.t.shape == (1,)
     assert sliced.resolved is not None and sliced.resolved.Phi2_kxt.shape[0] == 1
-    zero = _slice_gx_diagnostics(diag, 0)
+    zero = _slice_runtime_diagnostics(diag, 0)
     assert float(zero.dt_mean) == 0.0
     with pytest.raises(ValueError):
-        _slice_gx_diagnostics(diag, -1)
+        _slice_runtime_diagnostics(diag, -1)
 
-    truncated = _truncate_gx_diagnostics(diag, t_max=0.15)
+    truncated = _truncate_runtime_diagnostics(diag, t_max=0.15)
     assert truncated.t.shape == (2,)
-    empty = _truncate_gx_diagnostics(replace(diag, t=np.asarray([])), t_max=1.0)
+    empty = _truncate_runtime_diagnostics(replace(diag, t=np.asarray([])), t_max=1.0)
     assert empty is not None
 
-    strided = _stride_gx_diagnostics(diag, stride=2)
+    strided = _stride_runtime_diagnostics(diag, stride=2)
     assert strided.t.shape == (1,)
-    assert _stride_gx_diagnostics(diag, stride=1) is diag
+    assert _stride_runtime_diagnostics(diag, stride=1) is diag
 
-    concat = _concat_gx_diagnostics([diag, _diag(offset=1.0)])
+    concat = _concat_runtime_diagnostics([diag, _diag(offset=1.0)])
     assert concat.t.shape == (4,)
     assert concat.resolved is not None and concat.resolved.Phi2_kxt.shape[0] == 4
-    concat_none = _concat_gx_diagnostics(
+    concat_none = _concat_runtime_diagnostics(
         [replace(diag, resolved=None), replace(_diag(offset=1.0), resolved=None)]
     )
     assert concat_none.resolved is None
     with pytest.raises(ValueError):
-        _concat_gx_diagnostics([])
+        _concat_runtime_diagnostics([])
 
 
 def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:
@@ -328,10 +328,12 @@ def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> Non
     diag1 = _diag(offset=1.0, resolved=False)
 
     with pytest.raises(ValueError, match="optional diagnostic heat_flux_species_t"):
-        _concat_gx_diagnostics([diag0, diag1])
+        _concat_runtime_diagnostics([diag0, diag1])
 
     with pytest.raises(ValueError, match="resolved diagnostics"):
-        _concat_gx_diagnostics([replace(_diag(), resolved=None), _diag(offset=1.0)])
+        _concat_runtime_diagnostics(
+            [replace(_diag(), resolved=None), _diag(offset=1.0)]
+        )
 
     partial0 = replace(
         _diag(),
@@ -348,7 +350,7 @@ def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> Non
         ),
     )
     with pytest.raises(ValueError, match="resolved diagnostic Wg_kxst"):
-        _concat_gx_diagnostics([partial0, partial1])
+        _concat_runtime_diagnostics([partial0, partial1])
 
 
 def test_runtime_species_and_model_helpers() -> None:
@@ -532,7 +534,7 @@ def test_runtime_initial_state_helpers(
     )
 
     raw = np.arange(2 * 3 * 2 * 4 * 5, dtype=np.float32).astype(np.complex64)
-    reshaped = _reshape_gx_state(raw, nspec=1, nl=2, nm=3, nyc=2, nx=4, nz=5)
+    reshaped = _reshape_netcdf_state(raw, nspec=1, nl=2, nm=3, nyc=2, nx=4, nz=5)
     assert reshaped.shape == (1, 2, 3, 2, 4, 5)
 
     expanded = _expand_ky(np.ones((1, 2, 3, 4, 5), dtype=np.complex64), nyc=3)
@@ -603,7 +605,7 @@ def test_runtime_initial_state_loading_helpers(
 
     nc_path = tmp_path / "restart.nc"
     monkeypatch.setattr(
-        "spectraxgk.runtime.load_gx_restart_state",
+        "spectraxgk.runtime.load_netcdf_restart_state",
         lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64),
     )
     assert _load_initial_state_from_file(
@@ -1013,18 +1015,20 @@ def test_run_runtime_linear_diffrax_contract_paths(
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda arr, sel, method="project": np.exp(
-            (gamma_ref - 1j * omega_ref) * t_saved
-        ).astype(np.complex128)
-        if np.max(np.abs(arr)) < 2.0
-        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+        lambda arr, sel, method="project": (
+            np.exp((gamma_ref - 1j * omega_ref) * t_saved).astype(np.complex128)
+            if np.max(np.abs(arr)) < 2.0
+            else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)
+        ),
     )
     monkeypatch.setattr(
         runtime,
         "fit_growth_rate_auto_with_stats",
-        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
-        if np.max(np.abs(signal)) < 2.0
-        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+        lambda t, signal, **kwargs: (
+            (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+            if np.max(np.abs(signal)) < 2.0
+            else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0)
+        ),
     )
     monkeypatch.setattr(
         runtime,

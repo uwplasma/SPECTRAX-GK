@@ -70,7 +70,7 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style runtime diagnostics and exact-state parity audits",
+  "runtime diagnostics and exact-state parity audits",
   "Cyclone Base Case and W7-X/HSX runtime artifact regressions",
 ]
 physics_contracts = [
@@ -105,7 +105,7 @@ status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style runtime monitored-mode and external-field conventions",
+  "runtime monitored-mode and external-field conventions",
   "Cyclone/W7-X runtime scan and nonlinear artifact replay contracts",
 ]
 physics_contracts = [
@@ -140,7 +140,7 @@ status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style adaptive runtime progress and restart output contracts",
+  "adaptive runtime progress and restart output contracts",
   "combined-ky runtime scan and nonlinear checkpoint artifact regressions",
 ]
 physics_contracts = [
@@ -326,7 +326,7 @@ coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
   "field-aligned linked-boundary linear operator contracts",
-  "GX-style linked-end damping used by Cyclone and stellarator parity lanes",
+  "linked-end damping used by Cyclone and stellarator parity lanes",
 ]
 physics_contracts = [
   "linked chains preserve the intended ky/kx mirror symmetry for field-aligned domains",
@@ -1180,7 +1180,7 @@ coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "Cyclone s-alpha geometry metric and drift conventions",
-  "GX-style imported eik/NetCDF flux-tube geometry arrays",
+  "imported eik/NetCDF flux-tube geometry arrays",
 ]
 physics_contracts = [
   "analytic and imported geometry paths expose the same solver-facing FluxTubeGeometryData contract",
@@ -1429,14 +1429,14 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_gx_layout"
-path = "src/spectraxgk/runtime_artifact_gx_layout.py"
+module = "spectraxgk.netcdf_spectral_layout"
+path = "src/spectraxgk/netcdf_spectral_layout.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style active spectral-axis output conventions used by comparison artifacts",
+  "dealiased spectral-axis output conventions used by NetCDF comparison artifacts",
   "restart append and nonlinear resolved-diagnostic schema tests",
 ]
 physics_contracts = [
@@ -1460,14 +1460,14 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_gx_netcdf"
-path = "src/spectraxgk/runtime_artifact_gx_netcdf.py"
+module = "spectraxgk.nonlinear_output_netcdf"
+path = "src/spectraxgk/nonlinear_output_netcdf.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
   "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
 ]
 physics_contracts = [
@@ -1498,7 +1498,7 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style nonlinear diagnostic reload used by restart append and comparison artifacts",
+  "nonlinear NetCDF diagnostic reload used by restart append and comparison artifacts",
   "publication panel scripts and docs artifact refresh workflow",
 ]
 physics_contracts = [

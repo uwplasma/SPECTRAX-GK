@@ -78,23 +78,32 @@ from spectraxgk.gx_integrators import (
     _rk3_gx_step,
     integrate_linear_gx_diagnostics,
 )
-from spectraxgk.runtime_diagnostics import validate_finite_gx_diagnostics
+from spectraxgk.runtime_diagnostics import validate_finite_runtime_diagnostics
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import FieldState
 
 
 def test_diagnostics_refactor_preserves_legacy_import_identities() -> None:
-    assert diagnostics_module.ResolvedDiagnostics is diagnostics_metadata.ResolvedDiagnostics
+    assert (
+        diagnostics_module.ResolvedDiagnostics
+        is diagnostics_metadata.ResolvedDiagnostics
+    )
     assert (
         diagnostics_module.SimulationDiagnostics
         is diagnostics_metadata.SimulationDiagnostics
     )
     assert diagnostics_module.GXDiagnostics is diagnostics_metadata.GXDiagnostics
-    assert diagnostics_module.GXResolvedDiagnostics is diagnostics_metadata.GXResolvedDiagnostics
+    assert (
+        diagnostics_module.GXResolvedDiagnostics
+        is diagnostics_metadata.GXResolvedDiagnostics
+    )
     assert diagnostics_module.gx_volume_factors is diagnostics_weights.gx_volume_factors
     assert diagnostics_module._gx_fac_mask is diagnostics_weights._gx_fac_mask
-    assert diagnostics_module._gx_fac_mask_cached is diagnostics_weights._gx_fac_mask_cached
+    assert (
+        diagnostics_module._gx_fac_mask_cached
+        is diagnostics_weights._gx_fac_mask_cached
+    )
     assert (
         diagnostics_module._gx_fac_mask_nonzero
         is diagnostics_weights._gx_fac_mask_nonzero
@@ -164,7 +173,9 @@ def test_gx_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> No
     np.testing.assert_allclose(masked[1, 1], np.asarray(state[1, 1]))
 
 
-def test_validate_finite_gx_diagnostics_covers_optional_and_resolved_schema() -> None:
+def test_validate_finite_runtime_diagnostics_covers_optional_and_resolved_schema() -> (
+    None
+):
     n = 3
     t = np.asarray([0.0, 1.0, 2.0])
     resolved_payload = {
@@ -192,7 +203,7 @@ def test_validate_finite_gx_diagnostics_covers_optional_and_resolved_schema() ->
         resolved=resolved,
     )
 
-    validate_finite_gx_diagnostics(diag, label="bounded")
+    validate_finite_runtime_diagnostics(diag, label="bounded")
 
     expected_resolved = {
         "Phi_zonal_mode_kxt",
@@ -207,7 +218,7 @@ def test_validate_finite_gx_diagnostics_covers_optional_and_resolved_schema() ->
 
     bad_scalar = replace(diag, heat_flux_t=np.asarray([0.0, np.inf, 0.2]))
     with pytest.raises(RuntimeError, match="heat_flux_t at sample 1 at t=1"):
-        validate_finite_gx_diagnostics(bad_scalar, label="bounded")
+        validate_finite_runtime_diagnostics(bad_scalar, label="bounded")
 
     bad_resolved_payload = {
         field.name: np.asarray(getattr(resolved, field.name)).copy()
@@ -218,7 +229,7 @@ def test_validate_finite_gx_diagnostics_covers_optional_and_resolved_schema() ->
     with pytest.raises(
         RuntimeError, match=r"resolved\.Phi_zonal_line_kxt at sample 2 at t=2"
     ):
-        validate_finite_gx_diagnostics(bad_resolved, label="bounded")
+        validate_finite_runtime_diagnostics(bad_resolved, label="bounded")
 
 
 def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
@@ -355,9 +366,7 @@ def test_gx_volume_and_flux_weights_are_finite_positive_and_normalized() -> None
     assert np.all(np.isfinite(np.asarray(flux_fac)))
     assert np.all(np.asarray(vol_fac) > 0.0)
     assert np.all(np.asarray(flux_fac) > 0.0)
-    np.testing.assert_allclose(
-        np.asarray(vol_fac).sum(), 1.0, rtol=1.0e-7, atol=5.0e-7
-    )
+    np.testing.assert_allclose(np.asarray(vol_fac).sum(), 1.0, rtol=1.0e-7, atol=5.0e-7)
     np.testing.assert_allclose(
         np.asarray(flux_fac).sum(), 1.0, rtol=1.0e-7, atol=5.0e-7
     )
@@ -716,9 +725,7 @@ def test_gx_zero_field_state_has_zero_transport_and_heating() -> None:
         np.testing.assert_allclose(np.asarray(channel), 0.0)
     np.testing.assert_allclose(np.asarray(particle_species), 0.0)
     np.testing.assert_allclose(
-        np.asarray(
-            gx_particle_flux(G, phi, apar, bpar, cache, grid, params, flux_fac)
-        ),
+        np.asarray(gx_particle_flux(G, phi, apar, bpar, cache, grid, params, flux_fac)),
         0.0,
     )
     for channel in particle_split:

@@ -14,8 +14,8 @@ from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.runtime_artifacts as runtime_artifacts
-import spectraxgk.runtime_artifact_gx_layout as gx_layout
-import spectraxgk.runtime_artifact_gx_netcdf as gx_netcdf
+import spectraxgk.netcdf_spectral_layout as gx_layout
+import spectraxgk.nonlinear_output_netcdf as gx_netcdf
 import spectraxgk.runtime_artifact_io as artifact_io
 import spectraxgk.runtime_artifact_linear as artifact_linear
 import spectraxgk.runtime_artifact_nonlinear as artifact_nonlinear
@@ -27,21 +27,21 @@ from spectraxgk.runtime_artifacts import (
     _condense_kx,
     _condense_ky,
     _condense_kykx,
-    _condense_gx_diagnostics_for_output,
+    _condense_diagnostics_for_netcdf_output,
     _condense_kx_for_output,
     _condense_ky_for_output,
     _condense_kykx_for_output,
     _condense_resolved_for_output,
     _flatten_series,
-    _gx_active_field,
-    _gx_active_ky_count,
-    _gx_active_ky_indices,
-    _gx_active_ky_values,
-    _gx_active_kx_count,
-    _gx_active_kx_indices,
-    _gx_active_kx_values,
-    _gx_bundle_base,
-    _is_gx_netcdf_target,
+    _dealiased_spectral_field,
+    _dealiased_ky_count,
+    _dealiased_ky_indices,
+    _dealiased_ky_values,
+    _dealiased_kx_count,
+    _dealiased_kx_indices,
+    _dealiased_kx_values,
+    _netcdf_bundle_base,
+    _is_netcdf_output_target,
     _maybe_var,
     _nonlinear_summary,
     _particle_moments,
@@ -50,7 +50,7 @@ from spectraxgk.runtime_artifacts import (
     _require_netcdf4,
     _resolved_species_time,
     _resolve_restart_path,
-    _restart_to_gx_layout,
+    _restart_to_netcdf_layout,
     _spectral_species_to_ri,
     _species_matrix,
     _state_basis_moments,
@@ -59,14 +59,14 @@ from spectraxgk.runtime_artifacts import (
     _spectral_to_xy,
     _take_axis,
     _write_csv,
-    _write_gx_geometry_group,
-    _write_gx_inputs_group,
+    _write_geometry_group,
+    _write_input_parameters_group,
     _write_json,
     write_runtime_linear_scan_artifacts,
-    _write_runtime_nonlinear_gx_artifacts,
+    _write_nonlinear_netcdf_outputs,
     _write_runtime_root_metadata,
     _write_state,
-    load_runtime_nonlinear_gx_diagnostics,
+    load_nonlinear_netcdf_diagnostics,
     run_runtime_nonlinear_with_artifacts,
     write_runtime_linear_artifacts,
     write_runtime_nonlinear_artifacts,
@@ -75,7 +75,7 @@ from spectraxgk.runtime_artifact_diagnostics import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
-from spectraxgk.runtime_diagnostics import concat_gx_diagnostics
+from spectraxgk.runtime_diagnostics import concat_runtime_diagnostics
 from spectraxgk.runtime_orchestration import (
     resolve_nonlinear_artifact_policy,
     run_runtime_nonlinear_artifact_handoff,
@@ -87,16 +87,22 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert runtime_artifacts._write_json is artifact_io._write_json
     assert runtime_artifacts._write_csv is artifact_io._write_csv
     assert runtime_artifacts._write_state is artifact_io._write_state
-    assert runtime_artifacts._gx_bundle_base is artifact_io._gx_bundle_base
-    assert runtime_artifacts._is_gx_netcdf_target is artifact_io._is_gx_netcdf_target
-    assert runtime_artifacts._gx_active_kx_indices is gx_layout._gx_active_kx_indices
-    assert runtime_artifacts._gx_active_ky_indices is gx_layout._gx_active_ky_indices
+    assert runtime_artifacts._netcdf_bundle_base is artifact_io._netcdf_bundle_base
+    assert (
+        runtime_artifacts._is_netcdf_output_target
+        is artifact_io._is_netcdf_output_target
+    )
+    assert runtime_artifacts._dealiased_kx_indices is gx_layout._dealiased_kx_indices
+    assert runtime_artifacts._dealiased_ky_indices is gx_layout._dealiased_ky_indices
     assert (
         runtime_artifacts._condense_kykx_for_output
         is gx_layout._condense_kykx_for_output
     )
     assert runtime_artifacts._spectral_to_ri is gx_layout._spectral_to_ri
-    assert runtime_artifacts._restart_to_gx_layout is gx_layout._restart_to_gx_layout
+    assert (
+        runtime_artifacts._restart_to_netcdf_layout
+        is gx_layout._restart_to_netcdf_layout
+    )
     assert (
         runtime_artifacts._write_runtime_root_metadata
         is gx_layout._write_runtime_root_metadata
@@ -110,12 +116,12 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
         is artifact_nonlinear_diag._read_optional_var
     )
     assert (
-        runtime_artifacts._condense_gx_diagnostics_for_output
-        is artifact_nonlinear_diag._condense_gx_diagnostics_for_output
+        runtime_artifacts._condense_diagnostics_for_netcdf_output
+        is artifact_nonlinear_diag._condense_diagnostics_for_netcdf_output
     )
     assert (
-        runtime_artifacts.load_runtime_nonlinear_gx_diagnostics
-        is artifact_nonlinear_diag.load_runtime_nonlinear_gx_diagnostics
+        runtime_artifacts.load_nonlinear_netcdf_diagnostics
+        is artifact_nonlinear_diag.load_nonlinear_netcdf_diagnostics
     )
     assert (
         runtime_artifacts.write_quasilinear_artifacts
@@ -135,17 +141,18 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
         is artifact_nonlinear.write_runtime_nonlinear_table_artifacts
     )
     assert (
-        runtime_artifacts._build_artifact_grid_and_geometry
-        is gx_netcdf._build_artifact_grid_and_geometry
+        runtime_artifacts._build_output_grid_and_geometry
+        is gx_netcdf._build_output_grid_and_geometry
     )
     assert runtime_artifacts._particle_moments is gx_netcdf._particle_moments
+    assert runtime_artifacts._write_geometry_group is gx_netcdf._write_geometry_group
     assert (
-        runtime_artifacts._write_gx_geometry_group is gx_netcdf._write_gx_geometry_group
+        runtime_artifacts._write_input_parameters_group
+        is gx_netcdf._write_input_parameters_group
     )
-    assert runtime_artifacts._write_gx_inputs_group is gx_netcdf._write_gx_inputs_group
     assert (
-        runtime_artifacts._write_runtime_nonlinear_gx_artifacts
-        is gx_netcdf._write_runtime_nonlinear_gx_artifacts
+        runtime_artifacts._write_nonlinear_netcdf_outputs
+        is gx_netcdf._write_nonlinear_netcdf_outputs
     )
 
 
@@ -410,11 +417,11 @@ def test_runtime_artifact_helper_paths_and_flattening(tmp_path: Path) -> None:
         == tmp_path / "case.diagnostics"
     )
     assert _artifact_base(tmp_path / "case.out.nc") == tmp_path / "case.out.nc"
-    assert _gx_bundle_base(tmp_path / "case.nc") == tmp_path / "case"
-    assert _gx_bundle_base(tmp_path / "case.restart.nc") == tmp_path / "case"
-    assert _gx_bundle_base(tmp_path / "case.big.nc") == tmp_path / "case"
-    assert _is_gx_netcdf_target(tmp_path / "case.out.nc") is True
-    assert _is_gx_netcdf_target(tmp_path / "case.csv") is False
+    assert _netcdf_bundle_base(tmp_path / "case.nc") == tmp_path / "case"
+    assert _netcdf_bundle_base(tmp_path / "case.restart.nc") == tmp_path / "case"
+    assert _netcdf_bundle_base(tmp_path / "case.big.nc") == tmp_path / "case"
+    assert _is_netcdf_output_target(tmp_path / "case.out.nc") is True
+    assert _is_netcdf_output_target(tmp_path / "case.csv") is False
 
     assert np.allclose(_flatten_series(np.array([1.0, 2.0])), np.array([1.0, 2.0]))
     assert np.allclose(_flatten_series(np.array([[1.0], [2.0]])), np.array([1.0, 2.0]))
@@ -457,7 +464,7 @@ def test_runtime_artifact_restart_resolution_and_species_helpers() -> None:
         ),
     )
     deps = SimpleNamespace(
-        is_gx_netcdf_target=lambda path: Path(path).suffix == ".nc",
+        is_netcdf_output_target=lambda path: Path(path).suffix == ".nc",
         resolve_restart_path=lambda _path, _cfg: Path("policy_from.restart.nc"),
         resolve_restart_write_path=lambda _path, _cfg: Path("policy_to.restart.nc"),
     )
@@ -469,7 +476,7 @@ def test_runtime_artifact_restart_resolution_and_species_helpers() -> None:
         dt=None,
         deps=deps,
     )
-    assert policy.gx_target is True
+    assert policy.netcdf_output_target is True
     assert policy.diagnostics_on is True
     assert policy.remaining_steps == 5
     assert policy.checkpoint_steps == 2
@@ -584,7 +591,7 @@ def test_runtime_artifact_finite_validation_covers_state_and_fields() -> None:
 
 def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> None:
     full_kx = np.arange(7, dtype=np.float32)
-    active_kx = full_kx[_gx_active_kx_indices(full_kx.size)]
+    active_kx = full_kx[_dealiased_kx_indices(full_kx.size)]
     np.testing.assert_allclose(
         _condense_kx_for_output(full_kx, full_nx=7, active_nx=active_kx.size),
         active_kx,
@@ -597,7 +604,7 @@ def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> N
         _condense_kx_for_output(np.arange(6), full_nx=7, active_nx=active_kx.size)
 
     full_ky = np.arange(5, dtype=np.float32)
-    active_ky = full_ky[_gx_active_ky_indices(full_ky.size)]
+    active_ky = full_ky[_dealiased_ky_indices(full_ky.size)]
     np.testing.assert_allclose(
         _condense_ky_for_output(full_ky, full_ny=5, active_ny=active_ky.size),
         active_ky,
@@ -610,7 +617,7 @@ def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> N
         _condense_ky_for_output(np.arange(4), full_ny=5, active_ny=active_ky.size)
 
     full = np.arange(5 * 7, dtype=np.float32).reshape(5, 7)
-    active = full[_gx_active_ky_indices(5)][:, _gx_active_kx_indices(7)]
+    active = full[_dealiased_ky_indices(5)][:, _dealiased_kx_indices(7)]
     np.testing.assert_allclose(
         _condense_kykx_for_output(
             full,
@@ -621,7 +628,7 @@ def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> N
         ),
         active,
     )
-    partially_condensed = full[_gx_active_ky_indices(5)]
+    partially_condensed = full[_dealiased_ky_indices(5)]
     np.testing.assert_allclose(
         _condense_kykx_for_output(
             partially_condensed,
@@ -660,9 +667,9 @@ def test_runtime_artifact_spectral_helpers() -> None:
     assert xy.shape == (2, 2, 1)
 
     state = np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64)
-    gx = _restart_to_gx_layout(state)
+    gx = _restart_to_netcdf_layout(state)
     assert gx.shape[-1] == 2
-    gx_from_5d = _restart_to_gx_layout(np.ones((2, 3, 4, 4, 5), dtype=np.complex64))
+    gx_from_5d = _restart_to_netcdf_layout(np.ones((2, 3, 4, 4, 5), dtype=np.complex64))
     assert gx_from_5d.shape[0] == 1
 
     with pytest.raises(ValueError):
@@ -670,7 +677,7 @@ def test_runtime_artifact_spectral_helpers() -> None:
     with pytest.raises(ValueError):
         _spectral_species_to_ri(np.ones((2, 2), dtype=np.complex64))
     with pytest.raises(ValueError):
-        _restart_to_gx_layout(np.ones((2, 2), dtype=np.complex64))
+        _restart_to_netcdf_layout(np.ones((2, 2), dtype=np.complex64))
     with pytest.raises(ValueError):
         _state_basis_moments(np.ones((2, 2), dtype=np.complex64))
 
@@ -690,8 +697,8 @@ def test_write_runtime_nonlinear_artifacts_preserves_active_resolved_axes(
             path=str(tmp_path / "active.out.nc"), save_for_restart=False
         ),
     )
-    active_kx = _gx_active_kx_count(cfg.grid.Nx)
-    active_ky = _gx_active_ky_count(cfg.grid.Ny)
+    active_kx = _dealiased_kx_count(cfg.grid.Nx)
+    active_ky = _dealiased_ky_count(cfg.grid.Ny)
     line = np.asarray(
         [
             [1.0 + 0.5j, 2.0 + 0.25j, 3.0 + 0.125j],
@@ -810,13 +817,13 @@ def test_runtime_artifact_condense_helpers() -> None:
         energy_t=np.asarray([3.0, 3.2]),
         resolved=resolved,
     )
-    diag_condensed = _condense_gx_diagnostics_for_output(diag)
+    diag_condensed = _condense_diagnostics_for_netcdf_output(diag)
     assert diag_condensed.resolved is not None
 
 
 def test_runtime_artifact_small_helpers() -> None:
-    assert _gx_active_kx_count(1) == 1
-    assert np.array_equal(_gx_active_kx_indices(1), np.array([0], dtype=np.int32))
+    assert _dealiased_kx_count(1) == 1
+    assert np.array_equal(_dealiased_kx_indices(1), np.array([0], dtype=np.int32))
 
     class _Group:
         def __init__(self):
@@ -844,15 +851,15 @@ def test_runtime_artifact_axis_and_condense_helpers() -> None:
 
     ky = np.array([0.0, 0.2, 0.4, -0.4, -0.2], dtype=np.float32)
     kx = np.array([0.0, 0.1, 0.2, 0.3, -0.3, -0.2, -0.1], dtype=np.float32)
-    assert _gx_active_ky_count(ky.size) == 2
+    assert _dealiased_ky_count(ky.size) == 2
     np.testing.assert_array_equal(
-        _gx_active_ky_indices(ky.size), np.array([0, 1], dtype=np.int32)
+        _dealiased_ky_indices(ky.size), np.array([0, 1], dtype=np.int32)
     )
     np.testing.assert_allclose(
-        _gx_active_ky_values(ky), np.array([0.0, 0.2], dtype=np.float32)
+        _dealiased_ky_values(ky), np.array([0.0, 0.2], dtype=np.float32)
     )
     np.testing.assert_allclose(
-        _gx_active_kx_values(kx),
+        _dealiased_kx_values(kx),
         np.array([-0.2, -0.1, 0.0, 0.1, 0.2], dtype=np.float32),
     )
 
@@ -908,7 +915,7 @@ def test_runtime_artifact_root_metadata_and_active_field() -> None:
     assert root.vars["code_info"].attrs["value"] == "spectrax-gk"
 
     field = np.arange(5 * 7 * 2, dtype=np.float32).reshape(5, 7, 2)
-    active = _gx_active_field(field, ky_axis=0, kx_axis=1)
+    active = _dealiased_spectral_field(field, ky_axis=0, kx_axis=1)
     np.testing.assert_allclose(active, field[:2][:, [5, 6, 0, 1, 2], :])
 
 
@@ -966,31 +973,31 @@ def test_runtime_artifact_geometry_and_input_group_writers(
         physics=SimpleNamespace(beta=0.02),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.apply_geometry_grid_defaults",
+        "spectraxgk.nonlinear_output_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_spectral_grid", lambda _cfg: grid
+        "spectraxgk.nonlinear_output_netcdf.build_spectral_grid", lambda _cfg: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_runtime_geometry",
+        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
         lambda _cfg: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.ensure_flux_tube_geometry_data",
+        "spectraxgk.nonlinear_output_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.real_fft_ordered_kx",
+        "spectraxgk.nonlinear_output_netcdf.real_fft_ordered_kx",
         lambda arr: np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.real_fft_unique_ky",
+        "spectraxgk.nonlinear_output_netcdf.real_fft_unique_ky",
         lambda arr: np.asarray([0.0, 0.3], dtype=np.float32),
     )
 
     geom_group = _Group()
-    theta, kx_vals, ky_vals, geom_out = _write_gx_geometry_group(geom_group, cfg)
+    theta, kx_vals, ky_vals, geom_out = _write_geometry_group(geom_group, cfg)
     np.testing.assert_allclose(theta, grid.z)
     np.testing.assert_allclose(kx_vals, np.asarray([-0.2, 0.0, 0.2], dtype=np.float32))
     np.testing.assert_allclose(ky_vals, np.asarray([0.0, 0.3], dtype=np.float32))
@@ -1000,7 +1007,7 @@ def test_runtime_artifact_geometry_and_input_group_writers(
     assert int(geom_group.values["nfp"]) == 5
 
     inputs_group = _Group()
-    _write_gx_inputs_group(inputs_group, cfg, geom)
+    _write_input_parameters_group(inputs_group, cfg, geom)
     assert int(inputs_group.values["igeo"]) == 0
     assert int(inputs_group.values["slab"]) == 0
     assert float(inputs_group.values["kxfac"]) == pytest.approx(1.1)
@@ -1059,12 +1066,12 @@ def test_runtime_artifact_geometry_writer_applies_imported_grid_defaults(
         physics=SimpleNamespace(beta=0.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_runtime_geometry",
+        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
 
     group = _Group()
-    theta, _kx, _ky, geom_out = _write_gx_geometry_group(group, cfg)
+    theta, _kx, _ky, geom_out = _write_geometry_group(group, cfg)
 
     assert theta.shape == (theta_closed.size - 1,)
     np.testing.assert_allclose(theta, theta_closed[:-1].astype(np.float32))
@@ -1086,26 +1093,26 @@ def test_runtime_artifact_particle_moments(monkeypatch) -> None:
         kperp2=np.ones((2, 4, 3), dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.apply_geometry_grid_defaults",
+        "spectraxgk.nonlinear_output_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_spectral_grid", lambda _grid: grid
+        "spectraxgk.nonlinear_output_netcdf.build_spectral_grid", lambda _grid: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_runtime_geometry",
+        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.ensure_flux_tube_geometry_data",
+        "spectraxgk.nonlinear_output_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_runtime_linear_params",
+        "spectraxgk.nonlinear_output_netcdf.build_runtime_linear_params",
         lambda _cfg, **_kwargs: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifact_gx_netcdf.build_linear_cache",
+        "spectraxgk.nonlinear_output_netcdf.build_linear_cache",
         lambda *_args, **_kwargs: cache,
     )
 
@@ -1381,7 +1388,7 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(
         assert "Tperp" in root.groups["Diagnostics"].variables
         assert "ParticleDensity" in root.groups["Diagnostics"].variables
 
-    loaded = load_runtime_nonlinear_gx_diagnostics(paths["out"])
+    loaded = load_nonlinear_netcdf_diagnostics(paths["out"])
     np.testing.assert_allclose(
         np.asarray(loaded.Wg_t), np.asarray([1.0, 1.1], dtype=float)
     )
@@ -1393,7 +1400,7 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(
     assert loaded.resolved.TurbulentHeating_kxst is not None
 
 
-def test_write_runtime_nonlinear_gx_artifacts_requires_diagnostics(
+def test_write_nonlinear_netcdf_outputs_requires_diagnostics(
     tmp_path: Path,
 ) -> None:
     pytest.importorskip("netCDF4")
@@ -1412,7 +1419,7 @@ def test_write_runtime_nonlinear_gx_artifacts_requires_diagnostics(
     Dataset = _require_netcdf4()
     assert Dataset.__name__ == "Dataset"
     with pytest.raises(ValueError, match="require nonlinear diagnostics"):
-        _write_runtime_nonlinear_gx_artifacts(tmp_path / "probe.out.nc", result, cfg)
+        _write_nonlinear_netcdf_outputs(tmp_path / "probe.out.nc", result, cfg)
 
 
 def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(
@@ -1552,13 +1559,13 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
         return {"out": str(out_path), "restart": str(restart_path)}
 
     deps = SimpleNamespace(
-        is_gx_netcdf_target=lambda path: Path(path).suffix == ".nc",
+        is_netcdf_output_target=lambda path: Path(path).suffix == ".nc",
         resolve_restart_path=lambda _path, _cfg: restart_path,
         resolve_restart_write_path=lambda _path, _cfg: restart_path,
-        gx_bundle_base=lambda path: Path(path).with_suffix("").with_suffix(""),
-        load_runtime_nonlinear_gx_diagnostics=lambda _path: _diag(0.0),
-        condense_gx_diagnostics_for_output=lambda diag: diag,
-        concat_gx_diagnostics=lambda diags: concat_gx_diagnostics(diags),
+        netcdf_bundle_base=lambda path: Path(path).with_suffix("").with_suffix(""),
+        load_nonlinear_netcdf_diagnostics=lambda _path: _diag(0.0),
+        condense_diagnostics_for_netcdf_output=lambda diag: diag,
+        concat_runtime_diagnostics=lambda diags: concat_runtime_diagnostics(diags),
         validate_finite_runtime_result=lambda _result: None,
         run_runtime_nonlinear=_run,
         write_runtime_nonlinear_artifacts=_write,
@@ -1744,7 +1751,7 @@ def test_run_runtime_nonlinear_with_artifacts_rejects_nonfinite_chunk(
     assert calls == {"run": 1, "write": 0}
 
 
-def test_write_runtime_nonlinear_artifacts_requires_cfg_and_diagnostics_for_gx_target(
+def test_write_runtime_nonlinear_artifacts_requires_cfg_and_diagnostics_for_netcdf_output_target(
     tmp_path: Path,
 ) -> None:
     with pytest.raises(ValueError):
@@ -1767,7 +1774,7 @@ def test_write_runtime_nonlinear_artifacts_requires_cfg_and_diagnostics_for_gx_t
         )
 
 
-def test_load_runtime_nonlinear_gx_diagnostics_fills_missing_turbulent_heating(
+def test_load_nonlinear_netcdf_diagnostics_fills_missing_turbulent_heating(
     tmp_path: Path,
 ) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
@@ -1787,7 +1794,7 @@ def test_load_runtime_nonlinear_gx_diagnostics_fills_missing_turbulent_heating(
             "ParticleFlux_st": np.array([[4.0], [4.1]], dtype=np.float32),
         }.items():
             diag.createVariable(name, "f4", ("time", "s"))[:] = values
-    loaded = load_runtime_nonlinear_gx_diagnostics(out_nc)
+    loaded = load_nonlinear_netcdf_diagnostics(out_nc)
     assert np.allclose(loaded.turbulent_heating_t, np.zeros(2, dtype=np.float32))
 
 
@@ -1812,8 +1819,8 @@ def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_gx_schema(
     )
     full_ny = int(cfg.grid.Ny)
     full_nx = int(cfg.grid.Nx)
-    ky_idx = _gx_active_ky_indices(full_ny)
-    kx_idx = _gx_active_kx_indices(full_nx)
+    ky_idx = _dealiased_ky_indices(full_ny)
+    kx_idx = _dealiased_kx_indices(full_nx)
 
     def _diag(sample_t: float, base: float) -> SimulationDiagnostics:
         phi2_kxkyt = base + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
@@ -1998,7 +2005,7 @@ def test_run_runtime_nonlinear_with_artifacts_history_and_restart_paths(
     captured = {"writes": 0}
 
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifacts.load_runtime_nonlinear_gx_diagnostics",
+        "spectraxgk.runtime_artifacts.load_nonlinear_netcdf_diagnostics",
         lambda _path: cumulative,
     )
     monkeypatch.setattr(
@@ -2006,7 +2013,8 @@ def test_run_runtime_nonlinear_with_artifacts_history_and_restart_paths(
         lambda *_args, **_kwargs: result_chunk,
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifacts._concat_gx_diagnostics", lambda diags: diags[-1]
+        "spectraxgk.runtime_artifacts._concat_runtime_diagnostics",
+        lambda diags: diags[-1],
     )
     monkeypatch.setattr(
         "spectraxgk.runtime_artifacts.write_runtime_nonlinear_artifacts",

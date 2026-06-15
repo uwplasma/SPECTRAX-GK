@@ -18,7 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.runtime_artifacts import load_runtime_nonlinear_gx_diagnostics  # noqa: E402
+from spectraxgk.runtime_artifacts import load_nonlinear_netcdf_diagnostics  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,7 +84,9 @@ def window_summaries(
                 "heat_flux_std": float(np.std(heat)),
                 "heat_flux_last": float(heat_arr[-1]),
                 "heat_flux_slope": slope,
-                "heat_flux_relative_slope_per_time": float(slope / max(abs(heat_mean), 1.0e-300)),
+                "heat_flux_relative_slope_per_time": float(
+                    slope / max(abs(heat_mean), 1.0e-300)
+                ),
                 "wphi_mean": float(np.mean(wphi_win)),
                 "wphi_std": float(np.std(wphi_win)),
                 "wphi_last": float(wphi_arr[-1]),
@@ -96,7 +98,7 @@ def window_summaries(
 def load_trace_from_gx_netcdf(path: str | Path) -> dict[str, np.ndarray]:
     """Load the scalar trace needed for a nonlinear pilot panel."""
 
-    diag = load_runtime_nonlinear_gx_diagnostics(path)
+    diag = load_nonlinear_netcdf_diagnostics(path)
     return {
         "t": _as_1d(diag.t, name="t"),
         "heat_flux": _as_1d(diag.heat_flux_t, name="heat_flux"),
@@ -114,7 +116,9 @@ def write_trace_csv(path: str | Path, trace: dict[str, np.ndarray]) -> None:
     with out_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh, lineterminator="\n")
         writer.writerow(keys)
-        for values in zip(*(np.asarray(trace[key], dtype=float) for key in keys), strict=True):
+        for values in zip(
+            *(np.asarray(trace[key], dtype=float) for key in keys), strict=True
+        ):
             writer.writerow([f"{float(value):.16e}" for value in values])
 
 
@@ -137,7 +141,10 @@ def write_pilot_panel(
     wphi = _as_1d(trace["wphi"], name="wphi")
     wg = _as_1d(trace.get("wg", np.zeros_like(t)), name="wg")
     summaries = window_summaries(t, heat, wphi, start_fractions=start_fractions)
-    chosen = min(summaries, key=lambda item: abs(float(item["heat_flux_relative_slope_per_time"])))
+    chosen = min(
+        summaries,
+        key=lambda item: abs(float(item["heat_flux_relative_slope_per_time"])),
+    )
 
     set_plot_style()
     fig, axes = plt.subplots(2, 2, figsize=(12.4, 8.0), constrained_layout=True)
@@ -145,13 +152,17 @@ def write_pilot_panel(
 
     heat_plot = np.maximum(np.abs(heat), 1.0e-300)
     wphi_plot = np.maximum(np.abs(wphi), 1.0e-300)
-    ax_heat.semilogy(t, heat_plot, marker="o", markersize=3.2, linewidth=2.0, color="#0f4c81")
+    ax_heat.semilogy(
+        t, heat_plot, marker="o", markersize=3.2, linewidth=2.0, color="#0f4c81"
+    )
     ax_heat.set_xlabel("time")
     ax_heat.set_ylabel("|heat flux|")
     ax_heat.set_title("Transport trace")
     ax_heat.grid(True, alpha=0.25)
 
-    ax_wphi.semilogy(t, wphi_plot, marker="s", markersize=3.2, linewidth=2.0, color="#c44e52")
+    ax_wphi.semilogy(
+        t, wphi_plot, marker="s", markersize=3.2, linewidth=2.0, color="#c44e52"
+    )
     ax_wphi.set_xlabel("time")
     ax_wphi.set_ylabel(r"$W_\phi$")
     ax_wphi.set_title("Field-energy trace")
@@ -159,13 +170,30 @@ def write_pilot_panel(
 
     colors = ["#2a9d8f", "#b45309", "#7c3aed", "#6b7280"]
     for summary, color in zip(summaries, colors, strict=False):
-        ax_heat.axvspan(float(summary["tmin"]), float(summary["tmax"]), color=color, alpha=0.08)
-        ax_wphi.axvspan(float(summary["tmin"]), float(summary["tmax"]), color=color, alpha=0.08)
+        ax_heat.axvspan(
+            float(summary["tmin"]), float(summary["tmax"]), color=color, alpha=0.08
+        )
+        ax_wphi.axvspan(
+            float(summary["tmin"]), float(summary["tmax"]), color=color, alpha=0.08
+        )
     start_idx = int(chosen["start_index"])
     late_t = t[start_idx:]
     late_heat = heat[start_idx:]
-    ax_zoom.plot(late_t, late_heat, marker="o", markersize=3.5, linewidth=2.0, color="#0f4c81", label="heat flux")
-    ax_zoom.axhline(float(chosen["heat_flux_mean"]), color="#c44e52", linewidth=1.8, label="window mean")
+    ax_zoom.plot(
+        late_t,
+        late_heat,
+        marker="o",
+        markersize=3.5,
+        linewidth=2.0,
+        color="#0f4c81",
+        label="heat flux",
+    )
+    ax_zoom.axhline(
+        float(chosen["heat_flux_mean"]),
+        color="#c44e52",
+        linewidth=1.8,
+        label="window mean",
+    )
     ax_zoom.fill_between(
         late_t,
         float(chosen["heat_flux_mean"]) - float(chosen["heat_flux_std"]),
@@ -196,7 +224,15 @@ def write_pilot_panel(
         "finite long pilot; not promoted unless",
         "a saturated-window gate is defined and passed.",
     ]
-    ax_text.text(0.02, 0.98, "\n".join(lines), va="top", ha="left", fontsize=11, family="monospace")
+    ax_text.text(
+        0.02,
+        0.98,
+        "\n".join(lines),
+        va="top",
+        ha="left",
+        fontsize=11,
+        family="monospace",
+    )
 
     fig.suptitle(title, fontsize=14)
     fig.savefig(out_path, dpi=220, bbox_inches="tight")
@@ -228,8 +264,16 @@ def write_pilot_panel(
             "reason": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
         },
     }
-    json_path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {"png": str(out_path), "pdf": str(pdf_path), "json": str(json_path), "csv": str(csv_path)}
+    json_path.write_text(
+        json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "png": str(out_path),
+        "pdf": str(pdf_path),
+        "json": str(json_path),
+        "csv": str(csv_path),
+    }
 
 
 def _parse_fractions(raw: str) -> tuple[float, ...]:
@@ -238,11 +282,15 @@ def _parse_fractions(raw: str) -> tuple[float, ...]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", required=True, help="GX-style nonlinear *.out.nc file.")
+    parser.add_argument(
+        "--input", required=True, help="GX-style nonlinear *.out.nc file."
+    )
     parser.add_argument("--out", default=str(DEFAULT_OUT), help="Output PNG path.")
     parser.add_argument("--title", default="Nonlinear Feasibility Pilot")
     parser.add_argument("--label", default="external VMEC")
-    parser.add_argument("--claim-level", default="finite_nonlinear_feasibility_not_transport_validation")
+    parser.add_argument(
+        "--claim-level", default="finite_nonlinear_feasibility_not_transport_validation"
+    )
     parser.add_argument("--fractions", default="0.5,0.6,0.7,0.8")
     return parser
 

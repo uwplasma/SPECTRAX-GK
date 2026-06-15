@@ -744,8 +744,8 @@ status = "active"
 responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
 moved_exports = [
   "_artifact_base",
-  "_is_gx_netcdf_target",
-  "_gx_bundle_base",
+  "_is_netcdf_output_target",
+  "_netcdf_bundle_base",
   "_ensure_parent",
   "_flatten_series",
   "_write_json",
@@ -756,21 +756,21 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_gx_layout"
-source_path = "src/spectraxgk/runtime_artifact_gx_layout.py"
+module = "spectraxgk.netcdf_spectral_layout"
+source_path = "src/spectraxgk/netcdf_spectral_layout.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
-responsibility = "GX-style NetCDF active-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
+responsibility = "NetCDF dealiased-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
 moved_exports = [
   "_require_netcdf4",
   "_real_space_axis",
-  "_gx_active_kx_count",
-  "_gx_active_ky_count",
-  "_gx_active_kx_indices",
-  "_gx_active_ky_indices",
+  "_dealiased_kx_count",
+  "_dealiased_ky_count",
+  "_dealiased_kx_indices",
+  "_dealiased_ky_indices",
   "_spectral_to_ri",
   "_complex_to_ri",
-  "_restart_to_gx_layout",
+  "_restart_to_netcdf_layout",
   "_state_basis_moments",
   "_condense_kykx_for_output",
 ]
@@ -778,17 +778,17 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_gx_netcdf"
-source_path = "src/spectraxgk/runtime_artifact_gx_netcdf.py"
+module = "spectraxgk.nonlinear_output_netcdf"
+source_path = "src/spectraxgk/nonlinear_output_netcdf.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
-responsibility = "GX-style nonlinear NetCDF output schema, restart/big-file writing, artifact geometry resolution, and particle moment export helpers"
+responsibility = "nonlinear NetCDF output schema, restart/big-file writing, output geometry resolution, and particle moment export helpers"
 moved_exports = [
-  "_build_artifact_grid_and_geometry",
+  "_build_output_grid_and_geometry",
   "_particle_moments",
-  "_write_gx_geometry_group",
-  "_write_gx_inputs_group",
-  "_write_runtime_nonlinear_gx_artifacts",
+  "_write_geometry_group",
+  "_write_input_parameters_group",
+  "_write_nonlinear_netcdf_outputs",
 ]
 fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
@@ -825,14 +825,14 @@ module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
 source_path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
-responsibility = "GX-style nonlinear diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
+responsibility = "nonlinear NetCDF diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
 moved_exports = [
   "_resolved_species_time",
   "_read_optional_var",
   "_resolve_restart_path",
   "_condense_resolved_for_output",
-  "_condense_gx_diagnostics_for_output",
-  "load_runtime_nonlinear_gx_diagnostics",
+  "_condense_diagnostics_for_netcdf_output",
+  "load_nonlinear_netcdf_diagnostics",
 ]
 fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

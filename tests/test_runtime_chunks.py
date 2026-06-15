@@ -11,7 +11,7 @@ from spectraxgk.runtime_chunks import (
     _format_duration,
     _next_elapsed_time,
     _offset_chunk_diagnostics_time,
-    run_adaptive_gx_chunk_loop,
+    run_adaptive_runtime_chunk_loop,
 )
 from spectraxgk.terms.config import FieldState
 
@@ -55,9 +55,7 @@ def test_adaptive_chunk_time_helpers_lock_accumulated_time_axis() -> None:
 
 def test_adaptive_chunk_time_helper_rejects_empty_or_stalled_chunks() -> None:
     with pytest.raises(RuntimeError, match="chunk 1 produced no time samples"):
-        _next_elapsed_time(
-            _diag([]), previous_elapsed=0.0, label="test", chunk_index=1
-        )
+        _next_elapsed_time(_diag([]), previous_elapsed=0.0, label="test", chunk_index=1)
 
     with pytest.raises(RuntimeError, match="made no time-step progress"):
         _next_elapsed_time(
@@ -65,9 +63,13 @@ def test_adaptive_chunk_time_helper_rejects_empty_or_stalled_chunks() -> None:
         )
 
 
-def test_run_adaptive_gx_chunk_loop_reports_wall_eta(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_adaptive_runtime_chunk_loop_reports_wall_eta(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     clock = iter([0.0, 0.0, 10.0, 10.0, 10.0, 25.0, 25.0])
-    monkeypatch.setattr("spectraxgk.runtime_chunks.time.perf_counter", lambda: next(clock))
+    monkeypatch.setattr(
+        "spectraxgk.runtime_chunks.time.perf_counter", lambda: next(clock)
+    )
 
     messages: list[str] = []
     chunks = iter(
@@ -87,7 +89,7 @@ def test_run_adaptive_gx_chunk_loop_reports_wall_eta(monkeypatch: pytest.MonkeyP
         ]
     )
 
-    result = run_adaptive_gx_chunk_loop(
+    result = run_adaptive_runtime_chunk_loop(
         integrate_chunk=lambda _show_progress: next(chunks),
         t_max=1.5,
         chunk_steps=16,
@@ -96,19 +98,24 @@ def test_run_adaptive_gx_chunk_loop_reports_wall_eta(monkeypatch: pytest.MonkeyP
         status_callback=messages.append,
     )
 
-    assert messages[0] == "starting adaptive nonlinear integration in chunks of 16 steps up to t_max=1.5"
+    assert (
+        messages[0]
+        == "starting adaptive nonlinear integration in chunks of 16 steps up to t_max=1.5"
+    )
     assert "progress= 66.7%" in messages[1]
     assert "chunk_wall=00:10" in messages[1]
     assert "elapsed=00:10" in messages[1]
     assert "eta=00:05" in messages[1]
     assert "progress=100.0%" in messages[2]
     assert "eta=00:00" in messages[2]
-    np.testing.assert_allclose(np.asarray(result.diagnostics.t), np.asarray([0.5, 1.0, 1.25, 1.5]))
+    np.testing.assert_allclose(
+        np.asarray(result.diagnostics.t), np.asarray([0.5, 1.0, 1.25, 1.5])
+    )
     np.testing.assert_allclose(np.asarray(result.state), np.asarray([2.0]))
     np.testing.assert_allclose(np.asarray(result.fields.phi), np.asarray([2.0 + 0.0j]))
 
 
-def test_run_adaptive_gx_chunk_loop_truncates_before_applying_stride() -> None:
+def test_run_adaptive_runtime_chunk_loop_truncates_before_applying_stride() -> None:
     chunks = iter(
         [
             (
@@ -126,7 +133,7 @@ def test_run_adaptive_gx_chunk_loop_truncates_before_applying_stride() -> None:
         ]
     )
 
-    result = run_adaptive_gx_chunk_loop(
+    result = run_adaptive_runtime_chunk_loop(
         integrate_chunk=lambda _show_progress: next(chunks),
         t_max=1.2,
         chunk_steps=8,
@@ -139,9 +146,9 @@ def test_run_adaptive_gx_chunk_loop_truncates_before_applying_stride() -> None:
     np.testing.assert_allclose(np.asarray(result.fields.phi), [2.0 + 0.0j])
 
 
-def test_run_adaptive_gx_chunk_loop_rejects_stalled_time_progress() -> None:
+def test_run_adaptive_runtime_chunk_loop_rejects_stalled_time_progress() -> None:
     with pytest.raises(RuntimeError, match="made no time-step progress"):
-        run_adaptive_gx_chunk_loop(
+        run_adaptive_runtime_chunk_loop(
             integrate_chunk=lambda _show_progress: (
                 np.asarray([0.0]),
                 _diag([0.0]),
@@ -154,11 +161,13 @@ def test_run_adaptive_gx_chunk_loop_rejects_stalled_time_progress() -> None:
         )
 
 
-def test_run_adaptive_gx_chunk_loop_rejects_nonfinite_diagnostics() -> None:
+def test_run_adaptive_runtime_chunk_loop_rejects_nonfinite_diagnostics() -> None:
     bad = replace(_diag([0.5]), Wphi_t=np.asarray([np.nan]))
 
-    with pytest.raises(RuntimeError, match=r"non-finite diagnostics in Wphi_t at sample 0"):
-        run_adaptive_gx_chunk_loop(
+    with pytest.raises(
+        RuntimeError, match=r"non-finite diagnostics in Wphi_t at sample 0"
+    ):
+        run_adaptive_runtime_chunk_loop(
             integrate_chunk=lambda _show_progress: (
                 np.asarray([0.5]),
                 bad,
