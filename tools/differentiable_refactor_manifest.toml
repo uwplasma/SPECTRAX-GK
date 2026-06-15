@@ -778,6 +778,22 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.runtime_artifact_gx_netcdf"
+source_path = "src/spectraxgk/runtime_artifact_gx_netcdf.py"
+facade_module = "spectraxgk.runtime_artifacts"
+status = "active"
+responsibility = "GX-style nonlinear NetCDF output schema, restart/big-file writing, artifact geometry resolution, and particle moment export helpers"
+moved_exports = [
+  "_build_artifact_grid_and_geometry",
+  "_particle_moments",
+  "_write_gx_geometry_group",
+  "_write_gx_inputs_group",
+  "_write_runtime_nonlinear_gx_artifacts",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_artifact_linear"
 source_path = "src/spectraxgk/runtime_artifact_linear.py"
 facade_module = "spectraxgk.runtime_artifacts"

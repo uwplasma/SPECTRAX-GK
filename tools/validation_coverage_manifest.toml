@@ -1460,6 +1460,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_artifact_gx_netcdf"
+path = "src/spectraxgk/runtime_artifact_gx_netcdf.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF outputs preserve geometry profiles, species channels, resolved spectra, restart state, and final-field big-file diagnostics",
+  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+]
+numerics_contracts = [
+  "active kx/ky condensed NetCDF variables preserve total energy and transport reductions used by comparison metrics",
+  "restart and big-file outputs retain deterministic real/imag layout and finite final-time metadata",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add an end-to-end NetCDF reload-to-plot regression for a shipped nonlinear fixture",
+  "add multi-species finite-beta NetCDF schema tests before publication artifact freeze",
+]
+
+[[modules]]
 module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
 path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"

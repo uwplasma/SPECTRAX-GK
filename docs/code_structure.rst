@@ -166,12 +166,13 @@ Completed extractions:
   ``nonlinear_gradient_evidence_gap.py``
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, GX-style active-axis
-  layout, nonlinear diagnostic reload helpers, and restart-append schema
-  coverage:
+  layout, GX-style NetCDF schema writing, nonlinear diagnostic reload helpers,
+  and restart-append schema coverage:
   ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
   ``runtime_artifact_linear.py``,
   ``runtime_artifact_nonlinear.py``,
   ``runtime_artifact_gx_layout.py``,
+  ``runtime_artifact_gx_netcdf.py``,
   ``runtime_artifact_nonlinear_diagnostics.py``
 
 Next planned extractions:

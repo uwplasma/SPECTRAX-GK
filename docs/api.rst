@@ -492,6 +492,13 @@ Runtime Artifact GX Layout
    :members:
    :private-members:
 
+Runtime Artifact GX NetCDF Writer
+---------------------------------
+
+.. automodule:: spectraxgk.runtime_artifact_gx_netcdf
+   :members:
+   :private-members:
+
 Runtime Artifact Nonlinear Diagnostics
 --------------------------------------
 

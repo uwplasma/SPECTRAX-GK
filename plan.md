@@ -1,3 +1,10 @@
+- 2026-06-15: Completed the main runtime artifact facade reduction by moving
+  GX-style nonlinear NetCDF schema writing, artifact geometry resolution,
+  particle-moment output helpers, and GX geometry/input group writers into
+  `spectraxgk.runtime_artifact_gx_netcdf`. The legacy
+  `spectraxgk.runtime_artifacts` module is now a small dispatch/orchestration
+  facade that re-exports compatibility helpers for existing tests and tools.
+
 - 2026-06-15: Continued the runtime artifact refactor by moving generic
   nonlinear JSON/CSV/NPY summary and diagnostic table writing into
   `spectraxgk.runtime_artifact_nonlinear`. The legacy
