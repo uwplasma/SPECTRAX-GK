@@ -23,6 +23,7 @@ Public surfaces that examples, scripts, and external users are expected to rely
 on:
 
 - documented module pages in :doc:`api`
+- ``spectraxgk.artifacts``
 - ``spectraxgk.geometry``
 - ``spectraxgk.cli``
 - ``spectraxgk.runtime``
@@ -69,6 +70,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``runtime_diagnostics.py``
    - ``runtime_results.py``
    - ``runtime_artifacts.py``
+   - ``artifacts/``
    - ``plotting.py``
 4. **benchmark and validation tooling**
    - ``benchmarking.py``
@@ -106,7 +108,7 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
-     - ``runtime_artifacts.py``, ``runtime_artifact_io.py``, ``netcdf_spectral_layout.py``, ``plotting.py``
+     - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
      - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_cyclone.py``, ``benchmark_etg.py``, ``benchmark_kbm.py``, ``benchmark_kinetic.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
@@ -198,12 +200,14 @@ Completed extractions:
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF schema writing, nonlinear diagnostic reload helpers,
   and restart-append schema coverage:
-  ``runtime_artifacts.py``, ``runtime_artifact_io.py``,
-  ``runtime_artifact_linear.py``,
-  ``runtime_artifact_nonlinear.py``,
+  ``runtime_artifacts.py``, ``artifacts/io.py``,
+  ``artifacts/linear.py``,
+  ``artifacts/nonlinear.py``,
   ``netcdf_spectral_layout.py``,
   ``nonlinear_output_netcdf.py``,
-  ``runtime_artifact_nonlinear_diagnostics.py``
+  ``artifacts/nonlinear_diagnostics.py``. The root
+  ``runtime_artifact_*`` modules remain compatibility facades for existing
+  scripts and shipped examples.
 
 Next planned extractions:
 

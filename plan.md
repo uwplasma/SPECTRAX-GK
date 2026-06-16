@@ -248,6 +248,17 @@
   tranches removed the old geometry-model aliases and backend-package shims
   from canonical runtime/config paths.
 
+- 2026-06-16: Moved runtime artifact helper implementations into the
+  `spectraxgk.artifacts` domain package. Generic artifact I/O now lives in
+  `spectraxgk.artifacts.io`, linear/quasilinear writers in
+  `spectraxgk.artifacts.linear`, nonlinear table writers in
+  `spectraxgk.artifacts.nonlinear`, NetCDF diagnostic reload helpers in
+  `spectraxgk.artifacts.nonlinear_diagnostics`, and finite-value artifact
+  checks in `spectraxgk.artifacts.validation`. The old
+  `spectraxgk.runtime_artifact_*` modules remain compatibility facades, and
+  `spectraxgk.runtime_artifacts` remains the public dispatcher to preserve
+  executable and monkeypatch seams.
+
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
   names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart
@@ -2386,4 +2397,3 @@ No long nonlinear audit should be launched from these candidates.
 - Updated validation and architecture manifests, API docs, code-structure docs,
   and release-status evidence so coverage ownership follows the new domain
   package layout.
-

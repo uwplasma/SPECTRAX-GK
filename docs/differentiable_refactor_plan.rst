@@ -186,8 +186,12 @@ High-Risk Module Split Plan
 
 ``runtime_artifacts.py``
   Split artifact schema, NetCDF persistence, restart append, and provenance.
-  Required gates: round-trip persistence, restart append normalization, and plot
-  reload contracts.
+  Generic artifact I/O, linear/quasilinear writers, nonlinear table writers,
+  nonlinear diagnostic reload helpers, and finite-value artifact validation now
+  live under ``spectraxgk.artifacts``. The root ``runtime_artifacts.py`` module
+  remains the public dispatcher and monkeypatch-compatible executable seam.
+  Required gates: round-trip persistence, restart append normalization, and
+  plot reload contracts.
 
 ``linear.py``
   Split linear RHS, field solves, integrators, and diagnostics. Required gates:

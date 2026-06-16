@@ -1472,7 +1472,6 @@ module = "spectraxgk.runtime_artifacts"
 path = "src/spectraxgk/runtime_artifacts.py"
 owned_modules = [
   "spectraxgk.legacy_cetg_output",
-  "spectraxgk.runtime_artifact_diagnostics",
 ]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
@@ -1506,8 +1505,68 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_io"
-path = "src/spectraxgk/runtime_artifact_io.py"
+module = "spectraxgk.artifacts.__init__"
+path = "src/spectraxgk/artifacts/__init__.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "public artifact writer imports documented in docs/api.rst",
+]
+physics_contracts = [
+  "artifact package exports only serialization/reload helpers and does not run solver side effects",
+]
+numerics_contracts = [
+  "package imports preserve identity with implementation modules and legacy facades",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add import contract tests for any future artifact package submodule",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.validation"
+path = "src/spectraxgk/artifacts/validation.py"
+owned_modules = [
+  "spectraxgk.runtime_artifact_diagnostics",
+]
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication panel scripts and docs artifact refresh workflow",
+  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
+]
+physics_contracts = [
+  "artifact validation rejects nonfinite nonlinear state and field payloads before persisted output is trusted",
+]
+numerics_contracts = [
+  "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add direct finite-value rejection tests for future field containers",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.io"
+path = "src/spectraxgk/artifacts/io.py"
+owned_modules = [
+  "spectraxgk.runtime_artifact_io",
+]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1537,8 +1596,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_linear"
-path = "src/spectraxgk/runtime_artifact_linear.py"
+module = "spectraxgk.artifacts.linear"
+path = "src/spectraxgk/artifacts/linear.py"
+owned_modules = [
+  "spectraxgk.runtime_artifact_linear",
+]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1568,8 +1630,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_nonlinear"
-path = "src/spectraxgk/runtime_artifact_nonlinear.py"
+module = "spectraxgk.artifacts.nonlinear"
+path = "src/spectraxgk/artifacts/nonlinear.py"
+owned_modules = [
+  "spectraxgk.runtime_artifact_nonlinear",
+]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1661,8 +1726,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
-path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
+module = "spectraxgk.artifacts.nonlinear_diagnostics"
+path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
+owned_modules = [
+  "spectraxgk.runtime_artifact_nonlinear_diagnostics",
+]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"

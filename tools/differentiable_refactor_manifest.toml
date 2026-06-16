@@ -856,8 +856,21 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_io"
-source_path = "src/spectraxgk/runtime_artifact_io.py"
+module = "spectraxgk.artifacts.validation"
+source_path = "src/spectraxgk/artifacts/validation.py"
+facade_module = "spectraxgk.runtime_artifact_diagnostics"
+status = "active"
+responsibility = "finite-value validation for runtime artifact state, field, and diagnostics payloads"
+moved_exports = [
+  "validate_finite_array",
+  "validate_finite_runtime_result",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.io"
+source_path = "src/spectraxgk/artifacts/io.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
 responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
@@ -913,8 +926,8 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_linear"
-source_path = "src/spectraxgk/runtime_artifact_linear.py"
+module = "spectraxgk.artifacts.linear"
+source_path = "src/spectraxgk/artifacts/linear.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
 responsibility = "linear single-run artifacts, ky-scan artifacts, and quasilinear summary/species/spectrum CSV/JSON writers"
@@ -927,8 +940,8 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_nonlinear"
-source_path = "src/spectraxgk/runtime_artifact_nonlinear.py"
+module = "spectraxgk.artifacts.nonlinear"
+source_path = "src/spectraxgk/artifacts/nonlinear.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
 responsibility = "generic nonlinear JSON summaries, diagnostic CSV tables, and state-array artifact writing for non-NetCDF outputs"
@@ -940,8 +953,8 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_artifact_nonlinear_diagnostics"
-source_path = "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py"
+module = "spectraxgk.artifacts.nonlinear_diagnostics"
+source_path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
 facade_module = "spectraxgk.runtime_artifacts"
 status = "active"
 responsibility = "nonlinear NetCDF diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"

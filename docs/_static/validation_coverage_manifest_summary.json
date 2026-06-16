@@ -4,10 +4,10 @@
     "spectraxgk.runtime",
     "spectraxgk.linear",
     "spectraxgk.nonlinear",
-    "spectraxgk.nonlinear_rhs",
-    "spectraxgk.nonlinear_diagnostic_state",
-    "spectraxgk.nonlinear_explicit_step",
-    "spectraxgk.nonlinear_imex",
+    "spectraxgk.operators.nonlinear.rhs",
+    "spectraxgk.operators.nonlinear.diagnostic_state",
+    "spectraxgk.solvers.nonlinear.explicit",
+    "spectraxgk.solvers.nonlinear.imex",
     "spectraxgk.nonlinear_parallel",
     "spectraxgk.nonlinear_parallel_spectral_core",
     "spectraxgk.nonlinear_parallel_device_z",
@@ -25,12 +25,13 @@
     "spectraxgk.geometry_backends.vmec",
     "spectraxgk.geometry.differentiable",
     "spectraxgk.runtime_artifacts",
-    "spectraxgk.runtime_artifact_io",
-    "spectraxgk.runtime_artifact_linear",
-    "spectraxgk.runtime_artifact_nonlinear",
+    "spectraxgk.artifacts.validation",
+    "spectraxgk.artifacts.io",
+    "spectraxgk.artifacts.linear",
+    "spectraxgk.artifacts.nonlinear",
     "spectraxgk.netcdf_spectral_layout",
     "spectraxgk.nonlinear_output_netcdf",
-    "spectraxgk.runtime_artifact_nonlinear_diagnostics",
+    "spectraxgk.artifacts.nonlinear_diagnostics",
     "spectraxgk.nonlinear_gradient_evidence",
     "spectraxgk.nonlinear_gradient_evidence_core",
     "spectraxgk.nonlinear_gradient_evidence_classification",
@@ -64,13 +65,29 @@
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 78,
-  "n_excluded_modules": 7,
-  "n_high_priority_open": 63,
-  "n_modules": 78,
-  "n_owned_modules": 82,
-  "n_package_modules": 167,
+  "n_direct_modules": 80,
+  "n_excluded_modules": 13,
+  "n_high_priority_open": 64,
+  "n_modules": 80,
+  "n_owned_modules": 96,
+  "n_package_modules": 189,
   "owned_modules_by_owner": {
+    "spectraxgk.artifacts.__init__": [],
+    "spectraxgk.artifacts.io": [
+      "spectraxgk.runtime_artifact_io"
+    ],
+    "spectraxgk.artifacts.linear": [
+      "spectraxgk.runtime_artifact_linear"
+    ],
+    "spectraxgk.artifacts.nonlinear": [
+      "spectraxgk.runtime_artifact_nonlinear"
+    ],
+    "spectraxgk.artifacts.nonlinear_diagnostics": [
+      "spectraxgk.runtime_artifact_nonlinear_diagnostics"
+    ],
+    "spectraxgk.artifacts.validation": [
+      "spectraxgk.runtime_artifact_diagnostics"
+    ],
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
       "spectraxgk.normalization"
@@ -128,7 +145,8 @@
       "spectraxgk.grids",
       "spectraxgk.gyroaverage",
       "spectraxgk.linear_krylov",
-      "spectraxgk.operators",
+      "spectraxgk.operators.linear.streaming",
+      "spectraxgk.solvers.linear.krylov",
       "spectraxgk.secondary",
       "spectraxgk.species",
       "spectraxgk.terms.assembly",
@@ -139,18 +157,11 @@
       "spectraxgk.terms.operators",
       "spectraxgk.terms.validation"
     ],
-    "spectraxgk.linear_cache": [],
-    "spectraxgk.linear_linked": [],
-    "spectraxgk.linear_moments": [],
-    "spectraxgk.linear_parallel": [],
-    "spectraxgk.linear_params": [],
     "spectraxgk.netcdf_spectral_layout": [],
     "spectraxgk.nonlinear": [
       "spectraxgk.terms.nonlinear"
     ],
-    "spectraxgk.nonlinear_diagnostic_state": [],
     "spectraxgk.nonlinear_diagnostics": [],
-    "spectraxgk.nonlinear_explicit_step": [],
     "spectraxgk.nonlinear_gradient_evidence": [
       "spectraxgk.nonlinear_gradient_followup"
     ],
@@ -170,7 +181,6 @@
     "spectraxgk.nonlinear_helpers": [
       "spectraxgk.reduced_model_contracts"
     ],
-    "spectraxgk.nonlinear_imex": [],
     "spectraxgk.nonlinear_output_netcdf": [],
     "spectraxgk.nonlinear_parallel": [
       "spectraxgk.nonlinear_parallel_contracts",
@@ -180,7 +190,24 @@
     "spectraxgk.nonlinear_parallel_spectral_core": [],
     "spectraxgk.nonlinear_replicate_diagnostics": [],
     "spectraxgk.nonlinear_replicate_followup": [],
-    "spectraxgk.nonlinear_rhs": [],
+    "spectraxgk.operators.linear.cache": [
+      "spectraxgk.linear_cache"
+    ],
+    "spectraxgk.operators.linear.linked": [
+      "spectraxgk.linear_linked"
+    ],
+    "spectraxgk.operators.linear.moments": [
+      "spectraxgk.linear_moments"
+    ],
+    "spectraxgk.operators.linear.params": [
+      "spectraxgk.linear_params"
+    ],
+    "spectraxgk.operators.nonlinear.diagnostic_state": [
+      "spectraxgk.nonlinear_diagnostic_state"
+    ],
+    "spectraxgk.operators.nonlinear.rhs": [
+      "spectraxgk.nonlinear_rhs"
+    ],
     "spectraxgk.parallel": [],
     "spectraxgk.parallel_decomposition": [],
     "spectraxgk.plotting": [],
@@ -205,13 +232,8 @@
       "spectraxgk.runtime_diagnostics",
       "spectraxgk.runtime_startup"
     ],
-    "spectraxgk.runtime_artifact_io": [],
-    "spectraxgk.runtime_artifact_linear": [],
-    "spectraxgk.runtime_artifact_nonlinear": [],
-    "spectraxgk.runtime_artifact_nonlinear_diagnostics": [],
     "spectraxgk.runtime_artifacts": [
-      "spectraxgk.legacy_cetg_output",
-      "spectraxgk.runtime_artifact_diagnostics"
+      "spectraxgk.legacy_cetg_output"
     ],
     "spectraxgk.runtime_orchestration": [
       "spectraxgk.runtime_chunks",
@@ -246,6 +268,15 @@
     "spectraxgk.solver_vmec_boozer_line_search_gates": [],
     "spectraxgk.solver_vmec_boozer_objectives": [],
     "spectraxgk.solver_vmec_state": [],
+    "spectraxgk.solvers.linear.parallel": [
+      "spectraxgk.linear_parallel"
+    ],
+    "spectraxgk.solvers.nonlinear.explicit": [
+      "spectraxgk.nonlinear_explicit_step"
+    ],
+    "spectraxgk.solvers.nonlinear.imex": [
+      "spectraxgk.nonlinear_imex"
+    ],
     "spectraxgk.stellarator_objective_portfolio": [],
     "spectraxgk.validation_gates": [],
     "spectraxgk.zonal_objective": [],
@@ -317,7 +348,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 16,
+      "n_owned_modules": 17,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/linear.py",
@@ -326,71 +357,71 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.linear_cache",
+      "module": "spectraxgk.operators.linear.cache",
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/linear_cache.py",
+      "path": "src/spectraxgk/operators/linear/cache.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.linear_moments",
+      "module": "spectraxgk.operators.linear.moments",
       "n_artifacts": 2,
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/linear_moments.py",
+      "path": "src/spectraxgk/operators/linear/moments.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.linear_params",
+      "module": "spectraxgk.operators.linear.params",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/linear_params.py",
+      "path": "src/spectraxgk/operators/linear/params.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.linear_linked",
+      "module": "spectraxgk.operators.linear.linked",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/linear_linked.py",
+      "path": "src/spectraxgk/operators/linear/linked.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.linear_parallel",
+      "module": "spectraxgk.solvers.linear.parallel",
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/linear_parallel.py",
+      "path": "src/spectraxgk/solvers/linear/parallel.py",
       "status": "active"
     },
     {
@@ -410,57 +441,57 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_rhs",
+      "module": "spectraxgk.operators.nonlinear.rhs",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_rhs.py",
+      "path": "src/spectraxgk/operators/nonlinear/rhs.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_diagnostic_state",
+      "module": "spectraxgk.operators.nonlinear.diagnostic_state",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_diagnostic_state.py",
+      "path": "src/spectraxgk/operators/nonlinear/diagnostic_state.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_explicit_step",
+      "module": "spectraxgk.solvers.nonlinear.explicit",
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_explicit_step.py",
+      "path": "src/spectraxgk/solvers/nonlinear/explicit.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_imex",
+      "module": "spectraxgk.solvers.nonlinear.imex",
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_imex.py",
+      "path": "src/spectraxgk/solvers/nonlinear/imex.py",
       "status": "active"
     },
     {
@@ -779,52 +810,80 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 2,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime_artifacts.py",
       "status": "active"
     },
     {
-      "coverage_priority": "high",
+      "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_artifact_io",
-      "n_artifacts": 2,
+      "module": "spectraxgk.artifacts.__init__",
+      "n_artifacts": 1,
       "n_fast_tests": 1,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
+      "n_next_tests": 1,
+      "n_numerics_contracts": 1,
       "n_owned_modules": 0,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_artifact_io.py",
+      "n_physics_contracts": 1,
+      "n_reference_anchors": 1,
+      "path": "src/spectraxgk/artifacts/__init__.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_artifact_linear",
+      "module": "spectraxgk.artifacts.validation",
       "n_artifacts": 2,
       "n_fast_tests": 1,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 2,
+      "n_next_tests": 1,
+      "n_numerics_contracts": 1,
+      "n_owned_modules": 1,
+      "n_physics_contracts": 1,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_artifact_linear.py",
+      "path": "src/spectraxgk/artifacts/validation.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_artifact_nonlinear",
+      "module": "spectraxgk.artifacts.io",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_artifact_nonlinear.py",
+      "path": "src/spectraxgk/artifacts/io.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.artifacts.linear",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 1,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/artifacts/linear.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.artifacts.nonlinear",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 1,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/artifacts/nonlinear.py",
       "status": "active"
     },
     {
@@ -858,15 +917,15 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_artifact_nonlinear_diagnostics",
+      "module": "spectraxgk.artifacts.nonlinear_diagnostics",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_artifact_nonlinear_diagnostics.py",
+      "path": "src/spectraxgk/artifacts/nonlinear_diagnostics.py",
       "status": "active"
     },
     {

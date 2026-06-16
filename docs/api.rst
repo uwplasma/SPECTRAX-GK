@@ -504,24 +504,37 @@ Runtime Orchestration
    :members:
    :private-members:
 
+Runtime Artifact Package
+------------------------
+
+.. automodule:: spectraxgk.artifacts
+   :members:
+
 Runtime Artifact IO
 -------------------
 
-.. automodule:: spectraxgk.runtime_artifact_io
+.. automodule:: spectraxgk.artifacts.io
    :members:
    :private-members:
 
 Runtime Artifact Linear Writers
 -------------------------------
 
-.. automodule:: spectraxgk.runtime_artifact_linear
+.. automodule:: spectraxgk.artifacts.linear
    :members:
    :private-members:
 
 Runtime Artifact Nonlinear Writers
 ----------------------------------
 
-.. automodule:: spectraxgk.runtime_artifact_nonlinear
+.. automodule:: spectraxgk.artifacts.nonlinear
+   :members:
+   :private-members:
+
+Runtime Artifact Validation
+---------------------------
+
+.. automodule:: spectraxgk.artifacts.validation
    :members:
    :private-members:
 
@@ -542,7 +555,7 @@ Nonlinear Output NetCDF Writer
 Runtime Artifact Nonlinear Diagnostics
 --------------------------------------
 
-.. automodule:: spectraxgk.runtime_artifact_nonlinear_diagnostics
+.. automodule:: spectraxgk.artifacts.nonlinear_diagnostics
    :members:
    :private-members:
 

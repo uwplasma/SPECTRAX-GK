@@ -14,12 +14,17 @@ from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.runtime_artifacts as runtime_artifacts
-import spectraxgk.netcdf_spectral_layout as gx_layout
-import spectraxgk.nonlinear_output_netcdf as gx_netcdf
-import spectraxgk.runtime_artifact_io as artifact_io
-import spectraxgk.runtime_artifact_linear as artifact_linear
-import spectraxgk.runtime_artifact_nonlinear as artifact_nonlinear
-import spectraxgk.runtime_artifact_nonlinear_diagnostics as artifact_nonlinear_diag
+import spectraxgk.netcdf_spectral_layout as spectral_layout
+import spectraxgk.nonlinear_output_netcdf as nonlinear_netcdf
+import spectraxgk.artifacts as artifact_package
+import spectraxgk.artifacts.io as artifact_io
+import spectraxgk.artifacts.linear as artifact_linear
+import spectraxgk.artifacts.nonlinear as artifact_nonlinear
+import spectraxgk.artifacts.nonlinear_diagnostics as artifact_nonlinear_diag
+import spectraxgk.runtime_artifact_io as legacy_artifact_io
+import spectraxgk.runtime_artifact_linear as legacy_artifact_linear
+import spectraxgk.runtime_artifact_nonlinear as legacy_artifact_nonlinear
+import spectraxgk.runtime_artifact_nonlinear_diagnostics as legacy_artifact_diag
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
     _ensure_parent,
@@ -71,10 +76,11 @@ from spectraxgk.runtime_artifacts import (
     write_runtime_linear_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.runtime_artifact_diagnostics import (
+from spectraxgk.artifacts.validation import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
+import spectraxgk.runtime_artifact_diagnostics as legacy_artifact_validation
 from spectraxgk.runtime_diagnostics import concat_runtime_diagnostics
 from spectraxgk.runtime_orchestration import (
     resolve_nonlinear_artifact_policy,
@@ -83,6 +89,28 @@ from spectraxgk.runtime_orchestration import (
 
 
 def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
+    assert artifact_package.write_runtime_linear_artifacts is (
+        artifact_linear.write_runtime_linear_artifacts
+    )
+    assert artifact_package.write_runtime_nonlinear_table_artifacts is (
+        artifact_nonlinear.write_runtime_nonlinear_table_artifacts
+    )
+    assert artifact_package.load_nonlinear_netcdf_diagnostics is (
+        artifact_nonlinear_diag.load_nonlinear_netcdf_diagnostics
+    )
+    assert legacy_artifact_io._artifact_base is artifact_io._artifact_base
+    assert legacy_artifact_linear.write_runtime_linear_artifacts is (
+        artifact_linear.write_runtime_linear_artifacts
+    )
+    assert legacy_artifact_nonlinear.write_runtime_nonlinear_table_artifacts is (
+        artifact_nonlinear.write_runtime_nonlinear_table_artifacts
+    )
+    assert legacy_artifact_diag.load_nonlinear_netcdf_diagnostics is (
+        artifact_nonlinear_diag.load_nonlinear_netcdf_diagnostics
+    )
+    assert legacy_artifact_validation.validate_finite_runtime_result is (
+        validate_finite_runtime_result
+    )
     assert runtime_artifacts._artifact_base is artifact_io._artifact_base
     assert runtime_artifacts._write_json is artifact_io._write_json
     assert runtime_artifacts._write_csv is artifact_io._write_csv
@@ -92,20 +120,20 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
         runtime_artifacts._is_netcdf_output_target
         is artifact_io._is_netcdf_output_target
     )
-    assert runtime_artifacts._dealiased_kx_indices is gx_layout._dealiased_kx_indices
-    assert runtime_artifacts._dealiased_ky_indices is gx_layout._dealiased_ky_indices
+    assert runtime_artifacts._dealiased_kx_indices is spectral_layout._dealiased_kx_indices
+    assert runtime_artifacts._dealiased_ky_indices is spectral_layout._dealiased_ky_indices
     assert (
         runtime_artifacts._condense_kykx_for_output
-        is gx_layout._condense_kykx_for_output
+        is spectral_layout._condense_kykx_for_output
     )
-    assert runtime_artifacts._spectral_to_ri is gx_layout._spectral_to_ri
+    assert runtime_artifacts._spectral_to_ri is spectral_layout._spectral_to_ri
     assert (
         runtime_artifacts._restart_to_netcdf_layout
-        is gx_layout._restart_to_netcdf_layout
+        is spectral_layout._restart_to_netcdf_layout
     )
     assert (
         runtime_artifacts._write_runtime_root_metadata
-        is gx_layout._write_runtime_root_metadata
+        is spectral_layout._write_runtime_root_metadata
     )
     assert (
         runtime_artifacts._resolve_restart_path
@@ -142,17 +170,17 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     )
     assert (
         runtime_artifacts._build_output_grid_and_geometry
-        is gx_netcdf._build_output_grid_and_geometry
+        is nonlinear_netcdf._build_output_grid_and_geometry
     )
-    assert runtime_artifacts._particle_moments is gx_netcdf._particle_moments
-    assert runtime_artifacts._write_geometry_group is gx_netcdf._write_geometry_group
+    assert runtime_artifacts._particle_moments is nonlinear_netcdf._particle_moments
+    assert runtime_artifacts._write_geometry_group is nonlinear_netcdf._write_geometry_group
     assert (
         runtime_artifacts._write_input_parameters_group
-        is gx_netcdf._write_input_parameters_group
+        is nonlinear_netcdf._write_input_parameters_group
     )
     assert (
         runtime_artifacts._write_nonlinear_netcdf_outputs
-        is gx_netcdf._write_nonlinear_netcdf_outputs
+        is nonlinear_netcdf._write_nonlinear_netcdf_outputs
     )
 
 
@@ -667,10 +695,12 @@ def test_runtime_artifact_spectral_helpers() -> None:
     assert xy.shape == (2, 2, 1)
 
     state = np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64)
-    gx = _restart_to_netcdf_layout(state)
-    assert gx.shape[-1] == 2
-    gx_from_5d = _restart_to_netcdf_layout(np.ones((2, 3, 4, 4, 5), dtype=np.complex64))
-    assert gx_from_5d.shape[0] == 1
+    netcdf_layout = _restart_to_netcdf_layout(state)
+    assert netcdf_layout.shape[-1] == 2
+    netcdf_from_5d = _restart_to_netcdf_layout(
+        np.ones((2, 3, 4, 4, 5), dtype=np.complex64)
+    )
+    assert netcdf_from_5d.shape[0] == 1
 
     with pytest.raises(ValueError):
         _spectral_to_ri(np.ones((2, 2), dtype=np.complex64))
@@ -1213,7 +1243,7 @@ def test_write_runtime_nonlinear_artifacts_handles_scalar_result_and_1d_species(
     assert summary["phi2_last"] == 7.0
 
 
-def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(
+def test_write_runtime_nonlinear_artifacts_writes_nonlinear_netcdf_bundle(
     tmp_path: Path,
 ) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
@@ -1798,7 +1828,7 @@ def test_load_nonlinear_netcdf_diagnostics_fills_missing_turbulent_heating(
     assert np.allclose(loaded.turbulent_heating_t, np.zeros(2, dtype=np.float32))
 
 
-def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_gx_schema(
+def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_netcdf_schema(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
