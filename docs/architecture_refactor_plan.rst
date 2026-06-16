@@ -420,7 +420,7 @@ Phase C: nonlinear package consolidation
   ``operators/nonlinear`` and ``solvers/nonlinear``:
   ``nonlinear_rhs.py`` to ``operators/nonlinear/rhs.py``,
   ``nonlinear_diagnostic_state.py`` to
-  ``operators/nonlinear/diagnostics_state.py``,
+  ``operators/nonlinear/diagnostic_state.py``,
   ``nonlinear_explicit_step.py`` to ``solvers/nonlinear/explicit.py``, and
   ``nonlinear_imex.py`` to ``solvers/nonlinear/imex.py``. Keep
   ``spectraxgk.nonlinear`` as the public facade.

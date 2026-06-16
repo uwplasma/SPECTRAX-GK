@@ -127,6 +127,12 @@ Operators
 .. automodule:: spectraxgk.operators
    :members:
 
+Linear Operators
+----------------
+
+.. automodule:: spectraxgk.operators.linear
+   :members:
+
 Linear
 ------
 
@@ -178,7 +184,7 @@ Nonlinear Diagnostics
 Nonlinear Diagnostic State
 --------------------------
 
-.. automodule:: spectraxgk.nonlinear_diagnostic_state
+.. automodule:: spectraxgk.operators.nonlinear.diagnostic_state
    :members:
    :private-members:
 
@@ -192,21 +198,21 @@ Nonlinear Helpers
 Nonlinear RHS
 -------------
 
-.. automodule:: spectraxgk.nonlinear_rhs
+.. automodule:: spectraxgk.operators.nonlinear.rhs
    :members:
    :private-members:
 
 Nonlinear Explicit Step
 -----------------------
 
-.. automodule:: spectraxgk.nonlinear_explicit_step
+.. automodule:: spectraxgk.solvers.nonlinear.explicit
    :members:
    :private-members:
 
 Nonlinear IMEX
 --------------
 
-.. automodule:: spectraxgk.nonlinear_imex
+.. automodule:: spectraxgk.solvers.nonlinear.imex
    :members:
    :private-members:
 

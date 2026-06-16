@@ -262,6 +262,54 @@
       "checks": [
         {
           "exists": true,
+          "name": "architecture refactor plan",
+          "passed": true,
+          "path": "docs/architecture_refactor_plan.rst",
+          "required": true,
+          "snippet": "authoritative refactor plan"
+        },
+        {
+          "exists": true,
+          "name": "package architecture manifest",
+          "passed": true,
+          "path": "tools/package_architecture_manifest.toml",
+          "required": true,
+          "snippet": "allowed_root_prefix_modules"
+        },
+        {
+          "exists": true,
+          "name": "package architecture checker",
+          "passed": true,
+          "path": "tools/check_package_architecture_manifest.py",
+          "required": true,
+          "snippet": "root-level prefix modules"
+        },
+        {
+          "exists": true,
+          "name": "operators package facade",
+          "passed": true,
+          "path": "src/spectraxgk/operators/__init__.py",
+          "required": true,
+          "snippet": "hermite_streaming"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear operator package",
+          "passed": true,
+          "path": "src/spectraxgk/operators/nonlinear/__init__.py",
+          "required": true,
+          "snippet": "nonlinear_rhs_cached_impl"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear solver package",
+          "passed": true,
+          "path": "src/spectraxgk/solvers/nonlinear/__init__.py",
+          "required": true,
+          "snippet": "solve_imex_step"
+        },
+        {
+          "exists": true,
           "name": "runtime orchestration module",
           "passed": true,
           "path": "src/spectraxgk/runtime_orchestration.py",
@@ -343,8 +391,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 10,
-      "required": 10
+      "passed_required": 16,
+      "required": 16
     },
     "scientific_gate_guardrails": {
       "checks": [

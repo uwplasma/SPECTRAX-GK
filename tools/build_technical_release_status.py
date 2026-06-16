@@ -68,6 +68,12 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("parallel artifact checker", "tools/check_parallel_scaling_artifacts.py", "FAMILIES"),
     ),
     "refactor_modularity": (
+        EvidenceCheck("architecture refactor plan", "docs/architecture_refactor_plan.rst", "authoritative refactor plan"),
+        EvidenceCheck("package architecture manifest", "tools/package_architecture_manifest.toml", "allowed_root_prefix_modules"),
+        EvidenceCheck("package architecture checker", "tools/check_package_architecture_manifest.py", "root-level prefix modules"),
+        EvidenceCheck("operators package facade", "src/spectraxgk/operators/__init__.py", "hermite_streaming"),
+        EvidenceCheck("nonlinear operator package", "src/spectraxgk/operators/nonlinear/__init__.py", "nonlinear_rhs_cached_impl"),
+        EvidenceCheck("nonlinear solver package", "src/spectraxgk/solvers/nonlinear/__init__.py", "solve_imex_step"),
         EvidenceCheck("runtime orchestration module", "src/spectraxgk/runtime_orchestration.py"),
         EvidenceCheck("runtime policy module", "src/spectraxgk/runtime_policies.py", "RuntimeIndependentParallelPlan"),
         EvidenceCheck("linear cache module", "src/spectraxgk/linear_cache.py"),

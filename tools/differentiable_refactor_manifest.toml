@@ -957,9 +957,9 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_rhs"
-source_path = "src/spectraxgk/nonlinear_rhs.py"
-facade_module = "spectraxgk.nonlinear"
+module = "spectraxgk.operators.nonlinear.rhs"
+source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
+facade_module = "spectraxgk.nonlinear_rhs"
 status = "active"
 responsibility = "nonlinear RHS linear-path routing, electromagnetic bracket composition, and IMEX explicit nonlinear-term assembly with dependency-injected facade seams"
 moved_exports = [
@@ -972,9 +972,9 @@ fast_tests = ["tests/test_nonlinear_rhs.py", "tests/test_nonlinear_helpers_extra
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_diagnostic_state"
-source_path = "src/spectraxgk/nonlinear_diagnostic_state.py"
-facade_module = "spectraxgk.nonlinear"
+module = "spectraxgk.operators.nonlinear.diagnostic_state"
+source_path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
+facade_module = "spectraxgk.nonlinear_diagnostic_state"
 status = "active"
 responsibility = "nonlinear state-to-diagnostic tuple assembly shared by explicit and IMEX diagnostic scans with facade-injected diagnostic kernels"
 moved_exports = [
@@ -985,9 +985,9 @@ fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_explicit_step"
-source_path = "src/spectraxgk/nonlinear_explicit_step.py"
-facade_module = "spectraxgk.nonlinear"
+module = "spectraxgk.solvers.nonlinear.explicit"
+source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
+facade_module = "spectraxgk.nonlinear_explicit_step"
 status = "active"
 responsibility = "explicit nonlinear RK/SSP/K10 one-step policy with injected RHS and state projection"
 moved_exports = [
@@ -998,9 +998,9 @@ fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py"
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_imex"
-source_path = "src/spectraxgk/nonlinear_imex.py"
-facade_module = "spectraxgk.nonlinear"
+module = "spectraxgk.solvers.nonlinear.imex"
+source_path = "src/spectraxgk/solvers/nonlinear/imex.py"
+facade_module = "spectraxgk.nonlinear_imex"
 status = "active"
 responsibility = "IMEX fixed-point predictor and GMRES solve-step policy shared by cached and diagnostic nonlinear integrations"
 moved_exports = [
@@ -1159,9 +1159,9 @@ module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
 current_reason = "owns nonlinear scan orchestration, fixed-mode comparison conventions, output assembly, and the public facade for split RHS, explicit-step, IMEX, and diagnostic-state implementations"
 target_packages = [
-  "spectraxgk.solvers.nonlinear.rhs",
-  "spectraxgk.solvers.nonlinear.integrators",
-  "spectraxgk.solvers.nonlinear.diagnostics",
+  "spectraxgk.operators.nonlinear.rhs",
+  "spectraxgk.operators.nonlinear.diagnostic_state",
+  "spectraxgk.solvers.nonlinear.explicit",
   "spectraxgk.solvers.nonlinear.imex",
 ]
 public_facade = "spectraxgk.nonlinear"

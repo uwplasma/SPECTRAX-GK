@@ -13,6 +13,10 @@ excluded_modules = [
   "spectraxgk.core.__init__",
   "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
+  "spectraxgk.operators.__init__",
+  "spectraxgk.operators.nonlinear.__init__",
+  "spectraxgk.solvers.__init__",
+  "spectraxgk.solvers.nonlinear.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
 ]
@@ -174,7 +178,7 @@ owned_modules = [
   "spectraxgk.grids",
   "spectraxgk.gyroaverage",
   "spectraxgk.linear_krylov",
-  "spectraxgk.operators",
+  "spectraxgk.operators.linear",
   "spectraxgk.secondary",
   "spectraxgk.species",
   "spectraxgk.terms.assembly",
@@ -439,8 +443,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_rhs"
-path = "src/spectraxgk/nonlinear_rhs.py"
+module = "spectraxgk.operators.nonlinear.rhs"
+path = "src/spectraxgk/operators/nonlinear/rhs.py"
+owned_modules = [
+  "spectraxgk.nonlinear_rhs",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -473,8 +480,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_diagnostic_state"
-path = "src/spectraxgk/nonlinear_diagnostic_state.py"
+module = "spectraxgk.operators.nonlinear.diagnostic_state"
+path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
+owned_modules = [
+  "spectraxgk.nonlinear_diagnostic_state",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -505,8 +515,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_explicit_step"
-path = "src/spectraxgk/nonlinear_explicit_step.py"
+module = "spectraxgk.solvers.nonlinear.explicit"
+path = "src/spectraxgk/solvers/nonlinear/explicit.py"
+owned_modules = [
+  "spectraxgk.nonlinear_explicit_step",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -538,8 +551,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_imex"
-path = "src/spectraxgk/nonlinear_imex.py"
+module = "spectraxgk.solvers.nonlinear.imex"
+path = "src/spectraxgk/solvers/nonlinear/imex.py"
+owned_modules = [
+  "spectraxgk.nonlinear_imex",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"

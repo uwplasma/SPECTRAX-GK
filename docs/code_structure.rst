@@ -91,13 +91,13 @@ Physics / Numerics / IO Map
      - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``geometry_backends/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
-     - ``linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
+     - ``linear.py``, ``operators/linear.py``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
      - ``solver_objective_gradients.py``, ``solver_gradient_gates.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
-     - ``nonlinear.py``, ``nonlinear_rhs.py``, ``nonlinear_explicit_step.py``, ``nonlinear_imex.py``, ``nonlinear_diagnostic_state.py``, ``terms/nonlinear.py``
+     - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
      - RHS routing, bracket payload, explicit stepping, IMEX solve policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
@@ -157,12 +157,16 @@ Completed extractions:
   ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``,
   ``nonlinear_parallel_device_z.py``
 - nonlinear RHS composition behind the public nonlinear facade:
-  ``nonlinear_rhs.py``
+  ``operators/nonlinear/rhs.py`` with ``nonlinear_rhs.py`` as a compatibility
+  facade
 - nonlinear state-to-diagnostic tuple assembly behind facade-injected
   diagnostic kernels:
-  ``nonlinear_diagnostic_state.py``
+  ``operators/nonlinear/diagnostic_state.py`` with
+  ``nonlinear_diagnostic_state.py`` as a compatibility facade
 - explicit RK/SSP/K10 one-step policy and IMEX fixed-point/GMRES solve policy:
-  ``nonlinear_explicit_step.py``, ``nonlinear_imex.py``
+  ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py`` with
+  ``nonlinear_explicit_step.py`` and ``nonlinear_imex.py`` as compatibility
+  facades
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   candidate design, composite-control, matched-replicate, QL-seed,
   state-runbook, and variance-reduction/control-variate report helpers:

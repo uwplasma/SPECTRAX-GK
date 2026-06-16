@@ -89,16 +89,24 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.solver_vmec_boozer_gradient_gates"]["n_numerics_contracts"]
         >= 2
     )
-    assert rows["spectraxgk.nonlinear_rhs"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.nonlinear_rhs"]["n_numerics_contracts"] >= 2
+    assert rows["spectraxgk.operators.nonlinear.rhs"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.operators.nonlinear.rhs"]["n_numerics_contracts"] >= 2
     assert (
-        rows["spectraxgk.nonlinear_diagnostic_state"]["coverage_target_percent"] == 95.0
+        rows["spectraxgk.operators.nonlinear.diagnostic_state"][
+            "coverage_target_percent"
+        ]
+        == 95.0
     )
-    assert rows["spectraxgk.nonlinear_diagnostic_state"]["n_physics_contracts"] >= 2
-    assert rows["spectraxgk.nonlinear_explicit_step"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.nonlinear_explicit_step"]["n_numerics_contracts"] >= 2
-    assert rows["spectraxgk.nonlinear_imex"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.nonlinear_imex"]["n_physics_contracts"] >= 2
+    assert (
+        rows["spectraxgk.operators.nonlinear.diagnostic_state"][
+            "n_physics_contracts"
+        ]
+        >= 2
+    )
+    assert rows["spectraxgk.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.solvers.nonlinear.explicit"]["n_numerics_contracts"] >= 2
+    assert rows["spectraxgk.solvers.nonlinear.imex"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.solvers.nonlinear.imex"]["n_physics_contracts"] >= 2
     assert "spectraxgk.nonlinear" in summary["high_priority_open"]
 
 

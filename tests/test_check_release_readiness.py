@@ -42,6 +42,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "--enforce-package-coverage",
                 "codecov/codecov-action",
                 "tools/check_parallel_scaling_artifacts.py",
+                "tools/check_package_architecture_manifest.py",
                 "tools/check_performance_optimization_manifest.py",
                 "tools/check_quasilinear_promotion_guardrails.py",
                 "tools/check_vmec_boozer_differentiability_claim.py",
@@ -78,6 +79,7 @@ coverage:
         "tools/check_release_version.py\n"
         "tools/check_repository_size_manifest.py\n"
         "tools/check_release_artifact_manifest.py\n"
+        "tools/check_package_architecture_manifest.py\n"
         "tools/check_performance_optimization_manifest.py\n"
         "tools/check_parallel_scaling_artifacts.py\n"
         "tools/check_quasilinear_promotion_guardrails.py\n"

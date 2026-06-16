@@ -168,14 +168,15 @@ High-Risk Module Split Plan
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
   Required gates: RHS identity, transport windows, spectral diagnostics, and
   parity-preserving output schemas. The nonlinear RHS linear-path routing and
-  electromagnetic bracket composition now live in ``nonlinear_rhs.py`` while
+  electromagnetic bracket composition now live in
+  ``operators/nonlinear/rhs.py`` while
   ``spectraxgk.nonlinear`` remains the compatibility facade for public imports,
   monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
   IMEX state-to-diagnostic tuple assembly now lives in
-  ``nonlinear_diagnostic_state.py`` with facade-injected diagnostic kernels so
-  existing debug seams remain intact. Explicit RK/SSP/K10 one-step policy now
-  lives in ``nonlinear_explicit_step.py`` and the shared IMEX fixed-point/GMRES
-  solve policy lives in ``nonlinear_imex.py``.
+  ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
+  kernels so existing debug seams remain intact. Explicit RK/SSP/K10 one-step
+  policy now lives in ``solvers/nonlinear/explicit.py`` and the shared IMEX
+  fixed-point/GMRES solve policy lives in ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

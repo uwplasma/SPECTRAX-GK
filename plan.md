@@ -1,3 +1,13 @@
+- 2026-06-16: Started the first architecture-plan implementation tranche.
+  Added `tools/package_architecture_manifest.toml` and
+  `tools/check_package_architecture_manifest.py` to stop new root-level prefix
+  module growth unless explicitly listed as temporary migration scaffolding.
+  Converted `spectraxgk.operators` from a single module into a package while
+  preserving `hermite_streaming`, moved nonlinear RHS/diagnostic-state
+  implementation under `operators/nonlinear`, moved explicit/IMEX nonlinear
+  solve policy under `solvers/nonlinear`, and left the old root modules as thin
+  compatibility facades. Added import-identity tests for the old and new
+  module paths and wired the architecture checker into CI/release readiness.
 - 2026-06-16: Finalized the refactor planning hierarchy to avoid conflicting
   architecture plans. `docs/architecture_refactor_plan.rst` is now explicitly
   authoritative for future package layout, naming, migration order, simplicity

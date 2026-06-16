@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 LARGE_MODULE_DIRECT_ROW_MIN_SOURCE_LINES = 2_000
-PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {"spectraxgk.geometry"}
+PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {"spectraxgk.geometry", "spectraxgk.operators"}
 
 
 def _load_tool_module():
