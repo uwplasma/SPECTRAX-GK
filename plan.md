@@ -31,8 +31,8 @@
   `benchmark_*` root-module growth unless listed as temporary migration
   scaffolding.
 - 2026-06-16: Continued the nonlinear refactor by moving explicit RK/SSP/K10
-  one-step policy into `spectraxgk.nonlinear_explicit_step` and shared IMEX
-  fixed-point/GMRES solve policy into `spectraxgk.nonlinear_imex`. Added direct
+  one-step policy into `spectraxgk.solvers.nonlinear.explicit` and shared IMEX
+  fixed-point/GMRES solve policy into `spectraxgk.solvers.nonlinear.imex`. Added direct
   tests for projection/dtype stability, constant-RHS RK behavior,
   fixed-point iterations, and identity-system IMEX solves. Renamed lingering
   non-benchmark nonlinear test names/docstrings that used comparison-code
@@ -40,23 +40,22 @@
   validation coverage ownership.
 - 2026-06-16: Continued the nonlinear refactor by extracting nonlinear RHS
   linear-path selection and electromagnetic bracket composition into
-  `spectraxgk.nonlinear_rhs`. The public `spectraxgk.nonlinear` facade still
-  injects its module-level callables so monkeypatch/debug workflows and runtime
-  behavior stay compatible. Added direct RHS routing tests, registered the
+  `spectraxgk.operators.nonlinear.rhs`. The public `spectraxgk.nonlinear` API
+  injects its module-level callables so debug workflows and runtime behavior stay
+  compatible. Added direct RHS routing tests, registered the
   module in API/code-structure docs and the refactor/coverage manifests, and
   kept performance claims unchanged until profiler-backed gates are rerun.
 - 2026-06-16: Continued the nonlinear RHS refactor by moving the duplicated
   IMEX explicit nonlinear-term assembly into
-  `spectraxgk.nonlinear_rhs.nonlinear_em_term_cached_impl`. The explicit and
+  `spectraxgk.operators.nonlinear.rhs.nonlinear_em_term_cached_impl`. The explicit and
   cached IMEX paths now share one bracket payload convention, while
   `spectraxgk.nonlinear` still injects `compute_fields_cached` and
   `nonlinear_em_contribution` for compatibility debugging. Added a direct zero
   coefficient/payload-forwarding test and kept performance claims unchanged.
 - 2026-06-16: Continued the nonlinear refactor by extracting duplicated
   explicit/IMEX state-to-diagnostic tuple assembly into
-  `spectraxgk.nonlinear_diagnostic_state`. The implementation receives
-  facade-injected diagnostic kernels so public monkeypatch/debug seams stay
-  intact. Added direct scalar/resolved diagnostic-packing tests and updated the
+  `spectraxgk.operators.nonlinear.diagnostic_state`. The implementation receives
+  injected diagnostic kernels so debug seams stay intact. Added direct scalar/resolved diagnostic-packing tests and updated the
   API docs, code-structure docs, refactor manifest, and coverage manifest.
 - 2026-06-16: Continued the differentiable solver-objective refactor by
   splitting `spectraxgk.solver_gradient_gates` into a small compatibility

@@ -70,8 +70,8 @@
   "n_excluded_modules": 14,
   "n_high_priority_open": 65,
   "n_modules": 81,
-  "n_owned_modules": 85,
-  "n_package_modules": 180,
+  "n_owned_modules": 81,
+  "n_package_modules": 176,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -184,12 +184,8 @@
     "spectraxgk.operators.linear.linked": [],
     "spectraxgk.operators.linear.moments": [],
     "spectraxgk.operators.linear.params": [],
-    "spectraxgk.operators.nonlinear.diagnostic_state": [
-      "spectraxgk.nonlinear_diagnostic_state"
-    ],
-    "spectraxgk.operators.nonlinear.rhs": [
-      "spectraxgk.nonlinear_rhs"
-    ],
+    "spectraxgk.operators.nonlinear.diagnostic_state": [],
+    "spectraxgk.operators.nonlinear.rhs": [],
     "spectraxgk.parallel": [],
     "spectraxgk.parallel_decomposition": [],
     "spectraxgk.plotting": [],
@@ -251,12 +247,8 @@
     "spectraxgk.solver_vmec_boozer_objectives": [],
     "spectraxgk.solver_vmec_state": [],
     "spectraxgk.solvers.linear.parallel": [],
-    "spectraxgk.solvers.nonlinear.explicit": [
-      "spectraxgk.nonlinear_explicit_step"
-    ],
-    "spectraxgk.solvers.nonlinear.imex": [
-      "spectraxgk.nonlinear_imex"
-    ],
+    "spectraxgk.solvers.nonlinear.explicit": [],
+    "spectraxgk.solvers.nonlinear.imex": [],
     "spectraxgk.stellarator_objective_portfolio": [],
     "spectraxgk.validation_gates": [],
     "spectraxgk.workflows.cases": [],
@@ -441,7 +433,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/nonlinear/rhs.py",
@@ -455,7 +447,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/nonlinear/diagnostic_state.py",
@@ -469,7 +461,7 @@
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solvers/nonlinear/explicit.py",
@@ -483,7 +475,7 @@
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solvers/nonlinear/imex.py",

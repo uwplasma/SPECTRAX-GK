@@ -480,9 +480,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.nonlinear.rhs"
 path = "src/spectraxgk/operators/nonlinear/rhs.py"
-owned_modules = [
-  "spectraxgk.nonlinear_rhs",
-]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -510,16 +507,13 @@ artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.json",
 ]
 next_tests = [
-  "add direct free-energy reduced-limit checks once nonlinear bracket conservation tests are split from the facade",
+  "add direct free-energy reduced-limit checks for nonlinear bracket conservation",
   "add physical transport-window identity tests when production nonlinear decomposition is promoted",
 ]
 
 [[modules]]
 module = "spectraxgk.operators.nonlinear.diagnostic_state"
 path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
-owned_modules = [
-  "spectraxgk.nonlinear_diagnostic_state",
-]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -534,7 +528,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "disabled resolved diagnostics use scalar kernels without allocating resolved spectra",
-  "facade-injected kernels preserve monkeypatch/debug seams while keeping implementation pure-array and JAX-transformable",
+  "injected kernels preserve debug seams while keeping implementation pure-array and JAX-transformable",
 ]
 fast_tests = [
   "tests/test_nonlinear_diagnostic_state.py",
@@ -552,9 +546,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.nonlinear.explicit"
 path = "src/spectraxgk/solvers/nonlinear/explicit.py"
-owned_modules = [
-  "spectraxgk.nonlinear_explicit_step",
-]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -588,9 +579,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.nonlinear.imex"
 path = "src/spectraxgk/solvers/nonlinear/imex.py"
-owned_modules = [
-  "spectraxgk.nonlinear_imex",
-]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"

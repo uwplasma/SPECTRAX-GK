@@ -28,10 +28,10 @@ def test_validate_architecture_policy_accepts_manifested_root_facade(tmp_path):
     source_root = tmp_path / "spectraxgk"
     (source_root / "operators").mkdir(parents=True)
     (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
-    (source_root / "nonlinear_rhs.py").write_text("", encoding="utf-8")
+    (source_root / "nonlinear_removed_helper.py").write_text("", encoding="utf-8")
 
     summary = validate_architecture_policy(
-        _manifest(allowed=["spectraxgk.nonlinear_rhs"]),
+        _manifest(allowed=["spectraxgk.nonlinear_removed_helper"]),
         source_root=source_root,
         check_paths=False,
     )
@@ -61,7 +61,7 @@ def test_validate_architecture_policy_rejects_stale_allowlist(tmp_path):
 
     with pytest.raises(ValueError, match="allowlist contains modules"):
         validate_architecture_policy(
-            _manifest(allowed=["spectraxgk.nonlinear_rhs"]),
+            _manifest(allowed=["spectraxgk.nonlinear_removed_helper"]),
             source_root=source_root,
             check_paths=False,
         )

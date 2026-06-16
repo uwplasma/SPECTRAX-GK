@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.nonlinear_explicit_step import advance_explicit_nonlinear_state
+from spectraxgk.solvers.nonlinear.explicit import advance_explicit_nonlinear_state
 
 
 def _constant_rhs(value: float):

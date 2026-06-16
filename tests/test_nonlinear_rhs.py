@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.nonlinear_rhs import (
+from spectraxgk.operators.nonlinear.rhs import (
     linear_rhs_jit_for_terms_impl,
     nonlinear_em_term_cached_impl,
     nonlinear_rhs_cached_impl,

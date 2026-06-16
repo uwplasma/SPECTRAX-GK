@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.nonlinear_imex import imex_fixed_point_guess, solve_imex_step
+from spectraxgk.solvers.nonlinear.imex import imex_fixed_point_guess, solve_imex_step
 
 
 def test_imex_fixed_point_guess_applies_linear_predictor_iterations() -> None:

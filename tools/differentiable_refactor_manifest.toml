@@ -987,9 +987,9 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.rhs"
 source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
-facade_module = "spectraxgk.nonlinear_rhs"
+facade_module = "spectraxgk.operators.nonlinear"
 status = "active"
-responsibility = "nonlinear RHS linear-path routing, electromagnetic bracket composition, and IMEX explicit nonlinear-term assembly with dependency-injected facade seams"
+responsibility = "nonlinear RHS linear-path routing, electromagnetic bracket composition, and IMEX explicit nonlinear-term assembly with dependency-injected seams"
 moved_exports = [
   "RhsCallable",
   "linear_rhs_jit_for_terms_impl",
@@ -1002,9 +1002,9 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.diagnostic_state"
 source_path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
-facade_module = "spectraxgk.nonlinear_diagnostic_state"
+facade_module = "spectraxgk.operators.nonlinear"
 status = "active"
-responsibility = "nonlinear state-to-diagnostic tuple assembly shared by explicit and IMEX diagnostic scans with facade-injected diagnostic kernels"
+responsibility = "nonlinear state-to-diagnostic tuple assembly shared by explicit and IMEX diagnostic scans with injected diagnostic kernels"
 moved_exports = [
   "NonlinearDiagnosticKernels",
   "compute_nonlinear_diagnostic_tuple",
@@ -1015,7 +1015,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.solvers.nonlinear.explicit"
 source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
-facade_module = "spectraxgk.nonlinear_explicit_step"
+facade_module = "spectraxgk.solvers.nonlinear"
 status = "active"
 responsibility = "explicit nonlinear RK/SSP/K10 one-step policy with injected RHS and state projection"
 moved_exports = [
@@ -1028,7 +1028,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.solvers.nonlinear.imex"
 source_path = "src/spectraxgk/solvers/nonlinear/imex.py"
-facade_module = "spectraxgk.nonlinear_imex"
+facade_module = "spectraxgk.solvers.nonlinear"
 status = "active"
 responsibility = "IMEX fixed-point predictor and GMRES solve-step policy shared by cached and diagnostic nonlinear integrations"
 moved_exports = [

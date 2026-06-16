@@ -416,14 +416,11 @@ Phase B: package skeletons and compatibility facades
   implementation.
 
 Phase C: nonlinear package consolidation
-  Move the already extracted nonlinear implementation modules into
-  ``operators/nonlinear`` and ``solvers/nonlinear``:
-  ``nonlinear_rhs.py`` to ``operators/nonlinear/rhs.py``,
-  ``nonlinear_diagnostic_state.py`` to
-  ``operators/nonlinear/diagnostic_state.py``,
-  ``nonlinear_explicit_step.py`` to ``solvers/nonlinear/explicit.py``, and
-  ``nonlinear_imex.py`` to ``solvers/nonlinear/imex.py``. Keep
-  ``spectraxgk.nonlinear`` as the public facade.
+  Move nonlinear implementation helpers into ``operators/nonlinear`` and
+  ``solvers/nonlinear``. ``spectraxgk.nonlinear`` remains the public nonlinear
+  API, while developer imports use ``spectraxgk.operators.nonlinear`` and
+  ``spectraxgk.solvers.nonlinear`` directly. The obsolete root nonlinear helper
+  shims were removed after package-level tests covered the canonical imports.
 
 Phase D: runtime and output consolidation
   Move runtime orchestration to ``workflows/run.py`` and artifact persistence to

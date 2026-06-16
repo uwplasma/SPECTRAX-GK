@@ -161,17 +161,14 @@ Completed extractions:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,
   ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``,
   ``nonlinear_parallel_device_z.py``
-- nonlinear RHS composition behind the public nonlinear facade:
-  ``operators/nonlinear/rhs.py`` with ``nonlinear_rhs.py`` as a compatibility
-  facade
-- nonlinear state-to-diagnostic tuple assembly behind facade-injected
-  diagnostic kernels:
-  ``operators/nonlinear/diagnostic_state.py`` with
-  ``nonlinear_diagnostic_state.py`` as a compatibility facade
+- nonlinear RHS composition and state-to-diagnostic tuple assembly:
+  ``operators/nonlinear/rhs.py`` and
+  ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear
+  helper shims were removed; normal users should use ``spectraxgk.nonlinear``
+  and developer helpers should import from ``spectraxgk.operators.nonlinear``.
 - explicit RK/SSP/K10 one-step policy and IMEX fixed-point/GMRES solve policy:
-  ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py`` with
-  ``nonlinear_explicit_step.py`` and ``nonlinear_imex.py`` as compatibility
-  facades
+  ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
+  helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
   pytrees, Krylov eigensolver policy, and velocity-parallel RHS dispatch live
   under ``operators/linear/`` and ``solvers/linear/``. The obsolete root

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.nonlinear_diagnostic_state import (
+from spectraxgk.operators.nonlinear.diagnostic_state import (
     NonlinearDiagnosticKernels,
     compute_nonlinear_diagnostic_tuple,
 )
