@@ -5,6 +5,13 @@
   behavior stay compatible. Added direct RHS routing tests, registered the
   module in API/code-structure docs and the refactor/coverage manifests, and
   kept performance claims unchanged until profiler-backed gates are rerun.
+- 2026-06-16: Continued the nonlinear RHS refactor by moving the duplicated
+  IMEX explicit nonlinear-term assembly into
+  `spectraxgk.nonlinear_rhs.nonlinear_em_term_cached_impl`. The explicit and
+  cached IMEX paths now share one bracket payload convention, while
+  `spectraxgk.nonlinear` still injects `compute_fields_cached` and
+  `nonlinear_em_contribution` for compatibility debugging. Added a direct zero
+  coefficient/payload-forwarding test and kept performance claims unchanged.
 - 2026-06-16: Continued the nonlinear refactor by extracting duplicated
   explicit/IMEX state-to-diagnostic tuple assembly into
   `spectraxgk.nonlinear_diagnostic_state`. The implementation receives

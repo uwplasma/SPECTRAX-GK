@@ -959,10 +959,11 @@ module = "spectraxgk.nonlinear_rhs"
 source_path = "src/spectraxgk/nonlinear_rhs.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear RHS linear-path routing and electromagnetic bracket composition with dependency-injected facade seams"
+responsibility = "nonlinear RHS linear-path routing, electromagnetic bracket composition, and IMEX explicit nonlinear-term assembly with dependency-injected facade seams"
 moved_exports = [
   "RhsCallable",
   "linear_rhs_jit_for_terms_impl",
+  "nonlinear_em_term_cached_impl",
   "nonlinear_rhs_cached_impl",
 ]
 fast_tests = ["tests/test_nonlinear_rhs.py", "tests/test_nonlinear_helpers_extra.py"]

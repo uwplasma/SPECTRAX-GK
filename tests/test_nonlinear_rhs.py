@@ -7,6 +7,7 @@ import numpy as np
 
 from spectraxgk.nonlinear_rhs import (
     linear_rhs_jit_for_terms_impl,
+    nonlinear_em_term_cached_impl,
     nonlinear_rhs_cached_impl,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
@@ -125,6 +126,69 @@ def test_nonlinear_rhs_cached_impl_forwards_physical_bracket_payload() -> None:
         "weight": 0.25,
         "apar_weight": 1.0,
         "bpar_weight": 0.0,
+        "compressed_real_fft": False,
+        "laguerre_mode": "spectral",
+    }
+
+
+def test_nonlinear_em_term_cached_impl_reuses_imex_bracket_payload() -> None:
+    G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    phi = jnp.ones((1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=2.0 * phi, bpar=3.0 * phi)
+    seen: dict[str, object] = {"fields": 0, "nonlinear": 0}
+
+    def fields_fn(G_in, *_args, **kwargs):
+        seen["fields"] = int(seen["fields"]) + 1
+        seen["external_phi"] = kwargs["external_phi"]
+        np.testing.assert_allclose(np.asarray(G_in), np.asarray(G))
+        return fields
+
+    def nonlinear_contribution(G_in, **kwargs):
+        seen["nonlinear"] = int(seen["nonlinear"]) + 1
+        seen["shape"] = tuple(G_in.shape)
+        seen["apar_is_none"] = kwargs["apar"] is None
+        seen["bpar_is_none"] = kwargs["bpar"] is None
+        seen["weight"] = float(kwargs["weight"])
+        seen["apar_weight"] = kwargs["apar_weight"]
+        seen["bpar_weight"] = kwargs["bpar_weight"]
+        seen["compressed_real_fft"] = kwargs["compressed_real_fft"]
+        seen["laguerre_mode"] = kwargs["laguerre_mode"]
+        return 5.0 * jnp.ones_like(G_in)
+
+    zero = nonlinear_em_term_cached_impl(
+        G,
+        _minimal_cache(),
+        SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+        TermConfig(nonlinear=0.0),
+        fields_fn=fields_fn,
+        nonlinear_contribution_fn=nonlinear_contribution,
+    )
+    np.testing.assert_allclose(np.asarray(zero), 0.0)
+    assert seen == {"fields": 0, "nonlinear": 0}
+
+    out = nonlinear_em_term_cached_impl(
+        G,
+        _minimal_cache(),
+        SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+        TermConfig(nonlinear=0.5, apar=1.0, bpar=1.0),
+        external_phi=3.0,
+        compressed_real_fft=False,
+        laguerre_mode="spectral",
+        fields_fn=fields_fn,
+        nonlinear_contribution_fn=nonlinear_contribution,
+    )
+
+    np.testing.assert_allclose(np.asarray(out), 5.0)
+    assert seen == {
+        "fields": 1,
+        "nonlinear": 1,
+        "external_phi": 3.0,
+        "shape": tuple(G.shape),
+        "apar_is_none": False,
+        "bpar_is_none": False,
+        "weight": 0.5,
+        "apar_weight": 1.0,
+        "bpar_weight": 1.0,
         "compressed_real_fft": False,
         "laguerre_mode": "spectral",
     }

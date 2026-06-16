@@ -450,10 +450,12 @@ reference_anchors = [
 physics_contracts = [
   "zero nonlinear coefficient must leave the physical bracket inactive",
   "disabled electromagnetic channels must be pruned before bracket assembly",
+  "IMEX explicit nonlinear terms reuse the same electromagnetic bracket payload convention as the cached nonlinear RHS",
 ]
 numerics_contracts = [
   "electrostatic RHS path is selected when apar and bpar are statically zero",
   "bracket payload preserves dtype, Hermite-Laguerre transforms, dealiased masks, and laguerre-mode routing",
+  "zero-nonlinearity IMEX terms bypass field solves and return an exact zero state-shaped array",
 ]
 fast_tests = [
   "tests/test_nonlinear_rhs.py",
