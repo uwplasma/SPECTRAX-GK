@@ -9,6 +9,14 @@ SPECTRAX-GK. The goal is not to rewrite the solver for aesthetics. The goal is
 to make the code easier to use, easier to test, easier to extend, and safer to
 differentiate through while preserving the validated physics behavior.
 
+Authority note: :doc:`architecture_refactor_plan` is the authoritative plan for
+future package layout, file naming, migration order, and conflict resolution.
+This page is a technical appendix for differentiability contracts, active
+manifest rows, historical split inventory, and AD/physics/performance gate
+requirements. If a layout or naming detail here conflicts with
+:doc:`architecture_refactor_plan`, the architecture plan wins and this appendix
+or ``tools/differentiable_refactor_manifest.toml`` should be updated.
+
 The active branch for this work starts with planning infrastructure only:
 ``tools/differentiable_refactor_manifest.toml`` and
 ``tools/check_differentiable_refactor_manifest.py``. Large code moves should
@@ -79,11 +87,13 @@ The architecture should follow current JAX ecosystem practice:
   `Google Python style guide <https://google.github.io/styleguide/pyguide.html>`_
   are the baseline for docstring and API documentation conventions.
 
-Target Package Layout
----------------------
+Technical Layer Map
+-------------------
 
-The end-state should be organized by responsibility rather than by historical
-comparison-code structure:
+The detailed target source layout is maintained in
+:doc:`architecture_refactor_plan`. The following layer map is retained here
+only to connect differentiability and validation contracts to broad
+responsibility groups:
 
 .. code-block:: text
 
@@ -101,8 +111,9 @@ comparison-code structure:
      io/                # TOML, NetCDF, restart, artifact schemas
      cli/               # executable commands and default demo
 
-This layout should be introduced incrementally. Existing public modules remain
-as facades until the next major API cleanup.
+Existing public modules remain as facades until the planned API cleanup. New
+implementation code should be placed under the domain packages named in
+:doc:`architecture_refactor_plan`, not added as new root-level prefix modules.
 
 High-Risk Module Split Plan
 ---------------------------

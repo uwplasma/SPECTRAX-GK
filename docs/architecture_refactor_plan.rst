@@ -16,6 +16,29 @@ clear ownership, research-grade validation, strong JAX transformability, and a
 code layout that a new developer can understand without knowing the historical
 refactor sequence.
 
+Plan Authority And Conflict Resolution
+--------------------------------------
+
+This page is the authoritative refactor plan for package layout, naming,
+migration order, and acceptance gates.
+
+- :doc:`code_structure` documents the current source tree and compatibility
+  facades. It should not be read as the target architecture.
+- :doc:`differentiable_refactor_plan` is now a technical appendix for
+  differentiability contracts, historical split inventory, and validation-gate
+  traceability. It does not override this page's target package layout or
+  naming rules.
+- ``tools/differentiable_refactor_manifest.toml`` remains the executable
+  migration ledger for active tranches. When a manifest row conflicts with this
+  page, update the manifest row rather than adding a new root-level module.
+- ``plan.md`` is the chronological work log. It records what happened, not a
+  competing architecture.
+- README and user docs should describe stable user workflows, not internal
+  migration scaffolding.
+
+Any future refactor PR should cite this page, list the package ownership it is
+changing, and state which compatibility facade preserves user behavior.
+
 Planning Snapshot
 -----------------
 
@@ -65,6 +88,12 @@ and JAX codes:
 - `SimPEG <https://docs.simpeg.xyz/>`_ is a useful reference for separating
   simulations, maps, objective functions, inversions, regularization, and
   directives in an optimization-oriented scientific package.
+- `JAX just-in-time compilation <https://docs.jax.dev/en/latest/jit-compilation.html>`_
+  motivates coarse, stable compiled boundaries rather than many shape-changing
+  tiny wrappers.
+- `JAX distributed arrays <https://docs.jax.dev/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html>`_
+  and `manual ``shard_map`` parallelism <https://docs.jax.dev/en/latest/notebooks/shard_map.html>`_
+  motivate explicit global/local layout contracts for CPU/GPU parallel paths.
 
 These references point to the same practical rule: user workflows should be
 simple, but internals should be separated by responsibility, not by historical
@@ -89,6 +118,42 @@ Non-Negotiable Constraints
   numerics, and data-schema names.
 - Do not make new performance claims without profiler artifacts and
   identity-gated numerical evidence.
+
+What "Simpler" Means
+--------------------
+
+The refactor should make SPECTRAX-GK simpler for users and developers, but not
+by hiding physics or making every file artificially tiny.
+
+Simpler for users
+  A small public API, an executable that works out of the box, clear examples,
+  stable TOML schema, clear saved-output paths, and plotting commands that do
+  not require internal package knowledge.
+
+Simpler for developers
+  Domain packages with one responsibility, public facades with documented
+  exports, private helper modules with narrow contracts, tests that live next
+  to the behavior they protect, and no need to know the historical migration
+  sequence.
+
+Simpler for reviewers
+  Each physics claim points to equations, normalization, validation gates,
+  convergence criteria, and reproducible outputs. Validation code is isolated
+  from solver kernels.
+
+Simpler for performance work
+  Hot kernels have stable JIT boundaries, static/dynamic arguments are explicit,
+  memory layout is documented, and profiler output maps to named solver stages.
+
+Simplicity anti-patterns to avoid:
+
+- many root-level modules distinguished only by prefixes;
+- facades that re-export undocumented internals;
+- duplicate data containers for the same physical object;
+- side-effectful runtime code inside differentiable objectives;
+- one giant "misc helpers" module;
+- tests that patch private names across many unrelated modules;
+- performance wrappers that change array layout without identity gates.
 
 Architecture Principles
 -----------------------
@@ -122,6 +187,44 @@ Tests mirror packages
   Top-level mega test files should be split into package directories. Shared
   fixtures should live in ``tests/fixtures`` or package-specific
   ``conftest.py`` files.
+
+Python API, Executable, And Differentiability Boundary
+-------------------------------------------------------
+
+SPECTRAX-GK should support two intentionally different execution surfaces:
+
+Python research API
+  Pure functions and PyTree state for linear solves, nonlinear windows,
+  quasilinear models, geometry sensitivity, UQ, and stellarator optimization.
+  This path should remain compatible with ``jit``, ``vmap``, ``grad``,
+  ``jvp``, ``vjp``, checkpointing, and distributed arrays where the relevant
+  gates pass.
+
+Executable workflow
+  Friendly runtime behavior: progress output, ETA, TOML echoing, output-file
+  writing, plotting, restart handling, and human-readable errors. This path can
+  be non-differentiable and can use host-side I/O because it is not the
+  promoted optimization API.
+
+Shared numerical kernels
+  Both surfaces call the same operator and solver kernels. The executable
+  should wrap pure kernels; pure kernels should not import executable code.
+
+Performance And Memory Rules
+----------------------------
+
+The package layout should make high performance easier, not harder:
+
+- keep compiled solver stages coarse enough to avoid excessive dispatch and
+  recompilation;
+- make shape-changing options static and documented;
+- use struct-of-arrays or PyTree containers that support ``vmap`` and sharding;
+- keep file I/O, progress printing, and plotting outside JIT-compiled kernels;
+- expose explicit caches for geometry, gyroaverages, closures, and field solves;
+- keep global-vs-local sharded array layouts in typed parallel contracts;
+- require serial-vs-parallel identity gates before parallel speedup claims;
+- keep memory-heavy diagnostics opt-in and streamed through ``io``/``diagnostics``
+  rather than stored inside solver state by default.
 
 Target Source Layout
 --------------------

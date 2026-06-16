@@ -1,3 +1,13 @@
+- 2026-06-16: Finalized the refactor planning hierarchy to avoid conflicting
+  architecture plans. `docs/architecture_refactor_plan.rst` is now explicitly
+  authoritative for future package layout, naming, migration order, simplicity
+  constraints, Python-vs-executable differentiability boundaries, and
+  performance/memory rules. `docs/differentiable_refactor_plan.rst` is now a
+  technical appendix for AD contracts, manifest rows, historical split
+  inventory, and validation gates. `docs/code_structure.rst` now describes the
+  current tree only and points future work to the architecture plan.
+  `tools/differentiable_refactor_manifest.toml` records the architecture plan
+  as the layout authority while remaining the active migration ledger.
 - 2026-06-16: Reset the refactor plan around domain packages instead of
   adding more root-level prefix modules. The new architecture plan documents
   the audit snapshot (`167` source files, about `70k` source lines, `134`
