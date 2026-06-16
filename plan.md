@@ -1,3 +1,15 @@
+- 2026-06-16: Reset the refactor plan around domain packages instead of
+  adding more root-level prefix modules. The new architecture plan documents
+  the audit snapshot (`167` source files, about `70k` source lines, `134`
+  root-level package modules, and `315` top-level tests), names the target
+  package layout, defines naming rules, phases, acceptance gates, documentation
+  requirements, test mirroring, and the first concrete tranche:
+  move the already extracted nonlinear RHS/diagnostic/explicit/IMEX helpers
+  into `operators/nonlinear` and `solvers/nonlinear` behind the existing
+  `spectraxgk.nonlinear` facade. The plan explicitly stops future
+  `runtime_*`, `nonlinear_*`, `vmec_jax_*`, `quasilinear_*`, and
+  `benchmark_*` root-module growth unless listed as temporary migration
+  scaffolding.
 - 2026-06-16: Continued the nonlinear refactor by moving explicit RK/SSP/K10
   one-step policy into `spectraxgk.nonlinear_explicit_step` and shared IMEX
   fixed-point/GMRES solve policy into `spectraxgk.nonlinear_imex`. Added direct

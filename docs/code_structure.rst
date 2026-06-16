@@ -9,6 +9,13 @@ surfaces live in the source tree. It is meant to make refactoring safer by
 keeping the boundary between public APIs and internal implementation modules
 explicit.
 
+The long-term consolidation target is documented in
+:doc:`architecture_refactor_plan`. New refactor work should move implementation
+into domain packages such as ``operators``, ``solvers``, ``objectives``,
+``workflows``, ``io``, and ``validation`` instead of adding more root-level
+``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
+``benchmark_*`` modules.
+
 Public API vs Internal Modules
 ------------------------------
 
