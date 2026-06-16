@@ -1,3 +1,10 @@
+- 2026-06-15: Continued the VMEC/Boozer gate refactor by splitting
+  finite-difference report construction into
+  `spectraxgk.solver_vmec_boozer_fd_gates` and line-search/held-out audit
+  logic into `spectraxgk.solver_vmec_boozer_line_search_gates`. The
+  `solver_vmec_boozer_gates` facade now preserves public imports and
+  dependency-injected hook seams while dropping to a small wrapper module.
+  Focused solver-objective tests, Ruff, and mypy passed locally.
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   solver-ready branch-continuity and geometry-gradient reports plus mode-21
   VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient

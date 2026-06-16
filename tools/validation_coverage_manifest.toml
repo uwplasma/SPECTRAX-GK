@@ -2376,6 +2376,72 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_vmec_boozer_fd_gates"
+path = "src/spectraxgk/solver_vmec_boozer_fd_gates.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "finite-difference validation of VMEC/Boozer state perturbations before optimization promotion",
+  "multi-surface and multi-ky aggregate finite-difference reports for reduced stellarator objectives",
+]
+physics_contracts = [
+  "finite-difference reports must state that they are sensitivity gates, not full nonlinear transport or production AD claims",
+  "scalar and aggregate reports must record the perturbed VMEC family, radial index, mode index, and sampled objective vector rows",
+  "aggregate finite-difference reports must expose sample metadata for surface, field-line, and ky coverage",
+]
+numerics_contracts = [
+  "perturbation steps must be positive and curvature ratios must be bounded before a finite-difference report can pass",
+  "central-difference responses must be finite and resolved above response_atol",
+  "weighted aggregate reductions must use finite normalized positive-sum weights inherited from the sampling contract",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+]
+next_tests = [
+  "add direct tests for no-response finite-difference failures and invalid perturbation steps",
+  "add aggregate finite-difference fixtures with torflux and physical ky requests",
+]
+
+[[modules]]
+module = "spectraxgk.solver_vmec_boozer_line_search_gates"
+path = "src/spectraxgk/solver_vmec_boozer_line_search_gates.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "curvature-gated one-parameter VMEC/Boozer line-search audits before optimizer promotion",
+  "held-out surface, field-line, and ky validation for aggregate reduced objectives",
+]
+physics_contracts = [
+  "line-search reports must remain one-coefficient audits, not multi-parameter stellarator optimization claims",
+  "aggregate line-search holdouts must keep training and held-out samples separate before promotion",
+  "held-out reports must expose both training and held-out objective reductions",
+]
+numerics_contracts = [
+  "update steps, max steps, and improvement tolerances must fail closed when invalid",
+  "candidate steps require a passing finite-difference curvature gate and an objective decrease",
+  "holdout audits must recompute initial and final held-out objectives at the accepted coefficient offset",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
+  "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+]
+next_tests = [
+  "add direct line-search tests for zero derivative, failed curvature gate, and rejected candidate paths",
+  "add held-out audit fixtures where training passes but held-out objective worsens",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [

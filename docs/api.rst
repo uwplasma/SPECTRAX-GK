@@ -584,6 +584,20 @@ Solver VMEC/Boozer Gates
    :members:
    :private-members:
 
+Solver VMEC/Boozer Finite-Difference Gates
+------------------------------------------
+
+.. automodule:: spectraxgk.solver_vmec_boozer_fd_gates
+   :members:
+   :private-members:
+
+Solver VMEC/Boozer Line-Search Gates
+------------------------------------
+
+.. automodule:: spectraxgk.solver_vmec_boozer_line_search_gates
+   :members:
+   :private-members:
+
 External-VMEC Holdout Planning
 ------------------------------
 

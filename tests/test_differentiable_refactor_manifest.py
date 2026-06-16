@@ -50,6 +50,11 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     )
     assert "spectraxgk.geometry.vmec_tensor_mapping" in summary["phase1_split_modules"]
     assert "spectraxgk.solver_gradient_gates" in summary["phase1_split_modules"]
+    assert "spectraxgk.solver_vmec_boozer_fd_gates" in summary["phase1_split_modules"]
+    assert (
+        "spectraxgk.solver_vmec_boozer_line_search_gates"
+        in summary["phase1_split_modules"]
+    )
     assert "spectraxgk.solver_vmec_boozer_objectives" in summary["phase1_split_modules"]
     assert "spectraxgk.solver_vmec_boozer_gates" in summary["phase1_split_modules"]
     for module in (
