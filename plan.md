@@ -2369,6 +2369,14 @@ No long nonlinear audit should be launched from these candidates.
   the same owner modules. ``spectraxgk.__init__`` still re-exports through the
   stable ``spectraxgk.solver_objective_gradients`` facade until the major API
   cleanup, and the facade-specific tests keep the monkeypatch seams covered.
+- Continued the linear-facade reduction by moving type/cache-only source
+  imports to focused owner modules. Benchmark fit/scan/species policies,
+  species construction, diagnostics, quasilinear diagnostics, and nonlinear
+  NetCDF output now import ``LinearParams``/``LinearCache``/``build_linear_cache``
+  from ``spectraxgk.operators.linear.params`` and
+  ``spectraxgk.operators.linear.cache`` directly. Integrator-facing imports
+  remain on ``spectraxgk.linear`` until linear RHS/integration entry points are
+  split behind their own public API.
 - Continued the cleanup of provenance-oriented wording in source docstrings and
   docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
   species/Hermite sharding, field-coupled streaming, linked-boundary ordering,
