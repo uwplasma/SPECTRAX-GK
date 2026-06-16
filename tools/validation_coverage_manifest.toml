@@ -1566,9 +1566,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.artifacts.validation"
 path = "src/spectraxgk/artifacts/validation.py"
-owned_modules = [
-  "spectraxgk.runtime_artifact_diagnostics",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1597,9 +1594,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.artifacts.io"
 path = "src/spectraxgk/artifacts/io.py"
-owned_modules = [
-  "spectraxgk.runtime_artifact_io",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1631,9 +1625,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.artifacts.linear"
 path = "src/spectraxgk/artifacts/linear.py"
-owned_modules = [
-  "spectraxgk.runtime_artifact_linear",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1665,9 +1656,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.artifacts.nonlinear"
 path = "src/spectraxgk/artifacts/nonlinear.py"
-owned_modules = [
-  "spectraxgk.runtime_artifact_nonlinear",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1761,9 +1749,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.artifacts.nonlinear_diagnostics"
 path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
-owned_modules = [
-  "spectraxgk.runtime_artifact_nonlinear_diagnostics",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"

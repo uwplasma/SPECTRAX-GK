@@ -208,9 +208,9 @@ Completed extractions:
   ``artifacts/nonlinear.py``,
   ``netcdf_spectral_layout.py``,
   ``nonlinear_output_netcdf.py``,
-  ``artifacts/nonlinear_diagnostics.py``. The root
-  ``runtime_artifact_*`` modules remain compatibility facades for existing
-  scripts and shipped examples.
+  ``artifacts/nonlinear_diagnostics.py``. The obsolete root
+  ``runtime_artifact_*`` helper modules were removed; import implementation
+  helpers from ``spectraxgk.artifacts`` instead.
 
 Next planned extractions:
 

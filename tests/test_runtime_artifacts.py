@@ -21,10 +21,6 @@ import spectraxgk.artifacts.io as artifact_io
 import spectraxgk.artifacts.linear as artifact_linear
 import spectraxgk.artifacts.nonlinear as artifact_nonlinear
 import spectraxgk.artifacts.nonlinear_diagnostics as artifact_nonlinear_diag
-import spectraxgk.runtime_artifact_io as legacy_artifact_io
-import spectraxgk.runtime_artifact_linear as legacy_artifact_linear
-import spectraxgk.runtime_artifact_nonlinear as legacy_artifact_nonlinear
-import spectraxgk.runtime_artifact_nonlinear_diagnostics as legacy_artifact_diag
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
     _ensure_parent,
@@ -80,7 +76,6 @@ from spectraxgk.artifacts.validation import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
-import spectraxgk.runtime_artifact_diagnostics as legacy_artifact_validation
 from spectraxgk.runtime_diagnostics import concat_runtime_diagnostics
 from spectraxgk.runtime_orchestration import (
     resolve_nonlinear_artifact_policy,
@@ -97,19 +92,6 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     )
     assert artifact_package.load_nonlinear_netcdf_diagnostics is (
         artifact_nonlinear_diag.load_nonlinear_netcdf_diagnostics
-    )
-    assert legacy_artifact_io._artifact_base is artifact_io._artifact_base
-    assert legacy_artifact_linear.write_runtime_linear_artifacts is (
-        artifact_linear.write_runtime_linear_artifacts
-    )
-    assert legacy_artifact_nonlinear.write_runtime_nonlinear_table_artifacts is (
-        artifact_nonlinear.write_runtime_nonlinear_table_artifacts
-    )
-    assert legacy_artifact_diag.load_nonlinear_netcdf_diagnostics is (
-        artifact_nonlinear_diag.load_nonlinear_netcdf_diagnostics
-    )
-    assert legacy_artifact_validation.validate_finite_runtime_result is (
-        validate_finite_runtime_result
     )
     assert runtime_artifacts._artifact_base is artifact_io._artifact_base
     assert runtime_artifacts._write_json is artifact_io._write_json

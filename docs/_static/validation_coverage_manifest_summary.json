@@ -70,25 +70,15 @@
   "n_excluded_modules": 14,
   "n_high_priority_open": 65,
   "n_modules": 81,
-  "n_owned_modules": 96,
-  "n_package_modules": 191,
+  "n_owned_modules": 91,
+  "n_package_modules": 186,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
-    "spectraxgk.artifacts.io": [
-      "spectraxgk.runtime_artifact_io"
-    ],
-    "spectraxgk.artifacts.linear": [
-      "spectraxgk.runtime_artifact_linear"
-    ],
-    "spectraxgk.artifacts.nonlinear": [
-      "spectraxgk.runtime_artifact_nonlinear"
-    ],
-    "spectraxgk.artifacts.nonlinear_diagnostics": [
-      "spectraxgk.runtime_artifact_nonlinear_diagnostics"
-    ],
-    "spectraxgk.artifacts.validation": [
-      "spectraxgk.runtime_artifact_diagnostics"
-    ],
+    "spectraxgk.artifacts.io": [],
+    "spectraxgk.artifacts.linear": [],
+    "spectraxgk.artifacts.nonlinear": [],
+    "spectraxgk.artifacts.nonlinear_diagnostics": [],
+    "spectraxgk.artifacts.validation": [],
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
       "spectraxgk.normalization"
@@ -854,7 +844,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 1,
       "n_numerics_contracts": 1,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 1,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/validation.py",
@@ -868,7 +858,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/io.py",
@@ -882,7 +872,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/linear.py",
@@ -896,7 +886,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/nonlinear.py",
@@ -938,7 +928,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/nonlinear_diagnostics.py",

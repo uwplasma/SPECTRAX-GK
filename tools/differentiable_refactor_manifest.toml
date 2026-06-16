@@ -873,7 +873,7 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.artifacts.validation"
 source_path = "src/spectraxgk/artifacts/validation.py"
-facade_module = "spectraxgk.runtime_artifact_diagnostics"
+facade_module = "spectraxgk.artifacts"
 status = "active"
 responsibility = "finite-value validation for runtime artifact state, field, and diagnostics payloads"
 moved_exports = [
