@@ -46,7 +46,7 @@ from spectraxgk.terms.linear_terms import (
     end_damping_contribution,
     hypercollisions_contribution,
     mirror_contribution,
-    streaming_contribution_gx,
+    linked_streaming_contribution,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
@@ -222,7 +222,7 @@ def _manual_linear_contributions_from_fields(
     zero = jnp.zeros_like(G_arr)
 
     contrib: dict[str, jnp.ndarray] = {}
-    contrib["streaming"] = streaming_contribution_gx(
+    contrib["streaming"] = linked_streaming_contribution(
         G_arr,
         phi=phi_j,
         apar=apar_j,

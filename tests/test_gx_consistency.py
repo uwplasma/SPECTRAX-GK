@@ -11,7 +11,7 @@ from spectraxgk.terms.linear_terms import (
     hypercollisions_contribution,
     hyperdiffusion_contribution,
     streaming_contribution,
-    streaming_contribution_gx,
+    linked_streaming_contribution,
 )
 
 
@@ -355,7 +355,7 @@ def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
     assert jnp.allclose(out, jnp.zeros_like(G))
 
     field = jnp.zeros((1, 1, 4), dtype=jnp.complex64)
-    out_gx = streaming_contribution_gx(
+    out_gx = linked_streaming_contribution(
         G,
         phi=field,
         apar=field,
@@ -399,10 +399,10 @@ def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagne
         kz=jnp.asarray([0.0, 1.0, -1.0], dtype=jnp.float32),
         dz=jnp.asarray(1.0, dtype=jnp.float32),
     )
-    explicit_streaming = streaming_contribution_gx(
+    explicit_streaming = linked_streaming_contribution(
         apar=zero_field, bpar=zero_field, **common_streaming
     )
-    pruned_streaming = streaming_contribution_gx(
+    pruned_streaming = linked_streaming_contribution(
         apar=None, bpar=None, **common_streaming
     )
     assert jnp.allclose(pruned_streaming, explicit_streaming, rtol=1.0e-6, atol=1.0e-7)
