@@ -1,3 +1,15 @@
+- 2026-06-16: Continued the differentiable solver-objective refactor by
+  splitting `spectraxgk.solver_gradient_gates` into a small compatibility
+  facade plus `spectraxgk.solver_ready_gradient_gates` for solver-ready
+  branch/linear-RHS gradient gates and
+  `spectraxgk.solver_vmec_boozer_gradient_gates` for mode-21 VMEC/Boozer
+  frequency, quasilinear, and reduced nonlinear-window gradient gates. Added
+  direct implementation-module tests for FD reports, line-search/holdout
+  gates, facade identity, and injected VMEC/Boozer gradient reports. Updated
+  API docs, architecture docs, refactor manifests, validation ownership, and
+  README scope wording. Performance-manifest and parallel-scaling artifact
+  checks were rerun; they pass while still blocking production nonlinear
+  speedup claims until GPU production-speedup evidence exists.
 - 2026-06-15: Continued the VMEC/Boozer gate refactor by splitting
   finite-difference report construction into
   `spectraxgk.solver_vmec_boozer_fd_gates` and line-search/held-out audit

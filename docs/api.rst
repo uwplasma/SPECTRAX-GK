@@ -563,6 +563,20 @@ Solver Gradient Gates
    :members:
    :private-members:
 
+Solver-Ready Gradient Gates
+---------------------------
+
+.. automodule:: spectraxgk.solver_ready_gradient_gates
+   :members:
+   :private-members:
+
+Solver VMEC/Boozer Gradient Gates
+---------------------------------
+
+.. automodule:: spectraxgk.solver_vmec_boozer_gradient_gates
+   :members:
+   :private-members:
+
 Solver VMEC-State Helpers
 -------------------------
 

@@ -146,7 +146,8 @@ High-Risk Module Split Plan
   helpers, VMEC/Boozer objective-table plumbing, and VMEC/Boozer
   finite-difference/line-search gates now live in
   ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
-  ``solver_gradient_gates.py``, ``solver_vmec_state.py``,
+  ``solver_gradient_gates.py``, ``solver_ready_gradient_gates.py``,
+  ``solver_vmec_boozer_gradient_gates.py``, ``solver_vmec_state.py``,
   ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``,
   ``solver_vmec_boozer_fd_gates.py``, and
   ``solver_vmec_boozer_line_search_gates.py`` while the legacy facade keeps
