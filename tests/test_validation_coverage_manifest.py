@@ -95,6 +95,10 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.nonlinear_diagnostic_state"]["coverage_target_percent"] == 95.0
     )
     assert rows["spectraxgk.nonlinear_diagnostic_state"]["n_physics_contracts"] >= 2
+    assert rows["spectraxgk.nonlinear_explicit_step"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.nonlinear_explicit_step"]["n_numerics_contracts"] >= 2
+    assert rows["spectraxgk.nonlinear_imex"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.nonlinear_imex"]["n_physics_contracts"] >= 2
     assert "spectraxgk.nonlinear" in summary["high_priority_open"]
 
 

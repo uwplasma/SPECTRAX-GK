@@ -982,6 +982,32 @@ moved_exports = [
 fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_explicit_step"
+source_path = "src/spectraxgk/nonlinear_explicit_step.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "explicit nonlinear RK/SSP/K10 one-step policy with injected RHS and state projection"
+moved_exports = [
+  "advance_explicit_nonlinear_state",
+  "checkpoint_explicit_step",
+]
+fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_imex"
+source_path = "src/spectraxgk/nonlinear_imex.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "IMEX fixed-point predictor and GMRES solve-step policy shared by cached and diagnostic nonlinear integrations"
+moved_exports = [
+  "imex_fixed_point_guess",
+  "solve_imex_step",
+]
+fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
@@ -1129,7 +1155,7 @@ extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationR
 [[hotspots]]
 module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
-current_reason = "owns nonlinear integration policy, fixed-mode comparison conventions, output assembly, and the public facade for split RHS and diagnostic-state implementations"
+current_reason = "owns nonlinear scan orchestration, fixed-mode comparison conventions, output assembly, and the public facade for split RHS, explicit-step, IMEX, and diagnostic-state implementations"
 target_packages = [
   "spectraxgk.solvers.nonlinear.rhs",
   "spectraxgk.solvers.nonlinear.integrators",
@@ -1139,7 +1165,7 @@ target_packages = [
 public_facade = "spectraxgk.nonlinear"
 line_target = 900
 status = "active"
-existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_rhs.py", "tests/test_nonlinear_diagnostic_state.py"]
+existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_rhs.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear_imex.py"]
 planned_tests = [
   "RHS component identity tests",
   "IMEX/fixed-step/adaptive path equivalence tests",

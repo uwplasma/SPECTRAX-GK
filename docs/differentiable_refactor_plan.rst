@@ -162,7 +162,9 @@ High-Risk Module Split Plan
   monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
   IMEX state-to-diagnostic tuple assembly now lives in
   ``nonlinear_diagnostic_state.py`` with facade-injected diagnostic kernels so
-  existing debug seams remain intact.
+  existing debug seams remain intact. Explicit RK/SSP/K10 one-step policy now
+  lives in ``nonlinear_explicit_step.py`` and the shared IMEX fixed-point/GMRES
+  solve policy lives in ``nonlinear_imex.py``.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

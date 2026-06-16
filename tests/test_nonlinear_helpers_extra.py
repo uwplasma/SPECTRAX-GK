@@ -295,7 +295,9 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         dealias_mask=np.array([[True, True], [True, False], [False, True]]),
     )
     positive_cache = SimpleNamespace(ky=jnp.asarray(positive_grid.ky))
-    positive_mask = _diagnostic_omega_mode_mask(positive_grid, positive_cache, compressed_real_fft=True)
+    positive_mask = _diagnostic_omega_mode_mask(
+        positive_grid, positive_cache, compressed_real_fft=True
+    )
     np.testing.assert_array_equal(np.asarray(positive_mask), positive_grid.dealias_mask)
 
 
@@ -620,7 +622,7 @@ def test_integrate_nonlinear_builds_cache_and_rejects_bad_shape(monkeypatch) -> 
         )
 
 
-def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> None:
+def test_nonlinear_diagnostics_route_and_state_reject_imex(monkeypatch) -> None:
     monkeypatch.setattr(
         "spectraxgk.nonlinear.integrate_nonlinear_imex_diagnostics",
         lambda *args, **kwargs: ("t_imex", "diag_imex"),
@@ -679,7 +681,7 @@ def test_integrate_nonlinear_explicit_diagnostics_explicit_and_state_routes(
     assert out_state == payload
 
 
-def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
+def test_explicit_diagnostics_impl_rejects_imex_and_bad_state_rank(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -715,7 +717,9 @@ def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(
         )
 
 
-def test_integrate_nonlinear_explicit_diagnostics_forwarding_contracts(monkeypatch) -> None:
+def test_integrate_nonlinear_explicit_diagnostics_forwarding_contracts(
+    monkeypatch,
+) -> None:
     captured: dict[str, object] = {}
 
     def _fake_impl(*args, **kwargs):
@@ -723,7 +727,8 @@ def test_integrate_nonlinear_explicit_diagnostics_forwarding_contracts(monkeypat
         return ("t", "diag", "G_final", "fields_final")
 
     monkeypatch.setattr(
-        "spectraxgk.nonlinear._integrate_nonlinear_explicit_diagnostics_impl", _fake_impl
+        "spectraxgk.nonlinear._integrate_nonlinear_explicit_diagnostics_impl",
+        _fake_impl,
     )
 
     out = integrate_nonlinear_explicit_diagnostics(
@@ -809,7 +814,7 @@ def test_integrate_nonlinear_explicit_diagnostics_imex_forwarding_contracts(
     assert captured["show_progress"] is True
 
 
-def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
+def test_explicit_diagnostics_impl_applies_fixed_mode_collision_and_stride(
     monkeypatch,
 ) -> None:
     grid = SimpleNamespace(
@@ -884,7 +889,9 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
             jnp.ones((2, 1), dtype=jnp.float32) * -3.0,
         )
 
-    monkeypatch.setattr("spectraxgk.nonlinear._instantaneous_growth_rate_step", _fake_growth)
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear._instantaneous_growth_rate_step", _fake_growth
+    )
     monkeypatch.setattr(
         "spectraxgk.nonlinear.phi2_resolved",
         lambda *args, **kwargs: _resolved_tuple(),
@@ -1046,7 +1053,7 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(
     assert fields_final.phi.shape == (2, 1, 2)
 
 
-def test_explicit_gx_diagnostics_resolved_schema_and_sample_axis(monkeypatch) -> None:
+def test_explicit_diagnostics_resolved_schema_and_sample_axis(monkeypatch) -> None:
     grid = SimpleNamespace(
         ky=np.array([0.0, 0.2], dtype=float),
         kx=np.array([0.0, 0.5], dtype=float),

@@ -408,6 +408,8 @@ fast_tests = [
   "tests/test_nonlinear.py",
   "tests/test_nonlinear_rhs.py",
   "tests/test_nonlinear_diagnostic_state.py",
+  "tests/test_nonlinear_explicit_step.py",
+  "tests/test_nonlinear_imex.py",
   "tests/test_nonlinear_exb.py",
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
@@ -500,6 +502,72 @@ artifact_paths = [
 next_tests = [
   "add direct reduced free-energy balance checks after the diagnostic energy convention is split from integration scans",
   "add explicit-versus-IMEX diagnostic tuple equality checks on a shared manufactured state",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_explicit_step"
+path = "src/spectraxgk/nonlinear_explicit_step.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "explicit nonlinear RK/SSP/K10 time stepping used by transport-window audits",
+  "adaptive nonlinear diagnostic runs that compare gamma/omega between diagnostic strides",
+]
+physics_contracts = [
+  "explicit one-step policy preserves the projected spectral state convention after each stage",
+  "diagnostic gamma/omega updates remain tied to the previous time step rather than sparse diagnostic output",
+]
+numerics_contracts = [
+  "constant-RHS RK methods reduce to the expected first-order update over one step",
+  "state dtype and projection are applied after the final stage for scan-carry stability",
+]
+fast_tests = [
+  "tests/test_nonlinear_explicit_step.py",
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+]
+next_tests = [
+  "add observed-order manufactured-time-path checks for promoted explicit methods",
+  "add physical transport-window identity tests after explicit scan orchestration is split",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_imex"
+path = "src/spectraxgk/nonlinear_imex.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "semi-implicit nonlinear diagnostics and cached IMEX transport paths",
+  "operator dtype preservation under x64 and prebuilt-operator reuse tests",
+]
+physics_contracts = [
+  "IMEX solve policy keeps the nonlinear term explicit and the linear operator implicit",
+  "cached and diagnostic IMEX paths share the same fixed-point predictor and GMRES route",
+]
+numerics_contracts = [
+  "identity linear systems return the RHS with the expected state shape",
+  "fixed-point predictor applies the configured iteration count and relaxation exactly",
+]
+fast_tests = [
+  "tests/test_nonlinear_imex.py",
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/full_nonlinear_rhs_trace_summary.json",
+]
+next_tests = [
+  "add preconditioned IMEX solve residual checks with a manufactured linear operator",
+  "add explicit-versus-IMEX diagnostic parity checks in a linearized nonlinear-off limit",
 ]
 
 [[modules]]

@@ -1,3 +1,11 @@
+- 2026-06-16: Continued the nonlinear refactor by moving explicit RK/SSP/K10
+  one-step policy into `spectraxgk.nonlinear_explicit_step` and shared IMEX
+  fixed-point/GMRES solve policy into `spectraxgk.nonlinear_imex`. Added direct
+  tests for projection/dtype stability, constant-RHS RK behavior,
+  fixed-point iterations, and identity-system IMEX solves. Renamed lingering
+  non-benchmark nonlinear test names/docstrings that used comparison-code
+  terminology. Updated API docs, architecture docs, refactor manifests, and
+  validation coverage ownership.
 - 2026-06-16: Continued the nonlinear refactor by extracting nonlinear RHS
   linear-path selection and electromagnetic bracket composition into
   `spectraxgk.nonlinear_rhs`. The public `spectraxgk.nonlinear` facade still

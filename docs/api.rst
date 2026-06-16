@@ -196,6 +196,20 @@ Nonlinear RHS
    :members:
    :private-members:
 
+Nonlinear Explicit Step
+-----------------------
+
+.. automodule:: spectraxgk.nonlinear_explicit_step
+   :members:
+   :private-members:
+
+Nonlinear IMEX
+--------------
+
+.. automodule:: spectraxgk.nonlinear_imex
+   :members:
+   :private-members:
+
 Nonlinear Replicate Diagnostics
 -------------------------------
 
