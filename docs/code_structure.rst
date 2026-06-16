@@ -90,8 +90,8 @@ Physics / Numerics / IO Map
      - ``solver_objective_gradients.py``, ``solver_gradient_gates.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
-     - ``nonlinear.py``, ``nonlinear_rhs.py``, ``terms/nonlinear.py``
-     - RHS routing, bracket payload, fixed-mode, diagnostics, collision-split, transport-window tests
+     - ``nonlinear.py``, ``nonlinear_rhs.py``, ``nonlinear_diagnostic_state.py``, ``terms/nonlinear.py``
+     - RHS routing, bracket payload, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
@@ -151,6 +151,9 @@ Completed extractions:
   ``nonlinear_parallel_device_z.py``
 - nonlinear RHS composition behind the public nonlinear facade:
   ``nonlinear_rhs.py``
+- nonlinear state-to-diagnostic tuple assembly behind facade-injected
+  diagnostic kernels:
+  ``nonlinear_diagnostic_state.py``
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   candidate design, composite-control, matched-replicate, QL-seed,
   state-runbook, and variance-reduction/control-variate report helpers:

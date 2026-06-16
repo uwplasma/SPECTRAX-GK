@@ -407,6 +407,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_nonlinear.py",
   "tests/test_nonlinear_rhs.py",
+  "tests/test_nonlinear_diagnostic_state.py",
   "tests/test_nonlinear_exb.py",
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
@@ -465,6 +466,38 @@ artifact_paths = [
 next_tests = [
   "add direct free-energy reduced-limit checks once nonlinear bracket conservation tests are split from the facade",
   "add physical transport-window identity tests when production nonlinear decomposition is promoted",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_diagnostic_state"
+path = "src/spectraxgk/nonlinear_diagnostic_state.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "resolved nonlinear diagnostic schemas used by transport-window audits",
+  "explicit and IMEX nonlinear diagnostic scan parity contracts",
+]
+physics_contracts = [
+  "late-time gamma, omega, energy, particle-flux, and heat-flux observables are assembled from the same state convention in explicit and IMEX paths",
+  "resolved spectral diagnostics preserve the documented packing order for heat-flux and free-energy audits",
+]
+numerics_contracts = [
+  "disabled resolved diagnostics use scalar kernels without allocating resolved spectra",
+  "facade-injected kernels preserve monkeypatch/debug seams while keeping implementation pure-array and JAX-transformable",
+]
+fast_tests = [
+  "tests/test_nonlinear_diagnostic_state.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct reduced free-energy balance checks after the diagnostic energy convention is split from integration scans",
+  "add explicit-versus-IMEX diagnostic tuple equality checks on a shared manufactured state",
 ]
 
 [[modules]]

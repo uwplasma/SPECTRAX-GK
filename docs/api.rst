@@ -175,6 +175,13 @@ Nonlinear Diagnostics
    :members:
    :private-members:
 
+Nonlinear Diagnostic State
+--------------------------
+
+.. automodule:: spectraxgk.nonlinear_diagnostic_state
+   :members:
+   :private-members:
+
 Nonlinear Helpers
 -----------------
 

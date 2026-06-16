@@ -5,6 +5,12 @@
   behavior stay compatible. Added direct RHS routing tests, registered the
   module in API/code-structure docs and the refactor/coverage manifests, and
   kept performance claims unchanged until profiler-backed gates are rerun.
+- 2026-06-16: Continued the nonlinear refactor by extracting duplicated
+  explicit/IMEX state-to-diagnostic tuple assembly into
+  `spectraxgk.nonlinear_diagnostic_state`. The implementation receives
+  facade-injected diagnostic kernels so public monkeypatch/debug seams stay
+  intact. Added direct scalar/resolved diagnostic-packing tests and updated the
+  API docs, code-structure docs, refactor manifest, and coverage manifest.
 - 2026-06-16: Continued the differentiable solver-objective refactor by
   splitting `spectraxgk.solver_gradient_gates` into a small compatibility
   facade plus `spectraxgk.solver_ready_gradient_gates` for solver-ready

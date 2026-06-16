@@ -159,7 +159,10 @@ High-Risk Module Split Plan
   parity-preserving output schemas. The nonlinear RHS linear-path routing and
   electromagnetic bracket composition now live in ``nonlinear_rhs.py`` while
   ``spectraxgk.nonlinear`` remains the compatibility facade for public imports,
-  monkeypatch-based diagnostics, and runtime workflows.
+  monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
+  IMEX state-to-diagnostic tuple assembly now lives in
+  ``nonlinear_diagnostic_state.py`` with facade-injected diagnostic kernels so
+  existing debug seams remain intact.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
