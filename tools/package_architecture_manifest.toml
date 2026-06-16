@@ -70,7 +70,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.runtime_startup",
   "spectraxgk.solver_eigen_objectives",
   "spectraxgk.solver_geometry_objectives",
-  "spectraxgk.solver_gradient_gates",
   "spectraxgk.solver_nonlinear_window_objective",
   "spectraxgk.solver_objective_core",
   "spectraxgk.solver_objective_gradients",

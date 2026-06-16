@@ -1475,9 +1475,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.runtime_artifacts"
 path = "src/spectraxgk/runtime_artifacts.py"
-owned_modules = [
-  "spectraxgk.legacy_cetg_output",
-]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -2469,40 +2466,6 @@ artifact_paths = [
 next_tests = [
   "add parameterized invalid-window tests for steps and tail_fraction guards",
   "keep reduced-window gates separate from production nonlinear transport-window admission artifacts",
-]
-
-[[modules]]
-module = "spectraxgk.solver_gradient_gates"
-path = "src/spectraxgk/solver_gradient_gates.py"
-owner_lane = "production solver-objective geometry-gradient validation"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "stable public compatibility facade for solver-ready and VMEC/Boozer gradient gates",
-  "dependency-injected gradient-gate seams used by artifact builders and regression tests",
-]
-physics_contracts = [
-  "facade exports must preserve solver-ready and VMEC/Boozer gradient claim scopes without moving physics semantics into user code",
-  "public imports must remain stable while implementation modules stay physically separated",
-]
-numerics_contracts = [
-  "facade wrappers must preserve dependency-injected context hooks so artifact builders can audit alternate geometry plumbing",
-  "module-level exports must remain identity-compatible with the package and legacy solver-objective facade",
-]
-fast_tests = [
-  "tests/test_solver_objective_gradients.py",
-  "tests/test_solver_gradient_gate_modules.py",
-]
-artifact_paths = [
-  "docs/_static/solver_objective_gradient_gate.json",
-  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
-  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
-  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
-]
-next_tests = [
-  "keep facade identity tests in the direct implementation-module test shard",
-  "add import-compatibility checks before removing any remaining solver-objective facade exports",
 ]
 
 [[modules]]

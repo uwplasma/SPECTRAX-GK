@@ -196,7 +196,9 @@ def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:
     assert _cmd_run(args) == 9
 
 
-def test_main_shorthand_dispatches_runtime_and_legacy(monkeypatch, tmp_path: Path) -> None:
+def test_main_shorthand_dispatches_runtime_and_named_cases(
+    monkeypatch, tmp_path: Path
+) -> None:
     cfg_path = tmp_path / "case.toml"
     cfg_path.write_text("[physics]\n", encoding="utf-8")
     captured: list[list[str]] = []
@@ -1082,7 +1084,7 @@ path = "artifacts/direct_shorthand"
     assert (tmp_path / "artifacts" / "direct_shorthand.summary.json").exists()
 
 
-def test_cli_direct_config_shorthand_legacy_case_uses_run_linear_path(
+def test_cli_direct_config_shorthand_named_case_uses_run_linear_path(
     capsys, monkeypatch, tmp_path: Path
 ) -> None:
     cfg = """
@@ -1121,8 +1123,8 @@ R_over_Ln = 2.2
     code = main()
     out = capsys.readouterr().out
     assert code == 0
-    assert "starting legacy linear cyclone run" in out
-    assert "detected legacy case TOML; using run-linear path" in out
+    assert "starting named linear cyclone run" in out
+    assert "detected named case TOML; using run-linear path" in out
     assert "gamma=" in out
 
 

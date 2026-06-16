@@ -52,7 +52,6 @@
     "spectraxgk.solver_objective_sampling",
     "spectraxgk.solver_geometry_objectives",
     "spectraxgk.solver_nonlinear_window_objective",
-    "spectraxgk.solver_gradient_gates",
     "spectraxgk.solver_ready_gradient_gates",
     "spectraxgk.solver_vmec_boozer_gradient_gates",
     "spectraxgk.solver_vmec_state",
@@ -66,12 +65,12 @@
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 81,
+  "n_direct_modules": 80,
   "n_excluded_modules": 14,
-  "n_high_priority_open": 65,
-  "n_modules": 81,
-  "n_owned_modules": 81,
-  "n_package_modules": 176,
+  "n_high_priority_open": 64,
+  "n_modules": 80,
+  "n_owned_modules": 80,
+  "n_package_modules": 174,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -210,9 +209,7 @@
       "spectraxgk.runtime_diagnostics",
       "spectraxgk.runtime_startup"
     ],
-    "spectraxgk.runtime_artifacts": [
-      "spectraxgk.legacy_cetg_output"
-    ],
+    "spectraxgk.runtime_artifacts": [],
     "spectraxgk.runtime_orchestration": [
       "spectraxgk.runtime_chunks",
       "spectraxgk.runtime_results"
@@ -225,7 +222,6 @@
     ],
     "spectraxgk.solver_eigen_objectives": [],
     "spectraxgk.solver_geometry_objectives": [],
-    "spectraxgk.solver_gradient_gates": [],
     "spectraxgk.solver_nonlinear_window_objective": [],
     "spectraxgk.solver_objective_core": [],
     "spectraxgk.solver_objective_gradients": [
@@ -797,7 +793,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime_artifacts.py",
@@ -1193,20 +1189,6 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solver_nonlinear_window_objective.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "high",
-      "coverage_target_percent": 95.0,
-      "module": "spectraxgk.solver_gradient_gates",
-      "n_artifacts": 4,
-      "n_fast_tests": 2,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/solver_gradient_gates.py",
       "status": "active"
     },
     {

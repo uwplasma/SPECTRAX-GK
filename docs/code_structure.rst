@@ -99,7 +99,7 @@ Physics / Numerics / IO Map
      - ``linear.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
-     - ``solver_objective_gradients.py``, ``solver_gradient_gates.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``
+     - ``solver_objective_gradients.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
@@ -151,7 +151,7 @@ Completed extractions:
   state coefficient helpers, VMEC/Boozer objective-table plumbing, and
   VMEC/Boozer finite-difference/line-search gates:
   ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
-  ``solver_gradient_gates.py``, ``solver_ready_gradient_gates.py``,
+  ``solver_ready_gradient_gates.py``,
   ``solver_vmec_boozer_gradient_gates.py``, ``solver_vmec_state.py``,
   ``solver_vmec_boozer_objectives.py``,
   ``solver_vmec_boozer_gates.py``, ``solver_vmec_boozer_fd_gates.py``,

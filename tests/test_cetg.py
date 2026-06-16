@@ -197,7 +197,7 @@ def test_cetg_state_conversion_and_single_z_derivative_contracts() -> None:
     assert np.allclose(np.asarray(_kz_grid(grid)), 0.0)
 
 
-def test_cetg_linear_omega_max_matches_legacy_gx_formula() -> None:
+def test_cetg_linear_omega_max_matches_reference_formula() -> None:
     cfg = _base_cetg_cfg()
     geom = SlabGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)

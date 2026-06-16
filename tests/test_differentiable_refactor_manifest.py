@@ -49,7 +49,6 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
         "spectraxgk.geometry.vmec_flux_tube_reports" in summary["phase1_split_modules"]
     )
     assert "spectraxgk.geometry.vmec_tensor_mapping" in summary["phase1_split_modules"]
-    assert "spectraxgk.solver_gradient_gates" in summary["phase1_split_modules"]
     assert "spectraxgk.solver_ready_gradient_gates" in summary["phase1_split_modules"]
     assert (
         "spectraxgk.solver_vmec_boozer_gradient_gates"

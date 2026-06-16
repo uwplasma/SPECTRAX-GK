@@ -58,13 +58,13 @@
   injected diagnostic kernels so debug seams stay intact. Added direct scalar/resolved diagnostic-packing tests and updated the
   API docs, code-structure docs, refactor manifest, and coverage manifest.
 - 2026-06-16: Continued the differentiable solver-objective refactor by
-  splitting `spectraxgk.solver_gradient_gates` into a small compatibility
-  facade plus `spectraxgk.solver_ready_gradient_gates` for solver-ready
-  branch/linear-RHS gradient gates and
+  removing the temporary solver-gradient compatibility facade. The canonical
+  implementation modules are now `spectraxgk.solver_ready_gradient_gates` for
+  solver-ready branch/linear-RHS gradient gates and
   `spectraxgk.solver_vmec_boozer_gradient_gates` for mode-21 VMEC/Boozer
   frequency, quasilinear, and reduced nonlinear-window gradient gates. Added
   direct implementation-module tests for FD reports, line-search/holdout
-  gates, facade identity, and injected VMEC/Boozer gradient reports. Updated
+  gates, and injected VMEC/Boozer gradient reports. Updated
   API docs, architecture docs, refactor manifests, validation ownership, and
   README scope wording. Performance-manifest and parallel-scaling artifact
   checks were rerun; they pass while still blocking production nonlinear
@@ -79,12 +79,10 @@
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   solver-ready branch-continuity and geometry-gradient reports plus mode-21
   VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient
-  reports into
-  `spectraxgk.solver_gradient_gates`. The legacy
-  `solver_objective_gradients` facade keeps the public exports and
-  dependency-injected private context hooks, reducing the facade below one
-  thousand lines while preserving existing tests and tool imports. Focused
-  solver-objective tests, Ruff, and mypy passed locally.
+  reports into focused implementation modules. `solver_objective_gradients`
+  keeps the higher-level public objective surface and dependency-injected
+  private context hooks. Focused solver-objective tests, Ruff, and mypy passed
+  locally.
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   VMEC/Boozer finite-difference sensitivity reports, curvature-gated
   line-search gates, and held-out aggregate objective audits into
@@ -112,8 +110,7 @@
   package source. The deleted package paths are `spectraxgk.from_gx.*`,
   `spectraxgk.gx_legacy_output`, and `spectraxgk.gx_reduced_models`; callers
   should use `spectraxgk.geometry_backends.*`,
-  `spectraxgk.legacy_cetg_output`, and
-  `spectraxgk.reduced_model_contracts` instead. Legacy input aliases for
+  and `spectraxgk.reduced_model_contracts` instead. Legacy input aliases for
   helper paths, diagnostic normalization, imported-geometry model strings,
   reduced-model names, and runtime `gx_time` solver spelling were also removed
   from canonical runtime/config paths. Explicit benchmark/comparison tools keep
@@ -203,12 +200,13 @@
   EIK, runtime-config, comparison-tool, lint, and compile checks passed locally.
 
 - 2026-06-15: Continued source naming cleanup by moving generic reduced-model
-  and legacy cETG NetCDF helpers from old reference-code-named modules to
-  `spectraxgk.reduced_model_contracts` and
-  `spectraxgk.legacy_cetg_output`. Implementation tests and comparison
-  utilities now import the canonical modules. Coverage ownership moved to the canonical
-  modules and the legacy shim modules are excluded from the wide-coverage
-  ownership inventory. Focused reduced-model/cETG tests, manifest tests, lint,
+  helpers from old reference-code-named modules to
+  `spectraxgk.reduced_model_contracts`. The transitional grouped cETG NetCDF
+  output reader has since been removed so the package only carries current
+  artifact formats and validation workflows. Coverage ownership moved to the
+  canonical modules and obsolete shim modules are excluded from the
+  wide-coverage ownership inventory. Focused reduced-model/cETG tests,
+  manifest tests, lint,
   format, and compile checks passed locally.
 
 - 2026-06-15: Completed the internal imported-geometry backend package rename

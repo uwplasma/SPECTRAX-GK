@@ -478,30 +478,9 @@ fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.solver_gradient_gates"
-source_path = "src/spectraxgk/solver_gradient_gates.py"
-facade_module = "spectraxgk.solver_objective_gradients"
-status = "active"
-responsibility = "compatibility facade for solver-ready and mode-21 VMEC/Boozer solver-objective gradient gates"
-moved_exports = [
-  "VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES",
-  "VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES",
-  "VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES",
-  "linear_solver_geometry_gradient_report",
-  "solver_objective_branch_gradient_report",
-  "_mode21_vmec_boozer_linear_context",
-  "_mode21_vmec_boozer_quasilinear_features",
-  "mode21_vmec_boozer_linear_frequency_gradient_report",
-  "mode21_vmec_boozer_quasilinear_gradient_report",
-  "mode21_vmec_boozer_nonlinear_window_gradient_report",
-]
-fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.solver_ready_gradient_gates"
 source_path = "src/spectraxgk/solver_ready_gradient_gates.py"
-facade_module = "spectraxgk.solver_gradient_gates"
+facade_module = "spectraxgk.solver_objective_gradients"
 status = "active"
 responsibility = "solver-ready geometry branch-continuity and actual linear-RHS gradient gates with optional objective-evaluator hooks"
 moved_exports = [
@@ -514,7 +493,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.solver_vmec_boozer_gradient_gates"
 source_path = "src/spectraxgk/solver_vmec_boozer_gradient_gates.py"
-facade_module = "spectraxgk.solver_gradient_gates"
+facade_module = "spectraxgk.solver_objective_gradients"
 status = "active"
 responsibility = "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates"
 moved_exports = [

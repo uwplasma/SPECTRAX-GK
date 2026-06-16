@@ -8,8 +8,6 @@ import numpy as np
 import pytest
 
 from spectraxgk.solver_objective_core import solver_scalar_objective_from_vector
-import spectraxgk.solver_gradient_gates as facade
-import spectraxgk.solver_ready_gradient_gates as ready_gates
 import spectraxgk.solver_vmec_boozer_fd_gates as fd_gates
 import spectraxgk.solver_vmec_boozer_gradient_gates as vmec_gradient_gates
 import spectraxgk.solver_vmec_boozer_line_search_gates as line_search_gates
@@ -271,19 +269,7 @@ def _fake_window_metrics(
     return gamma * heat * scale, heat / kperp, gamma - kperp
 
 
-def test_split_gradient_gate_modules_preserve_facade_and_injected_reports() -> None:
-    assert (
-        facade.linear_solver_geometry_gradient_report
-        is ready_gates.linear_solver_geometry_gradient_report
-    )
-    assert (
-        facade.solver_objective_branch_gradient_report
-        is ready_gates.solver_objective_branch_gradient_report
-    )
-    assert facade.mode21_vmec_boozer_quasilinear_gradient_report is (
-        vmec_gradient_gates.mode21_vmec_boozer_quasilinear_gradient_report
-    )
-
+def test_split_gradient_gate_modules_run_injected_reports() -> None:
     frequency = vmec_gradient_gates.mode21_vmec_boozer_linear_frequency_gradient_report(
         case_name="fake",
         fd_step=1.0e-3,

@@ -203,8 +203,8 @@
   "optimization_artifact_path": "docs/_static/stellarator_itg_optimization_comparison.json",
   "optimization_scope": {
     "artifact_claims_production": false,
+    "bounded_reduced_scope": true,
     "contains_reduced_nonlinear_window_objective": true,
-    "legacy_reduced_scope": true,
     "n_reduced_nonlinear_rows": 1,
     "n_results": 3,
     "n_rows_claiming_production": 0,
