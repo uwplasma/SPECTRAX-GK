@@ -2361,6 +2361,14 @@ No long nonlinear audit should be launched from these candidates.
   streaming RHS helper. RHS assembly, profiling, comparison tools, and
   comparison tests now import the algorithmic
   ``linked_streaming_contribution`` name directly.
+- Continued the solver-objective facade reduction without changing the public
+  top-level API. Stellarator optimization and VMEC-JAX transport objective
+  source modules now import solver-objective primitives from their focused
+  owner modules directly, and VMEC/Boozer artifact builders import finite-
+  difference, line-search, gradient, sampling, and objective-name helpers from
+  the same owner modules. ``spectraxgk.__init__`` still re-exports through the
+  stable ``spectraxgk.solver_objective_gradients`` facade until the major API
+  cleanup, and the facade-specific tests keep the monkeypatch seams covered.
 - Continued the cleanup of provenance-oriented wording in source docstrings and
   docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
   species/Hermite sharding, field-coupled streaming, linked-boundary ordering,

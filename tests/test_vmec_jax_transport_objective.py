@@ -18,7 +18,7 @@ from spectraxgk import (
     vmec_jax_transport_growth_branch_locality_report_from_states,
     vmec_jax_transport_objective_from_state,
 )
-from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES
+from spectraxgk.solver_objective_core import SOLVER_OBJECTIVE_NAMES
 
 
 def _fake_geometry() -> SimpleNamespace:

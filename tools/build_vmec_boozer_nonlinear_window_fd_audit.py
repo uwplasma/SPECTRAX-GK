@@ -49,7 +49,7 @@ from spectraxgk.runtime_config import (  # noqa: E402
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
-from spectraxgk.solver_objective_gradients import _mode21_vmec_boozer_linear_context  # noqa: E402
+from spectraxgk.solver_vmec_boozer_gradient_gates import _mode21_vmec_boozer_linear_context  # noqa: E402
 
 from tools.build_nonlinear_window_fd_audit import (  # noqa: E402
     late_window_metrics,
