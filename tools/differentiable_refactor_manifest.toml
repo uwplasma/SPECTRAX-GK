@@ -115,7 +115,7 @@ doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_initialization"
 source_path = "src/spectraxgk/benchmark_initialization.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark Gaussian and moment initial-condition builders plus kinetic-reference seed policy"
 moved_exports = [
@@ -129,7 +129,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_reference"
 source_path = "src/spectraxgk/benchmark_reference.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark result containers, reference-table loaders, and reference comparison records"
 moved_exports = [
@@ -153,7 +153,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_species"
 source_path = "src/spectraxgk/benchmark_species.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark species-to-LinearParams construction and reference hypercollision/end-damping policy"
 moved_exports = [
@@ -175,7 +175,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_fit_signals"
 source_path = "src/spectraxgk/benchmark_fit_signals.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark fit-signal, mode-extraction, auto-window scoring, and diagnostic-normalization policies"
 moved_exports = [
@@ -191,7 +191,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_batching"
 source_path = "src/spectraxgk/benchmark_batching.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark scan batching and streaming-window helper policies"
 moved_exports = [
@@ -205,7 +205,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.benchmark_solver_policy"
 source_path = "src/spectraxgk/benchmark_solver_policy.py"
-facade_module = "spectraxgk.benchmark_helpers"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark solver-selection, KBM branch policy, and mode-index helpers"
 moved_exports = [

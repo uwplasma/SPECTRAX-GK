@@ -226,8 +226,8 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.benchmark_kbm``, ``spectraxgk.benchmark_tem``,
   ``spectraxgk.benchmark_kinetic``, and ``spectraxgk.benchmark_etg`` own the
   extracted family runners while ``spectraxgk.benchmarks`` remains the public
-  compatibility facade.
-  ``spectraxgk.benchmark_helpers`` retains object-identical re-exports. The
+  benchmark entry point. The obsolete benchmark helper bridge has been removed;
+  runners and tests import focused benchmark modules directly. The
   first differentiable-geometry support split also lives in this phase:
   ``spectraxgk.geometry.backend_discovery`` owns
   optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and

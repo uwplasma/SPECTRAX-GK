@@ -266,9 +266,9 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
-The first benchmark-helper split keeps ``spectraxgk.benchmark_helpers`` and
-``spectraxgk.benchmarks`` as compatibility facades while moving narrow helper
-responsibilities into ``spectraxgk.benchmark_initialization`` and
+The benchmark helper split now uses focused domain modules directly.
+Benchmark initial conditions and reference data live in
+``spectraxgk.benchmark_initialization`` and
 ``spectraxgk.benchmark_reference``. Benchmark species-to-``LinearParams``
 construction and reference hypercollision/end-damping policy live in
 ``spectraxgk.benchmark_species``. Fit-signal selection, scan batching, and

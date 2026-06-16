@@ -64,12 +64,12 @@
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 79,
+  "n_direct_modules": 78,
   "n_excluded_modules": 14,
   "n_high_priority_open": 63,
-  "n_modules": 79,
+  "n_modules": 78,
   "n_owned_modules": 80,
-  "n_package_modules": 173,
+  "n_package_modules": 172,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -81,21 +81,19 @@
     "spectraxgk.benchmark_defaults": [
       "spectraxgk.normalization"
     ],
-    "spectraxgk.benchmark_helpers": [
-      "spectraxgk.benchmark_batching",
-      "spectraxgk.benchmark_fit_signals",
-      "spectraxgk.benchmark_initialization",
-      "spectraxgk.benchmark_reference",
-      "spectraxgk.benchmark_solver_policy",
-      "spectraxgk.benchmark_species"
-    ],
     "spectraxgk.benchmark_scan": [],
     "spectraxgk.benchmarks": [
       "spectraxgk.benchmarking",
+      "spectraxgk.benchmark_batching",
       "spectraxgk.benchmark_cyclone",
       "spectraxgk.benchmark_etg",
+      "spectraxgk.benchmark_fit_signals",
+      "spectraxgk.benchmark_initialization",
       "spectraxgk.benchmark_kbm",
       "spectraxgk.benchmark_kinetic",
+      "spectraxgk.benchmark_reference",
+      "spectraxgk.benchmark_solver_policy",
+      "spectraxgk.benchmark_species",
       "spectraxgk.benchmark_tem"
     ],
     "spectraxgk.core.contracts": [
@@ -623,24 +621,10 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 6,
+      "n_owned_modules": 12,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "medium",
-      "coverage_target_percent": 95.0,
-      "module": "spectraxgk.benchmark_helpers",
-      "n_artifacts": 2,
-      "n_fast_tests": 1,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 6,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/benchmark_helpers.py",
       "status": "active"
     },
     {

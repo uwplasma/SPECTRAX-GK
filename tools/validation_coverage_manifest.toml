@@ -1020,10 +1020,16 @@ module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
   "spectraxgk.benchmarking",
+  "spectraxgk.benchmark_batching",
   "spectraxgk.benchmark_cyclone",
   "spectraxgk.benchmark_etg",
+  "spectraxgk.benchmark_fit_signals",
+  "spectraxgk.benchmark_initialization",
   "spectraxgk.benchmark_kbm",
   "spectraxgk.benchmark_kinetic",
+  "spectraxgk.benchmark_reference",
+  "spectraxgk.benchmark_solver_policy",
+  "spectraxgk.benchmark_species",
   "spectraxgk.benchmark_tem",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
@@ -1056,45 +1062,6 @@ artifact_paths = [
 next_tests = [
   "split remaining run execution blocks behind compatibility exports",
   "add manifest-backed tests that every published benchmark figure has a gate source",
-]
-
-[[modules]]
-module = "spectraxgk.benchmark_helpers"
-path = "src/spectraxgk/benchmark_helpers.py"
-owned_modules = [
-  "spectraxgk.benchmark_batching",
-  "spectraxgk.benchmark_fit_signals",
-  "spectraxgk.benchmark_initialization",
-  "spectraxgk.benchmark_reference",
-  "spectraxgk.benchmark_solver_policy",
-  "spectraxgk.benchmark_species",
-]
-owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "Cyclone, ETG, TEM, KBM, and kinetic-electron reference tables",
-  "benchmark fit-window policies used by release atlas generation",
-]
-physics_contracts = [
-  "reference loaders preserve ky ordering and sign conventions",
-  "fit-signal fallback policies remain explicit for density/phi ambiguity",
-]
-numerics_contracts = [
-  "auto-window scoring handles nonfinite and near-zero signals deterministically",
-  "batch slicing preserves ky order and requested batch size",
-]
-fast_tests = [
-  "tests/test_benchmarks_helpers.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_core_linear_atlas.png",
-  "docs/_static/validation_gate_index.json",
-]
-next_tests = [
-  "add reference-table checksum tests for every shipped CSV",
-  "split benchmark figure manifest policy after runner orchestration is smaller",
 ]
 
 [[modules]]

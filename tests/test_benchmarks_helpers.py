@@ -6,42 +6,45 @@ import numpy as np
 import pytest
 
 from spectraxgk.analysis import ModeSelection
-import spectraxgk.benchmark_batching as benchmark_batching
-import spectraxgk.benchmark_fit_signals as benchmark_fit_signals
-import spectraxgk.benchmark_helpers as benchmark_helpers
-import spectraxgk.benchmark_initialization as benchmark_initialization
-import spectraxgk.benchmark_reference as benchmark_reference
-import spectraxgk.benchmark_solver_policy as benchmark_solver_policy
-import spectraxgk.benchmark_species as benchmark_species
-from spectraxgk.benchmark_helpers import (
-    CycloneReference,
-    CycloneRunResult,
-    _apply_reference_hypercollisions,
-    _build_gaussian_profile,
-    _build_initial_condition,
-    _electron_only_params,
-    _extract_mode_only_signal,
-    _linked_boundary_end_damping,
-    _reference_hypercollision_power,
+from spectraxgk.benchmark_batching import (
     _is_array_like,
     _iter_ky_batches,
-    _kbm_use_multi_target_krylov,
-    _kinetic_reference_init_cfg,
-    _load_reference_with_header,
-    _midplane_index,
-    _normalize_growth_rate,
     _resolve_streaming_window,
+)
+from spectraxgk.benchmark_fit_signals import (
+    _extract_mode_only_signal,
+    _normalize_growth_rate,
     _score_fit_signal_auto,
     _select_fit_signal,
     _select_fit_signal_auto,
-    _two_species_params,
+)
+from spectraxgk.benchmark_initialization import (
+    _build_gaussian_profile,
+    _build_initial_condition,
+    _kinetic_reference_init_cfg,
+)
+from spectraxgk.benchmark_reference import (
+    CycloneReference,
+    CycloneRunResult,
+    _load_reference_with_header,
     compare_cyclone_to_reference,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
     load_kbm_reference,
     load_tem_reference,
+)
+from spectraxgk.benchmark_solver_policy import (
+    _kbm_use_multi_target_krylov,
+    _midplane_index,
     select_kbm_solver_auto,
+)
+from spectraxgk.benchmark_species import (
+    _apply_reference_hypercollisions,
+    _electron_only_params,
+    _linked_boundary_end_damping,
+    _reference_hypercollision_power,
+    _two_species_params,
 )
 from spectraxgk.config import (
     InitializationConfig,
@@ -107,91 +110,6 @@ def test_reference_loaders_return_data() -> None:
         ref = loader()
         assert ref.ky.size > 0
         assert ref.gamma.shape == ref.omega.shape == ref.ky.shape
-
-
-def test_split_benchmark_helper_reexports_preserve_public_import_identity() -> None:
-    assert (
-        benchmark_helpers._build_gaussian_profile
-        is benchmark_initialization._build_gaussian_profile
-    )
-    assert (
-        benchmark_helpers._build_initial_condition
-        is benchmark_initialization._build_initial_condition
-    )
-    assert (
-        benchmark_helpers._kinetic_reference_init_cfg
-        is benchmark_initialization._kinetic_reference_init_cfg
-    )
-    assert benchmark_helpers.CycloneReference is benchmark_reference.CycloneReference
-    assert benchmark_helpers.CycloneRunResult is benchmark_reference.CycloneRunResult
-    assert benchmark_helpers.CycloneScanResult is benchmark_reference.CycloneScanResult
-    assert benchmark_helpers.LinearRunResult is benchmark_reference.LinearRunResult
-    assert benchmark_helpers.LinearScanResult is benchmark_reference.LinearScanResult
-    assert (
-        benchmark_helpers.load_cyclone_reference
-        is benchmark_reference.load_cyclone_reference
-    )
-    assert (
-        benchmark_helpers.compare_cyclone_to_reference
-        is benchmark_reference.compare_cyclone_to_reference
-    )
-    assert (
-        benchmark_helpers._reference_hypercollision_power
-        is benchmark_species._reference_hypercollision_power
-    )
-    assert (
-        benchmark_helpers._apply_reference_hypercollisions
-        is benchmark_species._apply_reference_hypercollisions
-    )
-    assert (
-        benchmark_helpers._linked_boundary_end_damping
-        is benchmark_species._linked_boundary_end_damping
-    )
-    assert (
-        benchmark_helpers._two_species_params is benchmark_species._two_species_params
-    )
-    assert (
-        benchmark_helpers._electron_only_params
-        is benchmark_species._electron_only_params
-    )
-    assert callable(benchmark_helpers._select_fit_signal)
-    assert callable(benchmark_helpers._select_fit_signal_auto)
-    assert callable(benchmark_helpers._score_fit_signal_auto)
-    assert (
-        benchmark_helpers._select_fit_signal
-        is not benchmark_fit_signals._select_fit_signal
-    )
-    assert (
-        benchmark_helpers._select_fit_signal_auto
-        is not benchmark_fit_signals._select_fit_signal_auto
-    )
-    assert (
-        benchmark_helpers._score_fit_signal_auto
-        is not benchmark_fit_signals._score_fit_signal_auto
-    )
-    assert (
-        benchmark_helpers._extract_mode_only_signal
-        is benchmark_fit_signals._extract_mode_only_signal
-    )
-    assert (
-        benchmark_helpers._normalize_growth_rate
-        is benchmark_fit_signals._normalize_growth_rate
-    )
-    assert benchmark_helpers._is_array_like is benchmark_batching._is_array_like
-    assert benchmark_helpers._iter_ky_batches is benchmark_batching._iter_ky_batches
-    assert (
-        benchmark_helpers._resolve_streaming_window
-        is benchmark_batching._resolve_streaming_window
-    )
-    assert benchmark_helpers._midplane_index is benchmark_solver_policy._midplane_index
-    assert (
-        benchmark_helpers.select_kbm_solver_auto
-        is benchmark_solver_policy.select_kbm_solver_auto
-    )
-    assert (
-        benchmark_helpers._kbm_use_multi_target_krylov
-        is benchmark_solver_policy._kbm_use_multi_target_krylov
-    )
 
 
 def test_checked_in_references_keep_literature_scale_and_sign_conventions() -> None:
@@ -406,90 +324,6 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
     np.testing.assert_allclose(signal, signals["density"])
     assert gamma == 0.4
     assert omega == 0.5
-
-
-def test_benchmark_helper_legacy_facade_monkeypatch_hooks(monkeypatch) -> None:
-    """Facade monkeypatch hooks should still route into focused helpers."""
-
-    phi_t = np.ones((3, 1, 1, 1), dtype=np.complex128)
-    density_t = 2.0 * phi_t
-    sel = ModeSelection(ky_index=0, kx_index=0)
-    phi_signal = np.array([np.nan, np.nan, np.nan], dtype=np.complex128)
-    density_signal = np.array([1.0, 2.0, 3.0], dtype=np.complex128)
-
-    def fake_extract(arr, _sel, method):
-        assert method == "project"
-        return density_signal if arr is density_t else phi_signal
-
-    monkeypatch.setattr(benchmark_helpers, "extract_mode_time_series", fake_extract)
-    signal = benchmark_helpers._select_fit_signal(
-        phi_t, density_t, sel, fit_signal="phi", mode_method="project"
-    )
-    np.testing.assert_allclose(signal, density_signal)
-
-    def fake_fit(_t, signal, **_kwargs):
-        if np.allclose(signal, density_signal):
-            return 0.3, 0.4, 0.0, 2.0, 0.95, 0.8
-        return 0.1, 0.2, 0.0, 2.0, 0.5, 0.1
-
-    monkeypatch.setattr(benchmark_helpers, "fit_growth_rate_auto_with_stats", fake_fit)
-    gamma, omega, score = benchmark_helpers._score_fit_signal_auto(
-        np.array([0.0, 1.0, 2.0]),
-        density_signal,
-        tmin=None,
-        tmax=None,
-        window_fraction=0.5,
-        min_points=2,
-        start_fraction=0.2,
-        growth_weight=1.0,
-        require_positive=True,
-        min_amp_fraction=0.0,
-        max_amp_fraction=1.0,
-        window_method="rolling",
-        max_fraction=1.0,
-        end_fraction=1.0,
-        num_windows=3,
-        phase_weight=0.5,
-        length_weight=0.0,
-        min_r2=0.0,
-        late_penalty=0.0,
-        min_slope=None,
-        min_slope_frac=0.0,
-        slope_var_weight=0.0,
-    )
-    assert (gamma, omega) == pytest.approx((0.3, 0.4))
-    assert score == pytest.approx(0.95 + 0.5 * 0.8 + 0.3)
-
-    signal, name, gamma, omega = benchmark_helpers._select_fit_signal_auto(
-        np.array([0.0, 1.0, 2.0]),
-        phi_t,
-        density_t,
-        sel,
-        mode_method="project",
-        tmin=None,
-        tmax=None,
-        window_fraction=0.5,
-        min_points=2,
-        start_fraction=0.2,
-        growth_weight=1.0,
-        require_positive=True,
-        min_amp_fraction=0.0,
-        max_amp_fraction=1.0,
-        window_method="rolling",
-        max_fraction=1.0,
-        end_fraction=1.0,
-        num_windows=3,
-        phase_weight=0.5,
-        length_weight=0.0,
-        min_r2=0.0,
-        late_penalty=0.0,
-        min_slope=None,
-        min_slope_frac=0.0,
-        slope_var_weight=0.0,
-    )
-    np.testing.assert_allclose(signal, density_signal)
-    assert name == "density"
-    assert (gamma, omega) == pytest.approx((0.3, 0.4))
 
 
 def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:

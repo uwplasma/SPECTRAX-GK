@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import jax.numpy as jnp
 
-import spectraxgk.benchmark_helpers as benchmark_helpers
+import spectraxgk.benchmark_fit_signals as benchmark_fit_signals
 import spectraxgk.benchmark_kbm as benchmark_kbm
 import spectraxgk.benchmark_kinetic as benchmark_kinetic
 import spectraxgk.benchmark_tem as benchmark_tem
@@ -213,7 +213,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
         assert method == "z_index"
         return valid if arr is density else invalid
 
-    monkeypatch.setattr(benchmark_helpers, "extract_mode_time_series", fake_extract)
+    monkeypatch.setattr(benchmark_fit_signals, "extract_mode_time_series", fake_extract)
     np.testing.assert_allclose(
         benchmarks._select_fit_signal(
             phi, density, sel, fit_signal="phi", mode_method="z_index"
@@ -236,7 +236,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
         return invalid if arr is density else valid
 
     monkeypatch.setattr(
-        benchmark_helpers, "extract_mode_time_series", fake_density_invalid
+        benchmark_fit_signals, "extract_mode_time_series", fake_density_invalid
     )
     np.testing.assert_allclose(
         benchmarks._select_fit_signal(
@@ -246,7 +246,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(
-        benchmark_helpers, "extract_mode_time_series", lambda *_args, **_kwargs: invalid
+        benchmark_fit_signals, "extract_mode_time_series", lambda *_args, **_kwargs: invalid
     )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
         zero_density = benchmarks._select_fit_signal(
@@ -289,14 +289,14 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     signal = np.exp(0.1 * t)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad window")),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.0, 0.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (np.nan, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
@@ -305,7 +305,7 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     assert score == -np.inf
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (-0.1, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
@@ -316,14 +316,14 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     )
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.1, 1.0, 0.0, 1.0, 0.7, 1.0),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.1, 1.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.2, 1.0, 0.0, 1.0, 0.9, 0.5),
     )

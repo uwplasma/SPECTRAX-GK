@@ -2223,22 +2223,20 @@ No long nonlinear audit should be launched from these candidates.
   now owns benchmark Gaussian/moment initial-condition builders and the kinetic
   reference seed policy; ``spectraxgk.benchmark_reference`` now owns benchmark
   result containers, reference-table loaders, and reference comparison records.
-  ``spectraxgk.benchmark_helpers`` remains the compatibility facade with
-  object-identical re-exports, and the refactor manifest now validates these
-  implemented split modules with source paths, moved exports, tests, and docs.
+  The refactor manifest validates these implemented split modules with source
+  paths, moved exports, tests, and docs.
 - Extended the same benchmark-helper refactor tranche with
   ``spectraxgk.benchmark_species``. The new module owns benchmark
   species-to-``LinearParams`` builders plus reference hypercollision and
-  linked-end damping policy. ``spectraxgk.benchmark_helpers`` continues to
-  provide object-identical re-exports, and the manifest now tracks three
-  implemented Phase-1 split modules for benchmark helpers.
-- Completed the benchmark-helper Phase-1 split by reducing
-  ``spectraxgk.benchmark_helpers`` to a compatibility facade. Fit-signal and
-  normalization policies now live in ``spectraxgk.benchmark_fit_signals``, scan
-  batching/window helpers live in ``spectraxgk.benchmark_batching``, and
-  solver-selection/KBM branch policies live in
-  ``spectraxgk.benchmark_solver_policy``. Import-identity tests now cover every
-  moved helper symbol before any benchmark-family runner is extracted.
+  linked-end damping policy. The manifest now tracks three implemented Phase-1
+  split modules for benchmark helper behavior.
+- Completed the benchmark-helper Phase-1 split by making the focused domain
+  modules canonical. Fit-signal and normalization policies now live in
+  ``spectraxgk.benchmark_fit_signals``, scan batching/window helpers live in
+  ``spectraxgk.benchmark_batching``, and solver-selection/KBM branch policies
+  live in ``spectraxgk.benchmark_solver_policy``. Benchmark runners import those
+  modules directly, while ``spectraxgk.benchmarks`` remains the public benchmark
+  entry point.
 - Continued Phase 1 of the differentiable architecture refactor with the first
   behavior-preserving differentiable-geometry support split. Optional backend
   discovery, local-checkout import precedence, JAX dtype selection, and tracer

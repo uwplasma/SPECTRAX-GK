@@ -21,7 +21,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.benchmark_defaults",
   "spectraxgk.benchmark_etg",
   "spectraxgk.benchmark_fit_signals",
-  "spectraxgk.benchmark_helpers",
   "spectraxgk.benchmark_initialization",
   "spectraxgk.benchmark_kbm",
   "spectraxgk.benchmark_kinetic",
