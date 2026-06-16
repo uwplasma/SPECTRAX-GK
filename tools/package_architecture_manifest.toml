@@ -76,7 +76,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.solver_objective_sampling",
   "spectraxgk.solver_ready_gradient_gates",
   "spectraxgk.solver_vmec_boozer_fd_gates",
-  "spectraxgk.solver_vmec_boozer_gates",
   "spectraxgk.solver_vmec_boozer_gradient_gates",
   "spectraxgk.solver_vmec_boozer_line_search_gates",
   "spectraxgk.solver_vmec_boozer_objectives",

@@ -60,7 +60,6 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
         in summary["phase1_split_modules"]
     )
     assert "spectraxgk.solver_vmec_boozer_objectives" in summary["phase1_split_modules"]
-    assert "spectraxgk.solver_vmec_boozer_gates" in summary["phase1_split_modules"]
     assert "spectraxgk.operators.nonlinear.rhs" in summary["phase1_split_modules"]
     assert (
         "spectraxgk.operators.nonlinear.diagnostic_state"

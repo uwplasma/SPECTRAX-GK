@@ -159,7 +159,7 @@ High-Risk Module Split Plan
   ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
   ``solver_ready_gradient_gates.py``,
   ``solver_vmec_boozer_gradient_gates.py``, ``solver_vmec_state.py``,
-  ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_gates.py``,
+  ``solver_vmec_boozer_objectives.py``,
   ``solver_vmec_boozer_fd_gates.py``, and
   ``solver_vmec_boozer_line_search_gates.py`` while
   ``solver_objective_gradients.py`` remains the higher-level public objective

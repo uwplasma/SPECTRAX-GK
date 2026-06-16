@@ -72,10 +72,10 @@
 - 2026-06-15: Continued the VMEC/Boozer gate refactor by splitting
   finite-difference report construction into
   `spectraxgk.solver_vmec_boozer_fd_gates` and line-search/held-out audit
-  logic into `spectraxgk.solver_vmec_boozer_line_search_gates`. The
-  `solver_vmec_boozer_gates` facade now preserves public imports and
-  dependency-injected hook seams while dropping to a small wrapper module.
-  Focused solver-objective tests, Ruff, and mypy passed locally.
+  logic into `spectraxgk.solver_vmec_boozer_line_search_gates`. The temporary
+  wrapper module has since been removed; `solver_objective_gradients` imports
+  the focused gate modules directly while preserving dependency-injected hook
+  seams. Focused solver-objective tests, Ruff, and mypy passed locally.
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   solver-ready branch-continuity and geometry-gradient reports plus mode-21
   VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient
@@ -86,12 +86,11 @@
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   VMEC/Boozer finite-difference sensitivity reports, curvature-gated
   line-search gates, and held-out aggregate objective audits into
-  `spectraxgk.solver_vmec_boozer_gates`. The legacy
-  `solver_objective_gradients` facade now delegates through dependency-injected
-  wrappers so public imports and monkeypatch-based validation tests keep
-  working. Focused solver-objective tests, refactor/coverage manifest tests,
-  Ruff, mypy, docs build with warnings-as-errors, and release-readiness checks
-  passed locally.
+  focused FD and line-search gate modules. `solver_objective_gradients` now
+  delegates to those modules directly through dependency-injected wrappers so
+  public objective imports and validation tests keep working. Focused
+  solver-objective tests, refactor/coverage manifest tests, Ruff, mypy, docs
+  build with warnings-as-errors, and release-readiness checks passed locally.
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   VMEC/Boozer objective option splitting, objective-table construction, sample
   metadata, and scalar reductions into
