@@ -2377,6 +2377,13 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.operators.linear.cache`` directly. Integrator-facing imports
   remain on ``spectraxgk.linear`` until linear RHS/integration entry points are
   split behind their own public API.
+- Continued the same linear-facade reduction through nonlinear, runtime,
+  sharded-integration, Krylov, benchmark-case, and solver-gradient support
+  modules. These internals now import linear data classes, cache builders,
+  damping policies, and term-conversion helpers from
+  ``spectraxgk.operators.linear.params`` and
+  ``spectraxgk.operators.linear.cache``. Only actual public RHS/integrator entry
+  points remain routed through ``spectraxgk.linear``.
 - Continued the cleanup of provenance-oriented wording in source docstrings and
   docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
   species/Hermite sharding, field-coupled streaming, linked-boundary ordering,
