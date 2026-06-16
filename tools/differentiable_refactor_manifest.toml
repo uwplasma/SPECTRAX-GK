@@ -1220,67 +1220,67 @@ facade_module = "spectraxgk.operators"
 status = "active"
 responsibility = "Hermite streaming kernel exposed through the linear operator package facade"
 moved_exports = ["hermite_streaming"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear.py"]
+fast_tests = ["tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.params"
 source_path = "src/spectraxgk/operators/linear/params.py"
-facade_module = "spectraxgk.linear_params"
+facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linear parameter pytrees, term toggles, validation/coercion helpers, and term-config conversions"
 moved_exports = ["LinearParams", "LinearTerms", "linear_terms_to_term_config", "term_config_to_linear_terms"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.linked"
 source_path = "src/spectraxgk/operators/linear/linked.py"
-facade_module = "spectraxgk.linear_linked"
+facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linked-boundary FFT maps, signed spectral-index mapping, and linked-end damping profiles"
 moved_exports = ["_build_linked_fft_maps", "_build_linked_end_damping_profile", "_signed_to_index"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.moments"
 source_path = "src/spectraxgk/operators/linear/moments.py"
-facade_module = "spectraxgk.linear_moments"
+facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "Hermite-Laguerre moment operators, field-coupling primitives, and quasineutrality field solve helpers"
 moved_exports = ["build_H", "quasineutrality_phi", "streaming_term", "grad_z_periodic"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.cache"
 source_path = "src/spectraxgk/operators/linear/cache.py"
-facade_module = "spectraxgk.linear_cache"
+facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linear geometry, gyroaverage, damping, linked-boundary, and moment-cache construction"
 moved_exports = ["LinearCache", "build_linear_cache", "collision_damping", "hypercollision_damping"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.solvers.linear.krylov"
 source_path = "src/spectraxgk/solvers/linear/krylov.py"
-facade_module = "spectraxgk.linear_krylov"
+facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "matrix-free Krylov eigenvalue/eigenvector solve policies for linear gyrokinetic operators"
 moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear.py"]
+fast_tests = ["tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.solvers.linear.parallel"
 source_path = "src/spectraxgk/solvers/linear/parallel.py"
-facade_module = "spectraxgk.linear_parallel"
+facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 moved_exports = ["linear_rhs_parallel_cached", "linear_rhs_streaming_velocity_sharded", "linear_rhs_electrostatic_slices_velocity_sharded"]
-fast_tests = ["tests/test_linear_package_facades.py", "tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 

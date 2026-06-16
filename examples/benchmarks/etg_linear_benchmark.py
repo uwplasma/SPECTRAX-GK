@@ -17,7 +17,7 @@ from spectraxgk import (
     run_scan_and_mode,
     scan_comparison_figure,
 )
-from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 
 def _etg_resolution_policy(ky: float) -> tuple[int, int]:

@@ -14,7 +14,7 @@ from spectraxgk.linear import (
     build_linear_cache,
     linear_terms_to_term_config,
 )
-from spectraxgk import linear_krylov as lk
+import spectraxgk.solvers.linear.krylov as lk
 
 
 def _tiny_krylov_setup(*, linked: bool = False):

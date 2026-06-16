@@ -70,8 +70,8 @@
   "n_excluded_modules": 14,
   "n_high_priority_open": 65,
   "n_modules": 81,
-  "n_owned_modules": 91,
-  "n_package_modules": 186,
+  "n_owned_modules": 85,
+  "n_package_modules": 180,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -135,7 +135,6 @@
       "spectraxgk.cetg",
       "spectraxgk.grids",
       "spectraxgk.gyroaverage",
-      "spectraxgk.linear_krylov",
       "spectraxgk.operators.linear.streaming",
       "spectraxgk.solvers.linear.krylov",
       "spectraxgk.secondary",
@@ -181,18 +180,10 @@
     "spectraxgk.nonlinear_parallel_spectral_core": [],
     "spectraxgk.nonlinear_replicate_diagnostics": [],
     "spectraxgk.nonlinear_replicate_followup": [],
-    "spectraxgk.operators.linear.cache": [
-      "spectraxgk.linear_cache"
-    ],
-    "spectraxgk.operators.linear.linked": [
-      "spectraxgk.linear_linked"
-    ],
-    "spectraxgk.operators.linear.moments": [
-      "spectraxgk.linear_moments"
-    ],
-    "spectraxgk.operators.linear.params": [
-      "spectraxgk.linear_params"
-    ],
+    "spectraxgk.operators.linear.cache": [],
+    "spectraxgk.operators.linear.linked": [],
+    "spectraxgk.operators.linear.moments": [],
+    "spectraxgk.operators.linear.params": [],
     "spectraxgk.operators.nonlinear.diagnostic_state": [
       "spectraxgk.nonlinear_diagnostic_state"
     ],
@@ -259,9 +250,7 @@
     "spectraxgk.solver_vmec_boozer_line_search_gates": [],
     "spectraxgk.solver_vmec_boozer_objectives": [],
     "spectraxgk.solver_vmec_state": [],
-    "spectraxgk.solvers.linear.parallel": [
-      "spectraxgk.linear_parallel"
-    ],
+    "spectraxgk.solvers.linear.parallel": [],
     "spectraxgk.solvers.nonlinear.explicit": [
       "spectraxgk.nonlinear_explicit_step"
     ],
@@ -354,7 +343,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 17,
+      "n_owned_modules": 16,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/linear.py",
@@ -368,7 +357,7 @@
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/linear/cache.py",
@@ -382,7 +371,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/linear/moments.py",
@@ -396,7 +385,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/linear/params.py",
@@ -410,7 +399,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/linear/linked.py",
@@ -424,7 +413,7 @@
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solvers/linear/parallel.py",

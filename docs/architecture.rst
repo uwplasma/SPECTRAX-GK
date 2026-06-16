@@ -9,11 +9,10 @@ Core modules
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
 - ``spectraxgk.linear``: public linear API, field solves, RHS kernels, and integrators that call modular RHS assembly.
-- ``spectraxgk.linear_cache``: geometry-dependent linear cache construction, gyroaverage tables, and collision/hypercollision damping factors.
-- ``spectraxgk.linear_linked``: linked-boundary FFT maps and end-damping profiles for field-aligned linear operators.
-- ``spectraxgk.linear_moments``: Hermite/Laguerre ladder operators, quasineutrality, and gyrokinetic-field variable construction.
-- ``spectraxgk.linear_params``: linear parameter pytrees, term toggles, and validation/coercion helpers.
-- ``spectraxgk.linear_parallel``: gated velocity-parallel linear RHS helpers and disabled-by-default parallel dispatcher.
+- ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
+  Hermite/Laguerre moment operators, and linear parameter pytrees.
+- ``spectraxgk.solvers.linear``: matrix-free eigensolver policy and
+  gated velocity-parallel linear RHS dispatch.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
 - ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,

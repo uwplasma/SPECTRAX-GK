@@ -344,7 +344,7 @@
           "exists": true,
           "name": "linear cache module",
           "passed": true,
-          "path": "src/spectraxgk/linear_cache.py",
+          "path": "src/spectraxgk/operators/linear/cache.py",
           "required": true,
           "snippet": null
         },
@@ -352,7 +352,7 @@
           "exists": true,
           "name": "linear moments module",
           "passed": true,
-          "path": "src/spectraxgk/linear_moments.py",
+          "path": "src/spectraxgk/operators/linear/moments.py",
           "required": true,
           "snippet": null
         },
@@ -360,7 +360,7 @@
           "exists": true,
           "name": "linear params module",
           "passed": true,
-          "path": "src/spectraxgk/linear_params.py",
+          "path": "src/spectraxgk/operators/linear/params.py",
           "required": true,
           "snippet": null
         },
@@ -368,7 +368,7 @@
           "exists": true,
           "name": "linear parallel module",
           "passed": true,
-          "path": "src/spectraxgk/linear_parallel.py",
+          "path": "src/spectraxgk/solvers/linear/parallel.py",
           "required": true,
           "snippet": null
         },

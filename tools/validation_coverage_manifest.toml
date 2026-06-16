@@ -212,7 +212,6 @@ owned_modules = [
   "spectraxgk.cetg",
   "spectraxgk.grids",
   "spectraxgk.gyroaverage",
-  "spectraxgk.linear_krylov",
   "spectraxgk.operators.linear.streaming",
   "spectraxgk.solvers.linear.krylov",
   "spectraxgk.secondary",
@@ -261,9 +260,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.linear.cache"
 path = "src/spectraxgk/operators/linear/cache.py"
-owned_modules = [
-  "spectraxgk.linear_cache",
-]
 owner_lane = "linear geometry cache construction and damping factors"
 status = "active"
 coverage_priority = "medium"
@@ -291,15 +287,12 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct cache-construction fixtures for sampled geometry, linked geometry, and multispecies damping paths",
-  "keep spectraxgk.linear cache exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public cache exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
 module = "spectraxgk.operators.linear.moments"
 path = "src/spectraxgk/operators/linear/moments.py"
-owned_modules = [
-  "spectraxgk.linear_moments",
-]
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
 status = "active"
 coverage_priority = "medium"
@@ -328,15 +321,12 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct finite-difference checks for grad_z_periodic and streaming_term on analytic waves",
-  "keep spectraxgk.linear moment exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public moment exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
 module = "spectraxgk.operators.linear.params"
 path = "src/spectraxgk/operators/linear/params.py"
-owned_modules = [
-  "spectraxgk.linear_params",
-]
 owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
 status = "active"
 coverage_priority = "medium"
@@ -363,15 +353,12 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct pytree round-trip tests for LinearParams and LinearTerms after any dataclass field changes",
-  "keep spectraxgk.linear re-exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public parameter exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
 module = "spectraxgk.operators.linear.linked"
 path = "src/spectraxgk/operators/linear/linked.py"
-owned_modules = [
-  "spectraxgk.linear_linked",
-]
 owner_lane = "linked-boundary FFT maps and end-damping profiles"
 status = "active"
 coverage_priority = "medium"
@@ -404,9 +391,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.linear.parallel"
 path = "src/spectraxgk/solvers/linear/parallel.py"
-owned_modules = [
-  "spectraxgk.linear_parallel",
-]
 owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 status = "active"
 coverage_priority = "medium"
@@ -433,7 +417,7 @@ artifact_paths = [
   "docs/_static/linear_rhs_electrostatic_slices_gate.json",
 ]
 next_tests = [
-  "keep spectraxgk.linear parallel exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public parallel exports documented while developer helpers live in solvers.linear",
   "extend dispatch-policy tests when new velocity or domain-parallel backends are promoted",
 ]
 

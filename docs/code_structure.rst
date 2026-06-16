@@ -173,11 +173,11 @@ Completed extractions:
   ``nonlinear_explicit_step.py`` and ``nonlinear_imex.py`` as compatibility
   facades
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
-  pytrees, Krylov eigensolver policy, and velocity-parallel RHS dispatch now
-  live under ``operators/linear/`` and ``solvers/linear/``. The root
-  ``linear_cache.py``, ``linear_linked.py``, ``linear_moments.py``,
-  ``linear_params.py``, ``linear_krylov.py``, and ``linear_parallel.py`` files
-  remain compatibility facades.
+  pytrees, Krylov eigensolver policy, and velocity-parallel RHS dispatch live
+  under ``operators/linear/`` and ``solvers/linear/``. The obsolete root
+  ``linear_*`` helper shims were removed; normal users should use
+  ``spectraxgk.linear`` for the public linear API or import focused developer
+  helpers from the domain packages.
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   candidate design, composite-control, matched-replicate, QL-seed,
   state-runbook, and variance-reduction/control-variate report helpers:

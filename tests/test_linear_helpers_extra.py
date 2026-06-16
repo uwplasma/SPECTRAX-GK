@@ -100,27 +100,27 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
     assert _resolve_implicit_preconditioner(fn) is fn
 
 
-def test_linear_linked_helpers_preserve_legacy_exports() -> None:
+def test_linear_linked_helpers_preserve_public_exports() -> None:
     for name in linear_linked.__all__:
         assert getattr(linear_mod, name) is getattr(linear_linked, name)
 
 
-def test_linear_param_helpers_preserve_legacy_exports() -> None:
+def test_linear_param_helpers_preserve_public_exports() -> None:
     for name in linear_params.__all__:
         assert getattr(linear_mod, name) is getattr(linear_params, name)
 
 
-def test_linear_cache_helpers_preserve_legacy_exports() -> None:
+def test_linear_cache_helpers_preserve_public_exports() -> None:
     for name in linear_cache.__all__:
         assert getattr(linear_mod, name) is getattr(linear_cache, name)
 
 
-def test_linear_moment_helpers_preserve_legacy_exports() -> None:
+def test_linear_moment_helpers_preserve_public_exports() -> None:
     for name in linear_moments.__all__:
         assert getattr(linear_mod, name) is getattr(linear_moments, name)
 
 
-def test_linear_parallel_helpers_preserve_legacy_exports() -> None:
+def test_linear_parallel_helpers_preserve_public_exports() -> None:
     for name in linear_parallel.__all__:
         assert getattr(linear_mod, name) is getattr(linear_parallel, name)
 
