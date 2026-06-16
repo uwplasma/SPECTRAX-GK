@@ -131,7 +131,6 @@ Linear Operators
 ----------------
 
 .. automodule:: spectraxgk.operators.linear
-   :members:
 
 Linear
 ------
@@ -142,35 +141,42 @@ Linear
 Linear Linked Boundaries
 ------------------------
 
-.. automodule:: spectraxgk.linear_linked
+.. automodule:: spectraxgk.operators.linear.linked
    :members:
    :private-members:
 
 Linear Cache
 ------------
 
-.. automodule:: spectraxgk.linear_cache
+.. automodule:: spectraxgk.operators.linear.cache
    :members:
    :private-members:
 
 Linear Moments
 --------------
 
-.. automodule:: spectraxgk.linear_moments
+.. automodule:: spectraxgk.operators.linear.moments
    :members:
    :private-members:
 
 Linear Parameters
 -----------------
 
-.. automodule:: spectraxgk.linear_params
+.. automodule:: spectraxgk.operators.linear.params
    :members:
    :private-members:
 
 Linear Parallel RHS
 -------------------
 
-.. automodule:: spectraxgk.linear_parallel
+.. automodule:: spectraxgk.solvers.linear.parallel
+   :members:
+   :private-members:
+
+Linear Krylov Solvers
+---------------------
+
+.. automodule:: spectraxgk.solvers.linear.krylov
    :members:
    :private-members:
 

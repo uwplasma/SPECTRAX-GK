@@ -112,7 +112,9 @@ required_domain_packages = [
   "spectraxgk.core",
   "spectraxgk.geometry",
   "spectraxgk.operators",
+  "spectraxgk.operators.linear",
   "spectraxgk.solvers",
+  "spectraxgk.solvers.linear",
 ]
 required_docs = [
   "docs/architecture_refactor_plan.rst",

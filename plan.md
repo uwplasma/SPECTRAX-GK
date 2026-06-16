@@ -2373,3 +2373,17 @@ No long nonlinear audit should be launched from these candidates.
   validated by separate release, docs, artifact, and smoke-test gates. This
   should keep external Codecov patch status from failing on non-package cleanup
   commits.
+
+### 2026-06-16 Linear Package Consolidation Tranche
+
+- Moved linear cache construction, linked-boundary maps, Hermite-Laguerre
+  moment helpers, parameter pytrees, Krylov eigensolver policy, and
+  velocity-parallel RHS dispatch into `spectraxgk.operators.linear` and
+  `spectraxgk.solvers.linear` implementation packages.
+- Kept `spectraxgk.linear_*` root modules as object-identical compatibility
+  facades and added explicit facade identity tests so documented imports remain
+  stable during the refactor.
+- Updated validation and architecture manifests, API docs, code-structure docs,
+  and release-status evidence so coverage ownership follows the new domain
+  package layout.
+

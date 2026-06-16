@@ -69,7 +69,7 @@ from spectraxgk.plotting import (
     cyclone_reference_figure,
     scan_comparison_figure,
 )
-from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 
 def _scale_steps(

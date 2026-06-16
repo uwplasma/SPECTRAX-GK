@@ -48,7 +48,7 @@ from spectraxgk.config import (
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, LinearTerms
-from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.solvers.linear.krylov import KrylovConfig
 from spectraxgk.species import Species, build_linear_params
 
 pytestmark = pytest.mark.integration

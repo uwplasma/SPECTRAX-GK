@@ -294,6 +294,22 @@
         },
         {
           "exists": true,
+          "name": "linear operator package",
+          "passed": true,
+          "path": "src/spectraxgk/operators/linear/__init__.py",
+          "required": true,
+          "snippet": "build_linear_cache"
+        },
+        {
+          "exists": true,
+          "name": "linear solver package",
+          "passed": true,
+          "path": "src/spectraxgk/solvers/linear/__init__.py",
+          "required": true,
+          "snippet": "KrylovConfig"
+        },
+        {
+          "exists": true,
           "name": "nonlinear operator package",
           "passed": true,
           "path": "src/spectraxgk/operators/nonlinear/__init__.py",
@@ -391,8 +407,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 16,
-      "required": 16
+      "passed_required": 18,
+      "required": 18
     },
     "scientific_gate_guardrails": {
       "checks": [

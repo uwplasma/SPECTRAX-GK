@@ -72,6 +72,8 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("package architecture manifest", "tools/package_architecture_manifest.toml", "allowed_root_prefix_modules"),
         EvidenceCheck("package architecture checker", "tools/check_package_architecture_manifest.py", "root-level prefix modules"),
         EvidenceCheck("operators package facade", "src/spectraxgk/operators/__init__.py", "hermite_streaming"),
+        EvidenceCheck("linear operator package", "src/spectraxgk/operators/linear/__init__.py", "build_linear_cache"),
+        EvidenceCheck("linear solver package", "src/spectraxgk/solvers/linear/__init__.py", "KrylovConfig"),
         EvidenceCheck("nonlinear operator package", "src/spectraxgk/operators/nonlinear/__init__.py", "nonlinear_rhs_cached_impl"),
         EvidenceCheck("nonlinear solver package", "src/spectraxgk/solvers/nonlinear/__init__.py", "solve_imex_step"),
         EvidenceCheck("runtime orchestration module", "src/spectraxgk/runtime_orchestration.py"),

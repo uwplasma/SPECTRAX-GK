@@ -5,8 +5,8 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk import linear_parallel
-from spectraxgk.linear_params import LinearParams, LinearTerms
+from spectraxgk.solvers.linear import parallel as linear_parallel
+from spectraxgk.operators.linear.params import LinearParams, LinearTerms
 
 
 def _state() -> jnp.ndarray:

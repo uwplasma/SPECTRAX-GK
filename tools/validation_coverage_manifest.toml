@@ -14,8 +14,10 @@ excluded_modules = [
   "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.operators.__init__",
+  "spectraxgk.operators.linear.__init__",
   "spectraxgk.operators.nonlinear.__init__",
   "spectraxgk.solvers.__init__",
+  "spectraxgk.solvers.linear.__init__",
   "spectraxgk.solvers.nonlinear.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
@@ -178,7 +180,8 @@ owned_modules = [
   "spectraxgk.grids",
   "spectraxgk.gyroaverage",
   "spectraxgk.linear_krylov",
-  "spectraxgk.operators.linear",
+  "spectraxgk.operators.linear.streaming",
+  "spectraxgk.solvers.linear.krylov",
   "spectraxgk.secondary",
   "spectraxgk.species",
   "spectraxgk.terms.assembly",
@@ -223,8 +226,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_cache"
-path = "src/spectraxgk/linear_cache.py"
+module = "spectraxgk.operators.linear.cache"
+path = "src/spectraxgk/operators/linear/cache.py"
+owned_modules = [
+  "spectraxgk.linear_cache",
+]
 owner_lane = "linear geometry cache construction and damping factors"
 status = "active"
 coverage_priority = "medium"
@@ -256,8 +262,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_moments"
-path = "src/spectraxgk/linear_moments.py"
+module = "spectraxgk.operators.linear.moments"
+path = "src/spectraxgk/operators/linear/moments.py"
+owned_modules = [
+  "spectraxgk.linear_moments",
+]
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
 status = "active"
 coverage_priority = "medium"
@@ -290,8 +299,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_params"
-path = "src/spectraxgk/linear_params.py"
+module = "spectraxgk.operators.linear.params"
+path = "src/spectraxgk/operators/linear/params.py"
+owned_modules = [
+  "spectraxgk.linear_params",
+]
 owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
 status = "active"
 coverage_priority = "medium"
@@ -322,8 +334,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_linked"
-path = "src/spectraxgk/linear_linked.py"
+module = "spectraxgk.operators.linear.linked"
+path = "src/spectraxgk/operators/linear/linked.py"
+owned_modules = [
+  "spectraxgk.linear_linked",
+]
 owner_lane = "linked-boundary FFT maps and end-damping profiles"
 status = "active"
 coverage_priority = "medium"
@@ -354,8 +369,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_parallel"
-path = "src/spectraxgk/linear_parallel.py"
+module = "spectraxgk.solvers.linear.parallel"
+path = "src/spectraxgk/solvers/linear/parallel.py"
+owned_modules = [
+  "spectraxgk.linear_parallel",
+]
 owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 status = "active"
 coverage_priority = "medium"

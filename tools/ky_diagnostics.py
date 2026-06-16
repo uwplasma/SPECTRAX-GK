@@ -69,7 +69,7 @@ from spectraxgk.linear import (
     build_linear_cache,
     integrate_linear_diagnostics,
 )
-from spectraxgk.linear_krylov import KrylovConfig, dominant_eigenpair
+from spectraxgk.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import TermConfig
 

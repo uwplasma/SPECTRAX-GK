@@ -69,6 +69,11 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     )
     assert "spectraxgk.solvers.nonlinear.explicit" in summary["phase1_split_modules"]
     assert "spectraxgk.solvers.nonlinear.imex" in summary["phase1_split_modules"]
+    assert "spectraxgk.operators.linear.cache" in summary["phase1_split_modules"]
+    assert "spectraxgk.operators.linear.moments" in summary["phase1_split_modules"]
+    assert "spectraxgk.operators.linear.params" in summary["phase1_split_modules"]
+    assert "spectraxgk.solvers.linear.krylov" in summary["phase1_split_modules"]
+    assert "spectraxgk.solvers.linear.parallel" in summary["phase1_split_modules"]
     for module in (
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",

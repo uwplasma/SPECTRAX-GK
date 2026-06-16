@@ -14,11 +14,11 @@ from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gyroaverage import J_l_all
 import spectraxgk.linear as linear_mod
-import spectraxgk.linear_cache as linear_cache
-import spectraxgk.linear_linked as linear_linked
-import spectraxgk.linear_moments as linear_moments
-import spectraxgk.linear_parallel as linear_parallel
-import spectraxgk.linear_params as linear_params
+import spectraxgk.operators.linear.cache as linear_cache
+import spectraxgk.operators.linear.linked as linear_linked
+import spectraxgk.operators.linear.moments as linear_moments
+import spectraxgk.solvers.linear.parallel as linear_parallel
+import spectraxgk.operators.linear.params as linear_params
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,

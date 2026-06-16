@@ -48,7 +48,7 @@ from spectraxgk.config import (
     KineticElectronBaseCase as KineticBaseConfig,
 )
 from spectraxgk.linear import LinearParams
-from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 
 def _linear_params() -> LinearParams:
