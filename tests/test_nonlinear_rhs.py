@@ -1,0 +1,130 @@
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+import jax.numpy as jnp
+import numpy as np
+
+from spectraxgk.nonlinear_rhs import (
+    linear_rhs_jit_for_terms_impl,
+    nonlinear_rhs_cached_impl,
+)
+from spectraxgk.terms.config import FieldState, TermConfig
+
+
+def _minimal_cache() -> SimpleNamespace:
+    return SimpleNamespace(
+        Jl=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        JlB=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m_p1=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        kx_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        ky_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        dealias_mask=jnp.ones((1, 1), dtype=bool),
+        kxfac=1.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        laguerre_j0=None,
+        laguerre_j1_over_alpha=None,
+        b=None,
+    )
+
+
+def test_linear_rhs_jit_for_terms_impl_selects_narrowest_route() -> None:
+    electrostatic = object()
+    full = object()
+
+    assert (
+        linear_rhs_jit_for_terms_impl(
+            TermConfig(apar=0.0, bpar=0.0),
+            electrostatic_rhs_fn=electrostatic,  # type: ignore[arg-type]
+            full_rhs_fn=full,  # type: ignore[arg-type]
+            is_static_zero_fn=lambda value: float(value) == 0.0,
+        )
+        is electrostatic
+    )
+    assert (
+        linear_rhs_jit_for_terms_impl(
+            TermConfig(apar=1.0, bpar=0.0),
+            electrostatic_rhs_fn=electrostatic,  # type: ignore[arg-type]
+            full_rhs_fn=full,  # type: ignore[arg-type]
+            is_static_zero_fn=lambda value: float(value) == 0.0,
+        )
+        is full
+    )
+
+
+def test_nonlinear_rhs_cached_impl_skips_bracket_when_disabled() -> None:
+    G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64))
+    calls = {"linear": 0, "nonlinear": 0}
+
+    def linear_rhs(G_in, *_args, **_kwargs):
+        calls["linear"] += 1
+        return 2.0 * G_in, fields
+
+    def nonlinear_contribution(*_args, **_kwargs):
+        calls["nonlinear"] += 1
+        raise AssertionError("nonlinear contribution should not run")
+
+    rhs, rhs_fields = nonlinear_rhs_cached_impl(
+        G,
+        _minimal_cache(),
+        SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+        TermConfig(nonlinear=0.0, apar=0.0, bpar=0.0),
+        electrostatic_rhs_fn=linear_rhs,
+        full_rhs_fn=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError()),
+        nonlinear_contribution_fn=nonlinear_contribution,
+    )
+
+    assert calls == {"linear": 1, "nonlinear": 0}
+    np.testing.assert_allclose(np.asarray(rhs), 2.0)
+    assert rhs_fields is fields
+
+
+def test_nonlinear_rhs_cached_impl_forwards_physical_bracket_payload() -> None:
+    G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    phi = jnp.ones((1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=2.0 * phi, bpar=3.0 * phi)
+    seen: dict[str, object] = {}
+
+    def linear_rhs(G_in, *_args, **_kwargs):
+        return jnp.zeros_like(G_in), fields
+
+    def nonlinear_contribution(G_in, **kwargs):
+        seen["shape"] = tuple(G_in.shape)
+        seen["apar_is_none"] = kwargs["apar"] is None
+        seen["bpar_is_none"] = kwargs["bpar"] is None
+        seen["weight"] = float(kwargs["weight"])
+        seen["apar_weight"] = kwargs["apar_weight"]
+        seen["bpar_weight"] = kwargs["bpar_weight"]
+        seen["compressed_real_fft"] = kwargs["compressed_real_fft"]
+        seen["laguerre_mode"] = kwargs["laguerre_mode"]
+        return 4.0 * jnp.ones_like(G_in)
+
+    rhs, _rhs_fields = nonlinear_rhs_cached_impl(
+        G,
+        _minimal_cache(),
+        SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+        TermConfig(nonlinear=0.25, apar=1.0, bpar=0.0),
+        compressed_real_fft=False,
+        laguerre_mode="spectral",
+        electrostatic_rhs_fn=lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError()
+        ),
+        full_rhs_fn=linear_rhs,
+        nonlinear_contribution_fn=nonlinear_contribution,
+    )
+
+    np.testing.assert_allclose(np.asarray(rhs), 4.0)
+    assert seen == {
+        "shape": tuple(G.shape),
+        "apar_is_none": False,
+        "bpar_is_none": True,
+        "weight": 0.25,
+        "apar_weight": 1.0,
+        "bpar_weight": 0.0,
+        "compressed_real_fft": False,
+        "laguerre_mode": "spectral",
+    }

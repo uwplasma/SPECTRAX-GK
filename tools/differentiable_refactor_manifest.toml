@@ -954,6 +954,20 @@ moved_exports = [
 fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.nonlinear_rhs"
+source_path = "src/spectraxgk/nonlinear_rhs.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "nonlinear RHS linear-path routing and electromagnetic bracket composition with dependency-injected facade seams"
+moved_exports = [
+  "RhsCallable",
+  "linear_rhs_jit_for_terms_impl",
+  "nonlinear_rhs_cached_impl",
+]
+fast_tests = ["tests/test_nonlinear_rhs.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
@@ -1101,7 +1115,7 @@ extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationR
 [[hotspots]]
 module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
-current_reason = "owns nonlinear RHS, integration policy, diagnostics, fixed-mode comparison conventions, and output assembly"
+current_reason = "owns nonlinear integration policy, diagnostics, fixed-mode comparison conventions, output assembly, and the public facade for the split RHS implementation"
 target_packages = [
   "spectraxgk.solvers.nonlinear.rhs",
   "spectraxgk.solvers.nonlinear.integrators",
@@ -1110,8 +1124,8 @@ target_packages = [
 ]
 public_facade = "spectraxgk.nonlinear"
 line_target = 900
-status = "planned"
-existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+status = "active"
+existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_rhs.py"]
 planned_tests = [
   "RHS component identity tests",
   "IMEX/fixed-step/adaptive path equivalence tests",

@@ -89,6 +89,8 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.solver_vmec_boozer_gradient_gates"]["n_numerics_contracts"]
         >= 2
     )
+    assert rows["spectraxgk.nonlinear_rhs"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.nonlinear_rhs"]["n_numerics_contracts"] >= 2
     assert "spectraxgk.nonlinear" in summary["high_priority_open"]
 
 

@@ -406,6 +406,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear.py",
+  "tests/test_nonlinear_rhs.py",
   "tests/test_nonlinear_exb.py",
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
@@ -432,6 +433,38 @@ next_tests = [
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",
   "close TEM branch/frequency parity before kinetic-electron W7-X nonlinear gates",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_rhs"
+path = "src/spectraxgk/nonlinear_rhs.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone, KBM, HSX, and W7-X nonlinear transport-window validation artifacts",
+  "electrostatic and electromagnetic nonlinear RHS decomposition tests",
+]
+physics_contracts = [
+  "zero nonlinear coefficient must leave the physical bracket inactive",
+  "disabled electromagnetic channels must be pruned before bracket assembly",
+]
+numerics_contracts = [
+  "electrostatic RHS path is selected when apar and bpar are statically zero",
+  "bracket payload preserves dtype, Hermite-Laguerre transforms, dealiased masks, and laguerre-mode routing",
+]
+fast_tests = [
+  "tests/test_nonlinear_rhs.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+]
+next_tests = [
+  "add direct free-energy reduced-limit checks once nonlinear bracket conservation tests are split from the facade",
+  "add physical transport-window identity tests when production nonlinear decomposition is promoted",
 ]
 
 [[modules]]

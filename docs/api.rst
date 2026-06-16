@@ -182,6 +182,13 @@ Nonlinear Helpers
    :members:
    :private-members:
 
+Nonlinear RHS
+-------------
+
+.. automodule:: spectraxgk.nonlinear_rhs
+   :members:
+   :private-members:
+
 Nonlinear Replicate Diagnostics
 -------------------------------
 

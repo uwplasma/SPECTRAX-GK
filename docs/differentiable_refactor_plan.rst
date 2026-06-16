@@ -156,7 +156,10 @@ High-Risk Module Split Plan
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
   Required gates: RHS identity, transport windows, spectral diagnostics, and
-  parity-preserving output schemas.
+  parity-preserving output schemas. The nonlinear RHS linear-path routing and
+  electromagnetic bracket composition now live in ``nonlinear_rhs.py`` while
+  ``spectraxgk.nonlinear`` remains the compatibility facade for public imports,
+  monkeypatch-based diagnostics, and runtime workflows.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

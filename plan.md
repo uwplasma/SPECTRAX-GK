@@ -1,3 +1,10 @@
+- 2026-06-16: Continued the nonlinear refactor by extracting nonlinear RHS
+  linear-path selection and electromagnetic bracket composition into
+  `spectraxgk.nonlinear_rhs`. The public `spectraxgk.nonlinear` facade still
+  injects its module-level callables so monkeypatch/debug workflows and runtime
+  behavior stay compatible. Added direct RHS routing tests, registered the
+  module in API/code-structure docs and the refactor/coverage manifests, and
+  kept performance claims unchanged until profiler-backed gates are rerun.
 - 2026-06-16: Continued the differentiable solver-objective refactor by
   splitting `spectraxgk.solver_gradient_gates` into a small compatibility
   facade plus `spectraxgk.solver_ready_gradient_gates` for solver-ready
