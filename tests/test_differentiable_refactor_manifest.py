@@ -74,6 +74,7 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     assert "spectraxgk.operators.linear.params" in summary["phase1_split_modules"]
     assert "spectraxgk.solvers.linear.krylov" in summary["phase1_split_modules"]
     assert "spectraxgk.solvers.linear.parallel" in summary["phase1_split_modules"]
+    assert "spectraxgk.workflows.cases" in summary["phase1_split_modules"]
     assert "spectraxgk.artifacts.validation" in summary["phase1_split_modules"]
     assert "spectraxgk.artifacts.io" in summary["phase1_split_modules"]
     assert "spectraxgk.artifacts.linear" in summary["phase1_split_modules"]

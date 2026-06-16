@@ -12,7 +12,7 @@ explicit.
 The long-term consolidation target is documented in
 :doc:`architecture_refactor_plan`. New refactor work should move implementation
 into domain packages such as ``operators``, ``solvers``, ``objectives``,
-``workflows``, ``io``, and ``validation`` instead of adding more root-level
+``workflows``, ``artifacts``, and ``validation`` instead of adding more root-level
 ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
 ``benchmark_*`` modules.
 
@@ -72,7 +72,10 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``runtime_artifacts.py``
    - ``artifacts/``
    - ``plotting.py``
-4. **benchmark and validation tooling**
+4. **executable workflows**
+   - ``workflows/cases.py``
+   - ``cli.py``
+5. **benchmark and validation tooling**
    - ``benchmarking.py``
    - ``benchmarks.py``
    - ``tools/*.py``
@@ -105,7 +108,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``workflows/cases.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``

@@ -21,6 +21,7 @@ excluded_modules = [
   "spectraxgk.solvers.nonlinear.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
+  "spectraxgk.workflows.__init__",
 ]
 
 [[modules]]
@@ -168,6 +169,38 @@ artifact_paths = [
 next_tests = [
   "add direct combined-ky scan orchestration fixtures that bypass the legacy runtime wrapper",
   "split CLI plotting/output dispatch once CLI ownership is available in a later tranche",
+]
+
+[[modules]]
+module = "spectraxgk.workflows.cases"
+path = "src/spectraxgk/workflows/cases.py"
+owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime TOML examples for linear and nonlinear executable workflows",
+  "default executable progress and output provenance contracts",
+]
+physics_contracts = [
+  "case workflows pass fitted linear growth/frequency and nonlinear transport settings through without altering solver physics",
+  "output workflows preserve documented linear and nonlinear artifact paths",
+]
+numerics_contracts = [
+  "TOML overrides preserve solver, time-step, sample-stride, and fit-window semantics",
+  "dependency injection preserves runtime monkeypatch seams used by regression tests",
+]
+fast_tests = [
+  "tests/test_runtime_runner.py",
+  "tests/test_runtime_config.py",
+]
+artifact_paths = [
+  "examples/linear/axisymmetric/runtime_cyclone.toml",
+  "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml",
+]
+next_tests = [
+  "add executable-level provenance tests for copied input TOML files",
+  "add progress-output contract tests for long nonlinear chunked runs",
 ]
 
 [[modules]]

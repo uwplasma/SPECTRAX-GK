@@ -116,6 +116,7 @@ required_domain_packages = [
   "spectraxgk.operators.linear",
   "spectraxgk.solvers",
   "spectraxgk.solvers.linear",
+  "spectraxgk.workflows",
 ]
 required_docs = [
   "docs/architecture_refactor_plan.rst",

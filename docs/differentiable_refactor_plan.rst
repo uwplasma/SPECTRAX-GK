@@ -180,9 +180,11 @@ High-Risk Module Split Plan
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
-  plotting, and artifact handoff. Required gates: default-run behavior,
-  ``--plot`` behavior, TOML provenance, restart/output schema, and import
-  compatibility.
+  plotting, and artifact handoff. Runtime TOML case wrappers now delegate to
+  ``spectraxgk.workflows.cases`` through dependency-injected facades so
+  ``spectraxgk.runtime`` remains the public import and monkeypatch surface.
+  Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
+  restart/output schema, and import compatibility.
 
 ``runtime_artifacts.py``
   Split artifact schema, NetCDF persistence, restart append, and provenance.

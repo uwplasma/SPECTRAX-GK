@@ -259,6 +259,13 @@
   `spectraxgk.runtime_artifacts` remains the public dispatcher to preserve
   executable and monkeypatch seams.
 
+- 2026-06-16: Started the runtime workflow consolidation by moving the
+  side-effecting TOML case runners into `spectraxgk.workflows.cases`. The
+  public `spectraxgk.runtime.run_linear_case` and `run_nonlinear_case` wrappers
+  now delegate through explicit dependency injection, preserving existing
+  executable behavior and monkeypatch-based tests while keeping CLI workflow
+  code separate from solver kernels.
+
 - 2026-06-15: Added the naming-governance rule for the refactor: package
   source, examples, README, and docs should use physics, numerics, and schema
   names (`dealiased`, `NetCDF output`, `runtime diagnostics`, `restart

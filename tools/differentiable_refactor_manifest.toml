@@ -856,6 +856,21 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.cases"
+source_path = "src/spectraxgk/workflows/cases.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime TOML linear and nonlinear case workflows, output artifact dispatch, and executable summary printing"
+moved_exports = [
+  "RUNTIME_CASE_FIT_KEYS",
+  "RuntimeCaseDeps",
+  "run_linear_case",
+  "run_nonlinear_case",
+]
+fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.artifacts.validation"
 source_path = "src/spectraxgk/artifacts/validation.py"
 facade_module = "spectraxgk.runtime_artifact_diagnostics"

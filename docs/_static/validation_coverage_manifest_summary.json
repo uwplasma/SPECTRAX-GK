@@ -2,6 +2,7 @@
   "high_priority_open": [
     "spectraxgk.core.contracts",
     "spectraxgk.runtime",
+    "spectraxgk.workflows.cases",
     "spectraxgk.linear",
     "spectraxgk.nonlinear",
     "spectraxgk.operators.nonlinear.rhs",
@@ -65,12 +66,12 @@
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 80,
-  "n_excluded_modules": 13,
-  "n_high_priority_open": 64,
-  "n_modules": 80,
+  "n_direct_modules": 81,
+  "n_excluded_modules": 14,
+  "n_high_priority_open": 65,
+  "n_modules": 81,
   "n_owned_modules": 96,
-  "n_package_modules": 189,
+  "n_package_modules": 191,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [
@@ -279,6 +280,7 @@
     ],
     "spectraxgk.stellarator_objective_portfolio": [],
     "spectraxgk.validation_gates": [],
+    "spectraxgk.workflows.cases": [],
     "spectraxgk.zonal_objective": [],
     "spectraxgk.zonal_validation": []
   },
@@ -338,6 +340,20 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime_orchestration.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.workflows.cases",
+      "n_artifacts": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/workflows/cases.py",
       "status": "active"
     },
     {
