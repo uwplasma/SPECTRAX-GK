@@ -2384,6 +2384,13 @@ No long nonlinear audit should be launched from these candidates.
   ``spectraxgk.operators.linear.params`` and
   ``spectraxgk.operators.linear.cache``. Only actual public RHS/integrator entry
   points remain routed through ``spectraxgk.linear``.
+- Continued differentiable-geometry facade reduction by moving the
+  production VMEC/Boozer state-to-flux-tube builder into
+  ``spectraxgk.geometry.vmec_boozer_core`` and routing internal solver,
+  gradient-gate, and VMEC-JAX transport modules to the focused owner modules:
+  backend discovery, flux-tube contracts, autodiff checks, and VMEC/Boozer
+  core profiles. The public ``spectraxgk.geometry.differentiable`` facade
+  remains the compatibility and monkeypatch surface for documented imports.
 - Continued the cleanup of provenance-oriented wording in source docstrings and
   docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
   species/Hermite sharding, field-coupled streaming, linked-boundary ordering,
