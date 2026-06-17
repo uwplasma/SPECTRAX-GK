@@ -769,7 +769,7 @@ Parallel Decomposition Contracts
 QA Low-Turbulence Optimization
 ------------------------------
 
-.. automodule:: spectraxgk.qa_low_turbulence
+.. automodule:: spectraxgk.objectives.qa_low_turbulence
    :members:
 
 VMEC-JAX Transport Objective

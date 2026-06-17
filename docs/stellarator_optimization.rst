@@ -1251,7 +1251,7 @@ Objective Blocks
 
 The two designs use the same four reduced low-order controls
 ``p = (p_a, p_kappa, p_h, p_s)`` exposed by
-:mod:`spectraxgk.qa_low_turbulence`: a minor-radius/aspect shift, a vertical
+:mod:`spectraxgk.objectives.qa_low_turbulence`: a minor-radius/aspect shift, a vertical
 elongation shift, a helical-ripple amplitude, and a magnetic-shear shift. The
 helical amplitude is not allowed to collapse to zero: both objectives include
 a high-weight QA-compatible shaping residual that keeps ``p_h`` near ``0.16``.
@@ -1481,7 +1481,7 @@ step, not a geometry optimization result.
 Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
-- Core reduced model: :mod:`spectraxgk.qa_low_turbulence`
+- Core reduced model: :mod:`spectraxgk.objectives.qa_low_turbulence`
 - Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`

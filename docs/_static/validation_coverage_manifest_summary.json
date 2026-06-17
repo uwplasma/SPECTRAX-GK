@@ -60,7 +60,7 @@
     "spectraxgk.objectives.vmec_boozer_fd",
     "spectraxgk.objectives.vmec_boozer_line_search",
     "spectraxgk.objectives.solver_gradients",
-    "spectraxgk.qa_low_turbulence",
+    "spectraxgk.objectives.qa_low_turbulence",
     "spectraxgk.objectives.stellarator_portfolio",
     "spectraxgk.parallel.core",
     "spectraxgk.parallel.decomposition"
@@ -150,6 +150,7 @@
     "spectraxgk.objectives.geometry": [],
     "spectraxgk.objectives.gradient_gates": [],
     "spectraxgk.objectives.nonlinear_window": [],
+    "spectraxgk.objectives.qa_low_turbulence": [],
     "spectraxgk.objectives.sampling": [],
     "spectraxgk.objectives.solver_gradients": [
       "spectraxgk.objectives.stellarator",
@@ -195,7 +196,6 @@
       "spectraxgk.parallel.velocity"
     ],
     "spectraxgk.plotting": [],
-    "spectraxgk.qa_low_turbulence": [],
     "spectraxgk.quasilinear": [
       "spectraxgk.validation.quasilinear.model_selection",
       "spectraxgk.validation.external_holdout"
@@ -1328,7 +1328,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.qa_low_turbulence",
+      "module": "spectraxgk.objectives.qa_low_turbulence",
       "n_artifacts": 7,
       "n_fast_tests": 1,
       "n_next_tests": 2,
@@ -1336,7 +1336,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/qa_low_turbulence.py",
+      "path": "src/spectraxgk/objectives/qa_low_turbulence.py",
       "status": "active"
     },
     {

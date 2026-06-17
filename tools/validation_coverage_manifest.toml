@@ -2960,8 +2960,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.qa_low_turbulence"
-path = "src/spectraxgk/qa_low_turbulence.py"
+module = "spectraxgk.objectives.qa_low_turbulence"
+path = "src/spectraxgk/objectives/qa_low_turbulence.py"
 owner_lane = "aspect-constrained QA low-turbulence reduced optimization plumbing"
 status = "active"
 coverage_priority = "high"
