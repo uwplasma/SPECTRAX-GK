@@ -2611,3 +2611,15 @@ No long nonlinear audit should be launched from these candidates.
   covering serial ordering, quasilinear payload ordering, independent-worker
   metadata, explicit worker overrides, non-ky-axis rejection, and combined-ky
   dispatch.
+
+### 2026-06-17 Runtime Nonlinear Diagnostics Policy Split
+
+- Extracted nonlinear diagnostics integrator keyword assembly from the public
+  runtime facade into `spectraxgk.runtime_policies.build_runtime_nonlinear_diagnostics_kwargs`.
+  Fixed-window and adaptive nonlinear diagnostic branches now use one policy for
+  sample/diagnostic stride, dealiased masks, Laguerre mode, flux normalization,
+  adaptive-step controls, collision split, implicit solve settings, fixed-mode
+  indices, external forcing, resolved-diagnostic suppression, and progress flags.
+- Added a focused runtime policy test and re-ran the nonlinear runtime helper
+  shard covering source forcing, adaptive chunks, fixed mode, collision split,
+  return-state diagnostics, and final-state contracts.

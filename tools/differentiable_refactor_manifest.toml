@@ -1364,6 +1364,28 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.runtime_policies"
+source_path = "src/spectraxgk/runtime_policies.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime mode-index, nonlinear step-count, external-source, independent-worker, combined-ky, and nonlinear diagnostics integrator keyword policies"
+moved_exports = [
+  "RuntimeIndependentParallelPlan",
+  "build_runtime_nonlinear_diagnostics_kwargs",
+  "_infer_runtime_nonlinear_steps",
+  "_midplane_index",
+  "_normalize_linear_solver_name",
+  "_parallel_requests_combined_ky_scan",
+  "_runtime_external_phi",
+  "_runtime_independent_parallel_plan",
+  "_select_nonlinear_mode_indices",
+  "_zero_kx_index",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_orchestration"
 source_path = "src/spectraxgk/runtime_orchestration.py"
 facade_module = "spectraxgk.runtime"

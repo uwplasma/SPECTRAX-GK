@@ -291,6 +291,66 @@ def test_runtime_mode_index_selection_and_step_inference() -> None:
         )
 
 
+def test_runtime_nonlinear_diagnostics_kwargs_policy() -> None:
+    base = _base_cfg()
+    cfg = replace(
+        base,
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        time=replace(
+            base.time,
+            method="rk4",
+            nonlinear_dealias=True,
+            collision_split=True,
+            collision_scheme="exp",
+            implicit_restart=7,
+            implicit_solve_method="gmres",
+            implicit_preconditioner="jacobi",
+            cfl_fac=None,
+        ),
+    )
+
+    kwargs = runtime_policies.build_runtime_nonlinear_diagnostics_kwargs(
+        cfg,
+        dt=0.05,
+        steps=9,
+        method=None,
+        term_config="terms",
+        sample_stride=2,
+        diagnostics_stride=3,
+        laguerre_mode="grid",
+        ky_index=1,
+        kx_index=2,
+        fixed_dt=False,
+        fixed_mode_ky_index=4,
+        fixed_mode_kx_index=5,
+        external_phi=0.25,
+        resolved_diagnostics=False,
+        show_progress=True,
+    )
+
+    assert kwargs["dt"] == pytest.approx(0.05)
+    assert kwargs["steps"] == 9
+    assert kwargs["method"] == "rk4"
+    assert kwargs["terms"] == "terms"
+    assert kwargs["sample_stride"] == 2
+    assert kwargs["diagnostics_stride"] == 3
+    assert kwargs["use_dealias_mask"] is True
+    assert kwargs["laguerre_mode"] == "grid"
+    assert kwargs["omega_ky_index"] == 1
+    assert kwargs["omega_kx_index"] == 2
+    assert kwargs["fixed_dt"] is False
+    assert kwargs["collision_split"] is True
+    assert kwargs["collision_scheme"] == "exp"
+    assert kwargs["implicit_restart"] == 7
+    assert kwargs["implicit_solve_method"] == "gmres"
+    assert kwargs["implicit_preconditioner"] == "jacobi"
+    assert kwargs["fixed_mode_ky_index"] == 4
+    assert kwargs["fixed_mode_kx_index"] == 5
+    assert kwargs["external_phi"] == pytest.approx(0.25)
+    assert kwargs["resolved_diagnostics"] is False
+    assert kwargs["show_progress"] is True
+
+
 def test_runtime_diagnostic_slice_stride_truncate_concat() -> None:
     diag = _diag()
     sliced = _slice_runtime_diagnostics(diag, 1)

@@ -232,7 +232,9 @@ High-Risk Module Split Plan
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
   plotting, and artifact handoff. Runtime scan orchestration and combined-``ky``
   scan batching now live in ``spectraxgk.runtime_orchestration`` behind the
-  public ``spectraxgk.runtime`` facade. Runtime TOML case wrappers now delegate to
+  public ``spectraxgk.runtime`` facade. Runtime nonlinear diagnostics keyword
+  assembly now lives in ``spectraxgk.runtime_policies`` so fixed-window and
+  adaptive diagnostic branches share one policy. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
   default no-input educational demo now delegates to
