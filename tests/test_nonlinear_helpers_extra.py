@@ -29,6 +29,7 @@ from spectraxgk.nonlinear import (
     build_nonlinear_diagnostic_setup,
     build_nonlinear_simulation_diagnostics,
     build_nonlinear_imex_operator,
+    build_nonlinear_time_step_policy,
     integrate_nonlinear,
     integrate_nonlinear_cached,
     integrate_nonlinear_explicit_diagnostics,
@@ -458,6 +459,89 @@ def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:
     assert setup.use_dealias is True
     np.testing.assert_allclose(np.asarray(setup.vol_fac), np.ones(4))
     assert float(setup.flux_fac) == pytest.approx(2.0)
+
+
+def test_build_nonlinear_time_step_policy_fixed_and_adaptive() -> None:
+    grid = SimpleNamespace(
+        ky=np.asarray([0.0, 0.2, 0.4], dtype=float),
+        kx=np.asarray([0.0, 0.5, 1.0], dtype=float),
+    )
+    cache = SimpleNamespace(
+        ky=jnp.asarray(grid.ky),
+        kx=jnp.asarray(grid.kx),
+        l=jnp.arange(2),
+        m=jnp.arange(3)[None, :],
+        kxfac=1.0,
+    )
+    params = SimpleNamespace(
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        tz=jnp.asarray([2.0], dtype=jnp.float32),
+    )
+    fields = FieldState(
+        phi=jnp.ones((3, 3, 2), dtype=jnp.complex64),
+        apar=None,
+        bpar=None,
+    )
+
+    fixed = build_nonlinear_time_step_policy(
+        grid,
+        SimpleNamespace(),
+        params,
+        cache,
+        method="rk3",
+        dt=0.1,
+        steps=4,
+        fixed_dt=True,
+        dt_min=0.01,
+        dt_max=None,
+        cfl=1.0,
+        cfl_fac=None,
+        compressed_real_fft=True,
+        real_dtype=jnp.float32,
+        resolve_cfl_fac_fn=lambda _method, _cfl_fac: 0.5,
+        linear_frequency_bound_fn=lambda *args, **kwargs: np.asarray([1.0, 1.0, 1.0]),
+        laguerre_velocity_max_fn=lambda _nl: 2.0,
+        cfl_frequency_components_fn=lambda *args, **kwargs: (
+            jnp.asarray(2.0, dtype=jnp.float32),
+            jnp.asarray(3.0, dtype=jnp.float32),
+        ),
+    )
+    np.testing.assert_allclose(np.asarray(fixed.dt_init), 0.1)
+    np.testing.assert_allclose(np.asarray(fixed.progress_total), 0.4)
+    np.testing.assert_allclose(
+        np.asarray(fixed.update_dt(fields, jnp.asarray(0.07, dtype=jnp.float32))),
+        0.07,
+    )
+
+    adaptive = build_nonlinear_time_step_policy(
+        grid,
+        SimpleNamespace(),
+        params,
+        cache,
+        method="rk3",
+        dt=0.1,
+        steps=4,
+        fixed_dt=False,
+        dt_min=0.01,
+        dt_max=0.2,
+        cfl=1.0,
+        cfl_fac=None,
+        compressed_real_fft=True,
+        real_dtype=jnp.float32,
+        resolve_cfl_fac_fn=lambda _method, _cfl_fac: 0.5,
+        linear_frequency_bound_fn=lambda *args, **kwargs: np.asarray([1.0, 1.0, 1.0]),
+        laguerre_velocity_max_fn=lambda _nl: 2.0,
+        cfl_frequency_components_fn=lambda *args, **kwargs: (
+            jnp.asarray(2.0, dtype=jnp.float32),
+            jnp.asarray(3.0, dtype=jnp.float32),
+        ),
+    )
+    assert np.isnan(float(np.asarray(adaptive.progress_total)))
+    np.testing.assert_allclose(
+        np.asarray(adaptive.update_dt(fields, jnp.asarray(0.1, dtype=jnp.float32))),
+        0.5 / 6.0,
+        rtol=1.0e-6,
+    )
 
 
 def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:

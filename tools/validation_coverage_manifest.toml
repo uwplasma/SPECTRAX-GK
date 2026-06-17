@@ -866,22 +866,25 @@ path = "src/spectraxgk/nonlinear_helpers.py"
 owned_modules = [
   "spectraxgk.reduced_model_contracts",
 ]
-owner_lane = "nonlinear diagnostic setup, projection helpers, collision split policies, fixed-mode omega masks, and IMEX operator construction"
+owner_lane = "nonlinear diagnostic setup, time-step policy, projection helpers, collision split policies, fixed-mode omega masks, and IMEX operator construction"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
+  "adaptive nonlinear CFL bounds used by long fixed/adaptive transport windows",
   "shared nonlinear diagnostic setup used by explicit and IMEX scan paths",
   "fixed-mode nonlinear diagnostics and compressed real-FFT Hermitian projection",
   "split collision/hypercollision nonlinear updates and reusable IMEX solves",
 ]
 physics_contracts = [
+  "adaptive time-step policy combines linear frequency bounds and nonlinear E cross B CFL bounds before clipping",
   "diagnostic setup preserves caller-selected geometry, field-line weights, monitored z index, and fixed-mode policy",
   "collision and hypercollision weights remain explicit before split updates are applied",
   "fixed-mode projection preserves the selected Fourier block exactly",
   "explicit and IMEX diagnostic scans share the same composed fixed-mode/Hermitian projection convention",
 ]
 numerics_contracts = [
+  "fixed-step policy returns the previous step unchanged while adaptive policy respects dt_min and dt_max",
   "cache construction infers Hermite and Laguerre moment counts from species and non-species nonlinear states",
   "diagnostic omega masks keep only unique real-FFT modes before gamma/omega reductions",
   "compressed real-FFT Hermitian projection mirrors negative ky and reversed kx consistently",

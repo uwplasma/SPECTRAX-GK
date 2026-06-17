@@ -1,3 +1,9 @@
+- 2026-06-17: Extracted fixed/adaptive nonlinear time-step policy from
+  `spectraxgk.nonlinear` into
+  `spectraxgk.nonlinear_helpers.build_nonlinear_time_step_policy`. The explicit
+  diagnostics path now delegates initial `dt`, progress horizon, linear/CFL
+  frequency bounds, velocity-space bounds, and `dt_min`/`dt_max` clipping to a
+  directly tested helper with injected compatibility seams.
 - 2026-06-17: Deduplicated nonlinear diagnostic-stride selection and progress
   callback routing. Explicit and IMEX diagnostic scans now share
   `select_nonlinear_step_diagnostics` and `maybe_emit_nonlinear_progress` in
