@@ -26,6 +26,7 @@ from spectraxgk.nonlinear import (
     _make_nonlinear_state_projector,
     _pack_resolved_diagnostics,
     _sample_indices_with_final,
+    build_nonlinear_diagnostic_setup,
     build_nonlinear_simulation_diagnostics,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
@@ -364,6 +365,64 @@ def test_make_nonlinear_state_projector_composes_fixed_mode_and_hermitian() -> N
         fixed_mode_kx_index=None,
     )
     np.testing.assert_allclose(np.asarray(no_hermitian(trial)), np.asarray(trial))
+
+
+def test_build_nonlinear_diagnostic_setup_uses_injected_policy() -> None:
+    grid = SimpleNamespace(
+        ky=np.asarray([0.0, 0.2, -0.2], dtype=float),
+        kx=np.asarray([0.0, 0.5], dtype=float),
+        z=np.asarray([0.0, 0.5, 1.0, 1.5], dtype=float),
+    )
+    cache = SimpleNamespace(ky=jnp.asarray(grid.ky), kx=jnp.asarray(grid.kx))
+    calls: dict[str, object] = {}
+
+    def _ensure_geometry(geom, z):
+        calls["geom"] = geom
+        calls["z"] = tuple(np.asarray(z, dtype=float))
+        return SimpleNamespace(name="geometry")
+
+    def _build_cache(_grid, geom, params, nl, nm):
+        calls["cache_counts"] = (nl, nm)
+        assert geom.name == "geometry"
+        assert params.name == "params"
+        return cache
+
+    def _weights(geom, grid_in):
+        assert geom.name == "geometry"
+        return jnp.ones((grid_in.z.size,), dtype=jnp.float32), jnp.asarray(2.0)
+
+    def _omega_mask(_grid, cache_in, *, compressed_real_fft):
+        calls["compressed"] = compressed_real_fft
+        assert cache_in is cache
+        return jnp.ones((_grid.ky.size, _grid.kx.size), dtype=bool)
+
+    setup = build_nonlinear_diagnostic_setup(
+        jnp.zeros((2, 3, 3, 2, 4), dtype=jnp.complex64),
+        grid,
+        SimpleNamespace(name="raw"),
+        SimpleNamespace(name="params"),
+        cache=None,
+        use_dealias_mask=True,
+        z_index=None,
+        compressed_real_fft=True,
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=0,
+        ensure_geometry_fn=_ensure_geometry,
+        build_cache_fn=_build_cache,
+        quadrature_weights_fn=_weights,
+        omega_mask_fn=_omega_mask,
+        midplane_index_fn=lambda nz: nz - 1,
+    )
+
+    assert calls["geom"].name == "raw"
+    assert calls["z"] == (0.0, 0.5, 1.0, 1.5)
+    assert calls["cache_counts"] == (2, 3)
+    assert calls["compressed"] is True
+    assert setup.cache is cache
+    assert setup.z_idx == 3
+    assert setup.use_dealias is True
+    np.testing.assert_allclose(np.asarray(setup.vol_fac), np.ones(4))
+    assert float(setup.flux_fac) == pytest.approx(2.0)
 
 
 def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:

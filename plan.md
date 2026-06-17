@@ -1,3 +1,10 @@
+- 2026-06-17: Extracted shared nonlinear diagnostic setup into
+  `spectraxgk.nonlinear_helpers.build_nonlinear_diagnostic_setup`.
+  Explicit and IMEX diagnostic scans now use the same cache construction,
+  quadrature weights, omega masks, monitored z-index policy, and fixed-mode plus
+  Hermitian projection setup through injected compatibility seams. Added a
+  direct setup-builder regression covering moment-count inference, injected
+  geometry/cache/weight/mask policies, and monitored-index selection.
 - 2026-06-17: Deduplicated nonlinear diagnostic scan postprocessing by moving
   raw scan-tuple sampling, resolved-diagnostic packing, energy reconstruction,
   and `SimulationDiagnostics` construction into

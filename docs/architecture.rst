@@ -24,8 +24,9 @@ Core modules
   packing, and ``SimulationDiagnostics`` construction shared by nonlinear
   diagnostic scans.
 - ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,
-  fixed-mode omega masks used by comparison parity audits,
-  collision-split policies, and reusable nonlinear IMEX operator construction.
+  diagnostic cache/weight/projection setup, fixed-mode omega masks used by
+  comparison parity audits, collision-split policies, and reusable nonlinear
+  IMEX operator construction.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
 - ``spectraxgk.runtime_orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.

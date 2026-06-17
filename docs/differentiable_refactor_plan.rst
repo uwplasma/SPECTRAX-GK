@@ -177,10 +177,12 @@ High-Risk Module Split Plan
   ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
   kernels so existing debug seams remain intact. Shared scan-output sampling,
   resolved-diagnostic packing, and ``SimulationDiagnostics`` construction now
-  live in ``spectraxgk.nonlinear_diagnostics``. Explicit RK/SSP/K10 one-step
-  policy now lives in ``solvers/nonlinear/explicit.py`` and the shared IMEX
-  fixed-point/GMRES solve plus SSPX3 stage-composition policy lives in
-  ``solvers/nonlinear/imex.py``.
+  live in ``spectraxgk.nonlinear_diagnostics``. Shared diagnostic cache,
+  quadrature-weight, omega-mask, z-index, and state-projection setup now lives
+  in ``spectraxgk.nonlinear_helpers`` with injected compatibility seams.
+  Explicit RK/SSP/K10 one-step policy now lives in
+  ``solvers/nonlinear/explicit.py`` and the shared IMEX fixed-point/GMRES solve
+  plus SSPX3 stage-composition policy lives in ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

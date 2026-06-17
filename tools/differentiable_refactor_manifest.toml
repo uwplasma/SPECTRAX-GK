@@ -989,6 +989,28 @@ fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_helpers"
+source_path = "src/spectraxgk/nonlinear_helpers.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "nonlinear diagnostic setup, projection, CFL, collision-split, omega-mask, and reusable IMEX operator policies"
+moved_exports = [
+  "IMEXLinearOperator",
+  "NonlinearDiagnosticSetup",
+  "_apply_collision_split",
+  "_collision_damping",
+  "_diagnostic_omega_mode_mask",
+  "_make_fixed_mode_projector",
+  "_make_hermitian_projector",
+  "_make_nonlinear_state_projector",
+  "_nonlinear_cfl_frequency_components",
+  "build_nonlinear_diagnostic_setup",
+  "build_nonlinear_imex_operator",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.nonlinear.explicit"
 source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
 facade_module = "spectraxgk.solvers.nonlinear"
@@ -1162,11 +1184,12 @@ extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationR
 [[hotspots]]
 module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
-current_reason = "owns nonlinear scan orchestration, adaptive-step policy, and the public facade for split RHS, explicit-step, IMEX, diagnostic-state, and scan-diagnostic implementations"
+current_reason = "owns nonlinear scan orchestration, adaptive-step policy, and the public facade for split RHS, explicit-step, IMEX, diagnostic-state, diagnostic-setup, and scan-diagnostic implementations"
 target_packages = [
   "spectraxgk.operators.nonlinear.rhs",
   "spectraxgk.operators.nonlinear.diagnostic_state",
   "spectraxgk.nonlinear_diagnostics",
+  "spectraxgk.nonlinear_helpers",
   "spectraxgk.solvers.nonlinear.explicit",
   "spectraxgk.solvers.nonlinear.imex",
 ]
