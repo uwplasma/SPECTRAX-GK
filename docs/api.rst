@@ -179,6 +179,13 @@ Linear Implicit Solvers
    :members:
    :private-members:
 
+Linear Integrators
+------------------
+
+.. automodule:: spectraxgk.solvers.linear.integrators
+   :members:
+   :private-members:
+
 Linear Parallel RHS
 -------------------
 

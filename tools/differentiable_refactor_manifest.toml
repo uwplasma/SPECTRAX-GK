@@ -1264,6 +1264,16 @@ moved_exports = ["_build_implicit_operator", "_integrate_linear_implicit_cached"
 fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_imex.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.integrators"
+source_path = "src/spectraxgk/solvers/linear/integrators.py"
+facade_module = "spectraxgk.solvers.linear"
+status = "active"
+responsibility = "linear fixed-step integration, implicit dispatch, parallel fallback, and diagnostic sampling"
+moved_exports = ["_integrate_linear_cached", "_integrate_linear_cached_donate", "_integrate_linear_cached_impl", "integrate_linear", "integrate_linear_diagnostics"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_fast_smoke.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 
 [[hotspots]]
 module = "spectraxgk.runtime"

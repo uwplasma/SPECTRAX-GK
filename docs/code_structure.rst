@@ -171,11 +171,11 @@ Completed extractions:
   helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
   pytrees, cache-backed RHS assembly, implicit linear GMRES/preconditioner
-  policy, Krylov eigensolver policy, and velocity-parallel RHS dispatch live
-  under ``operators/linear/`` and ``solvers/linear/``. The obsolete root
-  ``linear_*`` helper shims were removed; normal users should use
-  ``spectraxgk.linear`` for the public linear API or import focused developer
-  helpers from the domain packages.
+  policy, fixed-step/diagnostic integration policy, Krylov eigensolver policy,
+  and velocity-parallel RHS dispatch live under ``operators/linear/`` and
+  ``solvers/linear/``. The obsolete root ``linear_*`` helper shims were
+  removed; normal users should use ``spectraxgk.linear`` for the public linear
+  API or import focused developer helpers from the domain packages.
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   candidate design, composite-control, matched-replicate, QL-seed,
   state-runbook, and variance-reduction/control-variate report helpers:

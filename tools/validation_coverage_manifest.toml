@@ -359,6 +359,40 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solvers.linear.integrators"
+path = "src/spectraxgk/solvers/linear/integrators.py"
+owner_lane = "linear fixed-step integration, implicit dispatch, and diagnostic sampling"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "observed-order checks for explicit and IMEX linear time paths",
+  "late-time linear diagnostic sampling used by benchmark and validation workflows",
+]
+physics_contracts = [
+  "linear time integration advances the same cache-backed RHS and term weights exposed by the public linear API",
+  "diagnostic sampling reports phi, density, and Hermite-Laguerre energy without changing the evolved state convention",
+]
+numerics_contracts = [
+  "explicit RK, SSPX3, IMEX, sampled, donated-buffer, and parallel-dispatch paths preserve shape, dtype, and sample count",
+  "observed-order gates exercise RK2, RK4, SSPX3, IMEX, and IMEX2 against manufactured exact solutions",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_fast_smoke.py",
+  "tests/test_benchmarks_runner_branches.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct owner-module coverage for progress callback emission once callback policy is split",
+  "keep spectraxgk.linear public integrate_linear exports documented while implementation lives in solvers.linear.integrators",
+]
+
+[[modules]]
 module = "spectraxgk.operators.linear.moments"
 path = "src/spectraxgk/operators/linear/moments.py"
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"

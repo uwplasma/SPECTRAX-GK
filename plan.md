@@ -5,6 +5,12 @@
   still re-exports the implicit helpers for current users, while nonlinear
   IMEX code and profiling tools now import the focused owner module directly.
   Focused implicit linear and nonlinear IMEX tests cover the new owner seam.
+- 2026-06-17: Moved linear fixed-step time integration, implicit-method
+  dispatch, velocity-parallel fallback routing, and diagnostic sampling into
+  `spectraxgk.solvers.linear.integrators`. The public `spectraxgk.linear`
+  module is now a compact facade for linear parameters, caches, RHS helpers,
+  moments, and solver entry points. Tests now patch the integrator owner module
+  while preserving facade import identity for existing users.
 - 2026-06-16: Started the first architecture-plan implementation tranche.
   Added `tools/package_architecture_manifest.toml` and
   `tools/check_package_architecture_manifest.py` to stop new root-level prefix
