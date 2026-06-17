@@ -12,6 +12,7 @@ from spectraxgk.solvers.nonlinear.imex import (
     make_imex_diagnostic_step,
     make_imex_nonlinear_term,
     make_imex_solve_step,
+    run_imex_diagnostic_scan,
     solve_imex_step,
 )
 from spectraxgk.terms.config import FieldState
@@ -363,6 +364,37 @@ def test_make_imex_diagnostic_step_requires_collision_split_policy() -> None:
             ),
             jnp.asarray(0, dtype=jnp.int32),
         )
+
+
+def test_run_imex_diagnostic_scan_runs_fixed_step_policy() -> None:
+    def step(carry, idx):
+        G, G_prev, fields_prev, diag_prev, t_prev = carry
+        del G_prev, fields_prev
+        G_new = G + 1.0
+        diag = diag_prev + idx + 1
+        t_new = t_prev + 0.5
+        return (G_new, G_new, jnp.asarray([2.0], dtype=jnp.float32), diag, t_new), (
+            diag,
+            t_new,
+        )
+
+    G_final, diag_out = run_imex_diagnostic_scan(
+        step,
+        (
+            jnp.asarray([0.0], dtype=jnp.float32),
+            jnp.asarray([0.0], dtype=jnp.float32),
+            jnp.asarray([0.0], dtype=jnp.float32),
+            jnp.asarray(0.0, dtype=jnp.float32),
+            jnp.asarray(0.0, dtype=jnp.float32),
+        ),
+        steps=3,
+        checkpoint=False,
+    )
+
+    diag, t = diag_out
+    np.testing.assert_allclose(np.asarray(G_final), [3.0])
+    np.testing.assert_allclose(np.asarray(diag), [1.0, 3.0, 6.0])
+    np.testing.assert_allclose(np.asarray(t), [0.5, 1.0, 1.5])
 
 
 def test_integrate_cached_imex_scan_owns_cached_scan_policy(monkeypatch) -> None:

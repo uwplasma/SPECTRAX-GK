@@ -77,4 +77,8 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
     )
     assert nonlinear_solvers.make_imex_nonlinear_term is solver_imex.make_imex_nonlinear_term
     assert nonlinear_solvers.make_imex_solve_step is solver_imex.make_imex_solve_step
+    assert (
+        nonlinear_solvers.run_imex_diagnostic_scan
+        is solver_imex.run_imex_diagnostic_scan
+    )
     assert nonlinear_solvers.solve_imex_step is solver_imex.solve_imex_step

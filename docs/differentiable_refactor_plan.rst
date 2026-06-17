@@ -222,8 +222,9 @@ High-Risk Module Split Plan
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
   in ``solvers/nonlinear/explicit.py``; the shared IMEX nonlinear-term closure,
-  GMRES solve-step closure, diagnostic step construction, cached scan policy,
-  fixed-point/GMRES solve, and SSPX3 stage-composition policies live in
+  GMRES solve-step closure, diagnostic step construction, fixed diagnostic scan
+  execution, cached scan policy, fixed-point/GMRES solve, and SSPX3
+  stage-composition policies live in
   ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``

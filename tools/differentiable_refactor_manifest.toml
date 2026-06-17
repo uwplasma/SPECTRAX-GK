@@ -1039,7 +1039,7 @@ module = "spectraxgk.solvers.nonlinear.imex"
 source_path = "src/spectraxgk/solvers/nonlinear/imex.py"
 facade_module = "spectraxgk.solvers.nonlinear"
 status = "active"
-responsibility = "IMEX nonlinear-term, solve-step, and diagnostic-step closure factories, cached scan policy, fixed-point predictor, GMRES solve-step policy, and SSPX3 stage composition shared by cached and diagnostic nonlinear integrations"
+responsibility = "IMEX nonlinear-term, solve-step, and diagnostic-step closure factories, cached scan policy, fixed diagnostic scan execution, fixed-point predictor, GMRES solve-step policy, and SSPX3 stage composition shared by cached and diagnostic nonlinear integrations"
 moved_exports = [
   "advance_imex_nonlinear_state",
   "imex_fixed_point_guess",
@@ -1047,6 +1047,7 @@ moved_exports = [
   "make_imex_diagnostic_step",
   "make_imex_nonlinear_term",
   "make_imex_solve_step",
+  "run_imex_diagnostic_scan",
   "solve_imex_step",
 ]
 fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]

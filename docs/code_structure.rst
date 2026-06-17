@@ -168,7 +168,8 @@ Completed extractions:
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
 - explicit RK/SSP/K10 one-step policy, cached explicit scan policy, explicit
   diagnostic step and scan-selection policy, cached IMEX scan policy, IMEX
-  diagnostic step policy, and IMEX fixed-point/GMRES solve policy:
+  diagnostic step and scan-execution policy, and IMEX fixed-point/GMRES solve
+  policy:
   ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
   helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter

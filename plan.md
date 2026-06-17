@@ -1,3 +1,8 @@
+- 2026-06-17: Moved fixed-step IMEX nonlinear diagnostic scan execution into
+  `spectraxgk.solvers.nonlinear.imex.run_imex_diagnostic_scan`. The public
+  nonlinear facade now delegates checkpoint and `jax.lax.scan` mechanics for
+  IMEX diagnostics to the solver owner, matching the explicit diagnostic scan
+  split and reducing facade-only scan logic.
 - 2026-06-17: Moved IMEX nonlinear diagnostic step construction into
   `spectraxgk.solvers.nonlinear.imex.make_imex_diagnostic_step`. The public
   nonlinear facade still owns diagnostic setup, implicit-operator setup, and
