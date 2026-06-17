@@ -86,7 +86,7 @@ def build_profile(
     rtol: float,
     min_speedup: float,
 ) -> dict[str, Any]:
-    from spectraxgk.nonlinear_parallel import (  # type: ignore[import-untyped]
+    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
         _pencil_nonlinear_spectral_rhs,
         _serial_nonlinear_spectral_rhs,
         deterministic_nonlinear_spectral_state,

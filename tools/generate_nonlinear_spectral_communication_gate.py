@@ -47,7 +47,7 @@ def build_nonlinear_spectral_communication_gate(
 ) -> dict[str, object]:
     """Run deterministic spectral communication, RHS, and integrator gates."""
 
-    from spectraxgk.nonlinear_parallel import (
+    from spectraxgk.operators.nonlinear.parallel import (
         deterministic_nonlinear_spectral_state,
         nonlinear_spectral_communication_identity_gate,
         nonlinear_spectral_integrator_identity_gate,
@@ -221,7 +221,7 @@ def build_nonlinear_spectral_communication_gate(
     return _json_clean(
         {
             "case": "Nonlinear spectral decomposition identity gate",
-            "source": "spectraxgk.nonlinear_parallel nonlinear-spectral communication utilities",
+            "source": "spectraxgk.operators.nonlinear.parallel nonlinear-spectral communication utilities",
             "claim_scope": combined_gate["claim_scope"],
             "kind": "nonlinear_spectral_communication_identity_gate",
             "communication_decomposition": {

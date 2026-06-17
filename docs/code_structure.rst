@@ -31,7 +31,7 @@ on:
 - ``spectraxgk.workflows.runtime.artifacts``
 - ``spectraxgk.plotting``
 - ``spectraxgk.parallel``
-- ``spectraxgk.nonlinear_parallel``
+- ``spectraxgk.operators.nonlinear.parallel``
 - documented benchmark/example scripts under ``examples/`` and ``tools/``
 
 Internal modules that are free to move as long as the public behavior and tests
@@ -111,7 +111,7 @@ Physics / Numerics / IO Map
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
      - RHS routing, bracket payload, explicit stepping, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
-     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
+     - ``parallel.py``, ``sharding.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
@@ -177,7 +177,7 @@ Completed extractions:
   ``objectives/vmec_boozer_line_search.py``
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
-  ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,
+  ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``,
   ``operators/nonlinear/domain_decomposition.py``,
   ``operators/nonlinear/spectral_core.py``,
   ``operators/nonlinear/device_z.py``
@@ -228,7 +228,7 @@ Completed extractions:
   ``artifacts/linear.py``,
   ``artifacts/nonlinear.py``,
   ``netcdf_spectral_layout.py``,
-  ``nonlinear_output_netcdf.py``,
+  ``artifacts/nonlinear_netcdf.py``,
   ``artifacts/nonlinear_diagnostics.py``. The obsolete root
   ``runtime_artifact_*`` helper modules were removed; import implementation
   helpers from ``spectraxgk.artifacts`` instead.

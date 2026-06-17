@@ -222,9 +222,9 @@ benchmark nonlinear conservation checks, accepted turbulent transport-window
 physics, or any speedup claim.
 
 The package also exposes
-``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate``,
-``spectraxgk.nonlinear_parallel.logical_decomposed_nonlinear_spectral_rhs``,
-and ``spectraxgk.nonlinear_parallel.nonlinear_spectral_integrator_identity_gate``
+``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_rhs_identity_gate``,
+``spectraxgk.operators.nonlinear.parallel.logical_decomposed_nonlinear_spectral_rhs``,
+and ``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_integrator_identity_gate``
 for focused tests. They are useful because they exercise field/bracket/RHS and
 fixed-step dataflow instead of only layout round trips. They remain fail-closed
 and diagnostic-only: logical tiles are reconstructed for identity validation,

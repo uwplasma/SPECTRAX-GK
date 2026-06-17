@@ -376,7 +376,7 @@
           "exists": true,
           "name": "nonlinear helper module",
           "passed": true,
-          "path": "src/spectraxgk/nonlinear_helpers.py",
+          "path": "src/spectraxgk/operators/nonlinear/policies.py",
           "required": true,
           "snippet": null
         },

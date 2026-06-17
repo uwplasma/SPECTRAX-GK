@@ -96,8 +96,8 @@ def build_profile(
 ) -> dict[str, Any]:
     """Return serial-vs-logical routed timing plus identity metrics."""
 
-    from spectraxgk import nonlinear_parallel as npmod
-    from spectraxgk.nonlinear_parallel import (
+    import spectraxgk.operators.nonlinear.parallel as npmod
+    from spectraxgk.operators.nonlinear.parallel import (
         deterministic_nonlinear_spectral_state,
         integrate_logical_decomposed_nonlinear_spectral,
         nonlinear_spectral_domain_work_model,

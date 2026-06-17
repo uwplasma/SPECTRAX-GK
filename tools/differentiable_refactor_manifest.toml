@@ -575,7 +575,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_core"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
-facade_module = "spectraxgk.nonlinear_parallel"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "deterministic spectral states, chunk/layout utilities, work models, pencil FFT/bracket kernels, RHS micro-routes, and tolerance helpers for nonlinear parallelization gates"
 moved_exports = [
@@ -594,7 +594,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_identity"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_identity.py"
-facade_module = "spectraxgk.nonlinear_parallel"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "logical spectral communication, RHS, and fixed-window integrator identity gates for nonlinear parallelization"
 moved_exports = [
@@ -612,7 +612,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.device_z"
 source_path = "src/spectraxgk/operators/nonlinear/device_z.py"
-facade_module = "spectraxgk.nonlinear_parallel"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window identity gates"
 moved_exports = [
@@ -994,8 +994,8 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_output_netcdf"
-source_path = "src/spectraxgk/nonlinear_output_netcdf.py"
+module = "spectraxgk.artifacts.nonlinear_netcdf"
+source_path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
 facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "nonlinear NetCDF output schema, restart/big-file writing, output geometry resolution, and particle moment export helpers"
@@ -1083,8 +1083,8 @@ fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_diagnostics"
-source_path = "src/spectraxgk/nonlinear_diagnostics.py"
+module = "spectraxgk.operators.nonlinear.diagnostics"
+source_path = "src/spectraxgk/operators/nonlinear/diagnostics.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
 responsibility = "nonlinear sampled-scan interval routing, step-diagnostic selection, progress callback routing, scan-output sampling/finalization, resolved diagnostic packing, and SimulationDiagnostics construction shared by explicit and IMEX diagnostic scans"
@@ -1103,8 +1103,8 @@ fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_helpers"
-source_path = "src/spectraxgk/nonlinear_helpers.py"
+module = "spectraxgk.operators.nonlinear.policies"
+source_path = "src/spectraxgk/operators/nonlinear/policies.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
 responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, projection, CFL, collision-split policy construction, omega-mask, and reusable IMEX operator policies"
@@ -1238,8 +1238,8 @@ autodiff_gates = [
 extension_points = ["GeometryProvider", "BoozerTransformProvider", "GeometrySensitivityReport"]
 
 [[hotspots]]
-module = "spectraxgk.nonlinear_parallel"
-source_path = "src/spectraxgk/nonlinear_parallel.py"
+module = "spectraxgk.operators.nonlinear.parallel"
+source_path = "src/spectraxgk/operators/nonlinear/parallel.py"
 current_reason = "mixes decomposition metadata, communication models, sharded RHS routes, observable reductions, profiler reports, and policy text"
 target_packages = [
   "spectraxgk.parallel.domain_plan",
@@ -1248,7 +1248,7 @@ target_packages = [
   "spectraxgk.parallel.observable_reduce",
   "spectraxgk.parallel.profiling",
 ]
-public_facade = "spectraxgk.nonlinear_parallel"
+public_facade = "spectraxgk.operators.nonlinear.parallel"
 line_target = 900
 status = "planned"
 existing_fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
@@ -1314,8 +1314,8 @@ current_reason = "owns nonlinear scan orchestration, adaptive-step policy, and t
 target_packages = [
   "spectraxgk.operators.nonlinear.rhs",
   "spectraxgk.operators.nonlinear.diagnostic_state",
-  "spectraxgk.nonlinear_diagnostics",
-  "spectraxgk.nonlinear_helpers",
+  "spectraxgk.operators.nonlinear.diagnostics",
+  "spectraxgk.operators.nonlinear.policies",
   "spectraxgk.solvers.nonlinear.explicit",
   "spectraxgk.solvers.nonlinear.imex",
 ]

@@ -15,7 +15,7 @@ from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.workflows.runtime.artifacts as runtime_artifacts
 import spectraxgk.netcdf_spectral_layout as spectral_layout
-import spectraxgk.nonlinear_output_netcdf as nonlinear_netcdf
+import spectraxgk.artifacts.nonlinear_netcdf as nonlinear_netcdf
 import spectraxgk.artifacts as artifact_package
 import spectraxgk.artifacts.io as artifact_io
 import spectraxgk.artifacts.linear as artifact_linear
@@ -985,26 +985,26 @@ def test_runtime_artifact_geometry_and_input_group_writers(
         physics=SimpleNamespace(beta=0.02),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.apply_geometry_grid_defaults",
+        "spectraxgk.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_spectral_grid", lambda _cfg: grid
+        "spectraxgk.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _cfg: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
+        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.ensure_flux_tube_geometry_data",
+        "spectraxgk.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.real_fft_ordered_kx",
+        "spectraxgk.artifacts.nonlinear_netcdf.real_fft_ordered_kx",
         lambda arr: np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.real_fft_unique_ky",
+        "spectraxgk.artifacts.nonlinear_netcdf.real_fft_unique_ky",
         lambda arr: np.asarray([0.0, 0.3], dtype=np.float32),
     )
 
@@ -1078,7 +1078,7 @@ def test_runtime_artifact_geometry_writer_applies_imported_grid_defaults(
         physics=SimpleNamespace(beta=0.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
+        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
 
@@ -1105,26 +1105,26 @@ def test_runtime_artifact_particle_moments(monkeypatch) -> None:
         kperp2=np.ones((2, 4, 3), dtype=np.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.apply_geometry_grid_defaults",
+        "spectraxgk.artifacts.nonlinear_netcdf.apply_geometry_grid_defaults",
         lambda _geom, grid_cfg: grid_cfg,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_spectral_grid", lambda _grid: grid
+        "spectraxgk.artifacts.nonlinear_netcdf.build_spectral_grid", lambda _grid: grid
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_runtime_geometry",
+        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_geometry",
         lambda _cfg: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.ensure_flux_tube_geometry_data",
+        "spectraxgk.artifacts.nonlinear_netcdf.ensure_flux_tube_geometry_data",
         lambda _geom, _theta: geom,
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_runtime_linear_params",
+        "spectraxgk.artifacts.nonlinear_netcdf.build_runtime_linear_params",
         lambda _cfg, **_kwargs: object(),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear_output_netcdf.build_linear_cache",
+        "spectraxgk.artifacts.nonlinear_netcdf.build_linear_cache",
         lambda *_args, **_kwargs: cache,
     )
 

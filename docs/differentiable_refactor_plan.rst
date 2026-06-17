@@ -164,7 +164,7 @@ High-Risk Module Split Plan
   optional-backend import behavior, same-WOUT provenance, geometry parity,
   JVP/VJP/finite-difference agreement, and conditioning diagnostics.
 
-``nonlinear_parallel.py``
+``operators/nonlinear/parallel.py``
   Split domain plans, spectral communication, device-z pencil route, observable
   reductions, and profiling. Required gates: serial-vs-decomposed RHS identity,
   physical transport-window identity, profiler artifact schema, and no speedup
@@ -172,7 +172,7 @@ High-Risk Module Split Plan
   chunk/layout utilities, communication/work models, pencil FFT/bracket
   primitives, RHS micro-routes, and tolerance helpers now live in
   ``operators/nonlinear/spectral_core.py`` behind the unchanged
-  ``spectraxgk.nonlinear_parallel`` facade. Logical spectral communication,
+  ``spectraxgk.operators.nonlinear.parallel`` facade. Logical spectral communication,
   RHS, and fixed-window integrator identity gates now live in
   ``operators/nonlinear/spectral_identity.py``. The local domain prototype
   gates and device-z shard-map route now live in
@@ -221,10 +221,10 @@ High-Risk Module Split Plan
   Shared sampled-scan interval routing, diagnostic-stride selection, progress
   callback routing, scan-output sampling/finalization, resolved diagnostic
   packing, and ``SimulationDiagnostics`` construction now live in
-  ``spectraxgk.nonlinear_diagnostics``. Shared diagnostic cache,
+  ``spectraxgk.operators.nonlinear.diagnostics``. Shared diagnostic cache,
   quadrature-weight, omega-mask, z-index, state-projection setup, reusable IMEX
   operator setup, collision-split policy construction, and fixed/adaptive
-  nonlinear time-step policy now live in ``spectraxgk.nonlinear_helpers`` with
+  nonlinear time-step policy now live in ``spectraxgk.operators.nonlinear.policies`` with
   injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live

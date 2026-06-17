@@ -15,16 +15,7 @@ blocked_prefixes = [
   "benchmark_",
   "stellarator_",
 ]
-allowed_root_prefix_modules = [
-  "spectraxgk.nonlinear_diagnostics",
-  "spectraxgk.nonlinear_helpers",
-  "spectraxgk.nonlinear_output_netcdf",
-  "spectraxgk.nonlinear_parallel",
-  "spectraxgk.nonlinear_parallel_contracts",
-  "spectraxgk.nonlinear_replicate_diagnostics",
-  "spectraxgk.nonlinear_replicate_followup",
-  "spectraxgk.nonlinear_transport_optimization",
-]
+allowed_root_prefix_modules = []
 
 [package_policy]
 required_domain_packages = [
@@ -40,6 +31,7 @@ required_domain_packages = [
   "spectraxgk.validation",
   "spectraxgk.validation.benchmarks",
   "spectraxgk.validation.nonlinear_gradient",
+  "spectraxgk.validation.nonlinear_transport",
   "spectraxgk.validation.quasilinear",
   "spectraxgk.validation.stellarator",
   "spectraxgk.workflows",

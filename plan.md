@@ -4,12 +4,12 @@
   `_periodic_zp_from_grid` to the existing `spectraxgk.workflows.runtime.startup` owner,
   preserving imports while shrinking the main runtime runner.
 - 2026-06-17: Moved explicit/IMEX diagnostic collision-split setup into
-  `spectraxgk.nonlinear_helpers.build_nonlinear_collision_split_policy`. The
+  `spectraxgk.operators.nonlinear.policies.build_nonlinear_collision_split_policy`. The
   facade still injects its damping seam for monkeypatch compatibility, but
   active/inactive split detection, collision-free RHS terms, and damping
   assembly now have one focused policy object and direct tests.
 - 2026-06-17: Moved explicit/IMEX nonlinear diagnostic output finalization into
-  `spectraxgk.nonlinear_diagnostics.finalize_nonlinear_scan_diagnostics`. The
+  `spectraxgk.operators.nonlinear.diagnostics.finalize_nonlinear_scan_diagnostics`. The
   public nonlinear facade no longer owns duplicate stride/sample-index logic
   before packaging `SimulationDiagnostics`, and the helper now has focused
   tests for dense versus already-sampled scans.
@@ -75,7 +75,7 @@
   both scan paths now share one tested closure factory and direct operator
   package re-export.
 - 2026-06-17: Extracted the non-CPU sampled explicit diagnostic scan runner
-  into `spectraxgk.nonlinear_diagnostics`. The retained-step interval policy
+  into `spectraxgk.operators.nonlinear.diagnostics`. The retained-step interval policy
   now lives in `sampled_scan_intervals`, and
   `run_sampled_explicit_diagnostic_scan` owns the interval `fori_loop`/`scan`
   orchestration while preserving final-step retention. Added manufactured scan
@@ -83,14 +83,14 @@
   series.
 - 2026-06-17: Extracted fixed/adaptive nonlinear time-step policy from
   `spectraxgk.nonlinear` into
-  `spectraxgk.nonlinear_helpers.build_nonlinear_time_step_policy`. The explicit
+  `spectraxgk.operators.nonlinear.policies.build_nonlinear_time_step_policy`. The explicit
   diagnostics path now delegates initial `dt`, progress horizon, linear/CFL
   frequency bounds, velocity-space bounds, and `dt_min`/`dt_max` clipping to a
   directly tested helper with injected compatibility seams.
 - 2026-06-17: Deduplicated nonlinear diagnostic-stride selection and progress
   callback routing. Explicit and IMEX diagnostic scans now share
   `select_nonlinear_step_diagnostics` and `maybe_emit_nonlinear_progress` in
-  `spectraxgk.nonlinear_diagnostics`, preserving the existing callback cadence
+  `spectraxgk.operators.nonlinear.diagnostics`, preserving the existing callback cadence
   while keeping host-output policy out of the scan bodies. Added direct tests
   for compute-vs-reuse stride selection and the disabled-progress no-op path.
 - 2026-06-17: Moved duplicated nonlinear IMEX closure construction into
@@ -100,7 +100,7 @@
   facade kernels for debugging/monkeypatch workflows. Added direct factory
   tests for nonlinear-kernel forwarding and solve-policy forwarding.
 - 2026-06-17: Extracted shared nonlinear diagnostic setup into
-  `spectraxgk.nonlinear_helpers.build_nonlinear_diagnostic_setup`.
+  `spectraxgk.operators.nonlinear.policies.build_nonlinear_diagnostic_setup`.
   Explicit and IMEX diagnostic scans now use the same cache construction,
   quadrature weights, omega masks, monitored z-index policy, and fixed-mode plus
   Hermitian projection setup through injected compatibility seams. Added a
@@ -109,13 +109,13 @@
 - 2026-06-17: Deduplicated nonlinear diagnostic scan postprocessing by moving
   raw scan-tuple sampling, resolved-diagnostic packing, energy reconstruction,
   and `SimulationDiagnostics` construction into
-  `spectraxgk.nonlinear_diagnostics.build_nonlinear_simulation_diagnostics`.
+  `spectraxgk.operators.nonlinear.diagnostics.build_nonlinear_simulation_diagnostics`.
   Explicit and IMEX nonlinear diagnostic paths now share the same output
   convention, while direct tests cover stride sampling, resolved schema mapping,
   and total-energy reconstruction.
 - 2026-06-17: Deduplicated nonlinear diagnostic projection setup by moving the
   composed fixed-mode plus compressed-real-FFT Hermitian projector into
-  `spectraxgk.nonlinear_helpers._make_nonlinear_state_projector`. Explicit and
+  `spectraxgk.operators.nonlinear.policies._make_nonlinear_state_projector`. Explicit and
   IMEX diagnostic scans now share one projection convention, with a direct
   helper test covering fixed Fourier-mode preservation and negative-ky
   reconstruction.
@@ -425,7 +425,7 @@
 
 - 2026-06-15: Continued the naming/refactor cleanup by renaming the nonlinear
   NetCDF writer and spectral-layout helpers from reference-code-oriented names
-  to `spectraxgk.nonlinear_output_netcdf` and
+  to `spectraxgk.artifacts.nonlinear_netcdf` and
   `spectraxgk.netcdf_spectral_layout`. Runtime diagnostics, adaptive chunk
   execution, restart IO, and startup randomization helpers now use
   `runtime_*`, `NetCDF`, `dealiased`, and `glibc` vocabulary. The remaining
@@ -441,7 +441,7 @@
 - 2026-06-15: Completed the main runtime artifact facade reduction by moving
   nonlinear NetCDF output schema writing, artifact geometry resolution,
   particle-moment output helpers, and geometry/input metadata group writers into
-  `spectraxgk.nonlinear_output_netcdf`. The legacy
+  `spectraxgk.artifacts.nonlinear_netcdf`. The legacy
   `spectraxgk.workflows.runtime.artifacts` module is now a small dispatch/orchestration
   facade that re-exports compatibility helpers for existing tests and tools.
 
@@ -515,7 +515,7 @@
   device-z shard-map RHS route, z-sharding topology check, physical transport
   observable reductions, and serial-vs-device transport-window identity gate
   into `spectraxgk.operators.nonlinear.device_z`. The public
-  `spectraxgk.nonlinear_parallel` facade still re-exports the release-visible
+  `spectraxgk.operators.nonlinear.parallel` facade still re-exports the release-visible
   route and test-visible helper seams, preserving the fail-closed distinction
   between identity-gated routing and profiler-backed speedup claims.
 
@@ -548,7 +548,7 @@
   The split module now owns deterministic spectral test states, chunk/layout
   utilities, communication/work models, pencil FFT/bracket kernels, RHS
   micro-routes, z-chunked bracket helpers, host-staged sharding preparation,
-  and tolerance helpers. The public `spectraxgk.nonlinear_parallel` facade
+  and tolerance helpers. The public `spectraxgk.operators.nonlinear.parallel` facade
   still re-exports the moved public and test-visible helpers, with an
   import-identity regression guarding downstream compatibility.
 
@@ -630,9 +630,9 @@
 
 - 2026-06-14: Continued the behavior-preserving refactor lane by splitting
   nonlinear parallelization contracts, JSON-ready reports, and local
-  state-domain identity gates into `spectraxgk.nonlinear_parallel_contracts`
+  state-domain identity gates into `spectraxgk.operators.nonlinear.parallel_contracts`
   and `spectraxgk.operators.nonlinear.domain_decomposition`. The public
-  `spectraxgk.nonlinear_parallel` facade remains the import surface for
+  `spectraxgk.operators.nonlinear.parallel` facade remains the import surface for
   examples and downstream users, while focused tests now assert that facade
   exports are identical to the underlying contract and domain objects. This
   advances the refactor/testability lane without changing nonlinear RHS,
@@ -2716,11 +2716,11 @@ No long nonlinear audit should be launched from these candidates.
 ### 2026-06-17 Nonlinear Parallel Spectral Identity Split
 
 - Moved logical spectral communication, RHS, and fixed-window integrator
-  identity gates from `spectraxgk.nonlinear_parallel` into
+  identity gates from `spectraxgk.operators.nonlinear.parallel` into
   `spectraxgk.operators.nonlinear.spectral_identity`, leaving the public
   nonlinear-parallel facade as a re-export and strategy/pencil policy surface.
 - Added a facade re-export test for the new identity module and reduced
-  `src/spectraxgk/nonlinear_parallel.py` from 1153 to 472 lines, below the
+  `src/spectraxgk/operators/nonlinear/parallel.py` from 1153 to 472 lines, below the
   active 900-line target.
 - Local gates: Ruff, targeted mypy, and the nonlinear parallel/domain/spectral
   communication test shard passed.

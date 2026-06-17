@@ -203,7 +203,7 @@ Linear Krylov Solvers
 Nonlinear Diagnostics
 ---------------------
 
-.. automodule:: spectraxgk.nonlinear_diagnostics
+.. automodule:: spectraxgk.operators.nonlinear.diagnostics
    :members:
    :private-members:
 
@@ -217,7 +217,7 @@ Nonlinear Diagnostic State
 Nonlinear Helpers
 -----------------
 
-.. automodule:: spectraxgk.nonlinear_helpers
+.. automodule:: spectraxgk.operators.nonlinear.policies
    :members:
    :private-members:
 
@@ -245,13 +245,13 @@ Nonlinear IMEX
 Nonlinear Replicate Diagnostics
 -------------------------------
 
-.. automodule:: spectraxgk.nonlinear_replicate_diagnostics
+.. automodule:: spectraxgk.validation.nonlinear_transport.replicate_diagnostics
    :members:
 
 Nonlinear Replicate Follow-Up
 -----------------------------
 
-.. automodule:: spectraxgk.nonlinear_replicate_followup
+.. automodule:: spectraxgk.validation.nonlinear_transport.replicate_followup
    :members:
 
 Nonlinear Gradient Follow-Up
@@ -467,7 +467,7 @@ Nonlinear Parallel Device-Z Core
 Nonlinear Parallel Contracts
 ----------------------------
 
-.. automodule:: spectraxgk.nonlinear_parallel_contracts
+.. automodule:: spectraxgk.operators.nonlinear.parallel_contracts
    :members:
 
 Velocity Sharding Plans
@@ -610,7 +610,7 @@ NetCDF Spectral Layout
 Nonlinear Output NetCDF Writer
 ---------------------------------
 
-.. automodule:: spectraxgk.nonlinear_output_netcdf
+.. automodule:: spectraxgk.artifacts.nonlinear_netcdf
    :members:
    :private-members:
 

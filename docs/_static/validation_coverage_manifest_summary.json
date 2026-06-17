@@ -10,10 +10,10 @@
     "spectraxgk.operators.nonlinear.diagnostic_state",
     "spectraxgk.solvers.nonlinear.explicit",
     "spectraxgk.solvers.nonlinear.imex",
-    "spectraxgk.nonlinear_parallel",
+    "spectraxgk.operators.nonlinear.parallel",
     "spectraxgk.operators.nonlinear.spectral_core",
     "spectraxgk.operators.nonlinear.device_z",
-    "spectraxgk.nonlinear_helpers",
+    "spectraxgk.operators.nonlinear.policies",
     "spectraxgk.quasilinear",
     "spectraxgk.validation.quasilinear.calibration",
     "spectraxgk.validation.quasilinear.window",
@@ -32,7 +32,7 @@
     "spectraxgk.artifacts.linear",
     "spectraxgk.artifacts.nonlinear",
     "spectraxgk.netcdf_spectral_layout",
-    "spectraxgk.nonlinear_output_netcdf",
+    "spectraxgk.artifacts.nonlinear_netcdf",
     "spectraxgk.artifacts.nonlinear_diagnostics",
     "spectraxgk.validation.nonlinear_gradient.evidence",
     "spectraxgk.validation.nonlinear_gradient.evidence_core",
@@ -66,17 +66,18 @@
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 21,
+  "n_excluded_modules": 22,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 188,
+  "n_package_modules": 189,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
     "spectraxgk.artifacts.linear": [],
     "spectraxgk.artifacts.nonlinear": [],
     "spectraxgk.artifacts.nonlinear_diagnostics": [],
+    "spectraxgk.artifacts.nonlinear_netcdf": [],
     "spectraxgk.artifacts.validation": [],
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmarks": [
@@ -144,17 +145,6 @@
     "spectraxgk.nonlinear": [
       "spectraxgk.terms.nonlinear"
     ],
-    "spectraxgk.nonlinear_diagnostics": [],
-    "spectraxgk.nonlinear_helpers": [
-      "spectraxgk.reduced_model_contracts"
-    ],
-    "spectraxgk.nonlinear_output_netcdf": [],
-    "spectraxgk.nonlinear_parallel": [
-      "spectraxgk.nonlinear_parallel_contracts",
-      "spectraxgk.operators.nonlinear.domain_decomposition"
-    ],
-    "spectraxgk.nonlinear_replicate_diagnostics": [],
-    "spectraxgk.nonlinear_replicate_followup": [],
     "spectraxgk.objectives.core": [],
     "spectraxgk.objectives.eigen": [],
     "spectraxgk.objectives.geometry": [],
@@ -163,7 +153,7 @@
     "spectraxgk.objectives.sampling": [],
     "spectraxgk.objectives.solver_gradients": [
       "spectraxgk.objectives.stellarator",
-      "spectraxgk.nonlinear_transport_optimization",
+      "spectraxgk.validation.nonlinear_transport.optimization_guard",
       "spectraxgk.validation.stellarator.candidate_gate",
       "spectraxgk.validation.stellarator.transport_admission",
       "spectraxgk.geometry.vmec_boundary_chain",
@@ -184,6 +174,14 @@
     "spectraxgk.operators.linear.rhs": [],
     "spectraxgk.operators.nonlinear.device_z": [],
     "spectraxgk.operators.nonlinear.diagnostic_state": [],
+    "spectraxgk.operators.nonlinear.diagnostics": [],
+    "spectraxgk.operators.nonlinear.parallel": [
+      "spectraxgk.operators.nonlinear.parallel_contracts",
+      "spectraxgk.operators.nonlinear.domain_decomposition"
+    ],
+    "spectraxgk.operators.nonlinear.policies": [
+      "spectraxgk.reduced_model_contracts"
+    ],
     "spectraxgk.operators.nonlinear.rhs": [],
     "spectraxgk.operators.nonlinear.spectral_core": [
       "spectraxgk.operators.nonlinear.spectral_identity"
@@ -238,6 +236,8 @@
     "spectraxgk.validation.nonlinear_gradient.followup_ql_seed": [],
     "spectraxgk.validation.nonlinear_gradient.followup_state_runbook": [],
     "spectraxgk.validation.nonlinear_gradient.followup_variance": [],
+    "spectraxgk.validation.nonlinear_transport.replicate_diagnostics": [],
+    "spectraxgk.validation.nonlinear_transport.replicate_followup": [],
     "spectraxgk.validation.quasilinear.calibration": [
       "spectraxgk.validation.quasilinear.holdout_admission"
     ],
@@ -530,7 +530,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_parallel",
+      "module": "spectraxgk.operators.nonlinear.parallel",
       "n_artifacts": 9,
       "n_fast_tests": 5,
       "n_next_tests": 2,
@@ -538,7 +538,7 @@
       "n_owned_modules": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_parallel.py",
+      "path": "src/spectraxgk/operators/nonlinear/parallel.py",
       "status": "active"
     },
     {
@@ -572,7 +572,7 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_diagnostics",
+      "module": "spectraxgk.operators.nonlinear.diagnostics",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
@@ -580,13 +580,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 5,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_diagnostics.py",
+      "path": "src/spectraxgk/operators/nonlinear/diagnostics.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_helpers",
+      "module": "spectraxgk.operators.nonlinear.policies",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -594,13 +594,13 @@
       "n_owned_modules": 1,
       "n_physics_contracts": 5,
       "n_reference_anchors": 4,
-      "path": "src/spectraxgk/nonlinear_helpers.py",
+      "path": "src/spectraxgk/operators/nonlinear/policies.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_replicate_diagnostics",
+      "module": "spectraxgk.validation.nonlinear_transport.replicate_diagnostics",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -608,13 +608,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_replicate_diagnostics.py",
+      "path": "src/spectraxgk/validation/nonlinear_transport/replicate_diagnostics.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_replicate_followup",
+      "module": "spectraxgk.validation.nonlinear_transport.replicate_followup",
       "n_artifacts": 1,
       "n_fast_tests": 4,
       "n_next_tests": 2,
@@ -622,7 +622,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_replicate_followup.py",
+      "path": "src/spectraxgk/validation/nonlinear_transport/replicate_followup.py",
       "status": "active"
     },
     {
@@ -922,7 +922,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.nonlinear_output_netcdf",
+      "module": "spectraxgk.artifacts.nonlinear_netcdf",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
@@ -930,7 +930,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/nonlinear_output_netcdf.py",
+      "path": "src/spectraxgk/artifacts/nonlinear_netcdf.py",
       "status": "active"
     },
     {

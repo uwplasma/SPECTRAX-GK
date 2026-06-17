@@ -142,7 +142,7 @@ def build_profile(
     trace_device_count: int | None,
     hlo_prefix: Path | None,
 ) -> dict[str, Any]:
-    from spectraxgk.nonlinear_parallel import (  # type: ignore[import-untyped]
+    from spectraxgk.operators.nonlinear.parallel import (  # type: ignore[import-untyped]
         _device_z_pencil_shard_map_rhs_fn,
         _host_staged_array_for_sharding,
         _serial_nonlinear_spectral_rhs,

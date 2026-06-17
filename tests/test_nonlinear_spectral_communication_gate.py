@@ -3,7 +3,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.nonlinear_parallel import (
+from spectraxgk.operators.nonlinear.parallel import (
     NonlinearSpectralCommunicationReport,
     NonlinearSpectralIntegratorIdentityReport,
     NonlinearSpectralRHSIdentityReport,

@@ -25,6 +25,7 @@ excluded_modules = [
   "spectraxgk.validation.__init__",
   "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.validation.nonlinear_gradient.__init__",
+  "spectraxgk.validation.nonlinear_transport.__init__",
   "spectraxgk.validation.quasilinear.__init__",
   "spectraxgk.validation.stellarator.__init__",
   "spectraxgk.workflows.__init__",
@@ -731,10 +732,10 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_parallel"
-path = "src/spectraxgk/nonlinear_parallel.py"
+module = "spectraxgk.operators.nonlinear.parallel"
+path = "src/spectraxgk/operators/nonlinear/parallel.py"
 owned_modules = [
-  "spectraxgk.nonlinear_parallel_contracts",
+  "spectraxgk.operators.nonlinear.parallel_contracts",
   "spectraxgk.operators.nonlinear.domain_decomposition",
 ]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
@@ -845,8 +846,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_diagnostics"
-path = "src/spectraxgk/nonlinear_diagnostics.py"
+module = "spectraxgk.operators.nonlinear.diagnostics"
+path = "src/spectraxgk/operators/nonlinear/diagnostics.py"
 owner_lane = "resolved nonlinear diagnostic packing, sampled-scan routing, scan sampling, progress routing, and diagnostics construction"
 status = "active"
 coverage_priority = "medium"
@@ -882,8 +883,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_helpers"
-path = "src/spectraxgk/nonlinear_helpers.py"
+module = "spectraxgk.operators.nonlinear.policies"
+path = "src/spectraxgk/operators/nonlinear/policies.py"
 owned_modules = [
   "spectraxgk.reduced_model_contracts",
 ]
@@ -925,8 +926,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_replicate_diagnostics"
-path = "src/spectraxgk/nonlinear_replicate_diagnostics.py"
+module = "spectraxgk.validation.nonlinear_transport.replicate_diagnostics"
+path = "src/spectraxgk/validation/nonlinear_transport/replicate_diagnostics.py"
 owner_lane = "replicated nonlinear-window spread diagnosis before follow-up GPU campaigns"
 status = "active"
 coverage_priority = "medium"
@@ -957,8 +958,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_replicate_followup"
-path = "src/spectraxgk/nonlinear_replicate_followup.py"
+module = "spectraxgk.validation.nonlinear_transport.replicate_followup"
+path = "src/spectraxgk/validation/nonlinear_transport/replicate_followup.py"
 owner_lane = "targeted seed/timestep follow-up planning for blocked nonlinear-gradient campaigns"
 status = "active"
 coverage_priority = "medium"
@@ -1790,8 +1791,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_output_netcdf"
-path = "src/spectraxgk/nonlinear_output_netcdf.py"
+module = "spectraxgk.artifacts.nonlinear_netcdf"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -2772,7 +2773,7 @@ module = "spectraxgk.objectives.solver_gradients"
 path = "src/spectraxgk/objectives/solver_gradients.py"
 owned_modules = [
   "spectraxgk.objectives.stellarator",
-  "spectraxgk.nonlinear_transport_optimization",
+  "spectraxgk.validation.nonlinear_transport.optimization_guard",
   "spectraxgk.validation.stellarator.candidate_gate",
   "spectraxgk.validation.stellarator.transport_admission",
   "spectraxgk.geometry.vmec_boundary_chain",

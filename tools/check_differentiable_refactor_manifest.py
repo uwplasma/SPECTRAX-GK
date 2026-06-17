@@ -353,7 +353,7 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
     required_hotspots = {
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",
-        "spectraxgk.nonlinear_parallel",
+        "spectraxgk.operators.nonlinear.parallel",
         "spectraxgk.objectives.solver_gradients",
         "spectraxgk.nonlinear",
         "spectraxgk.workflows.runtime.artifacts",
