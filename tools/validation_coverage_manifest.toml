@@ -18,6 +18,7 @@ excluded_modules = [
   "spectraxgk.operators.__init__",
   "spectraxgk.operators.linear.__init__",
   "spectraxgk.operators.nonlinear.__init__",
+  "spectraxgk.parallel.__init__",
   "spectraxgk.solvers.__init__",
   "spectraxgk.solvers.linear.__init__",
   "spectraxgk.solvers.nonlinear.__init__",
@@ -1854,12 +1855,12 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.sharding"
-path = "src/spectraxgk/sharding.py"
+module = "spectraxgk.parallel.state"
+path = "src/spectraxgk/parallel/state.py"
 owned_modules = [
-  "spectraxgk.sharded_integrators",
+  "spectraxgk.parallel.integrators",
   "spectraxgk.utils.callbacks",
-  "spectraxgk.velocity_sharding",
+  "spectraxgk.parallel.velocity",
 ]
 owner_lane = "JAX parallelization policy for CPU/GPU scans and ensemble workloads"
 status = "active"
@@ -3029,8 +3030,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.parallel"
-path = "src/spectraxgk/parallel.py"
+module = "spectraxgk.parallel.core"
+path = "src/spectraxgk/parallel/core.py"
 owner_lane = "production ky/batch scan and UQ ensemble parallelization"
 status = "active"
 coverage_priority = "high"
@@ -3097,8 +3098,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.parallel_decomposition"
-path = "src/spectraxgk/parallel_decomposition.py"
+module = "spectraxgk.parallel.decomposition"
+path = "src/spectraxgk/parallel/decomposition.py"
 owner_lane = "deterministic decomposition contracts for production independent work and diagnostic nonlinear partitions"
 status = "active"
 coverage_priority = "high"

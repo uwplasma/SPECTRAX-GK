@@ -34,9 +34,9 @@ def test_hermite_exchange_gate_builds_identity_summary(monkeypatch) -> None:
 
     monkeypatch.setattr(gate, "_state", fake_state)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", fake_build_plan)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.hermite_neighbor_reference", fake_reference)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.hermite_neighbor_shard_map", lambda state, plan, devices: fake_reference(state))
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", fake_build_plan)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.hermite_neighbor_reference", fake_reference)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.hermite_neighbor_shard_map", lambda state, plan, devices: fake_reference(state))
 
     summary = gate.build_hermite_exchange_gate(shape=(1, 4, 1, 1, 1), requested_devices=2, atol=1.0e-12)
 

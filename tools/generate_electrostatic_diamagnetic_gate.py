@@ -114,7 +114,7 @@ def build_electrostatic_diamagnetic_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan, diamagnetic_drive_shard_map, electrostatic_phi_shard_map
+    from spectraxgk.parallel.velocity import build_velocity_sharding_plan, diamagnetic_drive_shard_map, electrostatic_phi_shard_map
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
@@ -180,7 +180,7 @@ def build_electrostatic_diamagnetic_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded diamagnetic-drive identity gate",
-            "source": "spectraxgk.velocity_sharding.diamagnetic_drive_shard_map",
+            "source": "spectraxgk.parallel.velocity.diamagnetic_drive_shard_map",
             "reference_source": "spectraxgk.linear.linear_rhs_cached with diamagnetic term only",
             "claim_scope": "single-species periodic electrostatic diamagnetic-drive identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),

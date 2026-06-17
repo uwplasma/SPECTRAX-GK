@@ -120,7 +120,7 @@ def build_linear_rhs_electrostatic_slices_gate(
 
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
     from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan
+    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):

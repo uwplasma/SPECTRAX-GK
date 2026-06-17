@@ -69,7 +69,7 @@ def build_hermite_streaming_ladder_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         hermite_streaming_ladder_reference,
         hermite_streaming_ladder_shard_map,
@@ -117,7 +117,7 @@ def build_hermite_streaming_ladder_gate(
     return _json_clean(
         {
             "case": "Hermite streaming-ladder shard_map identity gate",
-            "source": "spectraxgk.velocity_sharding.hermite_streaming_ladder_shard_map",
+            "source": "spectraxgk.parallel.velocity.hermite_streaming_ladder_shard_map",
             "claim_scope": "Hermite streaming communication/coefficient gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "vth": float(vth),

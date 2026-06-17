@@ -25,8 +25,8 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cached
-from spectraxgk.sharded_integrators import integrate_nonlinear_sharded
-from spectraxgk.sharding import resolve_state_sharding
+from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
+from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
 
 

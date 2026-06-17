@@ -12,9 +12,9 @@ explicit.
 The long-term consolidation target is documented in
 :doc:`architecture_refactor_plan`. New refactor work should move implementation
 into domain packages such as ``operators``, ``solvers``, ``objectives``,
-``workflows``, ``artifacts``, and ``validation`` instead of adding more root-level
-``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
-``benchmark_*`` modules.
+``parallel``, ``diagnostics``, ``workflows``, ``artifacts``, and ``validation``
+instead of adding more root-level ``runtime_*``, ``nonlinear_*``,
+``vmec_jax_*``, ``quasilinear_*``, or ``benchmark_*`` modules.
 
 Public API vs Internal Modules
 ------------------------------
@@ -67,7 +67,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``nonlinear.py``
    - ``diffrax_integrators.py``
 3. **diagnostics and artifacts**
-   - ``diagnostics.py``
+   - ``diagnostics/core.py``
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/results.py``
    - ``workflows/runtime/orchestration.py``

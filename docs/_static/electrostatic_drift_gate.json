@@ -82,7 +82,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.velocity_sharding mirror_drift_shard_map + curvature_gradb_drift_shard_map",
+  "source": "spectraxgk.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
   "state_shape": [
     2,
     8,

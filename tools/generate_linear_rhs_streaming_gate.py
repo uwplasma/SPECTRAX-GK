@@ -122,7 +122,7 @@ def build_linear_rhs_streaming_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         periodic_streaming_shard_map,
     )
@@ -176,7 +176,7 @@ def build_linear_rhs_streaming_gate(
     return _json_clean(
         {
             "case": "Full linear-RHS streaming-only shard-map identity gate",
-            "source": "spectraxgk.velocity_sharding.periodic_streaming_shard_map",
+            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
             "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
             "claim_scope": "linear RHS identity gate with only streaming enabled, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),

@@ -15,8 +15,8 @@ from spectraxgk import build_linear_cache, build_linear_params
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.sharding import resolve_state_sharding
-from spectraxgk.sharded_integrators import integrate_linear_sharded
+from spectraxgk.parallel.state import resolve_state_sharding
+from spectraxgk.parallel.integrators import integrate_linear_sharded
 from spectraxgk.species import Species
 
 

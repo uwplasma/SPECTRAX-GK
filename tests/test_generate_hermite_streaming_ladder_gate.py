@@ -37,11 +37,11 @@ def test_hermite_streaming_ladder_gate_builds_identity_summary(monkeypatch) -> N
 
     monkeypatch.setattr(gate, "_state", fake_state)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", fake_build_plan)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.hermite_streaming_ladder_reference", fake_ladder)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.hermite_streaming_ladder_shard_map", lambda state, plan, **kwargs: fake_ladder(state))
-    monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_reference", fake_reduce)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_shard_map", lambda state, plan, **kwargs: fake_reduce(state))
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", fake_build_plan)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.hermite_streaming_ladder_reference", fake_ladder)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.hermite_streaming_ladder_shard_map", lambda state, plan, **kwargs: fake_ladder(state))
+    monkeypatch.setattr("spectraxgk.parallel.velocity.velocity_field_reduce_reference", fake_reduce)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.velocity_field_reduce_shard_map", lambda state, plan, **kwargs: fake_reduce(state))
 
     summary = gate.build_hermite_streaming_ladder_gate(
         shape=(1, 4, 1, 1, 1),

@@ -31,9 +31,9 @@ def test_periodic_streaming_microkernel_gate_builds_identity_summary(monkeypatch
     monkeypatch.setattr(gate, "_state", fake_state)
     monkeypatch.setattr(gate, "_production_streaming_term", fake_streaming)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", fake_build_plan)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.periodic_streaming_reference", fake_streaming)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.periodic_streaming_shard_map", lambda state, plan, **kwargs: fake_streaming(state))
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", fake_build_plan)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.periodic_streaming_reference", fake_streaming)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.periodic_streaming_shard_map", lambda state, plan, **kwargs: fake_streaming(state))
 
     summary = gate.build_periodic_streaming_microkernel_gate(
         shape=(1, 1, 4, 1, 1, 4),

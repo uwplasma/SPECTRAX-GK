@@ -36,7 +36,7 @@ def test_linear_rhs_streaming_electrostatic_gate_builds_identity_summary(monkeyp
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
     monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr("spectraxgk.linear.linear_rhs_parallel_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
 
     summary = gate.build_linear_rhs_streaming_electrostatic_gate(
         requested_devices=2,

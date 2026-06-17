@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 
 import spectraxgk
-from spectraxgk.velocity_sharding import (
+from spectraxgk.parallel.velocity import (
     build_velocity_sharding_plan,
     curvature_gradb_drift_reference,
     curvature_gradb_drift_shard_map,
@@ -242,7 +242,7 @@ def test_mocked_shard_map_exercises_multi_device_velocity_paths(monkeypatch: pyt
     kz = jnp.asarray([0.0, 1.0, -1.0, -2.0], dtype=jnp.float32)
     local_coeffs = jnp.ones((1, 3, 1, 1, 1), dtype=state.dtype)
     monkeypatch.setattr(
-        "spectraxgk.velocity_sharding._hermite_ladder_coefficients",
+        "spectraxgk.parallel.velocity._hermite_ladder_coefficients",
         lambda _arr: (local_coeffs, local_coeffs, 1),
     )
     assert hermite_streaming_ladder_shard_map(state, plan, vth=1.2, devices=devices).shape == (2, 3, 3, 1, 4)

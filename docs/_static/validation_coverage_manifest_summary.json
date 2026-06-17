@@ -62,15 +62,15 @@
     "spectraxgk.objectives.solver_gradients",
     "spectraxgk.qa_low_turbulence",
     "spectraxgk.objectives.stellarator_portfolio",
-    "spectraxgk.parallel",
-    "spectraxgk.parallel_decomposition"
+    "spectraxgk.parallel.core",
+    "spectraxgk.parallel.decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 23,
+  "n_excluded_modules": 24,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 190,
+  "n_package_modules": 191,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -186,8 +186,13 @@
     "spectraxgk.operators.nonlinear.spectral_core": [
       "spectraxgk.operators.nonlinear.spectral_identity"
     ],
-    "spectraxgk.parallel": [],
-    "spectraxgk.parallel_decomposition": [],
+    "spectraxgk.parallel.core": [],
+    "spectraxgk.parallel.decomposition": [],
+    "spectraxgk.parallel.state": [
+      "spectraxgk.parallel.integrators",
+      "spectraxgk.utils.callbacks",
+      "spectraxgk.parallel.velocity"
+    ],
     "spectraxgk.plotting": [],
     "spectraxgk.qa_low_turbulence": [],
     "spectraxgk.quasilinear": [
@@ -205,11 +210,6 @@
       "spectraxgk.workflows.runtime.config",
       "spectraxgk.workflows.runtime.diagnostics",
       "spectraxgk.workflows.runtime.startup"
-    ],
-    "spectraxgk.sharding": [
-      "spectraxgk.sharded_integrators",
-      "spectraxgk.utils.callbacks",
-      "spectraxgk.velocity_sharding"
     ],
     "spectraxgk.solvers.linear.implicit": [],
     "spectraxgk.solvers.linear.integrators": [],
@@ -950,7 +950,7 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 90.0,
-      "module": "spectraxgk.sharding",
+      "module": "spectraxgk.parallel.state",
       "n_artifacts": 19,
       "n_fast_tests": 4,
       "n_next_tests": 3,
@@ -958,7 +958,7 @@
       "n_owned_modules": 3,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/sharding.py",
+      "path": "src/spectraxgk/parallel/state.py",
       "status": "active"
     },
     {
@@ -1356,7 +1356,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.parallel",
+      "module": "spectraxgk.parallel.core",
       "n_artifacts": 39,
       "n_fast_tests": 2,
       "n_next_tests": 1,
@@ -1364,13 +1364,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/parallel.py",
+      "path": "src/spectraxgk/parallel/core.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.parallel_decomposition",
+      "module": "spectraxgk.parallel.decomposition",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
@@ -1378,7 +1378,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/parallel_decomposition.py",
+      "path": "src/spectraxgk/parallel/decomposition.py",
       "status": "active"
     },
     {

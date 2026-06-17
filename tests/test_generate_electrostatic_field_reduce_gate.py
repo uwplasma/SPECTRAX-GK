@@ -45,13 +45,13 @@ def test_electrostatic_field_reduce_gate_builds_identity_summary(monkeypatch) ->
     monkeypatch.setattr(gate, "build_problem", fake_problem)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
     monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
     def fake_phi(*_args, **_kwargs):  # type: ignore[no-untyped-def]
         import jax.numpy as jnp
 
         return jnp.ones((2, 1, 4), dtype=jnp.complex64)
 
-    monkeypatch.setattr("spectraxgk.velocity_sharding.electrostatic_phi_shard_map", fake_phi)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.electrostatic_phi_shard_map", fake_phi)
 
     summary = gate.build_electrostatic_field_reduce_gate(
         requested_devices=2,

@@ -68,7 +68,7 @@ def build_velocity_field_reduce_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         velocity_field_reduce_reference,
         velocity_field_reduce_shard_map,
@@ -112,7 +112,7 @@ def build_velocity_field_reduce_gate(
     return _json_clean(
         {
             "case": "Velocity-space field-reduction shard_map identity gate",
-            "source": "spectraxgk.velocity_sharding.velocity_field_reduce_shard_map",
+            "source": "spectraxgk.parallel.velocity.velocity_field_reduce_shard_map",
             "claim_scope": "communication-kernel identity gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "reduction_axis": "hermite",

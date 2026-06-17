@@ -157,7 +157,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.velocity_sharding.electrostatic_phi_shard_map",
+  "source": "spectraxgk.parallel.velocity.electrostatic_phi_shard_map",
   "state_shape": [
     2,
     8,

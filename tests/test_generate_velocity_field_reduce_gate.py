@@ -32,9 +32,9 @@ def test_velocity_field_reduce_gate_builds_identity_summary(monkeypatch) -> None
 
     monkeypatch.setattr(gate, "_state", fake_state)
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", fake_build_plan)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_reference", fake_reduce)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.velocity_field_reduce_shard_map", fake_reduce)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", fake_build_plan)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.velocity_field_reduce_reference", fake_reduce)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.velocity_field_reduce_shard_map", fake_reduce)
 
     summary = gate.build_velocity_field_reduce_gate(
         shape=(1, 4, 2, 1, 1),

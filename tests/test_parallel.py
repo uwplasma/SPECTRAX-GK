@@ -7,6 +7,7 @@ import pytest
 
 import spectraxgk
 import spectraxgk.parallel as parallel
+import spectraxgk.parallel.core as parallel_core
 
 
 def test_parallel_public_api_exports_are_stable() -> None:
@@ -197,7 +198,7 @@ def test_batch_map_multi_device_branch_preserves_vmap_identity(monkeypatch) -> N
 
         return mapped
 
-    monkeypatch.setattr(parallel.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
     values = jnp.linspace(0.0, 1.0, 5)
 
     def fn(x):
@@ -225,7 +226,7 @@ def test_batch_map_multi_device_branch_drops_padding_and_preserves_chunk_order(
 
         return mapped
 
-    monkeypatch.setattr(parallel.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
     values = jnp.arange(7, dtype=jnp.float32)
 
     def fn(x):
@@ -250,7 +251,7 @@ def test_batch_map_multi_device_branch_drops_padding_and_preserves_chunk_order(
 
 def test_batch_map_single_device_fallback_never_calls_pmap(monkeypatch) -> None:
     monkeypatch.setattr(
-        parallel.jax,
+        parallel_core.jax,
         "pmap",
         lambda *args, **kwargs: pytest.fail(
             "single-device fallback must use vmap chunks, not pmap"
@@ -283,7 +284,7 @@ def test_batch_map_multi_device_branch_preserves_pytree_identity(monkeypatch) ->
 
         return mapped
 
-    monkeypatch.setattr(parallel.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
     values = jnp.linspace(0.0, 1.0, 5)
 
     def fn(x):
@@ -354,7 +355,7 @@ def test_independent_map_clips_thread_workers_and_accepts_executor_aliases(
             records.append((self.max_workers, materialized))
             return [fn(item) for item in materialized]
 
-    monkeypatch.setattr(parallel, "ThreadPoolExecutor", FakeThreadPool)
+    monkeypatch.setattr(parallel_core, "ThreadPoolExecutor", FakeThreadPool)
 
     observed = parallel.independent_map(
         lambda value: value * 11, [3, 1, 4], workers=99, executor="threads"

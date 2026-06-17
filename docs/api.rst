@@ -473,13 +473,19 @@ Nonlinear Parallel Contracts
 Velocity Sharding Plans
 -----------------------
 
-.. automodule:: spectraxgk.velocity_sharding
+.. automodule:: spectraxgk.parallel.velocity
+   :members:
+
+State Sharding Policy
+---------------------
+
+.. automodule:: spectraxgk.parallel.state
    :members:
 
 Sharded Integrators
 -------------------
 
-.. automodule:: spectraxgk.sharded_integrators
+.. automodule:: spectraxgk.parallel.integrators
    :members:
 
 Zonal Validation
@@ -722,7 +728,7 @@ External-VMEC Holdout Planning
 Parallel Decomposition Contracts
 --------------------------------
 
-.. automodule:: spectraxgk.parallel_decomposition
+.. automodule:: spectraxgk.parallel.decomposition
    :members:
 
 QA Low-Turbulence Optimization

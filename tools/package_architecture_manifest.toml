@@ -21,11 +21,13 @@ allowed_root_prefix_modules = []
 required_domain_packages = [
   "spectraxgk.artifacts",
   "spectraxgk.core",
+  "spectraxgk.diagnostics",
   "spectraxgk.geometry",
   "spectraxgk.objectives",
   "spectraxgk.operators",
   "spectraxgk.operators.linear",
   "spectraxgk.operators.nonlinear",
+  "spectraxgk.parallel",
   "spectraxgk.solvers",
   "spectraxgk.solvers.linear",
   "spectraxgk.validation",

@@ -101,7 +101,7 @@ def test_resolve_parallel_devices_validates_explicit_and_requested_counts(monkey
 
 
 def test_streaming_velocity_sharded_route_validates_shape_and_returns_zero_phi(monkeypatch) -> None:
-    import spectraxgk.velocity_sharding as velocity_sharding
+    import spectraxgk.parallel.velocity as velocity_sharding
 
     calls: list[tuple[tuple[int, ...], int]] = []
 
@@ -138,7 +138,7 @@ def test_streaming_velocity_sharded_route_validates_shape_and_returns_zero_phi(m
 
 def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> None:
     import spectraxgk.terms.operators as operators
-    import spectraxgk.velocity_sharding as velocity_sharding
+    import spectraxgk.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()
@@ -169,7 +169,7 @@ def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> 
     monkeypatch.setattr(velocity_sharding, "periodic_streaming_shard_map", fake_streaming)
     monkeypatch.setattr(operators, "grad_z_periodic", fake_grad_z)
 
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan
+    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
 
     out = linear_parallel._streaming_electrostatic_from_phi_velocity_sharded(
         arr,
@@ -185,7 +185,7 @@ def test_electrostatic_streaming_field_rhs_and_sharded_phi_path(monkeypatch) -> 
 
 
 def test_streaming_electrostatic_velocity_sharded_fail_closed_and_uses_phi(monkeypatch) -> None:
-    import spectraxgk.velocity_sharding as velocity_sharding
+    import spectraxgk.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()
@@ -234,7 +234,7 @@ def test_streaming_electrostatic_velocity_sharded_fail_closed_and_uses_phi(monke
 
 
 def test_electrostatic_slices_velocity_sharded_fail_closed_and_weighted_routes(monkeypatch) -> None:
-    import spectraxgk.velocity_sharding as velocity_sharding
+    import spectraxgk.parallel.velocity as velocity_sharding
 
     arr = _richer_state()
     cache = _cache_for_richer_state()

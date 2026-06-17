@@ -92,7 +92,7 @@ def build_periodic_streaming_microkernel_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         periodic_streaming_reference,
         periodic_streaming_shard_map,
@@ -139,7 +139,7 @@ def build_periodic_streaming_microkernel_gate(
     return _json_clean(
         {
             "case": "Periodic streaming microkernel shard_map identity gate",
-            "source": "spectraxgk.velocity_sharding.periodic_streaming_shard_map",
+            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
             "reference_source": "spectraxgk.terms.operators.streaming_term",
             "claim_scope": "linear streaming microkernel identity gate, not a full RHS or nonlinear speedup claim",
             "state_shape": shape,

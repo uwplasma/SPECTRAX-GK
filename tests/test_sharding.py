@@ -2,8 +2,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-import spectraxgk.sharding as sharding_mod
-from spectraxgk.sharding import resolve_state_sharding
+import spectraxgk.parallel.state as sharding_mod
+from spectraxgk.parallel.state import resolve_state_sharding
 
 
 def _state_5d():

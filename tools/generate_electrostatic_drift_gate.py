@@ -122,7 +122,7 @@ def build_electrostatic_drift_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import build_H, linear_rhs_cached
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         curvature_gradb_drift_shard_map,
         electrostatic_phi_shard_map,
@@ -217,7 +217,7 @@ def build_electrostatic_drift_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded mirror/curvature/grad-B drift identity gate",
-            "source": "spectraxgk.velocity_sharding mirror_drift_shard_map + curvature_gradb_drift_shard_map",
+            "source": "spectraxgk.parallel.velocity mirror_drift_shard_map + curvature_gradb_drift_shard_map",
             "reference_source": "spectraxgk.linear.linear_rhs_cached with mirror/curvature/grad-B terms only",
             "claim_scope": "single-species periodic electrostatic drift-slice identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),

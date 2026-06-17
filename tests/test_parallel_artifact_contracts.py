@@ -121,7 +121,8 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
     validation_paths = {
         path
         for module in validation["modules"]
-        if module["module"] in {"spectraxgk.parallel", "spectraxgk.sharding"}
+        if module["module"]
+        in {"spectraxgk.parallel.core", "spectraxgk.parallel.state"}
         for path in module["artifact_paths"]
     }
 
