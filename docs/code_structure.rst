@@ -103,7 +103,7 @@ Physics / Numerics / IO Map
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
-     - RHS routing, bracket payload, explicit stepping, IMEX solve policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
+     - RHS routing, bracket payload, explicit stepping, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
@@ -166,7 +166,8 @@ Completed extractions:
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
-- explicit RK/SSP/K10 one-step policy and IMEX fixed-point/GMRES solve policy:
+- explicit RK/SSP/K10 one-step policy, cached IMEX scan policy, and IMEX
+  fixed-point/GMRES solve policy:
   ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
   helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter

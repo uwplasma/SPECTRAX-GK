@@ -8,10 +8,12 @@ import numpy as np
 from spectraxgk.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
+    integrate_cached_imex_scan,
     make_imex_nonlinear_term,
     make_imex_solve_step,
     solve_imex_step,
 )
+from spectraxgk.terms.config import FieldState
 
 
 def test_imex_fixed_point_guess_applies_linear_predictor_iterations() -> None:
@@ -210,3 +212,71 @@ def test_advance_imex_nonlinear_state_sspx3_matches_constant_rhs_step() -> None:
     )
 
     np.testing.assert_allclose(np.asarray(out), [1.5], rtol=1e-6)
+
+
+def test_integrate_cached_imex_scan_owns_cached_scan_policy(monkeypatch) -> None:
+    G0 = jnp.zeros((1,), dtype=jnp.complex64)
+    fields = FieldState(phi=jnp.zeros((1,), dtype=jnp.complex64), apar=None, bpar=None)
+    build_calls: list[dict[str, object]] = []
+    nonlinear_calls: list[str] = []
+    linear_calls: list[str] = []
+
+    def build_operator_fn(G, cache, params, dt, **kwargs):
+        build_calls.append(kwargs)
+        return SimpleNamespace(
+            shape=tuple(G.shape),
+            dt_val=jnp.asarray(dt, dtype=jnp.float32),
+            precond_op=None,
+            matvec=lambda x: x,
+            squeeze_species=False,
+            state_dtype=G.dtype,
+        )
+
+    def linear_rhs_fn(G, *_args, **_kwargs):
+        linear_calls.append("linear")
+        return jnp.zeros_like(G), fields
+
+    def nonlinear_kernel(G, cache, params, terms, **kwargs):
+        del cache, params, terms
+        assert kwargs["fields_fn"] is fields_fn
+        assert kwargs["nonlinear_contribution_fn"] is contribution_fn
+        assert kwargs["compressed_real_fft"] is False
+        assert kwargs["laguerre_mode"] == "spectral"
+        nonlinear_calls.append("nonlinear")
+        return jnp.ones_like(G)
+
+    def fields_fn(*_args, **_kwargs):
+        return fields
+
+    def contribution_fn(*_args, **_kwargs):
+        return jnp.asarray(0.0, dtype=jnp.float32)
+
+    monkeypatch.setattr(
+        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
+        lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
+    )
+
+    G_out, fields_t = integrate_cached_imex_scan(
+        G0,
+        SimpleNamespace(name="cache"),
+        SimpleNamespace(name="params"),
+        0.2,
+        2,
+        term_cfg=SimpleNamespace(name="terms"),
+        linear_cfg=SimpleNamespace(name="linear"),
+        linear_rhs_fn=linear_rhs_fn,
+        build_operator_fn=build_operator_fn,
+        fields_fn=fields_fn,
+        nonlinear_term_fn=nonlinear_kernel,
+        nonlinear_contribution_fn=contribution_fn,
+        implicit_iters=0,
+        compressed_real_fft=False,
+        laguerre_mode="spectral",
+    )
+
+    assert build_calls
+    assert build_calls[0]["terms"].name == "linear"
+    np.testing.assert_allclose(np.asarray(G_out), np.asarray([0.4]), rtol=1e-6)
+    assert fields_t.phi.shape == (2, 1)
+    assert nonlinear_calls == ["nonlinear"]
+    assert linear_calls

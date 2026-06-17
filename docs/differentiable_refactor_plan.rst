@@ -221,8 +221,8 @@ High-Risk Module Split Plan
   ``spectraxgk.nonlinear_helpers`` with injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy now lives in
   ``solvers/nonlinear/explicit.py`` and the shared IMEX nonlinear-term closure,
-  GMRES solve-step closure, fixed-point/GMRES solve, and SSPX3
-  stage-composition policies live in ``solvers/nonlinear/imex.py``.
+  GMRES solve-step closure, cached scan policy, fixed-point/GMRES solve, and
+  SSPX3 stage-composition policies live in ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

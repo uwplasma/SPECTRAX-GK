@@ -1,3 +1,11 @@
+- 2026-06-17: Continued nonlinear consolidation by moving the cached IMEX
+  nonlinear scan policy from the public `spectraxgk.nonlinear` facade into
+  `spectraxgk.solvers.nonlinear.imex.integrate_cached_imex_scan`. The facade
+  now normalizes term configuration and injects its field/RHS/operator seams
+  for compatibility, while the solver package owns the shape check, scan
+  closure, nonlinear-term routing, GMRES solve-step closure, checkpointed
+  scan, and final field trace. Added direct owner-module coverage and package
+  re-export coverage, and updated the refactor docs plus manifest.
 - 2026-06-17: Re-audited the active differentiable-refactor branch, draft PR,
   CI status, changed files, large source hotspots, companion VMEC/Boozer
   repositories, and external JAX/scientific-Python guidance. The active PR is
