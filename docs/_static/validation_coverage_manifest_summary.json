@@ -19,9 +19,9 @@
     "spectraxgk.validation.quasilinear.window",
     "spectraxgk.benchmarks",
     "spectraxgk.diagnostics.core",
-    "spectraxgk.validation_gates",
-    "spectraxgk.zonal_validation",
-    "spectraxgk.zonal_objective",
+    "spectraxgk.validation.gates",
+    "spectraxgk.validation.zonal",
+    "spectraxgk.objectives.zonal",
     "spectraxgk.autodiff_validation",
     "spectraxgk.geometry.core",
     "spectraxgk.geometry_backends.vmec",
@@ -167,6 +167,7 @@
     "spectraxgk.objectives.vmec_boozer_gradients": [],
     "spectraxgk.objectives.vmec_boozer_line_search": [],
     "spectraxgk.objectives.vmec_state": [],
+    "spectraxgk.objectives.zonal": [],
     "spectraxgk.operators.linear.cache": [],
     "spectraxgk.operators.linear.linked": [],
     "spectraxgk.operators.linear.moments": [],
@@ -197,7 +198,7 @@
     "spectraxgk.qa_low_turbulence": [],
     "spectraxgk.quasilinear": [
       "spectraxgk.validation.quasilinear.model_selection",
-      "spectraxgk.external_holdout_plan"
+      "spectraxgk.validation.external_holdout"
     ],
     "spectraxgk.runtime": [
       "spectraxgk.cli",
@@ -220,6 +221,7 @@
       "spectraxgk.normalization"
     ],
     "spectraxgk.validation.benchmarks.scan": [],
+    "spectraxgk.validation.gates": [],
     "spectraxgk.validation.nonlinear_gradient.evidence": [
       "spectraxgk.validation.nonlinear_gradient.followup"
     ],
@@ -242,7 +244,7 @@
       "spectraxgk.validation.quasilinear.holdout_admission"
     ],
     "spectraxgk.validation.quasilinear.window": [],
-    "spectraxgk.validation_gates": [],
+    "spectraxgk.validation.zonal": [],
     "spectraxgk.workflows.cases": [
       "spectraxgk.workflows.demo",
       "spectraxgk.workflows.linear",
@@ -255,9 +257,7 @@
       "spectraxgk.workflows.runtime.chunks",
       "spectraxgk.workflows.runtime.results"
     ],
-    "spectraxgk.workflows.runtime.policies": [],
-    "spectraxgk.zonal_objective": [],
-    "spectraxgk.zonal_validation": []
+    "spectraxgk.workflows.runtime.policies": []
   },
   "package_coverage_target_percent": 95.0,
   "rows": [
@@ -726,7 +726,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 98.0,
-      "module": "spectraxgk.validation_gates",
+      "module": "spectraxgk.validation.gates",
       "n_artifacts": 2,
       "n_fast_tests": 4,
       "n_next_tests": 2,
@@ -734,13 +734,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/validation_gates.py",
+      "path": "src/spectraxgk/validation/gates.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.zonal_validation",
+      "module": "spectraxgk.validation.zonal",
       "n_artifacts": 6,
       "n_fast_tests": 7,
       "n_next_tests": 2,
@@ -748,13 +748,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/zonal_validation.py",
+      "path": "src/spectraxgk/validation/zonal.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.zonal_objective",
+      "module": "spectraxgk.objectives.zonal",
       "n_artifacts": 3,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -762,7 +762,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 3,
       "n_reference_anchors": 3,
-      "path": "src/spectraxgk/zonal_objective.py",
+      "path": "src/spectraxgk/objectives/zonal.py",
       "status": "active"
     },
     {

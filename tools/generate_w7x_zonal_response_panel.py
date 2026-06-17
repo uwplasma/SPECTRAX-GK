@@ -18,7 +18,7 @@ from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_resp
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.plotting import set_plot_style
 from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
-from spectraxgk.zonal_validation import kx_token
+from spectraxgk.validation.zonal import kx_token
 
 ROOT = Path(__file__).resolve().parents[1]
 

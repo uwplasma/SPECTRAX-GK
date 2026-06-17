@@ -19,7 +19,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.validation_gates import evaluate_scalar_gate, gate_report, gate_report_to_dict  # noqa: E402
+from spectraxgk.validation.gates import evaluate_scalar_gate, gate_report, gate_report_to_dict  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]

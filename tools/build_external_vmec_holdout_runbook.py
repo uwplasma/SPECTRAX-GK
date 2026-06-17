@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.external_holdout_plan import (  # noqa: E402
+from spectraxgk.validation.external_holdout import (  # noqa: E402
     build_external_holdout_runbook,
     read_external_holdout_screen,
 )

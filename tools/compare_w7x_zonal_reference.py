@@ -13,7 +13,7 @@ import pandas as pd
 
 from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
 from spectraxgk.plotting import set_plot_style
-from spectraxgk.zonal_validation import (
+from spectraxgk.validation.zonal import (
     kx_token,
     load_w7x_combined_trace_csv,
     load_w7x_trace_csv,

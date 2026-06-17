@@ -122,7 +122,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation_gates.py``, ``zonal_validation.py``
+     - ``benchmarking.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -156,9 +156,9 @@ Completed extractions:
 - executable reduced-model runtime workflows:
   ``workflows/reduced_models.py``
 - validation gate dataclasses and JSON-ready gate helpers:
-  ``validation_gates.py``
+  ``validation/gates.py``
 - zonal-response reference/trace normalization helpers:
-  ``zonal_validation.py``
+  ``validation/zonal.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:
   ``objectives/eigen.py``
 - core solver-objective constants plus value-level linear/quasilinear

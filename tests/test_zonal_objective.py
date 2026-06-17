@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.zonal_objective import (
+from spectraxgk.objectives.zonal import (
     ZONAL_FLOW_OBJECTIVE_NAMES,
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,

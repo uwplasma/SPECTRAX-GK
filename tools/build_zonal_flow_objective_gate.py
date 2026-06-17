@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.zonal_objective import (  # noqa: E402
+from spectraxgk.objectives.zonal import (  # noqa: E402
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,
 )

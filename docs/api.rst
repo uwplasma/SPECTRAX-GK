@@ -456,7 +456,7 @@ Benchmarking
 Validation Gates
 ----------------
 
-.. automodule:: spectraxgk.validation_gates
+.. automodule:: spectraxgk.validation.gates
    :members:
 
 Autodiff Validation
@@ -526,13 +526,13 @@ Sharded Integrators
 Zonal Validation
 ----------------
 
-.. automodule:: spectraxgk.zonal_validation
+.. automodule:: spectraxgk.validation.zonal
    :members:
 
 Zonal Flow Objectives
 ---------------------
 
-.. automodule:: spectraxgk.zonal_objective
+.. automodule:: spectraxgk.objectives.zonal
    :members:
 
 Analysis
@@ -757,7 +757,7 @@ Solver VMEC/Boozer Line-Search Gates
 External-VMEC Holdout Planning
 ------------------------------
 
-.. automodule:: spectraxgk.external_holdout_plan
+.. automodule:: spectraxgk.validation.external_holdout
    :members:
 
 Parallel Decomposition Contracts

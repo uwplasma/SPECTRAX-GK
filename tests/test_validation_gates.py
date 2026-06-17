@@ -7,7 +7,7 @@ import pytest
 
 import spectraxgk
 from spectraxgk import benchmarking
-from spectraxgk.validation_gates import (
+from spectraxgk.validation.gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,
     GateReport,

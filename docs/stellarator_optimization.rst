@@ -2027,7 +2027,7 @@ Zonal-flow Objective Contract
 
 The next stellarator-optimization lane targets geometries with stronger zonal
 response before claiming nonlinear turbulence suppression. The backend-free
-contract lives in :mod:`spectraxgk.zonal_objective`. It reduces tensors of
+contract lives in :mod:`spectraxgk.objectives.zonal`. It reduces tensors of
 ``residual_level``, ``damping_rate``, optional ``linear_growth_rate``, and
 optional ``recurrence_amplitude`` over a ``(surface, alpha, kx)`` portfolio.
 The minimization objective rewards large residual zonal flow through an

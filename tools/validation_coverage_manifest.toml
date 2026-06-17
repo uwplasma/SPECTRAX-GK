@@ -998,7 +998,7 @@ module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
   "spectraxgk.validation.quasilinear.model_selection",
-  "spectraxgk.external_holdout_plan",
+  "spectraxgk.validation.external_holdout",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"
@@ -1312,8 +1312,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation_gates"
-path = "src/spectraxgk/validation_gates.py"
+module = "spectraxgk.validation.gates"
+path = "src/spectraxgk/validation/gates.py"
 owner_lane = "JSON-ready acceptance metrics for linear, nonlinear, eigenfunction, and response gates"
 status = "active"
 coverage_priority = "high"
@@ -1346,8 +1346,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.zonal_validation"
-path = "src/spectraxgk/zonal_validation.py"
+module = "spectraxgk.validation.zonal"
+path = "src/spectraxgk/validation/zonal.py"
 owner_lane = "W7-X/Miller zonal-response trace normalization, reference loading, and tails"
 status = "active"
 coverage_priority = "high"
@@ -1387,8 +1387,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.zonal_objective"
-path = "src/spectraxgk/zonal_objective.py"
+module = "spectraxgk.objectives.zonal"
+path = "src/spectraxgk/objectives/zonal.py"
 owner_lane = "reduced zonal-flow objective, AD/FD gates, and stellarator optimization bridge"
 status = "active"
 coverage_priority = "high"
