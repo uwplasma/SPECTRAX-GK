@@ -8,6 +8,8 @@ import numpy as np
 from spectraxgk.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
+    make_imex_nonlinear_term,
+    make_imex_solve_step,
     solve_imex_step,
 )
 
@@ -57,6 +59,115 @@ def test_solve_imex_step_identity_system_returns_rhs_shape() -> None:
     )
 
     np.testing.assert_allclose(np.asarray(out), np.asarray(G_rhs), rtol=1e-6)
+
+
+def test_make_imex_nonlinear_term_forwards_injected_kernels() -> None:
+    seen: dict[str, object] = {}
+
+    def fields_fn(*_args, **_kwargs):
+        return "fields"
+
+    def contribution_fn(*_args, **_kwargs):
+        return "contribution"
+
+    def nonlinear_kernel(G, cache, params, terms, **kwargs):
+        seen["G"] = G
+        seen["cache"] = cache
+        seen["params"] = params
+        seen["terms"] = terms
+        seen["fields_fn"] = kwargs["fields_fn"]
+        seen["contribution_fn"] = kwargs["nonlinear_contribution_fn"]
+        seen["real_dtype"] = kwargs["real_dtype"]
+        seen["external_phi"] = kwargs["external_phi"]
+        seen["compressed_real_fft"] = kwargs["compressed_real_fft"]
+        seen["laguerre_mode"] = kwargs["laguerre_mode"]
+        return G + 2.0
+
+    cache = SimpleNamespace(name="cache")
+    params = SimpleNamespace(name="params")
+    terms = SimpleNamespace(name="terms")
+    term = make_imex_nonlinear_term(
+        cache,
+        params,
+        terms,
+        real_dtype=jnp.float32,
+        external_phi=3.0,
+        compressed_real_fft=False,
+        laguerre_mode="spectral",
+        fields_fn=fields_fn,
+        nonlinear_term_fn=nonlinear_kernel,
+        nonlinear_contribution_fn=contribution_fn,
+    )
+    G = jnp.asarray([1.0], dtype=jnp.float32)
+
+    out = term(G)
+
+    np.testing.assert_allclose(np.asarray(out), [3.0])
+    assert seen["G"] is G
+    assert seen["cache"] is cache
+    assert seen["params"] is params
+    assert seen["terms"] is terms
+    assert seen["fields_fn"] is fields_fn
+    assert seen["contribution_fn"] is contribution_fn
+    assert seen["real_dtype"] is jnp.float32
+    assert seen["external_phi"] == 3.0
+    assert seen["compressed_real_fft"] is False
+    assert seen["laguerre_mode"] == "spectral"
+
+
+def test_make_imex_solve_step_forwards_solver_policy() -> None:
+    seen: dict[str, object] = {}
+
+    def solve_step_fn(G_in, G_rhs, **kwargs):
+        seen["G_in"] = G_in
+        seen["G_rhs"] = G_rhs
+        seen.update(kwargs)
+        return G_rhs + 4.0
+
+    def linear_rhs_fn(g, *_args, **_kwargs):
+        return g, None
+
+    def matvec(flat):
+        return flat
+
+    def precond(flat):
+        return flat
+    solve_step = make_imex_solve_step(
+        linear_rhs_fn=linear_rhs_fn,
+        cache=SimpleNamespace(name="cache"),
+        params=SimpleNamespace(name="params"),
+        linear_cfg=SimpleNamespace(name="linear"),
+        external_phi=None,
+        dt_val=jnp.asarray(0.2, dtype=jnp.float32),
+        implicit_iters=3,
+        implicit_relax=0.5,
+        matvec=matvec,
+        shape=(1,),
+        implicit_tol=1.0e-5,
+        implicit_maxiter=7,
+        implicit_restart=2,
+        implicit_solve_method="batched",
+        precond_op=precond,
+        solve_step_fn=solve_step_fn,
+    )
+    G_in = jnp.asarray([1.0], dtype=jnp.float32)
+    G_rhs = jnp.asarray([2.0], dtype=jnp.float32)
+
+    out = solve_step(G_in, G_rhs)
+
+    np.testing.assert_allclose(np.asarray(out), [6.0])
+    assert seen["G_in"] is G_in
+    assert seen["G_rhs"] is G_rhs
+    assert seen["linear_rhs_fn"] is linear_rhs_fn
+    assert seen["matvec"] is matvec
+    assert seen["precond_op"] is precond
+    assert seen["implicit_iters"] == 3
+    assert seen["implicit_relax"] == 0.5
+    assert seen["shape"] == (1,)
+    assert seen["implicit_tol"] == 1.0e-5
+    assert seen["implicit_maxiter"] == 7
+    assert seen["implicit_restart"] == 2
+    assert seen["implicit_solve_method"] == "batched"
 
 
 def test_advance_imex_nonlinear_state_default_method_solves_rhs() -> None:

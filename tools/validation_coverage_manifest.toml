@@ -692,9 +692,11 @@ reference_anchors = [
 physics_contracts = [
   "IMEX solve policy keeps the nonlinear term explicit and the linear operator implicit",
   "cached and diagnostic IMEX paths share the same fixed-point predictor, GMRES route, and SSPX3 stage composition",
+  "cached and diagnostic IMEX paths construct nonlinear-term closures through the same injected kernel convention",
 ]
 numerics_contracts = [
   "identity linear systems return the RHS with the expected state shape",
+  "solve-step factories forward tolerances, restart policy, preconditioner, and matrix-free operator metadata unchanged",
   "fixed-point predictor applies the configured iteration count and relaxation exactly",
   "constant-RHS SSPX3 stage composition gives the same one-step update as the exact constant derivative",
 ]

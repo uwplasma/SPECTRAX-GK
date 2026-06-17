@@ -512,9 +512,9 @@
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
-      "n_numerics_contracts": 3,
+      "n_numerics_contracts": 4,
       "n_owned_modules": 0,
-      "n_physics_contracts": 2,
+      "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solvers/nonlinear/imex.py",
       "status": "active"

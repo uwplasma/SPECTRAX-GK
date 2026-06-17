@@ -1,3 +1,9 @@
+- 2026-06-17: Moved duplicated nonlinear IMEX closure construction into
+  `spectraxgk.solvers.nonlinear.imex`. Cached and diagnostic IMEX paths now
+  share `make_imex_nonlinear_term` and `make_imex_solve_step` for explicit
+  nonlinear-term evaluation and GMRES solve-step policy, preserving injected
+  facade kernels for debugging/monkeypatch workflows. Added direct factory
+  tests for nonlinear-kernel forwarding and solve-policy forwarding.
 - 2026-06-17: Extracted shared nonlinear diagnostic setup into
   `spectraxgk.nonlinear_helpers.build_nonlinear_diagnostic_setup`.
   Explicit and IMEX diagnostic scans now use the same cache construction,
