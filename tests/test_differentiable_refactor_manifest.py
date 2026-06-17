@@ -22,7 +22,12 @@ def _load_tool_module():
 def test_differentiable_refactor_manifest_is_well_formed() -> None:
     mod = _load_tool_module()
     summary = mod.validate_manifest(mod.load_manifest())
+    manifest = mod.load_manifest()
     assert summary["required_package_coverage_percent"] >= 95.0
+    assert manifest["global_acceptance"]["require_adaptive_derivative_policy"] is True
+    assert "adaptive-branch derivative policy" in (
+        manifest["validation_policy"]["autodiff_gate_scope"]
+    )
     assert summary["n_architecture_layers"] >= 8
     assert summary["n_phase1_contract_modules"] >= 2
     assert summary["n_phase1_split_modules"] >= 16

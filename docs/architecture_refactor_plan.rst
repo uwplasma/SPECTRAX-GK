@@ -69,6 +69,11 @@ and JAX codes:
 - `JAX custom derivative rules <https://docs.jax.dev/en/latest/notebooks/Custom_derivative_rules_for_Python_code.html>`_
   should be used only when the promoted observable has finite-difference,
   tangent, and conditioning tests.
+- `JAX structured control flow <https://docs.jax.dev/en/latest/control-flow.html>`_
+  makes adaptive branches a deliberate solver-design choice: ``scan`` is
+  reverse-mode differentiable, ``fori_loop`` is reverse-mode differentiable
+  when endpoints are static, and ``while_loop`` is forward-mode differentiable
+  but not a general reverse-mode path.
 - `Diffrax <https://docs.kidger.site/diffrax/>`_ is the model for separating
   terms, solvers, controllers, adjoints, and PyTree-valued state.
 - `Equinox <https://docs.kidger.site/equinox/all-of-equinox/>`_ is the model
@@ -79,6 +84,14 @@ and JAX codes:
 - `Optax <https://optax.readthedocs.io/>`_ and
   `JAXopt <https://jaxopt.github.io/>`_ are the model for separating objective
   construction from optimizer policy.
+- `DESC <https://github.com/PlasmaControl/DESC>`_ is the closest stellarator
+  design reference for separating equilibria, compute kernels, objective
+  functions, optimizer policies, and validation.
+- The spectral-PDE adjoint strategy in
+  `Fast automated adjoints for spectral PDE solvers <https://arxiv.org/abs/2506.14792>`_
+  is a useful long-term model: build adjoints from the operator graph so
+  gradients preserve sparse/spectral solver structure instead of recording a
+  memory-heavy primal trace.
 - `Dedalus <https://dedalus-project.readthedocs.io/>`_ is a useful reference
   for spectral-method software separating equations, bases/domains, solvers,
   and analysis tasks.
@@ -209,6 +222,67 @@ Executable workflow
 Shared numerical kernels
   Both surfaces call the same operator and solver kernels. The executable
   should wrap pure kernels; pure kernels should not import executable code.
+
+Differentiation Method Policy
+-----------------------------
+
+SPECTRAX-GK should not use one differentiation strategy everywhere. The method
+must match the observable, solver structure, parameter dimension, and memory
+budget. The following ladder is the default policy for promoted Python
+research APIs.
+
+Native JAX differentiation
+  Use ``jacfwd``, ``jvp``, ``grad``, ``vjp``, and ``scan``-based reverse-mode
+  autodiff for small dense validation problems, smooth reduced objectives,
+  fixed-step windows, and pure algebraic geometry/diagnostic maps. This is the
+  first choice when memory is bounded and FD/tangent gates pass.
+
+Implicit eigenpair differentiation
+  Use the left/right eigenpair sensitivity for isolated linear branches. This
+  is already the right method for growth-rate and frequency objectives because
+  it avoids differentiating through non-Hermitian eigenvector internals.
+  Every promoted row must keep branch-gap, nearest-branch finite-difference,
+  and phase-invariant observable gates.
+
+Implicit root/fixed-point differentiation
+  Use JAXopt-style implicit differentiation, or a local custom VJP around a
+  stated optimality/root equation, for converged fixed points, equilibria,
+  optimizer inner solves, and nonlinear steady/window conditions. Do not
+  differentiate through arbitrary optimizer iteration history unless the
+  iteration count is intentionally part of the objective.
+
+Linear-solve adjoints
+  Use explicit matrix-free operator abstractions, following the Lineax pattern,
+  for Krylov, preconditioned, and least-squares sensitivities. This keeps
+  transposes, solve tolerances, and preconditioner assumptions visible and
+  testable.
+
+Checkpointed unrolled solves
+  Use ``jax.checkpoint``/``remat`` or Diffrax recursive checkpoint adjoints for
+  fixed-step transient objectives when the time history matters and implicit
+  differentiation is not yet justified. Gate memory and runtime separately.
+
+Adaptive-step differentiation
+  Treat adaptive branches as a promoted feature only after explicit gates pass.
+  Preferred routes are: (1) differentiable fixed-grid replay using the accepted
+  adaptive step sequence, (2) forward-mode differentiation through bounded
+  ``while_loop``/controller logic for low-dimensional design directions, or
+  (3) custom/implicit adjoints for controller-independent accepted trajectories.
+  The executable may use a faster non-differentiable adaptive controller; the
+  Python research API must expose which adaptive derivative policy is active.
+
+Noisy nonlinear transport objectives
+  Use common-random-number finite differences, SPSA/CMA/Bayesian outer loops,
+  and replicated late-window statistics until a smoother differentiable
+  surrogate passes conditioning and transfer gates. Do not promote an AD
+  nonlinear turbulent-flux optimization claim from startup windows or reduced
+  proxies.
+
+Method admission gates
+  A differentiated observable is accepted only when it records the method,
+  static/dynamic arguments, branch or controller assumptions, FD/JVP/VJP or
+  tangent checks, conditioning/UQ metadata, and a performance/memory profile
+  when runtime claims are made.
 
 Performance And Memory Rules
 ----------------------------
@@ -460,6 +534,40 @@ Phase J: remove migration scaffolding
   After all public imports are covered by facades and docs, remove temporary
   aliases in the next planned API cleanup. This is the only phase that should
   intentionally break undocumented internal imports.
+
+Finite Completion Sequence For The Current Branch
+-------------------------------------------------
+
+The active draft PR should finish in a finite sequence rather than continuing
+open-ended extraction work.
+
+1. Finish nonlinear consolidation.
+   Keep ``spectraxgk.nonlinear`` as the public facade, but move remaining
+   scan orchestration, collision-split policy, and diagnostic-output helpers
+   into ``operators/nonlinear``, ``solvers/nonlinear``, and diagnostics/io
+   packages. Stop once the facade is small enough to document and tests no
+   longer need broad cross-module monkeypatches.
+2. Consolidate runtime/executable code.
+   Move progress, default-demo, plotting dispatch, saved-output handoff, and
+   restart orchestration toward ``workflows`` and ``io``. Keep the executable
+   user-friendly and non-pure, but keep solver kernels free of I/O.
+3. Consolidate objectives and optimization.
+   Move solver, quasilinear, nonlinear-window, VMEC/Boozer, optimizer ladder,
+   and portfolio logic into ``objectives`` and ``optimization`` packages.
+   Add the adaptive-branch differentiation policy gates before claiming
+   end-to-end differentiability through adaptive controllers.
+4. Consolidate validation and benchmark code.
+   Move benchmark-family runners, comparison adapters, calibration ledgers,
+   and literature gates under ``validation``. Keep external-code names only in
+   benchmark/comparison paths.
+5. Mirror tests by package.
+   Split the largest top-level tests into package-aligned directories only
+   after the source package move is stable, preserving the wide 95% coverage
+   gate.
+6. Remove temporary migration allowances.
+   Shrink ``tools/package_architecture_manifest.toml`` allowed root-prefix
+   modules as each family moves. This is the measurable endpoint for the
+   simplification lane.
 
 Acceptance Gates
 ----------------

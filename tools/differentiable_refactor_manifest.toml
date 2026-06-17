@@ -16,12 +16,13 @@ max_fast_test_budget_seconds = 300
 require_public_api_facades = true
 require_reference_adapter_isolation = true
 require_jax_transform_contracts = true
+require_adaptive_derivative_policy = true
 require_docstring_policy = true
 
 [validation_policy]
 parity_reference_scope = "GX and other independent-code artifacts are validation inputs only; solver code must not depend on comparison adapters."
 literature_gate_scope = "Cyclone, shaped tokamak, W7-X/HSX, KBM/TEM/ETG, Rosenbluth-Hinton/Merlo, and quasilinear/nonlinear transport gates stay artifact-backed."
-autodiff_gate_scope = "Finite-difference, JVP/VJP, branch-locality, conditioning, and UQ covariance checks are required before differentiable claims are promoted."
+autodiff_gate_scope = "Finite-difference, JVP/VJP, branch-locality, adaptive-branch derivative policy, conditioning, and UQ covariance checks are required before differentiable claims are promoted."
 performance_gate_scope = "No speedup claim without identity gates, profiler artifacts, and matched CPU/GPU measurements."
 
 [[architecture_layers]]

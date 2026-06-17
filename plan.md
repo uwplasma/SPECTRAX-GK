@@ -1,3 +1,16 @@
+- 2026-06-17: Re-audited the active differentiable-refactor branch, draft PR,
+  CI status, changed files, large source hotspots, companion VMEC/Boozer
+  repositories, and external JAX/scientific-Python guidance. The active PR is
+  green before this tranche, and the plan hierarchy is now explicit:
+  `docs/architecture_refactor_plan.rst` is the single layout authority,
+  `docs/differentiable_refactor_plan.rst` is the AD/validation appendix, and
+  this file is the chronological log. Added an explicit differentiation-method
+  ladder and adaptive-branch derivative admission policy so end-to-end
+  differentiability through adaptive controllers is gated rather than assumed.
+  The finite completion sequence for the branch is now: nonlinear
+  consolidation, runtime/executable consolidation, objectives/optimization
+  consolidation with adaptive gates, validation/benchmark consolidation,
+  package-mirrored tests, then removal of temporary migration allowances.
 - 2026-06-17: Routed cached IMEX nonlinear integration through
   `build_nonlinear_imex_operator` instead of duplicating implicit-operator
   setup in `spectraxgk.nonlinear`. The helper now accepts a call-time injected

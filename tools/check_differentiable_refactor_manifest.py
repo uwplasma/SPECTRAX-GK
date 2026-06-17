@@ -134,6 +134,7 @@ def _validate_global_acceptance(data: dict[str, Any]) -> dict[str, Any]:
         "require_public_api_facades",
         "require_reference_adapter_isolation",
         "require_jax_transform_contracts",
+        "require_adaptive_derivative_policy",
         "require_docstring_policy",
     ):
         if acceptance.get(field) is not True:

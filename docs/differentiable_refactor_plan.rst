@@ -66,6 +66,11 @@ The architecture should follow current JAX ecosystem practice:
 - `JAX custom derivative rules <https://docs.jax.dev/en/latest/notebooks/Custom_derivative_rules_for_Python_code.html>`_
   should be reserved for transformable functions whose default derivative is
   unstable, too expensive, or mathematically wrong for the promoted objective.
+- `JAX structured control flow <https://docs.jax.dev/en/latest/control-flow.html>`_
+  makes adaptive controllers a solver-policy decision, not an implementation
+  detail: ``scan`` and static-trip ``fori_loop`` are the preferred
+  reverse-mode paths, while dynamic ``while_loop`` control is not a general
+  reverse-mode route.
 - `Diffrax <https://docs.kidger.site/diffrax/>`_ already uses PyTree states,
   vmappable solves, and multiple adjoint methods; its adjoint guidance is a
   useful model for separating forward-mode, reverse-mode, direct, and
@@ -86,6 +91,36 @@ The architecture should follow current JAX ecosystem practice:
 - `PEP 257 <https://peps.python.org/pep-0257/>`_ and the
   `Google Python style guide <https://google.github.io/styleguide/pyguide.html>`_
   are the baseline for docstring and API documentation conventions.
+
+Differentiation Method Ladder
+-----------------------------
+
+The Python research API should choose the cheapest mathematically correct
+derivative route for each observable rather than differentiating through every
+implementation detail.
+
+- Use native JAX ``grad``/``jvp``/``vjp``/``scan`` for smooth fixed-step
+  algebraic, diagnostic, and reduced-window objectives.
+- Use implicit left/right eigenpair differentiation for isolated linear growth
+  and frequency branches.
+- Use implicit root or fixed-point differentiation for equilibria, optimizer
+  inner solves, and converged steady/window conditions when the defining
+  residual is explicit.
+- Use matrix-free linear-solve adjoints for Krylov, preconditioned, and
+  least-squares sensitivities so transpose and tolerance assumptions are
+  inspectable.
+- Use checkpointed unrolled solves only when the transient trajectory itself is
+  the observable and memory/runtime gates pass.
+- Treat adaptive-step derivatives as a promoted feature only after an explicit
+  policy is recorded: fixed-grid replay of accepted steps, forward-mode through
+  bounded controller logic for low-dimensional directions, or a custom/implicit
+  adjoint for the accepted trajectory. The executable can use a faster
+  non-differentiable adaptive controller, but promoted Python objectives must
+  report the active adaptive derivative policy.
+- Treat noisy nonlinear turbulent flux objectives as statistical optimization
+  targets first. Common-random-number finite differences, SPSA/CMA/Bayesian
+  outer loops, late-window ensemble statistics, and transfer gates are required
+  before claiming differentiable nonlinear turbulent-flux optimization.
 
 Technical Layer Map
 -------------------
