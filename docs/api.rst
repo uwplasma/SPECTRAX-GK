@@ -13,16 +13,10 @@ Core Extension Points
 .. automodule:: spectraxgk.core.extension_points
    :members:
 
-Basis
------
+Velocity-Space Core
+-------------------
 
-.. automodule:: spectraxgk.basis
-   :members:
-
-Gyroaverage
------------
-
-.. automodule:: spectraxgk.gyroaverage
+.. automodule:: spectraxgk.core.velocity
    :members:
 
 Geometry

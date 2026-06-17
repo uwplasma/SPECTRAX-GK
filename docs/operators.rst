@@ -70,7 +70,7 @@ Nonlinear electromagnetic terms additionally use :math:`J_0(\alpha)` and
 
 Source mapping:
 
-- ``src/spectraxgk/gyroaverage.py``
+- ``src/spectraxgk/core/velocity.py``
 - ``src/spectraxgk/terms/nonlinear.py``
 
 Streaming

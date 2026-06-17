@@ -3,7 +3,7 @@ import math
 import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.gyroaverage import J_l_all, single_precision_factorial
+from spectraxgk.core.velocity import J_l_all, single_precision_factorial
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
     diamagnetic_contribution,

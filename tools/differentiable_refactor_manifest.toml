@@ -34,7 +34,7 @@ extension_points = ["PyTree containers", "dtype/precision policy", "normalizatio
 [[architecture_layers]]
 name = "basis"
 responsibility = "orthogonal velocity-space bases and recurrence rules"
-planned_packages = ["spectraxgk.basis"]
+planned_packages = ["spectraxgk.core.velocity"]
 extension_points = ["BasisFamily", "HermiteLaguerreBasis", "OrthaxBasisAdapter", "custom basis recurrence tests"]
 
 [[architecture_layers]]

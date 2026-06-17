@@ -2,7 +2,7 @@
 
 import jax.numpy as jnp
 
-from spectraxgk.basis import hermite_normed, laguerre
+from spectraxgk.core.velocity import hermite_normed, laguerre
 
 
 def test_hermite_orthonormality():
@@ -30,7 +30,7 @@ def test_laguerre_orthonormality():
 def test_basis_invalid_inputs():
     """Negative orders should raise errors."""
     import pytest
-    from spectraxgk.basis import hermite_ladder_coeffs
+    from spectraxgk.core.velocity import hermite_ladder_coeffs
 
     with pytest.raises(ValueError):
         hermite_normed(jnp.array([0.0]), -1)

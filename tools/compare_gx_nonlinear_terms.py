@@ -27,7 +27,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, apply_imported_geometry_grid_defaults
-from spectraxgk.gyroaverage import laguerre_quadrature_count
+from spectraxgk.core.velocity import laguerre_quadrature_count
 from spectraxgk.grids import build_spectral_grid, twothirds_mask
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache

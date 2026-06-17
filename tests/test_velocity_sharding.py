@@ -871,7 +871,7 @@ def test_hermite_streaming_ladder_shard_map_matches_reference_when_logical_devic
 
 
 def test_periodic_streaming_reference_matches_production_streaming_term() -> None:
-    from spectraxgk.basis import hermite_ladder_coeffs
+    from spectraxgk.core.velocity import hermite_ladder_coeffs
     from spectraxgk.terms.operators import streaming_term
 
     ns, nl, nm, ny, nx, nz = 1, 2, 4, 2, 1, 8

@@ -134,7 +134,7 @@ def main() -> None:
         ensure_flux_tube_geometry_data,
     )
     from spectraxgk.grids import build_spectral_grid
-    from spectraxgk.gyroaverage import bessel_j0, bessel_j1, laguerre_transform
+    from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
     from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
     from spectraxgk.linear import (
         _build_end_damping_profile_array,

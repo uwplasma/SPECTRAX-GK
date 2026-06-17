@@ -4,8 +4,8 @@ Architecture
 Core modules
 ------------
 
-- ``spectraxgk.basis``: Hermite and Laguerre basis functions.
-- ``spectraxgk.gyroaverage``: gyroaverage coefficients and polarization helpers.
+- ``spectraxgk.core.velocity``: Hermite/Laguerre basis functions, gyroaverage
+  coefficients, and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
 - ``spectraxgk.linear``: public linear API facade for documented linear imports

@@ -63,7 +63,7 @@ def _state(shape: tuple[int, ...]) -> tuple[Any, Any]:
 def _production_streaming_term(state: Any, *, kz: Any, vth: float) -> Any:
     import jax.numpy as jnp
 
-    from spectraxgk.basis import hermite_ladder_coeffs
+    from spectraxgk.core.velocity import hermite_ladder_coeffs
     from spectraxgk.terms.operators import streaming_term
 
     nm = int(state.shape[-4])

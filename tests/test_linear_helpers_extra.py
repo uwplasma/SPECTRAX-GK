@@ -12,7 +12,7 @@ from spectraxgk.validation.benchmarks.harness import estimate_observed_order
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.gyroaverage import J_l_all
+from spectraxgk.core.velocity import J_l_all
 import spectraxgk.linear as linear_mod
 import spectraxgk.operators.linear.cache as linear_cache
 import spectraxgk.operators.linear.linked as linear_linked

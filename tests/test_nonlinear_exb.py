@@ -2,7 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
-from spectraxgk.gyroaverage import bessel_j0, bessel_j1, laguerre_transform
+from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
 from spectraxgk.grids import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms import nonlinear as nonlinear_terms_module
 from spectraxgk.terms.nonlinear import (
@@ -1085,7 +1085,7 @@ def test_gx_precomputed_bessel_helpers_match_direct():
             0.0, 2.0 * roots[None, :, None, None, None] * b_species[:, None, ...]
         )
     )
-    from spectraxgk.gyroaverage import bessel_j0 as _b0, bessel_j1 as _b1
+    from spectraxgk.core.velocity import bessel_j0 as _b0, bessel_j1 as _b1
 
     j0 = _b0(alpha)
     j1 = _b1(alpha)

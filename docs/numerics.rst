@@ -17,9 +17,9 @@ Algorithm mapping (numerics → code)
 The core numerical algorithms and their implementation entry points are:
 
 - **Hermite–Laguerre pseudo-spectral expansion**:
-  :mod:`spectraxgk.basis`, :mod:`spectraxgk.gyroaverage`.
+  :mod:`spectraxgk.core.velocity`.
 - **Gyroaverage / polarization**:
-  :func:`spectraxgk.gyroaverage.J_l_all`,
+  :func:`spectraxgk.core.velocity.J_l_all`,
   :func:`spectraxgk.linear.quasineutrality_phi`.
 - **Centered periodic derivative in z**:
   :func:`spectraxgk.linear.grad_z_periodic`.

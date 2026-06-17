@@ -5,7 +5,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.basis import hermite_ladder_coeffs
+from spectraxgk.core.velocity import hermite_ladder_coeffs
 import spectraxgk.operators.linear.moments as linear_moments
 from spectraxgk.terms import operators as term_operators
 

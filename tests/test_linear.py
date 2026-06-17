@@ -31,7 +31,7 @@ from spectraxgk.linear import (
     streaming_term,
 )
 from spectraxgk.terms.operators import grad_z_linked_fft
-from spectraxgk.gyroaverage import J_l_all
+from spectraxgk.core.velocity import J_l_all
 from spectraxgk.solvers.linear.krylov import dominant_eigenpair
 from spectraxgk.terms.linear_terms import collisions_contribution
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached

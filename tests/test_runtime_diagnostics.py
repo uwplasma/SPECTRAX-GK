@@ -50,7 +50,7 @@ from spectraxgk.diagnostics import (
     turbulent_heating_resolved_species,
     turbulent_heating_species,
 )
-from spectraxgk.gyroaverage import gamma0
+from spectraxgk.core.velocity import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.diagnostics.analysis import select_ky_index
