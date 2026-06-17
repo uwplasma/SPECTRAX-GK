@@ -1,3 +1,8 @@
+- 2026-06-17: Moved explicit/IMEX nonlinear diagnostic output finalization into
+  `spectraxgk.nonlinear_diagnostics.finalize_nonlinear_scan_diagnostics`. The
+  public nonlinear facade no longer owns duplicate stride/sample-index logic
+  before packaging `SimulationDiagnostics`, and the helper now has focused
+  tests for dense versus already-sampled scans.
 - 2026-06-17: Moved fixed-step IMEX nonlinear diagnostic scan execution into
   `spectraxgk.solvers.nonlinear.imex.run_imex_diagnostic_scan`. The public
   nonlinear facade now delegates checkpoint and `jax.lax.scan` mechanics for

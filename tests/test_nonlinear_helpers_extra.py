@@ -30,6 +30,7 @@ from spectraxgk.nonlinear import (
     build_nonlinear_simulation_diagnostics,
     build_nonlinear_imex_operator,
     build_nonlinear_time_step_policy,
+    finalize_nonlinear_scan_diagnostics,
     integrate_nonlinear,
     integrate_nonlinear_cached,
     integrate_nonlinear_explicit_diagnostics,
@@ -312,6 +313,35 @@ def test_build_nonlinear_simulation_diagnostics_samples_scan_tuple() -> None:
     assert out.resolved is not None
     np.testing.assert_allclose(np.asarray(out.resolved.Phi2_kxt), 0.0)
     np.testing.assert_allclose(np.asarray(out.resolved.TurbulentHeating_zst), 57.0)
+
+
+def test_finalize_nonlinear_scan_diagnostics_applies_output_sampling() -> None:
+    series = tuple(jnp.arange(5, dtype=jnp.float32) + offset for offset in range(12))
+    diag = (*series, ())
+    t = jnp.linspace(0.1, 0.5, 5, dtype=jnp.float32)
+    dt = jnp.ones((5,), dtype=jnp.float32) * 0.1
+
+    sampled = finalize_nonlinear_scan_diagnostics(
+        diag,
+        t=t,
+        dt_series=dt,
+        stride=3,
+        sampled_scan=False,
+        resolved_diagnostics=False,
+    )
+    retained = finalize_nonlinear_scan_diagnostics(
+        diag,
+        t=t,
+        dt_series=dt,
+        stride=3,
+        sampled_scan=True,
+        resolved_diagnostics=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(sampled.t), [0.1, 0.4, 0.5])
+    np.testing.assert_allclose(np.asarray(sampled.gamma_t), [0.0, 3.0, 4.0])
+    np.testing.assert_allclose(np.asarray(retained.t), np.asarray(t))
+    np.testing.assert_allclose(np.asarray(retained.gamma_t), np.arange(5))
 
 
 def test_select_nonlinear_step_diagnostics_and_progress_noop() -> None:
