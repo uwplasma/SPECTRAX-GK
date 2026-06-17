@@ -860,7 +860,7 @@ path = "src/spectraxgk/nonlinear_helpers.py"
 owned_modules = [
   "spectraxgk.reduced_model_contracts",
 ]
-owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
+owner_lane = "nonlinear projection helpers, collision split policies, fixed-mode omega masks, and IMEX operator construction"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -871,9 +871,11 @@ reference_anchors = [
 physics_contracts = [
   "collision and hypercollision weights remain explicit before split updates are applied",
   "fixed-mode projection preserves the selected Fourier block exactly",
+  "explicit and IMEX diagnostic scans share the same composed fixed-mode/Hermitian projection convention",
 ]
 numerics_contracts = [
-  "GX omega masks keep only unique real-FFT modes before gamma/omega reductions",
+  "diagnostic omega masks keep only unique real-FFT modes before gamma/omega reductions",
+  "compressed real-FFT Hermitian projection mirrors negative ky and reversed kx consistently",
   "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
 ]
 fast_tests = [

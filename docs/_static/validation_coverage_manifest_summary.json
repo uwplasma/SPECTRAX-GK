@@ -582,9 +582,9 @@
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
-      "n_numerics_contracts": 2,
+      "n_numerics_contracts": 3,
       "n_owned_modules": 1,
-      "n_physics_contracts": 2,
+      "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/nonlinear_helpers.py",
       "status": "active"

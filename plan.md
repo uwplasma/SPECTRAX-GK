@@ -1,3 +1,9 @@
+- 2026-06-17: Deduplicated nonlinear diagnostic projection setup by moving the
+  composed fixed-mode plus compressed-real-FFT Hermitian projector into
+  `spectraxgk.nonlinear_helpers._make_nonlinear_state_projector`. Explicit and
+  IMEX diagnostic scans now share one projection convention, with a direct
+  helper test covering fixed Fourier-mode preservation and negative-ky
+  reconstruction.
 - 2026-06-17: Continued nonlinear solver modularization by moving the IMEX
   SSPX3 stage-composition policy into `spectraxgk.solvers.nonlinear.imex`.
   `spectraxgk.nonlinear` now builds runtime state, cache, and diagnostics while

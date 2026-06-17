@@ -23,6 +23,7 @@ from spectraxgk.nonlinear import (
     _integrate_nonlinear_explicit_diagnostics_impl,
     _make_fixed_mode_projector,
     _make_hermitian_projector,
+    _make_nonlinear_state_projector,
     _pack_resolved_diagnostics,
     _sample_indices_with_final,
     build_nonlinear_imex_operator,
@@ -299,6 +300,41 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
         positive_grid, positive_cache, compressed_real_fft=True
     )
     np.testing.assert_array_equal(np.asarray(positive_mask), positive_grid.dealias_mask)
+
+
+def test_make_nonlinear_state_projector_composes_fixed_mode_and_hermitian() -> None:
+    fixed = jnp.zeros((1, 4, 3, 2), dtype=jnp.complex64)
+    fixed = fixed.at[..., 1:2, 1:2, :].set(7.0 + 1.0j)
+    trial = jnp.ones((1, 4, 3, 2), dtype=jnp.complex64) * (2.0 + 3.0j)
+
+    projector = _make_nonlinear_state_projector(
+        fixed,
+        ky_vals=np.array([0.0, 0.2, 0.4, -0.2], dtype=float),
+        nx=3,
+        compressed_real_fft=True,
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=1,
+    )
+    projected = projector(trial)
+
+    np.testing.assert_allclose(
+        np.asarray(projected[..., 1:2, 1:2, :]),
+        np.asarray(fixed[..., 1:2, 1:2, :]),
+    )
+    np.testing.assert_allclose(
+        np.asarray(projected[..., 3, :, :]),
+        np.conj(np.asarray(projected[..., 1, [0, 2, 1], :])),
+    )
+
+    no_hermitian = _make_nonlinear_state_projector(
+        fixed,
+        ky_vals=np.array([0.0, 0.2, 0.4, -0.2], dtype=float),
+        nx=3,
+        compressed_real_fft=False,
+        fixed_mode_ky_index=None,
+        fixed_mode_kx_index=None,
+    )
+    np.testing.assert_allclose(np.asarray(no_hermitian(trial)), np.asarray(trial))
 
 
 def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
