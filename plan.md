@@ -2693,3 +2693,13 @@ No long nonlinear audit should be launched from these candidates.
   `src/spectraxgk/cli.py` from 771 to 615 lines.
 - Local gates: Ruff on the touched modules and the complete `tests/test_cli.py`
   shard passed.
+
+### 2026-06-17 CLI Parser Boilerplate Consolidation
+
+- Consolidated repeated executable parser flag definitions inside
+  `spectraxgk.cli`, preserving the same public subcommand option sets while
+  reducing the file to 498 lines, below the active 500-line target.
+- Removed unused private path/quasilinear override wrappers from the CLI facade;
+  runtime command execution still delegates to `spectraxgk.workflows.cases`.
+- Local gates: Ruff, targeted mypy, parser option-contract check, and the
+  complete `tests/test_cli.py` shard passed.
