@@ -72,6 +72,14 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
         is solver_diagnostics.integrate_explicit_nonlinear_diagnostics_impl
     )
     assert (
+        nonlinear_solvers.IMEXNonlinearDiagnosticsDeps
+        is solver_diagnostics.IMEXNonlinearDiagnosticsDeps
+    )
+    assert (
+        nonlinear_solvers.integrate_imex_nonlinear_diagnostics_impl
+        is solver_diagnostics.integrate_imex_nonlinear_diagnostics_impl
+    )
+    assert (
         nonlinear_solvers.advance_imex_nonlinear_state
         is solver_imex.advance_imex_nonlinear_state
     )

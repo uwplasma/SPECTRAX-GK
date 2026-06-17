@@ -706,14 +706,16 @@ coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "explicit nonlinear diagnostic scans used by transport-window audits",
+  "IMEX nonlinear diagnostic scans used by semi-implicit transport-window audits",
   "facade-injected nonlinear diagnostic kernels used by debug and parity tests",
 ]
 physics_contracts = [
-  "explicit diagnostic integration assembles gamma, omega, energy, heat-flux, particle-flux, and resolved spectra from one state convention",
+  "explicit and IMEX diagnostic integration assemble gamma, omega, energy, heat-flux, particle-flux, and resolved spectra from one state convention",
   "facade-injected diagnostic kernels preserve the same observable definitions as cached nonlinear RHS runs",
 ]
 numerics_contracts = [
   "fixed and adaptive explicit diagnostic paths share one time-step policy and projection convention",
+  "IMEX diagnostic paths keep the nonlinear term explicit and the linear solve implicit while sharing diagnostic assembly",
   "sampled diagnostic scans preserve final-time samples and resolved-diagnostic axis lengths",
   "dependency injection keeps branch choices explicit while leaving traced state arrays JAX-transformable",
 ]
