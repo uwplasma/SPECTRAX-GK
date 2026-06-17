@@ -972,8 +972,8 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.netcdf_spectral_layout"
-source_path = "src/spectraxgk/netcdf_spectral_layout.py"
+module = "spectraxgk.artifacts.spectral_layout"
+source_path = "src/spectraxgk/artifacts/spectral_layout.py"
 facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "NetCDF dealiased-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"

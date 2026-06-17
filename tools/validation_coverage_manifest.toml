@@ -1763,8 +1763,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.netcdf_spectral_layout"
-path = "src/spectraxgk/netcdf_spectral_layout.py"
+module = "spectraxgk.artifacts.spectral_layout"
+path = "src/spectraxgk/artifacts/spectral_layout.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"

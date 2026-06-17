@@ -14,7 +14,7 @@ from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 import spectraxgk.workflows.runtime.artifacts as runtime_artifacts
-import spectraxgk.netcdf_spectral_layout as spectral_layout
+import spectraxgk.artifacts.spectral_layout as spectral_layout
 import spectraxgk.artifacts.nonlinear_netcdf as nonlinear_netcdf
 import spectraxgk.artifacts as artifact_package
 import spectraxgk.artifacts.io as artifact_io

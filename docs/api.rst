@@ -644,7 +644,7 @@ Runtime Artifact Validation
 NetCDF Spectral Layout
 ----------------------
 
-.. automodule:: spectraxgk.netcdf_spectral_layout
+.. automodule:: spectraxgk.artifacts.spectral_layout
    :members:
    :private-members:
 
