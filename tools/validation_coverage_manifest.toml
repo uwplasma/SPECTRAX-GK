@@ -227,7 +227,7 @@ path = "src/spectraxgk/linear.py"
 owned_modules = [
   "spectraxgk.diagnostics.analysis",
   "spectraxgk.basis",
-  "spectraxgk.cetg",
+  "spectraxgk.terms.cetg",
   "spectraxgk.grids",
   "spectraxgk.gyroaverage",
   "spectraxgk.operators.linear.streaming",

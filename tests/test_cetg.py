@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.cetg import (
+from spectraxgk.terms.cetg import (
     _from_internal_state,
     _cetg_linear_omega_max,
     _kz_grid,
