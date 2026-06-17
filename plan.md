@@ -199,9 +199,9 @@
   API docs, code-structure docs, refactor manifest, and coverage manifest.
 - 2026-06-16: Continued the differentiable solver-objective refactor by
   removing the temporary solver-gradient compatibility facade. The canonical
-  implementation modules are now `spectraxgk.solver_ready_gradient_gates` for
+  implementation modules are now `spectraxgk.objectives.gradient_gates` for
   solver-ready branch/linear-RHS gradient gates and
-  `spectraxgk.solver_vmec_boozer_gradient_gates` for mode-21 VMEC/Boozer
+  `spectraxgk.objectives.vmec_boozer_gradients` for mode-21 VMEC/Boozer
   frequency, quasilinear, and reduced nonlinear-window gradient gates. Added
   direct implementation-module tests for FD reports, line-search/holdout
   gates, and injected VMEC/Boozer gradient reports. Updated
@@ -211,8 +211,8 @@
   speedup claims until GPU production-speedup evidence exists.
 - 2026-06-15: Continued the VMEC/Boozer gate refactor by splitting
   finite-difference report construction into
-  `spectraxgk.solver_vmec_boozer_fd_gates` and line-search/held-out audit
-  logic into `spectraxgk.solver_vmec_boozer_line_search_gates`. The temporary
+  `spectraxgk.objectives.vmec_boozer_fd` and line-search/held-out audit
+  logic into `spectraxgk.objectives.vmec_boozer_line_search`. The temporary
   wrapper module has since been removed; `solver_objective_gradients` imports
   the focused gate modules directly while preserving dependency-injected hook
   seams. Focused solver-objective tests, Ruff, and mypy passed locally.
@@ -234,7 +234,7 @@
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   VMEC/Boozer objective option splitting, objective-table construction, sample
   metadata, and scalar reductions into
-  `spectraxgk.solver_vmec_boozer_objectives`. The legacy
+  `spectraxgk.objectives.vmec_boozer`. The legacy
   `solver_objective_gradients` facade now delegates through thin wrappers so
   public imports and monkeypatch-based validation tests keep working. Focused
   solver-objective tests, refactor/coverage manifest tests, Ruff, mypy, docs
@@ -554,17 +554,17 @@
 
 - 2026-06-14: Continued the solver-objective refactor with a larger
   three-module split. Solver-ready geometry objective gates moved into
-  `spectraxgk.solver_geometry_objectives`, reduced nonlinear-window estimator
-  metrics moved into `spectraxgk.solver_nonlinear_window_objective`, and
+  `spectraxgk.objectives.geometry`, reduced nonlinear-window estimator
+  metrics moved into `spectraxgk.objectives.nonlinear_window`, and
   VMEC/Boozer state coefficient helpers moved into
-  `spectraxgk.solver_vmec_state`. The unchanged
+  `spectraxgk.objectives.vmec_state`. The unchanged
   `spectraxgk.solver_objective_gradients` facade still re-exports the public
   and test-visible names, while the manifest/docs now track the moved physics,
   numerics, and differentiability contracts directly.
 
 - 2026-06-14: Continued the differentiable-objective refactor by moving the
   implicit dominant-eigenvalue custom VJP and branch-locality finite-difference
-  report into `spectraxgk.solver_eigen_objectives`. The legacy
+  report into `spectraxgk.objectives.eigen`. The legacy
   `spectraxgk.solver_objective_gradients` facade still re-exports
   `dominant_real_eigenvalue` and
   `dominant_eigenvalue_branch_locality_report`, preserving package-level and
@@ -573,7 +573,7 @@
 
 - 2026-06-14: Continued the solver-objective refactor by moving physical
   `ky` scan mapping, VMEC/Boozer sample-axis helpers, and aggregate objective
-  weights into `spectraxgk.solver_objective_sampling`. The legacy
+  weights into `spectraxgk.objectives.sampling`. The legacy
   `spectraxgk.solver_objective_gradients` facade still exposes the public
   `solver_grid_options_from_ky_values` helper and private compatibility seams
   used by existing tests, while the new module isolates deterministic sampling
@@ -581,7 +581,7 @@
 
 - 2026-06-14: Continued the solver-objective refactor by moving core
   linear/quasilinear objective constants and value evaluators into
-  `spectraxgk.solver_objective_core`. The unchanged
+  `spectraxgk.objectives.core`. The unchanged
   `spectraxgk.solver_objective_gradients` facade still re-exports
   `SOLVER_OBJECTIVE_NAMES`, `SolverScalarObjective`,
   `solver_growth_rate_from_geometry`,

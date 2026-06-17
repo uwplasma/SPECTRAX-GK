@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.solver_vmec_boozer_line_search_gates import (  # noqa: E402
+from spectraxgk.objectives.vmec_boozer_line_search import (  # noqa: E402
     vmec_boozer_aggregate_scalar_objective_line_search_report,
 )
 from tools.build_solver_objective_gradient_gate import _json_clean  # noqa: E402

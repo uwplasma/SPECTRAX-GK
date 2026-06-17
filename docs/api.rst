@@ -614,74 +614,74 @@ Quasilinear Model Selection
 Solver Eigen Objectives
 -----------------------
 
-.. automodule:: spectraxgk.solver_eigen_objectives
+.. automodule:: spectraxgk.objectives.eigen
    :members:
 
 Solver Objective Core
 ---------------------
 
-.. automodule:: spectraxgk.solver_objective_core
+.. automodule:: spectraxgk.objectives.core
    :members:
 
 Solver Objective Sampling
 -------------------------
 
-.. automodule:: spectraxgk.solver_objective_sampling
+.. automodule:: spectraxgk.objectives.sampling
    :members:
 
 Solver Geometry Objectives
 --------------------------
 
-.. automodule:: spectraxgk.solver_geometry_objectives
+.. automodule:: spectraxgk.objectives.geometry
    :members:
    :private-members:
 
 Solver Nonlinear-Window Objective
 ---------------------------------
 
-.. automodule:: spectraxgk.solver_nonlinear_window_objective
+.. automodule:: spectraxgk.objectives.nonlinear_window
    :members:
    :private-members:
 
 Solver-Ready Gradient Gates
 ---------------------------
 
-.. automodule:: spectraxgk.solver_ready_gradient_gates
+.. automodule:: spectraxgk.objectives.gradient_gates
    :members:
    :private-members:
 
 Solver VMEC/Boozer Gradient Gates
 ---------------------------------
 
-.. automodule:: spectraxgk.solver_vmec_boozer_gradient_gates
+.. automodule:: spectraxgk.objectives.vmec_boozer_gradients
    :members:
    :private-members:
 
 Solver VMEC-State Helpers
 -------------------------
 
-.. automodule:: spectraxgk.solver_vmec_state
+.. automodule:: spectraxgk.objectives.vmec_state
    :members:
    :private-members:
 
 Solver VMEC/Boozer Objectives
 -----------------------------
 
-.. automodule:: spectraxgk.solver_vmec_boozer_objectives
+.. automodule:: spectraxgk.objectives.vmec_boozer
    :members:
    :private-members:
 
 Solver VMEC/Boozer Finite-Difference Gates
 ------------------------------------------
 
-.. automodule:: spectraxgk.solver_vmec_boozer_fd_gates
+.. automodule:: spectraxgk.objectives.vmec_boozer_fd
    :members:
    :private-members:
 
 Solver VMEC/Boozer Line-Search Gates
 ------------------------------------
 
-.. automodule:: spectraxgk.solver_vmec_boozer_line_search_gates
+.. automodule:: spectraxgk.objectives.vmec_boozer_line_search
    :members:
    :private-members:
 

@@ -105,7 +105,7 @@ Physics / Numerics / IO Map
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
-     - ``solver_objective_gradients.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``
+     - ``solver_objective_gradients.py``, ``objectives/gradient_gates.py``, ``objectives/vmec_boozer_gradients.py``, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/sampling.py``, ``objectives/geometry.py``, ``objectives/nonlinear_window.py``, ``objectives/vmec_state.py``, ``objectives/vmec_boozer.py``, ``objectives/vmec_boozer_fd.py``, ``objectives/vmec_boozer_line_search.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
@@ -158,23 +158,23 @@ Completed extractions:
 - zonal-response reference/trace normalization helpers:
   ``zonal_validation.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:
-  ``solver_eigen_objectives.py``
+  ``objectives/eigen.py``
 - core solver-objective constants plus value-level linear/quasilinear
   observables:
-  ``solver_objective_core.py``
+  ``objectives/core.py``
 - solver-objective sampling axes, physical-``ky`` grid mapping, and aggregate
   weights:
-  ``solver_objective_sampling.py``
+  ``objectives/sampling.py``
 - solver-ready geometry objective gates, reduced nonlinear-window metrics,
   solver-ready gradient gates, mode-21 VMEC/Boozer gradient gates, VMEC/Boozer
   state coefficient helpers, VMEC/Boozer objective-table plumbing, and
   VMEC/Boozer finite-difference/line-search gates:
-  ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
-  ``solver_ready_gradient_gates.py``,
-  ``solver_vmec_boozer_gradient_gates.py``, ``solver_vmec_state.py``,
-  ``solver_vmec_boozer_objectives.py``,
-  ``solver_vmec_boozer_fd_gates.py``,
-  ``solver_vmec_boozer_line_search_gates.py``
+  ``objectives/geometry.py``, ``objectives/nonlinear_window.py``,
+  ``objectives/gradient_gates.py``,
+  ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_state.py``,
+  ``objectives/vmec_boozer.py``,
+  ``objectives/vmec_boozer_fd.py``,
+  ``objectives/vmec_boozer_line_search.py``
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,

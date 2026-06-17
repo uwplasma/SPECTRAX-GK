@@ -186,23 +186,23 @@ High-Risk Module Split Plan
   gradient gates. Required gates: branch-locality, spectral-gap guards,
   finite-difference/JVP/VJP checks, UQ covariance, and objective conditioning.
   The dominant-growth implicit eigenpair VJP and branch-locality report now
-  live in ``solver_eigen_objectives.py`` and remain re-exported by the legacy
+  live in ``objectives/eigen.py`` and remain re-exported by the legacy
   solver-objective facade. Solver-objective sampling axes, physical-``ky`` grid
   construction, and aggregate weights now live in
-  ``solver_objective_sampling.py`` behind the same facade. Core
+  ``objectives/sampling.py`` behind the same facade. Core
   linear/quasilinear objective constants, scalar selectors, operator
   materialization, growth-rate, and objective-vector evaluators now live in
-  ``solver_objective_core.py``. Solver-ready geometry objective gates, solver
+  ``objectives/core.py``. Solver-ready geometry objective gates, solver
   geometry-gradient reports, mode-21 VMEC/Boozer state-gradient reports,
   reduced nonlinear-window estimator metrics, VMEC/Boozer state coefficient
   helpers, VMEC/Boozer objective-table plumbing, and VMEC/Boozer
   finite-difference/line-search gates now live in
-  ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``,
-  ``solver_ready_gradient_gates.py``,
-  ``solver_vmec_boozer_gradient_gates.py``, ``solver_vmec_state.py``,
-  ``solver_vmec_boozer_objectives.py``,
-  ``solver_vmec_boozer_fd_gates.py``, and
-  ``solver_vmec_boozer_line_search_gates.py`` while
+  ``objectives/geometry.py``, ``objectives/nonlinear_window.py``,
+  ``objectives/gradient_gates.py``,
+  ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_state.py``,
+  ``objectives/vmec_boozer.py``,
+  ``objectives/vmec_boozer_fd.py``, and
+  ``objectives/vmec_boozer_line_search.py`` while
   ``solver_objective_gradients.py`` remains the higher-level public objective
   surface.
 

@@ -82,11 +82,11 @@ def test_repository_validation_manifest_is_well_formed() -> None:
     assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
     assert rows["spectraxgk.validation_gates"]["n_physics_contracts"] >= 2
     assert (
-        rows["spectraxgk.solver_ready_gradient_gates"]["coverage_target_percent"]
+        rows["spectraxgk.objectives.gradient_gates"]["coverage_target_percent"]
         == 95.0
     )
     assert (
-        rows["spectraxgk.solver_vmec_boozer_gradient_gates"]["n_numerics_contracts"]
+        rows["spectraxgk.objectives.vmec_boozer_gradients"]["n_numerics_contracts"]
         >= 2
     )
 

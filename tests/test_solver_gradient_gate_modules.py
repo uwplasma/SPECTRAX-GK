@@ -7,10 +7,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.solver_objective_core import solver_scalar_objective_from_vector
-import spectraxgk.solver_vmec_boozer_fd_gates as fd_gates
-import spectraxgk.solver_vmec_boozer_gradient_gates as vmec_gradient_gates
-import spectraxgk.solver_vmec_boozer_line_search_gates as line_search_gates
+from spectraxgk.objectives.core import solver_scalar_objective_from_vector
+import spectraxgk.objectives.vmec_boozer_fd as fd_gates
+import spectraxgk.objectives.vmec_boozer_gradients as vmec_gradient_gates
+import spectraxgk.objectives.vmec_boozer_line_search as line_search_gates
 
 
 def _fake_state_bundle(_case_name: str) -> dict[str, object]:

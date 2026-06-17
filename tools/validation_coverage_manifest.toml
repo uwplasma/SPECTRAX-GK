@@ -13,6 +13,7 @@ excluded_modules = [
   "spectraxgk.core.__init__",
   "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
+  "spectraxgk.objectives.__init__",
   "spectraxgk.operators.__init__",
   "spectraxgk.operators.linear.__init__",
   "spectraxgk.operators.nonlinear.__init__",
@@ -2409,8 +2410,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_eigen_objectives"
-path = "src/spectraxgk/solver_eigen_objectives.py"
+module = "spectraxgk.objectives.eigen"
+path = "src/spectraxgk/objectives/eigen.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2441,8 +2442,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_objective_core"
-path = "src/spectraxgk/solver_objective_core.py"
+module = "spectraxgk.objectives.core"
+path = "src/spectraxgk/objectives/core.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2473,8 +2474,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_objective_sampling"
-path = "src/spectraxgk/solver_objective_sampling.py"
+module = "spectraxgk.objectives.sampling"
+path = "src/spectraxgk/objectives/sampling.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2505,8 +2506,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_geometry_objectives"
-path = "src/spectraxgk/solver_geometry_objectives.py"
+module = "spectraxgk.objectives.geometry"
+path = "src/spectraxgk/objectives/geometry.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2536,8 +2537,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_nonlinear_window_objective"
-path = "src/spectraxgk/solver_nonlinear_window_objective.py"
+module = "spectraxgk.objectives.nonlinear_window"
+path = "src/spectraxgk/objectives/nonlinear_window.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2567,8 +2568,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_ready_gradient_gates"
-path = "src/spectraxgk/solver_ready_gradient_gates.py"
+module = "spectraxgk.objectives.gradient_gates"
+path = "src/spectraxgk/objectives/gradient_gates.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2598,8 +2599,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_vmec_boozer_gradient_gates"
-path = "src/spectraxgk/solver_vmec_boozer_gradient_gates.py"
+module = "spectraxgk.objectives.vmec_boozer_gradients"
+path = "src/spectraxgk/objectives/vmec_boozer_gradients.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2631,8 +2632,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_vmec_state"
-path = "src/spectraxgk/solver_vmec_state.py"
+module = "spectraxgk.objectives.vmec_state"
+path = "src/spectraxgk/objectives/vmec_state.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2662,8 +2663,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_vmec_boozer_objectives"
-path = "src/spectraxgk/solver_vmec_boozer_objectives.py"
+module = "spectraxgk.objectives.vmec_boozer"
+path = "src/spectraxgk/objectives/vmec_boozer.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2695,8 +2696,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_vmec_boozer_fd_gates"
-path = "src/spectraxgk/solver_vmec_boozer_fd_gates.py"
+module = "spectraxgk.objectives.vmec_boozer_fd"
+path = "src/spectraxgk/objectives/vmec_boozer_fd.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"
@@ -2728,8 +2729,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_vmec_boozer_line_search_gates"
-path = "src/spectraxgk/solver_vmec_boozer_line_search_gates.py"
+module = "spectraxgk.objectives.vmec_boozer_line_search"
+path = "src/spectraxgk/objectives/vmec_boozer_line_search.py"
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"

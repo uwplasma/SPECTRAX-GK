@@ -30,7 +30,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
-from spectraxgk.solver_objective_core import SOLVER_OBJECTIVE_NAMES  # noqa: E402
+from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES  # noqa: E402
 from spectraxgk.stellarator_objective_portfolio import (  # noqa: E402
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,

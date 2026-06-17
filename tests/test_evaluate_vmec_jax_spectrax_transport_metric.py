@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from spectraxgk import StellaratorITGSampleSet, VMECJAXTransportObjectiveConfig
-from spectraxgk.solver_objective_core import SOLVER_OBJECTIVE_NAMES
+from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 
 
 ROOT = Path(__file__).resolve().parents[1]
