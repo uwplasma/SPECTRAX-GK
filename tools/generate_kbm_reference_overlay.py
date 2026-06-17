@@ -23,7 +23,7 @@ from compare_gx_kbm import (
     _normalize_mode,
     _prepare_gx_reference,
 )
-from spectraxgk.analysis import extract_eigenfunction
+from spectraxgk.diagnostics.analysis import extract_eigenfunction
 from spectraxgk.validation.benchmarks.harness import (
     compare_eigenfunctions,
     eigenfunction_gate_report,

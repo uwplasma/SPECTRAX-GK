@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.validation.benchmarks.harness import (
     _analytic_signal,
     _explicit_time_window,

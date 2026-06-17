@@ -68,7 +68,7 @@ from spectraxgk.solvers.time.explicit import (
 )
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 from spectraxgk.solvers.linear.krylov import KrylovConfig
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,

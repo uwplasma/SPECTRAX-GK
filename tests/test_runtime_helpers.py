@@ -9,7 +9,7 @@ import pytest
 
 import spectraxgk.runtime as runtime
 import spectraxgk.workflows.runtime.policies as runtime_policies
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.workflows.runtime.diagnostics import fit_runtime_linear_diagnostics
 from spectraxgk.workflows.runtime.diagnostics import (
     RuntimeQuasilinearFinalizationDeps,

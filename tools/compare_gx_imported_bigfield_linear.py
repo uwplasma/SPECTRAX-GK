@@ -27,7 +27,7 @@ from tools.compare_gx_imported_linear import (
     _resolve_imported_real_fft_ny,
     _resolve_internal_geometry_source,
 )
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate,

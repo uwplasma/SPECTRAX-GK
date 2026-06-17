@@ -1,6 +1,6 @@
 import numpy as np
 
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.benchmarks import _select_fit_signal_auto
 
 

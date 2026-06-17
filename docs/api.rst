@@ -545,7 +545,7 @@ Zonal Flow Objectives
 Analysis
 --------
 
-.. automodule:: spectraxgk.analysis
+.. automodule:: spectraxgk.diagnostics.analysis
    :members:
 
 Plotting

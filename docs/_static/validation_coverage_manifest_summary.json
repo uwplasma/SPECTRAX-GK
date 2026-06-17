@@ -124,7 +124,7 @@
       "spectraxgk.geometry.vmec_eik"
     ],
     "spectraxgk.linear": [
-      "spectraxgk.analysis",
+      "spectraxgk.diagnostics.analysis",
       "spectraxgk.basis",
       "spectraxgk.cetg",
       "spectraxgk.grids",

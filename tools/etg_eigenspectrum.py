@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.analysis import select_ky_index
+from spectraxgk.diagnostics.analysis import select_ky_index
 from spectraxgk.benchmarks import ETGBaseCase, _electron_only_params, ETG_OMEGA_D_SCALE, ETG_OMEGA_STAR_SCALE, ETG_RHO_STAR
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid

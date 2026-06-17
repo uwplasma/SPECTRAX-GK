@@ -8,7 +8,7 @@ import pytest
 diffrax = pytest.importorskip("diffrax")
 pytest.importorskip("equinox")
 
-from spectraxgk.analysis import ModeSelection, ModeSelectionBatch
+from spectraxgk.diagnostics.analysis import ModeSelection, ModeSelectionBatch
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.solvers.time.diffrax import (
     _adjoint,

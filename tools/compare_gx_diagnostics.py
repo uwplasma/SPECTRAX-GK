@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import instantaneous_growth_rate_from_phi, select_ky_index, ModeSelection
+from spectraxgk.diagnostics.analysis import instantaneous_growth_rate_from_phi, select_ky_index, ModeSelection
 from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,

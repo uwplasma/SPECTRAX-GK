@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from spectraxgk import __version__
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.cli import (
     _cmd_default_demo,
     _cmd_run,

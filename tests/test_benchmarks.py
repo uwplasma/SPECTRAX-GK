@@ -13,7 +13,7 @@ import spectraxgk.validation.benchmarks.kbm as benchmark_kbm
 import spectraxgk.validation.benchmarks.kinetic as benchmark_kinetic
 import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
-from spectraxgk.analysis import fit_growth_rate
+from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
     compare_cyclone_to_reference,
     load_cyclone_reference,

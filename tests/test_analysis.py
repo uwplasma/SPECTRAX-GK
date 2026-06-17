@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     _log_amp_phase,
     density_moment,
@@ -447,7 +447,7 @@ def test_fit_growth_rate_auto_with_stats_fallback(monkeypatch) -> None:
     def _boom(*_args, **_kwargs):
         raise ValueError("forced")
 
-    monkeypatch.setattr("spectraxgk.analysis.fit_growth_rate_with_stats", _boom)
+    monkeypatch.setattr("spectraxgk.diagnostics.analysis.fit_growth_rate_with_stats", _boom)
     gamma, omega, tmin, tmax, r2_log, r2_phase = fit_growth_rate_auto_with_stats(t, signal)
     assert np.isfinite(gamma)
     assert np.isfinite(omega)
@@ -699,7 +699,7 @@ def test_fit_growth_rate_auto_invalid_window_method_and_stats_fallback(monkeypat
         fit_growth_rate_auto(t, signal, window_method="bad")
 
     monkeypatch.setattr(
-        "spectraxgk.analysis.fit_growth_rate_with_stats",
+        "spectraxgk.diagnostics.analysis.fit_growth_rate_with_stats",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("forced")),
     )
     gamma, omega, tmin, tmax, r2_log, r2_phase = fit_growth_rate_auto_with_stats(t, signal, window_method="fixed")
