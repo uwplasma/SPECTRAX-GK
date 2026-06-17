@@ -66,11 +66,11 @@
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 15,
+  "n_excluded_modules": 16,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 182,
+  "n_package_modules": 183,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -218,15 +218,10 @@
       "spectraxgk.restart",
       "spectraxgk.runners",
       "spectraxgk.runtime_config",
-      "spectraxgk.runtime_diagnostics",
-      "spectraxgk.runtime_startup"
+      "spectraxgk.workflows.runtime.diagnostics",
+      "spectraxgk.workflows.runtime.startup"
     ],
     "spectraxgk.runtime_artifacts": [],
-    "spectraxgk.runtime_orchestration": [
-      "spectraxgk.runtime_chunks",
-      "spectraxgk.runtime_results"
-    ],
-    "spectraxgk.runtime_policies": [],
     "spectraxgk.sharding": [
       "spectraxgk.sharded_integrators",
       "spectraxgk.utils.callbacks",
@@ -256,6 +251,11 @@
       "spectraxgk.workflows.nonlinear",
       "spectraxgk.workflows.reduced_models"
     ],
+    "spectraxgk.workflows.runtime.orchestration": [
+      "spectraxgk.workflows.runtime.chunks",
+      "spectraxgk.workflows.runtime.results"
+    ],
+    "spectraxgk.workflows.runtime.policies": [],
     "spectraxgk.zonal_objective": [],
     "spectraxgk.zonal_validation": []
   },
@@ -292,7 +292,7 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_policies",
+      "module": "spectraxgk.workflows.runtime.policies",
       "n_artifacts": 2,
       "n_fast_tests": 1,
       "n_next_tests": 2,
@@ -300,13 +300,13 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_policies.py",
+      "path": "src/spectraxgk/workflows/runtime/policies.py",
       "status": "active"
     },
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_orchestration",
+      "module": "spectraxgk.workflows.runtime.orchestration",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -314,7 +314,7 @@
       "n_owned_modules": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_orchestration.py",
+      "path": "src/spectraxgk/workflows/runtime/orchestration.py",
       "status": "active"
     },
     {

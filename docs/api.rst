@@ -524,17 +524,45 @@ Runtime Config
 .. automodule:: spectraxgk.runtime_config
    :members:
 
+Runtime Startup
+---------------
+
+.. automodule:: spectraxgk.workflows.runtime.startup
+   :members:
+   :private-members:
+
 Runtime Policies
 ----------------
 
-.. automodule:: spectraxgk.runtime_policies
+.. automodule:: spectraxgk.workflows.runtime.policies
+   :members:
+   :private-members:
+
+Runtime Diagnostics
+-------------------
+
+.. automodule:: spectraxgk.workflows.runtime.diagnostics
+   :members:
+   :private-members:
+
+Runtime Chunks
+--------------
+
+.. automodule:: spectraxgk.workflows.runtime.chunks
+   :members:
+   :private-members:
+
+Runtime Results
+---------------
+
+.. automodule:: spectraxgk.workflows.runtime.results
    :members:
    :private-members:
 
 Runtime Orchestration
 ---------------------
 
-.. automodule:: spectraxgk.runtime_orchestration
+.. automodule:: spectraxgk.workflows.runtime.orchestration
    :members:
    :private-members:
 

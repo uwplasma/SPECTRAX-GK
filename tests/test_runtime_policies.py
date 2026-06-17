@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.runtime_policies import (
+from spectraxgk.workflows.runtime.policies import (
     RuntimeIndependentParallelPlan,
     _active_kx_indices,
     _active_ky_indices,

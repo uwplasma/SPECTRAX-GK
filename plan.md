@@ -1,7 +1,7 @@
 - 2026-06-17: Removed duplicate runtime startup helper implementations from
   `spectraxgk.runtime`. The public runtime facade now aliases
   `_centered_glibc_random_pairs`, `_dealiased_initial_mode_pairs`, and
-  `_periodic_zp_from_grid` to the existing `spectraxgk.runtime_startup` owner,
+  `_periodic_zp_from_grid` to the existing `spectraxgk.workflows.runtime.startup` owner,
   preserving imports while shrinking the main runtime runner.
 - 2026-06-17: Moved explicit/IMEX diagnostic collision-split setup into
   `spectraxgk.nonlinear_helpers.build_nonlinear_collision_split_policy`. The
@@ -2601,7 +2601,7 @@ No long nonlinear audit should be launched from these candidates.
 ### 2026-06-17 Runtime Scan Orchestration Split
 
 - Moved runtime ky-scan coordination out of `spectraxgk.runtime` and into the
-  existing `spectraxgk.runtime_orchestration` owner. The public `run_runtime_scan`
+  existing `spectraxgk.workflows.runtime.orchestration` owner. The public `run_runtime_scan`
   facade now wires dependency seams for Hermite-Laguerre dimension resolution,
   solver-name normalization, independent-worker policy, combined-ky batching,
   and the scan task runner.
@@ -2615,7 +2615,7 @@ No long nonlinear audit should be launched from these candidates.
 ### 2026-06-17 Runtime Nonlinear Diagnostics Policy Split
 
 - Extracted nonlinear diagnostics integrator keyword assembly from the public
-  runtime facade into `spectraxgk.runtime_policies.build_runtime_nonlinear_diagnostics_kwargs`.
+  runtime facade into `spectraxgk.workflows.runtime.policies.build_runtime_nonlinear_diagnostics_kwargs`.
   Fixed-window and adaptive nonlinear diagnostic branches now use one policy for
   sample/diagnostic stride, dealiased masks, Laguerre mode, flux normalization,
   adaptive-step controls, collision split, implicit solve settings, fixed-mode
@@ -2627,7 +2627,7 @@ No long nonlinear audit should be launched from these candidates.
 ### 2026-06-17 Runtime Linear Fit Diagnostics Split
 
 - Moved generic runtime linear fit/eigenfunction extraction from `run_runtime_linear`
-  into `spectraxgk.runtime_diagnostics.fit_runtime_linear_diagnostics`.
+  into `spectraxgk.workflows.runtime.diagnostics.fit_runtime_linear_diagnostics`.
 - Preserved runtime facade monkeypatch seams by injecting analysis callables from
   `spectraxgk.runtime`; added a direct density-fit helper test and reran runtime
   linear fit integration tests.
@@ -2644,7 +2644,7 @@ No long nonlinear audit should be launched from these candidates.
 
 - Moved optional runtime linear quasilinear payload construction from the
   `run_runtime_linear` closure into
-  `spectraxgk.runtime_diagnostics.finalize_runtime_linear_quasilinear`.
+  `spectraxgk.workflows.runtime.diagnostics.finalize_runtime_linear_quasilinear`.
 - Preserved runtime facade seams by injecting cache construction, quasilinear
   computation, and term-conversion callables; added a direct metadata/state
   contract test plus runtime quasilinear smoke coverage.

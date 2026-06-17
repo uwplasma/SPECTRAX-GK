@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.runtime_startup as startup
+import spectraxgk.workflows.runtime.startup as startup
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,

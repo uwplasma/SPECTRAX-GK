@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.runtime_results import RuntimeLinearScanResult
+from spectraxgk.workflows.runtime.results import RuntimeLinearScanResult
 from tools import generate_quasilinear_runtime_parallel_gate as gate
 
 

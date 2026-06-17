@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from spectraxgk.runtime_results import (
+from spectraxgk.workflows.runtime.results import (
     build_runtime_nonlinear_result,
     nonlinear_field_phi2,
 )

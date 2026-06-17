@@ -1442,8 +1442,8 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_diagnostics"
-source_path = "src/spectraxgk/runtime_diagnostics.py"
+module = "spectraxgk.workflows.runtime.diagnostics"
+source_path = "src/spectraxgk/workflows/runtime/diagnostics.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
 responsibility = "runtime linear fit/eigenfunction extraction, quasilinear finalization, plus finite-value, slicing, truncation, striding, and concatenation policies for runtime diagnostic payloads"
@@ -1463,8 +1463,8 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_policies"
-source_path = "src/spectraxgk/runtime_policies.py"
+module = "spectraxgk.workflows.runtime.policies"
+source_path = "src/spectraxgk/workflows/runtime/policies.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
 responsibility = "runtime mode-index, nonlinear step-count, external-source, independent-worker, combined-ky, and nonlinear diagnostics integrator keyword policies"
@@ -1485,8 +1485,8 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
-module = "spectraxgk.runtime_orchestration"
-source_path = "src/spectraxgk/runtime_orchestration.py"
+module = "spectraxgk.workflows.runtime.orchestration"
+source_path = "src/spectraxgk/workflows/runtime/orchestration.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
 responsibility = "runtime progress formatting, combined-ky scan batching, serial/worker ky-scan orchestration, and nonlinear artifact handoff policy behind the public runtime facade"

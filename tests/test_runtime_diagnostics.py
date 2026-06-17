@@ -78,7 +78,7 @@ from spectraxgk.explicit_time_integrators import (
     _rk3_heun_step,
     integrate_linear_explicit_diagnostics,
 )
-from spectraxgk.runtime_diagnostics import validate_finite_runtime_diagnostics
+from spectraxgk.workflows.runtime.diagnostics import validate_finite_runtime_diagnostics
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import FieldState

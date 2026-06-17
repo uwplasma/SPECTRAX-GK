@@ -57,13 +57,7 @@ allowed_root_prefix_modules = [
   "spectraxgk.quasilinear_model_selection",
   "spectraxgk.quasilinear_window",
   "spectraxgk.runtime_artifacts",
-  "spectraxgk.runtime_chunks",
   "spectraxgk.runtime_config",
-  "spectraxgk.runtime_diagnostics",
-  "spectraxgk.runtime_orchestration",
-  "spectraxgk.runtime_policies",
-  "spectraxgk.runtime_results",
-  "spectraxgk.runtime_startup",
   "spectraxgk.solver_objective_gradients",
   "spectraxgk.stellarator_objective_portfolio",
   "spectraxgk.stellarator_optimization",
@@ -87,6 +81,7 @@ required_domain_packages = [
   "spectraxgk.solvers",
   "spectraxgk.solvers.linear",
   "spectraxgk.workflows",
+  "spectraxgk.workflows.runtime",
 ]
 required_docs = [
   "docs/architecture_refactor_plan.rst",

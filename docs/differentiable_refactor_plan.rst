@@ -240,11 +240,11 @@ High-Risk Module Split Plan
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
   plotting, and artifact handoff. Runtime scan orchestration and combined-``ky``
-  scan batching now live in ``spectraxgk.runtime_orchestration`` behind the
+  scan batching now live in ``spectraxgk.workflows.runtime.orchestration`` behind the
   public ``spectraxgk.runtime`` facade. Runtime nonlinear diagnostics keyword
-  assembly now lives in ``spectraxgk.runtime_policies`` so fixed-window and
+  assembly now lives in ``spectraxgk.workflows.runtime.policies`` so fixed-window and
   adaptive diagnostic branches share one policy. Generic runtime linear
-  fit/eigenfunction extraction now lives in ``spectraxgk.runtime_diagnostics``
+  fit/eigenfunction extraction now lives in ``spectraxgk.workflows.runtime.diagnostics``
   so the public runtime facade only wires analysis callables, normalization,
   quasilinear post-processing dependencies, and result construction. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so

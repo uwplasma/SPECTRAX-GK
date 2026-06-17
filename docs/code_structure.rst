@@ -38,10 +38,10 @@ Internal modules that are free to move as long as the public behavior and tests
 remain unchanged:
 
 - ``spectraxgk.terms.*``
-- ``spectraxgk.runtime_startup``
-- ``spectraxgk.runtime_diagnostics``
-- ``spectraxgk.runtime_chunks``
-- ``spectraxgk.runtime_results``
+- ``spectraxgk.workflows.runtime.startup``
+- ``spectraxgk.workflows.runtime.diagnostics``
+- ``spectraxgk.workflows.runtime.chunks``
+- ``spectraxgk.workflows.runtime.results``
 - ``spectraxgk.geometry_backends.*``
 - low-level geometry adapters and import bridges
 
@@ -59,8 +59,8 @@ The executable-facing runtime path is split conceptually into four layers:
 
 1. **configuration and startup**
    - ``runtime_config.py``
-   - ``runtime_startup.py``
-   - ``runtime_policies.py``
+   - ``workflows/runtime/startup.py``
+   - ``workflows/runtime/policies.py``
 2. **solver execution**
    - ``runtime.py``
    - ``linear.py``
@@ -68,9 +68,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``diffrax_integrators.py``
 3. **diagnostics and artifacts**
    - ``diagnostics.py``
-   - ``runtime_diagnostics.py``
-   - ``runtime_results.py``
-   - ``runtime_orchestration.py``
+   - ``workflows/runtime/diagnostics.py``
+   - ``workflows/runtime/results.py``
+   - ``workflows/runtime/orchestration.py``
    - ``runtime_artifacts.py``
    - ``artifacts/``
    - ``plotting.py``
@@ -114,7 +114,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_diagnostics.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
@@ -133,20 +133,20 @@ modules.
 Completed extractions:
 
 - startup/loading/initial-condition helpers:
-  ``runtime_startup.py``
+  ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
   and nonlinear diagnostics keyword policies:
-  ``runtime_policies.py``
+  ``workflows/runtime/policies.py``
 - runtime linear fit/eigenfunction extraction, quasilinear finalization, and
   diagnostic chunk helpers used by runtime and comparison artifacts:
-  ``runtime_diagnostics.py``
+  ``workflows/runtime/diagnostics.py``
 - adaptive chunk execution used by runtime and comparison artifacts:
-  ``runtime_chunks.py``
+  ``workflows/runtime/chunks.py``
 - runtime result containers and nonlinear result assembly:
-  ``runtime_results.py``
+  ``workflows/runtime/results.py``
 - runtime progress formatting, combined-``ky`` scan batching, serial/worker
   scan orchestration, and nonlinear artifact handoff policy:
-  ``runtime_orchestration.py``
+  ``workflows/runtime/orchestration.py``
 - full-GK executable linear runtime workflow:
   ``workflows/linear.py``
 - full-GK executable nonlinear runtime workflow:

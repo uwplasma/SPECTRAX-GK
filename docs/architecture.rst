@@ -28,8 +28,8 @@ Core modules
   comparison parity audits, collision-split policies, and reusable nonlinear
   IMEX operator construction.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
-- ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
-- ``spectraxgk.runtime_orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
+- ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
+- ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
 - ``spectraxgk.benchmark_defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
 - ``spectraxgk.benchmark_reference`` / ``spectraxgk.benchmark_fit_signals`` / ``spectraxgk.benchmark_species``: reference data loaders, result containers, fitting policies, and benchmark species policies.
 - ``spectraxgk.benchmark_scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.

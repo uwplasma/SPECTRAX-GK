@@ -328,7 +328,7 @@
           "exists": true,
           "name": "runtime orchestration module",
           "passed": true,
-          "path": "src/spectraxgk/runtime_orchestration.py",
+          "path": "src/spectraxgk/workflows/runtime/orchestration.py",
           "required": true,
           "snippet": null
         },
@@ -336,7 +336,7 @@
           "exists": true,
           "name": "runtime policy module",
           "passed": true,
-          "path": "src/spectraxgk/runtime_policies.py",
+          "path": "src/spectraxgk/workflows/runtime/policies.py",
           "required": true,
           "snippet": "RuntimeIndependentParallelPlan"
         },
@@ -402,7 +402,7 @@
           "passed": true,
           "path": "tools/validation_coverage_manifest.toml",
           "required": true,
-          "snippet": "spectraxgk.runtime_orchestration"
+          "snippet": "spectraxgk.workflows.runtime.orchestration"
         }
       ],
       "completion_percent": 100.0,

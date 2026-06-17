@@ -23,6 +23,7 @@ excluded_modules = [
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
   "spectraxgk.workflows.__init__",
+  "spectraxgk.workflows.runtime.__init__",
 ]
 
 [[modules]]
@@ -70,8 +71,8 @@ owned_modules = [
   "spectraxgk.restart",
   "spectraxgk.runners",
   "spectraxgk.runtime_config",
-  "spectraxgk.runtime_diagnostics",
-  "spectraxgk.runtime_startup",
+  "spectraxgk.workflows.runtime.diagnostics",
+  "spectraxgk.workflows.runtime.startup",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"
@@ -106,8 +107,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_policies"
-path = "src/spectraxgk/runtime_policies.py"
+module = "spectraxgk.workflows.runtime.policies"
+path = "src/spectraxgk/workflows/runtime/policies.py"
 owner_lane = "pure runtime selection policies split from runtime orchestration"
 status = "active"
 coverage_priority = "medium"
@@ -137,11 +138,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_orchestration"
-path = "src/spectraxgk/runtime_orchestration.py"
+module = "spectraxgk.workflows.runtime.orchestration"
+path = "src/spectraxgk/workflows/runtime/orchestration.py"
 owned_modules = [
-  "spectraxgk.runtime_chunks",
-  "spectraxgk.runtime_results",
+  "spectraxgk.workflows.runtime.chunks",
+  "spectraxgk.workflows.runtime.results",
 ]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
 status = "active"

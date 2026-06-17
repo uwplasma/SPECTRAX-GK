@@ -8,15 +8,15 @@ import numpy as np
 import pytest
 
 import spectraxgk.runtime as runtime
-import spectraxgk.runtime_policies as runtime_policies
+import spectraxgk.workflows.runtime.policies as runtime_policies
 from spectraxgk.analysis import ModeSelection
-from spectraxgk.runtime_diagnostics import fit_runtime_linear_diagnostics
-from spectraxgk.runtime_diagnostics import (
+from spectraxgk.workflows.runtime.diagnostics import fit_runtime_linear_diagnostics
+from spectraxgk.workflows.runtime.diagnostics import (
     RuntimeQuasilinearFinalizationDeps,
     finalize_runtime_linear_quasilinear,
 )
-from spectraxgk.runtime_results import RuntimeLinearResult
-from spectraxgk.runtime_orchestration import (
+from spectraxgk.workflows.runtime.results import RuntimeLinearResult
+from spectraxgk.workflows.runtime.orchestration import (
     build_runtime_progress_message,
     format_duration,
 )
@@ -661,13 +661,13 @@ def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None
 
     monkeypatch.setattr("spectraxgk.runtime.build_runtime_geometry", _fake_build_geom)
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_linear_params", _fake_build_params
+        "spectraxgk.workflows.runtime.startup.build_runtime_linear_params", _fake_build_params
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_linear_terms", _fake_build_terms
+        "spectraxgk.workflows.runtime.startup.build_runtime_linear_terms", _fake_build_terms
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_term_config", _fake_build_term_config
+        "spectraxgk.workflows.runtime.startup.build_runtime_term_config", _fake_build_term_config
     )
 
     assert build_runtime_linear_params(cfg, Nm=7) == "params"

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics import SimulationDiagnostics
-from spectraxgk.runtime_chunks import (
+from spectraxgk.workflows.runtime.chunks import (
     _effective_diagnostics_stride,
     _format_duration,
     _next_elapsed_time,
@@ -68,7 +68,7 @@ def test_run_adaptive_runtime_chunk_loop_reports_wall_eta(
 ) -> None:
     clock = iter([0.0, 0.0, 10.0, 10.0, 10.0, 25.0, 25.0])
     monkeypatch.setattr(
-        "spectraxgk.runtime_chunks.time.perf_counter", lambda: next(clock)
+        "spectraxgk.workflows.runtime.chunks.time.perf_counter", lambda: next(clock)
     )
 
     messages: list[str] = []
