@@ -167,7 +167,7 @@ Completed extractions:
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
 - explicit RK/SSP/K10 one-step policy, cached explicit scan policy, explicit
-  diagnostic scan-selection policy, cached IMEX scan policy, and IMEX
+  diagnostic step and scan-selection policy, cached IMEX scan policy, and IMEX
   fixed-point/GMRES solve policy:
   ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
   helpers should import from ``spectraxgk.solvers.nonlinear``.

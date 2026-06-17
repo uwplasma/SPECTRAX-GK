@@ -1,3 +1,9 @@
+- 2026-06-17: Moved explicit nonlinear diagnostic step construction into
+  `spectraxgk.solvers.nonlinear.explicit.make_explicit_diagnostic_step`.
+  The public nonlinear facade still owns cache setup, diagnostic setup, and
+  monkeypatch-compatible injected functions, but the solver owner now contains
+  the per-step RHS/adaptive-dt/RK/collision/diagnostic/progress policy with
+  direct unit tests.
 - 2026-06-17: Extracted explicit nonlinear diagnostic scan-selection policy
   into `spectraxgk.solvers.nonlinear.explicit.run_explicit_diagnostic_scan`.
   The public nonlinear facade still owns diagnostic setup and public

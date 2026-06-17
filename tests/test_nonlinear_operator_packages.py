@@ -55,6 +55,10 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
         is solver_explicit.integrate_cached_explicit_scan
     )
     assert (
+        nonlinear_solvers.make_explicit_diagnostic_step
+        is solver_explicit.make_explicit_diagnostic_step
+    )
+    assert (
         nonlinear_solvers.run_explicit_diagnostic_scan
         is solver_explicit.run_explicit_diagnostic_scan
     )

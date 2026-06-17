@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -7,6 +9,7 @@ import pytest
 from spectraxgk.solvers.nonlinear.explicit import (
     advance_explicit_nonlinear_state,
     integrate_cached_explicit_scan,
+    make_explicit_diagnostic_step,
     run_explicit_diagnostic_scan,
 )
 
@@ -131,6 +134,143 @@ def test_integrate_cached_explicit_scan_forwards_scan_policy() -> None:
     assert captured["checkpoint"] is True
     assert captured["project_state"] is project_state
     assert captured["show_progress"] is True
+
+
+def test_make_explicit_diagnostic_step_forwards_runtime_policies() -> None:
+    seen: dict[str, object] = {}
+    time_step_policy = SimpleNamespace(
+        update_dt=lambda _fields, dt_prev: dt_prev + 0.25,
+        progress_total=jnp.asarray(5.0, dtype=jnp.float32),
+    )
+
+    def rhs_fn(G):
+        seen["rhs_input"] = G
+        return jnp.ones_like(G) * 2.0, "rhs_fields"
+
+    def project_state(G):
+        seen["projected"] = True
+        return G
+
+    def compute_fields_fn(G, cache, params, **kwargs):
+        seen["fields_G"] = G
+        seen["cache"] = cache
+        seen["params"] = params
+        seen["field_terms"] = kwargs["terms"]
+        seen["external_phi"] = kwargs["external_phi"]
+        return "new_fields"
+
+    def compute_diag_from_state(G, fields, G_prev, fields_prev, dt_local):
+        seen["diag_args"] = (G, fields, G_prev, fields_prev, dt_local)
+        return jnp.asarray(7.0, dtype=jnp.float32)
+
+    def select_diagnostics_fn(idx, **kwargs):
+        seen["diag_idx"] = idx
+        seen["diagnostics_stride"] = kwargs["diagnostics_stride"]
+        seen["diag_prev"] = kwargs["diag_prev"]
+        return kwargs["compute_diag_fn"]()
+
+    def emit_progress_fn(G, **kwargs):
+        seen["progress"] = kwargs
+        return G + 1.0
+
+    def apply_collision_split_fn(G, damping, dt_local, scheme):
+        seen["collision"] = (damping, dt_local, scheme)
+        return G + 3.0
+
+    step = make_explicit_diagnostic_step(
+        rhs_fn=rhs_fn,
+        method="euler",
+        project_state=project_state,
+        state_dtype=jnp.float32,
+        real_dtype=jnp.float32,
+        time_step_policy=time_step_policy,
+        compute_fields_fn=compute_fields_fn,
+        cache="cache",
+        params="params",
+        term_cfg="terms",
+        external_phi="phi",
+        compute_diag_from_state=compute_diag_from_state,
+        diagnostics_stride=2,
+        select_diagnostics_fn=select_diagnostics_fn,
+        show_progress=True,
+        steps=4,
+        emit_progress_fn=emit_progress_fn,
+        use_collision_split=True,
+        damping="damping",
+        collision_scheme="implicit",
+        apply_collision_split_fn=apply_collision_split_fn,
+    )
+
+    carry, out = step(
+        (
+            jnp.asarray([1.0], dtype=jnp.float32),
+            jnp.asarray([0.5], dtype=jnp.float32),
+            "old_fields",
+            jnp.asarray(0.0, dtype=jnp.float32),
+            jnp.asarray(0.0, dtype=jnp.float32),
+            jnp.asarray(0.25, dtype=jnp.float32),
+        ),
+        jnp.asarray(3, dtype=jnp.int32),
+    )
+
+    G_new, G_prev, fields_new, diag, t_new, dt_new = carry
+    np.testing.assert_allclose(np.asarray(G_new), [6.0], rtol=1e-6)
+    np.testing.assert_allclose(np.asarray(G_prev), [6.0], rtol=1e-6)
+    assert fields_new == "new_fields"
+    np.testing.assert_allclose(np.asarray(diag), 7.0, rtol=1e-6)
+    np.testing.assert_allclose(np.asarray(t_new), 0.5, rtol=1e-6)
+    np.testing.assert_allclose(np.asarray(dt_new), 0.5, rtol=1e-6)
+    assert out[0] is diag
+    assert seen["field_terms"] == "terms"
+    assert seen["external_phi"] == "phi"
+    assert seen["diagnostics_stride"] == 2
+    np.testing.assert_allclose(np.asarray(seen["diag_prev"]), 0.0, rtol=1e-6)
+    np.testing.assert_allclose(np.asarray(seen["diag_args"][0]), [5.0], rtol=1e-6)
+    assert seen["collision"][0] == "damping"
+    assert seen["collision"][2] == "implicit"
+    assert seen["progress"]["show_progress"] is True
+    assert seen["progress"]["steps"] == 4
+
+
+def test_make_explicit_diagnostic_step_requires_collision_split_policy() -> None:
+    step = make_explicit_diagnostic_step(
+        rhs_fn=lambda G: (jnp.zeros_like(G), "fields"),
+        method="euler",
+        project_state=lambda G: G,
+        state_dtype=jnp.float32,
+        real_dtype=jnp.float32,
+        time_step_policy=SimpleNamespace(
+            update_dt=lambda _fields, dt_prev: dt_prev,
+            progress_total=jnp.asarray(1.0, dtype=jnp.float32),
+        ),
+        compute_fields_fn=lambda G, *_args, **_kwargs: G,
+        cache=None,
+        params=None,
+        term_cfg=None,
+        external_phi=None,
+        compute_diag_from_state=lambda *_args: jnp.asarray(0.0, dtype=jnp.float32),
+        diagnostics_stride=1,
+        select_diagnostics_fn=lambda _idx, **kwargs: kwargs["compute_diag_fn"](),
+        show_progress=False,
+        steps=1,
+        emit_progress_fn=lambda G, **_kwargs: G,
+        use_collision_split=True,
+        damping=jnp.asarray(1.0, dtype=jnp.float32),
+        apply_collision_split_fn=None,
+    )
+
+    with pytest.raises(ValueError, match="apply_collision_split_fn"):
+        step(
+            (
+                jnp.asarray([1.0], dtype=jnp.float32),
+                jnp.asarray([1.0], dtype=jnp.float32),
+                None,
+                jnp.asarray(0.0, dtype=jnp.float32),
+                jnp.asarray(0.0, dtype=jnp.float32),
+                jnp.asarray(0.1, dtype=jnp.float32),
+            ),
+            jnp.asarray(0, dtype=jnp.int32),
+        )
 
 
 def test_run_explicit_diagnostic_scan_dense_path_runs_all_steps() -> None:
