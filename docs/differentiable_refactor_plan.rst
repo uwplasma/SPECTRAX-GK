@@ -248,13 +248,15 @@ High-Risk Module Split Plan
   diagnostics routing, adaptive chunks, fixed-mode/source policy, and
   final-state integration. The
   default no-input educational demo now delegates to
-  ``spectraxgk.workflows.demo`` and runtime linear, scan, and nonlinear
-  executable command bodies now delegate to ``spectraxgk.workflows.cases`` so
-  parser dispatch stays separate from simulation, plotting, path override, and
-  artifact side effects. The cETG reduced-model linear and nonlinear runtime paths now
-  delegates to ``spectraxgk.workflows.reduced_models`` through injected runtime
-  dependencies so reduced-model execution is separated from the full-GK runtime
-  facade without breaking existing monkeypatch seams.
+  ``spectraxgk.workflows.demo``; named Cyclone/ETG linear executable workflows
+  now delegate to ``spectraxgk.workflows.named_cases``; and runtime linear,
+  scan, and nonlinear executable command bodies now delegate to
+  ``spectraxgk.workflows.cases`` so parser dispatch stays separate from
+  simulation, plotting, path override, and artifact side effects. The cETG
+  reduced-model linear and nonlinear runtime paths now delegate to
+  ``spectraxgk.workflows.reduced_models`` through injected runtime dependencies
+  so reduced-model execution is separated from the full-GK runtime facade
+  without breaking existing monkeypatch seams.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
   restart/output schema, and import compatibility.
 

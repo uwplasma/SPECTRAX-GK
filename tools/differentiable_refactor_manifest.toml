@@ -862,6 +862,22 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.named_cases"
+source_path = "src/spectraxgk/workflows/named_cases.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "named linear executable workflows for built-in Cyclone and ETG TOML cases, including optional pedagogical plotting and scan-reference plotting behind the public CLI facade"
+moved_exports = [
+  "NamedLinearCommandDeps",
+  "load_scan_ky",
+  "run_named_linear_command",
+  "scan_named_linear_command",
+]
+fast_tests = ["tests/test_cli.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.cases"
 source_path = "src/spectraxgk/workflows/cases.py"
 facade_module = "spectraxgk.runtime"

@@ -2680,3 +2680,16 @@ No long nonlinear audit should be launched from these candidates.
   passing all patchable runtime globals through `FullNonlinearRuntimeDeps`.
   Focused nonlinear helper tests, integration-marked runtime nonlinear guards,
   Ruff, mypy, manifest, and docs gates passed locally.
+
+### 2026-06-17 Runtime Facade Target Trim and Named-Case CLI Split
+
+- Trimmed the public `spectraxgk.runtime` facade below the active 700-line
+  manifest target without changing behavior, keeping it as a patchable
+  compatibility surface over the extracted workflow modules.
+- Moved named Cyclone/ETG `run-linear` and `scan-linear` executable workflows
+  into `spectraxgk.workflows.named_cases`, including optional fit/eigenfunction
+  plots and scan-reference plots. The public CLI now injects the same globals as
+  dependencies, preserving existing monkeypatch seams while reducing
+  `src/spectraxgk/cli.py` from 771 to 615 lines.
+- Local gates: Ruff on the touched modules and the complete `tests/test_cli.py`
+  shard passed.
