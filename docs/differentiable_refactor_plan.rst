@@ -175,7 +175,9 @@ High-Risk Module Split Plan
   monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
   IMEX state-to-diagnostic tuple assembly now lives in
   ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
-  kernels so existing debug seams remain intact. Explicit RK/SSP/K10 one-step
+  kernels so existing debug seams remain intact. Shared scan-output sampling,
+  resolved-diagnostic packing, and ``SimulationDiagnostics`` construction now
+  live in ``spectraxgk.nonlinear_diagnostics``. Explicit RK/SSP/K10 one-step
   policy now lives in ``solvers/nonlinear/explicit.py`` and the shared IMEX
   fixed-point/GMRES solve plus SSPX3 stage-composition policy lives in
   ``solvers/nonlinear/imex.py``.

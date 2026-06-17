@@ -974,6 +974,21 @@ fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.nonlinear_diagnostics"
+source_path = "src/spectraxgk/nonlinear_diagnostics.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "nonlinear scan-output sampling, resolved diagnostic packing, and SimulationDiagnostics construction shared by explicit and IMEX diagnostic scans"
+moved_exports = [
+  "_pack_resolved_diagnostics",
+  "_sample_axis0",
+  "_sample_indices_with_final",
+  "build_nonlinear_simulation_diagnostics",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.nonlinear.explicit"
 source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
 facade_module = "spectraxgk.solvers.nonlinear"
@@ -1147,10 +1162,11 @@ extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationR
 [[hotspots]]
 module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
-current_reason = "owns nonlinear scan orchestration, fixed-mode comparison conventions, output assembly, and the public facade for split RHS, explicit-step, IMEX, and diagnostic-state implementations"
+current_reason = "owns nonlinear scan orchestration, adaptive-step policy, and the public facade for split RHS, explicit-step, IMEX, diagnostic-state, and scan-diagnostic implementations"
 target_packages = [
   "spectraxgk.operators.nonlinear.rhs",
   "spectraxgk.operators.nonlinear.diagnostic_state",
+  "spectraxgk.nonlinear_diagnostics",
   "spectraxgk.solvers.nonlinear.explicit",
   "spectraxgk.solvers.nonlinear.imex",
 ]

@@ -20,9 +20,11 @@ Core modules
   adaptive, diagnostic, and cached IMEX workflows.
 - ``spectraxgk.solvers.nonlinear``: explicit RK/SSP/K10 and IMEX fixed-point,
   GMRES, and stage-composition policy.
-- ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
+- ``spectraxgk.nonlinear_diagnostics``: sampling, resolved-diagnostic
+  packing, and ``SimulationDiagnostics`` construction shared by nonlinear
+  diagnostic scans.
 - ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,
-  comparison-reference omega masks used by GX-comparison parity audits,
+  fixed-mode omega masks used by comparison parity audits,
   collision-split policies, and reusable nonlinear IMEX operator construction.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.

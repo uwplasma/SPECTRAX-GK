@@ -826,21 +826,23 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear_diagnostics"
 path = "src/spectraxgk/nonlinear_diagnostics.py"
-owner_lane = "resolved nonlinear diagnostic packing and time-sample retention"
+owner_lane = "resolved nonlinear diagnostic packing, scan sampling, and diagnostics construction"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX exact-state resolved nonlinear diagnostic schemas",
+  "external-reference exact-state resolved nonlinear diagnostic schemas",
   "case-specific nonlinear window statistics used for release gates",
 ]
 physics_contracts = [
   "resolved diagnostic names and ordering remain stable for spectral heat-flux audits",
   "sample-stride compression retains the final nonlinear state needed by transport windows",
+  "explicit and IMEX scan outputs construct the same SimulationDiagnostics fields from the same tuple convention",
 ]
 numerics_contracts = [
   "axis-0 sampling preserves array rank and final sample retention",
   "diagnostic packing maps each resolved array to the documented dataclass field",
+  "total energy is reconstructed from free-energy, electrostatic-field, and magnetic-field channels after sampling",
 ]
 fast_tests = [
   "tests/test_nonlinear_helpers_extra.py",

@@ -26,6 +26,7 @@ from spectraxgk.nonlinear import (
     _make_nonlinear_state_projector,
     _pack_resolved_diagnostics,
     _sample_indices_with_final,
+    build_nonlinear_simulation_diagnostics,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_cached,
@@ -234,6 +235,34 @@ def test_sample_indices_with_final_preserves_last_step() -> None:
     )
     np.testing.assert_array_equal(_sample_indices_with_final(6, 5), np.asarray([0, 5]))
     assert isinstance(_sample_indices_with_final(6, 1), slice)
+
+
+def test_build_nonlinear_simulation_diagnostics_samples_scan_tuple() -> None:
+    series = tuple(jnp.arange(5, dtype=jnp.float32) + offset for offset in range(12))
+    resolved = tuple(
+        jnp.full((5, 2), float(index), dtype=jnp.float32)
+        for index, _field in enumerate(dataclass_fields(ResolvedDiagnostics))
+    )
+    diag = (*series, resolved)
+    sample_idx = np.asarray([0, 3, 4], dtype=int)
+
+    out = build_nonlinear_simulation_diagnostics(
+        diag,
+        t=jnp.linspace(0.1, 0.5, 5, dtype=jnp.float32),
+        dt_series=jnp.ones((5,), dtype=jnp.float32) * 0.1,
+        resolved_diagnostics=True,
+        sample_indices=sample_idx,
+    )
+
+    np.testing.assert_allclose(np.asarray(out.t), [0.1, 0.4, 0.5])
+    np.testing.assert_allclose(np.asarray(out.gamma_t), [0.0, 3.0, 4.0])
+    np.testing.assert_allclose(
+        np.asarray(out.energy_t),
+        np.asarray(out.Wg_t + out.Wphi_t + out.Wapar_t),
+    )
+    assert out.resolved is not None
+    np.testing.assert_allclose(np.asarray(out.resolved.Phi2_kxt), 0.0)
+    np.testing.assert_allclose(np.asarray(out.resolved.TurbulentHeating_zst), 57.0)
 
 
 def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:

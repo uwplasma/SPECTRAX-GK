@@ -1,3 +1,10 @@
+- 2026-06-17: Deduplicated nonlinear diagnostic scan postprocessing by moving
+  raw scan-tuple sampling, resolved-diagnostic packing, energy reconstruction,
+  and `SimulationDiagnostics` construction into
+  `spectraxgk.nonlinear_diagnostics.build_nonlinear_simulation_diagnostics`.
+  Explicit and IMEX nonlinear diagnostic paths now share the same output
+  convention, while direct tests cover stride sampling, resolved schema mapping,
+  and total-energy reconstruction.
 - 2026-06-17: Deduplicated nonlinear diagnostic projection setup by moving the
   composed fixed-mode plus compressed-real-FFT Hermitian projector into
   `spectraxgk.nonlinear_helpers._make_nonlinear_state_projector`. Explicit and
