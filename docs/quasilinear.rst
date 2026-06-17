@@ -400,11 +400,11 @@ Implementation map
      - heat, particle, field-energy, volume-factor, and resolved flux
        contractions shared by linear and nonlinear paths
    * - Runtime plumbing
-     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.runtime_artifacts`
+     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.workflows.runtime.artifacts`
      - single-run and scan execution, TOML/executable overrides, JSON/CSV
        artifact writing
    * - Input schema
-     - :mod:`spectraxgk.runtime_config`, :mod:`spectraxgk.io`
+     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.io`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
      - :mod:`spectraxgk.validation.quasilinear.calibration`

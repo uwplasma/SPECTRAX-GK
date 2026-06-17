@@ -27,7 +27,7 @@ from spectraxgk.benchmarking import (
 )
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.plotting import zonal_flow_response_figure
-from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
+from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -316,7 +316,7 @@ Source Mapping
 - low-level parameter container:
   ``src/spectraxgk/linear.py``
 - runtime parameter surface:
-  ``src/spectraxgk/runtime_config.py``
+  ``src/spectraxgk/workflows/runtime/config.py``
 
 Parameter Surface
 -----------------

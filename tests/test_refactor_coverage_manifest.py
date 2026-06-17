@@ -181,22 +181,22 @@ def test_large_modules_have_direct_manifest_rows() -> None:
 
 
 def test_manifest_accepts_owned_refactor_modules(tmp_path: Path) -> None:
-    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.runtime_config")
+    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.workflows.runtime.config")
     _write_fast_inputs(tmp_path)
 
     summary = _validate_tmp_manifest(
         tmp_path,
-        _manifest(_row("spectraxgk.runtime", owned_modules=["spectraxgk.runtime_config"])),
+        _manifest(_row("spectraxgk.runtime", owned_modules=["spectraxgk.workflows.runtime.config"])),
     )
 
     assert summary["n_direct_modules"] == 1
     assert summary["n_owned_modules"] == 1
     assert summary["n_excluded_modules"] == 1
-    assert summary["owned_modules_by_owner"]["spectraxgk.runtime"] == ["spectraxgk.runtime_config"]
+    assert summary["owned_modules_by_owner"]["spectraxgk.runtime"] == ["spectraxgk.workflows.runtime.config"]
 
 
 def test_manifest_rejects_unowned_package_modules(tmp_path: Path) -> None:
-    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.runtime_config")
+    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.workflows.runtime.config")
     _write_fast_inputs(tmp_path)
 
     with pytest.raises(ValueError, match="package modules lack coverage ownership"):
@@ -204,12 +204,12 @@ def test_manifest_rejects_unowned_package_modules(tmp_path: Path) -> None:
 
 
 def test_manifest_rejects_duplicate_owned_modules(tmp_path: Path) -> None:
-    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.linear", "spectraxgk.runtime_config")
+    _write_package(tmp_path, "spectraxgk.runtime", "spectraxgk.linear", "spectraxgk.workflows.runtime.config")
     _write_fast_inputs(tmp_path)
 
     manifest = _manifest(
-        _row("spectraxgk.runtime", owned_modules=["spectraxgk.runtime_config"]),
-        _row("spectraxgk.linear", owned_modules=["spectraxgk.runtime_config"]),
+        _row("spectraxgk.runtime", owned_modules=["spectraxgk.workflows.runtime.config"]),
+        _row("spectraxgk.linear", owned_modules=["spectraxgk.workflows.runtime.config"]),
     )
     with pytest.raises(ValueError, match="duplicate coverage ownership"):
         _validate_tmp_manifest(tmp_path, manifest)

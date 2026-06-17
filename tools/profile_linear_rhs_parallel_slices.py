@@ -106,7 +106,7 @@ def profile_linear_rhs_parallel_slices(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     platform_name = str(platform).lower()
     device_list = list(jax.devices(platform_name))[: int(requested_devices)]

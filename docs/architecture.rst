@@ -27,7 +27,7 @@ Core modules
   diagnostic cache/weight/projection setup, fixed-mode omega masks used by
   comparison parity audits, collision-split policies, and reusable nonlinear
   IMEX operator construction.
-- ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
+- ``spectraxgk.runtime`` / ``spectraxgk.workflows.runtime.config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
 - ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
 - ``spectraxgk.validation.benchmarks.defaults``: normalization constants and Krylov policies for shipped benchmark lanes.

@@ -392,7 +392,7 @@
   `spectraxgk.artifacts.nonlinear_diagnostics`, and finite-value artifact
   checks in `spectraxgk.artifacts.validation`. The obsolete root
   `spectraxgk.runtime_artifact_*` helper modules were removed;
-  `spectraxgk.runtime_artifacts` remains the public dispatcher for executable
+  `spectraxgk.workflows.runtime.artifacts` remains the public dispatcher for executable
   artifact handoff and monkeypatch seams.
 
 - 2026-06-16: Started the runtime workflow consolidation by moving the
@@ -442,19 +442,19 @@
   nonlinear NetCDF output schema writing, artifact geometry resolution,
   particle-moment output helpers, and geometry/input metadata group writers into
   `spectraxgk.nonlinear_output_netcdf`. The legacy
-  `spectraxgk.runtime_artifacts` module is now a small dispatch/orchestration
+  `spectraxgk.workflows.runtime.artifacts` module is now a small dispatch/orchestration
   facade that re-exports compatibility helpers for existing tests and tools.
 
 - 2026-06-15: Continued the runtime artifact refactor by moving generic
   nonlinear JSON/CSV/NPY summary and diagnostic table writing into
   `spectraxgk.artifacts.nonlinear`. The public
-  `spectraxgk.runtime_artifacts` module now remains only as the artifact
+  `spectraxgk.workflows.runtime.artifacts` module now remains only as the artifact
   dispatcher, while helper imports use the domain package directly.
 
 - 2026-06-15: Continued the runtime artifact refactor by moving linear scan,
   linear single-run, and quasilinear artifact writers into
   `spectraxgk.artifacts.linear`. The public
-  `spectraxgk.runtime_artifacts` dispatcher keeps the executable/runtime
+  `spectraxgk.workflows.runtime.artifacts` dispatcher keeps the executable/runtime
   artifact contract stable while pure linear CSV/JSON serialization now lives
   in the domain package.
 
@@ -462,7 +462,7 @@
   NetCDF diagnostic reload, optional-variable parsing, restart-path
   resolution, species-time condensation, and restart-append diagnostic schema
   normalization into `spectraxgk.artifacts.nonlinear_diagnostics`. The
-  public `spectraxgk.runtime_artifacts` dispatcher preserves restart and
+  public `spectraxgk.workflows.runtime.artifacts` dispatcher preserves restart and
   NetCDF handoff compatibility while helper imports now use the domain package.
 
 - 2026-06-15: Completed the nonlinear-gradient follow-up facade split by
@@ -524,7 +524,7 @@
   pure dealiased-axis, real/imag packing, restart-layout, species-matrix,
   and diagnostic-condense helpers into
   `spectraxgk.netcdf_spectral_layout`. The public
-  `spectraxgk.runtime_artifacts` dispatcher remains for artifact orchestration,
+  `spectraxgk.workflows.runtime.artifacts` dispatcher remains for artifact orchestration,
   while low-level helper imports now use the domain package.
 
 - 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving

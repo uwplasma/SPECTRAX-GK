@@ -107,7 +107,7 @@ def build_logical_cpu_parallel_scan_gate(
 ) -> dict[str, object]:
     """Compare serial and logical-CPU device-batched independent scans."""
 
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     devices = _select_devices(requested_devices)
     serial_config = RuntimeParallelConfig(strategy="serial", axis="ky", batch_size=serial_batch, num_devices=1)

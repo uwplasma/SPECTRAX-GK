@@ -29,7 +29,7 @@ from spectraxgk.cli import (
 )
 from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.workflows.runtime.config import RuntimeConfig
 
 
 def _project_version() -> str:

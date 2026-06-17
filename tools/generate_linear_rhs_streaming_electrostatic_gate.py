@@ -114,7 +114,7 @@ def build_linear_rhs_streaming_electrostatic_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
     from spectraxgk.velocity_sharding import build_velocity_sharding_plan
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]

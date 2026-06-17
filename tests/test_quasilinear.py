@@ -30,7 +30,7 @@ from spectraxgk.runtime import (
     run_runtime_linear,
     run_runtime_scan,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,

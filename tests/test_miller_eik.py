@@ -15,7 +15,7 @@ from spectraxgk.miller_eik import (
     generate_runtime_miller_eik,
 )
 from spectraxgk.geometry_backends.miller import _request_attr
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,

@@ -24,8 +24,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.nonlinear_replicate_diagnostics",
   "spectraxgk.nonlinear_replicate_followup",
   "spectraxgk.nonlinear_transport_optimization",
-  "spectraxgk.runtime_artifacts",
-  "spectraxgk.runtime_config",
   "spectraxgk.solver_objective_gradients",
   "spectraxgk.stellarator_objective_portfolio",
   "spectraxgk.stellarator_optimization",

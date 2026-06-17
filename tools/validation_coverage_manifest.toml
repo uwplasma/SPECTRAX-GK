@@ -74,7 +74,7 @@ owned_modules = [
   "spectraxgk.io",
   "spectraxgk.restart",
   "spectraxgk.runners",
-  "spectraxgk.runtime_config",
+  "spectraxgk.workflows.runtime.config",
   "spectraxgk.workflows.runtime.diagnostics",
   "spectraxgk.workflows.runtime.startup",
 ]
@@ -1577,8 +1577,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifacts"
-path = "src/spectraxgk/runtime_artifacts.py"
+module = "spectraxgk.workflows.runtime.artifacts"
+path = "src/spectraxgk/workflows/runtime/artifacts.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"

@@ -14,7 +14,7 @@ from spectraxgk.config import (
 )
 from spectraxgk.restart import load_netcdf_restart_state, write_netcdf_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
-from spectraxgk.runtime_artifacts import (
+from spectraxgk.workflows.runtime.artifacts import (
     _condense_kx,
     _condense_kykx,
     _restart_to_netcdf_layout,
@@ -22,7 +22,7 @@ from spectraxgk.runtime_artifacts import (
     run_runtime_nonlinear_with_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,

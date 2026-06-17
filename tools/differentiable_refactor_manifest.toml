@@ -955,7 +955,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.artifacts.io"
 source_path = "src/spectraxgk/artifacts/io.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
 moved_exports = [
@@ -974,7 +974,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.netcdf_spectral_layout"
 source_path = "src/spectraxgk/netcdf_spectral_layout.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "NetCDF dealiased-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
 moved_exports = [
@@ -996,7 +996,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.nonlinear_output_netcdf"
 source_path = "src/spectraxgk/nonlinear_output_netcdf.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "nonlinear NetCDF output schema, restart/big-file writing, output geometry resolution, and particle moment export helpers"
 moved_exports = [
@@ -1012,7 +1012,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.artifacts.linear"
 source_path = "src/spectraxgk/artifacts/linear.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "linear single-run artifacts, ky-scan artifacts, and quasilinear summary/species/spectrum CSV/JSON writers"
 moved_exports = [
@@ -1026,7 +1026,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.artifacts.nonlinear"
 source_path = "src/spectraxgk/artifacts/nonlinear.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "generic nonlinear JSON summaries, diagnostic CSV tables, and state-array artifact writing for non-NetCDF outputs"
 moved_exports = [
@@ -1039,7 +1039,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.artifacts.nonlinear_diagnostics"
 source_path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
-facade_module = "spectraxgk.runtime_artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "nonlinear NetCDF diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
 moved_exports = [
@@ -1534,8 +1534,8 @@ autodiff_gates = ["runtime wrappers do not hide nondifferentiable side effects i
 extension_points = ["RuntimeWorkflow", "ProgressReporter", "ArtifactWriter"]
 
 [[hotspots]]
-module = "spectraxgk.runtime_artifacts"
-source_path = "src/spectraxgk/runtime_artifacts.py"
+module = "spectraxgk.workflows.runtime.artifacts"
+source_path = "src/spectraxgk/workflows/runtime/artifacts.py"
 current_reason = "large artifact serialization, restart, diagnostics, and schema-normalization surface"
 target_packages = [
   "spectraxgk.io.artifacts.schema",
@@ -1543,7 +1543,7 @@ target_packages = [
   "spectraxgk.io.artifacts.restart",
   "spectraxgk.io.artifacts.provenance",
 ]
-public_facade = "spectraxgk.runtime_artifacts"
+public_facade = "spectraxgk.workflows.runtime.artifacts"
 line_target = 700
 status = "planned"
 existing_fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart.py"]

@@ -356,7 +356,7 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
         "spectraxgk.nonlinear_parallel",
         "spectraxgk.solver_objective_gradients",
         "spectraxgk.nonlinear",
-        "spectraxgk.runtime_artifacts",
+        "spectraxgk.workflows.runtime.artifacts",
         "spectraxgk.runtime",
         "spectraxgk.linear",
         "spectraxgk.cli",

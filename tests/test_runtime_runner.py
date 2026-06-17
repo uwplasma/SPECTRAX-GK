@@ -44,7 +44,7 @@ from spectraxgk.runtime import (
     run_runtime_nonlinear,
     run_runtime_scan,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeExpertConfig,
@@ -4070,7 +4070,7 @@ def test_run_nonlinear_case_uses_toml_output_path(
         "spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_artifacts.run_runtime_nonlinear_with_artifacts",
+        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
         fake_run_runtime_nonlinear_with_artifacts,
     )
 

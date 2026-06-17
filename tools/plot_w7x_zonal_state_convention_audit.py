@@ -30,7 +30,7 @@ from spectraxgk.runtime import (  # noqa: E402
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.runtime_config import RuntimeConfig  # noqa: E402
+from spectraxgk.workflows.runtime.config import RuntimeConfig  # noqa: E402
 from spectraxgk.terms.assembly import compute_fields_cached  # noqa: E402
 
 

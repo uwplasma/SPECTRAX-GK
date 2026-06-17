@@ -44,7 +44,7 @@ from spectraxgk.runtime import (
 )
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.miller_eik import generate_runtime_miller_eik
-from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
+from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.vmec_eik import generate_runtime_vmec_eik

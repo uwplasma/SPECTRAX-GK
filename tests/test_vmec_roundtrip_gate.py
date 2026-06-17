@@ -13,7 +13,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import load_imported_geometry_netcdf
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,

@@ -10,7 +10,7 @@ import pytest
 
 from spectraxgk.config import GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimePhysicsConfig,

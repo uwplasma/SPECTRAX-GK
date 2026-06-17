@@ -17,7 +17,7 @@ import numpy as np
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.plotting import set_plot_style
 from spectraxgk.runtime import RuntimeLinearScanResult, run_runtime_scan
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,

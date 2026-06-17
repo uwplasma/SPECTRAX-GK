@@ -521,7 +521,7 @@ Normalization
 Runtime Config
 --------------
 
-.. automodule:: spectraxgk.runtime_config
+.. automodule:: spectraxgk.workflows.runtime.config
    :members:
 
 Runtime Startup

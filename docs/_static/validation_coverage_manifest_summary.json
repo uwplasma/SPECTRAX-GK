@@ -26,7 +26,7 @@
     "spectraxgk.geometry.core",
     "spectraxgk.geometry_backends.vmec",
     "spectraxgk.geometry.differentiable",
-    "spectraxgk.runtime_artifacts",
+    "spectraxgk.workflows.runtime.artifacts",
     "spectraxgk.artifacts.validation",
     "spectraxgk.artifacts.io",
     "spectraxgk.artifacts.linear",
@@ -193,11 +193,10 @@
       "spectraxgk.io",
       "spectraxgk.restart",
       "spectraxgk.runners",
-      "spectraxgk.runtime_config",
+      "spectraxgk.workflows.runtime.config",
       "spectraxgk.workflows.runtime.diagnostics",
       "spectraxgk.workflows.runtime.startup"
     ],
-    "spectraxgk.runtime_artifacts": [],
     "spectraxgk.sharding": [
       "spectraxgk.sharded_integrators",
       "spectraxgk.utils.callbacks",
@@ -251,6 +250,7 @@
       "spectraxgk.workflows.nonlinear",
       "spectraxgk.workflows.reduced_models"
     ],
+    "spectraxgk.workflows.runtime.artifacts": [],
     "spectraxgk.workflows.runtime.orchestration": [
       "spectraxgk.workflows.runtime.chunks",
       "spectraxgk.workflows.runtime.results"
@@ -824,7 +824,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.runtime_artifacts",
+      "module": "spectraxgk.workflows.runtime.artifacts",
       "n_artifacts": 2,
       "n_fast_tests": 4,
       "n_next_tests": 2,
@@ -832,7 +832,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/runtime_artifacts.py",
+      "path": "src/spectraxgk/workflows/runtime/artifacts.py",
       "status": "active"
     },
     {

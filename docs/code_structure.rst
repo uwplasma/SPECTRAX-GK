@@ -27,8 +27,8 @@ on:
 - ``spectraxgk.geometry``
 - ``spectraxgk.cli``
 - ``spectraxgk.runtime``
-- ``spectraxgk.runtime_config``
-- ``spectraxgk.runtime_artifacts``
+- ``spectraxgk.workflows.runtime.config``
+- ``spectraxgk.workflows.runtime.artifacts``
 - ``spectraxgk.plotting``
 - ``spectraxgk.parallel``
 - ``spectraxgk.nonlinear_parallel``
@@ -58,7 +58,7 @@ Runtime Flow
 The executable-facing runtime path is split conceptually into four layers:
 
 1. **configuration and startup**
-   - ``runtime_config.py``
+   - ``workflows/runtime/config.py``
    - ``workflows/runtime/startup.py``
    - ``workflows/runtime/policies.py``
 2. **solver execution**
@@ -71,7 +71,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/results.py``
    - ``workflows/runtime/orchestration.py``
-   - ``runtime_artifacts.py``
+   - ``workflows/runtime/artifacts.py``
    - ``artifacts/``
    - ``plotting.py``
 4. **executable workflows**
@@ -117,7 +117,7 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
-     - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
+     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
      - ``benchmarking.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation_gates.py``, ``zonal_validation.py``
@@ -224,7 +224,7 @@ Completed extractions:
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF schema writing, nonlinear diagnostic reload helpers,
   and restart-append schema coverage:
-  ``runtime_artifacts.py``, ``artifacts/io.py``,
+  ``workflows/runtime/artifacts.py``, ``artifacts/io.py``,
   ``artifacts/linear.py``,
   ``artifacts/nonlinear.py``,
   ``netcdf_spectral_layout.py``,

@@ -12,7 +12,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.runtime import run_runtime_linear
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,

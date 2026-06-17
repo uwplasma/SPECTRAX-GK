@@ -41,7 +41,7 @@ from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.explicit_time_integrators import ExplicitTimeConfig
 from spectraxgk.linear import LinearTerms
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.workflows.runtime.config import RuntimeConfig
 from spectraxgk.species import Species
 
 

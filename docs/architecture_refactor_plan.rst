@@ -499,7 +499,7 @@ Phase C: nonlinear package consolidation
 Phase D: runtime and output consolidation
   Move runtime orchestration to ``workflows/run.py`` and artifact persistence to
   ``spectraxgk.artifacts``. Keep ``spectraxgk.runtime`` and
-  ``spectraxgk.runtime_artifacts`` as facades. This should make the executable
+  ``spectraxgk.workflows.runtime.artifacts`` as facades. This should make the executable
   path easier to read and keep file I/O out of solver kernels.
 
 Phase E: linear, basis, grids, and operator consolidation
