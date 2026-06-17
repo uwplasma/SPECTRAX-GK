@@ -630,13 +630,13 @@ Quasilinear Transport
 Quasilinear Calibration
 -----------------------
 
-.. automodule:: spectraxgk.quasilinear_calibration
+.. automodule:: spectraxgk.validation.quasilinear.calibration
    :members:
 
 Quasilinear Model Selection
 ---------------------------
 
-.. automodule:: spectraxgk.quasilinear_model_selection
+.. automodule:: spectraxgk.validation.quasilinear.model_selection
    :members:
 
 Solver Eigen Objectives

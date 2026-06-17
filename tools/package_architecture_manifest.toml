@@ -24,10 +24,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.nonlinear_replicate_diagnostics",
   "spectraxgk.nonlinear_replicate_followup",
   "spectraxgk.nonlinear_transport_optimization",
-  "spectraxgk.quasilinear_calibration",
-  "spectraxgk.quasilinear_holdout_admission",
-  "spectraxgk.quasilinear_model_selection",
-  "spectraxgk.quasilinear_window",
   "spectraxgk.runtime_artifacts",
   "spectraxgk.runtime_config",
   "spectraxgk.solver_objective_gradients",
@@ -55,6 +51,7 @@ required_domain_packages = [
   "spectraxgk.validation",
   "spectraxgk.validation.benchmarks",
   "spectraxgk.validation.nonlinear_gradient",
+  "spectraxgk.validation.quasilinear",
   "spectraxgk.workflows",
   "spectraxgk.workflows.runtime",
 ]

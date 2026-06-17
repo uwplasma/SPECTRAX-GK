@@ -1047,8 +1047,8 @@
 - 2026-06-11: Expanded the quasilinear model-development ledger to consume the
   admitted CTH-like high-grid replicated nonlinear ensemble as a first-class
   nonlinear calibration input. Added fail-closed ensemble-gate ingestion in
-  `spectraxgk.quasilinear_calibration` and promotion-ready checks in
-  `spectraxgk.quasilinear_window`, with regression tests. Regenerated the QL
+  `spectraxgk.validation.quasilinear.calibration` and promotion-ready checks in
+  `spectraxgk.validation.quasilinear.window`, with regression tests. Regenerated the QL
   saturation, candidate uncertainty, dataset-sufficiency, screening-skill,
   usefulness, model-selection, and holdout-gap artifacts. Result: rank/correlation
   screening is stronger (`spectral_envelope_ridge` passes full and held-out

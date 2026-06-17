@@ -15,8 +15,8 @@
     "spectraxgk.operators.nonlinear.device_z",
     "spectraxgk.nonlinear_helpers",
     "spectraxgk.quasilinear",
-    "spectraxgk.quasilinear_calibration",
-    "spectraxgk.quasilinear_window",
+    "spectraxgk.validation.quasilinear.calibration",
+    "spectraxgk.validation.quasilinear.window",
     "spectraxgk.benchmarks",
     "spectraxgk.diagnostics",
     "spectraxgk.validation_gates",
@@ -66,11 +66,11 @@
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 19,
+  "n_excluded_modules": 20,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 186,
+  "n_package_modules": 187,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -182,13 +182,9 @@
     "spectraxgk.plotting": [],
     "spectraxgk.qa_low_turbulence": [],
     "spectraxgk.quasilinear": [
-      "spectraxgk.quasilinear_model_selection",
+      "spectraxgk.validation.quasilinear.model_selection",
       "spectraxgk.external_holdout_plan"
     ],
-    "spectraxgk.quasilinear_calibration": [
-      "spectraxgk.quasilinear_holdout_admission"
-    ],
-    "spectraxgk.quasilinear_window": [],
     "spectraxgk.runtime": [
       "spectraxgk.cli",
       "spectraxgk.config",
@@ -243,6 +239,10 @@
     "spectraxgk.validation.nonlinear_gradient.followup_ql_seed": [],
     "spectraxgk.validation.nonlinear_gradient.followup_state_runbook": [],
     "spectraxgk.validation.nonlinear_gradient.followup_variance": [],
+    "spectraxgk.validation.quasilinear.calibration": [
+      "spectraxgk.validation.quasilinear.holdout_admission"
+    ],
+    "spectraxgk.validation.quasilinear.window": [],
     "spectraxgk.validation_gates": [],
     "spectraxgk.workflows.cases": [
       "spectraxgk.workflows.demo",
@@ -642,7 +642,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.quasilinear_calibration",
+      "module": "spectraxgk.validation.quasilinear.calibration",
       "n_artifacts": 31,
       "n_fast_tests": 10,
       "n_next_tests": 2,
@@ -650,13 +650,13 @@
       "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/quasilinear_calibration.py",
+      "path": "src/spectraxgk/validation/quasilinear/calibration.py",
       "status": "active"
     },
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.quasilinear_window",
+      "module": "spectraxgk.validation.quasilinear.window",
       "n_artifacts": 1,
       "n_fast_tests": 3,
       "n_next_tests": 2,
@@ -664,7 +664,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/quasilinear_window.py",
+      "path": "src/spectraxgk/validation/quasilinear/window.py",
       "status": "active"
     },
     {

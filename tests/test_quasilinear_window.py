@@ -10,7 +10,7 @@ import sys
 import numpy as np
 import pytest
 
-from spectraxgk.quasilinear_window import (
+from spectraxgk.validation.quasilinear.window import (
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
     nonlinear_window_convergence_from_csv,

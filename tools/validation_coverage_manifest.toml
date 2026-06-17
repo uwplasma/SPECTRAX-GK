@@ -25,6 +25,7 @@ excluded_modules = [
   "spectraxgk.validation.__init__",
   "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.validation.nonlinear_gradient.__init__",
+  "spectraxgk.validation.quasilinear.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
 ]
@@ -991,7 +992,7 @@ next_tests = [
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
-  "spectraxgk.quasilinear_model_selection",
+  "spectraxgk.validation.quasilinear.model_selection",
   "spectraxgk.external_holdout_plan",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
@@ -1046,10 +1047,10 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.quasilinear_calibration"
-path = "src/spectraxgk/quasilinear_calibration.py"
+module = "spectraxgk.validation.quasilinear.calibration"
+path = "src/spectraxgk/validation/quasilinear/calibration.py"
 owned_modules = [
-  "spectraxgk.quasilinear_holdout_admission",
+  "spectraxgk.validation.quasilinear.holdout_admission",
 ]
 owner_lane = "nonlinear-window calibration and train/holdout quasilinear reports"
 status = "active"
@@ -1120,8 +1121,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.quasilinear_window"
-path = "src/spectraxgk/quasilinear_window.py"
+module = "spectraxgk.validation.quasilinear.window"
+path = "src/spectraxgk/validation/quasilinear/window.py"
 owner_lane = "nonlinear late-window convergence metadata for quasilinear holdouts"
 status = "active"
 coverage_priority = "high"

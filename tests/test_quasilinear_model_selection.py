@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import spectraxgk
-from spectraxgk.quasilinear_model_selection import (
+from spectraxgk.validation.quasilinear.model_selection import (
     build_quasilinear_model_selection_status,
     build_quasilinear_model_selection_status_from_paths,
 )
