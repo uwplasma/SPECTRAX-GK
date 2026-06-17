@@ -219,10 +219,11 @@ High-Risk Module Split Plan
   quadrature-weight, omega-mask, z-index, state-projection setup, reusable IMEX
   operator setup, and fixed/adaptive nonlinear time-step policy now live in
   ``spectraxgk.nonlinear_helpers`` with injected compatibility seams.
-  Explicit RK/SSP/K10 one-step policy and cached explicit scan dispatch now
-  live in ``solvers/nonlinear/explicit.py``; the shared IMEX nonlinear-term
-  closure, GMRES solve-step closure, cached scan policy, fixed-point/GMRES
-  solve, and SSPX3 stage-composition policies live in
+  Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, and
+  explicit diagnostic scan-selection policy now live in
+  ``solvers/nonlinear/explicit.py``; the shared IMEX nonlinear-term closure,
+  GMRES solve-step closure, cached scan policy, fixed-point/GMRES solve, and
+  SSPX3 stage-composition policies live in
   ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``

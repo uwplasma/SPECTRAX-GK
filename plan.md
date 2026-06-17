@@ -1,3 +1,9 @@
+- 2026-06-17: Extracted explicit nonlinear diagnostic scan-selection policy
+  into `spectraxgk.solvers.nonlinear.explicit.run_explicit_diagnostic_scan`.
+  The public nonlinear facade still owns diagnostic setup and public
+  compatibility, but checkpointing plus sampled-vs-dense diagnostic scan
+  orchestration now has direct solver-owner tests and package re-export
+  coverage.
 - 2026-06-17: Moved cached explicit nonlinear scan dispatch into
   `spectraxgk.solvers.nonlinear.explicit.integrate_cached_explicit_scan`.
   `spectraxgk.nonlinear.integrate_nonlinear_cached` still owns public

@@ -1023,11 +1023,12 @@ module = "spectraxgk.solvers.nonlinear.explicit"
 source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
 facade_module = "spectraxgk.solvers.nonlinear"
 status = "active"
-responsibility = "explicit nonlinear RK/SSP/K10 one-step policy and cached scan dispatch with injected RHS and state projection"
+responsibility = "explicit nonlinear RK/SSP/K10 one-step policy, cached scan dispatch, and diagnostic scan-selection policy with injected RHS, state projection, and sampled-scan seams"
 moved_exports = [
   "advance_explicit_nonlinear_state",
   "checkpoint_explicit_step",
   "integrate_cached_explicit_scan",
+  "run_explicit_diagnostic_scan",
 ]
 fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
