@@ -114,8 +114,8 @@ fast_tests = ["tests/test_core_contracts.py"]
 doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_initialization"
-source_path = "src/spectraxgk/benchmark_initialization.py"
+module = "spectraxgk.validation.benchmarks.initialization"
+source_path = "src/spectraxgk/validation/benchmarks/initialization.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark Gaussian and moment initial-condition builders plus kinetic-reference seed policy"
@@ -128,8 +128,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_reference"
-source_path = "src/spectraxgk/benchmark_reference.py"
+module = "spectraxgk.validation.benchmarks.reference"
+source_path = "src/spectraxgk/validation/benchmarks/reference.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark result containers, reference-table loaders, and reference comparison records"
@@ -152,8 +152,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_species"
-source_path = "src/spectraxgk/benchmark_species.py"
+module = "spectraxgk.validation.benchmarks.species"
+source_path = "src/spectraxgk/validation/benchmarks/species.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark species-to-LinearParams construction and reference hypercollision/end-damping policy"
@@ -174,8 +174,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_fit_signals"
-source_path = "src/spectraxgk/benchmark_fit_signals.py"
+module = "spectraxgk.validation.benchmarks.fit_signals"
+source_path = "src/spectraxgk/validation/benchmarks/fit_signals.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark fit-signal, mode-extraction, auto-window scoring, and diagnostic-normalization policies"
@@ -190,8 +190,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_batching"
-source_path = "src/spectraxgk/benchmark_batching.py"
+module = "spectraxgk.validation.benchmarks.batching"
+source_path = "src/spectraxgk/validation/benchmarks/batching.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark scan batching and streaming-window helper policies"
@@ -204,8 +204,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmark_scan.py"
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_solver_policy"
-source_path = "src/spectraxgk/benchmark_solver_policy.py"
+module = "spectraxgk.validation.benchmarks.solver_policy"
+source_path = "src/spectraxgk/validation/benchmarks/solver_policy.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "benchmark solver-selection, KBM branch policy, and mode-index helpers"
@@ -220,8 +220,8 @@ fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_cyclone"
-source_path = "src/spectraxgk/benchmark_cyclone.py"
+module = "spectraxgk.validation.benchmarks.cyclone"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "Cyclone benchmark-family linear and ky-scan runners behind the public benchmarks facade"
@@ -233,8 +233,8 @@ fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmarks_runner_branches
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.benchmark_etg"
-source_path = "src/spectraxgk/benchmark_etg.py"
+module = "spectraxgk.validation.benchmarks.etg"
+source_path = "src/spectraxgk/validation/benchmarks/etg.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "ETG benchmark-family linear and ky-scan runners behind the public benchmarks facade"

@@ -297,16 +297,16 @@ Phase 1: introduce protocols and containers
   tranche now lives in ``spectraxgk.core.contracts`` and
   ``spectraxgk.core.extension_points``. The first compatibility-preserving
   benchmark split also lives in this phase:
-  ``spectraxgk.benchmark_initialization`` owns benchmark initial-condition
-  construction and ``spectraxgk.benchmark_reference`` owns reference containers
-  and CSV loaders. ``spectraxgk.benchmark_species`` owns benchmark
+  ``spectraxgk.validation.benchmarks.initialization`` owns benchmark initial-condition
+  construction and ``spectraxgk.validation.benchmarks.reference`` owns reference containers
+  and CSV loaders. ``spectraxgk.validation.benchmarks.species`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
-  ``spectraxgk.benchmark_fit_signals`` owns fit-signal and diagnostic
-  normalization policies, ``spectraxgk.benchmark_batching`` owns scan batching
-  and streaming windows, and ``spectraxgk.benchmark_solver_policy`` owns
-  branch-selection policies. ``spectraxgk.benchmark_cyclone``,
-  ``spectraxgk.benchmark_kbm``, ``spectraxgk.benchmark_tem``,
-  ``spectraxgk.benchmark_kinetic``, and ``spectraxgk.benchmark_etg`` own the
+  ``spectraxgk.validation.benchmarks.fit_signals`` owns fit-signal and diagnostic
+  normalization policies, ``spectraxgk.validation.benchmarks.batching`` owns scan batching
+  and streaming windows, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
+  branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone``,
+  ``spectraxgk.validation.benchmarks.kbm``, ``spectraxgk.validation.benchmarks.tem``,
+  ``spectraxgk.validation.benchmarks.kinetic``, and ``spectraxgk.validation.benchmarks.etg`` own the
   extracted family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The obsolete benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly. The

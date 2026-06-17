@@ -120,7 +120,7 @@ Physics / Numerics / IO Map
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``, ``benchmark_cyclone.py``, ``benchmark_etg.py``, ``benchmark_kbm.py``, ``benchmark_kinetic.py``, ``benchmark_tem.py``, ``validation_gates.py``, ``zonal_validation.py``
+     - ``benchmarking.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -294,23 +294,23 @@ Runtime command dispatch now keeps parser construction in ``spectraxgk.cli`` and
 
 The benchmark helper split now uses focused domain modules directly.
 Benchmark initial conditions and reference data live in
-``spectraxgk.benchmark_initialization`` and
-``spectraxgk.benchmark_reference``. Benchmark species-to-``LinearParams``
+``spectraxgk.validation.benchmarks.initialization`` and
+``spectraxgk.validation.benchmarks.reference``. Benchmark species-to-``LinearParams``
 construction and reference hypercollision/end-damping policy live in
-``spectraxgk.benchmark_species``. Fit-signal selection, scan batching, and
-solver-selection policies live in ``spectraxgk.benchmark_fit_signals``,
-``spectraxgk.benchmark_batching``, and
-``spectraxgk.benchmark_solver_policy``. Import-identity tests pin the old
+``spectraxgk.validation.benchmarks.species``. Fit-signal selection, scan batching, and
+solver-selection policies live in ``spectraxgk.validation.benchmarks.fit_signals``,
+``spectraxgk.validation.benchmarks.batching``, and
+``spectraxgk.validation.benchmarks.solver_policy``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are
 moved. The KBM benchmark family runner now lives in
-``spectraxgk.benchmark_kbm`` while ``spectraxgk.benchmarks`` remains the
+``spectraxgk.validation.benchmarks.kbm`` while ``spectraxgk.benchmarks`` remains the
 public compatibility facade for ``run_kbm_linear``, ``run_kbm_scan``, and
 ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
-``spectraxgk.benchmark_tem`` for ``run_tem_linear`` and ``run_tem_scan``.
-Kinetic-electron ITG/TEM runners are in ``spectraxgk.benchmark_kinetic`` with
+``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
+Kinetic-electron ITG/TEM runners are in ``spectraxgk.validation.benchmarks.kinetic`` with
 the same public facade guarantees. ETG runners are in
-``spectraxgk.benchmark_etg`` for ``run_etg_linear`` and ``run_etg_scan``;
-Cyclone runners are in ``spectraxgk.benchmark_cyclone`` for
+``spectraxgk.validation.benchmarks.etg`` for ``run_etg_linear`` and ``run_etg_scan``;
+Cyclone runners are in ``spectraxgk.validation.benchmarks.cyclone`` for
 ``run_cyclone_linear`` and ``run_cyclone_scan``. Family-specific branch tests
 patch those implementation modules directly while examples and downstream
 scripts keep importing through ``spectraxgk.benchmarks``.

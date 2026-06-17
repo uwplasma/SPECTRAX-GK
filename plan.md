@@ -593,14 +593,14 @@
 
 - 2026-06-14: Split the Cyclone benchmark-family runners
   (`run_cyclone_linear` and `run_cyclone_scan`) into
-  `spectraxgk.benchmark_cyclone` behind the unchanged
+  `spectraxgk.validation.benchmarks.cyclone` behind the unchanged
   `spectraxgk.benchmarks` public facade. This turns `benchmarks.py` into a
   small compatibility facade for benchmark constants, helper exports, config
   classes, and public runners while preserving legacy imports such as
   `ModeSelection`, `ExplicitTimeConfig`, and `KrylovConfig`.
 
 - 2026-06-14: Split the ETG benchmark-family runners (`run_etg_linear` and
-  `run_etg_scan`) into `spectraxgk.benchmark_etg` behind the unchanged
+  `run_etg_scan`) into `spectraxgk.validation.benchmarks.etg` behind the unchanged
   `spectraxgk.benchmarks` public facade. ETG branch tests now patch the
   implementation module directly, and the stale ETG branch-test monkeypatch
   against a Cyclone-only helper was removed rather than re-exporting unused
@@ -608,13 +608,13 @@
 
 - 2026-06-14: Split the kinetic-electron benchmark-family runners
   (`run_kinetic_linear` and `run_kinetic_scan`) into
-  `spectraxgk.benchmark_kinetic`, preserving the GX-reference hypercollision,
+  `spectraxgk.validation.benchmarks.kinetic`, preserving the GX-reference hypercollision,
   end-damping, and legacy density-seed policies behind the unchanged
   `spectraxgk.benchmarks` public facade. Focused kinetic branch tests now
   patch the implementation module directly.
 
 - 2026-06-14: Split the TEM benchmark-family runners (`run_tem_linear` and
-  `run_tem_scan`) into `spectraxgk.benchmark_tem` using the same
+  `run_tem_scan`) into `spectraxgk.validation.benchmarks.tem` using the same
   behavior-preserving facade pattern as the KBM split. TEM branch tests now
   patch the implementation module directly, while public examples and
   downstream code can continue importing the runners from
@@ -622,7 +622,7 @@
 
 - 2026-06-14: Continued the behavior-preserving benchmark refactor by moving
   the KBM benchmark-family runners (`run_kbm_linear`, `run_kbm_scan`, and
-  `run_kbm_beta_scan`) into `spectraxgk.benchmark_kbm` behind the existing
+  `run_kbm_beta_scan`) into `spectraxgk.validation.benchmarks.kbm` behind the existing
   `spectraxgk.benchmarks` public facade. KBM-specific regression tests now
   patch the implementation module directly, preserving public imports while
   making the largest benchmark file smaller and the KBM lane easier to test
@@ -2359,22 +2359,22 @@ No long nonlinear audit should be launched from these candidates.
   ``tests/test_core_contracts.py`` exercises both valid and invalid metadata
   paths with 99% coverage for the new core package.
 - Continued Phase 1 of the differentiable architecture refactor with the first
-  behavior-preserving benchmark-helper split. ``spectraxgk.benchmark_initialization``
+  behavior-preserving benchmark-helper split. ``spectraxgk.validation.benchmarks.initialization``
   now owns benchmark Gaussian/moment initial-condition builders and the kinetic
-  reference seed policy; ``spectraxgk.benchmark_reference`` now owns benchmark
+  reference seed policy; ``spectraxgk.validation.benchmarks.reference`` now owns benchmark
   result containers, reference-table loaders, and reference comparison records.
   The refactor manifest validates these implemented split modules with source
   paths, moved exports, tests, and docs.
 - Extended the same benchmark-helper refactor tranche with
-  ``spectraxgk.benchmark_species``. The new module owns benchmark
+  ``spectraxgk.validation.benchmarks.species``. The new module owns benchmark
   species-to-``LinearParams`` builders plus reference hypercollision and
   linked-end damping policy. The manifest now tracks three implemented Phase-1
   split modules for benchmark helper behavior.
 - Completed the benchmark-helper Phase-1 split by making the focused domain
   modules canonical. Fit-signal and normalization policies now live in
-  ``spectraxgk.benchmark_fit_signals``, scan batching/window helpers live in
-  ``spectraxgk.benchmark_batching``, and solver-selection/KBM branch policies
-  live in ``spectraxgk.benchmark_solver_policy``. Benchmark runners import those
+  ``spectraxgk.validation.benchmarks.fit_signals``, scan batching/window helpers live in
+  ``spectraxgk.validation.benchmarks.batching``, and solver-selection/KBM branch policies
+  live in ``spectraxgk.validation.benchmarks.solver_policy``. Benchmark runners import those
   modules directly, while ``spectraxgk.benchmarks`` remains the public benchmark
   entry point.
 - Continued Phase 1 of the differentiable architecture refactor with the first

@@ -8,10 +8,10 @@ import numpy as np
 import pytest
 import jax.numpy as jnp
 
-import spectraxgk.benchmark_fit_signals as benchmark_fit_signals
-import spectraxgk.benchmark_kbm as benchmark_kbm
-import spectraxgk.benchmark_kinetic as benchmark_kinetic
-import spectraxgk.benchmark_tem as benchmark_tem
+import spectraxgk.validation.benchmarks.fit_signals as benchmark_fit_signals
+import spectraxgk.validation.benchmarks.kbm as benchmark_kbm
+import spectraxgk.validation.benchmarks.kinetic as benchmark_kinetic
+import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
@@ -692,7 +692,7 @@ def test_cyclone_krylov_smoke():
 
 
 def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
-    import spectraxgk.benchmark_cyclone as benchmark_cyclone
+    import spectraxgk.validation.benchmarks.cyclone as benchmark_cyclone
 
     def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
         phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
@@ -748,7 +748,7 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
 def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_gx_growth_is_unavailable(
     monkeypatch,
 ):
-    import spectraxgk.benchmark_cyclone as benchmark_cyclone
+    import spectraxgk.validation.benchmarks.cyclone as benchmark_cyclone
 
     monkeypatch.setattr(
         benchmark_cyclone, "build_linear_cache", lambda *_args, **_kwargs: object()
@@ -2085,7 +2085,7 @@ def test_etg_scan_with_params():
 
 def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     from types import SimpleNamespace
-    import spectraxgk.benchmark_etg as benchmark_etg
+    import spectraxgk.validation.benchmarks.etg as benchmark_etg
 
     captured = {}
 
@@ -2121,7 +2121,7 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
-    import spectraxgk.benchmark_etg as benchmark_etg
+    import spectraxgk.validation.benchmarks.etg as benchmark_etg
 
     captured = {}
 
@@ -2158,7 +2158,7 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
-    import spectraxgk.benchmark_etg as benchmark_etg
+    import spectraxgk.validation.benchmarks.etg as benchmark_etg
 
     calls: list[dict[str, object]] = []
 

@@ -16,19 +16,6 @@ blocked_prefixes = [
   "stellarator_",
 ]
 allowed_root_prefix_modules = [
-  "spectraxgk.benchmark_batching",
-  "spectraxgk.benchmark_cyclone",
-  "spectraxgk.benchmark_defaults",
-  "spectraxgk.benchmark_etg",
-  "spectraxgk.benchmark_fit_signals",
-  "spectraxgk.benchmark_initialization",
-  "spectraxgk.benchmark_kbm",
-  "spectraxgk.benchmark_kinetic",
-  "spectraxgk.benchmark_reference",
-  "spectraxgk.benchmark_scan",
-  "spectraxgk.benchmark_solver_policy",
-  "spectraxgk.benchmark_species",
-  "spectraxgk.benchmark_tem",
   "spectraxgk.nonlinear_diagnostics",
   "spectraxgk.nonlinear_gradient_evidence",
   "spectraxgk.nonlinear_gradient_evidence_classification",
@@ -80,6 +67,8 @@ required_domain_packages = [
   "spectraxgk.operators.nonlinear",
   "spectraxgk.solvers",
   "spectraxgk.solvers.linear",
+  "spectraxgk.validation",
+  "spectraxgk.validation.benchmarks",
   "spectraxgk.workflows",
   "spectraxgk.workflows.runtime",
 ]

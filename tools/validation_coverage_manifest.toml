@@ -22,6 +22,8 @@ excluded_modules = [
   "spectraxgk.solvers.nonlinear.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
+  "spectraxgk.validation.__init__",
+  "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
 ]
@@ -1153,17 +1155,17 @@ module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
   "spectraxgk.benchmarking",
-  "spectraxgk.benchmark_batching",
-  "spectraxgk.benchmark_cyclone",
-  "spectraxgk.benchmark_etg",
-  "spectraxgk.benchmark_fit_signals",
-  "spectraxgk.benchmark_initialization",
-  "spectraxgk.benchmark_kbm",
-  "spectraxgk.benchmark_kinetic",
-  "spectraxgk.benchmark_reference",
-  "spectraxgk.benchmark_solver_policy",
-  "spectraxgk.benchmark_species",
-  "spectraxgk.benchmark_tem",
+  "spectraxgk.validation.benchmarks.batching",
+  "spectraxgk.validation.benchmarks.cyclone",
+  "spectraxgk.validation.benchmarks.etg",
+  "spectraxgk.validation.benchmarks.fit_signals",
+  "spectraxgk.validation.benchmarks.initialization",
+  "spectraxgk.validation.benchmarks.kbm",
+  "spectraxgk.validation.benchmarks.kinetic",
+  "spectraxgk.validation.benchmarks.reference",
+  "spectraxgk.validation.benchmarks.solver_policy",
+  "spectraxgk.validation.benchmarks.species",
+  "spectraxgk.validation.benchmarks.tem",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
@@ -1198,8 +1200,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.benchmark_scan"
-path = "src/spectraxgk/benchmark_scan.py"
+module = "spectraxgk.validation.benchmarks.scan"
+path = "src/spectraxgk/validation/benchmarks/scan.py"
 owner_lane = "pure benchmark scan-window, batching, and fit-signal policies"
 status = "active"
 coverage_priority = "medium"
@@ -1230,8 +1232,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.benchmark_defaults"
-path = "src/spectraxgk/benchmark_defaults.py"
+module = "spectraxgk.validation.benchmarks.defaults"
+path = "src/spectraxgk/validation/benchmarks/defaults.py"
 owned_modules = [
   "spectraxgk.normalization",
 ]

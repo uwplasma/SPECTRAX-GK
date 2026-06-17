@@ -360,55 +360,55 @@ Benchmarks
 Benchmark Initialization
 ------------------------
 
-.. automodule:: spectraxgk.benchmark_initialization
+.. automodule:: spectraxgk.validation.benchmarks.initialization
    :members:
    :private-members:
 
 Benchmark Fit Signals
 ---------------------
 
-.. automodule:: spectraxgk.benchmark_fit_signals
+.. automodule:: spectraxgk.validation.benchmarks.fit_signals
    :members:
    :private-members:
 
 Benchmark Batching
 ------------------
 
-.. automodule:: spectraxgk.benchmark_batching
+.. automodule:: spectraxgk.validation.benchmarks.batching
    :members:
    :private-members:
 
 Benchmark Solver Policies
 -------------------------
 
-.. automodule:: spectraxgk.benchmark_solver_policy
+.. automodule:: spectraxgk.validation.benchmarks.solver_policy
    :members:
    :private-members:
 
 Benchmark Reference Data
 ------------------------
 
-.. automodule:: spectraxgk.benchmark_reference
+.. automodule:: spectraxgk.validation.benchmarks.reference
    :members:
    :private-members:
 
 Benchmark Species Policies
 --------------------------
 
-.. automodule:: spectraxgk.benchmark_species
+.. automodule:: spectraxgk.validation.benchmarks.species
    :members:
    :private-members:
 
 Benchmark Defaults
 ------------------
 
-.. automodule:: spectraxgk.benchmark_defaults
+.. automodule:: spectraxgk.validation.benchmarks.defaults
    :members:
 
 Benchmark Scan Policies
 -----------------------
 
-.. automodule:: spectraxgk.benchmark_scan
+.. automodule:: spectraxgk.validation.benchmarks.scan
    :members:
    :private-members:
 

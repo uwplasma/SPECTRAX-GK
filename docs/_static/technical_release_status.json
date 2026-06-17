@@ -384,7 +384,7 @@
           "exists": true,
           "name": "benchmark scan module",
           "passed": true,
-          "path": "src/spectraxgk/benchmark_scan.py",
+          "path": "src/spectraxgk/validation/benchmarks/scan.py",
           "required": true,
           "snippet": null
         },
