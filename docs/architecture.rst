@@ -8,9 +8,11 @@ Core modules
 - ``spectraxgk.gyroaverage``: gyroaverage coefficients and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
-- ``spectraxgk.linear``: public linear API, field solves, RHS kernels, and integrators that call modular RHS assembly.
+- ``spectraxgk.linear``: public linear API facade for documented linear imports
+  and fixed-step integration entry points.
 - ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
-  Hermite/Laguerre moment operators, and linear parameter pytrees.
+  Hermite/Laguerre moment operators, linear parameter pytrees, and cached RHS
+  assembly entry points.
 - ``spectraxgk.solvers.linear``: matrix-free eigensolver policy and
   gated velocity-parallel linear RHS dispatch.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.

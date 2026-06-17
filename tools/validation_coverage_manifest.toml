@@ -291,6 +291,40 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.operators.linear.rhs"
+path = "src/spectraxgk/operators/linear/rhs.py"
+owner_lane = "linear RHS assembly entry points and cache-backed field solve dispatch"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre linear gyrokinetic RHS contracts",
+  "electrostatic and electromagnetic term assembly used by linear, nonlinear, and solver-gradient lanes",
+]
+physics_contracts = [
+  "grid/geometry RHS construction builds the same cache-backed operator as direct cached calls",
+  "term toggles route through the modular term assembly without changing field-solve physics",
+]
+numerics_contracts = [
+  "5D and 6D state validation preserves single-species and multi-species semantics",
+  "jit and non-jit RHS dispatch return identical state and phi shapes with deterministic dtype policy",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_velocity_sharding.py",
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct RHS-owner tests after linear time integration moves out of the public facade",
+  "keep spectraxgk.linear public RHS exports documented while implementation lives in operators.linear.rhs",
+]
+
+[[modules]]
 module = "spectraxgk.operators.linear.moments"
 path = "src/spectraxgk/operators/linear/moments.py"
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"

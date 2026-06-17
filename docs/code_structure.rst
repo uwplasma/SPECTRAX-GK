@@ -96,7 +96,7 @@ Physics / Numerics / IO Map
      - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``geometry_backends/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
-     - ``linear.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
+     - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
      - ``solver_objective_gradients.py``, ``solver_ready_gradient_gates.py``, ``solver_vmec_boozer_gradient_gates.py``, ``solver_objective_core.py``, ``solver_eigen_objectives.py``, ``solver_objective_sampling.py``, ``solver_geometry_objectives.py``, ``solver_nonlinear_window_objective.py``, ``solver_vmec_state.py``, ``solver_vmec_boozer_objectives.py``, ``solver_vmec_boozer_fd_gates.py``, ``solver_vmec_boozer_line_search_gates.py``

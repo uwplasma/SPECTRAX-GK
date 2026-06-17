@@ -166,6 +166,12 @@ Linear Parameters
    :members:
    :private-members:
 
+Linear RHS
+----------
+
+.. automodule:: spectraxgk.operators.linear.rhs
+   :members:
+
 Linear Parallel RHS
 -------------------
 

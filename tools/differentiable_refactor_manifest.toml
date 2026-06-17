@@ -1225,6 +1225,16 @@ fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.operators.linear.rhs"
+source_path = "src/spectraxgk/operators/linear/rhs.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "linear RHS assembly entry points and cache-backed field-solve dispatch"
+moved_exports = ["linear_rhs", "linear_rhs_cached"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_velocity_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.linear.krylov"
 source_path = "src/spectraxgk/solvers/linear/krylov.py"
 facade_module = "spectraxgk.solvers.linear"

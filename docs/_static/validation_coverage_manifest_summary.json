@@ -64,12 +64,12 @@
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 78,
+  "n_direct_modules": 79,
   "n_excluded_modules": 14,
   "n_high_priority_open": 63,
-  "n_modules": 78,
+  "n_modules": 79,
   "n_owned_modules": 80,
-  "n_package_modules": 172,
+  "n_package_modules": 173,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -180,6 +180,7 @@
     "spectraxgk.operators.linear.linked": [],
     "spectraxgk.operators.linear.moments": [],
     "spectraxgk.operators.linear.params": [],
+    "spectraxgk.operators.linear.rhs": [],
     "spectraxgk.operators.nonlinear.diagnostic_state": [],
     "spectraxgk.operators.nonlinear.rhs": [],
     "spectraxgk.parallel": [],
@@ -345,6 +346,20 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/linear/cache.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "medium",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.operators.linear.rhs",
+      "n_artifacts": 2,
+      "n_fast_tests": 4,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/operators/linear/rhs.py",
       "status": "active"
     },
     {

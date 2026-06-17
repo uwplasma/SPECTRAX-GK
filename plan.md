@@ -2391,6 +2391,12 @@ No long nonlinear audit should be launched from these candidates.
   backend discovery, flux-tube contracts, autodiff checks, and VMEC/Boozer
   core profiles. The public ``spectraxgk.geometry.differentiable`` facade
   remains the compatibility and monkeypatch surface for documented imports.
+- Split linear RHS ownership out of the broad ``spectraxgk.linear`` facade into
+  ``spectraxgk.operators.linear.rhs``. The public facade still re-exports
+  ``linear_rhs`` and ``linear_rhs_cached``, while solver-objective gates,
+  sharded integration, and velocity-parallel fallback routes now import the RHS
+  owner directly. Focused linear, velocity-sharding, and solver-gradient tests
+  cover the new owner seams.
 - Continued the cleanup of provenance-oriented wording in source docstrings and
   docs. Generic grouped-NetCDF, nonnegative-``ky`` real-FFT storage,
   species/Hermite sharding, field-coupled streaming, linked-boundary ordering,

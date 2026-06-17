@@ -991,7 +991,7 @@ def test_linear_rhs_parallel_cached_serial_alias_and_error_branches(
         assert float(kwargs["dt"]) == pytest.approx(0.2)
         return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
 
-    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", _fake_serial)
+    monkeypatch.setattr("spectraxgk.operators.linear.rhs.linear_rhs_cached", _fake_serial)
 
     rhs, phi = linear_rhs_parallel_cached(
         G0,
@@ -1077,15 +1077,15 @@ def test_linear_rhs_parallel_cached_routes_gated_velocity_backends(
         return _fake
 
     monkeypatch.setattr(
-        "spectraxgk.linear.linear_rhs_streaming_velocity_sharded",
+        "spectraxgk.solvers.linear.parallel.linear_rhs_streaming_velocity_sharded",
         _out("streaming"),
     )
     monkeypatch.setattr(
-        "spectraxgk.linear.linear_rhs_streaming_electrostatic_velocity_sharded",
+        "spectraxgk.solvers.linear.parallel.linear_rhs_streaming_electrostatic_velocity_sharded",
         _out("streaming_es"),
     )
     monkeypatch.setattr(
-        "spectraxgk.linear.linear_rhs_electrostatic_slices_velocity_sharded",
+        "spectraxgk.solvers.linear.parallel.linear_rhs_electrostatic_slices_velocity_sharded",
         _out("slices"),
     )
 
