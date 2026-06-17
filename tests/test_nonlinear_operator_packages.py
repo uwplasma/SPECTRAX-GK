@@ -35,6 +35,10 @@ def test_nonlinear_operator_package_reexports_diagnostic_implementation() -> Non
         nonlinear_operators.compute_nonlinear_diagnostic_tuple
         is operator_diagnostics.compute_nonlinear_diagnostic_tuple
     )
+    assert (
+        nonlinear_operators.make_nonlinear_diagnostic_tuple_fn
+        is operator_diagnostics.make_nonlinear_diagnostic_tuple_fn
+    )
 
 
 def test_nonlinear_solver_package_reexports_implementations() -> None:

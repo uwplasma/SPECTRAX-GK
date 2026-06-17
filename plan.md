@@ -1,3 +1,9 @@
+- 2026-06-17: Moved explicit/IMEX nonlinear state-to-diagnostic closure
+  construction into
+  `spectraxgk.operators.nonlinear.diagnostic_state.make_nonlinear_diagnostic_tuple_fn`.
+  The public nonlinear facade still injects facade-level diagnostic kernels, but
+  both scan paths now share one tested closure factory and direct operator
+  package re-export.
 - 2026-06-17: Extracted the non-CPU sampled explicit diagnostic scan runner
   into `spectraxgk.nonlinear_diagnostics`. The retained-step interval policy
   now lives in `sampled_scan_intervals`, and

@@ -627,10 +627,12 @@ reference_anchors = [
 physics_contracts = [
   "late-time gamma, omega, energy, particle-flux, and heat-flux observables are assembled from the same state convention in explicit and IMEX paths",
   "resolved spectral diagnostics preserve the documented packing order for heat-flux and free-energy audits",
+  "explicit and IMEX scan policies use the same state-to-diagnostic closure factory",
 ]
 numerics_contracts = [
   "disabled resolved diagnostics use scalar kernels without allocating resolved spectra",
   "injected kernels preserve debug seams while keeping implementation pure-array and JAX-transformable",
+  "closure construction binds static diagnostic metadata once while leaving state arrays JAX-transformable",
 ]
 fast_tests = [
   "tests/test_nonlinear_diagnostic_state.py",
