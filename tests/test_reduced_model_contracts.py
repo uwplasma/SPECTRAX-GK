@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from spectraxgk.reduced_model_contracts import load_reduced_model_contract
+from spectraxgk.workflows.reduced_models import load_reduced_model_contract
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 

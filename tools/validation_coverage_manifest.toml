@@ -232,7 +232,7 @@ owned_modules = [
   "spectraxgk.gyroaverage",
   "spectraxgk.operators.linear.streaming",
   "spectraxgk.solvers.linear.krylov",
-  "spectraxgk.secondary",
+  "spectraxgk.validation.benchmarks.secondary",
   "spectraxgk.species",
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.config",
@@ -888,9 +888,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.nonlinear.policies"
 path = "src/spectraxgk/operators/nonlinear/policies.py"
-owned_modules = [
-  "spectraxgk.reduced_model_contracts",
-]
 owner_lane = "nonlinear diagnostic setup, time-step policy, projection helpers, collision split policies, fixed-mode omega masks, and IMEX operator construction"
 status = "active"
 coverage_priority = "high"

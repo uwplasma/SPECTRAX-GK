@@ -12,7 +12,7 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.secondary import build_secondary_stage2_config, run_secondary_modes, run_secondary_seed
+from spectraxgk.validation.benchmarks.secondary import build_secondary_stage2_config, run_secondary_modes, run_secondary_seed
 
 
 DEFAULT_MODES = (

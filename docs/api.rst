@@ -447,6 +447,13 @@ Benchmark Scan Policies
    :members:
    :private-members:
 
+Benchmark Secondary Workflow
+----------------------------
+
+.. automodule:: spectraxgk.validation.benchmarks.secondary
+   :members:
+   :private-members:
+
 Benchmarking
 ------------
 
@@ -564,6 +571,13 @@ Runtime Config
 
 .. automodule:: spectraxgk.workflows.runtime.config
    :members:
+
+Reduced-Model Workflows
+-----------------------
+
+.. automodule:: spectraxgk.workflows.reduced_models
+   :members:
+   :private-members:
 
 Runtime Startup
 ---------------

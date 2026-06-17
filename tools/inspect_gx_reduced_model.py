@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from spectraxgk.reduced_model_contracts import load_reduced_model_contract
+from spectraxgk.workflows.reduced_models import load_reduced_model_contract
 
 
 def build_parser() -> argparse.ArgumentParser:

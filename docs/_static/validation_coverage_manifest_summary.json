@@ -69,8 +69,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 64,
   "n_modules": 81,
-  "n_owned_modules": 86,
-  "n_package_modules": 192,
+  "n_owned_modules": 85,
+  "n_package_modules": 191,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -131,7 +131,7 @@
       "spectraxgk.gyroaverage",
       "spectraxgk.operators.linear.streaming",
       "spectraxgk.solvers.linear.krylov",
-      "spectraxgk.secondary",
+      "spectraxgk.validation.benchmarks.secondary",
       "spectraxgk.species",
       "spectraxgk.terms.assembly",
       "spectraxgk.terms.config",
@@ -180,9 +180,7 @@
       "spectraxgk.operators.nonlinear.parallel_contracts",
       "spectraxgk.operators.nonlinear.domain_decomposition"
     ],
-    "spectraxgk.operators.nonlinear.policies": [
-      "spectraxgk.reduced_model_contracts"
-    ],
+    "spectraxgk.operators.nonlinear.policies": [],
     "spectraxgk.operators.nonlinear.rhs": [],
     "spectraxgk.operators.nonlinear.spectral_core": [
       "spectraxgk.operators.nonlinear.spectral_identity"
@@ -591,7 +589,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 5,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 5,
       "n_reference_anchors": 4,
       "path": "src/spectraxgk/operators/nonlinear/policies.py",
