@@ -15,6 +15,10 @@ from spectraxgk.runtime_orchestration import (
     build_runtime_progress_message,
     format_duration,
 )
+from spectraxgk.workflows.reduced_models import (
+    CETGLinearRuntimeDeps,
+    run_cetg_linear_runtime,
+)
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
@@ -415,6 +419,67 @@ def test_fit_runtime_linear_diagnostics_density_fit_contract() -> None:
     assert out.fit_window_tmin is not None
     assert out.fit_window_tmax is not None
     np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
+
+
+def test_run_cetg_linear_runtime_dependency_contract() -> None:
+    cfg = replace(_base_cfg(), physics=replace(_base_cfg().physics, reduced_model="cetg"))
+    grid = build_spectral_grid(cfg.grid)
+    statuses: list[str] = []
+
+    def _fake_integrator(*_args, **_kwargs):
+        diag = SimpleNamespace(
+            t=np.asarray([0.1, 0.2, 0.3]),
+            phi_mode_t=np.asarray([1.0 + 0.0j, 1.1 + 0.1j, 1.4 + 0.2j]),
+            gamma_t=np.asarray([0.1, 0.2, 0.3]),
+            omega_t=np.asarray([-0.1, -0.2, -0.3]),
+        )
+        return (
+            np.asarray(diag.t),
+            diag,
+            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+            object(),
+        )
+
+    out = run_cetg_linear_runtime(
+        cfg,
+        deps=CETGLinearRuntimeDeps(
+            build_runtime_geometry=build_runtime_geometry,
+            validate_cetg_runtime_config=lambda *_args, **_kwargs: None,
+            build_initial_condition=lambda *_args, **_kwargs: np.zeros(
+                (2, 1, 1, 1, grid.z.size), dtype=np.complex64
+            ),
+            build_runtime_term_config=lambda _cfg: object(),
+            build_cetg_model_params=lambda *_args, **_kwargs: object(),
+            integrate_cetg_explicit_diagnostics_state=_fake_integrator,
+            fit_growth_rate_auto=lambda *_args, **_kwargs: (0.2, -0.3, 0.1, 0.3),
+            fit_growth_rate=lambda *_args, **_kwargs: (0.2, -0.3),
+        ),
+        ky_target=0.1,
+        Nl=2,
+        Nm=1,
+        solver="time",
+        method=None,
+        dt=0.1,
+        steps=3,
+        sample_stride=None,
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        return_state=True,
+        status_callback=statuses.append,
+    )
+
+    assert out.gamma == pytest.approx(0.2)
+    assert out.omega == pytest.approx(-0.3)
+    assert out.state is not None
+    assert out.fit_signal_used == "phi"
+    assert any("running cETG time integration" in msg for msg in statuses)
 
 
 def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:

@@ -2631,3 +2631,11 @@ No long nonlinear audit should be launched from these candidates.
 - Preserved runtime facade monkeypatch seams by injecting analysis callables from
   `spectraxgk.runtime`; added a direct density-fit helper test and reran runtime
   linear fit integration tests.
+
+### 2026-06-17 cETG Linear Runtime Workflow Split
+
+- Moved the reduced-model cETG linear runtime branch from `run_runtime_linear`
+  into `spectraxgk.workflows.reduced_models.run_cetg_linear_runtime`.
+- Kept existing runtime monkeypatch seams by passing geometry, validation,
+  initial-condition, model-parameter, integrator, and fit callables through
+  `CETGLinearRuntimeDeps`; added a direct fake-dependency workflow contract test.

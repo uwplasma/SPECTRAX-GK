@@ -818,6 +818,20 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.reduced_models"
+source_path = "src/spectraxgk/workflows/reduced_models.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "executable reduced-model runtime workflows, starting with the cETG linear path behind dependency-injected runtime facade seams"
+moved_exports = [
+  "CETGLinearRuntimeDeps",
+  "run_cetg_linear_runtime",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/test_cetg.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.cases"
 source_path = "src/spectraxgk/workflows/cases.py"
 facade_module = "spectraxgk.runtime"
