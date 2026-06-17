@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.stellarator_objective_portfolio import (
+from spectraxgk.objectives.stellarator_portfolio import (
     ReducedPortfolioArtifactGuardConfig,
     aggregate_objective_portfolio,
     objective_portfolio_sensitivity_report,

@@ -24,15 +24,6 @@ allowed_root_prefix_modules = [
   "spectraxgk.nonlinear_replicate_diagnostics",
   "spectraxgk.nonlinear_replicate_followup",
   "spectraxgk.nonlinear_transport_optimization",
-  "spectraxgk.solver_objective_gradients",
-  "spectraxgk.stellarator_objective_portfolio",
-  "spectraxgk.stellarator_optimization",
-  "spectraxgk.vmec_jax_boundary_chain",
-  "spectraxgk.vmec_jax_candidate_gate",
-  "spectraxgk.vmec_jax_transport_admission",
-  "spectraxgk.vmec_jax_transport_gradient",
-  "spectraxgk.vmec_jax_transport_line_search",
-  "spectraxgk.vmec_jax_transport_objective",
 ]
 
 [package_policy]
@@ -50,6 +41,7 @@ required_domain_packages = [
   "spectraxgk.validation.benchmarks",
   "spectraxgk.validation.nonlinear_gradient",
   "spectraxgk.validation.quasilinear",
+  "spectraxgk.validation.stellarator",
   "spectraxgk.workflows",
   "spectraxgk.workflows.runtime",
 ]

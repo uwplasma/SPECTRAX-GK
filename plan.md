@@ -558,14 +558,14 @@
   metrics moved into `spectraxgk.objectives.nonlinear_window`, and
   VMEC/Boozer state coefficient helpers moved into
   `spectraxgk.objectives.vmec_state`. The unchanged
-  `spectraxgk.solver_objective_gradients` facade still re-exports the public
+  `spectraxgk.objectives.solver_gradients` facade still re-exports the public
   and test-visible names, while the manifest/docs now track the moved physics,
   numerics, and differentiability contracts directly.
 
 - 2026-06-14: Continued the differentiable-objective refactor by moving the
   implicit dominant-eigenvalue custom VJP and branch-locality finite-difference
   report into `spectraxgk.objectives.eigen`. The legacy
-  `spectraxgk.solver_objective_gradients` facade still re-exports
+  `spectraxgk.objectives.solver_gradients` facade still re-exports
   `dominant_real_eigenvalue` and
   `dominant_eigenvalue_branch_locality_report`, preserving package-level and
   tool imports while separating the eigen-AD gate from VMEC/Boozer objective
@@ -574,7 +574,7 @@
 - 2026-06-14: Continued the solver-objective refactor by moving physical
   `ky` scan mapping, VMEC/Boozer sample-axis helpers, and aggregate objective
   weights into `spectraxgk.objectives.sampling`. The legacy
-  `spectraxgk.solver_objective_gradients` facade still exposes the public
+  `spectraxgk.objectives.solver_gradients` facade still exposes the public
   `solver_grid_options_from_ky_values` helper and private compatibility seams
   used by existing tests, while the new module isolates deterministic sampling
   contracts from gradient-report orchestration.
@@ -582,7 +582,7 @@
 - 2026-06-14: Continued the solver-objective refactor by moving core
   linear/quasilinear objective constants and value evaluators into
   `spectraxgk.objectives.core`. The unchanged
-  `spectraxgk.solver_objective_gradients` facade still re-exports
+  `spectraxgk.objectives.solver_gradients` facade still re-exports
   `SOLVER_OBJECTIVE_NAMES`, `SolverScalarObjective`,
   `solver_growth_rate_from_geometry`,
   `solver_linear_operator_matrix_from_geometry`,
@@ -2010,7 +2010,7 @@ No long nonlinear audit should be launched from these candidates.
   compact ensemble JSON sidecars are tracked, not NetCDF outputs or office
   scratch traces.
 - Added a backend-free nonlinear landscape admission helper in
-  `spectraxgk.vmec_jax_transport_admission` and materialized
+  `spectraxgk.validation.stellarator.transport_admission` and materialized
   `docs/_static/vmec_boundary_transport_landscape_admission.json`. The policy
   requires passed ensembles, three replicas, bounded relative SEM, a minimum
   relative heat-flux reduction, and an uncertainty-separated z-score. Applied
@@ -2507,7 +2507,7 @@ No long nonlinear audit should be launched from these candidates.
   owner modules directly, and VMEC/Boozer artifact builders import finite-
   difference, line-search, gradient, sampling, and objective-name helpers from
   the same owner modules. ``spectraxgk.__init__`` still re-exports through the
-  stable ``spectraxgk.solver_objective_gradients`` facade until the major API
+  stable ``spectraxgk.objectives.solver_gradients`` facade until the major API
   cleanup, and the facade-specific tests keep the monkeypatch seams covered.
 - Continued the linear-facade reduction by moving type/cache-only source
   imports to focused owner modules. Benchmark fit/scan/species policies,

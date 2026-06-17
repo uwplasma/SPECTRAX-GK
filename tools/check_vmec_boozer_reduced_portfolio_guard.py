@@ -18,7 +18,7 @@ for path in (SRC, ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from spectraxgk.stellarator_objective_portfolio import (  # noqa: E402
+from spectraxgk.objectives.stellarator_portfolio import (  # noqa: E402
     ReducedPortfolioArtifactGuardConfig,
     reduced_portfolio_artifact_guard_report,
 )

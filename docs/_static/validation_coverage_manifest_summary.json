@@ -59,18 +59,18 @@
     "spectraxgk.objectives.vmec_boozer",
     "spectraxgk.objectives.vmec_boozer_fd",
     "spectraxgk.objectives.vmec_boozer_line_search",
-    "spectraxgk.solver_objective_gradients",
+    "spectraxgk.objectives.solver_gradients",
     "spectraxgk.qa_low_turbulence",
-    "spectraxgk.stellarator_objective_portfolio",
+    "spectraxgk.objectives.stellarator_portfolio",
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 20,
+  "n_excluded_modules": 21,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 187,
+  "n_package_modules": 188,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -161,6 +161,17 @@
     "spectraxgk.objectives.gradient_gates": [],
     "spectraxgk.objectives.nonlinear_window": [],
     "spectraxgk.objectives.sampling": [],
+    "spectraxgk.objectives.solver_gradients": [
+      "spectraxgk.objectives.stellarator",
+      "spectraxgk.nonlinear_transport_optimization",
+      "spectraxgk.validation.stellarator.candidate_gate",
+      "spectraxgk.validation.stellarator.transport_admission",
+      "spectraxgk.geometry.vmec_boundary_chain",
+      "spectraxgk.objectives.vmec_transport_gradient",
+      "spectraxgk.objectives.vmec_transport_line_search",
+      "spectraxgk.objectives.vmec_transport"
+    ],
+    "spectraxgk.objectives.stellarator_portfolio": [],
     "spectraxgk.objectives.vmec_boozer": [],
     "spectraxgk.objectives.vmec_boozer_fd": [],
     "spectraxgk.objectives.vmec_boozer_gradients": [],
@@ -202,22 +213,11 @@
       "spectraxgk.utils.callbacks",
       "spectraxgk.velocity_sharding"
     ],
-    "spectraxgk.solver_objective_gradients": [
-      "spectraxgk.stellarator_optimization",
-      "spectraxgk.nonlinear_transport_optimization",
-      "spectraxgk.vmec_jax_candidate_gate",
-      "spectraxgk.vmec_jax_transport_admission",
-      "spectraxgk.vmec_jax_boundary_chain",
-      "spectraxgk.vmec_jax_transport_gradient",
-      "spectraxgk.vmec_jax_transport_line_search",
-      "spectraxgk.vmec_jax_transport_objective"
-    ],
     "spectraxgk.solvers.linear.implicit": [],
     "spectraxgk.solvers.linear.integrators": [],
     "spectraxgk.solvers.linear.parallel": [],
     "spectraxgk.solvers.nonlinear.explicit": [],
     "spectraxgk.solvers.nonlinear.imex": [],
-    "spectraxgk.stellarator_objective_portfolio": [],
     "spectraxgk.validation.benchmarks.defaults": [
       "spectraxgk.normalization"
     ],
@@ -1314,7 +1314,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.solver_objective_gradients",
+      "module": "spectraxgk.objectives.solver_gradients",
       "n_artifacts": 109,
       "n_fast_tests": 23,
       "n_next_tests": 5,
@@ -1322,7 +1322,7 @@
       "n_owned_modules": 8,
       "n_physics_contracts": 9,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/solver_objective_gradients.py",
+      "path": "src/spectraxgk/objectives/solver_gradients.py",
       "status": "active"
     },
     {
@@ -1342,7 +1342,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.stellarator_objective_portfolio",
+      "module": "spectraxgk.objectives.stellarator_portfolio",
       "n_artifacts": 3,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -1350,7 +1350,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/stellarator_objective_portfolio.py",
+      "path": "src/spectraxgk/objectives/stellarator_portfolio.py",
       "status": "active"
     },
     {

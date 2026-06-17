@@ -90,7 +90,7 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",
         "spectraxgk.nonlinear_parallel",
-        "spectraxgk.solver_objective_gradients",
+        "spectraxgk.objectives.solver_gradients",
         "spectraxgk.nonlinear",
         "spectraxgk.workflows.runtime.artifacts",
         "spectraxgk.runtime",

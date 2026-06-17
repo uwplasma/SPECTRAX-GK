@@ -354,7 +354,7 @@ def validate_manifest(data: dict[str, Any]) -> dict[str, Any]:
         "spectraxgk.benchmarks",
         "spectraxgk.geometry.differentiable",
         "spectraxgk.nonlinear_parallel",
-        "spectraxgk.solver_objective_gradients",
+        "spectraxgk.objectives.solver_gradients",
         "spectraxgk.nonlinear",
         "spectraxgk.workflows.runtime.artifacts",
         "spectraxgk.runtime",

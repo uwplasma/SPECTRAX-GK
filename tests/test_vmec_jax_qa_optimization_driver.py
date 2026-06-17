@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate
+from spectraxgk.validation.stellarator.candidate_gate import build_solved_vmec_candidate_gate
 
 
 ROOT = Path(__file__).resolve().parents[1]

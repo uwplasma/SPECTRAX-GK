@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tools.build_nonlinear_campaign_admission_report import build_report, main
 
-from spectraxgk.vmec_jax_transport_admission import VMECJAXNonlinearCampaignPolicy
+from spectraxgk.validation.stellarator.transport_admission import VMECJAXNonlinearCampaignPolicy
 
 
 def _write(path: Path, payload: dict) -> Path:

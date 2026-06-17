@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.solver_objective_gradients as sog
-from spectraxgk.solver_objective_gradients import (
+import spectraxgk.objectives.solver_gradients as sog
+from spectraxgk.objectives.solver_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
     SolverScalarObjective,

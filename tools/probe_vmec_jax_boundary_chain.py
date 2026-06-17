@@ -38,8 +38,8 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from build_vmec_jax_transport_gradient_diagnostic import _build_stage, _sample_set_from_args  # noqa: E402
-from spectraxgk.vmec_jax_boundary_chain import build_boundary_chain_summary  # noqa: E402
-from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
+from spectraxgk.geometry.vmec_boundary_chain import build_boundary_chain_summary  # noqa: E402
+from spectraxgk.objectives.vmec_transport import (  # noqa: E402
     VMECJAXTransportObjectiveConfig,
     _reference_wout_from_context,
     vmec_jax_transport_growth_branch_locality_report_from_states,

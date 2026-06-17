@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.vmec_jax_transport_admission import (  # noqa: E402
+from spectraxgk.validation.stellarator.transport_admission import (  # noqa: E402
     VMECJAXNonlinearCampaignPolicy,
     build_nonlinear_campaign_admission_report,
 )

@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.vmec_jax_boundary_chain import build_boundary_chain_collection_summary  # noqa: E402
+from spectraxgk.geometry.vmec_boundary_chain import build_boundary_chain_collection_summary  # noqa: E402
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:

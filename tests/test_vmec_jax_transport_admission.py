@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 import spectraxgk
-from spectraxgk.vmec_jax_transport_admission import (
+from spectraxgk.validation.stellarator.transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
     VMECJAXReducedPrelaunchPolicy,

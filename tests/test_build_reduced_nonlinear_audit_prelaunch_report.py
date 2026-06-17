@@ -9,7 +9,7 @@ from tools.build_reduced_nonlinear_audit_prelaunch_report import (
     main,
 )
 
-from spectraxgk.vmec_jax_transport_admission import VMECJAXReducedPrelaunchPolicy
+from spectraxgk.validation.stellarator.transport_admission import VMECJAXReducedPrelaunchPolicy
 
 
 def _landscape(path: Path) -> Path:

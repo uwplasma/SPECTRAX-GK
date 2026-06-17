@@ -35,12 +35,12 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
-from spectraxgk.vmec_jax_candidate_gate import (  # noqa: E402
+from spectraxgk.validation.stellarator.candidate_gate import (  # noqa: E402
     build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,
 )
-from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
+from spectraxgk.objectives.vmec_transport import VMECJAXTransportObjectiveTransform  # noqa: E402
 
 
 DEFAULT_TRANSPORT_SURFACES = (0.45, 0.64, 0.78)

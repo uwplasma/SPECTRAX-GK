@@ -6,7 +6,7 @@ import math
 import pytest
 
 import spectraxgk
-from spectraxgk.vmec_jax_boundary_chain import (
+from spectraxgk.geometry.vmec_boundary_chain import (
     boundary_chain_summary_from_probe,
     build_boundary_chain_collection_summary,
     build_boundary_chain_summary,

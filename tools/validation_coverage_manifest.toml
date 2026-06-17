@@ -26,6 +26,7 @@ excluded_modules = [
   "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.validation.nonlinear_gradient.__init__",
   "spectraxgk.validation.quasilinear.__init__",
+  "spectraxgk.validation.stellarator.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
 ]
@@ -2767,17 +2768,17 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_objective_gradients"
-path = "src/spectraxgk/solver_objective_gradients.py"
+module = "spectraxgk.objectives.solver_gradients"
+path = "src/spectraxgk/objectives/solver_gradients.py"
 owned_modules = [
-  "spectraxgk.stellarator_optimization",
+  "spectraxgk.objectives.stellarator",
   "spectraxgk.nonlinear_transport_optimization",
-  "spectraxgk.vmec_jax_candidate_gate",
-  "spectraxgk.vmec_jax_transport_admission",
-  "spectraxgk.vmec_jax_boundary_chain",
-  "spectraxgk.vmec_jax_transport_gradient",
-  "spectraxgk.vmec_jax_transport_line_search",
-  "spectraxgk.vmec_jax_transport_objective",
+  "spectraxgk.validation.stellarator.candidate_gate",
+  "spectraxgk.validation.stellarator.transport_admission",
+  "spectraxgk.geometry.vmec_boundary_chain",
+  "spectraxgk.objectives.vmec_transport_gradient",
+  "spectraxgk.objectives.vmec_transport_line_search",
+  "spectraxgk.objectives.vmec_transport",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
@@ -2993,8 +2994,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.stellarator_objective_portfolio"
-path = "src/spectraxgk/stellarator_objective_portfolio.py"
+module = "spectraxgk.objectives.stellarator_portfolio"
+path = "src/spectraxgk/objectives/stellarator_portfolio.py"
 owner_lane = "backend-free and artifact-level multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
 status = "active"
 coverage_priority = "high"

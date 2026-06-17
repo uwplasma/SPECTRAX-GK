@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.vmec_jax_candidate_gate import (
+from spectraxgk.validation.stellarator.candidate_gate import (
     build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,

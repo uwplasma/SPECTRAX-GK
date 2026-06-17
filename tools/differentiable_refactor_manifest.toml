@@ -403,7 +403,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.eigen"
 source_path = "src/spectraxgk/objectives/eigen.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "implicit dominant-eigenvalue custom VJP and finite-difference branch-locality diagnostics for solver-objective gradient gates"
 moved_exports = [
@@ -416,7 +416,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.core"
 source_path = "src/spectraxgk/objectives/core.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "core solver-objective constants plus value-level linear growth, frequency, quasilinear weight, and mixing-length proxy evaluators"
 moved_exports = [
@@ -433,7 +433,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.sampling"
 source_path = "src/spectraxgk/objectives/sampling.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "physical ky scan mapping, VMEC/Boozer sample-axis construction, and aggregate weights for solver-objective validation gates"
 moved_exports = [
@@ -452,7 +452,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.geometry"
 source_path = "src/spectraxgk/objectives/geometry.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "solver-ready geometry objective mapping, tiny differentiable objective AD/FD gate, and objective-gate row formatting"
 moved_exports = [
@@ -469,7 +469,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.nonlinear_window"
 source_path = "src/spectraxgk/objectives/nonlinear_window.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "smooth reduced nonlinear-window estimator metrics used by differentiability gates without promoting converged nonlinear transport claims"
 moved_exports = [
@@ -481,7 +481,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.gradient_gates"
 source_path = "src/spectraxgk/objectives/gradient_gates.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "solver-ready geometry branch-continuity and actual linear-RHS gradient gates with optional objective-evaluator hooks"
 moved_exports = [
@@ -494,7 +494,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_boozer_gradients"
 source_path = "src/spectraxgk/objectives/vmec_boozer_gradients.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates"
 moved_exports = [
@@ -513,7 +513,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_state"
 source_path = "src/spectraxgk/objectives/vmec_state.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "VMEC/Boozer state coefficient array access, perturbation replacement, and parameter-name helpers for solver-objective gates"
 moved_exports = [
@@ -529,7 +529,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_boozer"
 source_path = "src/spectraxgk/objectives/vmec_boozer.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "VMEC/Boozer objective option splitting, solver-objective table construction, sample metadata, and scalar reductions"
 moved_exports = [
@@ -546,7 +546,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_boozer_fd"
 source_path = "src/spectraxgk/objectives/vmec_boozer_fd.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "VMEC/Boozer scalar and aggregate finite-difference sensitivity reports for solver-objective gates"
 moved_exports = [
@@ -561,7 +561,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_boozer_line_search"
 source_path = "src/spectraxgk/objectives/vmec_boozer_line_search.py"
-facade_module = "spectraxgk.solver_objective_gradients"
+facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
 responsibility = "VMEC/Boozer curvature-gated scalar/aggregate line searches and held-out aggregate objective audits"
 moved_exports = [
@@ -1270,8 +1270,8 @@ autodiff_gates = ["parallel routes preserve JAX transformability or fail with ex
 extension_points = ["DomainDecomposition", "SpectralCommunicator", "ObservableReducer"]
 
 [[hotspots]]
-module = "spectraxgk.solver_objective_gradients"
-source_path = "src/spectraxgk/solver_objective_gradients.py"
+module = "spectraxgk.objectives.solver_gradients"
+source_path = "src/spectraxgk/objectives/solver_gradients.py"
 current_reason = "combines eigenvalue derivative rules, solver objectives, VMEC/Boozer objectives, finite-difference gates, line-search reports, and reduced nonlinear windows"
 target_packages = [
   "spectraxgk.objectives.eigen",
@@ -1281,7 +1281,7 @@ target_packages = [
   "spectraxgk.objectives.vmec_boozer",
   "spectraxgk.objectives.gradient_gates",
 ]
-public_facade = "spectraxgk.solver_objective_gradients"
+public_facade = "spectraxgk.objectives.solver_gradients"
 line_target = 900
 status = "planned"
 existing_fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_stellarator_optimization.py"]

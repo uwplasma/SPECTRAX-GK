@@ -734,43 +734,43 @@ QA Low-Turbulence Optimization
 VMEC-JAX Transport Objective
 ----------------------------
 
-.. automodule:: spectraxgk.vmec_jax_transport_objective
+.. automodule:: spectraxgk.objectives.vmec_transport
    :members:
 
 VMEC-JAX Transport Admission
 ----------------------------
 
-.. automodule:: spectraxgk.vmec_jax_transport_admission
+.. automodule:: spectraxgk.validation.stellarator.transport_admission
    :members:
 
 VMEC-JAX Transport Gradient
 ---------------------------
 
-.. automodule:: spectraxgk.vmec_jax_transport_gradient
+.. automodule:: spectraxgk.objectives.vmec_transport_gradient
    :members:
 
 VMEC-JAX Boundary Chain
 -----------------------
 
-.. automodule:: spectraxgk.vmec_jax_boundary_chain
+.. automodule:: spectraxgk.geometry.vmec_boundary_chain
    :members:
 
 VMEC-JAX Transport Line Search
 ------------------------------
 
-.. automodule:: spectraxgk.vmec_jax_transport_line_search
+.. automodule:: spectraxgk.objectives.vmec_transport_line_search
    :members:
 
 VMEC-JAX Candidate Gates
 ------------------------
 
-.. automodule:: spectraxgk.vmec_jax_candidate_gate
+.. automodule:: spectraxgk.validation.stellarator.candidate_gate
    :members:
 
 Stellarator Objective Portfolios
 --------------------------------
 
-.. automodule:: spectraxgk.stellarator_objective_portfolio
+.. automodule:: spectraxgk.objectives.stellarator_portfolio
    :members:
 
 Runtime Runner
