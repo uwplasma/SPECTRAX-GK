@@ -172,6 +172,13 @@ Linear RHS
 .. automodule:: spectraxgk.operators.linear.rhs
    :members:
 
+Linear Implicit Solvers
+-----------------------
+
+.. automodule:: spectraxgk.solvers.linear.implicit
+   :members:
+   :private-members:
+
 Linear Parallel RHS
 -------------------
 

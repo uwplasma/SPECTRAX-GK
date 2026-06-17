@@ -16,9 +16,9 @@ from spectraxgk.linear import (
     LinearTerms,
     build_linear_cache,
     linear_rhs_cached,
-    _build_implicit_operator,
     _x64_enabled,
 )
+from spectraxgk.solvers.linear.implicit import _build_implicit_operator
 
 
 def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, maxiter: int = 40) -> int:

@@ -170,7 +170,8 @@ Completed extractions:
   ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
   helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
-  pytrees, Krylov eigensolver policy, and velocity-parallel RHS dispatch live
+  pytrees, cache-backed RHS assembly, implicit linear GMRES/preconditioner
+  policy, Krylov eigensolver policy, and velocity-parallel RHS dispatch live
   under ``operators/linear/`` and ``solvers/linear/``. The obsolete root
   ``linear_*`` helper shims were removed; normal users should use
   ``spectraxgk.linear`` for the public linear API or import focused developer

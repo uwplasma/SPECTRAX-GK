@@ -13,8 +13,9 @@ Core modules
 - ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
   Hermite/Laguerre moment operators, linear parameter pytrees, and cached RHS
   assembly entry points.
-- ``spectraxgk.solvers.linear``: matrix-free eigensolver policy and
-  gated velocity-parallel linear RHS dispatch.
+- ``spectraxgk.solvers.linear``: matrix-free eigensolver policy, implicit
+  linear GMRES/preconditioner policy, and gated velocity-parallel linear RHS
+  dispatch.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
 - ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,

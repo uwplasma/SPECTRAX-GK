@@ -1,3 +1,10 @@
+- 2026-06-17: Continued the linear refactor by moving implicit linear
+  matrix-free operator construction, Hermite/PAS/diagonal preconditioner
+  policy, and GMRES time integration into
+  `spectraxgk.solvers.linear.implicit`. The public `spectraxgk.linear` facade
+  still re-exports the implicit helpers for current users, while nonlinear
+  IMEX code and profiling tools now import the focused owner module directly.
+  Focused implicit linear and nonlinear IMEX tests cover the new owner seam.
 - 2026-06-16: Started the first architecture-plan implementation tranche.
   Added `tools/package_architecture_manifest.toml` and
   `tools/check_package_architecture_manifest.py` to stop new root-level prefix

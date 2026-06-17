@@ -325,6 +325,40 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solvers.linear.implicit"
+path = "src/spectraxgk/solvers/linear/implicit.py"
+owner_lane = "implicit linear operator and GMRES integration policy"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "matrix-free implicit linear gyrokinetic solves",
+  "Hermite-line and diagonal preconditioner contracts used by linked-boundary stability runs",
+]
+physics_contracts = [
+  "implicit linear solves apply the same cache-backed gyrokinetic operator and term weights as explicit RHS assembly",
+  "nonlinear IMEX paths reuse the same implicit linear operator builder rather than a duplicated operator convention",
+]
+numerics_contracts = [
+  "preconditioner aliases map deterministically to diagonal, damping, PAS, Hermite-line, and identity policies",
+  "sampled implicit integration preserves shape, dtype, species squeezing, and finite sampled field diagnostics",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear_imex.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct owner-module tests for GMRES failure metadata if exposed in a future public solver report",
+  "keep spectraxgk.linear public implicit helper exports until the next major API cleanup",
+]
+
+[[modules]]
 module = "spectraxgk.operators.linear.moments"
 path = "src/spectraxgk/operators/linear/moments.py"
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
