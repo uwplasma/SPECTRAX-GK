@@ -1363,6 +1363,29 @@ fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tes
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
+[[phase1_split_modules]]
+module = "spectraxgk.runtime_orchestration"
+source_path = "src/spectraxgk/runtime_orchestration.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime progress formatting, combined-ky scan batching, serial/worker ky-scan orchestration, and nonlinear artifact handoff policy behind the public runtime facade"
+moved_exports = [
+  "NonlinearArtifactPolicy",
+  "RuntimeArtifactHandoffDeps",
+  "RuntimeProgressSnapshot",
+  "RuntimeScanBatchDeps",
+  "RuntimeScanDeps",
+  "build_runtime_progress_message",
+  "format_duration",
+  "resolve_nonlinear_artifact_policy",
+  "run_runtime_nonlinear_artifact_handoff",
+  "run_runtime_scan_batch",
+  "run_runtime_scan_orchestration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
 [[hotspots]]
 module = "spectraxgk.runtime"
 source_path = "src/spectraxgk/runtime.py"

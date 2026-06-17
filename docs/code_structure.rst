@@ -69,6 +69,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``diagnostics.py``
    - ``runtime_diagnostics.py``
    - ``runtime_results.py``
+   - ``runtime_orchestration.py``
    - ``runtime_artifacts.py``
    - ``artifacts/``
    - ``plotting.py``
@@ -109,7 +110,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
@@ -135,6 +136,9 @@ Completed extractions:
   ``runtime_chunks.py``
 - runtime result containers and nonlinear result assembly:
   ``runtime_results.py``
+- runtime progress formatting, combined-``ky`` scan batching, serial/worker
+  scan orchestration, and nonlinear artifact handoff policy:
+  ``runtime_orchestration.py``
 - validation gate dataclasses and JSON-ready gate helpers:
   ``validation_gates.py``
 - zonal-response reference/trace normalization helpers:

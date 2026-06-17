@@ -230,7 +230,9 @@ High-Risk Module Split Plan
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
-  plotting, and artifact handoff. Runtime TOML case wrappers now delegate to
+  plotting, and artifact handoff. Runtime scan orchestration and combined-``ky``
+  scan batching now live in ``spectraxgk.runtime_orchestration`` behind the
+  public ``spectraxgk.runtime`` facade. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
   default no-input educational demo now delegates to

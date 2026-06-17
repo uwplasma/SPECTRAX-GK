@@ -2597,3 +2597,17 @@ No long nonlinear audit should be launched from these candidates.
   functions so existing tests and developer monkeypatch workflows still target
   the public CLI facade. This tranche reduced `src/spectraxgk/cli.py` from 1091
   to 771 lines, below the refactor manifest public-module target.
+
+### 2026-06-17 Runtime Scan Orchestration Split
+
+- Moved runtime ky-scan coordination out of `spectraxgk.runtime` and into the
+  existing `spectraxgk.runtime_orchestration` owner. The public `run_runtime_scan`
+  facade now wires dependency seams for Hermite-Laguerre dimension resolution,
+  solver-name normalization, independent-worker policy, combined-ky batching,
+  and the scan task runner.
+- Preserved the existing monkeypatch surfaces `_run_runtime_scan_batch`,
+  `_run_runtime_scan_ky_task`, `run_runtime_linear`, and `independent_map` on the
+  public runtime module. Fast and integration-marked scan-policy tests passed,
+  covering serial ordering, quasilinear payload ordering, independent-worker
+  metadata, explicit worker overrides, non-ky-axis rejection, and combined-ky
+  dispatch.
