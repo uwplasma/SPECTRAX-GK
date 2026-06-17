@@ -24,6 +24,7 @@ excluded_modules = [
   "spectraxgk.utils.__init__",
   "spectraxgk.validation.__init__",
   "spectraxgk.validation.benchmarks.__init__",
+  "spectraxgk.validation.nonlinear_gradient.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
 ]
@@ -1907,10 +1908,10 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence"
-path = "src/spectraxgk/nonlinear_gradient_evidence.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence.py"
 owned_modules = [
-  "spectraxgk.nonlinear_gradient_followup",
+  "spectraxgk.validation.nonlinear_gradient.followup",
 ]
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
@@ -2000,8 +2001,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_core"
-path = "src/spectraxgk/nonlinear_gradient_evidence_core.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_core"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_core.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2031,8 +2032,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_classification"
-path = "src/spectraxgk/nonlinear_gradient_evidence_classification.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_classification"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_classification.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2062,8 +2063,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_windows"
-path = "src/spectraxgk/nonlinear_gradient_evidence_windows.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_windows"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_windows.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2093,8 +2094,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_fd"
-path = "src/spectraxgk/nonlinear_gradient_evidence_fd.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_fd"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_fd.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2125,8 +2126,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_screening"
-path = "src/spectraxgk/nonlinear_gradient_evidence_screening.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2157,8 +2158,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_gap"
-path = "src/spectraxgk/nonlinear_gradient_evidence_gap.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_gap"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_gap.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2189,8 +2190,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_core"
-path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_core"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_core.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2223,8 +2224,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_candidate"
-path = "src/spectraxgk/nonlinear_gradient_followup_candidate.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_candidate.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2254,8 +2255,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_composite"
-path = "src/spectraxgk/nonlinear_gradient_followup_composite.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_composite.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2285,8 +2286,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_plan"
-path = "src/spectraxgk/nonlinear_gradient_followup_plan.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_plan.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2316,8 +2317,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_ql_seed"
-path = "src/spectraxgk/nonlinear_gradient_followup_ql_seed.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_ql_seed.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2348,8 +2349,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_state_runbook"
-path = "src/spectraxgk/nonlinear_gradient_followup_state_runbook.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_state_runbook.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -2380,8 +2381,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_followup_variance"
-path = "src/spectraxgk/nonlinear_gradient_followup_variance.py"
+module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_variance.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"

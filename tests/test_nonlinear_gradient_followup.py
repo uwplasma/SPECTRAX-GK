@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from spectraxgk.nonlinear_gradient_followup import (
+from spectraxgk.validation.nonlinear_gradient.followup import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
     NonlinearGradientControlMeanGateConfig,
@@ -21,14 +21,14 @@ from spectraxgk.nonlinear_gradient_followup import (
     nonlinear_gradient_followup_plan,
     nonlinear_gradient_variance_reduction_plan,
 )
-import spectraxgk.nonlinear_gradient_followup as nonlinear_gradient_followup
-import spectraxgk.nonlinear_gradient_followup_candidate as nonlinear_gradient_followup_candidate
-import spectraxgk.nonlinear_gradient_followup_composite as nonlinear_gradient_followup_composite
-import spectraxgk.nonlinear_gradient_followup_core as nonlinear_gradient_followup_core
-import spectraxgk.nonlinear_gradient_followup_plan as nonlinear_gradient_followup_plan_module
-import spectraxgk.nonlinear_gradient_followup_ql_seed as nonlinear_gradient_followup_ql_seed
-import spectraxgk.nonlinear_gradient_followup_state_runbook as nonlinear_gradient_followup_state_runbook
-import spectraxgk.nonlinear_gradient_followup_variance as nonlinear_gradient_followup_variance
+import spectraxgk.validation.nonlinear_gradient.followup as nonlinear_gradient_followup
+import spectraxgk.validation.nonlinear_gradient.followup_candidate as nonlinear_gradient_followup_candidate
+import spectraxgk.validation.nonlinear_gradient.followup_composite as nonlinear_gradient_followup_composite
+import spectraxgk.validation.nonlinear_gradient.followup_core as nonlinear_gradient_followup_core
+import spectraxgk.validation.nonlinear_gradient.followup_plan as nonlinear_gradient_followup_plan_module
+import spectraxgk.validation.nonlinear_gradient.followup_ql_seed as nonlinear_gradient_followup_ql_seed
+import spectraxgk.validation.nonlinear_gradient.followup_state_runbook as nonlinear_gradient_followup_state_runbook
+import spectraxgk.validation.nonlinear_gradient.followup_variance as nonlinear_gradient_followup_variance
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -468,46 +468,46 @@
 - 2026-06-15: Completed the nonlinear-gradient follow-up facade split by
   moving candidate-design, composite-control, matched-replicate follow-up,
   QL/linear seed-screen, and VMEC-state runbook reports into
-  `spectraxgk.nonlinear_gradient_followup_candidate`,
-  `spectraxgk.nonlinear_gradient_followup_composite`,
-  `spectraxgk.nonlinear_gradient_followup_plan`,
-  `spectraxgk.nonlinear_gradient_followup_ql_seed`, and
-  `spectraxgk.nonlinear_gradient_followup_state_runbook`. The legacy
-  `spectraxgk.nonlinear_gradient_followup` module is now a compatibility
+  `spectraxgk.validation.nonlinear_gradient.followup_candidate`,
+  `spectraxgk.validation.nonlinear_gradient.followup_composite`,
+  `spectraxgk.validation.nonlinear_gradient.followup_plan`,
+  `spectraxgk.validation.nonlinear_gradient.followup_ql_seed`, and
+  `spectraxgk.validation.nonlinear_gradient.followup_state_runbook`. The legacy
+  `spectraxgk.validation.nonlinear_gradient.followup` module is now a compatibility
   facade over core, variance, and report modules, with tests asserting public
   and test-visible facade identities.
 
 - 2026-06-15: Completed the nonlinear-gradient evidence facade split by moving
   production evidence report assembly and missing-campaign gap reports into
-  `spectraxgk.nonlinear_gradient_evidence_gap`. The legacy
-  `spectraxgk.nonlinear_gradient_evidence` module is now a compatibility
+  `spectraxgk.validation.nonlinear_gradient.evidence_gap`. The legacy
+  `spectraxgk.validation.nonlinear_gradient.evidence` module is now a compatibility
   facade plus JSON artifact loader, while the direct implementation modules
   own classification, replicated windows, central finite differences,
   candidate/bracket screening, and gap-report orchestration.
 
 - 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
   artifact claim classification into
-  `spectraxgk.nonlinear_gradient_evidence_classification` and campaign
+  `spectraxgk.validation.nonlinear_gradient.evidence_classification` and campaign
   candidate/bracket screening reports into
-  `spectraxgk.nonlinear_gradient_evidence_screening`. The remaining
-  `spectraxgk.nonlinear_gradient_evidence` module is now a small evidence-gap
+  `spectraxgk.validation.nonlinear_gradient.evidence_screening`. The remaining
+  `spectraxgk.validation.nonlinear_gradient.evidence` module is now a small evidence-gap
   orchestration facade plus JSON loader, while compatibility tests assert that
   public and test-visible facade names still resolve to the moved modules.
 
 - 2026-06-15: Continued the nonlinear-gradient evidence refactor by moving
   replicated nonlinear-window evidence summaries into
-  `spectraxgk.nonlinear_gradient_evidence_windows` and central
+  `spectraxgk.validation.nonlinear_gradient.evidence_windows` and central
   finite-difference turbulence-gradient report assembly into
-  `spectraxgk.nonlinear_gradient_evidence_fd`. The public
-  `spectraxgk.nonlinear_gradient_evidence` facade still re-exports the moved
+  `spectraxgk.validation.nonlinear_gradient.evidence_fd`. The public
+  `spectraxgk.validation.nonlinear_gradient.evidence` facade still re-exports the moved
   report builders and compatibility seam, while tests, API docs, and the
   validation/refactor manifests now track the new modules directly.
 
 - 2026-06-14: Continued the nonlinear-gradient follow-up refactor by moving
   paired-seed variance-reduction planning, control-variate campaign design,
   and independent control-mean uncertainty gates into
-  `spectraxgk.nonlinear_gradient_followup_variance`. The public
-  `spectraxgk.nonlinear_gradient_followup` facade still re-exports the moved
+  `spectraxgk.validation.nonlinear_gradient.followup_variance`. The public
+  `spectraxgk.validation.nonlinear_gradient.followup` facade still re-exports the moved
   report builders and config/helper seams, keeping existing tools and tests
   compatible while making the control-variate evidence path easier to test.
 
@@ -530,16 +530,16 @@
 - 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
   the claim-boundary scope markers, acceptance config dataclasses, JSON-safe
   metric parsing, replicated finite-difference helpers, and gradient
-  conditioning summary into `spectraxgk.nonlinear_gradient_evidence_core`.
-  The public `spectraxgk.nonlinear_gradient_evidence` facade still re-exports
+  conditioning summary into `spectraxgk.validation.nonlinear_gradient.evidence_core`.
+  The public `spectraxgk.validation.nonlinear_gradient.evidence` facade still re-exports
   the moved names used by existing tools, and tests now assert facade/core
   object identity for the production-scope and finite-difference gate seams.
 
 - 2026-06-14: Continued the nonlinear-gradient evidence refactor by moving
   follow-up configuration dataclasses, JSON-safe metric parsing, replicate
   metadata extraction, coefficient/control labeling, and paired-seed/control-
-  variate statistics helpers into `spectraxgk.nonlinear_gradient_followup_core`.
-  The existing `spectraxgk.nonlinear_gradient_followup` planner facade still
+  variate statistics helpers into `spectraxgk.validation.nonlinear_gradient.followup_core`.
+  The existing `spectraxgk.validation.nonlinear_gradient.followup` planner facade still
   re-exports the moved names, and tests now assert object identity for the core
   compatibility seam.
 

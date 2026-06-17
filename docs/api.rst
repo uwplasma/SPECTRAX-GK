@@ -257,97 +257,97 @@ Nonlinear Replicate Follow-Up
 Nonlinear Gradient Follow-Up
 ----------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup
    :members:
 
 Nonlinear Gradient Follow-Up Core
 ---------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_core
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_core
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up Variance
 -------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_variance
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_variance
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up Candidate Design
 ---------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_candidate
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_candidate
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up Composite Controls
 -----------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_composite
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_composite
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up Matched Plans
 ------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_plan
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_plan
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up QL Seed Screens
 --------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_ql_seed
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_ql_seed
    :members:
    :private-members:
 
 Nonlinear Gradient Follow-Up State Runbooks
 -------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_followup_state_runbook
+.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_state_runbook
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Core
 --------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_core
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_core
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Classification
 ------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_classification
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_classification
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Windows
 -----------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_windows
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_windows
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Finite Difference
 ---------------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_fd
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_fd
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Screening
 -------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_screening
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_screening
    :members:
    :private-members:
 
 Nonlinear Gradient Evidence Gap Reports
 ---------------------------------------
 
-.. automodule:: spectraxgk.nonlinear_gradient_evidence_gap
+.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_gap
    :members:
    :private-members:
 

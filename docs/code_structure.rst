@@ -202,24 +202,24 @@ Completed extractions:
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
   candidate design, composite-control, matched-replicate, QL-seed,
   state-runbook, and variance-reduction/control-variate report helpers:
-  ``nonlinear_gradient_followup_core.py``,
-  ``nonlinear_gradient_followup_candidate.py``,
-  ``nonlinear_gradient_followup_composite.py``,
-  ``nonlinear_gradient_followup_plan.py``,
-  ``nonlinear_gradient_followup_ql_seed.py``,
-  ``nonlinear_gradient_followup_state_runbook.py``,
-  ``nonlinear_gradient_followup_variance.py``
+  ``validation/nonlinear_gradient/followup_core.py``,
+  ``validation/nonlinear_gradient/followup_candidate.py``,
+  ``validation/nonlinear_gradient/followup_composite.py``,
+  ``validation/nonlinear_gradient/followup_plan.py``,
+  ``validation/nonlinear_gradient/followup_ql_seed.py``,
+  ``validation/nonlinear_gradient/followup_state_runbook.py``,
+  ``validation/nonlinear_gradient/followup_variance.py``
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central
   finite-difference report assembly, candidate/bracket screening reports, and
   production evidence-gap report orchestration:
-  ``nonlinear_gradient_evidence_core.py``,
-  ``nonlinear_gradient_evidence_classification.py``,
-  ``nonlinear_gradient_evidence_windows.py``,
-  ``nonlinear_gradient_evidence_fd.py``,
-  ``nonlinear_gradient_evidence_screening.py``,
-  ``nonlinear_gradient_evidence_gap.py``
+  ``validation/nonlinear_gradient/evidence_core.py``,
+  ``validation/nonlinear_gradient/evidence_classification.py``,
+  ``validation/nonlinear_gradient/evidence_windows.py``,
+  ``validation/nonlinear_gradient/evidence_fd.py``,
+  ``validation/nonlinear_gradient/evidence_screening.py``,
+  ``validation/nonlinear_gradient/evidence_gap.py``
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF schema writing, nonlinear diagnostic reload helpers,

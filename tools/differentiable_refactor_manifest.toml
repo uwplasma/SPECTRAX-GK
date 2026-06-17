@@ -629,9 +629,9 @@ fast_tests = ["tests/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_core"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_core.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_core"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_core.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "nonlinear turbulence-gradient follow-up configuration, JSON-safe metric parsing, replicate metadata extraction, and variance-reduction statistics helpers"
 moved_exports = [
@@ -651,9 +651,9 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_variance"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_variance.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_variance.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "paired-seed variance-reduction, control-variate campaign planning, and independent control-mean gate reports for nonlinear turbulence-gradient follow-up"
 moved_exports = [
@@ -668,9 +668,9 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_candidate"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_candidate.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_candidate.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "candidate-level nonlinear turbulence-gradient follow-up design reports for bracket scaling, bounded extra replicas, and replacement-control recommendations"
 moved_exports = [
@@ -682,9 +682,9 @@ fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_composite"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_composite.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_composite.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "composite VMEC-boundary control design from resolved nonlinear turbulence-gradient finite-difference candidates"
 moved_exports = [
@@ -695,9 +695,9 @@ fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_plan"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_plan.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_plan.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "matched-replicate follow-up planning for local but statistically unresolved nonlinear turbulence-gradient artifacts"
 moved_exports = [
@@ -709,9 +709,9 @@ fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_ql_seed"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_ql_seed.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_ql_seed.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "QL/linear sensitivity seed-screen reports for selecting VMEC-state controls before nonlinear turbulence-gradient campaigns"
 moved_exports = [
@@ -726,9 +726,9 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_followup_state_runbook"
-source_path = "src/spectraxgk/nonlinear_gradient_followup_state_runbook.py"
-facade_module = "spectraxgk.nonlinear_gradient_followup"
+module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_state_runbook.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
 status = "active"
 responsibility = "VMEC-state to perturbable input-control runbook assembly for nonlinear turbulence-gradient launch readiness"
 moved_exports = [
@@ -742,9 +742,9 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_core"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_core.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_core"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_core.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "nonlinear turbulence-gradient evidence scope markers, acceptance config dataclasses, JSON-safe metric parsing, and finite-difference conditioning helpers"
 moved_exports = [
@@ -765,9 +765,9 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_classification"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_classification.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_classification"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_classification.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "fail-closed nonlinear turbulence-gradient artifact classification and production-scope gate assembly"
 moved_exports = [
@@ -777,9 +777,9 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_windows"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_windows.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_windows"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_windows.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "replicated nonlinear-window evidence row classification and ensemble summary gates for nonlinear turbulence-gradient evidence"
 moved_exports = [
@@ -790,9 +790,9 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_fd"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_fd.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_fd"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_fd.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "central finite-difference nonlinear turbulence-gradient report assembly and paired-replicate diagnostics"
 moved_exports = [
@@ -802,9 +802,9 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_screening"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_screening.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "nonlinear turbulence-gradient candidate ranking, bracket-sweep screening, and next-campaign recommendation reports"
 moved_exports = [
@@ -822,9 +822,9 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_gradient_evidence_gap"
-source_path = "src/spectraxgk/nonlinear_gradient_evidence_gap.py"
-facade_module = "spectraxgk.nonlinear_gradient_evidence"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_gap"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_gap.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
 responsibility = "production nonlinear turbulence-gradient evidence report assembly and fail-closed missing-campaign gap reports"
 moved_exports = [

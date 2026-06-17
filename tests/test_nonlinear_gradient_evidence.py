@@ -8,14 +8,14 @@ import sys
 import numpy as np
 import pytest
 
-import spectraxgk.nonlinear_gradient_evidence as evidence
-import spectraxgk.nonlinear_gradient_evidence_classification as evidence_classification
-import spectraxgk.nonlinear_gradient_evidence_core as evidence_core
-import spectraxgk.nonlinear_gradient_evidence_fd as evidence_fd
-import spectraxgk.nonlinear_gradient_evidence_gap as evidence_gap
-import spectraxgk.nonlinear_gradient_evidence_screening as evidence_screening
-import spectraxgk.nonlinear_gradient_evidence_windows as evidence_windows
-from spectraxgk.nonlinear_gradient_evidence import (
+import spectraxgk.validation.nonlinear_gradient.evidence as evidence
+import spectraxgk.validation.nonlinear_gradient.evidence_classification as evidence_classification
+import spectraxgk.validation.nonlinear_gradient.evidence_core as evidence_core
+import spectraxgk.validation.nonlinear_gradient.evidence_fd as evidence_fd
+import spectraxgk.validation.nonlinear_gradient.evidence_gap as evidence_gap
+import spectraxgk.validation.nonlinear_gradient.evidence_screening as evidence_screening
+import spectraxgk.validation.nonlinear_gradient.evidence_windows as evidence_windows
+from spectraxgk.validation.nonlinear_gradient.evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
     NonlinearTurbulenceGradientFiniteDifferenceConfig,
