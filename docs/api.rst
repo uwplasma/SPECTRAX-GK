@@ -249,6 +249,13 @@ Nonlinear Explicit Step
    :members:
    :private-members:
 
+Nonlinear Diagnostic Drivers
+----------------------------
+
+.. automodule:: spectraxgk.solvers.nonlinear.diagnostics
+   :members:
+   :private-members:
+
 Nonlinear IMEX
 --------------
 

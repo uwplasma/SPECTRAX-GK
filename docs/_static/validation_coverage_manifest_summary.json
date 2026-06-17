@@ -9,6 +9,7 @@
     "spectraxgk.operators.nonlinear.rhs",
     "spectraxgk.operators.nonlinear.diagnostic_state",
     "spectraxgk.solvers.nonlinear.explicit",
+    "spectraxgk.solvers.nonlinear.diagnostics",
     "spectraxgk.solvers.nonlinear.imex",
     "spectraxgk.operators.nonlinear.parallel",
     "spectraxgk.operators.nonlinear.spectral_core",
@@ -65,12 +66,12 @@
     "spectraxgk.parallel.core",
     "spectraxgk.parallel.decomposition"
   ],
-  "n_direct_modules": 81,
+  "n_direct_modules": 82,
   "n_excluded_modules": 25,
-  "n_high_priority_open": 64,
-  "n_modules": 81,
+  "n_high_priority_open": 65,
+  "n_modules": 82,
   "n_owned_modules": 84,
-  "n_package_modules": 190,
+  "n_package_modules": 191,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -211,6 +212,7 @@
     "spectraxgk.solvers.linear.implicit": [],
     "spectraxgk.solvers.linear.integrators": [],
     "spectraxgk.solvers.linear.parallel": [],
+    "spectraxgk.solvers.nonlinear.diagnostics": [],
     "spectraxgk.solvers.nonlinear.explicit": [],
     "spectraxgk.solvers.nonlinear.imex": [],
     "spectraxgk.validation.autodiff": [],
@@ -508,6 +510,20 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solvers/nonlinear/explicit.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.solvers.nonlinear.diagnostics",
+      "n_artifacts": 1,
+      "n_fast_tests": 3,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 3,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/solvers/nonlinear/diagnostics.py",
       "status": "active"
     },
     {

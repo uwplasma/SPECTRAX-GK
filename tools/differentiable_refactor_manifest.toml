@@ -1145,6 +1145,19 @@ fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py"
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.diagnostics"
+source_path = "src/spectraxgk/solvers/nonlinear/diagnostics.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "explicit nonlinear diagnostic integration orchestration with facade-injected geometry, cache, RHS, diagnostic, time-step, collision-split, progress, sampled-scan, and finalization seams"
+moved_exports = [
+  "ExplicitNonlinearDiagnosticsDeps",
+  "integrate_explicit_nonlinear_diagnostics_impl",
+]
+fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_explicit_step.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.nonlinear.imex"
 source_path = "src/spectraxgk/solvers/nonlinear/imex.py"
 facade_module = "spectraxgk.solvers.nonlinear"
@@ -1317,6 +1330,7 @@ target_packages = [
   "spectraxgk.operators.nonlinear.diagnostics",
   "spectraxgk.operators.nonlinear.policies",
   "spectraxgk.solvers.nonlinear.explicit",
+  "spectraxgk.solvers.nonlinear.diagnostics",
   "spectraxgk.solvers.nonlinear.imex",
 ]
 public_facade = "spectraxgk.nonlinear"

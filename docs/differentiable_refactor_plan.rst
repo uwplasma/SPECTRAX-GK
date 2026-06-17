@@ -228,14 +228,16 @@ High-Risk Module Split Plan
   injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
-  in ``solvers/nonlinear/explicit.py``; the shared IMEX nonlinear-term closure,
-  GMRES solve-step closure, diagnostic step construction, fixed diagnostic scan
-  execution, cached scan policy, fixed-point/GMRES solve, and SSPX3
-  stage-composition policies live in
-  ``solvers/nonlinear/imex.py``. The public nonlinear facade is now below the
-  active line-count target; repeated explicit/IMEX diagnostic option forwarding
-  is centralized in a small policy table so future solver options are added in
-  one place.
+  in ``solvers/nonlinear/explicit.py``. Explicit diagnostic integration
+  orchestration now lives in ``solvers/nonlinear/diagnostics.py`` with
+  facade-injected geometry, cache, RHS, diagnostic, time-step, progress, and
+  sampled-scan seams. The shared IMEX nonlinear-term closure, GMRES solve-step
+  closure, diagnostic step construction, fixed diagnostic scan execution,
+  cached scan policy, fixed-point/GMRES solve, and SSPX3 stage-composition
+  policies live in ``solvers/nonlinear/imex.py``. The public nonlinear facade
+  is now below the active line-count target; repeated explicit/IMEX diagnostic
+  option forwarding is centralized in a small policy table so future solver
+  options are added in one place.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

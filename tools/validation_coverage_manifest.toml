@@ -698,6 +698,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solvers.nonlinear.diagnostics"
+path = "src/spectraxgk/solvers/nonlinear/diagnostics.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "explicit nonlinear diagnostic scans used by transport-window audits",
+  "facade-injected nonlinear diagnostic kernels used by debug and parity tests",
+]
+physics_contracts = [
+  "explicit diagnostic integration assembles gamma, omega, energy, heat-flux, particle-flux, and resolved spectra from one state convention",
+  "facade-injected diagnostic kernels preserve the same observable definitions as cached nonlinear RHS runs",
+]
+numerics_contracts = [
+  "fixed and adaptive explicit diagnostic paths share one time-step policy and projection convention",
+  "sampled diagnostic scans preserve final-time samples and resolved-diagnostic axis lengths",
+  "dependency injection keeps branch choices explicit while leaving traced state arrays JAX-transformable",
+]
+fast_tests = [
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear_explicit_step.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+]
+next_tests = [
+  "add manufactured explicit diagnostic observed-order checks after the remaining facade wrappers are split",
+  "add explicit diagnostic transport-window identity checks for production nonlinear decomposition",
+]
+
+[[modules]]
 module = "spectraxgk.solvers.nonlinear.imex"
 path = "src/spectraxgk/solvers/nonlinear/imex.py"
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"

@@ -1732,7 +1732,7 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(
     gmres_calls: list[int] = []
 
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
         lambda matvec, rhs, **kwargs: (
             gmres_calls.append(rhs.size) or rhs,
             SimpleNamespace(success=True),
@@ -1800,7 +1800,7 @@ def test_integrate_nonlinear_imex_cached_uses_electrostatic_linear_path(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
         lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
     )
 
@@ -1883,7 +1883,7 @@ def test_integrate_nonlinear_imex_cached_builds_operator_and_nonlinear_term(
         lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields),
     )
     monkeypatch.setattr(
-        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
         lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
     )
 

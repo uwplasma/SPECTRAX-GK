@@ -6,6 +6,7 @@ import spectraxgk.operators.nonlinear as nonlinear_operators
 import spectraxgk.operators.nonlinear.diagnostic_state as operator_diagnostics
 import spectraxgk.operators.nonlinear.rhs as operator_rhs
 import spectraxgk.solvers.nonlinear as nonlinear_solvers
+import spectraxgk.solvers.nonlinear.diagnostics as solver_diagnostics
 import spectraxgk.solvers.nonlinear.explicit as solver_explicit
 import spectraxgk.solvers.nonlinear.imex as solver_imex
 
@@ -61,6 +62,14 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
     assert (
         nonlinear_solvers.run_explicit_diagnostic_scan
         is solver_explicit.run_explicit_diagnostic_scan
+    )
+    assert (
+        nonlinear_solvers.ExplicitNonlinearDiagnosticsDeps
+        is solver_diagnostics.ExplicitNonlinearDiagnosticsDeps
+    )
+    assert (
+        nonlinear_solvers.integrate_explicit_nonlinear_diagnostics_impl
+        is solver_diagnostics.integrate_explicit_nonlinear_diagnostics_impl
     )
     assert (
         nonlinear_solvers.advance_imex_nonlinear_state

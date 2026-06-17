@@ -98,7 +98,7 @@ Physics / Numerics / IO Map
      - Primary files
      - Typical tests
    * - Basis and spectral grids
-     - ``basis.py``, ``grids.py``
+     - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
      - ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``
@@ -110,8 +110,8 @@ Physics / Numerics / IO Map
      - ``solver_objective_gradients.py``, ``objectives/gradient_gates.py``, ``objectives/vmec_boozer_gradients.py``, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/sampling.py``, ``objectives/geometry.py``, ``objectives/nonlinear_window.py``, ``objectives/vmec_state.py``, ``objectives/vmec_boozer.py``, ``objectives/vmec_boozer_fd.py``, ``objectives/vmec_boozer_line_search.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
-     - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
-     - RHS routing, bracket payload, explicit stepping, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
+     - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
+     - RHS routing, bracket payload, explicit stepping, explicit diagnostic orchestration, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
      - ``parallel.py``, ``sharding.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
@@ -189,11 +189,12 @@ Completed extractions:
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
 - explicit RK/SSP/K10 one-step policy, cached explicit scan policy, explicit
-  diagnostic step and scan-selection policy, cached IMEX scan policy, IMEX
-  diagnostic step and scan-execution policy, and IMEX fixed-point/GMRES solve
-  policy:
-  ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
-  helpers should import from ``spectraxgk.solvers.nonlinear``.
+  diagnostic step and scan-selection policy, explicit diagnostic integration
+  orchestration, cached IMEX scan policy, IMEX diagnostic step and
+  scan-execution policy, and IMEX fixed-point/GMRES solve policy:
+  ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, and
+  ``solvers/nonlinear/imex.py``. Developer helpers should import from
+  ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter
   pytrees, cache-backed RHS assembly, implicit linear GMRES/preconditioner
   policy, fixed-step/diagnostic integration policy, Krylov eigensolver policy,
