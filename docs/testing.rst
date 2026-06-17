@@ -120,8 +120,8 @@ Representative unit checks include:
 - **Grid construction and normalization**:
   :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Normalization contract consistency**:
-  :func:`spectraxgk.normalization.get_normalization_contract`,
-  :func:`spectraxgk.normalization.apply_diagnostic_normalization`.
+  :func:`spectraxgk.diagnostics.normalization.get_normalization_contract`,
+  :func:`spectraxgk.diagnostics.normalization.apply_diagnostic_normalization`.
 - **Modular RHS equivalence**:
   :func:`spectraxgk.linear.linear_terms_to_term_config`,
   :func:`spectraxgk.terms.assemble_rhs_cached`,

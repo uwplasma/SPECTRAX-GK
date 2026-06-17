@@ -563,7 +563,7 @@ Config
 Normalization
 -------------
 
-.. automodule:: spectraxgk.normalization
+.. automodule:: spectraxgk.diagnostics.normalization
    :members:
 
 Runtime Config

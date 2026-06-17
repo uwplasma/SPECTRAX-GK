@@ -6,7 +6,7 @@ import pytest
 
 import spectraxgk.validation.benchmarks.defaults as benchmark_defaults
 from spectraxgk import benchmarks
-from spectraxgk.normalization import (
+from spectraxgk.diagnostics.normalization import (
     apply_diagnostic_normalization,
     get_normalization_contract,
 )

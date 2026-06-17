@@ -215,7 +215,7 @@
     "spectraxgk.solvers.nonlinear.imex": [],
     "spectraxgk.validation.autodiff": [],
     "spectraxgk.validation.benchmarks.defaults": [
-      "spectraxgk.normalization"
+      "spectraxgk.diagnostics.normalization"
     ],
     "spectraxgk.validation.benchmarks.scan": [],
     "spectraxgk.validation.gates": [],

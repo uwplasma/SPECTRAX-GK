@@ -9,7 +9,7 @@ Canonical normalization contract
 --------------------------------
 
 SPECTRAX-GK now centralizes benchmark-family normalization values in
-``spectraxgk.normalization`` via :class:`spectraxgk.normalization.NormalizationContract`.
+``spectraxgk.diagnostics.normalization`` via :class:`spectraxgk.diagnostics.normalization.NormalizationContract`.
 This is the single source of truth for case defaults:
 
 .. list-table:: Canonical per-case normalization contracts
@@ -179,7 +179,7 @@ Diagnostic normalization mode
 -----------------------------
 
 Benchmark runners expose ``diagnostic_norm`` and route it through
-``spectraxgk.normalization.apply_diagnostic_normalization``:
+``spectraxgk.diagnostics.normalization.apply_diagnostic_normalization``:
 
 - ``none``: return raw solver ``(gamma, omega)``.
 - ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
@@ -225,8 +225,8 @@ Programmatic usage
 
 .. code-block:: python
 
-   from spectraxgk.normalization import get_normalization_contract
+   from spectraxgk.diagnostics.normalization import get_normalization_contract
 
    contract = get_normalization_contract("etg")
-   # contract.omega_d_scale == 0.4
+   # contract.omega_d_scale == 0.95
    # contract.omega_star_scale == 0.8

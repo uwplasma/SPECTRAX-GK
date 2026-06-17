@@ -1238,7 +1238,7 @@ next_tests = [
 module = "spectraxgk.validation.benchmarks.defaults"
 path = "src/spectraxgk/validation/benchmarks/defaults.py"
 owned_modules = [
-  "spectraxgk.normalization",
+  "spectraxgk.diagnostics.normalization",
 ]
 owner_lane = "normalization constants and Krylov policies for shipped benchmark lanes"
 status = "active"
