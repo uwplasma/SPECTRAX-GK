@@ -37,6 +37,8 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
     maybe_emit_nonlinear_progress,
+    run_sampled_explicit_diagnostic_scan,
+    sampled_scan_intervals,
     select_nonlinear_step_diagnostics,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
@@ -239,6 +241,49 @@ def test_sample_indices_with_final_preserves_last_step() -> None:
     )
     np.testing.assert_array_equal(_sample_indices_with_final(6, 5), np.asarray([0, 5]))
     assert isinstance(_sample_indices_with_final(6, 1), slice)
+
+
+def test_sampled_scan_intervals_and_runner_retain_final_step() -> None:
+    np.testing.assert_array_equal(
+        sampled_scan_intervals(5, 2), np.asarray([1, 2, 2], dtype=np.int32)
+    )
+
+    def step_fn(carry, _idx):
+        G, _G_prev, fields_prev, _diag_prev, t_prev, dt_prev = carry
+        G_new = G + 1
+        fields_new = fields_prev + 10
+        diag = G_new * 100
+        t_new = t_prev + dt_prev
+        return (G_new, G_new, fields_new, diag, t_new, dt_prev), (
+            diag,
+            t_new,
+            dt_prev,
+        )
+
+    final_carry, diag_out = run_sampled_explicit_diagnostic_scan(
+        step_fn,
+        (
+            jnp.asarray(0, dtype=jnp.int32),
+            jnp.asarray(0, dtype=jnp.int32),
+            jnp.asarray(0, dtype=jnp.int32),
+            jnp.asarray(0, dtype=jnp.int32),
+            jnp.asarray(0.0, dtype=jnp.float32),
+            jnp.asarray(0.1, dtype=jnp.float32),
+        ),
+        steps=5,
+        stride=2,
+    )
+
+    G_final, _G_prev, fields_final, diag_final, t_final, dt_final = final_carry
+    diag_t, t_t, dt_t = diag_out
+    np.testing.assert_allclose(np.asarray(G_final), 5)
+    np.testing.assert_allclose(np.asarray(fields_final), 50)
+    np.testing.assert_allclose(np.asarray(diag_final), 500)
+    np.testing.assert_allclose(np.asarray(t_final), 0.5, rtol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(dt_final), 0.1, rtol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(diag_t), [100, 300, 500])
+    np.testing.assert_allclose(np.asarray(t_t), [0.1, 0.3, 0.5], rtol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(dt_t), [0.1, 0.1, 0.1], rtol=1.0e-6)
 
 
 def test_build_nonlinear_simulation_diagnostics_samples_scan_tuple() -> None:

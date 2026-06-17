@@ -828,7 +828,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear_diagnostics"
 path = "src/spectraxgk/nonlinear_diagnostics.py"
-owner_lane = "resolved nonlinear diagnostic packing, scan sampling, progress routing, and diagnostics construction"
+owner_lane = "resolved nonlinear diagnostic packing, sampled-scan routing, scan sampling, progress routing, and diagnostics construction"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
@@ -839,11 +839,13 @@ reference_anchors = [
 physics_contracts = [
   "resolved diagnostic names and ordering remain stable for spectral heat-flux audits",
   "sample-stride compression retains the final nonlinear state needed by transport windows",
+  "sampled explicit diagnostic scans preserve the same retained-step sequence as full scans followed by sample-stride compression",
   "explicit and IMEX scan outputs construct the same SimulationDiagnostics fields from the same tuple convention",
   "explicit and IMEX scans share the same diagnostics-stride refresh policy before progress reporting",
 ]
 numerics_contracts = [
   "axis-0 sampling preserves array rank and final sample retention",
+  "sampled scan intervals are positive and include the final integration step",
   "diagnostic packing maps each resolved array to the documented dataclass field",
   "total energy is reconstructed from free-energy, electrostatic-field, and magnetic-field channels after sampling",
   "progress emission is a no-op on the state when progress output is disabled",

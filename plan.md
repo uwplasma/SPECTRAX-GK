@@ -1,3 +1,10 @@
+- 2026-06-17: Extracted the non-CPU sampled explicit diagnostic scan runner
+  into `spectraxgk.nonlinear_diagnostics`. The retained-step interval policy
+  now lives in `sampled_scan_intervals`, and
+  `run_sampled_explicit_diagnostic_scan` owns the interval `fori_loop`/`scan`
+  orchestration while preserving final-step retention. Added manufactured scan
+  tests covering sample intervals, final carry, sampled diagnostics, and `dt`
+  series.
 - 2026-06-17: Extracted fixed/adaptive nonlinear time-step policy from
   `spectraxgk.nonlinear` into
   `spectraxgk.nonlinear_helpers.build_nonlinear_time_step_policy`. The explicit
