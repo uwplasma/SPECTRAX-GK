@@ -11,6 +11,7 @@ excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
   "spectraxgk.core.__init__",
+  "spectraxgk.diagnostics.__init__",
   "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.objectives.__init__",
@@ -1270,12 +1271,12 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.diagnostics"
-path = "src/spectraxgk/diagnostics.py"
+module = "spectraxgk.diagnostics.core"
+path = "src/spectraxgk/diagnostics/core.py"
 owned_modules = [
-  "spectraxgk.diagnostics_channels",
-  "spectraxgk.diagnostics_metadata",
-  "spectraxgk.diagnostics_weights",
+  "spectraxgk.diagnostics.channels",
+  "spectraxgk.diagnostics.metadata",
+  "spectraxgk.diagnostics.weights",
 ]
 owner_lane = "scalar, resolved, flux, and zonal diagnostics"
 status = "active"

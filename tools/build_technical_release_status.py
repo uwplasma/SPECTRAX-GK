@@ -84,7 +84,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("linear parallel module", "src/spectraxgk/solvers/linear/parallel.py"),
         EvidenceCheck("nonlinear helper module", "src/spectraxgk/operators/nonlinear/policies.py"),
         EvidenceCheck("benchmark scan module", "src/spectraxgk/validation/benchmarks/scan.py"),
-        EvidenceCheck("diagnostics channel module", "src/spectraxgk/diagnostics_channels.py"),
+        EvidenceCheck("diagnostics channel module", "src/spectraxgk/diagnostics/channels.py"),
         EvidenceCheck("coverage manifest", "tools/validation_coverage_manifest.toml", "spectraxgk.workflows.runtime.orchestration"),
     ),
     "docs_release_hygiene": (

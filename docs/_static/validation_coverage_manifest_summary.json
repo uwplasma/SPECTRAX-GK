@@ -18,7 +18,7 @@
     "spectraxgk.validation.quasilinear.calibration",
     "spectraxgk.validation.quasilinear.window",
     "spectraxgk.benchmarks",
-    "spectraxgk.diagnostics",
+    "spectraxgk.diagnostics.core",
     "spectraxgk.validation_gates",
     "spectraxgk.zonal_validation",
     "spectraxgk.zonal_objective",
@@ -66,11 +66,11 @@
     "spectraxgk.parallel_decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 22,
+  "n_excluded_modules": 23,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 189,
+  "n_package_modules": 190,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -97,10 +97,10 @@
     "spectraxgk.core.contracts": [
       "spectraxgk.core.extension_points"
     ],
-    "spectraxgk.diagnostics": [
-      "spectraxgk.diagnostics_channels",
-      "spectraxgk.diagnostics_metadata",
-      "spectraxgk.diagnostics_weights"
+    "spectraxgk.diagnostics.core": [
+      "spectraxgk.diagnostics.channels",
+      "spectraxgk.diagnostics.metadata",
+      "spectraxgk.diagnostics.weights"
     ],
     "spectraxgk.geometry.core": [],
     "spectraxgk.geometry.differentiable": [
@@ -712,7 +712,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.diagnostics",
+      "module": "spectraxgk.diagnostics.core",
       "n_artifacts": 2,
       "n_fast_tests": 4,
       "n_next_tests": 2,
@@ -720,7 +720,7 @@
       "n_owned_modules": 3,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/diagnostics.py",
+      "path": "src/spectraxgk/diagnostics/core.py",
       "status": "active"
     },
     {

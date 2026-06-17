@@ -5,9 +5,9 @@ from dataclasses import fields, replace
 import pytest
 import spectraxgk.explicit_time_integrators as explicit_time_integrators
 import spectraxgk.diagnostics as diagnostics_module
-import spectraxgk.diagnostics_channels as diagnostics_channels
-import spectraxgk.diagnostics_metadata as diagnostics_metadata
-import spectraxgk.diagnostics_weights as diagnostics_weights
+import spectraxgk.diagnostics.channels as diagnostics_channels
+import spectraxgk.diagnostics.metadata as diagnostics_metadata
+import spectraxgk.diagnostics.weights as diagnostics_weights
 from types import SimpleNamespace
 
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
