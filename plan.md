@@ -2658,3 +2658,14 @@ No long nonlinear audit should be launched from these candidates.
   mode-selection, initial-condition, cETG integrator, adaptive-chunk, and
   nonlinear-result assembly callables. Mocked runtime tests and real cETG
   nonlinear smoke/adaptive tests passed locally.
+
+### 2026-06-17 Full-GK Linear Runtime Workflow Split
+
+- Moved the full-GK `run_runtime_linear` orchestration body into
+  `spectraxgk.workflows.linear.run_full_linear_runtime`, including time/Krylov
+  dispatch, auto fallback, fit/eigenfunction wiring, velocity-parallel policy,
+  and quasilinear finalization.
+- Kept `spectraxgk.runtime.run_runtime_linear` as the public facade by passing
+  all patchable runtime globals through `FullLinearRuntimeDeps`. Focused runtime
+  linear, quasilinear, patched-Krylov, diffrax, density-fit, and explicit-time
+  guard tests passed locally.

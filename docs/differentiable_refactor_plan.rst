@@ -240,6 +240,10 @@ High-Risk Module Split Plan
   quasilinear post-processing dependencies, and result construction. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
+  full-GK linear runtime workflow now delegates to
+  ``spectraxgk.workflows.linear`` through a dependency-injected facade, including
+  time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear
+  post-processing. The
   default no-input educational demo now delegates to
   ``spectraxgk.workflows.demo`` and runtime linear, scan, and nonlinear
   executable command bodies now delegate to ``spectraxgk.workflows.cases`` so
