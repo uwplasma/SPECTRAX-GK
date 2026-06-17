@@ -28,7 +28,7 @@ from spectraxgk.geometry import (
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
-from spectraxgk.explicit_time_integrators import (
+from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,
     _instantaneous_growth_rate_step,
     _linear_frequency_bound,

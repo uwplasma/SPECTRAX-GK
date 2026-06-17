@@ -4,7 +4,7 @@ import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diffrax_integrators import integrate_linear_diffrax
+from spectraxgk.solvers.time.diffrax import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams

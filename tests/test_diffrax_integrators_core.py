@@ -10,7 +10,7 @@ pytest.importorskip("equinox")
 
 from spectraxgk.analysis import ModeSelection, ModeSelectionBatch
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diffrax_integrators import (
+from spectraxgk.solvers.time.diffrax import (
     _adjoint,
     _density_from_G_cached,
     _is_imex_solver,
@@ -74,7 +74,7 @@ def test_diffrax_helper_functions() -> None:
 
 
 def test_require_diffrax_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    import spectraxgk.diffrax_integrators as di
+    import spectraxgk.solvers.time.diffrax as di
 
     monkeypatch.setattr(di, "dfx", None)
     monkeypatch.setattr(di, "eqx", None)

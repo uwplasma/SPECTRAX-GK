@@ -65,7 +65,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``runtime.py``
    - ``linear.py``
    - ``nonlinear.py``
-   - ``diffrax_integrators.py``
+   - ``solvers/time/explicit.py``
+   - ``solvers/time/diffrax.py``
+   - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
    - ``workflows/runtime/diagnostics.py``

@@ -30,6 +30,7 @@ required_domain_packages = [
   "spectraxgk.parallel",
   "spectraxgk.solvers",
   "spectraxgk.solvers.linear",
+  "spectraxgk.solvers.time",
   "spectraxgk.validation",
   "spectraxgk.validation.benchmarks",
   "spectraxgk.validation.nonlinear_gradient",

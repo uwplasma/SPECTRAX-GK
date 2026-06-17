@@ -242,6 +242,27 @@ Nonlinear IMEX
    :members:
    :private-members:
 
+Explicit Time Integrators
+-------------------------
+
+.. automodule:: spectraxgk.solvers.time.explicit
+   :members:
+   :private-members:
+
+Diffrax Time Integrators
+------------------------
+
+.. automodule:: spectraxgk.solvers.time.diffrax
+   :members:
+   :private-members:
+
+Config-Driven Time Runners
+--------------------------
+
+.. automodule:: spectraxgk.solvers.time.runners
+   :members:
+   :private-members:
+
 Nonlinear Replicate Diagnostics
 -------------------------------
 

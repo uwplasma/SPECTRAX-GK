@@ -7,7 +7,7 @@ import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
-from spectraxgk.explicit_time_integrators import _linear_frequency_bound
+from spectraxgk.solvers.time.explicit import _linear_frequency_bound
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (

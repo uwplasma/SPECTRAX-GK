@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.explicit_time_integrators as eti
+import spectraxgk.solvers.time.explicit as eti
 from spectraxgk.terms.config import FieldState
 
 

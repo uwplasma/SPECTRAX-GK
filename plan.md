@@ -2453,7 +2453,7 @@ No long nonlinear audit should be launched from these candidates.
   checks.
 - Continued the source-name cleanup by renaming the explicit time-stepper module
   from ``spectraxgk.gx_integrators`` to
-  ``spectraxgk.explicit_time_integrators``. Linear, cETG, nonlinear, runtime,
+  ``spectraxgk.solvers.time.explicit``. Linear, cETG, nonlinear, runtime,
   benchmark, and low-level tests now use explicit-time names for the Heun/RK4
   paths and diagnostic masks. External-reference comparison tools keep their
   comparison wording where they explicitly compare against another code.

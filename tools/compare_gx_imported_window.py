@@ -35,7 +35,7 @@ from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.diagnostics import magnetic_vector_potential_energy, distribution_free_energy, electrostatic_field_energy, fieldline_quadrature_weights
 from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid
-from spectraxgk.explicit_time_integrators import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
+from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.species import build_linear_params
 

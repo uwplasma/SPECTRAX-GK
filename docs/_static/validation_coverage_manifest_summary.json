@@ -66,11 +66,11 @@
     "spectraxgk.parallel.decomposition"
   ],
   "n_direct_modules": 81,
-  "n_excluded_modules": 24,
+  "n_excluded_modules": 25,
   "n_high_priority_open": 64,
   "n_modules": 81,
   "n_owned_modules": 86,
-  "n_package_modules": 191,
+  "n_package_modules": 192,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -202,11 +202,11 @@
     "spectraxgk.runtime": [
       "spectraxgk.cli",
       "spectraxgk.config",
-      "spectraxgk.diffrax_integrators",
-      "spectraxgk.explicit_time_integrators",
+      "spectraxgk.solvers.time.diffrax",
+      "spectraxgk.solvers.time.explicit",
       "spectraxgk.io",
       "spectraxgk.restart",
-      "spectraxgk.runners",
+      "spectraxgk.solvers.time.runners",
       "spectraxgk.workflows.runtime.config",
       "spectraxgk.workflows.runtime.diagnostics",
       "spectraxgk.workflows.runtime.startup"

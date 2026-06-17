@@ -3,7 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 from dataclasses import fields, replace
 import pytest
-import spectraxgk.explicit_time_integrators as explicit_time_integrators
+import spectraxgk.solvers.time.explicit as explicit_time_integrators
 import spectraxgk.diagnostics as diagnostics_module
 import spectraxgk.diagnostics.channels as diagnostics_channels
 import spectraxgk.diagnostics.metadata as diagnostics_metadata
@@ -60,7 +60,7 @@ from spectraxgk.linear import (
     LinearTerms,
     linear_terms_to_term_config,
 )
-from spectraxgk.explicit_time_integrators import (
+from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,
     _apply_completed_step_state_mask,
     _growth_rate_mode_mask,

@@ -3,12 +3,12 @@
 import jax.numpy as jnp
 import pytest
 
-import spectraxgk.runners as runners
+import spectraxgk.solvers.time.runners as runners
 from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams
-from spectraxgk.runners import integrate_linear_from_config, integrate_nonlinear_from_config
+from spectraxgk.solvers.time.runners import integrate_linear_from_config, integrate_nonlinear_from_config
 from spectraxgk.terms.config import FieldState
 
 
