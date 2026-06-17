@@ -368,7 +368,7 @@ def test_fused_electrostatic_slice_route_validates_decomposition_before_mesh() -
 
 
 def test_linear_rhs_parallel_cached_serial_dispatch(monkeypatch) -> None:
-    import spectraxgk.linear as linear_compat
+    import spectraxgk.operators.linear.rhs as linear_rhs_owner
 
     calls: list[str] = []
 
@@ -379,7 +379,7 @@ def test_linear_rhs_parallel_cached_serial_dispatch(monkeypatch) -> None:
         assert kwargs["dt"] == 0.125
         return _sentinel("serial")
 
-    monkeypatch.setattr(linear_compat, "linear_rhs_cached", fake_serial)
+    monkeypatch.setattr(linear_rhs_owner, "linear_rhs_cached", fake_serial)
 
     out = linear_parallel.linear_rhs_parallel_cached(
         _state(),
@@ -396,8 +396,6 @@ def test_linear_rhs_parallel_cached_serial_dispatch(monkeypatch) -> None:
 
 
 def test_linear_rhs_parallel_cached_velocity_auto_selects_electrostatic_slice(monkeypatch) -> None:
-    import spectraxgk.linear as linear_compat
-
     calls: list[tuple[str, int | None]] = []
 
     def fake_slice(*args, **kwargs):
@@ -405,7 +403,9 @@ def test_linear_rhs_parallel_cached_velocity_auto_selects_electrostatic_slice(mo
         assert kwargs["terms"] == _electrostatic_slice_terms()
         return _sentinel("slice")
 
-    monkeypatch.setattr(linear_compat, "linear_rhs_electrostatic_slices_velocity_sharded", fake_slice)
+    monkeypatch.setattr(
+        linear_parallel, "linear_rhs_electrostatic_slices_velocity_sharded", fake_slice
+    )
     parallel = SimpleNamespace(strategy="velocity", backend="auto", axis="hermite", num_devices=3)
 
     out = linear_parallel.linear_rhs_parallel_cached(
@@ -421,8 +421,6 @@ def test_linear_rhs_parallel_cached_velocity_auto_selects_electrostatic_slice(mo
 
 
 def test_linear_rhs_parallel_cached_explicit_streaming_routes(monkeypatch) -> None:
-    import spectraxgk.linear as linear_compat
-
     calls: list[str] = []
 
     def fake_streaming(*args, **kwargs):
@@ -436,9 +434,11 @@ def test_linear_rhs_parallel_cached_explicit_streaming_routes(monkeypatch) -> No
         assert kwargs["use_custom_vjp"] is False
         return _sentinel("electrostatic")
 
-    monkeypatch.setattr(linear_compat, "linear_rhs_streaming_velocity_sharded", fake_streaming)
     monkeypatch.setattr(
-        linear_compat,
+        linear_parallel, "linear_rhs_streaming_velocity_sharded", fake_streaming
+    )
+    monkeypatch.setattr(
+        linear_parallel,
         "linear_rhs_streaming_electrostatic_velocity_sharded",
         fake_electrostatic,
     )

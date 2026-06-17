@@ -3930,7 +3930,7 @@ def test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.linear as linear
+    import spectraxgk.solvers.linear.integrators as linear_integrators
 
     cfg_path = tmp_path / "velocity_auto.toml"
     cfg_path.write_text(
@@ -4003,7 +4003,9 @@ fit_signal = "phi"
         calls.append(f"{parallel.strategy}:{parallel.axis}:{parallel.backend}")
         return jnp.zeros_like(G), jnp.ones(G.shape[-3:], dtype=G.dtype)
 
-    monkeypatch.setattr(linear, "linear_rhs_parallel_cached", _fake_parallel_rhs)
+    monkeypatch.setattr(
+        linear_integrators, "linear_rhs_parallel_cached", _fake_parallel_rhs
+    )
 
     rc = run_linear_case(cfg_path, show_progress=False)
 
