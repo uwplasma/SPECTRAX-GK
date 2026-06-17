@@ -181,8 +181,8 @@ High-Risk Module Split Plan
   callback routing, scan-output sampling, resolved diagnostic packing, and
   ``SimulationDiagnostics`` construction now live in
   ``spectraxgk.nonlinear_diagnostics``. Shared diagnostic cache,
-  quadrature-weight, omega-mask, z-index, state-projection setup, and
-  fixed/adaptive nonlinear time-step policy now live in
+  quadrature-weight, omega-mask, z-index, state-projection setup, reusable IMEX
+  operator setup, and fixed/adaptive nonlinear time-step policy now live in
   ``spectraxgk.nonlinear_helpers`` with injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy now lives in
   ``solvers/nonlinear/explicit.py`` and the shared IMEX nonlinear-term closure,

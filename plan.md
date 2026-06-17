@@ -1,3 +1,8 @@
+- 2026-06-17: Routed cached IMEX nonlinear integration through
+  `build_nonlinear_imex_operator` instead of duplicating implicit-operator
+  setup in `spectraxgk.nonlinear`. The helper now accepts a call-time injected
+  implicit-operator builder so facade and helper monkeypatch/debug seams remain
+  intact.
 - 2026-06-17: Moved explicit/IMEX nonlinear state-to-diagnostic closure
   construction into
   `spectraxgk.operators.nonlinear.diagnostic_state.make_nonlinear_diagnostic_tuple_fn`.
