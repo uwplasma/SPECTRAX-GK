@@ -66,7 +66,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     controls = list(report["controls"])
     labels = [str(row.get("state_parameter") or index) for index, row in enumerate(controls)]

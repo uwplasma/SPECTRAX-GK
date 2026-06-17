@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 DEFAULT_GEOMETRY_PNG = ROOT / "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png"
 DEFAULT_SWEEP_JSON = ROOT / "docs/_static/vmec_jax_qa_full_sweep_panel.json"

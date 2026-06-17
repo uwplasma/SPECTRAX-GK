@@ -259,7 +259,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]
+    from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     out_json = out_prefix.with_suffix(".json")

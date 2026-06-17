@@ -23,7 +23,7 @@ from spectraxgk.geometry import apply_geometry_grid_defaults, ensure_flux_tube_g
 from spectraxgk.grids import SpectralGrid, build_spectral_grid  # noqa: E402
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
 from spectraxgk.linear import build_linear_cache  # noqa: E402
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.runtime import (  # noqa: E402
     _build_initial_condition,
     build_runtime_geometry,

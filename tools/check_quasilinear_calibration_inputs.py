@@ -17,7 +17,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.validation.quasilinear.holdout_admission import (  # noqa: E402
     external_vmec_holdout_admission_status,
     is_external_vmec_holdout_gate,

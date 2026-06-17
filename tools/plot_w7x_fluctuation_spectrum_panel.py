@@ -18,7 +18,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_NONLINEAR = Path("tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc")

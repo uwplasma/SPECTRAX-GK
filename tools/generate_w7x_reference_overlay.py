@@ -42,7 +42,7 @@ from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf  # noqa: E402
 from spectraxgk.grids import build_spectral_grid  # noqa: E402
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig  # noqa: E402
-from spectraxgk.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
+from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
 from spectraxgk.species import build_linear_params  # noqa: E402
 
 

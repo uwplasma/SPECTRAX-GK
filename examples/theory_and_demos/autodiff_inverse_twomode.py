@@ -17,7 +17,7 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, integrate_linear, build_linear_cache
-from spectraxgk.plotting import set_plot_style
+from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.species import Species, build_linear_params
 
 

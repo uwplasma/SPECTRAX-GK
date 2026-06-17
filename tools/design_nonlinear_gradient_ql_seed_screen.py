@@ -91,7 +91,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     objective_rows = list(report["objective_rows"])
     controls = list(report["controls"])

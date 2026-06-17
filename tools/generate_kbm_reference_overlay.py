@@ -33,7 +33,7 @@ from spectraxgk.validation.benchmarks.harness import (
     save_eigenfunction_reference_bundle,
 )
 from spectraxgk.benchmarks import run_kbm_linear
-from spectraxgk.plotting import eigenfunction_reference_overlay_figure
+from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure
 
 ROOT = Path(__file__).resolve().parents[1]
 

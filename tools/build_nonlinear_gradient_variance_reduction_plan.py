@@ -63,7 +63,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report.get("pair_rows", []))
     labels = [str(row.get("label")) for row in rows]

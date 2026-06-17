@@ -56,7 +56,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     summary = report.get("summary", {})
     raw = summary.get("raw_response_uncertainty_rel")

@@ -16,7 +16,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.validation.quasilinear.model_selection import (  # noqa: E402
     DEFAULT_REQUIRED_CANDIDATE,
     build_quasilinear_model_selection_status_from_paths,

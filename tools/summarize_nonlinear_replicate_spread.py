@@ -135,7 +135,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     replicate_rows = list(report.get("replicate_rows", []))
     state_rows = {str(row["state"]): row for row in report.get("state_rows", [])}

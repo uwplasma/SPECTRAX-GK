@@ -64,7 +64,7 @@ from spectraxgk.solvers.time.explicit import (
     integrate_linear_explicit,
 )
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
-from spectraxgk.plotting import (
+from spectraxgk.artifacts.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     scan_comparison_figure,

@@ -15,7 +15,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.objectives.gradient_gates import linear_solver_geometry_gradient_report  # noqa: E402
 
 

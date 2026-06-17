@@ -34,7 +34,7 @@ Core modules
 - ``spectraxgk.validation.benchmarks.reference`` / ``spectraxgk.validation.benchmarks.fit_signals`` / ``spectraxgk.validation.benchmarks.species``: reference data loaders, result containers, fitting policies, and benchmark species policies.
 - ``spectraxgk.validation.benchmarks.scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
 - ``spectraxgk.benchmarks``: public benchmark runners and compatibility import surface.
-- ``spectraxgk.plotting``: reusable, publication-ready plotting utilities.
+- ``spectraxgk.artifacts.plotting``: reusable, publication-ready plotting utilities.
 
 Term-level source mapping
 -------------------------

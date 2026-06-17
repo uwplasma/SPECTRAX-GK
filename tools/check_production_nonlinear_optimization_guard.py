@@ -24,7 +24,7 @@ from spectraxgk.validation.nonlinear_transport.optimization_guard import (  # no
     ProductionNonlinearOptimizationGuardConfig,
     production_nonlinear_optimization_guard_report,
 )
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_OPTIMIZATION_ARTIFACT = ROOT / "docs/_static/stellarator_itg_optimization_comparison.json"

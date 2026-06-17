@@ -64,7 +64,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     summary = report.get("summary", {})
     rows = [row for row in report.get("pair_rows", []) if isinstance(row, dict)]

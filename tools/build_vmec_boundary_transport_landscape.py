@@ -37,7 +37,7 @@ if str(ROOT / "src") not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
     CoefficientSpec,
     _coefficient_value,

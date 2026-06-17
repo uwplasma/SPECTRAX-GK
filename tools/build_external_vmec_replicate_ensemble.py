@@ -254,7 +254,7 @@ def _write_png(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     set_plot_style()
     colors = ["#11756f", "#b8612a", "#4569b2", "#7c3aed", "#b91c1c"]

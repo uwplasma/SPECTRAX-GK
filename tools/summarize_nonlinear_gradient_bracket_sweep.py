@@ -64,7 +64,7 @@ def write_artifacts(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

@@ -57,7 +57,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report["rows"])
     labels = [str(row["case"]) for row in rows]

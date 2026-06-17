@@ -315,7 +315,7 @@ The target root should be mostly packages plus a few user-facing facades:
      nonlinear.py              # compatibility facade
      runtime.py                # compatibility facade
      quasilinear.py            # compatibility facade
-     plotting.py               # user plotting facade
+     artifacts/plotting.py     # user plotting and figure utilities
      benchmarks.py             # validation facade
      cli/
        main.py

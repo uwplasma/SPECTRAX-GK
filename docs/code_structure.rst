@@ -29,7 +29,7 @@ on:
 - ``spectraxgk.runtime``
 - ``spectraxgk.workflows.runtime.config``
 - ``spectraxgk.workflows.runtime.artifacts``
-- ``spectraxgk.plotting``
+- ``spectraxgk.artifacts.plotting``
 - ``spectraxgk.parallel``
 - ``spectraxgk.operators.nonlinear.parallel``
 - documented benchmark/example scripts under ``examples/`` and ``tools/``
@@ -75,7 +75,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/orchestration.py``
    - ``workflows/runtime/artifacts.py``
    - ``artifacts/``
-   - ``plotting.py``
+   - ``artifacts/plotting.py``
 4. **executable workflows**
    - ``workflows/linear.py``
    - ``workflows/nonlinear.py``
@@ -119,7 +119,7 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
-     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``plotting.py``
+     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
      - ``validation/benchmarks/harness.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``

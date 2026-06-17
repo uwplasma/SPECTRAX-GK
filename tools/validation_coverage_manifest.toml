@@ -3127,8 +3127,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.plotting"
-path = "src/spectraxgk/plotting.py"
+module = "spectraxgk.artifacts.plotting"
+path = "src/spectraxgk/artifacts/plotting.py"
 owner_lane = "publication-quality plotting from outputs, gates, and benchmark summaries"
 status = "active"
 coverage_priority = "medium"

@@ -551,7 +551,7 @@ Analysis
 Plotting
 --------
 
-.. automodule:: spectraxgk.plotting
+.. automodule:: spectraxgk.artifacts.plotting
    :members:
 
 Config

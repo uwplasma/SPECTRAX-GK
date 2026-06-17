@@ -30,7 +30,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_PANEL_JSON = ROOT / "docs" / "_static" / "vmec_jax_qa_full_sweep_panel.json"

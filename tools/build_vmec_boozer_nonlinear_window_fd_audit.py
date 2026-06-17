@@ -40,7 +40,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )  # noqa: E402
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.runtime import run_runtime_nonlinear  # noqa: E402
 from spectraxgk.workflows.runtime.config import (  # noqa: E402
     RuntimeConfig,

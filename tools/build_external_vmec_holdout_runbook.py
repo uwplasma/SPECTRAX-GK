@@ -25,7 +25,7 @@ from spectraxgk.validation.external_holdout import (  # noqa: E402
     build_external_holdout_runbook,
     read_external_holdout_screen,
 )
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_GAP_REPORT = ROOT / "docs" / "_static" / "quasilinear_holdout_gap_report.json"

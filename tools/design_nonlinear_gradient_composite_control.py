@@ -96,7 +96,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report["candidates"])
     labels = [str(row.get("parameter_name") or idx) for idx, row in enumerate(rows)]

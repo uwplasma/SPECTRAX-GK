@@ -200,7 +200,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.validation.gates.zonal_response_gate_report`
 - :func:`spectraxgk.validation.zonal.reference_residual_table`
 - :func:`spectraxgk.validation.zonal.tail_trace_metrics`
-- :func:`spectraxgk.plotting.zonal_flow_response_figure`
+- :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
 - ``tools/generate_miller_zonal_response_pilot.py``

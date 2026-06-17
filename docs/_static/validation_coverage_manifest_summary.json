@@ -78,6 +78,7 @@
     "spectraxgk.artifacts.nonlinear": [],
     "spectraxgk.artifacts.nonlinear_diagnostics": [],
     "spectraxgk.artifacts.nonlinear_netcdf": [],
+    "spectraxgk.artifacts.plotting": [],
     "spectraxgk.artifacts.spectral_layout": [],
     "spectraxgk.artifacts.validation": [],
     "spectraxgk.benchmarks": [
@@ -192,7 +193,6 @@
       "spectraxgk.utils.callbacks",
       "spectraxgk.parallel.velocity"
     ],
-    "spectraxgk.plotting": [],
     "spectraxgk.quasilinear": [
       "spectraxgk.validation.quasilinear.model_selection",
       "spectraxgk.validation.external_holdout"
@@ -1382,7 +1382,7 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.plotting",
+      "module": "spectraxgk.artifacts.plotting",
       "n_artifacts": 9,
       "n_fast_tests": 7,
       "n_next_tests": 2,
@@ -1390,7 +1390,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/plotting.py",
+      "path": "src/spectraxgk/artifacts/plotting.py",
       "status": "active"
     }
   ]

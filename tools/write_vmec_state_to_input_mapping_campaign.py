@@ -113,7 +113,7 @@ def _plot(path: Path, report: Mapping[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     state_labels = [str(row["state_parameter"]) for row in report["admitted_state_controls"]]
     input_labels = [str(row["coefficient"]) for row in report["input_directions"]]

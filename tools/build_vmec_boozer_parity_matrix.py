@@ -28,7 +28,7 @@ from spectraxgk.geometry.differentiable import (  # type: ignore[import-untyped]
     discover_differentiable_geometry_backends,
     vmec_jax_flux_tube_array_parity_report,
 )
-from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]

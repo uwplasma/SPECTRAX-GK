@@ -26,7 +26,7 @@ for path in (SRC, ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.objectives.stellarator_portfolio import (  # noqa: E402
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,

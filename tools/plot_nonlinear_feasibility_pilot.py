@@ -17,7 +17,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.workflows.runtime.artifacts import load_nonlinear_netcdf_diagnostics  # noqa: E402
 
 

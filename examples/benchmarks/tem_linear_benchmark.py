@@ -2,7 +2,7 @@ import argparse
 
 from spectraxgk.benchmarks import load_tem_reference, run_tem_scan
 from spectraxgk.config import TimeConfig
-from spectraxgk.plotting import scan_comparison_figure
+from spectraxgk.artifacts.plotting import scan_comparison_figure
 
 
 def main() -> None:
