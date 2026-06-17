@@ -1,3 +1,8 @@
+- 2026-06-17: Moved explicit/IMEX diagnostic collision-split setup into
+  `spectraxgk.nonlinear_helpers.build_nonlinear_collision_split_policy`. The
+  facade still injects its damping seam for monkeypatch compatibility, but
+  active/inactive split detection, collision-free RHS terms, and damping
+  assembly now have one focused policy object and direct tests.
 - 2026-06-17: Moved explicit/IMEX nonlinear diagnostic output finalization into
   `spectraxgk.nonlinear_diagnostics.finalize_nonlinear_scan_diagnostics`. The
   public nonlinear facade no longer owns duplicate stride/sample-index logic

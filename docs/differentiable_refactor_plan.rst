@@ -217,8 +217,9 @@ High-Risk Module Split Plan
   packing, and ``SimulationDiagnostics`` construction now live in
   ``spectraxgk.nonlinear_diagnostics``. Shared diagnostic cache,
   quadrature-weight, omega-mask, z-index, state-projection setup, reusable IMEX
-  operator setup, and fixed/adaptive nonlinear time-step policy now live in
-  ``spectraxgk.nonlinear_helpers`` with injected compatibility seams.
+  operator setup, collision-split policy construction, and fixed/adaptive
+  nonlinear time-step policy now live in ``spectraxgk.nonlinear_helpers`` with
+  injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
   in ``solvers/nonlinear/explicit.py``; the shared IMEX nonlinear-term closure,

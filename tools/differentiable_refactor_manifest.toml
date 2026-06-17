@@ -1000,9 +1000,10 @@ module = "spectraxgk.nonlinear_helpers"
 source_path = "src/spectraxgk/nonlinear_helpers.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, projection, CFL, collision-split, omega-mask, and reusable IMEX operator policies"
+responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, projection, CFL, collision-split policy construction, omega-mask, and reusable IMEX operator policies"
 moved_exports = [
   "IMEXLinearOperator",
+  "NonlinearCollisionSplitPolicy",
   "NonlinearDiagnosticSetup",
   "NonlinearTimeStepPolicy",
   "_apply_collision_split",
@@ -1012,6 +1013,7 @@ moved_exports = [
   "_make_hermitian_projector",
   "_make_nonlinear_state_projector",
   "_nonlinear_cfl_frequency_components",
+  "build_nonlinear_collision_split_policy",
   "build_nonlinear_diagnostic_setup",
   "build_nonlinear_imex_operator",
   "build_nonlinear_time_step_policy",

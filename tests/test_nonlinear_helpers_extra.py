@@ -26,6 +26,7 @@ from spectraxgk.nonlinear import (
     _make_nonlinear_state_projector,
     _pack_resolved_diagnostics,
     _sample_indices_with_final,
+    build_nonlinear_collision_split_policy,
     build_nonlinear_diagnostic_setup,
     build_nonlinear_simulation_diagnostics,
     build_nonlinear_imex_operator,
@@ -686,6 +687,39 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     )
     assert op.shape == (1, 2, 2, 1, 1, 1)
     assert op.squeeze_species is True
+
+
+def test_build_nonlinear_collision_split_policy_controls_rhs_terms() -> None:
+    term_cfg = TermConfig(collisions=0.5, hypercollisions=0.25, nonlinear=1.0)
+    damping = jnp.asarray([2.0], dtype=jnp.float32)
+
+    active = build_nonlinear_collision_split_policy(
+        SimpleNamespace(name="cache"),
+        SimpleNamespace(name="params"),
+        term_cfg,
+        jnp.float32,
+        squeeze_species=True,
+        collision_split=True,
+        collision_damping_fn=lambda *args, **kwargs: damping,
+    )
+    inactive = build_nonlinear_collision_split_policy(
+        SimpleNamespace(name="cache"),
+        SimpleNamespace(name="params"),
+        term_cfg,
+        jnp.float32,
+        squeeze_species=True,
+        collision_split=False,
+        collision_damping_fn=lambda *args, **kwargs: damping,
+    )
+
+    assert active.active is True
+    assert active.rhs_terms.collisions == 0.0
+    assert active.rhs_terms.hypercollisions == 0.0
+    assert active.rhs_terms.nonlinear == term_cfg.nonlinear
+    np.testing.assert_allclose(np.asarray(active.damping), [2.0])
+    assert inactive.active is False
+    assert inactive.rhs_terms is term_cfg
+    assert inactive.damping is None
 
 
 def test_build_nonlinear_imex_operator_forwards_preconditioner(monkeypatch) -> None:
