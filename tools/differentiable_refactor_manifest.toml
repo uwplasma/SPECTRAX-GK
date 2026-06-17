@@ -822,10 +822,12 @@ module = "spectraxgk.workflows.reduced_models"
 source_path = "src/spectraxgk/workflows/reduced_models.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "executable reduced-model runtime workflows, starting with the cETG linear path behind dependency-injected runtime facade seams"
+responsibility = "executable reduced-model runtime workflows, including cETG linear and nonlinear paths behind dependency-injected runtime facade seams"
 moved_exports = [
   "CETGLinearRuntimeDeps",
+  "CETGNonlinearRuntimeDeps",
   "run_cetg_linear_runtime",
+  "run_cetg_nonlinear_runtime",
 ]
 fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/test_cetg.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

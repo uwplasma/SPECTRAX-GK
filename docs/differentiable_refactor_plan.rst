@@ -244,7 +244,7 @@ High-Risk Module Split Plan
   ``spectraxgk.workflows.demo`` and runtime linear, scan, and nonlinear
   executable command bodies now delegate to ``spectraxgk.workflows.cases`` so
   parser dispatch stays separate from simulation, plotting, path override, and
-  artifact side effects. The cETG reduced-model linear runtime path now
+  artifact side effects. The cETG reduced-model linear and nonlinear runtime paths now
   delegates to ``spectraxgk.workflows.reduced_models`` through injected runtime
   dependencies so reduced-model execution is separated from the full-GK runtime
   facade without breaking existing monkeypatch seams.

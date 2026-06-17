@@ -2648,3 +2648,13 @@ No long nonlinear audit should be launched from these candidates.
 - Preserved runtime facade seams by injecting cache construction, quasilinear
   computation, and term-conversion callables; added a direct metadata/state
   contract test plus runtime quasilinear smoke coverage.
+
+### 2026-06-17 cETG Nonlinear Runtime Workflow Split
+
+- Moved the reduced-model cETG nonlinear runtime branch from
+  `run_runtime_nonlinear` into
+  `spectraxgk.workflows.reduced_models.run_cetg_nonlinear_runtime`.
+- Preserved runtime facade monkeypatch seams by injecting geometry, validation,
+  mode-selection, initial-condition, cETG integrator, adaptive-chunk, and
+  nonlinear-result assembly callables. Mocked runtime tests and real cETG
+  nonlinear smoke/adaptive tests passed locally.
