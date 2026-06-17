@@ -978,12 +978,14 @@ module = "spectraxgk.nonlinear_diagnostics"
 source_path = "src/spectraxgk/nonlinear_diagnostics.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear scan-output sampling, resolved diagnostic packing, and SimulationDiagnostics construction shared by explicit and IMEX diagnostic scans"
+responsibility = "nonlinear step-diagnostic selection, progress callback routing, scan-output sampling, resolved diagnostic packing, and SimulationDiagnostics construction shared by explicit and IMEX diagnostic scans"
 moved_exports = [
   "_pack_resolved_diagnostics",
   "_sample_axis0",
   "_sample_indices_with_final",
   "build_nonlinear_simulation_diagnostics",
+  "maybe_emit_nonlinear_progress",
+  "select_nonlinear_step_diagnostics",
 ]
 fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]

@@ -1,3 +1,9 @@
+- 2026-06-17: Deduplicated nonlinear diagnostic-stride selection and progress
+  callback routing. Explicit and IMEX diagnostic scans now share
+  `select_nonlinear_step_diagnostics` and `maybe_emit_nonlinear_progress` in
+  `spectraxgk.nonlinear_diagnostics`, preserving the existing callback cadence
+  while keeping host-output policy out of the scan bodies. Added direct tests
+  for compute-vs-reuse stride selection and the disabled-progress no-op path.
 - 2026-06-17: Moved duplicated nonlinear IMEX closure construction into
   `spectraxgk.solvers.nonlinear.imex`. Cached and diagnostic IMEX paths now
   share `make_imex_nonlinear_term` and `make_imex_solve_step` for explicit

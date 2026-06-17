@@ -35,6 +35,8 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
     integrate_nonlinear_imex_diagnostics,
+    maybe_emit_nonlinear_progress,
+    select_nonlinear_step_diagnostics,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -264,6 +266,39 @@ def test_build_nonlinear_simulation_diagnostics_samples_scan_tuple() -> None:
     assert out.resolved is not None
     np.testing.assert_allclose(np.asarray(out.resolved.Phi2_kxt), 0.0)
     np.testing.assert_allclose(np.asarray(out.resolved.TurbulentHeating_zst), 57.0)
+
+
+def test_select_nonlinear_step_diagnostics_and_progress_noop() -> None:
+    computed = (jnp.asarray(2.0), jnp.asarray(3.0), jnp.asarray(4.0), jnp.asarray(5.0))
+    previous = (jnp.asarray(-1.0), jnp.asarray(-2.0), jnp.asarray(-3.0), jnp.asarray(-4.0))
+
+    used_compute = select_nonlinear_step_diagnostics(
+        jnp.asarray(4, dtype=jnp.int32),
+        diagnostics_stride=2,
+        diag_prev=previous,
+        compute_diag_fn=lambda: computed,
+    )
+    used_previous = select_nonlinear_step_diagnostics(
+        jnp.asarray(3, dtype=jnp.int32),
+        diagnostics_stride=2,
+        diag_prev=previous,
+        compute_diag_fn=lambda: computed,
+    )
+
+    np.testing.assert_allclose(np.asarray(used_compute[0]), 2.0)
+    np.testing.assert_allclose(np.asarray(used_previous[0]), -1.0)
+
+    state = jnp.asarray([7.0], dtype=jnp.float32)
+    out = maybe_emit_nonlinear_progress(
+        state,
+        show_progress=False,
+        diag=computed,
+        idx=jnp.asarray(0, dtype=jnp.int32),
+        steps=4,
+        t_new=jnp.asarray(0.1, dtype=jnp.float32),
+        progress_total=jnp.asarray(0.4, dtype=jnp.float32),
+    )
+    np.testing.assert_allclose(np.asarray(out), [7.0])
 
 
 def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:
