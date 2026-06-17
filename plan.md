@@ -2583,3 +2583,17 @@ No long nonlinear audit should be launched from these candidates.
   workflow split is tracked as intentional architecture work rather than a new
   unowned helper module. This tranche reduced `src/spectraxgk/cli.py` from 1296
   to 1091 lines without changing the default-run or `--plot` contracts.
+
+### 2026-06-17 Runtime Command Workflow Split
+
+- Moved the runtime linear, runtime ky-scan, and runtime nonlinear executable
+  command bodies from `spectraxgk.cli` into `spectraxgk.workflows.cases`.
+  `cli.py` now owns parser construction and public command wrappers, while the
+  workflow module owns path override policy, progress/header printing,
+  quasilinear override policy, solver invocation, artifact dispatch, and command
+  summaries.
+- Kept compatibility wrappers for `_runtime_output_path`,
+  `_apply_runtime_path_overrides`, `_apply_quasilinear_overrides`, and command
+  functions so existing tests and developer monkeypatch workflows still target
+  the public CLI facade. This tranche reduced `src/spectraxgk/cli.py` from 1091
+  to 771 lines, below the refactor manifest public-module target.

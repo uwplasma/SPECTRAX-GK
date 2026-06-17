@@ -822,12 +822,22 @@ module = "spectraxgk.workflows.cases"
 source_path = "src/spectraxgk/workflows/cases.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime TOML linear and nonlinear case workflows, output artifact dispatch, and executable summary printing"
+responsibility = "runtime TOML case workflows, runtime executable command workflows, output artifact dispatch, path/quasilinear override policy, and executable summary printing"
 moved_exports = [
   "RUNTIME_CASE_FIT_KEYS",
+  "RUNTIME_COMMAND_FIT_KEYS",
   "RuntimeCaseDeps",
+  "RuntimeCommandDeps",
+  "apply_quasilinear_overrides",
+  "apply_runtime_path_overrides",
+  "print_linear_run_header",
   "run_linear_case",
   "run_nonlinear_case",
+  "run_runtime_linear_command",
+  "run_runtime_nonlinear_command",
+  "runtime_output_path",
+  "scan_runtime_linear_command",
+  "should_show_progress",
 ]
 fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

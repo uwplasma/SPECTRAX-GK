@@ -110,7 +110,7 @@ Physics / Numerics / IO Map
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
+     - runtime contract, startup/restart, output-path, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
@@ -270,6 +270,8 @@ The first behavior-preserving contract modules are ``spectraxgk.core.contracts``
 and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
+
+Runtime command dispatch now keeps parser construction in ``spectraxgk.cli`` and moves runtime linear, runtime scan, and runtime nonlinear command execution into ``spectraxgk.workflows.cases``. The CLI facade still exposes compatibility helper names for tests and downstream scripts, but path override, progress, and quasilinear override policies have one workflow owner.
 
 The benchmark helper split now uses focused domain modules directly.
 Benchmark initial conditions and reference data live in

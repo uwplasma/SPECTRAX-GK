@@ -234,8 +234,10 @@ High-Risk Module Split Plan
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
   default no-input educational demo now delegates to
-  ``spectraxgk.workflows.demo`` so parser dispatch stays separate from
-  simulation, plotting, and artifact side effects.
+  ``spectraxgk.workflows.demo`` and runtime linear, scan, and nonlinear
+  executable command bodies now delegate to ``spectraxgk.workflows.cases`` so
+  parser dispatch stays separate from simulation, plotting, path override, and
+  artifact side effects.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
   restart/output schema, and import compatibility.
 
