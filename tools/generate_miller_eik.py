@@ -8,7 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.miller_eik import generate_runtime_miller_eik
+from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
 
 
 def build_parser() -> argparse.ArgumentParser:

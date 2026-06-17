@@ -120,8 +120,8 @@
     "spectraxgk.geometry_backends.vmec": [
       "spectraxgk.geometry_backends.kernels",
       "spectraxgk.geometry_backends.miller",
-      "spectraxgk.miller_eik",
-      "spectraxgk.vmec_eik"
+      "spectraxgk.geometry.miller_eik",
+      "spectraxgk.geometry.vmec_eik"
     ],
     "spectraxgk.linear": [
       "spectraxgk.analysis",

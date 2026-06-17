@@ -101,7 +101,7 @@ Physics / Numerics / IO Map
      - ``basis.py``, ``grids.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/core.py``, ``miller_eik.py``, ``vmec_eik.py``, ``geometry_backends/vmec.py``
+     - ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``

@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.vmec_eik import generate_runtime_vmec_eik
+from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 def main() -> int:

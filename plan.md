@@ -2551,7 +2551,7 @@ No long nonlinear audit should be launched from these candidates.
 - Removed stale provenance and placeholder-style comments from standalone Miller
   and VMEC geometry helpers. The comments now state the actual role of these
   compact helpers and point production Miller generation to the runtime
-  ``spectraxgk.miller_eik`` path.
+  ``spectraxgk.geometry.miller_eik`` path.
 - Added a root ``codecov.yml`` so Codecov patch coverage mirrors the CI coverage
   contract. The Actions coverage gates measure ``src/spectraxgk`` package
   coverage, while docs, tools, examples, tests, and generated-output trees are

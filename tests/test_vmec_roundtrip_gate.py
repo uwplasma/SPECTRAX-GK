@@ -19,7 +19,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
-from spectraxgk.vmec_eik import generate_runtime_vmec_eik
+from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 @pytest.mark.integration

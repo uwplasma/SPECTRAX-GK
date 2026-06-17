@@ -43,11 +43,11 @@ from spectraxgk.runtime import (
     _load_initial_state_from_file,
 )
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.miller_eik import generate_runtime_miller_eik
+from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
 from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.vmec_eik import generate_runtime_vmec_eik
+from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 @dataclass(frozen=True)

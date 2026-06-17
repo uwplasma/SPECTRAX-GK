@@ -58,7 +58,7 @@ def main() -> int:
         sys.path.insert(0, str(repo_root / "src"))
 
     from spectraxgk.io import load_runtime_from_toml
-    from spectraxgk.vmec_eik import build_vmec_geometry_request, generate_runtime_vmec_eik
+    from spectraxgk.geometry.vmec_eik import build_vmec_geometry_request, generate_runtime_vmec_eik
 
     cfg_path = (
         repo_root

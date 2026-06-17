@@ -39,6 +39,20 @@ Geometry Core
    :members:
    :private-members:
 
+Miller EIK Generation
+---------------------
+
+.. automodule:: spectraxgk.geometry.miller_eik
+   :members:
+   :private-members:
+
+VMEC EIK Generation
+-------------------
+
+.. automodule:: spectraxgk.geometry.vmec_eik
+   :members:
+   :private-members:
+
 Differentiable Geometry
 -----------------------
 

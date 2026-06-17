@@ -1491,8 +1491,8 @@ path = "src/spectraxgk/geometry_backends/vmec.py"
 owned_modules = [
   "spectraxgk.geometry_backends.kernels",
   "spectraxgk.geometry_backends.miller",
-  "spectraxgk.miller_eik",
-  "spectraxgk.vmec_eik",
+  "spectraxgk.geometry.miller_eik",
+  "spectraxgk.geometry.vmec_eik",
 ]
 owner_lane = "VMEC import/remap geometry and future differentiable geometry bridge"
 status = "active"

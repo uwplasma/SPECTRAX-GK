@@ -14,7 +14,7 @@ import numpy as np
 
 from spectraxgk.geometry import load_imported_geometry_netcdf
 from spectraxgk.io import load_runtime_from_toml, load_toml
-from spectraxgk.vmec_eik import generate_runtime_vmec_eik
+from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 FIELDS = (

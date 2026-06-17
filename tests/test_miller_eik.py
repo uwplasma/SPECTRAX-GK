@@ -10,7 +10,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.miller_eik import (
+from spectraxgk.geometry.miller_eik import (
     build_miller_geometry_request,
     generate_runtime_miller_eik,
 )
@@ -96,9 +96,9 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
     cfg = _miller_runtime_cfg(tmp_path, geometry_file=str(out_path))
 
     mock_gen = MagicMock(return_value=out_path.resolve())
-    monkeypatch.setattr("spectraxgk.miller_eik.generate_miller_eik_internal", mock_gen)
+    monkeypatch.setattr("spectraxgk.geometry.miller_eik.generate_miller_eik_internal", mock_gen)
     monkeypatch.setattr(
-        "spectraxgk.miller_eik.internal_miller_backend_available", lambda: True
+        "spectraxgk.geometry.miller_eik.internal_miller_backend_available", lambda: True
     )
 
     out = generate_runtime_miller_eik(cfg)
