@@ -9,6 +9,8 @@ import pytest
 
 import spectraxgk.runtime as runtime
 import spectraxgk.runtime_policies as runtime_policies
+from spectraxgk.analysis import ModeSelection
+from spectraxgk.runtime_diagnostics import fit_runtime_linear_diagnostics
 from spectraxgk.runtime_orchestration import (
     build_runtime_progress_message,
     format_duration,
@@ -379,6 +381,40 @@ def test_runtime_diagnostic_slice_stride_truncate_concat() -> None:
     assert concat_none.resolved is None
     with pytest.raises(ValueError):
         _concat_runtime_diagnostics([])
+
+
+def test_fit_runtime_linear_diagnostics_density_fit_contract() -> None:
+    t = np.asarray([0.1, 0.2, 0.3, 0.4])
+    phi = np.ones((4, 1, 1, 2), dtype=np.complex128)
+    density = np.asarray([1.0, 1.5, 2.25, 3.375], dtype=np.complex128)[
+        :, None, None, None
+    ] * np.ones((1, 1, 1, 2), dtype=np.complex128)
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    out = fit_runtime_linear_diagnostics(
+        t=t,
+        phi_t=phi,
+        density_t=density,
+        selection=sel,
+        z=np.asarray([-1.0, 1.0]),
+        fit_signal="density",
+        mode_method="z_index",
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+    )
+
+    assert out.fit_signal_used == "density"
+    assert out.gamma > 0.0
+    assert out.fit_window_tmin is not None
+    assert out.fit_window_tmax is not None
+    np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
 
 
 def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:

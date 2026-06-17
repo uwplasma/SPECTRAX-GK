@@ -1364,6 +1364,25 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.runtime_diagnostics"
+source_path = "src/spectraxgk/runtime_diagnostics.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime linear fit/eigenfunction extraction plus finite-value, slicing, truncation, striding, and concatenation policies for runtime diagnostic payloads"
+moved_exports = [
+  "RuntimeLinearFitResult",
+  "concat_runtime_diagnostics",
+  "fit_runtime_linear_diagnostics",
+  "slice_runtime_diagnostics",
+  "stride_runtime_diagnostics",
+  "truncate_runtime_diagnostics",
+  "validate_finite_runtime_diagnostics",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
 module = "spectraxgk.runtime_policies"
 source_path = "src/spectraxgk/runtime_policies.py"
 facade_module = "spectraxgk.runtime"

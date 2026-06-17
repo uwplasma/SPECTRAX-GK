@@ -111,8 +111,8 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, chunking, result assembly, runtime command workflows, executable smoke tests
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_diagnostics.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
+     - runtime contract, startup/restart, output-path, linear-fit diagnostics, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
@@ -134,7 +134,8 @@ Completed extractions:
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
   and nonlinear diagnostics keyword policies:
   ``runtime_policies.py``
-- runtime diagnostic chunk helpers used by runtime and comparison artifacts:
+- runtime linear fit/eigenfunction extraction and diagnostic chunk helpers used
+  by runtime and comparison artifacts:
   ``runtime_diagnostics.py``
 - adaptive chunk execution used by runtime and comparison artifacts:
   ``runtime_chunks.py``

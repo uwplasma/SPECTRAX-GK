@@ -2623,3 +2623,11 @@ No long nonlinear audit should be launched from these candidates.
 - Added a focused runtime policy test and re-ran the nonlinear runtime helper
   shard covering source forcing, adaptive chunks, fixed mode, collision split,
   return-state diagnostics, and final-state contracts.
+
+### 2026-06-17 Runtime Linear Fit Diagnostics Split
+
+- Moved generic runtime linear fit/eigenfunction extraction from `run_runtime_linear`
+  into `spectraxgk.runtime_diagnostics.fit_runtime_linear_diagnostics`.
+- Preserved runtime facade monkeypatch seams by injecting analysis callables from
+  `spectraxgk.runtime`; added a direct density-fit helper test and reran runtime
+  linear fit integration tests.

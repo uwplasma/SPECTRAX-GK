@@ -234,7 +234,10 @@ High-Risk Module Split Plan
   scan batching now live in ``spectraxgk.runtime_orchestration`` behind the
   public ``spectraxgk.runtime`` facade. Runtime nonlinear diagnostics keyword
   assembly now lives in ``spectraxgk.runtime_policies`` so fixed-window and
-  adaptive diagnostic branches share one policy. Runtime TOML case wrappers now delegate to
+  adaptive diagnostic branches share one policy. Generic runtime linear
+  fit/eigenfunction extraction now lives in ``spectraxgk.runtime_diagnostics``
+  so the public runtime facade only wires analysis callables, normalization,
+  and result construction. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
   default no-input educational demo now delegates to
