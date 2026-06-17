@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.diagnostics import zonal_phi_line_kxt, zonal_phi_mode_kxt, fieldline_quadrature_weights  # noqa: E402
 from spectraxgk.geometry import apply_geometry_grid_defaults, ensure_flux_tube_geometry_data  # noqa: E402
-from spectraxgk.grids import SpectralGrid, build_spectral_grid  # noqa: E402
+from spectraxgk.core.grid import SpectralGrid, build_spectral_grid  # noqa: E402
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # noqa: E402
 from spectraxgk.linear import build_linear_cache  # noqa: E402
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402

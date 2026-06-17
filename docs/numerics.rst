@@ -56,7 +56,7 @@ The implementation leverages the following JAX primitives:
   kernels.
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in
-  :func:`spectraxgk.grids.build_spectral_grid`.
+  :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Sparse Krylov solver**: ``jax.scipy.sparse.linalg.gmres`` is used for the
   implicit linear solve in :func:`spectraxgk.linear.integrate_linear`.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement

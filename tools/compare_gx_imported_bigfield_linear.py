@@ -37,7 +37,7 @@ from spectraxgk.diagnostics.analysis import (
 from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid, select_ky_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, _linear_explicit_step, _diagnostic_midplane_index
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.species import build_linear_params

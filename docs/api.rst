@@ -126,7 +126,7 @@ Differentiable Geometry Numerics
 Grids
 -----
 
-.. automodule:: spectraxgk.grids
+.. automodule:: spectraxgk.core.grid
    :members:
 
 Operators

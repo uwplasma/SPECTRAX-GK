@@ -58,7 +58,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import SpectralGrid, build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import SpectralGrid, build_spectral_grid, select_ky_grid
 from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,
     integrate_linear_explicit,

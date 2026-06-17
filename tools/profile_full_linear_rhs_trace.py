@@ -19,7 +19,7 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution fallba
     from _profiler_options import make_profile_options  # type: ignore[import-not-found,no-redef]
 
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache, linear_rhs_cached
 from spectraxgk.runtime import (

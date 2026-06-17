@@ -133,7 +133,7 @@ def main() -> None:
         apply_imported_geometry_grid_defaults,
         ensure_flux_tube_geometry_data,
     )
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
     from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
     from spectraxgk.linear import (

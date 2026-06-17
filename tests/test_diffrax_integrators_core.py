@@ -26,7 +26,7 @@ from spectraxgk.solvers.time.diffrax import (
     integrate_nonlinear_diffrax,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig

@@ -6,7 +6,7 @@ import pytest
 
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms import assembly as assembly_mod
 from spectraxgk.terms.assembly import (

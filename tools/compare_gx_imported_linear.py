@@ -26,7 +26,7 @@ from spectraxgk.geometry import (
     load_imported_geometry_netcdf,
 )
 from spectraxgk.core.velocity import gamma0
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.diagnostics.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
 from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,

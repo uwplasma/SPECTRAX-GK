@@ -36,7 +36,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GridConfig, ETGModelConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.assembly import assemble_rhs_cached

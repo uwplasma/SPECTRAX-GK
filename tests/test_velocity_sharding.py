@@ -371,7 +371,7 @@ def test_velocity_field_reduce_shard_map_matches_reference_when_logical_devices_
 def _small_periodic_field_problem():
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
@@ -932,7 +932,7 @@ def test_periodic_streaming_shard_map_matches_reference_when_logical_devices_ava
 def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -> None:
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import (
         LinearParams,
         LinearTerms,
@@ -990,7 +990,7 @@ def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> No
 def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_graph() -> None:
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import (
         LinearParams,
         LinearTerms,

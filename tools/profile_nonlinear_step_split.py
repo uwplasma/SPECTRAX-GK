@@ -23,7 +23,7 @@ from spectraxgk.runtime import (
     build_runtime_term_config,
 )
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.nonlinear import nonlinear_rhs_cached
 from spectraxgk.terms.assembly import assemble_rhs_cached_jit, compute_fields_cached
 from spectraxgk.terms.nonlinear import nonlinear_em_contribution

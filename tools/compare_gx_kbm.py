@@ -30,7 +30,7 @@ from spectraxgk.validation.benchmarks.harness import (
     gate_report_to_dict,
 )
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.workflows.runtime.toml import load_toml
 
 LATE_PROJECT_WINDOW_FRACTION = 0.3

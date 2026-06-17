@@ -12,7 +12,7 @@ import numpy as np
 
 from tools.compare_gx_rhs_terms import _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data
-from spectraxgk.grids import build_spectral_grid, real_fft_unique_ky, select_real_fft_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, real_fft_unique_ky, select_real_fft_ky_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config

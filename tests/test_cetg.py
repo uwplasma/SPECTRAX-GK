@@ -27,7 +27,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SlabGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.integrators import _SSPX3_ADT, _SSPX3_W1, _SSPX3_W2, _SSPX3_W3
 from spectraxgk.runtime import (

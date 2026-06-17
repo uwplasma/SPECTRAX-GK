@@ -12,7 +12,7 @@ import jax.numpy as jnp
 from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.nonlinear import integrate_nonlinear_explicit_diagnostics
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig

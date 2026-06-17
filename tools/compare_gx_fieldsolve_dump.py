@@ -17,7 +17,7 @@ from tools.compare_gx_rhs_terms import (
     _reshape_gx,
     _summary,
 )
-from spectraxgk.grids import select_ky_grid
+from spectraxgk.core.grid import select_ky_grid
 from spectraxgk.linear import _as_species_array, build_linear_cache
 
 

@@ -22,7 +22,7 @@ from spectraxgk.validation.autodiff import (
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import fieldline_quadrature_weights, heat_flux_species
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.quasilinear import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight

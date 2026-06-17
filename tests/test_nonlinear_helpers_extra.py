@@ -13,7 +13,7 @@ from spectraxgk.operators.nonlinear import policies as nonlinear_helpers
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
     _apply_collision_split,

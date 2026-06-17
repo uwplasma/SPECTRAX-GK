@@ -10,7 +10,7 @@ import jax.numpy as jnp
 from spectraxgk.diagnostics.analysis import select_ky_index
 from spectraxgk.benchmarks import ETGBaseCase, _electron_only_params, ETG_OMEGA_D_SCALE, ETG_OMEGA_STAR_SCALE, ETG_RHO_STAR
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.solvers.linear.krylov import _arnoldi, _apply_operator
 from spectraxgk.terms.config import TermConfig

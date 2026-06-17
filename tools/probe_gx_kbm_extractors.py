@@ -12,7 +12,7 @@ import pandas as pd
 
 from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.benchmarks import run_kbm_linear
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 
 from tools.compare_gx_kbm import (
     _build_cfg,

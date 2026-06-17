@@ -38,7 +38,7 @@ from compare_gx_imported_linear import (
 )
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig
 from spectraxgk.linear import LinearTerms
 from spectraxgk.workflows.runtime.config import RuntimeConfig

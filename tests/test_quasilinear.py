@@ -10,7 +10,7 @@ import pytest
 
 import spectraxgk
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
 from spectraxgk.quasilinear import (
     compute_quasilinear_from_linear_state,

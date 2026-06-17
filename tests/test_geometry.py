@@ -22,7 +22,7 @@ from spectraxgk.geometry import (
     sample_flux_tube_geometry,
     twist_shift_params,
 )
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 
 

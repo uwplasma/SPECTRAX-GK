@@ -11,7 +11,7 @@ import pytest
 from spectraxgk.validation.benchmarks.harness import estimate_observed_order
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all
 import spectraxgk.linear as linear_mod
 import spectraxgk.operators.linear.cache as linear_cache

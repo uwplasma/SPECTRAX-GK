@@ -30,7 +30,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, integrate_linear_explicit
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 

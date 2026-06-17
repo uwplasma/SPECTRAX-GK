@@ -52,7 +52,7 @@ from spectraxgk.diagnostics import (
 )
 from spectraxgk.core.velocity import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.diagnostics.analysis import select_ky_index
 from spectraxgk.linear import (
     build_linear_cache,

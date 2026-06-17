@@ -10,7 +10,7 @@ from spectraxgk import (
     integrate_linear_from_config,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 
 
 def main() -> None:

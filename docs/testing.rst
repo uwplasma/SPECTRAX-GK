@@ -118,7 +118,7 @@ Representative unit checks include:
   :func:`spectraxgk.diagnostics.analysis.select_fit_window`,
   :func:`spectraxgk.diagnostics.analysis.fit_growth_rate_auto`.
 - **Grid construction and normalization**:
-  :func:`spectraxgk.grids.build_spectral_grid`.
+  :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Normalization contract consistency**:
   :func:`spectraxgk.normalization.get_normalization_contract`,
   :func:`spectraxgk.normalization.apply_diagnostic_normalization`.

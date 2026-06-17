@@ -34,7 +34,7 @@ from tools.compare_gx_runtime_diag_state import (
 from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
 from spectraxgk.solvers.time.explicit import (
     ExplicitTimeConfig,
     _instantaneous_growth_rate_step,

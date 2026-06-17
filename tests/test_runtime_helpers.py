@@ -32,7 +32,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.diagnostics import ResolvedDiagnostics, SimulationDiagnostics
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.runtime import (
     _build_initial_condition,
     _build_gaussian_profile,

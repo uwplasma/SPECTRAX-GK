@@ -13,7 +13,7 @@ import jax.numpy as jnp
 
 from spectraxgk.benchmarks import ETGBaseCase
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all
 from spectraxgk.terms.linear_terms import curvature_gradb_contribution
 

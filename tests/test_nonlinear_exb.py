@@ -3,7 +3,7 @@ import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
 from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
-from spectraxgk.grids import build_spectral_grid, real_fft_mesh
+from spectraxgk.core.grid import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms import nonlinear as nonlinear_terms_module
 from spectraxgk.terms.nonlinear import (
     _apply_flutter,

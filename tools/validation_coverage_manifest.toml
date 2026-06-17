@@ -228,7 +228,7 @@ owned_modules = [
   "spectraxgk.diagnostics.analysis",
   "spectraxgk.core.velocity",
   "spectraxgk.terms.cetg",
-  "spectraxgk.grids",
+  "spectraxgk.core.grid",
   "spectraxgk.operators.linear.streaming",
   "spectraxgk.solvers.linear.krylov",
   "spectraxgk.validation.benchmarks.secondary",

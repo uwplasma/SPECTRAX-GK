@@ -28,7 +28,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import (
     LinearParams,

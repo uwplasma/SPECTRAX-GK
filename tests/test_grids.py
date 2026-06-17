@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
-from spectraxgk.grids import (
+from spectraxgk.core.grid import (
     SpectralGrid,
     build_spectral_grid,
     real_fft_ordered_kx,
