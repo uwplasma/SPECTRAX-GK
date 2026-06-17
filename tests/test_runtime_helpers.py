@@ -1364,6 +1364,70 @@ def test_run_runtime_nonlinear_final_state_contract(
     assert out.state is None
 
 
+def test_run_runtime_nonlinear_final_state_without_progress_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})(),
+    )
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0)
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+        ),
+    )
+
+    def _fake_final_state(*args, **kwargs):
+        captured["n_args"] = len(args)
+        captured["show_progress"] = kwargs.get("show_progress", None)
+        return (
+            np.ones(
+                (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+            ),
+            FieldState(
+                phi=np.ones(
+                    (grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+                ),
+                apar=None,
+                bpar=None,
+            ),
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        diagnostics=False,
+        show_progress=False,
+    )
+
+    assert captured["n_args"] == 5
+    assert captured["show_progress"] is None
+    assert out.diagnostics is None
+    assert out.phi2 is not None
+
+
 def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
