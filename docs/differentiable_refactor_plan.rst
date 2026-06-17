@@ -171,11 +171,14 @@ High-Risk Module Split Plan
   claim without matched CPU/GPU artifacts. Local spectral-state construction,
   chunk/layout utilities, communication/work models, pencil FFT/bracket
   primitives, RHS micro-routes, and tolerance helpers now live in
-  ``nonlinear_parallel_spectral_core.py`` behind the unchanged
+  ``operators/nonlinear/spectral_core.py`` behind the unchanged
   ``spectraxgk.nonlinear_parallel`` facade. Logical spectral communication,
   RHS, and fixed-window integrator identity gates now live in
-  ``operators/nonlinear/spectral_identity.py`` and remain re-exported by the
-  facade for existing validation tools and profiler scripts.
+  ``operators/nonlinear/spectral_identity.py``. The local domain prototype
+  gates and device-z shard-map route now live in
+  ``operators/nonlinear/domain_decomposition.py`` and
+  ``operators/nonlinear/device_z.py``. The facade remains the public import
+  surface for examples, while developer tests import the focused domain modules.
 
 ``solver_objective_gradients.py``
   Split eigenvalue objectives, linear-growth objectives, quasilinear flux

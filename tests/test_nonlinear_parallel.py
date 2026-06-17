@@ -10,8 +10,8 @@ import pytest
 import spectraxgk
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
 import spectraxgk.nonlinear_parallel_contracts as nonlinear_parallel_contracts
-import spectraxgk.nonlinear_parallel_device_z as nonlinear_parallel_device_z
-import spectraxgk.nonlinear_parallel_spectral_core as nonlinear_parallel_spectral_core
+import spectraxgk.operators.nonlinear.device_z as nonlinear_parallel_device_z
+import spectraxgk.operators.nonlinear.spectral_core as nonlinear_parallel_spectral_core
 import spectraxgk.operators.nonlinear.spectral_identity as spectral_identity
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,

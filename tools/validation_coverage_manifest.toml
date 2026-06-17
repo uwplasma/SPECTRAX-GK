@@ -174,6 +174,13 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.workflows.cases"
 path = "src/spectraxgk/workflows/cases.py"
+owned_modules = [
+  "spectraxgk.workflows.demo",
+  "spectraxgk.workflows.linear",
+  "spectraxgk.workflows.named_cases",
+  "spectraxgk.workflows.nonlinear",
+  "spectraxgk.workflows.reduced_models",
+]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"
 coverage_priority = "high"
@@ -721,7 +728,7 @@ module = "spectraxgk.nonlinear_parallel"
 path = "src/spectraxgk/nonlinear_parallel.py"
 owned_modules = [
   "spectraxgk.nonlinear_parallel_contracts",
-  "spectraxgk.nonlinear_parallel_domain",
+  "spectraxgk.operators.nonlinear.domain_decomposition",
 ]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
@@ -763,8 +770,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_parallel_spectral_core"
-path = "src/spectraxgk/nonlinear_parallel_spectral_core.py"
+module = "spectraxgk.operators.nonlinear.spectral_core"
+path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
+owned_modules = [
+  "spectraxgk.operators.nonlinear.spectral_identity",
+]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
 coverage_priority = "high"
@@ -796,8 +806,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_parallel_device_z"
-path = "src/spectraxgk/nonlinear_parallel_device_z.py"
+module = "spectraxgk.operators.nonlinear.device_z"
+path = "src/spectraxgk/operators/nonlinear/device_z.py"
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
 coverage_priority = "high"

@@ -514,7 +514,7 @@
 - 2026-06-14: Continued the nonlinear parallelization refactor by moving the
   device-z shard-map RHS route, z-sharding topology check, physical transport
   observable reductions, and serial-vs-device transport-window identity gate
-  into `spectraxgk.nonlinear_parallel_device_z`. The public
+  into `spectraxgk.operators.nonlinear.device_z`. The public
   `spectraxgk.nonlinear_parallel` facade still re-exports the release-visible
   route and test-visible helper seams, preserving the fail-closed distinction
   between identity-gated routing and profiler-backed speedup claims.
@@ -544,7 +544,7 @@
   compatibility seam.
 
 - 2026-06-14: Continued the large-module refactor by moving nonlinear spectral
-  parallelization primitives into `spectraxgk.nonlinear_parallel_spectral_core`.
+  parallelization primitives into `spectraxgk.operators.nonlinear.spectral_core`.
   The split module now owns deterministic spectral test states, chunk/layout
   utilities, communication/work models, pencil FFT/bracket kernels, RHS
   micro-routes, z-chunked bracket helpers, host-staged sharding preparation,
@@ -631,7 +631,7 @@
 - 2026-06-14: Continued the behavior-preserving refactor lane by splitting
   nonlinear parallelization contracts, JSON-ready reports, and local
   state-domain identity gates into `spectraxgk.nonlinear_parallel_contracts`
-  and `spectraxgk.nonlinear_parallel_domain`. The public
+  and `spectraxgk.operators.nonlinear.domain_decomposition`. The public
   `spectraxgk.nonlinear_parallel` facade remains the import surface for
   examples and downstream users, while focused tests now assert that facade
   exports are identical to the underlying contract and domain objects. This

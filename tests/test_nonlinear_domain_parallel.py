@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import pytest
 
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
-import spectraxgk.nonlinear_parallel_domain as nonlinear_parallel_domain
+import spectraxgk.operators.nonlinear.domain_decomposition as nonlinear_parallel_domain
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,
     build_nonlinear_domain_decomposition_plan,

@@ -573,8 +573,8 @@ fast_tests = ["tests/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_parallel_spectral_core"
-source_path = "src/spectraxgk/nonlinear_parallel_spectral_core.py"
+module = "spectraxgk.operators.nonlinear.spectral_core"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
 facade_module = "spectraxgk.nonlinear_parallel"
 status = "active"
 responsibility = "deterministic spectral states, chunk/layout utilities, work models, pencil FFT/bracket kernels, RHS micro-routes, and tolerance helpers for nonlinear parallelization gates"
@@ -610,8 +610,8 @@ fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_parallel_device_z"
-source_path = "src/spectraxgk/nonlinear_parallel_device_z.py"
+module = "spectraxgk.operators.nonlinear.device_z"
+source_path = "src/spectraxgk/operators/nonlinear/device_z.py"
 facade_module = "spectraxgk.nonlinear_parallel"
 status = "active"
 responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window identity gates"

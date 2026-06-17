@@ -111,7 +111,7 @@ Physics / Numerics / IO Map
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/imex.py``, ``terms/nonlinear.py``
      - RHS routing, bracket payload, explicit stepping, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
-     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``nonlinear_parallel_device_z.py``
+     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_diagnostics.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
@@ -178,8 +178,9 @@ Completed extractions:
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``,
-  ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``,
-  ``nonlinear_parallel_device_z.py``
+  ``operators/nonlinear/domain_decomposition.py``,
+  ``operators/nonlinear/spectral_core.py``,
+  ``operators/nonlinear/device_z.py``
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear

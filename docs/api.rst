@@ -439,14 +439,28 @@ Parallelization
 Nonlinear Parallel Spectral Core
 --------------------------------
 
-.. automodule:: spectraxgk.nonlinear_parallel_spectral_core
+.. automodule:: spectraxgk.operators.nonlinear.spectral_core
+   :members:
+   :private-members:
+
+Nonlinear Spectral Identity Gates
+---------------------------------
+
+.. automodule:: spectraxgk.operators.nonlinear.spectral_identity
+   :members:
+   :private-members:
+
+Nonlinear Domain Decomposition
+------------------------------
+
+.. automodule:: spectraxgk.operators.nonlinear.domain_decomposition
    :members:
    :private-members:
 
 Nonlinear Parallel Device-Z Core
 --------------------------------
 
-.. automodule:: spectraxgk.nonlinear_parallel_device_z
+.. automodule:: spectraxgk.operators.nonlinear.device_z
    :members:
    :private-members:
 
