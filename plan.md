@@ -2703,3 +2703,12 @@ No long nonlinear audit should be launched from these candidates.
   runtime command execution still delegates to `spectraxgk.workflows.cases`.
 - Local gates: Ruff, targeted mypy, parser option-contract check, and the
   complete `tests/test_cli.py` shard passed.
+
+### 2026-06-17 Nonlinear Facade Diagnostic Option Consolidation
+
+- Consolidated duplicated explicit/IMEX nonlinear diagnostic keyword forwarding
+  into small option-key policies inside `spectraxgk.nonlinear`, keeping the
+  public facade and solver placement unchanged while reducing the file from 951
+  to 882 lines, below the active 900-line target.
+- Local gates: Ruff, targeted mypy, and the nonlinear helper/RHS/diagnostic/
+  explicit-step/IMEX test shard passed.

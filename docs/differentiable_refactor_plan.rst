@@ -226,7 +226,10 @@ High-Risk Module Split Plan
   GMRES solve-step closure, diagnostic step construction, fixed diagnostic scan
   execution, cached scan policy, fixed-point/GMRES solve, and SSPX3
   stage-composition policies live in
-  ``solvers/nonlinear/imex.py``.
+  ``solvers/nonlinear/imex.py``. The public nonlinear facade is now below the
+  active line-count target; repeated explicit/IMEX diagnostic option forwarding
+  is centralized in a small policy table so future solver options are added in
+  one place.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
