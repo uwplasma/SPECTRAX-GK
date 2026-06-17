@@ -1538,10 +1538,10 @@ module = "spectraxgk.workflows.runtime.artifacts"
 source_path = "src/spectraxgk/workflows/runtime/artifacts.py"
 current_reason = "large artifact serialization, restart, diagnostics, and schema-normalization surface"
 target_packages = [
-  "spectraxgk.io.artifacts.schema",
-  "spectraxgk.io.artifacts.netcdf",
-  "spectraxgk.io.artifacts.restart",
-  "spectraxgk.io.artifacts.provenance",
+  "spectraxgk.artifacts.schema",
+  "spectraxgk.artifacts.netcdf",
+  "spectraxgk.artifacts.restart",
+  "spectraxgk.artifacts.provenance",
 ]
 public_facade = "spectraxgk.workflows.runtime.artifacts"
 line_target = 700

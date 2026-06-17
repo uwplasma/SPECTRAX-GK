@@ -19,7 +19,7 @@ from typing import Any
 import numpy as np
 
 from spectraxgk.config import GeometryConfig  # type: ignore[import-untyped]
-from spectraxgk.io import load_runtime_from_toml  # type: ignore[import-untyped]
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # type: ignore[import-untyped]
 from spectraxgk.runtime import run_runtime_nonlinear  # type: ignore[import-untyped]
 from spectraxgk.workflows.runtime.config import RuntimeConfig  # type: ignore[import-untyped]
 

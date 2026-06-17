@@ -86,7 +86,7 @@ def main() -> int:
     if str(repo_root / "src") not in sys.path:
         sys.path.insert(0, str(repo_root / "src"))
 
-    from spectraxgk.io import load_runtime_from_toml
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
     from spectraxgk.geometry.miller_eik import build_miller_geometry_request, generate_runtime_miller_eik
 
     cfg, _ = load_runtime_from_toml(args.config)

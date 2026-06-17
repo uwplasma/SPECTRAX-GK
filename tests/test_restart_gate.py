@@ -12,7 +12,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.restart import load_netcdf_restart_state, write_netcdf_restart_state
+from spectraxgk.artifacts.restart import load_netcdf_restart_state, write_netcdf_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
 from spectraxgk.workflows.runtime.artifacts import (
     _condense_kx,

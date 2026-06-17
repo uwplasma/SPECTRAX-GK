@@ -607,6 +607,13 @@ Runtime Orchestration
    :members:
    :private-members:
 
+Runtime TOML Inputs
+-------------------
+
+.. automodule:: spectraxgk.workflows.runtime.toml
+   :members:
+   :private-members:
+
 Runtime Artifact Package
 ------------------------
 
@@ -617,6 +624,13 @@ Runtime Artifact IO
 -------------------
 
 .. automodule:: spectraxgk.artifacts.io
+   :members:
+   :private-members:
+
+Runtime Restart Artifacts
+-------------------------
+
+.. automodule:: spectraxgk.artifacts.restart
    :members:
    :private-members:
 

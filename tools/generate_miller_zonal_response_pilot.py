@@ -25,7 +25,7 @@ from spectraxgk.validation.benchmarks.harness import (
     load_diagnostic_time_series,
     zonal_flow_response_metrics,
 )
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.plotting import zonal_flow_response_figure
 from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
 

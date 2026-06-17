@@ -413,12 +413,14 @@ The target root should be mostly packages plus a few user-facing facades:
        progress.py
        examples.py
        provenance.py
-     io/
-       artifacts.py
+     artifacts/
+       io.py
        netcdf.py
        restart.py
-       toml.py
        schema.py
+     workflows/
+       runtime/
+         toml.py
      validation/
        literature/
        benchmarks/

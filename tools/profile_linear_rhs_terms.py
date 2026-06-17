@@ -17,7 +17,7 @@ import numpy as np
 
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import _as_species_array, build_H, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,

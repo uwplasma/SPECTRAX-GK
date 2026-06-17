@@ -25,7 +25,7 @@ from spectraxgk.geometry import (
     sample_flux_tube_geometry,
 )
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
@@ -3913,7 +3913,7 @@ def test_run_linear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
@@ -4067,7 +4067,7 @@ def test_run_nonlinear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
     )
     monkeypatch.setattr(
         "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
@@ -4105,7 +4105,7 @@ def test_run_linear_case_without_output_path_prints_summary_only(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
@@ -4140,7 +4140,7 @@ def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
     )
     monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
 

@@ -15,7 +15,7 @@ import netCDF4 as nc
 import numpy as np
 
 from spectraxgk.validation.benchmarks.harness import load_diagnostic_time_series, zonal_flow_response_metrics
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.plotting import set_plot_style
 from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
 from spectraxgk.validation.zonal import kx_token

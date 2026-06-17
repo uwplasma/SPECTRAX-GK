@@ -36,13 +36,13 @@ from spectraxgk.solvers.time.explicit import (
     _linear_term_config,
     _linear_explicit_step,
 )
-from spectraxgk.io import load_toml
+from spectraxgk.workflows.runtime.toml import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition as _build_runtime_initial_condition,
     _load_initial_state_from_file,
 )
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
 from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params

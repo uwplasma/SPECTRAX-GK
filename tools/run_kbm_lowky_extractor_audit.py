@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import subprocess
 
-from spectraxgk.io import load_toml
+from spectraxgk.workflows.runtime.toml import load_toml
 
 
 def build_parser() -> argparse.ArgumentParser:

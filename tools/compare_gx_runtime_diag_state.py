@@ -25,7 +25,7 @@ from spectraxgk.diagnostics import (
 )
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data
 from spectraxgk.grids import build_spectral_grid, select_real_fft_ky_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import (
     build_runtime_geometry,

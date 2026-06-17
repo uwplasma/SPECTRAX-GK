@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeParallelConfig,

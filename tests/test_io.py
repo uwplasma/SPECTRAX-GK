@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from spectraxgk.io import load_case_from_toml, load_linear_terms_from_toml
+from spectraxgk.workflows.runtime.toml import load_case_from_toml, load_linear_terms_from_toml
 
 
 def test_load_case_from_toml_reference_alignment_flag(tmp_path: Path) -> None:

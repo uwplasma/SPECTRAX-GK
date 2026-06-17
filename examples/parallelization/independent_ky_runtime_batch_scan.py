@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.runtime import run_runtime_scan
 
 

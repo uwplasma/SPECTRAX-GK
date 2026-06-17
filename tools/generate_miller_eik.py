@@ -7,7 +7,7 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
 
 

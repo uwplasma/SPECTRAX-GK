@@ -404,7 +404,7 @@ Implementation map
      - single-run and scan execution, TOML/executable overrides, JSON/CSV
        artifact writing
    * - Input schema
-     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.io`
+     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
      - :mod:`spectraxgk.validation.quasilinear.calibration`
