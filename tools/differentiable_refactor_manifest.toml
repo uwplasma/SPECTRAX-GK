@@ -592,6 +592,24 @@ fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity.py"
+facade_module = "spectraxgk.nonlinear_parallel"
+status = "active"
+responsibility = "logical spectral communication, RHS, and fixed-window integrator identity gates for nonlinear parallelization"
+moved_exports = [
+  "nonlinear_spectral_communication_identity_gate",
+  "nonlinear_spectral_communication_identity_report",
+  "nonlinear_spectral_rhs_identity_gate",
+  "nonlinear_spectral_rhs_identity_report",
+  "logical_decomposed_nonlinear_spectral_rhs",
+  "nonlinear_spectral_integrator_identity_gate",
+  "integrate_logical_decomposed_nonlinear_spectral",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.nonlinear_parallel_device_z"
 source_path = "src/spectraxgk/nonlinear_parallel_device_z.py"
 facade_module = "spectraxgk.nonlinear_parallel"

@@ -2712,3 +2712,15 @@ No long nonlinear audit should be launched from these candidates.
   to 882 lines, below the active 900-line target.
 - Local gates: Ruff, targeted mypy, and the nonlinear helper/RHS/diagnostic/
   explicit-step/IMEX test shard passed.
+
+### 2026-06-17 Nonlinear Parallel Spectral Identity Split
+
+- Moved logical spectral communication, RHS, and fixed-window integrator
+  identity gates from `spectraxgk.nonlinear_parallel` into
+  `spectraxgk.operators.nonlinear.spectral_identity`, leaving the public
+  nonlinear-parallel facade as a re-export and strategy/pencil policy surface.
+- Added a facade re-export test for the new identity module and reduced
+  `src/spectraxgk/nonlinear_parallel.py` from 1153 to 472 lines, below the
+  active 900-line target.
+- Local gates: Ruff, targeted mypy, and the nonlinear parallel/domain/spectral
+  communication test shard passed.

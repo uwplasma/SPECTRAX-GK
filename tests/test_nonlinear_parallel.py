@@ -12,6 +12,7 @@ import spectraxgk.nonlinear_parallel as nonlinear_parallel
 import spectraxgk.nonlinear_parallel_contracts as nonlinear_parallel_contracts
 import spectraxgk.nonlinear_parallel_device_z as nonlinear_parallel_device_z
 import spectraxgk.nonlinear_parallel_spectral_core as nonlinear_parallel_spectral_core
+import spectraxgk.operators.nonlinear.spectral_identity as spectral_identity
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,
     NonlinearDomainIdentityReport,
@@ -52,6 +53,22 @@ def test_nonlinear_parallel_facade_reexports_device_z_core() -> None:
         nonlinear_parallel._spectral_physical_transport_observable_sums
         is nonlinear_parallel_device_z._spectral_physical_transport_observable_sums
     )
+
+
+def test_nonlinear_parallel_facade_reexports_spectral_identity_core() -> None:
+    assert (
+        nonlinear_parallel.nonlinear_spectral_communication_identity_gate
+        is spectral_identity.nonlinear_spectral_communication_identity_gate
+    )
+    assert (
+        nonlinear_parallel.nonlinear_spectral_rhs_identity_gate
+        is spectral_identity.nonlinear_spectral_rhs_identity_gate
+    )
+    assert (
+        nonlinear_parallel.integrate_logical_decomposed_nonlinear_spectral
+        is spectral_identity.integrate_logical_decomposed_nonlinear_spectral
+    )
+
 
 def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     public_names = (

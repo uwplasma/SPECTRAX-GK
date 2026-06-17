@@ -172,7 +172,10 @@ High-Risk Module Split Plan
   chunk/layout utilities, communication/work models, pencil FFT/bracket
   primitives, RHS micro-routes, and tolerance helpers now live in
   ``nonlinear_parallel_spectral_core.py`` behind the unchanged
-  ``spectraxgk.nonlinear_parallel`` facade.
+  ``spectraxgk.nonlinear_parallel`` facade. Logical spectral communication,
+  RHS, and fixed-window integrator identity gates now live in
+  ``operators/nonlinear/spectral_identity.py`` and remain re-exported by the
+  facade for existing validation tools and profiler scripts.
 
 ``solver_objective_gradients.py``
   Split eigenvalue objectives, linear-growth objectives, quasilinear flux
