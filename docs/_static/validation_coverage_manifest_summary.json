@@ -132,7 +132,7 @@
       "spectraxgk.operators.linear.streaming",
       "spectraxgk.solvers.linear.krylov",
       "spectraxgk.validation.benchmarks.secondary",
-      "spectraxgk.species",
+      "spectraxgk.core.species",
       "spectraxgk.terms.assembly",
       "spectraxgk.terms.config",
       "spectraxgk.terms.fields",

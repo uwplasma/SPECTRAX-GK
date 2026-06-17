@@ -14,7 +14,7 @@ from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.nonlinear import integrate_nonlinear_explicit_diagnostics
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.core.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 
 

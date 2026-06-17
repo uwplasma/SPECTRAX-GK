@@ -17,7 +17,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.parallel.integrators import integrate_linear_sharded
-from spectraxgk.species import Species
+from spectraxgk.core.species import Species
 
 
 def _parse_devices(value: str) -> list[int]:

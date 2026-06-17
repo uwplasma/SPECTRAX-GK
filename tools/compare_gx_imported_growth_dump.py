@@ -43,7 +43,7 @@ from spectraxgk.solvers.time.explicit import (
     _linear_explicit_step,
 )
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 
 
 def build_parser() -> argparse.ArgumentParser:

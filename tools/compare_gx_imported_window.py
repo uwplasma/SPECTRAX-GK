@@ -37,7 +37,7 @@ from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defau
 from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 
 
 def build_parser() -> argparse.ArgumentParser:

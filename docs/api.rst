@@ -129,6 +129,12 @@ Grids
 .. automodule:: spectraxgk.core.grid
    :members:
 
+Species
+-------
+
+.. automodule:: spectraxgk.core.species
+   :members:
+
 Operators
 ---------
 

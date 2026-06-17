@@ -43,7 +43,7 @@ from spectraxgk.geometry import apply_imported_geometry_grid_defaults, load_impo
 from spectraxgk.core.grid import build_spectral_grid  # noqa: E402
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig  # noqa: E402
 from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
-from spectraxgk.species import build_linear_params  # noqa: E402
+from spectraxgk.core.species import build_linear_params  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]

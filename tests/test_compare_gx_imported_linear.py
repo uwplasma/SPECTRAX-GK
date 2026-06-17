@@ -42,7 +42,7 @@ from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig
 from spectraxgk.linear import LinearTerms
 from spectraxgk.workflows.runtime.config import RuntimeConfig
-from spectraxgk.species import Species
+from spectraxgk.core.species import Species
 
 
 def test_compare_gx_imported_linear_parser_accepts_gx_input() -> None:

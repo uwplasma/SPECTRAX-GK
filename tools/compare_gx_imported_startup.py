@@ -24,7 +24,7 @@ from spectraxgk.config import GeometryConfig
 from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 from spectraxgk.terms.assembly import compute_fields_cached
 
 
