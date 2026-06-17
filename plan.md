@@ -1,3 +1,8 @@
+- 2026-06-17: Removed duplicate runtime startup helper implementations from
+  `spectraxgk.runtime`. The public runtime facade now aliases
+  `_centered_glibc_random_pairs`, `_dealiased_initial_mode_pairs`, and
+  `_periodic_zp_from_grid` to the existing `spectraxgk.runtime_startup` owner,
+  preserving imports while shrinking the main runtime runner.
 - 2026-06-17: Moved explicit/IMEX diagnostic collision-split setup into
   `spectraxgk.nonlinear_helpers.build_nonlinear_collision_split_policy`. The
   facade still injects its damping seam for monkeypatch compatibility, but
