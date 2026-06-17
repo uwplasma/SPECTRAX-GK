@@ -74,6 +74,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``plotting.py``
 4. **executable workflows**
    - ``workflows/cases.py``
+   - ``workflows/demo.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
    - ``benchmarking.py``
@@ -108,7 +109,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``workflows/cases.py``, ``cli.py``
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``

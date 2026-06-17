@@ -232,7 +232,10 @@ High-Risk Module Split Plan
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
   plotting, and artifact handoff. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
-  ``spectraxgk.runtime`` remains the public import and monkeypatch surface.
+  ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
+  default no-input educational demo now delegates to
+  ``spectraxgk.workflows.demo`` so parser dispatch stays separate from
+  simulation, plotting, and artifact side effects.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
   restart/output schema, and import compatibility.
 
@@ -324,7 +327,8 @@ Phase 4: split objectives and AD policies
 
 Phase 5: split runtime, CLI, and workflows
   Move side-effectful command/runtime/plotting code out of solver kernels. Add
-  progress and provenance tests for the executable.
+  progress and provenance tests for the executable. Default-demo side effects
+  now have an injectable workflow seam for tests and downstream examples.
 
 Phase 6: extension registries
   Add registries for collision operators, basis families, closure models,

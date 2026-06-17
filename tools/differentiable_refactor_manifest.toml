@@ -833,6 +833,25 @@ fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.demo"
+source_path = "src/spectraxgk/workflows/demo.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "no-input educational executable demo, reproducible TOML emission, default plot generation, and linear artifact bundle writing"
+moved_exports = [
+  "DEFAULT_DEMO_SETTINGS",
+  "DefaultDemoDeps",
+  "default_demo_artifact_base",
+  "default_demo_plot_path",
+  "default_demo_toml_path",
+  "default_demo_toml_text",
+  "default_example_config_path",
+  "run_default_linear_demo",
+]
+fast_tests = ["tests/test_cli.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.artifacts.validation"
 source_path = "src/spectraxgk/artifacts/validation.py"
 facade_module = "spectraxgk.artifacts"

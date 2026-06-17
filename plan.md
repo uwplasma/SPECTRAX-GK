@@ -2571,3 +2571,15 @@ No long nonlinear audit should be launched from these candidates.
 - Updated validation and architecture manifests, API docs, code-structure docs,
   and release-status evidence so coverage ownership follows the new domain
   package layout.
+
+### 2026-06-17 Default Executable Demo Workflow Split
+
+- Moved the no-input `spectraxgk` educational demo orchestration out of the
+  public parser module and into `spectraxgk.workflows.demo`. The CLI now builds
+  explicit workflow dependencies and delegates, preserving monkeypatch seams and
+  executable behavior while separating parser dispatch from simulation,
+  plotting, TOML provenance, and artifact-writing side effects.
+- Updated the differentiable refactor manifest and code-structure docs so the
+  workflow split is tracked as intentional architecture work rather than a new
+  unowned helper module. This tranche reduced `src/spectraxgk/cli.py` from 1296
+  to 1091 lines without changing the default-run or `--plot` contracts.
