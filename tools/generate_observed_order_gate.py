@@ -13,7 +13,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarking import (
+from spectraxgk.validation.benchmarks.harness import (
     estimate_observed_order,
     gate_report_to_dict,
     observed_order_gate_report,

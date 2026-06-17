@@ -24,7 +24,7 @@ from spectraxgk.workflows.reduced_models import (
     CETGLinearRuntimeDeps,
     run_cetg_linear_runtime,
 )
-from spectraxgk.benchmarking import late_time_linear_metrics
+from spectraxgk.validation.benchmarks.harness import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
     GridConfig,

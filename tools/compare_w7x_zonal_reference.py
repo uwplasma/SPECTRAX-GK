@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+from spectraxgk.validation.benchmarks.harness import evaluate_scalar_gate, gate_report, gate_report_to_dict
 from spectraxgk.plotting import set_plot_style
 from spectraxgk.validation.zonal import (
     kx_token,

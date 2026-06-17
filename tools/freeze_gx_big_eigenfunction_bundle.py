@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarking import save_eigenfunction_reference_bundle
+from spectraxgk.validation.benchmarks.harness import save_eigenfunction_reference_bundle
 
 
 def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:

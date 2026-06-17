@@ -84,7 +84,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/reduced_models.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
-   - ``benchmarking.py``
+   - ``validation/benchmarks/harness.py``
    - ``benchmarks.py``
    - ``tools/*.py``
 
@@ -122,7 +122,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
+     - ``validation/benchmarks/harness.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping

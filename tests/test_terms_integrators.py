@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.benchmarking import estimate_observed_order
+from spectraxgk.validation.benchmarks.harness import estimate_observed_order
 from spectraxgk.terms.config import FieldState
 from spectraxgk.terms.integrators import integrate_nonlinear
 from spectraxgk.terms.nonlinear import exb_nonlinear_contribution, placeholder_nonlinear_contribution

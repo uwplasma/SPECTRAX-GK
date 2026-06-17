@@ -24,7 +24,7 @@ from spectraxgk.analysis import (
     select_ky_index,
 )
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
-from spectraxgk.benchmarking import (
+from spectraxgk.validation.benchmarks.harness import (
     branch_continuity_gate_report,
     branch_continuity_metrics,
     gate_report_to_dict,

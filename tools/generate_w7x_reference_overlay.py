@@ -30,7 +30,7 @@ from compare_gx_imported_linear import (  # noqa: E402
     _run_single_ky,
     _select_gx_kx_index,
 )
-from spectraxgk.benchmarking import (  # noqa: E402
+from spectraxgk.validation.benchmarks.harness import (  # noqa: E402
     compare_eigenfunctions,
     eigenfunction_gate_report,
     gate_report_to_dict,

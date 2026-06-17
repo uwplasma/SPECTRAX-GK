@@ -189,8 +189,8 @@ lanes, not as ad hoc notebooks.
 
 The first reusable tooling for this lane now exists:
 
-- :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
-- :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
+- :func:`spectraxgk.validation.benchmarks.harness.zonal_flow_response_metrics`
+- :func:`spectraxgk.validation.benchmarks.harness.load_diagnostic_time_series`
 - :func:`spectraxgk.validation.gates.evaluate_scalar_gate`
 - :func:`spectraxgk.validation.gates.observed_order_gate_report`
 - :func:`spectraxgk.validation.gates.branch_continuity_gate_report`

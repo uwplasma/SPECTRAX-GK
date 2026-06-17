@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-from spectraxgk import benchmarking
+import spectraxgk.validation.benchmarks.harness as benchmark_harness
 from spectraxgk.validation.gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,
@@ -30,12 +30,15 @@ from spectraxgk.validation.gates import (
 )
 
 
-def test_validation_gate_primitives_are_public_and_backward_compatible() -> None:
+def test_validation_gate_primitives_are_public_and_available_to_benchmark_harness() -> None:
     assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
-    assert benchmarking.evaluate_scalar_gate is evaluate_scalar_gate
-    assert benchmarking.observed_order_gate_report is observed_order_gate_report
-    assert benchmarking.branch_continuity_gate_report is branch_continuity_gate_report
-    assert benchmarking.nonlinear_heat_flux_convergence_gate_report is nonlinear_heat_flux_convergence_gate_report
+    assert benchmark_harness.evaluate_scalar_gate is evaluate_scalar_gate
+    assert benchmark_harness.observed_order_gate_report is observed_order_gate_report
+    assert benchmark_harness.branch_continuity_gate_report is branch_continuity_gate_report
+    assert (
+        benchmark_harness.nonlinear_heat_flux_convergence_gate_report
+        is nonlinear_heat_flux_convergence_gate_report
+    )
 
 
 def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:

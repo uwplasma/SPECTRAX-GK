@@ -450,7 +450,7 @@ Benchmark Scan Policies
 Benchmarking
 ------------
 
-.. automodule:: spectraxgk.benchmarking
+.. automodule:: spectraxgk.validation.benchmarks.harness
    :members:
 
 Validation Gates

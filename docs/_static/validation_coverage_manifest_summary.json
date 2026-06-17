@@ -81,7 +81,7 @@
     "spectraxgk.artifacts.validation": [],
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmarks": [
-      "spectraxgk.benchmarking",
+      "spectraxgk.validation.benchmarks.harness",
       "spectraxgk.validation.benchmarks.batching",
       "spectraxgk.validation.benchmarks.cyclone",
       "spectraxgk.validation.benchmarks.etg",

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_response_metrics
+from spectraxgk.validation.benchmarks.harness import load_diagnostic_time_series, zonal_flow_response_metrics
 from spectraxgk.plotting import zonal_flow_response_figure
 
 ROOT = Path(__file__).resolve().parents[1]
