@@ -1382,10 +1382,12 @@ module = "spectraxgk.runtime_diagnostics"
 source_path = "src/spectraxgk/runtime_diagnostics.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime linear fit/eigenfunction extraction plus finite-value, slicing, truncation, striding, and concatenation policies for runtime diagnostic payloads"
+responsibility = "runtime linear fit/eigenfunction extraction, quasilinear finalization, plus finite-value, slicing, truncation, striding, and concatenation policies for runtime diagnostic payloads"
 moved_exports = [
   "RuntimeLinearFitResult",
+  "RuntimeQuasilinearFinalizationDeps",
   "concat_runtime_diagnostics",
+  "finalize_runtime_linear_quasilinear",
   "fit_runtime_linear_diagnostics",
   "slice_runtime_diagnostics",
   "stride_runtime_diagnostics",

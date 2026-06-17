@@ -2639,3 +2639,12 @@ No long nonlinear audit should be launched from these candidates.
 - Kept existing runtime monkeypatch seams by passing geometry, validation,
   initial-condition, model-parameter, integrator, and fit callables through
   `CETGLinearRuntimeDeps`; added a direct fake-dependency workflow contract test.
+
+### 2026-06-17 Runtime Quasilinear Finalization Split
+
+- Moved optional runtime linear quasilinear payload construction from the
+  `run_runtime_linear` closure into
+  `spectraxgk.runtime_diagnostics.finalize_runtime_linear_quasilinear`.
+- Preserved runtime facade seams by injecting cache construction, quasilinear
+  computation, and term-conversion callables; added a direct metadata/state
+  contract test plus runtime quasilinear smoke coverage.

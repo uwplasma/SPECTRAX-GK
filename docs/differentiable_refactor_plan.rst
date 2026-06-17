@@ -237,7 +237,7 @@ High-Risk Module Split Plan
   adaptive diagnostic branches share one policy. Generic runtime linear
   fit/eigenfunction extraction now lives in ``spectraxgk.runtime_diagnostics``
   so the public runtime facade only wires analysis callables, normalization,
-  and result construction. Runtime TOML case wrappers now delegate to
+  quasilinear post-processing dependencies, and result construction. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
   ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
   default no-input educational demo now delegates to

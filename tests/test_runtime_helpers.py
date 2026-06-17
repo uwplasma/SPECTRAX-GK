@@ -11,6 +11,11 @@ import spectraxgk.runtime as runtime
 import spectraxgk.runtime_policies as runtime_policies
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.runtime_diagnostics import fit_runtime_linear_diagnostics
+from spectraxgk.runtime_diagnostics import (
+    RuntimeQuasilinearFinalizationDeps,
+    finalize_runtime_linear_quasilinear,
+)
+from spectraxgk.runtime_results import RuntimeLinearResult
 from spectraxgk.runtime_orchestration import (
     build_runtime_progress_message,
     format_duration,
@@ -69,6 +74,7 @@ from spectraxgk.runtime_config import (
     RuntimeNormalizationConfig,
     RuntimeParallelConfig,
     RuntimePhysicsConfig,
+    RuntimeQuasilinearConfig,
     RuntimeSpeciesConfig,
 )
 from spectraxgk.terms.config import FieldState
@@ -480,6 +486,70 @@ def test_run_cetg_linear_runtime_dependency_contract() -> None:
     assert out.state is not None
     assert out.fit_signal_used == "phi"
     assert any("running cETG time integration" in msg for msg in statuses)
+
+
+def test_finalize_runtime_linear_quasilinear_contract() -> None:
+    cfg = replace(
+        _base_cfg(),
+        quasilinear=RuntimeQuasilinearConfig(enabled=True, csat=0.7),
+    )
+    result = RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.1,
+        omega=-0.3,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        state=np.ones((1, 1, 1, 1, 2), dtype=np.complex128),
+    )
+    statuses: list[str] = []
+
+    class _Payload:
+        def to_dict(self) -> dict[str, object]:
+            return {"heat_flux_weight_total": 1.5, "mode": "saturated"}
+
+    calls: dict[str, object] = {}
+
+    def _compute(state, **kwargs):
+        calls["state_shape"] = np.asarray(state).shape
+        calls["metadata"] = kwargs["metadata"]
+        calls["csat"] = kwargs["csat"]
+        return _Payload()
+
+    out = finalize_runtime_linear_quasilinear(
+        result,
+        enabled=True,
+        cfg=cfg,
+        grid=object(),
+        geom=object(),
+        params=SimpleNamespace(),
+        terms=object(),
+        Nl=2,
+        Nm=3,
+        solver_name="krylov",
+        species_names=("ion",),
+        return_state_requested=False,
+        deps=RuntimeQuasilinearFinalizationDeps(
+            build_linear_cache=lambda *_args: "cache",
+            compute_quasilinear_from_linear_state=_compute,
+            linear_terms_to_term_config=lambda terms: terms,
+        ),
+        status_callback=statuses.append,
+    )
+
+    assert out.state is None
+    assert out.quasilinear == {"heat_flux_weight_total": 1.5, "mode": "saturated"}
+    assert calls["state_shape"] == (1, 1, 1, 1, 2)
+    assert calls["csat"] == pytest.approx(0.7)
+    assert calls["metadata"] == {
+        "runtime_config_enabled": True,
+        "solver": "krylov",
+        "delta_ky": cfg.quasilinear.delta_ky,
+        "species_selection": cfg.quasilinear.species,
+        "write_spectrum": cfg.quasilinear.write_spectrum,
+    }
+    assert statuses == [
+        "computing quasilinear transport weights",
+        "quasilinear transport weights complete",
+    ]
 
 
 def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:
