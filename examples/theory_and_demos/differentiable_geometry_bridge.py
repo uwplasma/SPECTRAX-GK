@@ -36,7 +36,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectraxgk.autodiff_validation import covariance_diagnostics
+from spectraxgk.validation.autodiff import covariance_diagnostics
 from spectraxgk.geometry.differentiable import (
     booz_xform_flux_tube_sensitivity_report,
     booz_xform_spectral_sensitivity_report,

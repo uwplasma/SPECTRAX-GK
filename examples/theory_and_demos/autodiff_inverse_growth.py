@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.autodiff_validation import covariance_diagnostics
+from spectraxgk.validation.autodiff import covariance_diagnostics
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, integrate_linear, build_linear_cache

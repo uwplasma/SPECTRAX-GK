@@ -462,7 +462,7 @@ Validation Gates
 Autodiff Validation
 -------------------
 
-.. automodule:: spectraxgk.autodiff_validation
+.. automodule:: spectraxgk.validation.autodiff
    :members:
 
 Parallelization

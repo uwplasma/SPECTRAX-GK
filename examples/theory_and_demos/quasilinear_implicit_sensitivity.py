@@ -15,7 +15,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectraxgk.autodiff_validation import (
+from spectraxgk.validation.autodiff import (
     explicit_complex_operator_matrix,
     implicit_eigenpair_observable_sensitivity_report,
 )

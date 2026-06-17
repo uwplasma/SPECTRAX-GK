@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.autodiff_validation as adv
-from spectraxgk.autodiff_validation import (
+import spectraxgk.validation.autodiff as adv
+from spectraxgk.validation.autodiff import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,

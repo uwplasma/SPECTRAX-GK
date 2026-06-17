@@ -415,7 +415,7 @@ Implementation map
        ``tools/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
-     - :mod:`spectraxgk.autodiff_validation`
+     - :mod:`spectraxgk.validation.autodiff`
      - finite-difference checks, covariance diagnostics, dense operator
        fixtures, and implicit isolated-eigenpair sensitivities
 
@@ -463,7 +463,7 @@ Numerics and differentiability
 
 SPECTRAX-GK production linear solves remain matrix-free. Dense matrices are
 only materialized in tiny validation fixtures through
-:func:`spectraxgk.autodiff_validation.explicit_complex_operator_matrix`.
+:func:`spectraxgk.validation.autodiff.explicit_complex_operator_matrix`.
 
 Eigenvalue sensitivities use JAX derivatives of the matrix entries and the
 standard isolated-branch relation

@@ -22,7 +22,7 @@
     "spectraxgk.validation.gates",
     "spectraxgk.validation.zonal",
     "spectraxgk.objectives.zonal",
-    "spectraxgk.autodiff_validation",
+    "spectraxgk.validation.autodiff",
     "spectraxgk.geometry.core",
     "spectraxgk.geometry_backends.vmec",
     "spectraxgk.geometry.differentiable",
@@ -79,7 +79,6 @@
     "spectraxgk.artifacts.nonlinear_diagnostics": [],
     "spectraxgk.artifacts.nonlinear_netcdf": [],
     "spectraxgk.artifacts.validation": [],
-    "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmarks": [
       "spectraxgk.validation.benchmarks.harness",
       "spectraxgk.validation.benchmarks.batching",
@@ -217,6 +216,7 @@
     "spectraxgk.solvers.linear.parallel": [],
     "spectraxgk.solvers.nonlinear.explicit": [],
     "spectraxgk.solvers.nonlinear.imex": [],
+    "spectraxgk.validation.autodiff": [],
     "spectraxgk.validation.benchmarks.defaults": [
       "spectraxgk.normalization"
     ],
@@ -768,7 +768,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 98.0,
-      "module": "spectraxgk.autodiff_validation",
+      "module": "spectraxgk.validation.autodiff",
       "n_artifacts": 3,
       "n_fast_tests": 3,
       "n_next_tests": 2,
@@ -776,7 +776,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/autodiff_validation.py",
+      "path": "src/spectraxgk/validation/autodiff.py",
       "status": "active"
     },
     {

@@ -1422,8 +1422,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.autodiff_validation"
-path = "src/spectraxgk/autodiff_validation.py"
+module = "spectraxgk.validation.autodiff"
+path = "src/spectraxgk/validation/autodiff.py"
 owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
 status = "active"
 coverage_priority = "high"
