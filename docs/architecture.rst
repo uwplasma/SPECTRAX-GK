@@ -16,7 +16,10 @@ Core modules
 - ``spectraxgk.solvers.linear``: matrix-free eigensolver policy, linear
   fixed-step/diagnostic integration policy, implicit GMRES/preconditioner
   policy, and gated velocity-parallel linear RHS dispatch.
-- ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
+- ``spectraxgk.nonlinear``: public nonlinear runtime facade for explicit,
+  adaptive, diagnostic, and cached IMEX workflows.
+- ``spectraxgk.solvers.nonlinear``: explicit RK/SSP/K10 and IMEX fixed-point,
+  GMRES, and stage-composition policy.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
 - ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,
   comparison-reference omega masks used by GX-comparison parity audits,

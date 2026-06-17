@@ -177,7 +177,8 @@ High-Risk Module Split Plan
   ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
   kernels so existing debug seams remain intact. Explicit RK/SSP/K10 one-step
   policy now lives in ``solvers/nonlinear/explicit.py`` and the shared IMEX
-  fixed-point/GMRES solve policy lives in ``solvers/nonlinear/imex.py``.
+  fixed-point/GMRES solve plus SSPX3 stage-composition policy lives in
+  ``solvers/nonlinear/imex.py``.
 
 ``runtime.py`` and ``cli.py``
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,

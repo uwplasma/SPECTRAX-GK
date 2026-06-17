@@ -46,5 +46,9 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
         nonlinear_solvers.checkpoint_explicit_step
         is solver_explicit.checkpoint_explicit_step
     )
+    assert (
+        nonlinear_solvers.advance_imex_nonlinear_state
+        is solver_imex.advance_imex_nonlinear_state
+    )
     assert nonlinear_solvers.imex_fixed_point_guess is solver_imex.imex_fixed_point_guess
     assert nonlinear_solvers.solve_imex_step is solver_imex.solve_imex_step

@@ -1,3 +1,9 @@
+- 2026-06-17: Continued nonlinear solver modularization by moving the IMEX
+  SSPX3 stage-composition policy into `spectraxgk.solvers.nonlinear.imex`.
+  `spectraxgk.nonlinear` now builds runtime state, cache, and diagnostics while
+  the solver module owns fixed-point prediction, GMRES solves, and the
+  semi-implicit stage update. Added direct default-step and constant-RHS SSPX3
+  tests plus solver-package re-export coverage.
 - 2026-06-17: Continued the linear refactor by moving implicit linear
   matrix-free operator construction, Hermite/PAS/diagonal preconditioner
   policy, and GMRES time integration into

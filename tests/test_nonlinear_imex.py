@@ -5,7 +5,11 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.solvers.nonlinear.imex import imex_fixed_point_guess, solve_imex_step
+from spectraxgk.solvers.nonlinear.imex import (
+    advance_imex_nonlinear_state,
+    imex_fixed_point_guess,
+    solve_imex_step,
+)
 
 
 def test_imex_fixed_point_guess_applies_linear_predictor_iterations() -> None:
@@ -53,3 +57,45 @@ def test_solve_imex_step_identity_system_returns_rhs_shape() -> None:
     )
 
     np.testing.assert_allclose(np.asarray(out), np.asarray(G_rhs), rtol=1e-6)
+
+
+def test_advance_imex_nonlinear_state_default_method_solves_rhs() -> None:
+    calls: list[float] = []
+
+    def nonlinear_term(g):
+        return 2.0 * g
+
+    def solve_step(g_in, rhs):
+        calls.append(float(np.asarray(g_in[0])))
+        return rhs + 1.0
+
+    out = advance_imex_nonlinear_state(
+        jnp.asarray([1.0], dtype=jnp.float32),
+        dt_val=jnp.asarray(0.25, dtype=jnp.float32),
+        method="imex",
+        nonlinear_term=nonlinear_term,
+        solve_step=solve_step,
+        project_state=lambda g: g,
+    )
+
+    np.testing.assert_allclose(np.asarray(out), [2.5], rtol=1e-6)
+    assert calls == [1.0]
+
+
+def test_advance_imex_nonlinear_state_sspx3_matches_constant_rhs_step() -> None:
+    def nonlinear_term(g):
+        return jnp.ones_like(g) * 2.0
+
+    def solve_step(_g_in, rhs):
+        return rhs
+
+    out = advance_imex_nonlinear_state(
+        jnp.asarray([1.0], dtype=jnp.float32),
+        dt_val=jnp.asarray(0.25, dtype=jnp.float32),
+        method="sspx3",
+        nonlinear_term=nonlinear_term,
+        solve_step=solve_step,
+        project_state=lambda g: g,
+    )
+
+    np.testing.assert_allclose(np.asarray(out), [1.5], rtol=1e-6)
