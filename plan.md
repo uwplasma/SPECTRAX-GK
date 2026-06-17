@@ -1,3 +1,9 @@
+- 2026-06-17: Moved IMEX nonlinear diagnostic step construction into
+  `spectraxgk.solvers.nonlinear.imex.make_imex_diagnostic_step`. The public
+  nonlinear facade still owns diagnostic setup, implicit-operator setup, and
+  compatibility seams, while the solver owner now contains the per-step
+  IMEX/collision/diagnostic/progress policy with direct unit tests and package
+  re-export coverage.
 - 2026-06-17: Moved explicit nonlinear diagnostic step construction into
   `spectraxgk.solvers.nonlinear.explicit.make_explicit_diagnostic_step`.
   The public nonlinear facade still owns cache setup, diagnostic setup, and

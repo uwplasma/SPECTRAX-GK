@@ -9,6 +9,7 @@ from spectraxgk.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
     integrate_cached_imex_scan,
+    make_imex_diagnostic_step,
     make_imex_nonlinear_term,
     make_imex_solve_step,
     solve_imex_step,
@@ -212,6 +213,156 @@ def test_advance_imex_nonlinear_state_sspx3_matches_constant_rhs_step() -> None:
     )
 
     np.testing.assert_allclose(np.asarray(out), [1.5], rtol=1e-6)
+
+
+def test_make_imex_diagnostic_step_forwards_runtime_policies() -> None:
+    seen: dict[str, object] = {}
+
+    def nonlinear_term(G):
+        return jnp.ones_like(G) * 2.0
+
+    def solve_step(G_in, G_rhs):
+        seen["solve"] = (G_in, G_rhs)
+        return G_rhs + 3.0
+
+    def compute_fields_fn(G, cache, params, **kwargs):
+        seen["fields"] = (G, cache, params, kwargs)
+        return "new_fields"
+
+    def compute_diag_from_state(G, fields, G_prev, fields_prev, dt_val):
+        seen["diag_args"] = (G, fields, G_prev, fields_prev, dt_val)
+        return jnp.asarray(9.0, dtype=jnp.float32)
+
+    def select_diagnostics_fn(idx, **kwargs):
+        seen["select"] = (idx, kwargs)
+        return kwargs["compute_diag_fn"]()
+
+    def emit_progress_fn(G, **kwargs):
+        seen["progress"] = (G, kwargs)
+        return G + 1.0
+
+    def apply_collision_split_fn(G, damping, dt_val, scheme):
+        seen["collision"] = (G, damping, dt_val, scheme)
+        return G + 2.0
+
+    cache = SimpleNamespace(name="cache")
+    params = SimpleNamespace(name="params")
+    term_cfg = SimpleNamespace(name="terms")
+    damping = SimpleNamespace(name="damping")
+    step = make_imex_diagnostic_step(
+        method="imex",
+        nonlinear_term=nonlinear_term,
+        solve_step=solve_step,
+        project_state=lambda G: G,
+        state_dtype=jnp.float32,
+        real_dtype=jnp.float32,
+        dt_val=jnp.asarray(0.5, dtype=jnp.float32),
+        compute_fields_fn=compute_fields_fn,
+        cache=cache,
+        params=params,
+        term_cfg=term_cfg,
+        external_phi=4.0,
+        compute_diag_from_state=compute_diag_from_state,
+        diagnostics_stride=3,
+        select_diagnostics_fn=select_diagnostics_fn,
+        show_progress=True,
+        steps=11,
+        progress_total=jnp.asarray(5.5, dtype=jnp.float32),
+        emit_progress_fn=emit_progress_fn,
+        use_collision_split=True,
+        damping=damping,
+        collision_scheme="exact",
+        apply_collision_split_fn=apply_collision_split_fn,
+    )
+
+    carry_out, step_out = step(
+        (
+            jnp.asarray([1.0], dtype=jnp.float32),
+            jnp.asarray([0.5], dtype=jnp.float32),
+            "old_fields",
+            jnp.asarray(-1.0, dtype=jnp.float32),
+            jnp.asarray(2.0, dtype=jnp.float32),
+        ),
+        jnp.asarray(4, dtype=jnp.int32),
+    )
+
+    G_new, G_prev, fields_new, diag, t_new = carry_out
+    np.testing.assert_allclose(np.asarray(G_new), [8.0])
+    np.testing.assert_allclose(np.asarray(G_prev), [8.0])
+    assert fields_new == "new_fields"
+    np.testing.assert_allclose(np.asarray(diag), 9.0)
+    np.testing.assert_allclose(np.asarray(t_new), 2.5)
+    assert step_out[0] is diag
+    assert step_out[1] is t_new
+    solve_in, solve_rhs = seen["solve"]
+    np.testing.assert_allclose(np.asarray(solve_in), [1.0])
+    np.testing.assert_allclose(np.asarray(solve_rhs), [2.0])
+    fields_args = seen["fields"]
+    assert fields_args[1] is cache
+    assert fields_args[2] is params
+    assert fields_args[3]["terms"] is term_cfg
+    assert fields_args[3]["external_phi"] == 4.0
+    diag_args = seen["diag_args"]
+    np.testing.assert_allclose(np.asarray(diag_args[0]), [7.0])
+    assert diag_args[1] == "new_fields"
+    np.testing.assert_allclose(np.asarray(diag_args[2]), [0.5])
+    assert diag_args[3] == "old_fields"
+    np.testing.assert_allclose(np.asarray(diag_args[4]), 0.5)
+    select_idx, select_kwargs = seen["select"]
+    np.testing.assert_allclose(np.asarray(select_idx), 4)
+    assert select_kwargs["diagnostics_stride"] == 3
+    np.testing.assert_allclose(np.asarray(select_kwargs["diag_prev"]), -1.0)
+    collision_args = seen["collision"]
+    np.testing.assert_allclose(np.asarray(collision_args[0]), [5.0])
+    assert collision_args[1] is damping
+    np.testing.assert_allclose(np.asarray(collision_args[2]), 0.5)
+    assert collision_args[3] == "exact"
+    progress_args = seen["progress"]
+    np.testing.assert_allclose(np.asarray(progress_args[0]), [7.0])
+    assert progress_args[1]["show_progress"] is True
+    assert progress_args[1]["diag"] is diag
+    assert progress_args[1]["steps"] == 11
+    np.testing.assert_allclose(np.asarray(progress_args[1]["t_new"]), 2.5)
+    np.testing.assert_allclose(np.asarray(progress_args[1]["progress_total"]), 5.5)
+
+
+def test_make_imex_diagnostic_step_requires_collision_split_policy() -> None:
+    step = make_imex_diagnostic_step(
+        method="imex",
+        nonlinear_term=lambda G: G,
+        solve_step=lambda _G_in, G_rhs: G_rhs,
+        project_state=lambda G: G,
+        state_dtype=jnp.float32,
+        real_dtype=jnp.float32,
+        dt_val=jnp.asarray(0.1, dtype=jnp.float32),
+        compute_fields_fn=lambda *_args, **_kwargs: "fields",
+        cache=SimpleNamespace(),
+        params=SimpleNamespace(),
+        term_cfg=SimpleNamespace(),
+        external_phi=None,
+        compute_diag_from_state=lambda *_args: jnp.asarray(0.0, dtype=jnp.float32),
+        diagnostics_stride=1,
+        select_diagnostics_fn=lambda _idx, **kwargs: kwargs["compute_diag_fn"](),
+        show_progress=False,
+        steps=1,
+        progress_total=jnp.asarray(0.1, dtype=jnp.float32),
+        emit_progress_fn=lambda G, **_kwargs: G,
+        use_collision_split=True,
+        damping=SimpleNamespace(),
+        apply_collision_split_fn=None,
+    )
+
+    with np.testing.assert_raises(ValueError):
+        step(
+            (
+                jnp.asarray([1.0], dtype=jnp.float32),
+                jnp.asarray([1.0], dtype=jnp.float32),
+                "fields",
+                jnp.asarray(0.0, dtype=jnp.float32),
+                jnp.asarray(0.0, dtype=jnp.float32),
+            ),
+            jnp.asarray(0, dtype=jnp.int32),
+        )
 
 
 def test_integrate_cached_imex_scan_owns_cached_scan_policy(monkeypatch) -> None:
