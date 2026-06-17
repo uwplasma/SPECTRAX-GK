@@ -51,6 +51,10 @@ def test_nonlinear_solver_package_reexports_implementations() -> None:
         is solver_explicit.checkpoint_explicit_step
     )
     assert (
+        nonlinear_solvers.integrate_cached_explicit_scan
+        is solver_explicit.integrate_cached_explicit_scan
+    )
+    assert (
         nonlinear_solvers.advance_imex_nonlinear_state
         is solver_imex.advance_imex_nonlinear_state
     )

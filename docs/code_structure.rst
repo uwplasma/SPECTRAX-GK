@@ -166,8 +166,8 @@ Completed extractions:
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
-- explicit RK/SSP/K10 one-step policy, cached IMEX scan policy, and IMEX
-  fixed-point/GMRES solve policy:
+- explicit RK/SSP/K10 one-step policy, cached explicit scan policy, cached
+  IMEX scan policy, and IMEX fixed-point/GMRES solve policy:
   ``solvers/nonlinear/explicit.py`` and ``solvers/nonlinear/imex.py``. Developer
   helpers should import from ``spectraxgk.solvers.nonlinear``.
 - linear cache, linked-boundary maps, Hermite-Laguerre moments, parameter

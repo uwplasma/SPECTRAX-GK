@@ -1,3 +1,9 @@
+- 2026-06-17: Moved cached explicit nonlinear scan dispatch into
+  `spectraxgk.solvers.nonlinear.explicit.integrate_cached_explicit_scan`.
+  `spectraxgk.nonlinear.integrate_nonlinear_cached` still owns public
+  compatibility, term normalization, RHS closure construction, and Hermitian
+  projector selection, but the actual explicit scan call is now tested in the
+  solver owner package with injected scan/progress/checkpoint/projector seams.
 - 2026-06-17: Continued nonlinear consolidation by moving the cached IMEX
   nonlinear scan policy from the public `spectraxgk.nonlinear` facade into
   `spectraxgk.solvers.nonlinear.imex.integrate_cached_imex_scan`. The facade
