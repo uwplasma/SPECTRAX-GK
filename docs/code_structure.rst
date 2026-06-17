@@ -76,6 +76,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``plotting.py``
 4. **executable workflows**
    - ``workflows/linear.py``
+   - ``workflows/nonlinear.py``
    - ``workflows/cases.py``
    - ``workflows/demo.py``
    - ``workflows/reduced_models.py``
@@ -113,8 +114,8 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``, ``nonlinear_parallel_contracts.py``, ``nonlinear_parallel_domain.py``, ``nonlinear_parallel_spectral_core.py``, ``nonlinear_parallel_device_z.py``
      - identity gates, one-device fallback, spectral-core work models, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_diagnostics.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/linear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/reduced_models.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, full-GK linear workflow, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_policies.py``, ``runtime_diagnostics.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``runtime_orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/reduced_models.py``, ``cli.py``
+     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``artifacts/``, ``netcdf_spectral_layout.py``, ``plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
@@ -148,6 +149,8 @@ Completed extractions:
   ``runtime_orchestration.py``
 - full-GK executable linear runtime workflow:
   ``workflows/linear.py``
+- full-GK executable nonlinear runtime workflow:
+  ``workflows/nonlinear.py``
 - executable reduced-model runtime workflows:
   ``workflows/reduced_models.py``
 - validation gate dataclasses and JSON-ready gate helpers:

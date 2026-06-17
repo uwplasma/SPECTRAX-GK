@@ -243,7 +243,10 @@ High-Risk Module Split Plan
   full-GK linear runtime workflow now delegates to
   ``spectraxgk.workflows.linear`` through a dependency-injected facade, including
   time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear
-  post-processing. The
+  post-processing. The full-GK nonlinear runtime workflow now delegates to
+  ``spectraxgk.workflows.nonlinear`` through the same facade pattern, including
+  diagnostics routing, adaptive chunks, fixed-mode/source policy, and
+  final-state integration. The
   default no-input educational demo now delegates to
   ``spectraxgk.workflows.demo`` and runtime linear, scan, and nonlinear
   executable command bodies now delegate to ``spectraxgk.workflows.cases`` so

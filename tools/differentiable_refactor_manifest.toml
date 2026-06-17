@@ -818,6 +818,20 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.nonlinear"
+source_path = "src/spectraxgk/workflows/nonlinear.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "full-GK executable nonlinear runtime workflow, including diagnostics routing, adaptive chunks, fixed-mode/source policy, and final-state integration behind the public runtime facade"
+moved_exports = [
+  "FullNonlinearRuntimeDeps",
+  "run_full_nonlinear_runtime",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.linear"
 source_path = "src/spectraxgk/workflows/linear.py"
 facade_module = "spectraxgk.runtime"

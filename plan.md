@@ -2669,3 +2669,14 @@ No long nonlinear audit should be launched from these candidates.
   all patchable runtime globals through `FullLinearRuntimeDeps`. Focused runtime
   linear, quasilinear, patched-Krylov, diffrax, density-fit, and explicit-time
   guard tests passed locally.
+
+### 2026-06-17 Full-GK Nonlinear Runtime Workflow Split
+
+- Moved the full-GK `run_runtime_nonlinear` orchestration body into
+  `spectraxgk.workflows.nonlinear.run_full_nonlinear_runtime`, including
+  diagnostics routing, adaptive chunks, fixed-mode/source policy, and
+  final-state integration.
+- Kept `spectraxgk.runtime.run_runtime_nonlinear` as the public facade by
+  passing all patchable runtime globals through `FullNonlinearRuntimeDeps`.
+  Focused nonlinear helper tests, integration-marked runtime nonlinear guards,
+  Ruff, mypy, manifest, and docs gates passed locally.
