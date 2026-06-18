@@ -3191,6 +3191,68 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.objectives.stellarator_tables"
+path = "src/spectraxgk/objectives/stellarator_tables.py"
+owner_lane = "reduced and VMEC/Boozer stellarator ITG objective table and portfolio gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-surface and multi-field-line stellarator ITG objective reduction",
+  "VMEC/Boozer row-producer parity before differentiable geometry optimization claims",
+]
+physics_contracts = [
+  "surface, field-line, ky, and objective axes must stay explicit in table artifacts",
+  "reduced portfolio gates are not nonlinear turbulent-flux optimization claims",
+]
+numerics_contracts = [
+  "sample and objective weights are finite, non-negative, shape checked, and normalized",
+  "portfolio scalar reductions pass AD/FD, conditioning, and covariance gates before promotion",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_itg_portfolio_gate.json",
+  "docs/_static/stellarator_itg_portfolio_gate.png",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+]
+next_tests = [
+  "add direct VMEC/Boozer table fixtures that cover objective selection and sample-axis reshaping",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.stellarator_residuals"
+path = "src/spectraxgk/objectives/stellarator_residuals.py"
+owner_lane = "reduced stellarator ITG residual, covariance, and finite-difference gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Gauss-Newton residual conditioning for differentiable stellarator optimization",
+  "finite-difference validation of every differentiated transport objective",
+]
+physics_contracts = [
+  "residual vectors must expose aspect, iota, quasisymmetry, regularization, and transport terms separately",
+  "nonlinear-window residuals remain reduced differentiability gates unless long post-transient transport artifacts pass",
+]
+numerics_contracts = [
+  "residual Jacobians pass AD/FD parity with precision-aware tolerances",
+  "covariance gates require finite singular values, sufficient rank, and bounded condition numbers",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_itg_optimization_uq.png",
+  "docs/_static/stellarator_itg_portfolio_gate.json",
+]
+next_tests = [
+  "add residual-specific failure fixtures for rank-deficient and ill-conditioned sensitivity maps",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.portfolio_artifacts"
 path = "src/spectraxgk/objectives/portfolio_artifacts.py"
 owner_lane = "artifact-level promotion guards for real VMEC/Boozer reduced objective portfolios"
