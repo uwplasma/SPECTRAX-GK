@@ -1843,9 +1843,92 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_geometry"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_geometry.py"
+owner_lane = "nonlinear NetCDF geometry groups, input-parameter metadata, and particle moments"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF geometry groups preserve field-line geometry profiles used by diagnostics and comparison tooling",
+  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+]
+numerics_contracts = [
+  "geometry-implied grids are rebuilt with the same defaults as runtime execution",
+  "particle moments use deterministic float32 arrays on the dealiased output grid",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add direct tests for every public geometry profile written to NetCDF",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_restart"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_restart.py"
+owner_lane = "nonlinear NetCDF restart-state writer"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "restartable nonlinear output bundles used by long-window transport studies",
+]
+physics_contracts = [
+  "restart files preserve the evolved distribution state needed for continuation",
+]
+numerics_contracts = [
+  "restart state is stored in deterministic real/imag NetCDF layout with finite final-time metadata",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+  "tests/test_restart.py",
+]
+artifact_paths = [
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add a restart-layout roundtrip test for multispecies non-square kx/ky grids",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_fields"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_fields.py"
+owner_lane = "nonlinear NetCDF final-field big-file writer"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "final-field NetCDF diagnostics used by post-processing and publication artifact workflows",
+]
+physics_contracts = [
+  "big-file output preserves final electrostatic/electromagnetic fields and species moments",
+]
+numerics_contracts = [
+  "spectral fields use deterministic real/imag layout and real-space XY transforms",
+  "active kx/ky dealiased field variables preserve the same condensed axes as diagnostic histories",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add multi-species finite-beta big-file schema tests before publication artifact freeze",
+]
+
+[[modules]]
 module = "spectraxgk.artifacts.nonlinear_netcdf"
 path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+owner_lane = "nonlinear NetCDF diagnostic-history schema writer and output-bundle orchestrator"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
