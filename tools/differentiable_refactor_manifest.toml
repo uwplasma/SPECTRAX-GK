@@ -2830,3 +2830,60 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_miller_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "stable facade for nonlinear parallelization contracts, DTOs, and readiness policy"
+moved_exports = [
+  "NonlinearDomainDecompositionPlan",
+  "NonlinearSpectralDomainWorkModel",
+  "NonlinearParallelStrategy",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_domain_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_domain"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_domain.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+status = "active"
+responsibility = "state-domain decomposition plans, identity reports, transport-window reports, and fail-closed plan blockers"
+moved_exports = [
+  "NonlinearDomainDecompositionPlan",
+  "NonlinearDomainIdentityReport",
+  "NonlinearDomainTransportWindowReport",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_domain_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_spectral"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_spectral.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+status = "active"
+responsibility = "spectral communication/RHS/integrator reports and nonlinear spectral work-model DTOs"
+moved_exports = [
+  "NonlinearSpectralCommunicationReport",
+  "NonlinearSpectralDomainWorkModel",
+  "NonlinearSpectralPencilWorkModel",
+  "NonlinearSpectralDevicePencilFFTBatchModel",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_strategy"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_strategy.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+status = "active"
+responsibility = "nonlinear parallel strategy readiness contracts and strategy table metadata"
+moved_exports = [
+  "NonlinearParallelStrategy",
+  "NonlinearParallelStrategyName",
+  "ParallelReadiness",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

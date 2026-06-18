@@ -845,6 +845,9 @@ module = "spectraxgk.operators.nonlinear.parallel"
 path = "src/spectraxgk/operators/nonlinear/parallel.py"
 owned_modules = [
   "spectraxgk.operators.nonlinear.parallel_contracts",
+  "spectraxgk.operators.nonlinear.parallel_contracts_domain",
+  "spectraxgk.operators.nonlinear.parallel_contracts_spectral",
+  "spectraxgk.operators.nonlinear.parallel_contracts_strategy",
   "spectraxgk.operators.nonlinear.domain_decomposition",
 ]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"

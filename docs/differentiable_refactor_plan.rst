@@ -168,7 +168,9 @@ High-Risk Module Split Plan
   Split domain plans, spectral communication, device-z pencil route, observable
   reductions, and profiling. Required gates: serial-vs-decomposed RHS identity,
   physical transport-window identity, profiler artifact schema, and no speedup
-  claim without matched CPU/GPU artifacts. Local spectral-state construction,
+  claim without matched CPU/GPU artifacts. Domain, spectral, and strategy
+  report contracts now live in focused ``parallel_contracts_*`` modules behind
+  the unchanged ``operators/nonlinear/parallel_contracts.py`` facade. Local spectral-state construction,
   chunk/layout utilities, communication/work models, pencil FFT/bracket
   primitives, RHS micro-routes, and tolerance helpers now live in
   ``operators/nonlinear/spectral_core.py`` behind the unchanged
