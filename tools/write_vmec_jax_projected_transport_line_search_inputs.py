@@ -12,8 +12,10 @@ from typing import cast
 import numpy as np
 
 from spectraxgk.objectives.stellarator import StellaratorITGSampleSet
-from spectraxgk.validation.stellarator.transport_admission import (
+from spectraxgk.validation.stellarator.transport_policies import (
     VMECJAXNonlinearAuditPolicy,
+)
+from spectraxgk.validation.stellarator.transport_samples import (
     transport_objective_sample_summary,
 )
 from spectraxgk.objectives.vmec_transport_line_search import (

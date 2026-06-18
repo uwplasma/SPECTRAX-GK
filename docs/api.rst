@@ -1453,9 +1453,6 @@ VMEC-JAX Transport Branch Gates
 VMEC-JAX Transport Admission
 ----------------------------
 
-.. automodule:: spectraxgk.validation.stellarator.transport_admission
-   :members:
-
 .. automodule:: spectraxgk.validation.stellarator.transport_policies
    :members:
 

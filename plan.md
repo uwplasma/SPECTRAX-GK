@@ -2990,3 +2990,16 @@ No long nonlinear audit should be launched from these candidates.
   calibration/window tests, nonlinear-gradient evidence tests, validation and
   refactor manifest tests, validation summary regeneration, repository-size
   check, ruff, mypy, Sphinx docs build, and `git diff --check`.
+
+- 2026-06-18: Retired the legacy `spectraxgk.validation.stellarator.transport_admission`
+  facade. VMEC-JAX transport admission callers now import directly from the
+  focused owner modules: `transport_policies.py`, `transport_samples.py`,
+  `transport_landscape.py`, `transport_prelaunch.py`, `transport_campaign.py`,
+  `transport_audit.py`, and `transport_selection.py`. The public
+  `spectraxgk.validation` API continues to re-export the user-facing admission
+  helpers directly from those owners. Updated tests, tools, API/code-structure
+  docs, validation coverage manifests, and the differentiable refactor manifest,
+  then regenerated the validation coverage summary. Local gates passed: VMEC-JAX
+  transport admission tests, nonlinear landscape/prelaunch/campaign/audit tool
+  tests, validation/refactor manifest tests, validation summary regeneration,
+  repository-size check, ruff, mypy, Sphinx docs build, and `git diff --check`.

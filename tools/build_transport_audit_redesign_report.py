@@ -21,9 +21,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.stellarator.transport_admission import (  # noqa: E402
-    VMECJAXNonlinearAuditPolicy,
+from spectraxgk.validation.stellarator.transport_audit import (  # noqa: E402
     build_nonlinear_audit_redesign_report,
+)
+from spectraxgk.validation.stellarator.transport_policies import (  # noqa: E402
+    VMECJAXNonlinearAuditPolicy,
 )
 
 

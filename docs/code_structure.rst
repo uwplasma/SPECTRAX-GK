@@ -507,8 +507,10 @@ downstream scripts keep importing through ``spectraxgk.benchmarks``.
 Quasilinear calibration is split into ``calibration_core`` for
 train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral
 integration, and ``calibration_io`` for nonlinear-window CSV/NetCDF ingestion.
-The historical ``validation/quasilinear/calibration.py`` module remains a
-stable facade for tools and public API exports.
+Quasilinear calibration and late-window validation now import directly from the
+focused ``validation/quasilinear/calibration_*`` and
+``validation/quasilinear/window_*`` owner modules; the public
+``spectraxgk.validation`` API re-exports user-facing helpers.
 
 VMEC-JAX transport admission gates are split into focused policy,
 sample-coverage, nonlinear-audit, and candidate-selection modules:
@@ -516,9 +518,9 @@ sample-coverage, nonlinear-audit, and candidate-selection modules:
 ``spectraxgk.validation.stellarator.transport_samples``,
 ``transport_landscape``, ``transport_prelaunch``, ``transport_campaign``,
 ``transport_audit`` nonlinear report owners, and
-``spectraxgk.validation.stellarator.transport_selection``. The historical
-``spectraxgk.validation.stellarator.transport_admission`` module remains a
-stable facade for public imports.
+``spectraxgk.validation.stellarator.transport_selection``. The public
+``spectraxgk.validation`` API re-exports user-facing admission helpers directly
+from these owners.
 
 The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public compatibility facade while
