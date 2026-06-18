@@ -179,6 +179,28 @@ def test_runtime_command_helpers_have_single_canonical_owner() -> None:
         assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
 
 
+def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.CaptureFixture[str]) -> None:
+    captured: dict[str, object] = {}
+
+    def _renderer(path: str, *, out: str | None = None) -> Path:
+        captured["path"] = path
+        captured["out"] = out
+        return Path("rendered.png")
+
+    assert (
+        runtime_commands.plot_saved_output_command(
+            ["--plot", "case.summary.json", "--out", "figure.png"],
+            plot_saved_output=_renderer,
+        )
+        == 0
+    )
+    assert captured == {"path": "case.summary.json", "out": "figure.png"}
+    assert "saved rendered.png" in capsys.readouterr().out
+
+    assert runtime_commands.plot_saved_output_command(["--plot"], plot_saved_output=_renderer) == 1
+    assert "usage: spectraxgk --plot" in capsys.readouterr().out
+
+
 def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
     linear_deps = runtime._runtime_linear_dispatch_deps()
     nonlinear_deps = runtime._runtime_nonlinear_dispatch_deps()

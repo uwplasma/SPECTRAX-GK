@@ -1,3 +1,15 @@
+- 2026-06-18: Reduced the executable facade below its active line-count target
+  by moving the top-level `spectraxgk --plot` saved-output command parsing into
+  `spectraxgk.workflows.runtime.commands.plot_saved_output_command`. The CLI
+  still owns public parser dispatch and still passes its patchable
+  `plot_saved_output` renderer seam, while the runtime command workflow now
+  owns command-specific validation and messaging for saved-artifact plotting.
+  This brought `src/spectraxgk/cli.py` from 507 to 492 lines without adding a
+  new module. Local gates passed: full CLI test shard, focused runtime-helper owner
+  tests, Ruff on touched CLI/runtime command/test files, mypy on touched
+  source modules, `py_compile` on touched source modules,
+  differentiable-refactor manifest, validation coverage manifest regeneration,
+  repository-size manifest, warning-free Sphinx build, and `git diff --check`.
 - 2026-06-18: Simplified runtime TOML case wrappers by removing the duplicate
   case-dependency builder from `spectraxgk.runtime` and delegating default
   dependency construction to the workflow owner,
