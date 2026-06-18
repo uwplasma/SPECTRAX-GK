@@ -227,7 +227,8 @@ High-Risk Module Split Plan
   finite-difference/line-search gates now live in
   ``objectives/geometry.py``, ``objectives/nonlinear_window.py``,
   ``objectives/gradient_gates.py``,
-  ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_state.py``,
+  ``objectives/vmec_boozer_gradients.py``,
+  ``objectives/vmec_boozer_context.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``, and
   ``objectives/vmec_boozer_line_search.py``,

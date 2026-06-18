@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.objectives.core import solver_scalar_objective_from_vector
+import spectraxgk.objectives.vmec_boozer_context as vmec_gradient_context
 import spectraxgk.objectives.vmec_boozer_fd as fd_gates
 import spectraxgk.objectives.vmec_boozer_gradients as vmec_gradient_gates
 import spectraxgk.objectives.vmec_boozer_line_search as line_search_gates
@@ -299,3 +300,12 @@ def test_split_gradient_gate_modules_run_injected_reports() -> None:
     assert frequency["source_scope"] == "mode21_vmec_boozer_state"
     assert quasilinear["quasilinear_weight_gradient_gate"] is True
     assert nonlinear["nonlinear_window_gradient_gate"] is True
+
+
+def test_vmec_boozer_gradient_facade_reexports_context_helpers() -> None:
+    assert vmec_gradient_gates._mode21_vmec_boozer_linear_context is (
+        vmec_gradient_context._mode21_vmec_boozer_linear_context
+    )
+    assert vmec_gradient_gates._mode21_vmec_boozer_quasilinear_features is (
+        vmec_gradient_context._mode21_vmec_boozer_quasilinear_features
+    )

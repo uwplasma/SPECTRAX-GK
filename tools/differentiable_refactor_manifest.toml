@@ -976,13 +976,24 @@ moved_exports = [
   "VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES",
   "VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES",
   "VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES",
-  "_mode21_vmec_boozer_linear_context",
-  "_mode21_vmec_boozer_quasilinear_features",
   "mode21_vmec_boozer_linear_frequency_gradient_report",
   "mode21_vmec_boozer_quasilinear_gradient_report",
   "mode21_vmec_boozer_nonlinear_window_gradient_report",
 ]
 fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer_context"
+source_path = "src/spectraxgk/objectives/vmec_boozer_context.py"
+facade_module = "spectraxgk.objectives.vmec_boozer_gradients"
+status = "active"
+responsibility = "shared VMEC/Boozer state-to-linear-RHS context construction and quasilinear feature extraction for mode-21 gradient gates"
+moved_exports = [
+  "_mode21_vmec_boozer_linear_context",
+  "_mode21_vmec_boozer_quasilinear_features",
+]
+fast_tests = ["tests/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

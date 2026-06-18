@@ -2921,6 +2921,36 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.objectives.vmec_boozer_context"
+path = "src/spectraxgk/objectives/vmec_boozer_context.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "mode-21 VMEC/Boozer state-to-solver context construction used by full-chain differentiability gates",
+  "quasilinear heat-flux feature extraction from isolated eigenpairs for solver-objective gradient validation",
+]
+physics_contracts = [
+  "context construction must preserve the VMEC state coefficient perturbation, Boozer equal-arc mapping, and solver geometry source scope",
+  "quasilinear feature extraction must keep growth, frequency, kperp, heat-flux weight, and mixing-length proxy observables explicit",
+]
+numerics_contracts = [
+  "context builders must keep grid shape, moment counts, Boozer mode resolution, and selected ky metadata stable for report builders",
+  "feature extraction must build the same linear cache and quadrature weights used by the promoted solver-objective reports",
+]
+fast_tests = [
+  "tests/test_solver_gradient_gate_modules.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+]
+next_tests = [
+  "add fake-backend index-error tests for radial and mode bounds without optional VMEC dependencies",
+  "add a direct low-dimensional quasilinear-feature contract test with finite heat-flux weight",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.vmec_state"
 path = "src/spectraxgk/objectives/vmec_state.py"
 owner_lane = "production solver-objective geometry-gradient validation"
