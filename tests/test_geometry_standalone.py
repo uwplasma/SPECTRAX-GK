@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import builtins
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
-import pytest
 
 from spectraxgk.geometry.miller import derm, dermv, generate_miller_eik, nperiod_data_extend, reflect_n_append
-from spectraxgk.geometry.vmec import generate_vmec_eik
 
 
 class _FakeDataset:
@@ -47,67 +44,3 @@ def test_standalone_miller_helpers_and_generator(monkeypatch, tmp_path) -> None:
     assert datasets[0].path == out_path
     assert datasets[0].dimensions["z"] == 16
     assert datasets[0].closed is True
-
-
-def test_standalone_vmec_generator(monkeypatch, tmp_path) -> None:
-    datasets: list[_FakeDataset] = []
-    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda path, mode: datasets.append(_FakeDataset(path, mode)) or datasets[-1]))
-    monkeypatch.setitem(sys.modules, "booz_xform_jax", SimpleNamespace(Booz_xform=object))
-    out_path = tmp_path / "vmec.nc"
-    generate_vmec_eik({"Geometry": {}, "Dimensions": {}}, out_path)
-    assert datasets[0].path == out_path
-    assert datasets[0].dimensions["z"] == 16
-    assert datasets[0].closed is True
-
-
-def test_standalone_vmec_generator_falls_back_to_booz_xform(monkeypatch, tmp_path) -> None:
-    datasets: list[_FakeDataset] = []
-    real_import = builtins.__import__
-
-    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == "netCDF4":
-            return SimpleNamespace(Dataset=lambda path, mode: datasets.append(_FakeDataset(path, mode)) or datasets[-1])
-        if name == "booz_xform_jax":
-            raise ImportError("booz_xform_jax unavailable")
-        if name == "booz_xform":
-            return SimpleNamespace(Boozer=object)
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-
-    out_path = tmp_path / "vmec_fallback.nc"
-    generate_vmec_eik({"Geometry": {}, "Dimensions": {}}, out_path)
-
-    assert datasets[0].path == out_path
-    assert datasets[0].dimensions["z"] == 16
-    assert datasets[0].closed is True
-
-
-def test_standalone_vmec_generator_requires_backend(monkeypatch, tmp_path) -> None:
-    real_import = builtins.__import__
-
-    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == "netCDF4":
-            return SimpleNamespace(Dataset=lambda path, mode: _FakeDataset(path, mode))
-        if name in {"booz_xform_jax", "booz_xform"}:
-            raise ImportError(f"{name} unavailable")
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-
-    with pytest.raises(ImportError, match="Either booz_xform or booz_xform_jax is required"):
-        generate_vmec_eik({"Geometry": {}, "Dimensions": {}}, tmp_path / "vmec_missing_backend.nc")
-
-
-def test_standalone_vmec_generator_requires_netcdf4(monkeypatch, tmp_path) -> None:
-    real_import = builtins.__import__
-
-    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == "netCDF4":
-            raise ImportError("netCDF4 unavailable")
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-
-    with pytest.raises(ImportError, match="netCDF4 is required"):
-        generate_vmec_eik({"Geometry": {}, "Dimensions": {}}, tmp_path / "vmec_missing_netcdf.nc")

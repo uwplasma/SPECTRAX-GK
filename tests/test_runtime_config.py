@@ -597,7 +597,6 @@ restart_from_file = "../out/run.resume.nc"
 def test_secondary_slab_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_secondary_slab.toml"
     )

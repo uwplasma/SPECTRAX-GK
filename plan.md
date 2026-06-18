@@ -2952,3 +2952,16 @@ No long nonlinear audit should be launched from these candidates.
   coverage manifest regeneration, repository-size check, refactor manifest,
   ruff, mypy, Sphinx build, release readiness, and sdist/wheel build with
   benchmark files verified in the sdist.
+
+- 2026-06-18: Removed the dummy standalone `spectraxgk.geometry.vmec` module,
+  which only wrote a placeholder NetCDF dimension and was not a real VMEC
+  geometry implementation. VMEC flux-tube generation remains owned by the
+  physical runtime/backend path in `spectraxgk.geometry.vmec_eik` and
+  `spectraxgk.geometry_backends.vmec_*`. The same tranche removed the stub-only
+  tests, dropped the stale mypy/coverage-manifest row, regenerated the validation
+  coverage summary, and fixed the remaining `examples/benchmarks` test path to
+  the root `benchmarks/` directory. Local gates passed: standalone Miller plus
+  real VMEC EIK tests, runtime benchmark TOML loader test, validation/refactor
+  manifest tests, VMEC backend helper tests, validation coverage summary
+  regeneration, refactor manifest check, repository-size check, ruff, mypy,
+  Sphinx docs build, and `git diff --check`.
