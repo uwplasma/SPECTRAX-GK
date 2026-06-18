@@ -1,3 +1,16 @@
+- 2026-06-18: Continued executable-command consolidation by moving runtime
+  command dependency construction from `spectraxgk.cli` into the existing
+  command-workflow owner, `spectraxgk.workflows.runtime.commands`. The public
+  CLI facade now passes `sys.modules[__name__]` to
+  `build_runtime_command_deps`, so command tests and downstream monkeypatches
+  still patch the executable facade instead of workflow internals. Added a
+  focused regression test for the patch seam and documented the command owner
+  split in the code-structure docs. Local gates passed: focused CLI command
+  dependency/plot routing tests, runtime command owner tests, Ruff on touched
+  executable/test files, mypy on touched executable modules, `py_compile` on
+  touched executable modules, differentiable-refactor manifest, validation
+  coverage manifest regeneration, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
 - 2026-06-18: Continued runtime/executable consolidation by moving runtime
   scan dependency-bundle construction from the public `spectraxgk.runtime`
   facade into the existing workflow owner,

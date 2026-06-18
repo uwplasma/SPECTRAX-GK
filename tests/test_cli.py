@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from spectraxgk import __version__
+import spectraxgk.cli as cli
 from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.cli import (
     _cmd_default_demo,
@@ -129,6 +130,21 @@ def test_cli_plot_usage_errors(capsys, monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["spectraxgk", "--plot", "a", "--bad"])
     assert main() == 1
     assert "usage: spectraxgk --plot" in capsys.readouterr().out
+
+
+def test_runtime_command_deps_are_built_from_patchable_cli_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = object()
+    writer = object()
+
+    monkeypatch.setattr(cli, "run_runtime_scan", runner)
+    monkeypatch.setattr(cli, "write_runtime_linear_artifacts", writer)
+
+    deps = cli._runtime_command_deps()
+
+    assert deps.run_runtime_scan is runner
+    assert deps.write_runtime_linear_artifacts is writer
 
 
 def test_cli_cyclone_info(capsys, monkeypatch):

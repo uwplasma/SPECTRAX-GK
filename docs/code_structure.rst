@@ -230,8 +230,9 @@ Completed extractions:
   only as a patchable symbol source.
 - saved runtime-output plotting command routing:
   ``workflows/runtime/commands.py``. The public ``cli.py`` facade still owns
-  executable parser dispatch and the renderer patch seam, while the command
-  workflow owns ``spectraxgk --plot`` argument validation and user messages.
+  executable parser dispatch and renderer/runtime-command patch seams, while
+  the command workflow owns ``spectraxgk --plot`` argument validation, runtime
+  command dependency construction, and user messages.
 - runtime TOML case dependency defaults:
   ``workflows/cases.py``. The public ``runtime.py`` facade owns the stable
   ``run_linear_case`` and ``run_nonlinear_case`` signatures, while
