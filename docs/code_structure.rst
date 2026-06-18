@@ -111,8 +111,8 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``, ``geometry_backends/miller.py`` plus focused Miller numerics/core/profile/IO modules
-     - parser, remap, normalization, geometry-response tests, Miller finite-difference geometry and NetCDF writeout gates
+     - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/miller.py`` and ``geometry_backends/vmec.py`` facades plus focused Miller and VMEC backend modules
+     - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
@@ -162,6 +162,11 @@ Completed extractions:
   sampled/imported flux-tube geometry data/loading:
   ``geometry/boundaries.py``, ``geometry/analytic.py``, and
   ``geometry/flux_tube.py``
+- focused imported-geometry backends. ``geometry_backends.miller`` and
+  ``geometry_backends.vmec`` are now stable facades, while numerics,
+  field-line/core assembly, remap, IO, optional-backend discovery, and pipeline
+  ownership live in smaller ``geometry_backends.miller_*`` and
+  ``geometry_backends.vmec_*`` modules.
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
   ``diagnostics/modes.py`` and ``diagnostics/growth_rates.py``. The public

@@ -2832,6 +2832,95 @@ fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_mill
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec"
+source_path = "src/spectraxgk/geometry_backends/vmec.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "stable public facade for internal VMEC imported-geometry generation"
+moved_exports = [
+  "generate_vmec_eik_internal",
+  "internal_vmec_backend_available",
+  "write_vmec_eik_netcdf",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_backend_discovery"
+source_path = "src/spectraxgk/geometry_backends/vmec_backend_discovery.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "optional Boozer backend discovery, search-path policy, and backend availability probing"
+moved_exports = [
+  "_booz_xform_jax_search_paths",
+  "_import_booz_backend",
+  "_import_module_with_search_paths",
+  "internal_vmec_backend_available",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_numerics"
+source_path = "src/spectraxgk/geometry_backends/vmec_numerics.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC imported-geometry period contraction and nonuniform finite-difference helper numerics"
+moved_exports = ["dermv", "nperiod_set"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_fieldlines"
+source_path = "src/spectraxgk/geometry_backends/vmec_fieldlines.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC/Boozer radial spline construction, Boozer field-line tensor assembly, and local-equilibrium corrections"
+moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_remap"
+source_path = "src/spectraxgk/geometry_backends/vmec_remap.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC flux-tube boundary cuts, twist/aspect crossing selection, and equal-arc remapping"
+moved_exports = ["_apply_flux_tube_cut", "_equal_arc_remap"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_io"
+source_path = "src/spectraxgk/geometry_backends/vmec_io.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC imported-geometry NetCDF writeout and atomic cache replacement"
+moved_exports = ["_write_vmec_eik_netcdf_atomically", "write_vmec_eik_netcdf"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_pipeline"
+source_path = "src/spectraxgk/geometry_backends/vmec_pipeline.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "high-level VMEC request normalization, betaprim policy, remap orchestration, and EIK output generation"
+moved_exports = ["generate_vmec_eik_internal"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_types"
+source_path = "src/spectraxgk/geometry_backends/vmec_types.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "lightweight mutable container shared by VMEC imported-geometry assembly modules"
+moved_exports = ["_Struct"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.parallel_contracts"
 source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts.py"
 facade_module = "spectraxgk.operators.nonlinear.parallel"

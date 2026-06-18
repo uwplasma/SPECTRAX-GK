@@ -1,3 +1,10 @@
+- 2026-06-18: Split the 1235-line internal VMEC imported-geometry backend into
+  a 50-line `spectraxgk.geometry_backends.vmec` facade plus focused backend
+  discovery, numerical helper, field-line assembly, flux-tube remap, NetCDF IO,
+  pipeline, and shared type modules. Public VMEC imports remain available, but
+  tests now patch the implementation owner modules directly. Focused VMEC helper
+  and runtime EIK tests plus Ruff passed locally; broader manifest and docs
+  gates were refreshed to track the new owners.
 - 2026-06-18: Split the 868-line linear Krylov solver into a compact public
   facade plus focused eigenmode owner modules:
   `spectraxgk.solvers.linear.eigen_policy`,

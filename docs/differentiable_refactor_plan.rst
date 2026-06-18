@@ -162,7 +162,10 @@ High-Risk Module Split Plan
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
   equal-arc mapping, sensitivity reports, and parity reports. Required gates:
   optional-backend import behavior, same-WOUT provenance, geometry parity,
-  JVP/VJP/finite-difference agreement, and conditioning diagnostics.
+  JVP/VJP/finite-difference agreement, and conditioning diagnostics. The
+  internal file-backed VMEC imported-geometry backend is now split behind the
+  unchanged ``geometry_backends.vmec`` facade into focused discovery,
+  numerics, field-line assembly, remap, IO, and pipeline modules.
 
 ``operators/nonlinear/parallel.py``
   Split domain plans, spectral communication, device-z pencil route, observable

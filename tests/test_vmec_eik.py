@@ -160,7 +160,7 @@ def test_atomic_vmec_eik_write_replaces_final_path(
         temp_paths.append(path)
         path.write_text("new", encoding="utf-8")
 
-    monkeypatch.setattr(vmec_backend, "write_vmec_eik_netcdf", fake_write)
+    monkeypatch.setattr("spectraxgk.geometry_backends.vmec_io.write_vmec_eik_netcdf", fake_write)
 
     vmec_backend._write_vmec_eik_netcdf_atomically(out_path, {}, request="request")
 

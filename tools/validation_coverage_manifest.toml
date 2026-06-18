@@ -1641,6 +1641,13 @@ owned_modules = [
   "spectraxgk.geometry_backends.miller_numerics",
   "spectraxgk.geometry_backends.miller_pipeline",
   "spectraxgk.geometry_backends.miller_profiles",
+  "spectraxgk.geometry_backends.vmec_backend_discovery",
+  "spectraxgk.geometry_backends.vmec_fieldlines",
+  "spectraxgk.geometry_backends.vmec_io",
+  "spectraxgk.geometry_backends.vmec_numerics",
+  "spectraxgk.geometry_backends.vmec_pipeline",
+  "spectraxgk.geometry_backends.vmec_remap",
+  "spectraxgk.geometry_backends.vmec_types",
   "spectraxgk.geometry.miller_eik",
   "spectraxgk.geometry.vmec_eik",
 ]
@@ -1675,7 +1682,6 @@ artifact_paths = [
   "docs/_static/hsx_linear_t2_scan.csv",
 ]
 next_tests = [
-  "split file loading from coordinate remap helpers",
   "add vmec_jax in-memory parity fixtures after the core refactor lands",
   "add a multi-process VMEC cache stress test when the slow backend is available in CI",
 ]
