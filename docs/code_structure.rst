@@ -492,7 +492,8 @@ Cyclone single-mode and scan implementations now live in
 keeps grid, geometry, parameter, and fallback orchestration local while
 delegating Krylov seeding/branch selection and time-integration fit policy to
 ``spectraxgk.validation.benchmarks.cyclone_linear_paths``. The scan runner delegates
-Krylov branch-following and reference-aligned explicit-time reselection to
+Krylov branch-following, reference-aligned explicit-time reselection, and
+standard saved-time/streaming scan execution to
 ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
 hook bundle, so tests can still patch the public facade while the solver policy
 is isolated for review. Family-specific branch tests patch that facade directly

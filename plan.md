@@ -1,3 +1,12 @@
+- 2026-06-18: Continued the Cyclone scan refactor by moving the standard
+  saved-time, Diffrax-streaming, auto-fit, and invalid-growth Krylov fallback
+  batch loop from `spectraxgk.validation.benchmarks.cyclone_scan` into
+  `spectraxgk.validation.benchmarks.cyclone_scan_branches`. The public scan
+  runner now owns setup, solver/fit policy selection, and dispatch across the
+  Krylov, explicit-time, and standard time branches. The hook bundle was
+  extended so existing public-facade monkeypatch/debug seams continue to route
+  into the implementation owner. Focused Cyclone scan branch tests, Ruff, and
+  py_compile passed locally before broader gates.
 - 2026-06-18: Split the TEM benchmark runner into a compact public owner plus
   `spectraxgk.validation.benchmarks.tem_paths`. The public module now owns
   grid/geometry setup, TEM parameter construction, species-index validation,
