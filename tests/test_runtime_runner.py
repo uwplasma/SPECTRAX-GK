@@ -274,7 +274,7 @@ def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
     assert float(params_nm16.p_hyper_m) == 8.0
 
 
-def test_runtime_end_damping_defaults_follow_gx_rate_contract() -> None:
+def test_runtime_end_damping_defaults_use_unscaled_reference_rate() -> None:
     base = _base_runtime_cfg()
     cfg = replace(
         base,

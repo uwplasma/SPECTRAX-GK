@@ -9,6 +9,14 @@
   focused benchmark-runner branch shard, validation/refactor manifests,
   repository-size check, Ruff on touched Python modules, mypy on touched
   benchmark modules, Sphinx docs build, and `git diff --check`.
+- 2026-06-18: Audited the runtime facade after the benchmark-root tranche.
+  The public runtime wrapper still has broad, intentional monkeypatch seams in
+  the focused runtime tests, so this pass avoided moving runtime dispatch code
+  prematurely. Cleaned the remaining generic runtime damping test name that
+  used comparison-code terminology outside a benchmark/comparison context.
+  Local gates passed: runtime damping/terms shard with integration filtering
+  disabled, Ruff on `tests/test_runtime_runner.py`, terminology audit, and
+  `git diff --check`.
 - 2026-06-18: Retired the KBM benchmark-family compatibility module. Public
   KBM benchmark imports now route from `spectraxgk.benchmarks` directly to
   `spectraxgk.validation.benchmarks.kbm_linear`,
