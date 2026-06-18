@@ -596,7 +596,10 @@ Core Boozer equal-arc profile construction lives in
 and conversion into the solver-ready flux-tube mapping contract lives in
 ``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
 array-parity report orchestration lives in
-``spectraxgk.geometry.vmec_flux_tube_reports``.
+``spectraxgk.geometry.vmec_flux_tube_reports``. VMEC boundary-gradient
+probe classification, collection row assembly, and projected-transport
+line-search admission summaries live in
+``spectraxgk.geometry.vmec_boundary_chain``.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

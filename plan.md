@@ -1,3 +1,16 @@
+- 2026-06-18: Simplified the VMEC boundary-gradient collection gate without
+  adding another source file. The repeated guarded dictionary access in
+  `spectraxgk.geometry.vmec_boundary_chain.build_boundary_chain_collection_summary`
+  now lives in a local `_collection_row` helper, leaving the public collection
+  function focused on probe summarization, gate counts, and classification.
+  This reduced `src/spectraxgk/geometry/vmec_boundary_chain.py` from 578 to
+  567 lines while keeping the same JSON row schema used by projected transport
+  line-search filters. Local gates passed: VMEC boundary-chain tests, VMEC
+  transport line-search boundary-filter tests, Ruff on touched geometry/test
+  modules, mypy on `spectraxgk.geometry.vmec_boundary_chain`, `py_compile` on
+  the touched geometry module, differentiable-refactor manifest, validation
+  coverage manifest regeneration, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
 - 2026-06-18: Reduced the executable facade below its active line-count target
   by moving the top-level `spectraxgk --plot` saved-output command parsing into
   `spectraxgk.workflows.runtime.commands.plot_saved_output_command`. The CLI

@@ -385,6 +385,9 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.vmec_flux_tube_reports`` owns VMEC flux-tube
   sensitivity and array-parity report orchestration that combines the direct
   tensor, Boozer equal-arc, and imported-geometry comparison paths.
+  ``spectraxgk.geometry.vmec_boundary_chain`` owns VMEC boundary-gradient
+  probe classification, collection row assembly, and projected-transport
+  line-search admission summaries.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.
