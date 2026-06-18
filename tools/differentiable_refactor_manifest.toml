@@ -902,13 +902,53 @@ module = "spectraxgk.operators.nonlinear.spectral_identity"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_identity.py"
 facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
-responsibility = "logical spectral communication, RHS, and fixed-window integrator identity gates for nonlinear parallelization"
+responsibility = "stable facade for logical nonlinear spectral identity gates"
 moved_exports = [
   "nonlinear_spectral_communication_identity_gate",
   "nonlinear_spectral_communication_identity_report",
   "nonlinear_spectral_rhs_identity_gate",
   "nonlinear_spectral_rhs_identity_report",
   "logical_decomposed_nonlinear_spectral_rhs",
+  "nonlinear_spectral_integrator_identity_gate",
+  "integrate_logical_decomposed_nonlinear_spectral",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_reports"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_reports.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+status = "active"
+responsibility = "fail-closed communication and RHS report construction for logical nonlinear spectral decomposition"
+moved_exports = [
+  "nonlinear_spectral_communication_identity_gate",
+  "nonlinear_spectral_communication_identity_report",
+  "nonlinear_spectral_rhs_identity_report",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_rhs"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_rhs.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+status = "active"
+responsibility = "logical output-tile nonlinear spectral RHS routing plus serial-vs-decomposed identity gating"
+moved_exports = [
+  "logical_decomposed_nonlinear_spectral_rhs",
+  "nonlinear_spectral_rhs_identity_gate",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_integrator"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_integrator.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+status = "active"
+responsibility = "fixed-window logical nonlinear spectral integrator identity gates and observable traces"
+moved_exports = [
   "nonlinear_spectral_integrator_identity_gate",
   "integrate_logical_decomposed_nonlinear_spectral",
 ]

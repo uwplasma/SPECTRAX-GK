@@ -174,8 +174,9 @@ High-Risk Module Split Plan
   ``operators/nonlinear/spectral_core.py`` behind the unchanged
   ``spectraxgk.operators.nonlinear.parallel`` facade. Logical spectral communication,
   RHS, and fixed-window integrator identity gates now live in
-  ``operators/nonlinear/spectral_identity.py``. The local domain prototype
-  gates and device-z shard-map route now live in
+  ``operators/nonlinear/spectral_identity.py`` as a stable facade over focused
+  report, RHS-routing, and fixed-window integrator identity modules. The local
+  domain prototype gates and device-z shard-map route now live in
   ``operators/nonlinear/domain_decomposition.py`` and
   ``operators/nonlinear/device_z.py``. The facade remains the public import
   surface for examples, while developer tests import the focused domain modules.

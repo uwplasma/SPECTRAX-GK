@@ -891,6 +891,9 @@ module = "spectraxgk.operators.nonlinear.spectral_core"
 path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
 owned_modules = [
   "spectraxgk.operators.nonlinear.spectral_identity",
+  "spectraxgk.operators.nonlinear.spectral_identity_reports",
+  "spectraxgk.operators.nonlinear.spectral_identity_rhs",
+  "spectraxgk.operators.nonlinear.spectral_identity_integrator",
 ]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
@@ -918,7 +921,7 @@ artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
 ]
 next_tests = [
-  "add direct spectral-core import-identity and invalid-shape tests as more helpers leave the facade",
+  "add direct spectral identity submodule import-identity tests as report/RHS/integrator helpers leave the facade",
   "promote only profiler-backed speedup claims after a physical transport-window identity artifact passes",
 ]
 
