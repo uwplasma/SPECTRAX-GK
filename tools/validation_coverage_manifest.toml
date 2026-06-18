@@ -128,6 +128,7 @@ owned_modules = [
   "spectraxgk.solvers.time.diffrax_nonlinear",
   "spectraxgk.solvers.time.diffrax_streaming",
   "spectraxgk.solvers.time.explicit",
+  "spectraxgk.solvers.time.explicit_diagnostics",
   "spectraxgk.solvers.time.explicit_cfl",
   "spectraxgk.solvers.time.explicit_progress",
   "spectraxgk.solvers.time.explicit_steps",

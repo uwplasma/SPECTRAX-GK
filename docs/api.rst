@@ -502,6 +502,13 @@ Explicit Step Kernels
    :members:
    :private-members:
 
+Explicit Diagnostic Integrators
+-------------------------------
+
+.. automodule:: spectraxgk.solvers.time.explicit_diagnostics
+   :members:
+   :private-members:
+
 Explicit CFL Policy
 -------------------
 

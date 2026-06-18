@@ -183,10 +183,10 @@ Completed extractions:
   ``diagnostics/energy.py``, ``diagnostics/transport.py``, and
   ``diagnostics/resolved.py``. The public ``diagnostics.core`` module remains
   a compatibility facade re-exported by ``spectraxgk.diagnostics``.
-- explicit linear step kernels, explicit CFL/frequency-bound policy, and
-  progress formatting:
-  ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_cfl.py``, and
-  ``solvers/time/explicit_progress.py``. The public
+- explicit linear step kernels, diagnostics-rich linear IVP integration,
+  explicit CFL/frequency-bound policy, and progress formatting:
+  ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_diagnostics.py``,
+  ``solvers/time/explicit_cfl.py``, and ``solvers/time/explicit_progress.py``. The public
   ``solvers.time.explicit`` module remains the import facade for existing
   debug tools and tests.
 - Diffrax time-integration internals. ``solvers/time/diffrax.py`` remains the

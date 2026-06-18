@@ -585,6 +585,19 @@ fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_ru
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_diagnostics"
+source_path = "src/spectraxgk/solvers/time/explicit_diagnostics.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "diagnostics-rich explicit linear initial-value integration with energy and transport sampling"
+moved_exports = [
+  "ExplicitTimeConfigLike",
+  "integrate_linear_explicit_diagnostics",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_explicit_time_integrators_lowlevel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.time.explicit_cfl"
 source_path = "src/spectraxgk/solvers/time/explicit_cfl.py"
 facade_module = "spectraxgk.solvers.time.explicit"
