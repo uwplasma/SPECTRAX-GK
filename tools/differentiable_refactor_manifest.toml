@@ -224,13 +224,37 @@ module = "spectraxgk.validation.benchmarks.cyclone"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "Cyclone benchmark-family linear and ky-scan runners behind the public benchmarks facade"
+responsibility = "Cyclone benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
 moved_exports = [
   "run_cyclone_linear",
   "run_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_linear"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone"
+status = "active"
+responsibility = "Cyclone single-ky linear benchmark runner, branch seed, time-path, and Krylov fallback policy"
+moved_exports = [
+  "run_cyclone_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_full_operator.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone"
+status = "active"
+responsibility = "Cyclone ky-scan runner, batched time integration, explicit-time branch tracking, and Krylov mode following"
+moved_exports = [
+  "run_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.etg"

@@ -391,9 +391,11 @@ public compatibility facade for ``run_kbm_linear``, ``run_kbm_scan``, and
 Kinetic-electron ITG/TEM runners are in ``spectraxgk.validation.benchmarks.kinetic`` with
 the same public facade guarantees. ETG runners are in
 ``spectraxgk.validation.benchmarks.etg`` for ``run_etg_linear`` and ``run_etg_scan``;
-Cyclone runners are in ``spectraxgk.validation.benchmarks.cyclone`` for
-``run_cyclone_linear`` and ``run_cyclone_scan``. Family-specific branch tests
-patch those implementation modules directly while examples and downstream
+Cyclone single-mode and scan implementations now live in
+``spectraxgk.validation.benchmarks.cyclone_linear`` and
+``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable
+``spectraxgk.validation.benchmarks.cyclone`` facade. Family-specific branch tests
+patch that facade directly while examples and downstream
 scripts keep importing through ``spectraxgk.benchmarks``.
 
 The first differentiable-geometry split keeps
