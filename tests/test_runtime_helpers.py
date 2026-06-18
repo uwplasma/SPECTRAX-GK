@@ -191,6 +191,24 @@ def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
     assert nonlinear_deps.cetg_deps.run_adaptive_runtime_chunk_loop is runtime.run_adaptive_runtime_chunk_loop
 
 
+def test_runtime_scan_deps_are_built_from_patchable_runtime_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scan_plan = object()
+    geometry_builder = object()
+
+    monkeypatch.setattr(runtime, "_runtime_independent_parallel_plan", scan_plan)
+    monkeypatch.setattr(runtime, "build_runtime_geometry", geometry_builder)
+
+    orchestration_deps = runtime._runtime_scan_orchestration_deps()
+    batch_deps = runtime._runtime_scan_batch_deps()
+
+    assert orchestration_deps.runtime_independent_parallel_plan is scan_plan
+    assert orchestration_deps.run_runtime_scan_batch is runtime._run_runtime_scan_batch
+    assert batch_deps.build_runtime_geometry is geometry_builder
+    assert batch_deps.integrate_linear_diagnostics is runtime.integrate_linear_diagnostics
+
+
 def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:
     cfg = replace(
         _base_cfg(),

@@ -1,3 +1,17 @@
+- 2026-06-18: Simplified the public runtime scan facade by extracting explicit
+  dependency-bundle builders for ky-scan orchestration and combined-ky batch
+  execution inside `spectraxgk.runtime`. The extracted helpers keep the public
+  runtime facade as the monkeypatch surface but make `run_runtime_scan` and
+  `_run_runtime_scan_batch` read as thin handoffs to the workflow owners instead
+  of constructing dependency namespaces inline. Added a focused patchability
+  regression test for those bundles. Local gates passed: focused runtime
+  scan/helper tests, Ruff on touched runtime files, mypy on
+  `spectraxgk.runtime`, `py_compile` on touched Python files,
+  differentiable-refactor manifest, validation coverage manifest regeneration,
+  repository-size manifest, warning-free Sphinx build, and `git diff --check`.
+  A broader mypy run over the full test file still reports pre-existing test
+  typing issues unrelated to this refactor, so it is not used as this tranche's
+  gate.
 - 2026-06-18: Simplified executable parser ownership by splitting the dense
   `spectraxgk.cli.build_parser` body into generic-run, named-case, and runtime
   parser builders while keeping `spectraxgk.cli` as the single parser owner.

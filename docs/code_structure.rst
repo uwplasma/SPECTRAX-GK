@@ -222,7 +222,11 @@ Completed extractions:
   ``workflows/runtime/results.py``
 - runtime progress formatting, combined-``ky`` scan batching, serial/worker
   scan orchestration, progress formatting, and nonlinear artifact handoff policy:
-  ``workflows/runtime/orchestration.py`` facade plus ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, and ``workflows/runtime/orchestration_artifacts.py``
+  ``workflows/runtime/orchestration.py`` facade plus
+  ``workflows/runtime/orchestration_scan.py``,
+  ``workflows/runtime/orchestration_progress.py``, and
+  ``workflows/runtime/orchestration_artifacts.py`` behind explicit dependency
+  bundles in the public ``runtime.py`` facade
 - full-GK executable linear runtime workflow:
   ``workflows/linear.py``
 - full-GK executable nonlinear runtime workflow:
