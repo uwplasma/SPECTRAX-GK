@@ -737,6 +737,27 @@ Parallelization
 .. automodule:: spectraxgk.parallel
    :members:
 
+Parallel Identity Reports
+-------------------------
+
+.. automodule:: spectraxgk.parallel.identity
+   :members:
+   :private-members:
+
+Parallel Batch Mapping
+----------------------
+
+.. automodule:: spectraxgk.parallel.batch
+   :members:
+   :private-members:
+
+Parallel Independent Tasks
+--------------------------
+
+.. automodule:: spectraxgk.parallel.independent
+   :members:
+   :private-members:
+
 Nonlinear Parallel Spectral Core
 --------------------------------
 

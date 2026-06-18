@@ -292,6 +292,11 @@ Completed extractions:
   diamagnetic field-drive microkernels (``parallel/velocity_drive.py``). The
   public ``parallel/velocity.py`` module remains the stable facade used by
   tools and performance gates.
+- independent-work parallelization is split into numerical-identity reports
+  (``parallel/identity.py``), JAX-array batch mapping
+  (``parallel/batch.py``), and ordered Python ensemble execution
+  (``parallel/independent.py``). The public ``parallel/core.py`` and
+  ``parallel/__init__.py`` modules remain stable facades for user imports.
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear

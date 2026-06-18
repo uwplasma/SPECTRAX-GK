@@ -3326,3 +3326,50 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.identity"
+source_path = "src/spectraxgk/parallel/identity.py"
+facade_module = "spectraxgk.parallel.core"
+status = "active"
+responsibility = "numerical-identity reports and pytree error statistics for serial-vs-parallel gates"
+moved_exports = [
+  "ParallelIdentityReport",
+  "parallel_identity_report",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.batch"
+source_path = "src/spectraxgk/parallel/batch.py"
+facade_module = "spectraxgk.parallel.core"
+status = "active"
+responsibility = "JAX-array independent batch mapping, padding, balanced ky chunks, and vmap/pmap identity gates"
+moved_exports = [
+  "batch_map",
+  "batch_map_identity_report",
+  "ky_scan_batches",
+  "pad_to_multiple",
+  "split_evenly",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.independent"
+source_path = "src/spectraxgk/parallel/independent.py"
+facade_module = "spectraxgk.parallel.core"
+status = "active"
+responsibility = "ordered Python independent-task execution, worker metadata, exception provenance, and ensemble provenance gates"
+moved_exports = [
+  "IndependentEnsembleProvenanceReport",
+  "IndependentMapExecutionError",
+  "IndependentWorkerMetadata",
+  "independent_ensemble_provenance_gate",
+  "independent_map",
+  "independent_map_identity_report",
+  "independent_worker_metadata",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

@@ -7,7 +7,8 @@ import pytest
 
 import spectraxgk
 import spectraxgk.parallel as parallel
-import spectraxgk.parallel.core as parallel_core
+import spectraxgk.parallel.batch as parallel_batch
+import spectraxgk.parallel.independent as parallel_independent
 
 
 def test_parallel_public_api_exports_are_stable() -> None:
@@ -198,7 +199,7 @@ def test_batch_map_multi_device_branch_preserves_vmap_identity(monkeypatch) -> N
 
         return mapped
 
-    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_batch.jax, "pmap", fake_pmap)
     values = jnp.linspace(0.0, 1.0, 5)
 
     def fn(x):
@@ -226,7 +227,7 @@ def test_batch_map_multi_device_branch_drops_padding_and_preserves_chunk_order(
 
         return mapped
 
-    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_batch.jax, "pmap", fake_pmap)
     values = jnp.arange(7, dtype=jnp.float32)
 
     def fn(x):
@@ -251,7 +252,7 @@ def test_batch_map_multi_device_branch_drops_padding_and_preserves_chunk_order(
 
 def test_batch_map_single_device_fallback_never_calls_pmap(monkeypatch) -> None:
     monkeypatch.setattr(
-        parallel_core.jax,
+        parallel_batch.jax,
         "pmap",
         lambda *args, **kwargs: pytest.fail(
             "single-device fallback must use vmap chunks, not pmap"
@@ -284,7 +285,7 @@ def test_batch_map_multi_device_branch_preserves_pytree_identity(monkeypatch) ->
 
         return mapped
 
-    monkeypatch.setattr(parallel_core.jax, "pmap", fake_pmap)
+    monkeypatch.setattr(parallel_batch.jax, "pmap", fake_pmap)
     values = jnp.linspace(0.0, 1.0, 5)
 
     def fn(x):
@@ -355,7 +356,7 @@ def test_independent_map_clips_thread_workers_and_accepts_executor_aliases(
             records.append((self.max_workers, materialized))
             return [fn(item) for item in materialized]
 
-    monkeypatch.setattr(parallel_core, "ThreadPoolExecutor", FakeThreadPool)
+    monkeypatch.setattr(parallel_independent, "ThreadPoolExecutor", FakeThreadPool)
 
     observed = parallel.independent_map(
         lambda value: value * 11, [3, 1, 4], workers=99, executor="threads"
@@ -480,8 +481,7 @@ def test_independent_ensemble_provenance_gate_closes_uq_optimization_batching() 
     assert report.exception_metadata["original_type"] == "ValueError"
     assert report.metadata["case"] == "optimization_uq_batch"
     assert (
-        report.metadata["contract"]["claim_level"]
-        == "production_independent_batching"
+        report.metadata["contract"]["claim_level"] == "production_independent_batching"
     )
     assert report.to_dict()["passed"] is True
 
@@ -511,7 +511,9 @@ def test_independent_map_identity_helpers_are_exported_at_package_top_level() ->
         is parallel.independent_ensemble_provenance_gate
     )
     assert sgk.independent_worker_metadata is parallel.independent_worker_metadata
-    assert sgk.independent_map_identity_report is parallel.independent_map_identity_report
+    assert (
+        sgk.independent_map_identity_report is parallel.independent_map_identity_report
+    )
 
 
 def test_independent_map_parallel_failures_include_worker_metadata() -> None:

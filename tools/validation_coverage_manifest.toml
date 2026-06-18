@@ -3691,6 +3691,11 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.parallel.core"
 path = "src/spectraxgk/parallel/core.py"
+owned_modules = [
+  "spectraxgk.parallel.batch",
+  "spectraxgk.parallel.identity",
+  "spectraxgk.parallel.independent",
+]
 owner_lane = "production ky/batch scan and UQ ensemble parallelization"
 status = "active"
 coverage_priority = "high"
