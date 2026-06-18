@@ -1216,6 +1216,13 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.validation.quasilinear.window"
 path = "src/spectraxgk/validation/quasilinear/window.py"
+owned_modules = [
+  "spectraxgk.validation.quasilinear.window_config",
+  "spectraxgk.validation.quasilinear.window_ensemble",
+  "spectraxgk.validation.quasilinear.window_io",
+  "spectraxgk.validation.quasilinear.window_promotion",
+  "spectraxgk.validation.quasilinear.window_statistics",
+]
 owner_lane = "nonlinear late-window convergence metadata for quasilinear holdouts"
 status = "active"
 coverage_priority = "high"
@@ -1236,6 +1243,7 @@ fast_tests = [
   "tests/test_quasilinear_window.py",
   "tests/test_quasilinear_calibration.py",
   "tests/test_quasilinear_promotion_guardrails.py",
+  "tests/test_check_nonlinear_window_ensemble.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_promotion_guardrails.json",

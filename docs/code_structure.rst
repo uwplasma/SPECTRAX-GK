@@ -231,6 +231,11 @@ Completed extractions:
   ``objectives/vmec_boozer_line_search.py``. The public
   ``objectives.stellarator_portfolio`` module remains a small facade for
   existing imports.
+- quasilinear nonlinear-window convergence metadata is split into focused
+  config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
+  modules under ``validation/quasilinear/window_*.py``. The public
+  ``validation/quasilinear/window.py`` module remains the stable facade used by
+  calibration and tool scripts.
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``,

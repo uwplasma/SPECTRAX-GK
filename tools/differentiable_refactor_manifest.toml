@@ -1991,6 +1991,80 @@ fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_config"
+source_path = "src/spectraxgk/validation/quasilinear/window_config.py"
+facade_module = "spectraxgk.validation.quasilinear.window"
+status = "active"
+responsibility = "nonlinear transport-window convergence, ensemble, and manifest gate configuration contracts"
+moved_exports = [
+  "NonlinearWindowConvergenceConfig",
+  "NonlinearWindowEnsembleConfig",
+  "NonlinearWindowEnsembleManifestConfig",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_statistics"
+source_path = "src/spectraxgk/validation/quasilinear/window_statistics.py"
+facade_module = "spectraxgk.validation.quasilinear.window"
+status = "active"
+responsibility = "late-window finite-sample, drift, terminal-window, block, and bootstrap statistics for nonlinear heat-flux traces"
+moved_exports = [
+  "_bootstrap_sem",
+  "_contiguous_block_means",
+  "_default_block_size",
+  "_finite_number",
+  "_gate",
+  "_json_number",
+  "_late_window_bounds",
+  "nonlinear_window_convergence_report",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_io"
+source_path = "src/spectraxgk/validation/quasilinear/window_io.py"
+facade_module = "spectraxgk.validation.quasilinear.window"
+status = "active"
+responsibility = "CSV and summary-JSON readers for nonlinear transport-window convergence reports"
+moved_exports = [
+  "_resolve_summary_artifact",
+  "nonlinear_window_convergence_from_csv",
+  "nonlinear_window_convergence_from_summary",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_promotion"
+source_path = "src/spectraxgk/validation/quasilinear/window_promotion.py"
+facade_module = "spectraxgk.validation.quasilinear.window"
+status = "active"
+responsibility = "promotion-readiness checks for individual and ensemble nonlinear transport-window metadata"
+moved_exports = [
+  "_report_late_mean",
+  "_report_sem",
+  "nonlinear_window_stats_promotion_ready",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_promotion_guardrails.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_ensemble"
+source_path = "src/spectraxgk/validation/quasilinear/window_ensemble.py"
+facade_module = "spectraxgk.validation.quasilinear.window"
+status = "active"
+responsibility = "replicated nonlinear-window ensemble uncertainty gates and seed/timestep artifact-readiness manifests"
+moved_exports = [
+  "nonlinear_window_ensemble_artifact_manifest",
+  "nonlinear_window_ensemble_report",
+]
+fast_tests = ["tests/test_check_nonlinear_window_ensemble.py", "tests/test_quasilinear_window.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.api"
 source_path = "src/spectraxgk/api/__init__.py"

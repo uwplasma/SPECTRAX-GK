@@ -934,6 +934,32 @@ Quasilinear Calibration
 .. automodule:: spectraxgk.validation.quasilinear.calibration
    :members:
 
+Quasilinear Nonlinear-Window Gates
+----------------------------------
+
+.. automodule:: spectraxgk.validation.quasilinear.window
+   :members:
+   :no-index:
+
+.. automodule:: spectraxgk.validation.quasilinear.window_config
+   :members:
+
+.. automodule:: spectraxgk.validation.quasilinear.window_statistics
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.quasilinear.window_io
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.quasilinear.window_promotion
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.quasilinear.window_ensemble
+   :members:
+   :private-members:
+
 Quasilinear Model Selection
 ---------------------------
 
