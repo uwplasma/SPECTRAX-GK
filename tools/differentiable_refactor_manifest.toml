@@ -2898,19 +2898,31 @@ module = "spectraxgk.workflows.runtime.initial_conditions"
 source_path = "src/spectraxgk/workflows/runtime/initial_conditions.py"
 facade_module = "spectraxgk.workflows.runtime.startup"
 status = "active"
-responsibility = "runtime Gaussian/random/restart initial-condition construction, Hermitian ky expansion, and phi-target density-moment seeding"
+responsibility = "runtime Gaussian/random/restart initial-condition construction and Hermitian ky expansion"
 moved_exports = [
   "_build_gaussian_profile",
   "_build_initial_condition_impl",
   "_build_single_phi_gaussian_profile",
   "_centered_glibc_random_pairs",
   "_dealiased_initial_mode_pairs",
-  "_density_moments_for_target_phi",
   "_enforce_full_ky_hermitian",
   "_expand_ky",
   "_load_initial_state_from_file",
   "_periodic_zp_from_grid",
   "_reshape_netcdf_state",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.initial_phi"
+source_path = "src/spectraxgk/workflows/runtime/initial_phi.py"
+facade_module = "spectraxgk.workflows.runtime.startup"
+status = "active"
+responsibility = "runtime electrostatic-potential initial-condition inversion into density moments"
+moved_exports = [
+  "_as_runtime_species_array",
+  "_density_moments_for_target_phi",
 ]
 fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

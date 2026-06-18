@@ -2874,3 +2874,11 @@ No long nonlinear audit should be launched from these candidates.
   scope helpers, replicated transport report extractors, and a public promotion
   facade. Nonlinear transport optimization, guard tool import, public API, ruff,
   manifest, and docs gates passed locally.
+
+- Continued the runtime/executable refactor by moving electrostatic-potential
+  initial-condition inversion into `spectraxgk.workflows.runtime.initial_phi`.
+  The startup facade still re-exports the density-moment inversion helpers used
+  by runtime tests and downstream diagnostics, while `initial_conditions.py` now
+  owns only Gaussian/random/restart state construction and Hermitian ky expansion.
+  Focused runtime, manifest, architecture, size, type, and docs gates were run
+  locally before commit.

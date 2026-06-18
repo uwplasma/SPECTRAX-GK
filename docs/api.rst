@@ -1116,6 +1116,13 @@ Runtime Initial Conditions
    :members:
    :private-members:
 
+Runtime Phi Initializer
+-----------------------
+
+.. automodule:: spectraxgk.workflows.runtime.initial_phi
+   :members:
+   :private-members:
+
 Runtime Chunks
 --------------
 
