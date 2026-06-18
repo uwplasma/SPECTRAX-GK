@@ -459,6 +459,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.linear.integrators"
 path = "src/spectraxgk/solvers/linear/integrators.py"
+owned_modules = [
+  "spectraxgk.solvers.linear.integrator_diagnostics",
+]
 owner_lane = "linear fixed-step integration, implicit dispatch, and diagnostic sampling"
 status = "active"
 coverage_priority = "high"

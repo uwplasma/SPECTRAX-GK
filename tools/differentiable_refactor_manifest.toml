@@ -3403,3 +3403,13 @@ responsibility = "electrostatic slice linear RHS route and fused multi-device He
 moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
 fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/test_profile_linear_rhs_parallel_slices.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.integrator_diagnostics"
+source_path = "src/spectraxgk/solvers/linear/integrator_diagnostics.py"
+facade_module = "spectraxgk.solvers.linear.integrators"
+status = "active"
+responsibility = "linear fixed-step diagnostic sampling for phi, density, and Hermite-Laguerre energy histories"
+moved_exports = ["integrate_linear_diagnostics"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

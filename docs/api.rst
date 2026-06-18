@@ -288,6 +288,13 @@ Linear Integrators
    :members:
    :private-members:
 
+Linear Diagnostic Integration
+-----------------------------
+
+.. automodule:: spectraxgk.solvers.linear.integrator_diagnostics
+   :members:
+   :private-members:
+
 Linear Parallel RHS
 -------------------
 

@@ -2818,3 +2818,10 @@ No long nonlinear audit should be launched from these candidates.
   device policy, Hermite streaming, and electrostatic slice/fused shard-map
   owner modules. The public module remains the dispatcher and import facade;
   focused linear helper/profile tests passed before manifest/docs gates.
+
+- Continued the linear solver refactor by moving diagnostic fixed-step sampling
+  from `spectraxgk.solvers.linear.integrators` into
+  `spectraxgk.solvers.linear.integrator_diagnostics`. The public facade keeps
+  the same `integrate_linear_diagnostics` entry point and patchable dependency
+  seams. Linear, helper, runtime routing, manifest, ruff, and docs gates passed
+  locally.
