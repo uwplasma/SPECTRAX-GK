@@ -1,3 +1,15 @@
+- 2026-06-18: Continued core linear-term simplification without adding source
+  files by centralizing Hermite-mode drive insertion in
+  `spectraxgk.terms.linear_terms._hermite_mode_drive`. Linked streaming,
+  diamagnetic drives, and collision conservation corrections now share the
+  same mode-mask convention instead of repeating local mask construction.
+  Added a direct Hermite-mode isolation regression for the diamagnetic drive
+  and documented the convention in the code-structure page. Local gates passed
+  so far: focused linear consistency/algebra shard, broad linear helper shard,
+  velocity-sharded term shard, Ruff on touched linear/test files, mypy on
+  touched linear/test files, `py_compile` on touched files,
+  differentiable-refactor manifest, validation coverage manifest regeneration,
+  repository-size manifest, warning-free Sphinx build, and `git diff --check`.
 - 2026-06-18: Continued executable-command consolidation by moving runtime
   command dependency construction from `spectraxgk.cli` into the existing
   command-workflow owner, `spectraxgk.workflows.runtime.commands`. The public

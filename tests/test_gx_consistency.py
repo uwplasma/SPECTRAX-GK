@@ -434,6 +434,35 @@ def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagne
     )
 
 
+def test_diamagnetic_drive_populates_only_expected_hermite_modes():
+    dG = jnp.zeros((1, 2, 4, 1, 1, 1), dtype=jnp.complex64)
+    phi = jnp.ones((1, 1, 1), dtype=jnp.complex64)
+    Jl = jnp.ones((1, 2, 1, 1, 1), dtype=jnp.float32)
+    JlB = jnp.ones_like(Jl)
+    out = diamagnetic_contribution(
+        dG,
+        phi=phi,
+        apar=None,
+        bpar=None,
+        Jl=Jl,
+        JlB=JlB,
+        l4=jnp.arange(2, dtype=jnp.float32)[:, None, None, None],
+        tprim=jnp.asarray([2.0], dtype=jnp.float32),
+        fprim=jnp.asarray([0.8], dtype=jnp.float32),
+        tz=jnp.asarray([1.0], dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        omega_star_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        ky=jnp.asarray([0.3], dtype=jnp.float32),
+        imag=jnp.asarray(1j, dtype=jnp.complex64),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    mode_norm = jnp.sum(jnp.abs(out), axis=(0, 1, 3, 4, 5))
+    assert mode_norm[0] > 0.0
+    assert mode_norm[2] > 0.0
+    assert jnp.allclose(mode_norm[jnp.asarray([1, 3])], 0.0)
+
+
 def test_static_zero_damping_guards_return_zero_without_profiles():
     G = jnp.ones((1, 2, 3, 2, 2, 4), dtype=jnp.complex64)
 

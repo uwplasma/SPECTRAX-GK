@@ -199,7 +199,10 @@ Completed extractions:
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in
   ``terms/assembly_core.py``, ``terms/assembly_diagnostics.py``,
-  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``.
+  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``. Linear
+  contribution kernels keep Hermite-mode drive insertion centralized in
+  ``terms/linear_terms.py`` so streaming, diamagnetic, and collision
+  corrections share one reviewed convention.
 - nonlinear public-driver internals. ``nonlinear.py`` remains the public
   facade while cached RHS/state integration lives in ``solvers/nonlinear/state_integration.py`` and
   explicit/IMEX diagnostic entry points live in ``solvers/nonlinear/diagnostic_integration.py``.
