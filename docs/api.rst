@@ -814,10 +814,6 @@ Benchmarking
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kinetic
-   :members:
-   :no-index:
-
 .. automodule:: spectraxgk.validation.benchmarks.kinetic_linear
    :members:
 

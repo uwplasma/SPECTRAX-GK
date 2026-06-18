@@ -46,11 +46,14 @@
   progress, and nonlinear artifact/restart handoff owner modules. Runtime
   helper, runtime artifact, runtime chunk, public API, Ruff, manifest, and docs
   gates passed locally.
-- 2026-06-18: Split the 701-line kinetic-electron benchmark runner into an
-  8-line `spectraxgk.validation.benchmarks.kinetic` facade plus focused
-  `kinetic_linear` and `kinetic_scan` owner modules. Branch tests now patch the
-  correct owner modules for single-ky and scan paths. Focused benchmark branch,
-  benchmark helper, public API, and Ruff gates passed locally.
+- 2026-06-18: Completed the kinetic-electron benchmark cleanup: the former
+  combined runner is now split into focused `kinetic_linear` and `kinetic_scan`
+  owner modules, and the intermediate validation-package facade has been
+  removed. Kinetic-electron benchmark functions now route from the supported
+  `spectraxgk.benchmarks` API directly to the owner modules, reducing one file
+  and one stale compatibility layer while preserving user-facing imports.
+  Focused kinetic benchmark tests, manifests, lint, and compile gates passed
+  locally before the broader benchmark/docs gate run.
 - 2026-06-18: Split the 706-line public nonlinear driver into a 98-line
   `spectraxgk.nonlinear` facade plus `spectraxgk.nonlinear_core` for cached
   RHS/state integration and `spectraxgk.nonlinear_diagnostics` for explicit and
@@ -717,10 +720,10 @@
 
 - 2026-06-14: Split the kinetic-electron benchmark-family runners
   (`run_kinetic_linear` and `run_kinetic_scan`) into
-  `spectraxgk.validation.benchmarks.kinetic`, preserving the GX-reference hypercollision,
-  end-damping, and legacy density-seed policies behind the unchanged
-  `spectraxgk.benchmarks` public facade. Focused kinetic branch tests now
-  patch the implementation module directly.
+  focused kinetic linear and scan owner modules, preserving the reference-aligned
+  hypercollision, end-damping, and density-seed policies behind the unchanged
+  `spectraxgk.benchmarks` public facade. Focused kinetic branch tests now patch
+  the implementation module directly.
 
 - 2026-06-14: Split the TEM benchmark-family runners (`run_tem_linear` and
   `run_tem_scan`) into `spectraxgk.validation.benchmarks.tem` using the same

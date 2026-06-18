@@ -452,22 +452,9 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.kinetic"
-source_path = "src/spectraxgk/validation/benchmarks/kinetic.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "kinetic-electron benchmark-family facade preserving run_kinetic_linear and run_kinetic_scan imports"
-moved_exports = [
-  "run_kinetic_linear",
-  "run_kinetic_scan",
-]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kinetic_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kinetic_linear.py"
-facade_module = "spectraxgk.validation.benchmarks.kinetic"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "single-ky kinetic-electron linear benchmark runner with explicit-time, Diffrax-config, and Krylov branches"
 moved_exports = [
@@ -479,7 +466,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kinetic_scan"
 source_path = "src/spectraxgk/validation/benchmarks/kinetic_scan.py"
-facade_module = "spectraxgk.validation.benchmarks.kinetic"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "kinetic-electron ky-scan runner with batching, streaming fits, time-config routing, and Krylov branch support"
 moved_exports = [

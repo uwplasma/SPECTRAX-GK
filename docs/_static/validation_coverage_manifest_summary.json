@@ -90,8 +90,8 @@
   "n_excluded_modules": 26,
   "n_high_priority_open": 85,
   "n_modules": 108,
-  "n_owned_modules": 222,
-  "n_package_modules": 356,
+  "n_owned_modules": 221,
+  "n_package_modules": 355,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -149,7 +149,6 @@
       "spectraxgk.validation.benchmarks.kbm_linear",
       "spectraxgk.validation.benchmarks.kbm_linear_paths",
       "spectraxgk.validation.benchmarks.kbm_scan",
-      "spectraxgk.validation.benchmarks.kinetic",
       "spectraxgk.validation.benchmarks.kinetic_linear",
       "spectraxgk.validation.benchmarks.kinetic_scan",
       "spectraxgk.validation.benchmarks.reference",
@@ -923,7 +922,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 34,
+      "n_owned_modules": 33,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",

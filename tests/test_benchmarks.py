@@ -10,7 +10,7 @@ import jax.numpy as jnp
 
 import spectraxgk.validation.benchmarks.fit_signals as benchmark_fit_signals
 import spectraxgk.validation.benchmarks.kbm as benchmark_kbm
-import spectraxgk.validation.benchmarks.kinetic as benchmark_kinetic
+import spectraxgk.validation.benchmarks.kinetic_linear as benchmark_kinetic
 import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.diagnostics.analysis import fit_growth_rate
