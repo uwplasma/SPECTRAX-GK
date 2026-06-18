@@ -598,7 +598,11 @@ live in ``spectraxgk.geometry.vmec_boozer_core``. Direct ``vmec_jax`` tensor sam
 and conversion into the solver-ready flux-tube mapping contract lives in
 ``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
 array-parity report orchestration lives in
-``spectraxgk.geometry.vmec_flux_tube_reports``. VMEC boundary-gradient
+``spectraxgk.geometry.vmec_flux_tube_reports``; it reuses the shared
+VMEC-state example loading, coefficient-index validation, and perturbation
+policy from ``spectraxgk.geometry.vmec_state_sensitivity`` so the flux-tube,
+Boozer, metric-tensor, and field-line AD/FD gates stay on one setup contract.
+VMEC boundary-gradient
 probe classification, collection row assembly, and projected-transport
 line-search admission summaries live in
 ``spectraxgk.geometry.vmec_boundary_chain``.

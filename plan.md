@@ -1,3 +1,22 @@
+- 2026-06-18: Continued the differentiable-geometry cleanup by reusing the
+  shared VMEC-state context from `spectraxgk.geometry.vmec_state_sensitivity`
+  inside `spectraxgk.geometry.vmec_flux_tube_reports`. The direct flux-tube
+  sensitivity and parity reports now share optional-backend VMEC example
+  loading, coefficient-index validation, and coefficient perturbation policy
+  with the Boozer/metric/field-line sensitivity reports, removing duplicated
+  VMEC setup without adding source files. While gating that refactor, a cold
+  optional-backend test exposed an ill-conditioned summary relative-error
+  metric for zero-scale finite-difference references. The AD/FD report now
+  preserves raw per-entry relative errors and records
+  `max_rel_ad_fd_error_raw`, while the existing summary
+  `max_rel_ad_fd_error` is gate-facing and ignores entries that already satisfy
+  the absolute tolerance. Added a regression test for that zero-reference
+  behavior. Local gates passed: full `tests/test_differentiable_geometry_bridge.py`
+  shard, focused VMEC flux-tube report shard, Ruff on touched geometry/test
+  modules, mypy on touched geometry modules, `py_compile` on touched geometry
+  modules, differentiable-refactor manifest, validation coverage manifest
+  regeneration, repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
 - 2026-06-18: Continued the differentiable VMEC/Boozer refactor without adding
   source files. `spectraxgk.geometry.vmec_state_sensitivity` now centralizes
   optional-backend VMEC example loading, coefficient-index validation, state

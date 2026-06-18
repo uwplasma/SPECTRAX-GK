@@ -386,10 +386,17 @@ Phase 1: introduce protocols and containers
   sampling and conversion into the solver-ready flux-tube mapping contract.
   ``spectraxgk.geometry.vmec_flux_tube_reports`` owns VMEC flux-tube
   sensitivity and array-parity report orchestration that combines the direct
-  tensor, Boozer equal-arc, and imported-geometry comparison paths.
+  tensor, Boozer equal-arc, and imported-geometry comparison paths. It consumes
+  the same shared VMEC-state loading, coefficient-index validation, and
+  perturbation policy as the Boozer, metric-tensor, and field-line sensitivity
+  reports.
   ``spectraxgk.geometry.vmec_boundary_chain`` owns VMEC boundary-gradient
   probe classification, collection row assembly, and projected-transport
   line-search admission summaries.
+  ``spectraxgk.geometry.autodiff_checks`` keeps raw per-entry AD/FD relative
+  errors, but its summary ``max_rel_ad_fd_error`` is gate-facing: entries that
+  already satisfy the absolute tolerance do not dominate the summary solely
+  because the finite-difference reference is numerically zero.
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.

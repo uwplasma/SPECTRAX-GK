@@ -1009,6 +1009,40 @@ def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
         finite_difference_jacobian(fn, jnp.ones(2), step=0.0)
 
 
+def test_observable_gradient_report_preserves_raw_relative_zero_scale_error() -> (
+    None
+):
+    @jax.custom_jvp
+    def observable(params: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray([0.0, 2.0 * params[0]])
+
+    @observable.defjvp
+    def _observable_jvp(
+        primals: tuple[jnp.ndarray],
+        tangents: tuple[jnp.ndarray],
+    ) -> tuple[jnp.ndarray, jnp.ndarray]:
+        params = primals[0]
+        tangent = tangents[0]
+        return observable(params), jnp.asarray([5.0e-7 * tangent[0], 2.0 * tangent[0]])
+
+    report = diff_autodiff.observable_gradient_validation_report(
+        observable,
+        jnp.asarray([0.25]),
+        fd_step=1.0e-3,
+        atol=1.0e-6,
+        rtol=1.0e-4,
+        condition_number_max=None,
+    )
+
+    assert report["passed"] is True
+    assert float(report["max_rel_ad_fd_error"]) < 1.0e-4
+    assert float(report["max_rel_ad_fd_error_raw"]) > 1.0
+    zero_scale_check = report["gradient_checks"][0]
+    assert zero_scale_check["passed"] is True
+    assert float(zero_scale_check["abs_error"]) < 1.0e-6
+    assert float(zero_scale_check["rel_error"]) > 1.0
+
+
 def test_low_level_radial_and_sampling_helpers_cover_edge_contracts() -> None:
     s_grid = jnp.asarray([0.0, 0.5, 1.0])
     profile = jnp.asarray([1.0, 2.0, 5.0])
