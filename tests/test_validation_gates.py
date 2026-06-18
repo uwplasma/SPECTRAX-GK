@@ -30,6 +30,19 @@ from spectraxgk.validation.gates import (
 )
 
 
+def test_validation_gate_facade_points_to_focused_modules() -> None:
+    import spectraxgk.validation.gate_reports as gate_reports
+    import spectraxgk.validation.gate_types as gate_types
+    import spectraxgk.validation.gates as gates
+
+    assert gates.LateTimeLinearMetrics is gate_types.LateTimeLinearMetrics
+    assert gates.NonlinearWindowMetrics is gate_types.NonlinearWindowMetrics
+    assert gates.GateReport is gate_types.GateReport
+    assert gates.evaluate_scalar_gate is gate_reports.evaluate_scalar_gate
+    assert gates.gate_report_to_dict is gate_reports.gate_report_to_dict
+    assert gates.observed_order_gate_report is gate_reports.observed_order_gate_report
+
+
 def test_validation_gate_primitives_are_public_and_available_to_benchmark_harness() -> None:
     assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
     assert benchmark_harness.evaluate_scalar_gate is evaluate_scalar_gate

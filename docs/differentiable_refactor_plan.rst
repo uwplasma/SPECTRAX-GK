@@ -160,6 +160,11 @@ the stable public facade for examples and runtime workflows, while
 ``diagnostics.growth_fit``, ``diagnostics.growth_windows``, and
 ``diagnostics.growth_series`` own least-squares fitting, automatic fit-window
 selection, and resolved mode-series diagnostics.
+Validation gates also follow this facade/owner split:
+``validation.gates`` remains the public import point, while
+``validation.gate_types`` owns frozen metric/result containers and
+``validation.gate_reports`` owns scalar tolerance evaluation, JSON
+serialization, and physics/numerics report builders.
 
 High-Risk Module Split Plan
 ---------------------------

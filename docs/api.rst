@@ -784,6 +784,12 @@ Validation Gates
 .. automodule:: spectraxgk.validation.gates
    :members:
 
+.. automodule:: spectraxgk.validation.gate_types
+   :members:
+
+.. automodule:: spectraxgk.validation.gate_reports
+   :members:
+
 Autodiff Validation
 -------------------
 
