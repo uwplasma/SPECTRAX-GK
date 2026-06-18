@@ -1477,10 +1477,6 @@ VMEC-JAX Transport Admission
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.stellarator.transport_nonlinear
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.validation.stellarator.transport_landscape
    :members:
    :private-members:

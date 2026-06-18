@@ -90,8 +90,8 @@
   "n_excluded_modules": 26,
   "n_high_priority_open": 85,
   "n_modules": 108,
-  "n_owned_modules": 221,
-  "n_package_modules": 355,
+  "n_owned_modules": 220,
+  "n_package_modules": 354,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -277,7 +277,6 @@
       "spectraxgk.validation.stellarator.transport_audit",
       "spectraxgk.validation.stellarator.transport_campaign",
       "spectraxgk.validation.stellarator.transport_landscape",
-      "spectraxgk.validation.stellarator.transport_nonlinear",
       "spectraxgk.validation.stellarator.transport_policies",
       "spectraxgk.validation.stellarator.transport_prelaunch",
       "spectraxgk.validation.stellarator.transport_samples",
@@ -1636,7 +1635,7 @@
       "n_fast_tests": 23,
       "n_next_tests": 5,
       "n_numerics_contracts": 10,
-      "n_owned_modules": 22,
+      "n_owned_modules": 21,
       "n_physics_contracts": 9,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/objectives/solver_gradients.py",

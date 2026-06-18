@@ -2923,3 +2923,11 @@ No long nonlinear audit should be launched from these candidates.
   as the package-level public surface, and parallel artifact tests read that
   row for scaling artifacts. Focused parallel/public-API/refactor-manifest,
   lint, type, repository-size, and Sphinx gates passed locally.
+
+- Retired the internal `spectraxgk.validation.stellarator.transport_nonlinear`
+  re-export layer. The public `transport_admission` facade now imports
+  nonlinear landscape, prelaunch, campaign, and audit report owners directly.
+  This reduces one file and one stale compatibility hop while keeping the
+  documented transport admission API unchanged. Focused stellarator validation
+  tests, manifests, lint, and compile gates passed locally before the broader
+  gate run.

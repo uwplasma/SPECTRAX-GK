@@ -2113,24 +2113,9 @@ fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_nonlinear"
-source_path = "src/spectraxgk/validation/stellarator/transport_nonlinear.py"
-facade_module = "spectraxgk.validation.stellarator.transport_admission"
-status = "active"
-responsibility = "compatibility facade for nonlinear landscape, reduced prelaunch, campaign, and redesign admission report owners"
-moved_exports = [
-  "build_nonlinear_audit_redesign_report",
-  "build_nonlinear_campaign_admission_report",
-  "build_nonlinear_landscape_admission_report",
-  "build_reduced_nonlinear_audit_prelaunch_report",
-]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_vmec_jax_qa_transport_optimization_status.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.stellarator.transport_landscape"
 source_path = "src/spectraxgk/validation/stellarator/transport_landscape.py"
-facade_module = "spectraxgk.validation.stellarator.transport_nonlinear"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
 status = "active"
 responsibility = "replicated nonlinear landscape uncertainty and candidate-admission reports"
 moved_exports = [
@@ -2144,7 +2129,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.stellarator.transport_prelaunch"
 source_path = "src/spectraxgk/validation/stellarator/transport_prelaunch.py"
-facade_module = "spectraxgk.validation.stellarator.transport_nonlinear"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
 status = "active"
 responsibility = "reduced-objective prelaunch gates before expensive nonlinear transport audits"
 moved_exports = [
@@ -2157,7 +2142,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.stellarator.transport_campaign"
 source_path = "src/spectraxgk/validation/stellarator/transport_campaign.py"
-facade_module = "spectraxgk.validation.stellarator.transport_nonlinear"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
 status = "active"
 responsibility = "next-campaign admission gates combining reduced, cross-sample, and replicated landscape evidence"
 moved_exports = [
@@ -2169,7 +2154,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.stellarator.transport_audit"
 source_path = "src/spectraxgk/validation/stellarator/transport_audit.py"
-facade_module = "spectraxgk.validation.stellarator.transport_nonlinear"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
 status = "active"
 responsibility = "matched nonlinear audit redesign gates for turbulent-flux optimization evidence"
 moved_exports = [
