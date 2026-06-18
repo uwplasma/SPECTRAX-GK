@@ -1,3 +1,16 @@
+- 2026-06-18: Retired the ETG benchmark-family compatibility module. Public
+  ETG benchmark imports now route from `spectraxgk.benchmarks` directly to
+  `spectraxgk.validation.benchmarks.etg_linear` and
+  `spectraxgk.validation.benchmarks.etg_scan`; tests now patch those owner
+  modules directly. Updated API/code-structure/refactor-plan docs and the
+  validation/refactor manifests so the benchmark ownership map reflects the
+  maintained modules only. Regenerated the validation coverage summary and
+  kept the root `benchmarks/` result manifest unchanged as the lightweight
+  tracked index for benchmark outputs. Local gates passed: ETG runner-branch
+  tests, affected ETG integration node IDs with integration filtering disabled,
+  benchmark-result/runtime-config tests, validation/refactor manifest tests,
+  repository-size check, Ruff, mypy over 344 source files, Sphinx docs build,
+  and `git diff --check`.
 - 2026-06-18: Retired the nonlinear parallelization compatibility facades
   `spectraxgk.operators.nonlinear.parallel_contracts` and
   `spectraxgk.operators.nonlinear.spectral_identity`. Public nonlinear
@@ -727,9 +740,9 @@
   `ModeSelection`, `ExplicitTimeConfig`, and `KrylovConfig`.
 
 - 2026-06-14: Split the ETG benchmark-family runners (`run_etg_linear` and
-  `run_etg_scan`) into `spectraxgk.validation.benchmarks.etg` behind the unchanged
-  `spectraxgk.benchmarks` public facade. ETG branch tests now patch the
-  implementation module directly, and the stale ETG branch-test monkeypatch
+  `run_etg_scan`) into focused linear and scan owner modules behind the
+  unchanged `spectraxgk.benchmarks` public facade. ETG branch tests patch the
+  implementation owners directly, and the stale ETG branch-test monkeypatch
   against a Cyclone-only helper was removed rather than re-exporting unused
   implementation symbols.
 

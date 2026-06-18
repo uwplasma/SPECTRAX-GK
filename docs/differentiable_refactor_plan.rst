@@ -347,7 +347,7 @@ Phase 1: introduce protocols and containers
   and streaming windows, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
   branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone``,
   ``spectraxgk.validation.benchmarks.kbm``, ``spectraxgk.validation.benchmarks.tem``,
-  ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg`` owns the ETG facade for extracted family runners while ``spectraxgk.benchmarks`` remains the public
+  ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The obsolete benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly. The
   first differentiable-geometry support split also lives in this phase:

@@ -398,22 +398,9 @@ fast_tests = ["tests/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.etg"
-source_path = "src/spectraxgk/validation/benchmarks/etg.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "ETG benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
-moved_exports = [
-  "run_etg_linear",
-  "run_etg_scan",
-]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.etg_linear"
 source_path = "src/spectraxgk/validation/benchmarks/etg_linear.py"
-facade_module = "spectraxgk.validation.benchmarks.etg"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "ETG single-ky linear benchmark runner, streaming density branch, Krylov fallback, and fit-window policy"
 moved_exports = [
@@ -425,9 +412,9 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.etg_scan"
 source_path = "src/spectraxgk/validation/benchmarks/etg_scan.py"
-facade_module = "spectraxgk.validation.benchmarks.etg"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "ETG ky-scan setup, batching, parameter construction, and public result packaging behind the ETG facade"
+responsibility = "ETG ky-scan setup, batching, parameter construction, and public result packaging"
 moved_exports = [
   "run_etg_scan",
 ]
@@ -2193,7 +2180,8 @@ source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
   "spectraxgk.validation.benchmarks.cyclone",
-  "spectraxgk.validation.benchmarks.etg",
+  "spectraxgk.validation.benchmarks.etg_linear",
+  "spectraxgk.validation.benchmarks.etg_scan",
   "spectraxgk.validation.benchmarks.kbm",
   "spectraxgk.validation.benchmarks.tem",
   "spectraxgk.validation.reference_data",
