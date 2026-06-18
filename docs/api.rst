@@ -12,6 +12,7 @@ single large ``__init__.py`` file.
 
 .. automodule:: spectraxgk.api
    :members:
+   :exclude-members: KrylovConfig
    :no-index:
 
 .. automodule:: spectraxgk.api.configuration
@@ -32,6 +33,7 @@ single large ``__init__.py`` file.
 
 .. automodule:: spectraxgk.api.solvers
    :members:
+   :exclude-members: KrylovConfig
    :no-index:
 
 .. automodule:: spectraxgk.api.benchmarks
@@ -286,6 +288,33 @@ Linear Krylov Solvers
 .. automodule:: spectraxgk.solvers.linear.krylov
    :members:
    :private-members:
+
+Linear Eigenmode Solver Internals
+---------------------------------
+
+``spectraxgk.solvers.linear.eigen_policy`` owns ``KrylovConfig``; the public
+``spectraxgk.solvers.linear.krylov`` facade re-exports it so existing scripts
+and TOML loaders keep the same import path.
+
+.. automodule:: spectraxgk.solvers.linear.eigen_operator
+   :members:
+   :private-members:
+   :no-index:
+
+.. automodule:: spectraxgk.solvers.linear.eigen_selection
+   :members:
+   :private-members:
+   :no-index:
+
+.. automodule:: spectraxgk.solvers.linear.eigen_preconditioners
+   :members:
+   :private-members:
+   :no-index:
+
+.. automodule:: spectraxgk.solvers.linear.krylov_algorithms
+   :members:
+   :private-members:
+   :no-index:
 
 Nonlinear Diagnostics
 ---------------------

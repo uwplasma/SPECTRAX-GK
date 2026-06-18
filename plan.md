@@ -1,3 +1,16 @@
+- 2026-06-18: Split the 868-line linear Krylov solver into a compact public
+  facade plus focused eigenmode owner modules:
+  `spectraxgk.solvers.linear.eigen_policy`,
+  `spectraxgk.solvers.linear.eigen_operator`,
+  `spectraxgk.solvers.linear.eigen_selection`,
+  `spectraxgk.solvers.linear.eigen_preconditioners`, and
+  `spectraxgk.solvers.linear.krylov_algorithms`. The public
+  `spectraxgk.solvers.linear.krylov` import path still owns user-facing status
+  reporting and monkeypatch-compatible seams, while branch selection,
+  matrix-free operator application, shift-invert preconditioning, and compiled
+  Arnoldi/power kernels now have direct owner modules. Updated API/code
+  structure docs plus refactor and coverage manifests; local Krylov core tests
+  passed before broader gates.
 - 2026-06-17: Removed duplicate runtime startup helper implementations from
   `spectraxgk.runtime`. The public runtime facade now aliases
   `_centered_glibc_random_pairs`, `_dealiased_initial_mode_pairs`, and

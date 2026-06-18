@@ -2037,9 +2037,59 @@ module = "spectraxgk.solvers.linear.krylov"
 source_path = "src/spectraxgk/solvers/linear/krylov.py"
 facade_module = "spectraxgk.solvers.linear"
 status = "active"
-responsibility = "matrix-free Krylov eigenvalue/eigenvector solve policies for linear gyrokinetic operators"
+responsibility = "public compatibility facade and status-reporting wrapper for matrix-free Krylov eigenmode solves"
 moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
-fast_tests = ["tests/test_linear.py"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_policy"
+source_path = "src/spectraxgk/solvers/linear/eigen_policy.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "immutable eigenmode-solver configuration policy used by runtime and benchmark scans"
+moved_exports = ["KrylovConfig"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_operator"
+source_path = "src/spectraxgk/solvers/linear/eigen_operator.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "matrix-free linear operator applications, damping extraction, normalization, and IMEX propagator step used by eigenmode solvers"
+moved_exports = ["_apply_operator", "_advance_imex2", "_compute_damping", "_normalize"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_selection"
+source_path = "src/spectraxgk/solvers/linear/eigen_selection.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "target-frequency, sign, overlap, and mode-family branch-selection rules for linear eigenmode solves"
+moved_exports = ["_select_by_target", "_select_by_overlap", "_omega_scale", "_mode_family_sign"]
+fast_tests = ["tests/test_linear_krylov_core.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_preconditioners"
+source_path = "src/spectraxgk/solvers/linear/eigen_preconditioners.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "shift-invert preconditioner construction and fallback policy for damped Hermite-line solves"
+moved_exports = ["_build_shift_invert_precond"]
+fast_tests = ["tests/test_linear_krylov_core.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.krylov_algorithms"
+source_path = "src/spectraxgk/solvers/linear/krylov_algorithms.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "compiled power, Arnoldi, propagator, and shift-invert Krylov algorithms for linear eigenmode extraction"
+moved_exports = ["dominant_eigenpair_power", "_arnoldi", "dominant_eigenpair_cached", "dominant_eigenpair_propagator_cached", "dominant_eigenpair_shift_invert_cached"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
