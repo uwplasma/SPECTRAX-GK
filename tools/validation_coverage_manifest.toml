@@ -252,6 +252,7 @@ owned_modules = [
   "spectraxgk.workflows.named_cases",
   "spectraxgk.workflows.nonlinear",
   "spectraxgk.workflows.reduced_models",
+  "spectraxgk.workflows.runtime.commands",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"

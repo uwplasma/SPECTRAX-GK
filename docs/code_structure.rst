@@ -43,6 +43,7 @@ remain unchanged:
 - ``spectraxgk.workflows.runtime.diagnostic_arrays``
 - ``spectraxgk.workflows.runtime.chunks``
 - ``spectraxgk.workflows.runtime.results``
+- ``spectraxgk.workflows.runtime.commands``
 - ``spectraxgk.geometry_backends.*``
 - low-level geometry adapters and import bridges
 
@@ -87,6 +88,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``artifacts/``
    - ``artifacts/plotting.py``
 4. **executable workflows**
+   - ``workflows/runtime/commands.py``
    - ``workflows/linear.py``
    - ``workflows/nonlinear.py``
    - ``workflows/cases.py``
@@ -129,7 +131,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/parallel_contracts_domain.py``, ``operators/nonlinear/parallel_contracts_spectral.py``, ``operators/nonlinear/parallel_contracts_strategy.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_state.py``, ``operators/nonlinear/spectral_layout.py``, ``operators/nonlinear/spectral_work_models.py``, ``operators/nonlinear/spectral_brackets.py``, ``operators/nonlinear/spectral_tolerances.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/spectral_identity_reports.py``, ``operators/nonlinear/spectral_identity_rhs.py``, ``operators/nonlinear/spectral_identity_integrator.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, domain/spectral/strategy contracts, spectral state/layout/work-model/bracket/tolerance helpers, logical spectral reports/RHS/integrator gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
@@ -432,7 +434,7 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
-Runtime command dispatch now keeps parser construction in ``spectraxgk.cli`` and moves runtime linear, runtime scan, and runtime nonlinear command execution into ``spectraxgk.workflows.cases``. The CLI facade still exposes compatibility helper names for tests and downstream scripts, but path override, progress, and quasilinear override policies have one workflow owner.
+Runtime command dispatch now keeps parser construction in ``spectraxgk.cli`` and moves runtime linear, runtime scan, and runtime nonlinear command execution into ``spectraxgk.workflows.runtime.commands``. ``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and re-exports the command helpers only for compatibility; path override, progress, and quasilinear override policies have one canonical workflow owner.
 
 The benchmark helper split now uses focused domain modules directly.
 Benchmark initial conditions and reference data live in

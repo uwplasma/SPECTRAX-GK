@@ -8,6 +8,8 @@ import numpy as np
 import pytest
 
 import spectraxgk.runtime as runtime
+import spectraxgk.workflows.cases as runtime_cases
+import spectraxgk.workflows.runtime.commands as runtime_commands
 import spectraxgk.workflows.runtime.policies as runtime_policies
 from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.workflows.runtime.diagnostics import fit_runtime_linear_diagnostics
@@ -159,6 +161,22 @@ def test_runtime_small_helper_functions() -> None:
 def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
     for name in runtime_policies.__all__:
         assert getattr(runtime, name) is getattr(runtime_policies, name)
+
+
+def test_runtime_command_helpers_have_single_canonical_owner() -> None:
+    command_names = [
+        "RuntimeCommandDeps",
+        "apply_quasilinear_overrides",
+        "apply_runtime_path_overrides",
+        "run_runtime_linear_command",
+        "run_runtime_nonlinear_command",
+        "runtime_output_path",
+        "scan_runtime_linear_command",
+        "should_show_progress",
+    ]
+
+    for name in command_names:
+        assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
 
 
 def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:

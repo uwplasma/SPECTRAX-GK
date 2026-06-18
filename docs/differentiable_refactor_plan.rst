@@ -281,7 +281,7 @@ High-Risk Module Split Plan
   ``spectraxgk.workflows.demo``; named Cyclone/ETG linear executable workflows
   now delegate to ``spectraxgk.workflows.named_cases``; and runtime linear,
   scan, and nonlinear executable command bodies now delegate to
-  ``spectraxgk.workflows.cases`` so parser dispatch stays separate from
+  ``spectraxgk.workflows.runtime.commands`` so parser dispatch stays separate from
   simulation, plotting, path override, and artifact side effects. The cETG
   reduced-model linear and nonlinear runtime paths now delegate to
   ``spectraxgk.workflows.reduced_models`` through injected runtime dependencies

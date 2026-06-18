@@ -1067,6 +1067,13 @@ Runtime Orchestration
    :members:
    :private-members:
 
+Runtime Commands
+----------------
+
+.. automodule:: spectraxgk.workflows.runtime.commands
+   :members:
+   :private-members:
+
 Runtime TOML Inputs
 -------------------
 

@@ -1284,24 +1284,35 @@ module = "spectraxgk.workflows.cases"
 source_path = "src/spectraxgk/workflows/cases.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime TOML case workflows, runtime executable command workflows, output artifact dispatch, path/quasilinear override policy, and executable summary printing"
+responsibility = "runtime TOML case workflows for public runtime facade compatibility, including linear and nonlinear TOML override dispatch"
 moved_exports = [
   "RUNTIME_CASE_FIT_KEYS",
-  "RUNTIME_COMMAND_FIT_KEYS",
   "RuntimeCaseDeps",
+  "run_linear_case",
+  "run_nonlinear_case",
+]
+fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.commands"
+source_path = "src/spectraxgk/workflows/runtime/commands.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "runtime executable command workflows for linear runs, ky scans, nonlinear runs, path/quasilinear overrides, progress policy, and summary printing"
+moved_exports = [
+  "RUNTIME_COMMAND_FIT_KEYS",
   "RuntimeCommandDeps",
   "apply_quasilinear_overrides",
   "apply_runtime_path_overrides",
   "print_linear_run_header",
-  "run_linear_case",
-  "run_nonlinear_case",
   "run_runtime_linear_command",
   "run_runtime_nonlinear_command",
   "runtime_output_path",
   "scan_runtime_linear_command",
   "should_show_progress",
 ]
-fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
+fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
