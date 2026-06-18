@@ -1,3 +1,18 @@
+- 2026-06-18: Simplified runtime TOML case wrappers by removing the duplicate
+  case-dependency builder from `spectraxgk.runtime` and delegating default
+  dependency construction to the workflow owner,
+  `spectraxgk.workflows.cases.default_runtime_case_deps`. The public runtime
+  module still owns the stable `run_linear_case` and `run_nonlinear_case`
+  signatures, but case-workflow wiring now has one owner instead of a
+  facade-local copy. Reconfirmed that the root `benchmarks/` directory is
+  already the canonical lightweight benchmark location: it contains only
+  drivers, TOML inputs, and `benchmarks/results/manifest.toml`, with promoted
+  result figures/tables displayed from the docs and raw outputs kept in
+  scratch directories. Local gates passed: `py_compile` on `spectraxgk.runtime`, Ruff on touched
+  runtime files, mypy on `spectraxgk.runtime`, focused runtime-helper
+  dependency tests, differentiable-refactor manifest, validation coverage
+  manifest regeneration, repository-size manifest, warning-free Sphinx build,
+  and `git diff --check`.
 - 2026-06-18: Simplified the public runtime scan facade by extracting explicit
   dependency-bundle builders for ky-scan orchestration and combined-ky batch
   execution inside `spectraxgk.runtime`. The extracted helpers keep the public

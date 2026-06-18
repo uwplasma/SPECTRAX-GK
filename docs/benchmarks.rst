@@ -28,6 +28,13 @@ outputs should go to ``tools_out/`` or another scratch directory; only reviewed,
 compressed summary figures and small CSV/JSON metadata are tracked in
 ``docs/_static``.
 
+The repository-size contract for this directory is deliberately strict:
+``benchmarks/`` should stay at the scale of small scripts and manifests, not
+simulation products. The tracked result manifest under
+``benchmarks/results/manifest.toml`` is the docs-facing index for promoted
+figures and tables, while NetCDF files, restart files, logs, profiler traces,
+and exploratory plots remain outside git.
+
 Quick driver examples:
 
 .. code-block:: bash

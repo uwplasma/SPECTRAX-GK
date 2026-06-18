@@ -136,7 +136,7 @@ Physics / Numerics / IO Map
      - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, domain/spectral/strategy contracts, spectral state/layout/work-model/bracket/tolerance helpers, logical spectral reports/RHS/integrator gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
      - top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
@@ -227,6 +227,16 @@ Completed extractions:
   ``workflows/runtime/orchestration_progress.py``, and
   ``workflows/runtime/orchestration_artifacts.py`` behind explicit dependency
   bundles in the public ``runtime.py`` facade
+- runtime TOML case dependency defaults:
+  ``workflows/cases.py``. The public ``runtime.py`` facade owns the stable
+  ``run_linear_case`` and ``run_nonlinear_case`` signatures, while
+  ``workflows/cases.py`` owns default case-workflow wiring.
+- root benchmark drivers and result pointers:
+  ``benchmarks/``. This directory is the canonical lightweight benchmark
+  entry point at repository root. It stores drivers, TOML inputs, and
+  ``benchmarks/results/manifest.toml`` only; raw solver products stay in
+  scratch directories and promoted benchmark results are displayed from
+  :doc:`benchmarks`.
 - full-GK executable linear runtime workflow:
   ``workflows/linear.py``
 - full-GK executable nonlinear runtime workflow:
