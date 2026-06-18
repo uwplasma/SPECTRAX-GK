@@ -1,3 +1,19 @@
+- 2026-06-18: Continued runtime/executable consolidation by moving runtime
+  scan dependency-bundle construction from the public `spectraxgk.runtime`
+  facade into the existing workflow owner,
+  `spectraxgk.workflows.runtime.orchestration_scan`. The runtime facade now
+  passes `sys.modules[__name__]` to owner-side builders so monkeypatch seams
+  still work, while scan orchestration owns its own dependency contracts. The
+  intentionally patchable runtime imports are now documented in a compact
+  `_PATCHABLE_RUNTIME_GLOBALS` registry so static analysis does not treat them
+  as dead imports. This brought `src/spectraxgk/runtime.py` from 613 to 594
+  lines without adding files. Local gates passed: runtime scan
+  dependency/monkeypatch tests, focused runtime scan ordering/quasilinear
+  tests, selected non-slow runtime scan integration checks, Ruff on touched
+  runtime/test files, mypy on touched runtime modules, `py_compile` on touched
+  runtime modules, differentiable-refactor manifest, validation coverage
+  manifest regeneration, repository-size manifest, warning-free Sphinx build,
+  and `git diff --check`.
 - 2026-06-18: Continued the differentiable-geometry cleanup by reusing the
   shared VMEC-state context from `spectraxgk.geometry.vmec_state_sensitivity`
   inside `spectraxgk.geometry.vmec_flux_tube_reports`. The direct flux-tube

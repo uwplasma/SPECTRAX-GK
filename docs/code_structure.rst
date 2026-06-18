@@ -225,8 +225,9 @@ Completed extractions:
   ``workflows/runtime/orchestration.py`` facade plus
   ``workflows/runtime/orchestration_scan.py``,
   ``workflows/runtime/orchestration_progress.py``, and
-  ``workflows/runtime/orchestration_artifacts.py`` behind explicit dependency
-  bundles in the public ``runtime.py`` facade
+  ``workflows/runtime/orchestration_artifacts.py``. Scan dependency-bundle
+  builders live with the scan owner and read the public ``runtime.py`` facade
+  only as a patchable symbol source.
 - saved runtime-output plotting command routing:
   ``workflows/runtime/commands.py``. The public ``cli.py`` facade still owns
   executable parser dispatch and the renderer patch seam, while the command
