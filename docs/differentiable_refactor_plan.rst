@@ -149,6 +149,9 @@ responsibility groups:
 Existing public modules remain as facades until the planned API cleanup. New
 implementation code should be placed under the domain packages named in
 :doc:`architecture_refactor_plan`, not added as new root-level prefix modules.
+Term-wise RHS assembly now follows this rule with a small public
+``terms.assembly`` facade and focused cached-RHS, diagnostic-RHS, field-solve,
+and helper-policy owner modules.
 
 High-Risk Module Split Plan
 ---------------------------

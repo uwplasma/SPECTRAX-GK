@@ -9,6 +9,7 @@ from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms import assembly as assembly_mod
+import spectraxgk.terms.assembly_core as assembly_core
 from spectraxgk.terms.assembly import (
     assemble_rhs,
     assemble_rhs_cached,
@@ -176,14 +177,14 @@ def test_disabled_em_fields_skip_hamiltonian_branches(monkeypatch) -> None:
     assert h_bpar is None
 
     seen: dict[str, bool] = {}
-    original_build_h = assembly_mod.build_H
+    original_build_h = assembly_core.build_H
 
     def _record_build_h(*args, **kwargs):
         seen["apar_is_none"] = kwargs.get("apar") is None
         seen["bpar_is_none"] = kwargs.get("bpar") is None
         return original_build_h(*args, **kwargs)
 
-    monkeypatch.setattr(assembly_mod, "build_H", _record_build_h)
+    monkeypatch.setattr(assembly_core, "build_H", _record_build_h)
     assemble_rhs_cached(G0, cache, params, terms=terms, use_custom_vjp=False)
     assert seen == {"apar_is_none": True, "bpar_is_none": True}
 

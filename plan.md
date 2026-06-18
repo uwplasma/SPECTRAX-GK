@@ -1,3 +1,10 @@
+- 2026-06-18: Split the 719-line term-wise RHS assembly module into a 59-line
+  `spectraxgk.terms.assembly` facade plus focused cached RHS, per-term
+  diagnostic decomposition, field-only solve, and helper-policy owner modules.
+  The physics term order and public imports are unchanged; the Hamiltonian
+  builder monkeypatch seam now targets `spectraxgk.terms.assembly_core`, which
+  owns the cached RHS implementation. Focused term assembly, linear helper,
+  and Ruff gates passed locally.
 - 2026-06-18: Continued the differentiable objective refactor by splitting the
   723-line `spectraxgk.objectives.solver_gradients` module into a 133-line
   public facade plus `spectraxgk.objectives.solver_vmec` for VMEC/Boozer

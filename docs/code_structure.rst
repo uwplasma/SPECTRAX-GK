@@ -114,7 +114,7 @@ Physics / Numerics / IO Map
      - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/miller.py`` and ``geometry_backends/vmec.py`` facades plus focused Miller and VMEC backend modules
      - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
-     - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
+     - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py`` facade plus ``terms/assembly_*`` owner modules
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Reduced models
      - ``terms/cetg.py`` facade plus ``terms/reduced/cetg_model.py``, ``terms/reduced/cetg_state.py``, ``terms/reduced/cetg_rhs.py``, and ``terms/reduced/cetg_integrator.py``
@@ -181,6 +181,11 @@ Completed extractions:
   ``solvers/time/explicit_progress.py``. The public
   ``solvers.time.explicit`` module remains the import facade for existing
   debug tools and tests.
+- term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
+  facade while cached RHS composition, per-term diagnostic decomposition,
+  field-only solves, and shared helper policies live in
+  ``terms/assembly_core.py``, ``terms/assembly_diagnostics.py``,
+  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``.
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
