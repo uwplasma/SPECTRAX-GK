@@ -1188,6 +1188,13 @@ Nonlinear Output NetCDF Field Writer
    :members:
    :private-members:
 
+Nonlinear Output NetCDF Diagnostics Writer
+------------------------------------------
+
+.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_diagnostics
+   :members:
+   :private-members:
+
 Nonlinear Output NetCDF Facade
 ------------------------------
 

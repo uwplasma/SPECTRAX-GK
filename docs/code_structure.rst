@@ -373,14 +373,15 @@ Completed extractions:
   ``validation/nonlinear_gradient/evidence_gap.py``
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
-  layout, NetCDF diagnostic-history schema writing, NetCDF output geometry,
-  restart-file writing, final-field big-file writing, nonlinear diagnostic
+  layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema
+  writing, NetCDF output geometry, restart-file writing, final-field big-file writing, nonlinear diagnostic
   reload helpers, and restart-append schema coverage:
   ``workflows/runtime/artifacts.py``, ``artifacts/io.py``,
   ``artifacts/linear.py``,
   ``artifacts/nonlinear.py``,
   ``artifacts/spectral_layout.py``,
   ``artifacts/nonlinear_netcdf.py``,
+  ``artifacts/nonlinear_netcdf_diagnostics.py``,
   ``artifacts/nonlinear_netcdf_geometry.py``,
   ``artifacts/nonlinear_netcdf_restart.py``,
   ``artifacts/nonlinear_netcdf_fields.py``,

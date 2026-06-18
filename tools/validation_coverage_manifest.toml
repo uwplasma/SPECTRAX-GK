@@ -2073,9 +2073,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.artifacts.nonlinear_netcdf"
-path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
-owner_lane = "nonlinear NetCDF diagnostic-history schema writer and output-bundle orchestrator"
+module = "spectraxgk.artifacts.nonlinear_netcdf_diagnostics"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py"
+owner_lane = "nonlinear NetCDF scalar, species, spectral, and split-diagnostic history schema writer"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -2084,11 +2084,42 @@ reference_anchors = [
   "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
 ]
 physics_contracts = [
-  "NetCDF outputs preserve geometry profiles, species channels, resolved spectra, restart state, and final-field big-file diagnostics",
-  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+  "NetCDF diagnostic-history variables preserve scalar, species, resolved spectral, zonal, and split electromagnetic transport channels",
+  "electrostatic split diagnostics fall back to total resolved transport only under the electrostatic model contract",
 ]
 numerics_contracts = [
   "active kx/ky condensed NetCDF variables preserve total energy and transport reductions used by comparison metrics",
+  "complex zonal diagnostics are written in deterministic real/imag layout",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+  "tests/test_restart_gate.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add direct tests for every optional resolved diagnostic written to NetCDF",
+  "add multi-species finite-beta NetCDF schema tests before publication artifact freeze",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
+owner_lane = "nonlinear NetCDF output-bundle orchestrator"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF outputs preserve geometry profiles, diagnostic-history schema, restart state, and final-field big-file diagnostics",
+  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+]
+numerics_contracts = [
   "restart and big-file outputs retain deterministic real/imag layout and finite final-time metadata",
 ]
 fast_tests = [
