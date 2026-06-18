@@ -385,6 +385,13 @@ Nonlinear Helpers
    :members:
    :private-members:
 
+Nonlinear Projection Helpers
+----------------------------
+
+.. automodule:: spectraxgk.operators.nonlinear.projection
+   :members:
+   :private-members:
+
 Nonlinear RHS
 -------------
 

@@ -1030,28 +1030,26 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.nonlinear.policies"
 path = "src/spectraxgk/operators/nonlinear/policies.py"
-owner_lane = "nonlinear diagnostic setup, time-step policy, projection helpers, collision split policies, fixed-mode omega masks, and IMEX operator construction"
+owner_lane = "nonlinear diagnostic setup, time-step policy, collision split policies, fixed-mode omega masks, IMEX operator construction, and compatibility projection re-exports"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "adaptive nonlinear CFL bounds used by long fixed/adaptive transport windows",
   "shared nonlinear diagnostic setup used by explicit and IMEX scan paths",
-  "fixed-mode nonlinear diagnostics and compressed real-FFT Hermitian projection",
+  "fixed-mode nonlinear diagnostics and omega masks",
   "split collision/hypercollision nonlinear updates and reusable IMEX solves",
 ]
 physics_contracts = [
   "adaptive time-step policy combines linear frequency bounds and nonlinear E cross B CFL bounds before clipping",
   "diagnostic setup preserves caller-selected geometry, field-line weights, monitored z index, and fixed-mode policy",
   "collision and hypercollision weights remain explicit before split updates are applied",
-  "fixed-mode projection preserves the selected Fourier block exactly",
   "explicit and IMEX diagnostic scans share the same composed fixed-mode/Hermitian projection convention",
 ]
 numerics_contracts = [
   "fixed-step policy returns the previous step unchanged while adaptive policy respects dt_min and dt_max",
   "cache construction infers Hermite and Laguerre moment counts from species and non-species nonlinear states",
   "diagnostic omega masks keep only unique real-FFT modes before gamma/omega reductions",
-  "compressed real-FFT Hermitian projection mirrors negative ky and reversed kx consistently",
   "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
 ]
 fast_tests = [
@@ -1065,6 +1063,36 @@ artifact_paths = [
 next_tests = [
   "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
   "add direct helper parity coverage when the IMEX diagnostics loop is split further",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.projection"
+path = "src/spectraxgk/operators/nonlinear/projection.py"
+owner_lane = "nonlinear fixed-mode and compressed-real-FFT state projections"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "compressed real-FFT nonlinear diagnostics use unique positive-ky modes while reconstructing the Hermitian state",
+  "fixed-mode nonlinear frequency diagnostics preserve the monitored Fourier block exactly",
+]
+physics_contracts = [
+  "fixed-mode projection preserves the selected Fourier block exactly before diagnostic reductions",
+  "Hermitian projection reconstructs negative ky modes by complex conjugation and reversed kx indexing",
+]
+numerics_contracts = [
+  "projection helpers are shape-preserving and no-op when the input layout does not require a projection",
+  "composed nonlinear-state projection applies fixed-mode preservation before Hermitian completion",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep projection helper behavior object-identical through the nonlinear compatibility facade until the next major API cleanup",
 ]
 
 [[modules]]

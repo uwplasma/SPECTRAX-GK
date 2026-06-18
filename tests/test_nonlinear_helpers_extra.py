@@ -11,6 +11,7 @@ from spectraxgk import nonlinear as nonlinear_mod
 from spectraxgk.solvers.nonlinear import state_integration as nonlinear_state_integration_mod
 from spectraxgk.operators.nonlinear import diagnostics as nonlinear_diagnostics
 from spectraxgk.operators.nonlinear import policies as nonlinear_helpers
+from spectraxgk.operators.nonlinear import projection as nonlinear_projection
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
@@ -387,6 +388,8 @@ def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:
 def test_nonlinear_helpers_preserve_legacy_exports() -> None:
     for name in nonlinear_helpers.__all__:
         assert getattr(nonlinear_mod, name) is getattr(nonlinear_helpers, name)
+    for name in nonlinear_projection.__all__:
+        assert getattr(nonlinear_helpers, name) is getattr(nonlinear_projection, name)
 
 
 def test_make_hermitian_projector_and_mode_mask() -> None:

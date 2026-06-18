@@ -1856,7 +1856,7 @@ module = "spectraxgk.operators.nonlinear.policies"
 source_path = "src/spectraxgk/operators/nonlinear/policies.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, projection, CFL, collision-split policy construction, omega-mask, and reusable IMEX operator policies"
+responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, collision-split policy construction, omega-mask, reusable IMEX operator policies, and compatibility re-exports for projection helpers"
 moved_exports = [
   "IMEXLinearOperator",
   "NonlinearCollisionSplitPolicy",
@@ -1876,6 +1876,20 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.projection"
+source_path = "src/spectraxgk/operators/nonlinear/projection.py"
+facade_module = "spectraxgk.operators.nonlinear.policies"
+status = "active"
+responsibility = "fixed-mode and compressed real-FFT Hermitian nonlinear state projection helpers"
+moved_exports = [
+  "_make_fixed_mode_projector",
+  "_make_hermitian_projector",
+  "_make_nonlinear_state_projector",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 
 [[phase1_split_modules]]
@@ -2452,6 +2466,7 @@ target_packages = [
   "spectraxgk.operators.nonlinear.diagnostic_state",
   "spectraxgk.operators.nonlinear.diagnostics",
   "spectraxgk.operators.nonlinear.policies",
+  "spectraxgk.operators.nonlinear.projection",
   "spectraxgk.solvers.nonlinear.explicit",
   "spectraxgk.solvers.nonlinear.diagnostics",
   "spectraxgk.solvers.nonlinear.imex",
