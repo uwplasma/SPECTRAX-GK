@@ -1,3 +1,16 @@
+- 2026-06-18: Continued runtime/executable consolidation by adding an explicit
+  preloaded runtime-config handoff between the generic `spectraxgk run`
+  dispatcher and `spectraxgk.workflows.runtime.commands`. The generic run path
+  still inspects the TOML once to choose linear versus nonlinear execution, but
+  runtime command execution now reuses that loaded config/data instead of
+  parsing the same file again. Parser construction stays in `spectraxgk.cli`,
+  while path overrides, progress policy, quasilinear overrides, runtime output
+  routing, and preload reuse stay in the runtime command owner. Added a CLI
+  regression test for single-load generic dispatch and documented the contract
+  in the code-structure guide. Local gates passed: focused CLI runtime command
+  tests, runtime command re-export smoke shard, Ruff on touched Python files,
+  mypy on executable/runtime command modules, py_compile on touched source
+  modules, and `git diff --check`.
 - 2026-06-18: Promoted the root `benchmarks/` directory contract into a
   docs-checked result index. `benchmarks/` remains the canonical user-facing
   benchmark entry point at repository root and stays lightweight at 56 KB of

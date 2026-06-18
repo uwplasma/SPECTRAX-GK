@@ -196,6 +196,60 @@ def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:
     assert _cmd_run(args) == 9
 
 
+def test_cmd_run_reuses_loaded_runtime_config_for_linear_dispatch(
+    monkeypatch,
+) -> None:
+    cfg = RuntimeConfig()
+    load_calls: list[str] = []
+    captured: dict[str, object] = {}
+
+    def _load_runtime(path):
+        load_calls.append(str(path))
+        return cfg, {"run": {"ky": 0.2}}
+
+    def _run_runtime_linear(cfg_in, **kwargs):
+        captured["cfg"] = cfg_in
+        captured["kwargs"] = kwargs
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            t=np.asarray([0.0, 1.0]),
+            signal=np.asarray([1.0, 1.2]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.load_runtime_from_toml", _load_runtime)
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _run_runtime_linear)
+    args = argparse.Namespace(
+        config="case.toml",
+        ky=None,
+        Nl=None,
+        Nm=None,
+        solver=None,
+        fit_signal=None,
+        method=None,
+        dt=None,
+        steps=None,
+        sample_stride=None,
+        progress=False,
+        no_progress=True,
+        out=None,
+        vmec_file=None,
+        geometry_file=None,
+        quasilinear=False,
+        ql_mode=None,
+        ql_saturation_rule=None,
+        ql_csat=None,
+        ql_normalization=None,
+        ql_output=None,
+    )
+
+    assert _cmd_run(args) == 0
+    assert load_calls == ["case.toml"]
+    assert captured["kwargs"]["ky_target"] == pytest.approx(0.2)
+
+
 def test_main_shorthand_dispatches_runtime_and_named_cases(
     monkeypatch, tmp_path: Path
 ) -> None:

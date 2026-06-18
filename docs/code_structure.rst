@@ -447,7 +447,15 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
-Runtime command dispatch now keeps parser construction in ``spectraxgk.cli`` and moves runtime linear, runtime scan, and runtime nonlinear command execution into ``spectraxgk.workflows.runtime.commands``. ``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and re-exports the command helpers only for compatibility; path override, progress, and quasilinear override policies have one canonical workflow owner.
+Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``
+and moves runtime linear, runtime scan, and runtime nonlinear command execution
+into ``spectraxgk.workflows.runtime.commands``. The generic ``run`` executable
+path attaches the already-loaded runtime config/data to the parser namespace
+before dispatch, so command execution does not parse the same TOML twice.
+``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and
+re-exports the command helpers only for compatibility; path override, progress,
+quasilinear override, and preload-reuse policies have one canonical workflow
+owner.
 
 The benchmark helper split now uses focused domain modules directly.
 Benchmark case presets live in ``spectraxgk.validation.benchmarks.case_configs``
