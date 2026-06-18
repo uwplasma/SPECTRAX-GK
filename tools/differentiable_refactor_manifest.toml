@@ -1503,19 +1503,30 @@ module = "spectraxgk.workflows.runtime.diagnostics"
 source_path = "src/spectraxgk/workflows/runtime/diagnostics.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime linear fit/eigenfunction extraction, quasilinear finalization, plus finite-value, slicing, truncation, striding, and concatenation policies for runtime diagnostic payloads"
+responsibility = "runtime linear fit/eigenfunction extraction and quasilinear finalization"
 moved_exports = [
   "RuntimeLinearFitResult",
   "RuntimeQuasilinearFinalizationDeps",
-  "concat_runtime_diagnostics",
   "finalize_runtime_linear_quasilinear",
   "fit_runtime_linear_diagnostics",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.diagnostic_arrays"
+source_path = "src/spectraxgk/workflows/runtime/diagnostic_arrays.py"
+facade_module = "spectraxgk.workflows.runtime.diagnostics"
+status = "active"
+responsibility = "finite-value checks plus runtime diagnostic slicing, truncation, striding, and concatenation"
+moved_exports = [
+  "concat_runtime_diagnostics",
   "slice_runtime_diagnostics",
   "stride_runtime_diagnostics",
   "truncate_runtime_diagnostics",
   "validate_finite_runtime_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_diagnostics.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 

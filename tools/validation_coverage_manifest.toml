@@ -80,6 +80,7 @@ owned_modules = [
   "spectraxgk.artifacts.restart",
   "spectraxgk.solvers.time.runners",
   "spectraxgk.workflows.runtime.config",
+  "spectraxgk.workflows.runtime.diagnostic_arrays",
   "spectraxgk.workflows.runtime.diagnostics",
   "spectraxgk.workflows.runtime.execution",
   "spectraxgk.workflows.runtime.initial_conditions",

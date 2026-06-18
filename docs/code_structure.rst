@@ -40,6 +40,7 @@ remain unchanged:
 - ``spectraxgk.terms.*``
 - ``spectraxgk.workflows.runtime.startup``
 - ``spectraxgk.workflows.runtime.diagnostics``
+- ``spectraxgk.workflows.runtime.diagnostic_arrays``
 - ``spectraxgk.workflows.runtime.chunks``
 - ``spectraxgk.workflows.runtime.results``
 - ``spectraxgk.geometry_backends.*``
@@ -71,6 +72,7 @@ The executable-facing runtime path is split conceptually into four layers:
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
    - ``workflows/runtime/diagnostics.py``
+   - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
    - ``workflows/runtime/orchestration.py``
    - ``workflows/runtime/artifacts.py``
@@ -116,8 +118,8 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
+     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Artifacts and plots
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
@@ -139,9 +141,11 @@ Completed extractions:
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
   and nonlinear diagnostics keyword policies:
   ``workflows/runtime/policies.py``
-- runtime linear fit/eigenfunction extraction, quasilinear finalization, and
-  diagnostic chunk helpers used by runtime and comparison artifacts:
+- runtime linear fit/eigenfunction extraction and quasilinear finalization:
   ``workflows/runtime/diagnostics.py``
+- finite-value checks plus runtime diagnostic slicing, truncation, striding,
+  and concatenation:
+  ``workflows/runtime/diagnostic_arrays.py``
 - adaptive chunk execution used by runtime and comparison artifacts:
   ``workflows/runtime/chunks.py``
 - runtime result containers and nonlinear result assembly:

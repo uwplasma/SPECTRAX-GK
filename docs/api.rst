@@ -635,6 +635,13 @@ Runtime Diagnostics
    :members:
    :private-members:
 
+Runtime Diagnostic Arrays
+-------------------------
+
+.. automodule:: spectraxgk.workflows.runtime.diagnostic_arrays
+   :members:
+   :private-members:
+
 Runtime Initial Conditions
 --------------------------
 
