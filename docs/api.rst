@@ -709,6 +709,16 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.etg_scan
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.kinetic
+   :members:
+   :no-index:
+
+.. automodule:: spectraxgk.validation.benchmarks.kinetic_linear
+   :members:
+
+.. automodule:: spectraxgk.validation.benchmarks.kinetic_scan
+   :members:
+
 Validation Gates
 ----------------
 

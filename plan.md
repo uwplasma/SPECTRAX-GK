@@ -1,3 +1,8 @@
+- 2026-06-18: Split the 701-line kinetic-electron benchmark runner into an
+  8-line `spectraxgk.validation.benchmarks.kinetic` facade plus focused
+  `kinetic_linear` and `kinetic_scan` owner modules. Branch tests now patch the
+  correct owner modules for single-ky and scan paths. Focused benchmark branch,
+  benchmark helper, public API, and Ruff gates passed locally.
 - 2026-06-18: Split the 706-line public nonlinear driver into a 98-line
   `spectraxgk.nonlinear` facade plus `spectraxgk.nonlinear_core` for cached
   RHS/state integration and `spectraxgk.nonlinear_diagnostics` for explicit and
