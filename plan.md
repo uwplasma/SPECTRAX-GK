@@ -1,3 +1,22 @@
+- 2026-06-18: Continued the differentiable VMEC/Boozer refactor without adding
+  source files. `spectraxgk.geometry.vmec_state_sensitivity` now centralizes
+  optional-backend VMEC example loading, coefficient-index validation, state
+  perturbation, and length-2 parameter validation for the Boozer flux-tube,
+  metric-tensor, and field-line tensor AD/FD reports. The Boozer equal-arc core
+  bridge now uses explicit helper functions for radial Boozer-profile
+  interpolation, derivative interpolation, and repeated equal-arc open-grid
+  profile remapping. This keeps the public
+  `spectraxgk.geometry.differentiable` facade unchanged while making the
+  differentiable geometry path easier to audit and extend. Reconfirmed the
+  root `benchmarks/` contract: benchmark drivers, TOML inputs, and
+  `benchmarks/results/manifest.toml` already live at repository root, track
+  only small pointers/scripts, and publish their promoted results through
+  `docs/benchmarks.rst` without adding raw run products to git. Local gates
+  passed: focused differentiable-geometry VMEC/Boozer report tests, Ruff on
+  touched geometry modules, mypy on touched geometry modules, `py_compile` on
+  touched geometry modules, differentiable-refactor manifest, validation
+  coverage manifest regeneration, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
 - 2026-06-18: Centralized saved-artifact path printing for runtime executable
   commands in `spectraxgk.workflows.runtime.commands._print_saved_paths`.
   Linear, ky-scan, nonlinear, and quasilinear command paths now use the same
