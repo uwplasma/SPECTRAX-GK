@@ -635,6 +635,13 @@ Runtime Diagnostics
    :members:
    :private-members:
 
+Runtime Initial Conditions
+--------------------------
+
+.. automodule:: spectraxgk.workflows.runtime.initial_conditions
+   :members:
+   :private-members:
+
 Runtime Chunks
 --------------
 
