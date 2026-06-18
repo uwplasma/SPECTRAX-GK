@@ -3003,3 +3003,15 @@ No long nonlinear audit should be launched from these candidates.
   transport admission tests, nonlinear landscape/prelaunch/campaign/audit tool
   tests, validation/refactor manifest tests, validation summary regeneration,
   repository-size check, ruff, mypy, Sphinx docs build, and `git diff --check`.
+
+- 2026-06-18: Retired the legacy `spectraxgk.validation.nonlinear_gradient.followup`
+  facade. Nonlinear turbulence-gradient follow-up tools and tests now import
+  directly from the focused owner modules: `followup_core.py`,
+  `followup_plan.py`, `followup_candidate.py`, `followup_composite.py`,
+  `followup_ql_seed.py`, `followup_state_runbook.py`, and
+  `followup_variance.py`. Removed the facade from API docs and refactor/
+  coverage manifests, then regenerated the validation coverage summary. Local
+  gates passed: nonlinear-gradient follow-up, QL-seed-screen, and state-runbook
+  tests; validation/refactor manifest tests; validation summary regeneration;
+  repository-size check; ruff; mypy across 347 source files; Sphinx docs build;
+  and `git diff --check`.

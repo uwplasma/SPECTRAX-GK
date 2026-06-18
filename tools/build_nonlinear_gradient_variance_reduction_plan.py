@@ -15,8 +15,10 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
-from spectraxgk.validation.nonlinear_gradient.followup import (  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
     NonlinearGradientVarianceReductionConfig,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_variance import (  # noqa: E402
     nonlinear_gradient_variance_reduction_plan,
 )
 

@@ -17,9 +17,11 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
-from spectraxgk.validation.nonlinear_gradient.followup import (  # noqa: E402
-    NonlinearGradientCompositeControlConfig,
+from spectraxgk.validation.nonlinear_gradient.followup_composite import (  # noqa: E402
     nonlinear_gradient_composite_control_report,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
+    NonlinearGradientCompositeControlConfig,
 )
 
 DEFAULT_OUT_PREFIX = ROOT / "docs" / "_static" / "nonlinear_gradient_composite_control_design"

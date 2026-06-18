@@ -564,12 +564,6 @@ Production Nonlinear Optimization Guard
    :members:
    :private-members:
 
-Nonlinear Gradient Follow-Up
-----------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup
-   :members:
-
 Nonlinear Gradient Follow-Up Core
 ---------------------------------
 

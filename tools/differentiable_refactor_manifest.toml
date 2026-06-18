@@ -1274,7 +1274,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_core"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_core.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_core"
 status = "active"
 responsibility = "nonlinear turbulence-gradient follow-up configuration, JSON-safe metric parsing, replicate metadata extraction, and variance-reduction statistics helpers"
 moved_exports = [
@@ -1296,7 +1296,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_variance.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
 status = "active"
 responsibility = "paired-seed variance-reduction, control-variate campaign planning, and independent control-mean gate reports for nonlinear turbulence-gradient follow-up"
 moved_exports = [
@@ -1313,7 +1313,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_candidate.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
 status = "active"
 responsibility = "candidate-level nonlinear turbulence-gradient follow-up design reports for bracket scaling, bounded extra replicas, and replacement-control recommendations"
 moved_exports = [
@@ -1327,7 +1327,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_composite.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
 status = "active"
 responsibility = "composite VMEC-boundary control design from resolved nonlinear turbulence-gradient finite-difference candidates"
 moved_exports = [
@@ -1340,7 +1340,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_plan.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
 status = "active"
 responsibility = "matched-replicate follow-up planning for local but statistically unresolved nonlinear turbulence-gradient artifacts"
 moved_exports = [
@@ -1354,7 +1354,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_ql_seed.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
 status = "active"
 responsibility = "QL/linear sensitivity seed-screen reports for selecting VMEC-state controls before nonlinear turbulence-gradient campaigns"
 moved_exports = [
@@ -1371,7 +1371,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_state_runbook.py"
-facade_module = "spectraxgk.validation.nonlinear_gradient.followup"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
 status = "active"
 responsibility = "VMEC-state to perturbable input-control runbook assembly for nonlinear turbulence-gradient launch readiness"
 moved_exports = [

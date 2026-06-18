@@ -7,113 +7,32 @@ import sys
 
 import pytest
 
-from spectraxgk.validation.nonlinear_gradient.followup import (
+from spectraxgk.validation.nonlinear_gradient.followup_candidate import (
+    nonlinear_gradient_candidate_design_report,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_composite import (
+    nonlinear_gradient_composite_control_report,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_core import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
     NonlinearGradientControlMeanGateConfig,
     NonlinearGradientControlVariateCampaignConfig,
     NonlinearGradientFollowupConfig,
     NonlinearGradientVarianceReductionConfig,
-    nonlinear_gradient_candidate_design_report,
-    nonlinear_gradient_composite_control_report,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_plan import (
+    nonlinear_gradient_followup_plan,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_variance import (
     nonlinear_gradient_control_mean_gate,
     nonlinear_gradient_control_variate_campaign_plan,
-    nonlinear_gradient_followup_plan,
     nonlinear_gradient_variance_reduction_plan,
 )
-import spectraxgk.validation.nonlinear_gradient.followup as nonlinear_gradient_followup
-import spectraxgk.validation.nonlinear_gradient.followup_candidate as nonlinear_gradient_followup_candidate
-import spectraxgk.validation.nonlinear_gradient.followup_composite as nonlinear_gradient_followup_composite
-import spectraxgk.validation.nonlinear_gradient.followup_core as nonlinear_gradient_followup_core
-import spectraxgk.validation.nonlinear_gradient.followup_plan as nonlinear_gradient_followup_plan_module
-import spectraxgk.validation.nonlinear_gradient.followup_ql_seed as nonlinear_gradient_followup_ql_seed
-import spectraxgk.validation.nonlinear_gradient.followup_state_runbook as nonlinear_gradient_followup_state_runbook
-import spectraxgk.validation.nonlinear_gradient.followup_variance as nonlinear_gradient_followup_variance
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "plan_nonlinear_gradient_followup.py"
-
-
-def test_nonlinear_gradient_followup_facade_reexports_core_helpers() -> None:
-    core_names = (
-        "NonlinearGradientCandidateDesignConfig",
-        "NonlinearGradientCompositeControlConfig",
-        "NonlinearGradientControlMeanGateConfig",
-        "NonlinearGradientControlVariateCampaignConfig",
-        "NonlinearGradientFollowupConfig",
-        "NonlinearGradientVarianceReductionConfig",
-        "_finite_float",
-        "_json_number",
-        "_metric",
-        "_nested_metric",
-        "_artifact_passed",
-        "_control_variate_candidate",
-    )
-
-    for name in core_names:
-        assert getattr(nonlinear_gradient_followup, name) is getattr(
-            nonlinear_gradient_followup_core,
-            name,
-        )
-
-
-def test_nonlinear_gradient_followup_facade_reexports_variance_reports() -> None:
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_variance_reduction_plan
-        is nonlinear_gradient_followup_variance.nonlinear_gradient_variance_reduction_plan
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_control_variate_campaign_plan
-        is nonlinear_gradient_followup_variance.nonlinear_gradient_control_variate_campaign_plan
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_control_mean_gate
-        is nonlinear_gradient_followup_variance.nonlinear_gradient_control_mean_gate
-    )
-
-
-def test_nonlinear_gradient_followup_facade_reexports_report_modules() -> None:
-    assert (
-        nonlinear_gradient_followup._design_row
-        is nonlinear_gradient_followup_candidate._design_row
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_candidate_design_report
-        is nonlinear_gradient_followup_candidate.nonlinear_gradient_candidate_design_report
-    )
-    assert (
-        nonlinear_gradient_followup._composite_control_row
-        is nonlinear_gradient_followup_composite._composite_control_row
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_composite_control_report
-        is nonlinear_gradient_followup_composite.nonlinear_gradient_composite_control_report
-    )
-    assert (
-        nonlinear_gradient_followup._required_replicates
-        is nonlinear_gradient_followup_plan_module._required_replicates
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_followup_plan
-        is nonlinear_gradient_followup_plan_module.nonlinear_gradient_followup_plan
-    )
-    assert (
-        nonlinear_gradient_followup._ql_seed_rows
-        is nonlinear_gradient_followup_ql_seed._ql_seed_rows
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_ql_seed_screen_report
-        is nonlinear_gradient_followup_ql_seed.nonlinear_gradient_ql_seed_screen_report
-    )
-    assert (
-        nonlinear_gradient_followup._mapping_control_rows
-        is nonlinear_gradient_followup_state_runbook._mapping_control_rows
-    )
-    assert (
-        nonlinear_gradient_followup.nonlinear_gradient_state_control_runbook_report
-        is nonlinear_gradient_followup_state_runbook.nonlinear_gradient_state_control_runbook_report
-    )
 
 
 def _load_tool_module():

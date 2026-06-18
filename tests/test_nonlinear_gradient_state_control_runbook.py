@@ -7,8 +7,10 @@ import sys
 
 import pytest
 
-from spectraxgk.validation.nonlinear_gradient.followup import (
+from spectraxgk.validation.nonlinear_gradient.followup_core import (
     NonlinearGradientStateControlRunbookConfig,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_state_runbook import (
     nonlinear_gradient_state_control_runbook_report,
 )
 

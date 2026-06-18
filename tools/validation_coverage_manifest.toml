@@ -2267,9 +2267,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.validation.nonlinear_gradient.evidence"
 path = "src/spectraxgk/validation/nonlinear_gradient/evidence.py"
-owned_modules = [
-  "spectraxgk.validation.nonlinear_gradient.followup",
-]
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
