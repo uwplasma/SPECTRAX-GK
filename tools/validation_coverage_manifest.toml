@@ -10,6 +10,7 @@ require_all_package_modules_owned = true
 excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
+  "spectraxgk.api.__init__",
   "spectraxgk.core.__init__",
   "spectraxgk.diagnostics.__init__",
   "spectraxgk.geometry_backends.__init__",
@@ -33,6 +34,52 @@ excluded_modules = [
   "spectraxgk.validation.stellarator.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
+]
+
+[[modules]]
+module = "spectraxgk.api.configuration"
+path = "src/spectraxgk/api/configuration.py"
+owned_modules = [
+  "spectraxgk.api.artifacts",
+  "spectraxgk.api.benchmarks",
+  "spectraxgk.api.diagnostics",
+  "spectraxgk.api.geometry",
+  "spectraxgk.api.objectives",
+  "spectraxgk.api.parallel",
+  "spectraxgk.api.runtime",
+  "spectraxgk.api.solvers",
+  "spectraxgk.api.validation",
+]
+owner_lane = "domain-organized public API registry"
+status = "closed"
+coverage_priority = "low"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "stable public package API documented in docs/api.rst",
+  "Python package facade conventions for scientific libraries",
+]
+physics_contracts = [
+  "top-level imports remain a stable convenience layer while implementation modules own physics behavior",
+  "domain API modules group configuration, geometry, solvers, validation, parallelization, objectives, and plotting without changing numerical kernels",
+]
+numerics_contracts = [
+  "public export order and membership are preserved exactly across the split",
+  "object identity for benchmark, objective, parallel, and runtime exports is checked by focused import tests",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_quasilinear_model_selection_extra.py",
+  "tests/test_parallel.py",
+  "tests/test_nonlinear_parallel.py",
+]
+artifact_paths = [
+  "docs/code_structure.rst",
+  "docs/api.rst",
+]
+next_tests = [
+  "add a dedicated public API exact-order regression test if future export churn increases",
+  "move advanced users toward domain imports while keeping top-level imports stable through the next release",
 ]
 
 [[modules]]

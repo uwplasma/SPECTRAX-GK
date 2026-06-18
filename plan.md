@@ -2724,3 +2724,4 @@ No long nonlinear audit should be launched from these candidates.
   active 900-line target.
 - Local gates: Ruff, targeted mypy, and the nonlinear parallel/domain/spectral
   communication test shard passed.
+- Continued the differentiable architecture refactor by splitting the 905-line root public API registry into domain-organized `spectraxgk.api.*` modules. The root `spectraxgk` package is now an 11-line facade over the API registry, with exact historical `__all__` order and membership preserved for 411 exports. Focused public API, objective, VMEC transport, quasilinear model-selection, parallel, nonlinear-parallel, validation-manifest, refactor-manifest, ruff, and Sphinx gates passed. This tranche changes import organization only; solver, physics, validation, and differentiable objective behavior are unchanged.

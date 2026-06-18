@@ -1992,6 +1992,51 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[hotspots]]
+module = "spectraxgk.api"
+source_path = "src/spectraxgk/api/__init__.py"
+current_reason = "top-level public imports were previously maintained in one large package __init__; they are now grouped by domain while preserving the stable facade"
+target_packages = [
+  "spectraxgk.api.configuration",
+  "spectraxgk.api.geometry",
+  "spectraxgk.api.diagnostics",
+  "spectraxgk.api.runtime",
+  "spectraxgk.api.solvers",
+  "spectraxgk.api.benchmarks",
+  "spectraxgk.api.validation",
+  "spectraxgk.api.parallel",
+  "spectraxgk.api.objectives",
+  "spectraxgk.api.artifacts",
+]
+public_facade = "spectraxgk.api"
+line_target = 250
+status = "closed"
+existing_fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_quasilinear_model_selection_extra.py",
+  "tests/test_parallel.py",
+  "tests/test_nonlinear_parallel.py",
+]
+planned_tests = [
+  "dedicated exact-order public __all__ regression test if future API churn grows",
+  "domain-import examples for advanced users",
+]
+parity_gates = [
+  "top-level export membership and order preserved exactly",
+  "selected runtime, objective, quasilinear, and parallel objects remain identity-compatible",
+]
+literature_anchors = [
+  "scientific Python package facade patterns keep public imports stable while implementation modules own physics contracts",
+]
+autodiff_gates = [
+  "API split is import-only and does not introduce side effects inside differentiable objective paths",
+]
+extension_points = [
+  "domain API modules mirror configuration, geometry, solvers, validation, parallelization, objectives, and artifacts",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[hotspots]]
 module = "spectraxgk.runtime"
 source_path = "src/spectraxgk/runtime.py"
 current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration compatibility code"

@@ -128,6 +128,9 @@ Physics / Numerics / IO Map
    * - Runtime/executable behavior
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+   * - Public import registry
+     - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
+     - top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
    * - Diagnostic extraction and growth-rate fitting
      - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``
      - mode selection, eigenfunction extraction, automatic fit-window selection, late-time growth/frequency tests
@@ -147,6 +150,11 @@ modules.
 
 Completed extractions:
 
+- domain-organized public API registry in ``spectraxgk.api.*``. The root
+  ``spectraxgk`` package is now a small facade that preserves the exact
+  historical ``__all__`` order while the grouped API modules make the exported
+  configuration, geometry, solver, validation, parallelization, objective, and
+  plotting surfaces easier to audit.
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
   sampled/imported flux-tube geometry data/loading:
   ``geometry/boundaries.py``, ``geometry/analytic.py``, and
