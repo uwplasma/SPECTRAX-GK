@@ -262,6 +262,44 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.diagnostics.modes"
+source_path = "src/spectraxgk/diagnostics/modes.py"
+facade_module = "spectraxgk.diagnostics.analysis"
+status = "active"
+responsibility = "mode selection, complex mode time-series extraction, density moments, and eigenfunction extraction"
+moved_exports = [
+  "ModeSelection",
+  "ModeSelectionBatch",
+  "density_moment",
+  "extract_eigenfunction",
+  "extract_mode",
+  "extract_mode_time_series",
+  "select_ky_index",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_rates"
+source_path = "src/spectraxgk/diagnostics/growth_rates.py"
+facade_module = "spectraxgk.diagnostics.analysis"
+status = "active"
+responsibility = "growth-rate, frequency, automatic fit-window, instantaneous-ratio, and windowed omega-series diagnostics"
+moved_exports = [
+  "_log_amp_phase",
+  "fit_growth_rate",
+  "fit_growth_rate_auto",
+  "fit_growth_rate_auto_with_stats",
+  "fit_growth_rate_with_stats",
+  "instantaneous_growth_rate_from_phi",
+  "select_fit_window",
+  "select_fit_window_loglinear",
+  "windowed_growth_rate_from_omega_series",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.boundaries"
 source_path = "src/spectraxgk/geometry/boundaries.py"
 facade_module = "spectraxgk.geometry.core"

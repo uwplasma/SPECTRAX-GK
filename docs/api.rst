@@ -602,6 +602,20 @@ Analysis
 
 .. automodule:: spectraxgk.diagnostics.analysis
    :members:
+   :no-index:
+
+Mode Diagnostics
+----------------
+
+.. automodule:: spectraxgk.diagnostics.modes
+   :members:
+
+Growth-Rate Diagnostics
+-----------------------
+
+.. automodule:: spectraxgk.diagnostics.growth_rates
+   :members:
+   :private-members:
 
 Plotting
 --------

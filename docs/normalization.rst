@@ -145,7 +145,7 @@ The Cyclone base case defaults follow this benchmark setting, and the
 Sign conventions
 ----------------
 
-The growth-rate fitting in :func:`spectraxgk.diagnostics.analysis.fit_growth_rate` assumes
+The growth-rate fitting in :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate` assumes
 
 .. math::
 

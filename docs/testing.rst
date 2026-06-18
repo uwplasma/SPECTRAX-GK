@@ -115,8 +115,8 @@ Representative unit checks include:
   :func:`spectraxgk.linear.grad_z_periodic`,
   :func:`spectraxgk.linear.streaming_term`.
 - **Growth-rate fitting windows**:
-  :func:`spectraxgk.diagnostics.analysis.select_fit_window`,
-  :func:`spectraxgk.diagnostics.analysis.fit_growth_rate_auto`.
+  :func:`spectraxgk.diagnostics.growth_rates.select_fit_window`,
+  :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate_auto`.
 - **Grid construction and normalization**:
   :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Normalization contract consistency**:

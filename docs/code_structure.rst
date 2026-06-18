@@ -71,6 +71,8 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
+   - ``diagnostics/modes.py``
+   - ``diagnostics/growth_rates.py``
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
@@ -120,6 +122,9 @@ Physics / Numerics / IO Map
    * - Runtime/executable behavior
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+   * - Diagnostic extraction and growth-rate fitting
+     - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``
+     - mode selection, eigenfunction extraction, automatic fit-window selection, late-time growth/frequency tests
    * - Artifacts and plots
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
@@ -140,6 +145,10 @@ Completed extractions:
   sampled/imported flux-tube geometry data/loading:
   ``geometry/boundaries.py``, ``geometry/analytic.py``, and
   ``geometry/flux_tube.py``
+- mode selection/eigenfunction extraction and late-time growth/frequency
+  fitting:
+  ``diagnostics/modes.py`` and ``diagnostics/growth_rates.py``. The public
+  ``diagnostics.analysis`` module remains a small compatibility facade.
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,

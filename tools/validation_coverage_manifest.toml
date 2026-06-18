@@ -229,6 +229,8 @@ module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owned_modules = [
   "spectraxgk.diagnostics.analysis",
+  "spectraxgk.diagnostics.growth_rates",
+  "spectraxgk.diagnostics.modes",
   "spectraxgk.core.velocity",
   "spectraxgk.terms.cetg",
   "spectraxgk.core.grid",
