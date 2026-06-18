@@ -914,6 +914,25 @@ Growth-Rate Diagnostics
    :members:
    :private-members:
 
+Growth-Rate Fit Kernels
+-----------------------
+
+.. automodule:: spectraxgk.diagnostics.growth_fit
+   :members:
+   :private-members:
+
+Growth-Rate Fit Windows
+-----------------------
+
+.. automodule:: spectraxgk.diagnostics.growth_windows
+   :members:
+
+Growth-Rate Time Series
+-----------------------
+
+.. automodule:: spectraxgk.diagnostics.growth_series
+   :members:
+
 Plot Style
 ----------
 

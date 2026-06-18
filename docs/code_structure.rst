@@ -80,6 +80,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``diagnostics/resolved.py``
    - ``diagnostics/modes.py``
    - ``diagnostics/growth_rates.py``
+   - ``diagnostics/growth_fit.py``
+   - ``diagnostics/growth_windows.py``
+   - ``diagnostics/growth_series.py``
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
@@ -137,8 +140,8 @@ Physics / Numerics / IO Map
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
      - top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
    * - Diagnostic extraction and growth-rate fitting
-     - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``
-     - mode selection, eigenfunction extraction, automatic fit-window selection, late-time growth/frequency tests
+     - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, ``diagnostics/growth_series.py``
+     - mode selection, eigenfunction extraction, least-squares growth/frequency fitting, automatic fit-window selection, late-time growth/frequency tests
    * - Artifacts and plots
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
@@ -171,8 +174,11 @@ Completed extractions:
   ``geometry_backends.vmec_*`` modules.
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
-  ``diagnostics/modes.py`` and ``diagnostics/growth_rates.py``. The public
-  ``diagnostics.analysis`` module remains a small compatibility facade.
+  ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``,
+  ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, and
+  ``diagnostics/growth_series.py``. The public ``diagnostics.analysis`` and
+  ``diagnostics.growth_rates`` modules remain small facades over focused
+  diagnostic owners.
 - scalar energy, species transport/heating, and resolved spectral diagnostics:
   ``diagnostics/energy.py``, ``diagnostics/transport.py``, and
   ``diagnostics/resolved.py``. The public ``diagnostics.core`` module remains

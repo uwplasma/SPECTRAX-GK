@@ -155,6 +155,11 @@ and helper-policy owner modules. Diffrax time integration follows the same
 pattern: public imports stay on ``solvers.time.diffrax`` while optional
 dependency/policy helpers, linear save paths, streaming fits, and nonlinear
 paths live in focused owner modules.
+Growth diagnostics follow the same rule: ``diagnostics.growth_rates`` remains
+the stable public facade for examples and runtime workflows, while
+``diagnostics.growth_fit``, ``diagnostics.growth_windows``, and
+``diagnostics.growth_series`` own least-squares fitting, automatic fit-window
+selection, and resolved mode-series diagnostics.
 
 High-Risk Module Split Plan
 ---------------------------

@@ -22,6 +22,31 @@ from spectraxgk.diagnostics.analysis import (
 )
 
 
+def test_growth_rate_public_facades_point_to_focused_modules() -> None:
+    """Growth diagnostics keep stable imports while implementation owners split."""
+
+    import spectraxgk.diagnostics.analysis as analysis
+    import spectraxgk.diagnostics.growth_fit as growth_fit
+    import spectraxgk.diagnostics.growth_rates as growth_rates
+    import spectraxgk.diagnostics.growth_series as growth_series
+    import spectraxgk.diagnostics.growth_windows as growth_windows
+
+    assert growth_rates.fit_growth_rate is growth_fit.fit_growth_rate
+    assert growth_rates.fit_growth_rate_with_stats is growth_fit.fit_growth_rate_with_stats
+    assert growth_rates.select_fit_window is growth_windows.select_fit_window
+    assert growth_rates.select_fit_window_loglinear is growth_windows.select_fit_window_loglinear
+    assert (
+        growth_rates.instantaneous_growth_rate_from_phi
+        is growth_series.instantaneous_growth_rate_from_phi
+    )
+    assert (
+        growth_rates.windowed_growth_rate_from_omega_series
+        is growth_series.windowed_growth_rate_from_omega_series
+    )
+    assert analysis.fit_growth_rate is growth_rates.fit_growth_rate
+    assert analysis.fit_growth_rate_auto is growth_rates.fit_growth_rate_auto
+
+
 def test_extract_mode_time_series_methods():
     """Mode extraction should work for z_index, max, and svd modes."""
     t = np.linspace(0.0, 1.0, 64)

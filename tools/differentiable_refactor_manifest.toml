@@ -547,7 +547,7 @@ module = "spectraxgk.diagnostics.growth_rates"
 source_path = "src/spectraxgk/diagnostics/growth_rates.py"
 facade_module = "spectraxgk.diagnostics.analysis"
 status = "active"
-responsibility = "growth-rate, frequency, automatic fit-window, instantaneous-ratio, and windowed omega-series diagnostics"
+responsibility = "public growth-diagnostic facade and automatic fit orchestration over focused fitting, window-selection, and mode-series owners"
 moved_exports = [
   "_log_amp_phase",
   "fit_growth_rate",
@@ -557,6 +557,46 @@ moved_exports = [
   "instantaneous_growth_rate_from_phi",
   "select_fit_window",
   "select_fit_window_loglinear",
+  "windowed_growth_rate_from_omega_series",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_fit"
+source_path = "src/spectraxgk/diagnostics/growth_fit.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "least-squares growth-rate/frequency fits and robust complex log-amplitude/phase preprocessing"
+moved_exports = [
+  "_log_amp_phase",
+  "fit_growth_rate",
+  "fit_growth_rate_with_stats",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_windows"
+source_path = "src/spectraxgk/diagnostics/growth_windows.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "fixed-fraction and log-linear automatic fit-window selection for late-time linear diagnostics"
+moved_exports = [
+  "select_fit_window",
+  "select_fit_window_loglinear",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_series"
+source_path = "src/spectraxgk/diagnostics/growth_series.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "instantaneous and windowed growth/frequency extraction from resolved mode time series"
+moved_exports = [
+  "instantaneous_growth_rate_from_phi",
   "windowed_growth_rate_from_omega_series",
 ]
 fast_tests = ["tests/test_analysis.py"]
