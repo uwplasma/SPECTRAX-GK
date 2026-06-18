@@ -1628,6 +1628,11 @@ path = "src/spectraxgk/geometry_backends/vmec.py"
 owned_modules = [
   "spectraxgk.geometry_backends.kernels",
   "spectraxgk.geometry_backends.miller",
+  "spectraxgk.geometry_backends.miller_core",
+  "spectraxgk.geometry_backends.miller_io",
+  "spectraxgk.geometry_backends.miller_numerics",
+  "spectraxgk.geometry_backends.miller_pipeline",
+  "spectraxgk.geometry_backends.miller_profiles",
   "spectraxgk.geometry.miller_eik",
   "spectraxgk.geometry.vmec_eik",
 ]
@@ -1649,7 +1654,9 @@ numerics_contracts = [
   "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
 ]
 fast_tests = [
+  "tests/test_geometry_backend_miller_internal.py",
   "tests/test_geometry_backend_vmec_helpers.py",
+  "tests/test_miller_eik.py",
   "tests/test_vmec_eik.py",
   "tests/test_vmec_roundtrip_gate.py",
   "tests/test_run_vmec_roundtrip_gate.py",

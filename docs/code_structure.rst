@@ -111,8 +111,8 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``
-     - parser, remap, normalization, geometry-response tests
+     - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``, ``geometry_backends/miller.py`` plus focused Miller numerics/core/profile/IO modules
+     - parser, remap, normalization, geometry-response tests, Miller finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests

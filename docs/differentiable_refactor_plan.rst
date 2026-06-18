@@ -339,6 +339,10 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.numerics`` owns pure parity metrics, interpolation,
   radial derivative, Boozer half-mesh, Fourier field-line, and periodic
   sampling helpers.
+  ``spectraxgk.geometry_backends.miller`` remains the stable internal Miller
+  backend facade, while numerics, surface/theta-grid construction, profile
+  assembly, NetCDF IO, and request-to-EIK orchestration live in focused
+  ``geometry_backends.miller_*`` modules.
   ``spectraxgk.geometry.differentiable`` retains object-identical re-exports
   for pure helpers and thin wrappers for optional-backend bridge functions whose
   legacy tests patch facade-level backend discovery.
