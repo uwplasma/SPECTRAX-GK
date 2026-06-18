@@ -14,17 +14,19 @@ from spectraxgk.terms.brackets import (
     _spectral_bracket_multi,
     _stack_fields,
 )
-from spectraxgk.terms.nonlinear import (
-    _apply_flutter,
-    exb_nonlinear_contribution,
-    nonlinear_em_contribution,
-    nonlinear_em_components,
+from spectraxgk.terms.gyroaveraging import (
     _laguerre_bpar_correction,
     _laguerre_bpar_correction_precomputed,
     _laguerre_j0_field,
     _laguerre_j0_field_precomputed,
     _laguerre_to_grid,
     _laguerre_to_spectral,
+)
+from spectraxgk.terms.nonlinear import (
+    _apply_flutter,
+    exb_nonlinear_contribution,
+    nonlinear_em_contribution,
+    nonlinear_em_components,
     placeholder_nonlinear_contribution,
 )
 

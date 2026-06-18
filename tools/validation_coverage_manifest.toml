@@ -545,6 +545,7 @@ module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
   "spectraxgk.terms.brackets",
+  "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
 ]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
