@@ -1,3 +1,11 @@
+- 2026-06-18: Split the TEM benchmark runner into a compact public owner plus
+  `spectraxgk.validation.benchmarks.tem_paths`. The public module now owns
+  grid/geometry setup, TEM parameter construction, species-index validation,
+  and stable `run_tem_linear`/`run_tem_scan` imports, while the path owner
+  contains single-ky Krylov solving, single-ky time fitting, streaming scan
+  fitting, and saved-time scan batching through an explicit hook bundle. The
+  hook bundle preserves existing benchmark monkeypatch/debug seams. Focused TEM
+  branch tests, Ruff, and py_compile passed locally before manifest/docs gates.
 - 2026-06-18: Continued the KBM single-ky benchmark refactor by moving the
   explicit-time diagnostics branch, fit-window fallback, and single/multi-target
   Krylov branch policy from `spectraxgk.validation.benchmarks.kbm_linear` into

@@ -457,6 +457,34 @@ fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.tem"
+source_path = "src/spectraxgk/validation/benchmarks/tem.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "TEM benchmark-family public owner for setup, parameter construction, species validation, and stable run_tem_linear/run_tem_scan imports"
+moved_exports = [
+  "run_tem_linear",
+  "run_tem_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.tem_paths"
+source_path = "src/spectraxgk/validation/benchmarks/tem_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.tem"
+status = "active"
+responsibility = "TEM single-ky Krylov/time-fit policies plus streaming and saved-time scan batch execution through patchable hooks"
+moved_exports = [
+  "TEMPathHooks",
+  "run_tem_krylov_linear_path",
+  "run_tem_scan_batches",
+  "run_tem_time_linear_path",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.validation.gates"
 source_path = "src/spectraxgk/validation/gates.py"
 facade_module = "spectraxgk.validation"

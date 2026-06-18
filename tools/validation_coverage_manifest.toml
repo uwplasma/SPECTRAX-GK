@@ -1403,6 +1403,7 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.solver_policy",
   "spectraxgk.validation.benchmarks.species",
   "spectraxgk.validation.benchmarks.tem",
+  "spectraxgk.validation.benchmarks.tem_paths",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
