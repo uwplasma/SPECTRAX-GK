@@ -70,8 +70,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 65,
   "n_modules": 82,
-  "n_owned_modules": 86,
-  "n_package_modules": 193,
+  "n_owned_modules": 87,
+  "n_package_modules": 194,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -209,6 +209,7 @@
       "spectraxgk.solvers.time.runners",
       "spectraxgk.workflows.runtime.config",
       "spectraxgk.workflows.runtime.diagnostics",
+      "spectraxgk.workflows.runtime.execution",
       "spectraxgk.workflows.runtime.startup"
     ],
     "spectraxgk.solvers.linear.implicit": [],
@@ -284,7 +285,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 10,
+      "n_owned_modules": 11,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime.py",

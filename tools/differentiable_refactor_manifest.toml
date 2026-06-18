@@ -1542,6 +1542,21 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.execution"
+source_path = "src/spectraxgk/workflows/runtime/execution.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "configured runtime linear and nonlinear dispatch across full-GK and reduced cETG models with dependency-injected patch seams"
+moved_exports = [
+  "RuntimeLinearDispatchDeps",
+  "RuntimeNonlinearDispatchDeps",
+  "run_runtime_linear_impl",
+  "run_runtime_nonlinear_impl",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration"
 source_path = "src/spectraxgk/workflows/runtime/orchestration.py"
 facade_module = "spectraxgk.runtime"

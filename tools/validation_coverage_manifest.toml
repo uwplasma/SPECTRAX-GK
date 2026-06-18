@@ -81,6 +81,7 @@ owned_modules = [
   "spectraxgk.solvers.time.runners",
   "spectraxgk.workflows.runtime.config",
   "spectraxgk.workflows.runtime.diagnostics",
+  "spectraxgk.workflows.runtime.execution",
   "spectraxgk.workflows.runtime.startup",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"

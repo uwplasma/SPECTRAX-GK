@@ -305,6 +305,13 @@ Config-Driven Time Runners
    :members:
    :private-members:
 
+Runtime Execution Dispatch
+--------------------------
+
+.. automodule:: spectraxgk.workflows.runtime.execution
+   :members:
+   :private-members:
+
 Nonlinear Replicate Diagnostics
 -------------------------------
 
