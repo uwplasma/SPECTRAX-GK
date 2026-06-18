@@ -242,8 +242,8 @@ High-Risk Module Split Plan
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
   in ``solvers/nonlinear/explicit.py``. Public cached RHS/state integration now
-  lives in ``spectraxgk.nonlinear_core`` and public diagnostic entry points live
-  in ``spectraxgk.nonlinear_diagnostics``; ``spectraxgk.nonlinear`` is a small
+  lives in ``spectraxgk.solvers.nonlinear.state_integration`` and public diagnostic entry points live
+  in ``spectraxgk.solvers.nonlinear.diagnostic_integration``; ``spectraxgk.nonlinear`` is a small
   facade that re-exports the validated surface. Explicit and IMEX diagnostic
   integration orchestration now lives in ``solvers/nonlinear/diagnostics.py``
   with owner-module-injected geometry, cache, RHS, diagnostic, time-step,

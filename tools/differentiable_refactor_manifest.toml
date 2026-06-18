@@ -1702,8 +1702,8 @@ doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_core"
-source_path = "src/spectraxgk/nonlinear_core.py"
+module = "spectraxgk.solvers.nonlinear.state_integration"
+source_path = "src/spectraxgk/solvers/nonlinear/state_integration.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
 responsibility = "cached nonlinear RHS routing plus explicit and IMEX cached state integration with geometry/cache construction separated from diagnostics"
@@ -1718,8 +1718,8 @@ fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.nonlinear_diagnostics"
-source_path = "src/spectraxgk/nonlinear_diagnostics.py"
+module = "spectraxgk.solvers.nonlinear.diagnostic_integration"
+source_path = "src/spectraxgk/solvers/nonlinear/diagnostic_integration.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
 responsibility = "explicit and IMEX nonlinear diagnostic entry points plus dependency-injected diagnostic kernel wiring"
@@ -1753,7 +1753,7 @@ module = "spectraxgk.solvers.nonlinear.diagnostics"
 source_path = "src/spectraxgk/solvers/nonlinear/diagnostics.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "explicit and IMEX nonlinear diagnostic integration orchestration with facade-injected geometry, cache, RHS, diagnostic, time-step, collision-split, solve-step, progress, sampled-scan, and finalization seams"
+responsibility = "explicit and IMEX nonlinear_diagnostics orchestration with facade-injected geometry, cache, RHS, diagnostic, time-step, collision-split, solve-step, progress, sampled-scan, and finalization seams"
 moved_exports = [
   "ExplicitNonlinearDiagnosticsDeps",
   "integrate_explicit_nonlinear_diagnostics_impl",
@@ -2216,10 +2216,10 @@ extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationR
 [[hotspots]]
 module = "spectraxgk.nonlinear"
 source_path = "src/spectraxgk/nonlinear.py"
-current_reason = "public facade only; core cached integration and diagnostic entry points now live in nonlinear_core and nonlinear_diagnostics, while operator and solver owners hold kernels/policies"
+current_reason = "public facade only; cached state integration and diagnostic entry points now live in solvers.nonlinear owner modules, while operator and solver owners hold kernels/policies"
 target_packages = [
-  "spectraxgk.nonlinear_core",
-  "spectraxgk.nonlinear_diagnostics",
+  "spectraxgk.solvers.nonlinear.state_integration",
+  "spectraxgk.solvers.nonlinear.diagnostic_integration",
   "spectraxgk.operators.nonlinear.rhs",
   "spectraxgk.operators.nonlinear.diagnostic_state",
   "spectraxgk.operators.nonlinear.diagnostics",

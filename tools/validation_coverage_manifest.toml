@@ -633,8 +633,8 @@ next_tests = [
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
-  "spectraxgk.nonlinear_core",
-  "spectraxgk.nonlinear_diagnostics",
+  "spectraxgk.solvers.nonlinear.state_integration",
+  "spectraxgk.solvers.nonlinear.diagnostic_integration",
   "spectraxgk.terms.brackets",
   "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
@@ -683,7 +683,7 @@ artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.png",
 ]
 next_tests = [
-  "keep nonlinear_core and nonlinear_diagnostics owner-module tests on the fast path",
+  "keep nonlinear state-integration and diagnostic-integration owner-module tests on the fast path",
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",
