@@ -331,11 +331,26 @@ module = "spectraxgk.validation.benchmarks.kbm_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
 facade_module = "spectraxgk.validation.benchmarks.kbm"
 status = "active"
-responsibility = "KBM single-ky linear runner, geometry defaulting, explicit-time and Krylov paths, and fit-window policy"
+responsibility = "KBM single-ky geometry setup, generic saved-time fitting, and public result packaging"
 moved_exports = [
   "run_kbm_linear",
 ]
 fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_kbm_reference_overlay.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_linear_paths"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_linear_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm_linear"
+status = "active"
+responsibility = "KBM single-ky explicit-time diagnostics, fit-window fallback, and single/multi-target Krylov branch policies"
+moved_exports = [
+  "fit_kbm_window",
+  "run_kbm_explicit_time_path",
+  "run_kbm_krylov_path",
+  "sync_path_hooks",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

@@ -1,3 +1,11 @@
+- 2026-06-18: Continued the KBM single-ky benchmark refactor by moving the
+  explicit-time diagnostics branch, fit-window fallback, and single/multi-target
+  Krylov branch policy from `spectraxgk.validation.benchmarks.kbm_linear` into
+  `spectraxgk.validation.benchmarks.kbm_linear_paths`. The public single-point
+  runner still owns geometry setup, generic saved-time fitting, and result
+  packaging, while the new path owner preserves existing facade monkeypatch
+  seams through explicit hook synchronization. Focused KBM branch tests, Ruff,
+  py_compile, manifest, mypy, Sphinx, and repository-size gates passed locally.
 - 2026-06-18: Continued the ETG scan benchmark refactor by moving Krylov
   continuation, streaming-fit handling, saved-signal time integration, and
   fallback fit/appending policy from

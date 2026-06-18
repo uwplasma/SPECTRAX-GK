@@ -466,7 +466,11 @@ moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.validation.benchmarks.kbm`` facade, while
 ``spectraxgk.validation.benchmarks.kbm_beta_solver_paths`` owns the explicit-time
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
-runner. The public runner still owns per-beta setup and time/diffrax fallback.
+runner. The single-point runner delegates explicit-time diagnostics and
+single/multi-target Krylov branch selection to
+``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
+setup, generic saved-time fitting, and result packaging. The public beta runner
+still owns per-beta setup and time/diffrax fallback.
 ``spectraxgk.benchmarks`` remains the public compatibility facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
