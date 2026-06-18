@@ -1,3 +1,15 @@
+- 2026-06-18: Centralized saved-artifact path printing for runtime executable
+  commands in `spectraxgk.workflows.runtime.commands._print_saved_paths`.
+  Linear, ky-scan, nonlinear, and quasilinear command paths now use the same
+  ordered display helper, keeping output behavior explicit while removing
+  repeated per-command loops. I kept the process-safe runtime scan worker in
+  the public `spectraxgk.runtime` facade for now because the current
+  independent-worker route relies on an importable top-level task to preserve
+  patchability and multiprocessing compatibility. Local gates passed: focused
+  CLI/runtime command tests, Ruff on the touched command/test modules,
+  `py_compile` and mypy for the command workflow, differentiable-refactor
+  manifest, validation coverage manifest regeneration, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
 - 2026-06-18: Simplified the VMEC boundary-gradient collection gate without
   adding another source file. The repeated guarded dictionary access in
   `spectraxgk.geometry.vmec_boundary_chain.build_boundary_chain_collection_summary`
