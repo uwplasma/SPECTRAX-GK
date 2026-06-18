@@ -984,6 +984,26 @@ VMEC-JAX Transport Objective
 
 .. automodule:: spectraxgk.objectives.vmec_transport
    :members:
+   :no-index:
+
+VMEC-JAX Transport Configuration
+--------------------------------
+
+.. automodule:: spectraxgk.objectives.vmec_transport_config
+   :members:
+
+VMEC-JAX Transport Tables
+-------------------------
+
+.. automodule:: spectraxgk.objectives.vmec_transport_tables
+   :members:
+   :private-members:
+
+VMEC-JAX Transport Branch Gates
+-------------------------------
+
+.. automodule:: spectraxgk.objectives.vmec_transport_branch
+   :members:
 
 VMEC-JAX Transport Admission
 ----------------------------

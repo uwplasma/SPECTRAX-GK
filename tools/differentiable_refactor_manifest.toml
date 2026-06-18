@@ -1587,6 +1587,53 @@ moved_exports = [
 fast_tests = ["tests/test_stellarator_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_config"
+source_path = "src/spectraxgk/objectives/vmec_transport_config.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC-JAX transport objective kind/transform contracts, Boozer-resolution validation, and optional backend path pinning"
+moved_exports = [
+  "VMECJAXTransportObjectiveConfig",
+  "VMECJAXTransportObjectiveKind",
+  "VMECJAXTransportObjectiveTransform",
+  "_module_search_root",
+  "_pin_current_optional_backend_paths",
+  "_reference_wout_from_context",
+]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_tables"
+source_path = "src/spectraxgk/objectives/vmec_transport_tables.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC/Boozer sample-table construction, geometry transport weights, reduced nonlinear-window proxy, chunked weighted reductions, and scalar objective transforms"
+moved_exports = [
+  "_apply_objective_transform",
+  "_chunked_transport_objective_raw_value_from_state",
+  "_geometry_transport_weights",
+  "_solver_table_to_nonlinear_window_proxy",
+  "_static_grid_options_from_ky_values",
+  "_surface_chunk_sample_sets",
+  "_transport_feature_table_from_state",
+  "_transport_objective_raw_value_from_state",
+  "vmec_jax_transport_objective_from_state",
+]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py", "tests/test_vmec_jax_transport_gradient.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_branch"
+source_path = "src/spectraxgk/objectives/vmec_transport_branch.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC/Boozer final-state dominant-growth branch-locality report across surface, field-line, and ky samples"
+moved_exports = ["vmec_jax_transport_growth_branch_locality_report_from_states"]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
 [[hotspots]]
 module = "spectraxgk.objectives.solver_gradients"
 source_path = "src/spectraxgk/objectives/solver_gradients.py"

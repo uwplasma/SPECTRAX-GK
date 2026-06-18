@@ -3191,6 +3191,96 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.objectives.vmec_transport_config"
+path = "src/spectraxgk/objectives/vmec_transport_config.py"
+owner_lane = "VMEC-JAX transport objective configuration and optional backend path policy"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-JAX fixed-boundary optimization coupled to local gyrokinetic transport objectives",
+  "Boozer-resolution guardrails for paper-facing stellarator optimization",
+]
+physics_contracts = [
+  "configuration must keep growth, quasilinear, and reduced nonlinear-window scopes explicit",
+  "Boozer grids below the documented mode threshold fail closed before optimization",
+]
+numerics_contracts = [
+  "objective transforms and scales are finite, positive, and explicit",
+  "optional backend paths are pinned reproducibly when imported VMEC-JAX/Boozer modules are already active",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
+]
+next_tests = [
+  "add direct ObjectiveTerm metadata fixtures for every transform and transport kind",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_transport_tables"
+path = "src/spectraxgk/objectives/vmec_transport_tables.py"
+owner_lane = "VMEC-JAX to SPECTRAX-GK transport sample tables and scalar reductions"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-surface and multi-field-line stellarator transport screening",
+  "linear-growth and quasilinear proxy reductions before nonlinear holdout promotion",
+]
+physics_contracts = [
+  "growth, quasilinear, and reduced nonlinear-window table columns must remain distinguishable",
+  "reduced nonlinear-window proxies do not imply converged turbulent heat-flux optimization claims",
+]
+numerics_contracts = [
+  "ky samples map to unique integer solver-grid indices",
+  "surface chunking preserves weighted-mean reductions exactly against unchunked evaluation",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_vmec_jax_transport_gradient.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
+  "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
+]
+next_tests = [
+  "add real VMEC/Boozer fixture coverage for every supported transport objective kind",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_transport_branch"
+path = "src/spectraxgk/objectives/vmec_transport_branch.py"
+owner_lane = "VMEC-JAX transport eigenbranch locality gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "dominant non-Hermitian eigenbranch locality before differentiating growth objectives",
+  "finite-difference branch tracking for geometry-parameter microstability objectives",
+]
+physics_contracts = [
+  "transport-gradient promotion requires the same dominant-growth branch at base and perturbation states",
+  "truncated branch-locality reports fail closed and remain diagnostic only",
+]
+numerics_contracts = [
+  "branch slope, gap floor, and locality classifications are recorded per surface, field line, and ky",
+  "evaluation errors are converted into explicit failed gate rows",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.png",
+]
+next_tests = [
+  "add multi-sample branch-locality fixtures with one deliberately truncated sample set",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.stellarator_tables"
 path = "src/spectraxgk/objectives/stellarator_tables.py"
 owner_lane = "reduced and VMEC/Boozer stellarator ITG objective table and portfolio gates"
