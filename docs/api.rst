@@ -660,6 +660,7 @@ Benchmarks
 
 .. automodule:: spectraxgk.benchmarks
    :members:
+   :no-index:
 
 Benchmark Initialization
 ------------------------

@@ -1,3 +1,16 @@
+- 2026-06-18: Moved benchmark-family case presets out of the generic runtime
+  schema in `spectraxgk.config` and into
+  `spectraxgk.validation.benchmarks.case_configs`. `spectraxgk.config` remains
+  the stable public import location through explicit re-exports, while the
+  implementation owner now lives with the validation/benchmark modules that use
+  the presets. Added import-identity coverage, updated API/code-structure and
+  refactor-plan docs, registered the new owner in the validation/refactor
+  manifests, regenerated the validation coverage manifest summary, and
+  suppressed duplicate autodoc indexing on the benchmark facade. Local gates
+  passed: config tests, focused benchmark runner branch shard, public export
+  identity check, Ruff on touched Python modules, mypy on the split config
+  modules, validation/refactor manifests, repository-size check, warning-free
+  Sphinx docs build, and `git diff --check`.
 - 2026-06-18: Confirmed the root `benchmarks/` directory is the canonical
   tracked benchmark location and kept it lightweight: only drivers, TOML
   inputs, and `benchmarks/results/manifest.toml` live there, while raw outputs

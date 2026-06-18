@@ -2,6 +2,7 @@
 
 import pytest
 
+import spectraxgk.config as public_config
 from spectraxgk.config import (
     CycloneBaseCase,
     ETGBaseCase,
@@ -16,6 +17,7 @@ from spectraxgk.config import (
     explicit_method_default_cfl_fac,
     resolve_cfl_fac,
 )
+from spectraxgk.validation.benchmarks import case_configs
 
 
 def test_config_to_dict():
@@ -35,6 +37,23 @@ def test_config_to_dict():
     assert d["grid"]["ntheta"] == 32
     assert d["grid"]["nperiod"] == 2
     assert d["reference_alignment"]["enabled"] is True
+
+
+def test_benchmark_case_configs_keep_stable_public_exports() -> None:
+    """Benchmark presets are owned by validation modules but remain public."""
+
+    for name in (
+        "ModelConfig",
+        "CycloneBaseCase",
+        "ETGModelConfig",
+        "ETGBaseCase",
+        "KineticElectronModelConfig",
+        "KineticElectronBaseCase",
+        "KBMBaseCase",
+        "TEMModelConfig",
+        "TEMBaseCase",
+    ):
+        assert getattr(public_config, name) is getattr(case_configs, name)
 
 
 def test_config_override():
