@@ -1,3 +1,15 @@
+- 2026-06-18: Promoted the root `benchmarks/` directory contract into a
+  docs-checked result index. `benchmarks/` remains the canonical user-facing
+  benchmark entry point at repository root and stays lightweight at 56 KB of
+  tracked drivers, TOML inputs, and pointer manifests. `docs/benchmarks.rst`
+  now lists every promoted entry from `benchmarks/results/manifest.toml`,
+  including figure/table paths, claim scopes, and regeneration commands, while
+  raw solver products remain in ignored scratch directories. Added tests that
+  fail if the docs omit a promoted manifest entry or if the tracked benchmark
+  payload grows past the lightweight budget. Local gates passed: benchmark
+  result/atlas/refresh tests, Ruff on the touched Python test, repository-size
+  manifest check, warning-free Sphinx docs build, runtime-facade compile/signature
+  sanity check, and `git diff --check`.
 - 2026-06-18: Moved the core quasilinear transport diagnostic implementation
   from the root `spectraxgk.quasilinear` module into
   `spectraxgk.diagnostics.quasilinear_transport`. The root module is now a

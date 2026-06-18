@@ -59,35 +59,53 @@ duplicating large run products. The current tracked result set is:
 
 .. list-table:: Promoted benchmark result artifacts
    :header-rows: 1
-   :widths: 26 32 42
+   :widths: 22 30 18 30
 
    * - Result
      - Tracked artifact
+     - Claim scope
      - Regeneration path
-   * - Core linear atlas
+   * - Core linear benchmark atlas
      - ``docs/_static/benchmark_core_linear_atlas.png``
+     - headline linear validation atlas
      - ``python tools/make_benchmark_atlas.py``
-   * - Core nonlinear atlas
+   * - Core nonlinear benchmark atlas
      - ``docs/_static/benchmark_core_nonlinear_atlas.png``
+     - headline nonlinear validation atlas
      - ``python tools/make_benchmark_atlas.py``
-   * - README benchmark panel
+   * - README benchmark summary panel
      - ``docs/_static/benchmark_readme_panel.png``
+     - compact publication-facing benchmark summary
      - ``python tools/make_benchmark_atlas.py``
    * - Extended linear stress matrix
      - ``docs/_static/benchmark_extended_linear_panel.png``
+     - stress and provisional lanes, not headline validation claims
      - ``python tools/make_benchmark_atlas.py``
    * - Runtime and memory comparison
      - ``docs/_static/runtime_memory_benchmark.png``
-     - ``python tools/benchmark_runtime_memory.py`` using
-       ``tools/runtime_memory_manifest.toml``
-   * - Runtime and memory rows
+     - tracked wall-time and memory comparison rows
+     - ``python tools/benchmark_runtime_memory.py --summary-glob ...``
+   * - Runtime and memory result rows
      - ``docs/_static/runtime_memory_results_ship_refresh.csv``
-     - machine-readable rows behind the tracked runtime/memory panel
+     - machine-readable runtime/memory rows used by the tracked panel
+     - ``python tools/benchmark_runtime_memory.py``
+   * - Runtime and memory summary
+     - ``docs/_static/runtime_memory_summary_ship_refresh.json``
+     - machine-readable summary for runtime/memory panel generation
+     - ``python tools/benchmark_runtime_memory.py``
+   * - Core linear atlas inputs
+     - ``tools/benchmark_atlas_manifest.toml``
+     - manifest of small tracked benchmark inputs
+     - ``python tools/make_benchmark_atlas.py``
 
 This keeps the repository light: ``benchmarks/`` stores only drivers and
 pointers, ``docs/_static`` stores reviewed compact figures/tables, and raw
 solver output directories remain untracked. The tracked ``benchmarks/`` payload
 is intentionally on the order of tens of kilobytes.
+
+The manifest above is the docs-facing source of truth for promoted benchmark
+results. If a new result is added to ``benchmarks/results/manifest.toml``, it
+must either appear in this table or remain unpromoted in scratch storage.
 
 This produces the tracked atlas panels:
 
