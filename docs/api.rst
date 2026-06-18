@@ -772,6 +772,14 @@ Benchmarking
    :members:
    :private-members:
 
+.. automodule:: spectraxgk.validation.benchmarks.cyclone_scan_seed
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.benchmarks.cyclone_scan_explicit
+   :members:
+   :private-members:
+
 .. automodule:: spectraxgk.validation.benchmarks.kbm
    :members:
    :no-index:

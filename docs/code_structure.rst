@@ -496,10 +496,14 @@ delegating Krylov seeding/branch selection and time-integration fit policy to
 Krylov branch-following, reference-aligned explicit-time reselection, and
 standard saved-time/streaming scan execution to
 ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
-hook bundle, so tests can still patch the public facade while the solver policy
-is isolated for review. Family-specific branch tests patch that facade directly
-while examples and downstream scripts keep importing through
-``spectraxgk.benchmarks``.
+hook bundle. Trace-seed branch initialization lives in
+``spectraxgk.validation.benchmarks.cyclone_scan_seed`` and reference-aligned
+explicit-time reselection lives in
+``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The old branch
+module re-exports those helpers for compatibility, so tests can still patch the
+public facade while the solver policies are isolated for review.
+Family-specific branch tests patch that facade directly while examples and
+downstream scripts keep importing through ``spectraxgk.benchmarks``.
 
 Quasilinear calibration is split into ``calibration_core`` for
 train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral

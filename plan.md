@@ -2903,3 +2903,13 @@ No long nonlinear audit should be launched from these candidates.
   confined to comparison-tool loaders/tests. Focused benchmark branch, runtime,
   comparison-tool, lint, type, manifest, architecture, repository-size, and docs
   gates passed locally.
+
+- Split Cyclone ky-scan policy ownership further: explicit-trace seed/shift logic
+  now lives in `spectraxgk.validation.benchmarks.cyclone_scan_seed`, and
+  reference-aligned explicit-time reselection lives in
+  `spectraxgk.validation.benchmarks.cyclone_scan_explicit`. The original
+  branch module keeps compatibility re-exports and scan orchestration. Added
+  direct deterministic tests for seed override tolerance, continuation-target
+  extrapolation, and reselected-frequency scoring. Focused Cyclone benchmark
+  branch tests, lint, py_compile, manifest, type, repository-size, and Sphinx
+  gates passed locally.
