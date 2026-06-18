@@ -2812,3 +2812,9 @@ No long nonlinear audit should be launched from these candidates.
   `spectraxgk.parallel.core` facade preserves existing imports, while tests now
   patch the real owner modules. Focused parallel API, artifact-contract, ky-scan
   gate, ruff, manifest, and Sphinx gates passed locally.
+
+- Continued the linear-RHS parallelization refactor by splitting the 678-line
+  `spectraxgk.solvers.linear.parallel` implementation into common eligibility/
+  device policy, Hermite streaming, and electrostatic slice/fused shard-map
+  owner modules. The public module remains the dispatcher and import facade;
+  focused linear helper/profile tests passed before manifest/docs gates.

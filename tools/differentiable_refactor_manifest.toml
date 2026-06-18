@@ -3373,3 +3373,33 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_common"
+source_path = "src/spectraxgk/solvers/linear/parallel_common.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "shared term-eligibility predicates and device-list resolution for velocity-parallel linear RHS routes"
+moved_exports = ["_is_electrostatic_field_terms", "_is_electrostatic_slice_terms", "_is_streaming_only_terms", "_resolve_parallel_devices"]
+fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_streaming"
+source_path = "src/spectraxgk/solvers/linear/parallel_streaming.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "Hermite-sharded streaming-only and electrostatic-streaming linear RHS routes"
+moved_exports = ["linear_rhs_streaming_velocity_sharded", "linear_rhs_streaming_electrostatic_velocity_sharded", "_streaming_electrostatic_from_phi_velocity_sharded", "_electrostatic_streaming_field_rhs"]
+fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_electrostatic"
+source_path = "src/spectraxgk/solvers/linear/parallel_electrostatic.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "electrostatic slice linear RHS route and fused multi-device Hermite shard-map kernel cache"
+moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
+fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/test_profile_linear_rhs_parallel_slices.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

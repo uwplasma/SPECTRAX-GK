@@ -302,6 +302,11 @@ Completed extractions:
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
+- velocity-parallel linear RHS routing is split into common eligibility/device
+  policy (``solvers/linear/parallel_common.py``), Hermite streaming routes
+  (``solvers/linear/parallel_streaming.py``), and electrostatic slice/fused
+  shard-map routes (``solvers/linear/parallel_electrostatic.py``). The public
+  ``solvers/linear/parallel.py`` module remains the stable dispatcher.
 - explicit RK/SSP/K10 one-step policy, cached explicit scan policy, explicit
   diagnostic step and scan-selection policy, explicit/IMEX diagnostic integration
   orchestration, cached IMEX scan policy, IMEX diagnostic step and

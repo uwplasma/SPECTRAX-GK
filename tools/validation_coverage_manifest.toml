@@ -591,6 +591,11 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.linear.parallel"
 path = "src/spectraxgk/solvers/linear/parallel.py"
+owned_modules = [
+  "spectraxgk.solvers.linear.parallel_common",
+  "spectraxgk.solvers.linear.parallel_electrostatic",
+  "spectraxgk.solvers.linear.parallel_streaming",
+]
 owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 status = "active"
 coverage_priority = "medium"

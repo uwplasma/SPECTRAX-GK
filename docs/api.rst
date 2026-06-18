@@ -295,6 +295,27 @@ Linear Parallel RHS
    :members:
    :private-members:
 
+Linear Parallel Policy
+----------------------
+
+.. automodule:: spectraxgk.solvers.linear.parallel_common
+   :members:
+   :private-members:
+
+Linear Parallel Streaming
+-------------------------
+
+.. automodule:: spectraxgk.solvers.linear.parallel_streaming
+   :members:
+   :private-members:
+
+Linear Parallel Electrostatic Slices
+------------------------------------
+
+.. automodule:: spectraxgk.solvers.linear.parallel_electrostatic
+   :members:
+   :private-members:
+
 Linear Krylov Solvers
 ---------------------
 
