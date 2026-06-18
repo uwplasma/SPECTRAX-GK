@@ -28,7 +28,9 @@ def _load_toml(path: Path) -> dict:
 
 def _load_parallel_checker():
     path = ROOT / "tools" / "check_parallel_scaling_artifacts.py"
-    spec = importlib.util.spec_from_file_location("check_parallel_scaling_artifacts", path)
+    spec = importlib.util.spec_from_file_location(
+        "check_parallel_scaling_artifacts", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -37,7 +39,9 @@ def _load_parallel_checker():
     return module
 
 
-def _write_nonlinear_sharding_source_artifacts(tmp_path: Path, rows: list[dict]) -> None:
+def _write_nonlinear_sharding_source_artifacts(
+    tmp_path: Path, rows: list[dict]
+) -> None:
     split_names = {
         "cpu": "nonlinear_sharding_strong_scaling_cpu_large.json",
         "gpu": "nonlinear_sharding_strong_scaling_gpu_xlarge.json",
@@ -122,7 +126,7 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         path
         for module in validation["modules"]
         if module["module"]
-        in {"spectraxgk.parallel.core", "spectraxgk.parallel.state"}
+        in {"spectraxgk.parallel.__init__", "spectraxgk.parallel.state"}
         for path in module["artifact_paths"]
     }
 
@@ -132,7 +136,9 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         assert (ROOT / artifact).exists(), artifact
 
 
-def test_parallelization_completion_status_scopes_production_and_diagnostic_lanes() -> None:
+def test_parallelization_completion_status_scopes_production_and_diagnostic_lanes() -> (
+    None
+):
     payload = _load_json("parallelization_completion_status.json")
 
     assert payload["kind"] == "parallelization_completion_status"
@@ -142,13 +148,30 @@ def test_parallelization_completion_status_scopes_production_and_diagnostic_lane
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
     assert lanes["independent_ky_scan"]["status"] == "production_closed"
     assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
-    assert lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"] is True
-    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == ["cpu", "gpu"]
-    assert lanes["quasilinear_uq_ensemble"]["source_contract"]["claim_separation_passed"] is True
+    assert (
+        lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"]
+        is True
+    )
+    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == [
+        "cpu",
+        "gpu",
+    ]
+    assert (
+        lanes["quasilinear_uq_ensemble"]["source_contract"]["claim_separation_passed"]
+        is True
+    )
     assert lanes["independent_ky_scan"]["best_speedups"]["cpu"] >= 5.0
     assert lanes["independent_ky_scan"]["best_speedups"]["gpu"] >= 1.5
-    assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
-    assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
+    assert (
+        lanes["whole_state_nonlinear_sharding"]["status"]
+        == "diagnostic_closed_not_production"
+    )
+    assert (
+        lanes["whole_state_nonlinear_sharding"]["source_contract"][
+            "claim_separation_passed"
+        ]
+        is True
+    )
     assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
 
 
@@ -164,23 +187,37 @@ def test_nonlinear_domain_parallel_identity_gate_is_scoped_and_fail_closed() -> 
     assert payload["gate"]["max_rel_error"] <= payload["gate"]["rtol"]
     assert payload["transport_window"]["gate"]["identity_passed"] is True
     assert payload["transport_window"]["gate"]["decomposed_path_enabled"] is True
-    assert payload["transport_window"]["gate"]["max_abs_state_error"] <= payload["gate"]["atol"]
-    assert payload["transport_window"]["gate"]["mass_trace_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["transport_window"]["gate"]["free_energy_trace_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["transport_window"]["gate"]["flux_proxy_trace_max_abs_error"] <= payload["gate"]["atol"]
-    assert {
-        row["metric"] for row in payload["transport_window"]["metrics"]
-    } == {
+    assert (
+        payload["transport_window"]["gate"]["max_abs_state_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert (
+        payload["transport_window"]["gate"]["mass_trace_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert (
+        payload["transport_window"]["gate"]["free_energy_trace_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert (
+        payload["transport_window"]["gate"]["flux_proxy_trace_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert {row["metric"] for row in payload["transport_window"]["metrics"]} == {
         "mass_trace",
         "free_energy_trace",
         "boundary_flux_proxy_trace",
     }
-    assert all(row["identity_passed"] is True for row in payload["transport_window"]["metrics"])
+    assert all(
+        row["identity_passed"] is True for row in payload["transport_window"]["metrics"]
+    )
     assert "no production routing or speedup claim" in payload["claim_scope"]
     assert (STATIC / "nonlinear_domain_parallel_identity_gate.png").exists()
 
 
-def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_closed() -> None:
+def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_closed() -> (
+    None
+):
     payload = _load_json("nonlinear_spectral_communication_identity_gate.json")
 
     assert payload["case"] == "Nonlinear spectral decomposition identity gate"
@@ -193,13 +230,27 @@ def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_close
     assert payload["gate"]["pencil_rhs_identity_passed"] is True
     assert payload["gate"]["pencil_transport_window_identity_passed"] is True
     assert payload["communication_gate"]["fft_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["communication_gate"]["bracket_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["communication_gate"]["field_max_abs_error"] <= payload["gate"]["atol"]
+    assert (
+        payload["communication_gate"]["bracket_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert (
+        payload["communication_gate"]["field_max_abs_error"] <= payload["gate"]["atol"]
+    )
     assert payload["rhs_gate"]["rhs_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["integrator_gate"]["final_state_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["integrator_gate"]["flux_proxy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert (
+        payload["integrator_gate"]["final_state_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
+    assert (
+        payload["integrator_gate"]["flux_proxy_trace_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
     assert payload["pencil_rhs_gate"]["rhs_max_abs_error"] <= payload["gate"]["atol"]
-    assert payload["pencil_transport_window_gate"]["final_state_max_abs_error"] <= payload["gate"]["atol"]
+    assert (
+        payload["pencil_transport_window_gate"]["final_state_max_abs_error"]
+        <= payload["gate"]["atol"]
+    )
     assert all(row["identity_passed"] is True for row in payload["rows"])
     assert {row["operator"] for row in payload["rows"]} == {
         "fft_forward_inverse",
@@ -213,11 +264,16 @@ def test_nonlinear_spectral_communication_identity_gate_is_scoped_and_fail_close
     }
     assert "pencil fused-bracket" in payload["claim_scope"]
     assert "physical transport-window identity gate" in payload["claim_scope"]
-    assert "no production distributed FFT routing or speedup claim" in payload["claim_scope"]
+    assert (
+        "no production distributed FFT routing or speedup claim"
+        in payload["claim_scope"]
+    )
     assert (STATIC / "nonlinear_spectral_communication_identity_gate.png").exists()
 
 
-def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence() -> None:
+def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence() -> (
+    None
+):
     mod = _load_parallel_checker()
 
     summary = mod.validate_all()
@@ -232,7 +288,10 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
         "nonlinear_sharding",
         "linear_rhs_parallel_slices",
     }
-    assert summary["production_gate"]["name"] == "nonlinear_sharding_production_speedup_gate"
+    assert (
+        summary["production_gate"]["name"]
+        == "nonlinear_sharding_production_speedup_gate"
+    )
     assert summary["production_gate"]["gate_passed"] is False
     assert summary["production_gate"]["status"] == "diagnostic_only"
     assert summary["production_gate"]["production_candidate_backends"] == ["cpu"]
@@ -258,13 +317,17 @@ def test_parallel_scaling_artifact_checker_rejects_promoted_observable_split(
     mod = _load_parallel_checker()
     payload = _load_json(mod.OBSERVABLE_SPLIT_JSON)
     payload["summary"]["max_speedup_vs_serial"] = payload["min_speedup"]
-    (tmp_path / mod.OBSERVABLE_SPLIT_JSON).write_text(json.dumps(payload), encoding="utf-8")
+    (tmp_path / mod.OBSERVABLE_SPLIT_JSON).write_text(
+        json.dumps(payload), encoding="utf-8"
+    )
 
     with pytest.raises(ValueError, match="no longer below gate"):
         mod.validate_device_z_pencil_observable_split(tmp_path, check_sidecars=False)
 
 
-def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(tmp_path: Path) -> None:
+def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(
+    tmp_path: Path,
+) -> None:
     mod = _load_parallel_checker()
     family = mod.ArtifactFamily(
         name="bad_identity",
@@ -377,7 +440,12 @@ def test_parallel_scaling_artifact_checker_accepts_profile_source_contract(
         "max_abs_error": 0.0,
         "source_contract_version": 1,
         "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
-        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "profile_command_argv": [
+            "python",
+            "tools/profile_nonlinear_sharding.py",
+            "--sharding",
+            "kx",
+        ],
         "source_artifact": "docs/_static/profile.json",
         "software_versions": {
             "python": "3.11.0",
@@ -434,7 +502,12 @@ def test_parallel_scaling_artifact_checker_rejects_stale_profile_source_contract
         "max_abs_error": 0.0,
         "source_contract_version": 1,
         "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
-        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "profile_command_argv": [
+            "python",
+            "tools/profile_nonlinear_sharding.py",
+            "--sharding",
+            "kx",
+        ],
         "source_artifact": "docs/_static/profile.json",
         "software_versions": {
             "python": "3.11.0",
@@ -536,7 +609,9 @@ def test_parallel_scaling_artifact_checker_rejects_stale_production_gate(
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="blockers do not match missing backend candidates"):
+    with pytest.raises(
+        ValueError, match="blockers do not match missing backend candidates"
+    ):
         mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
 
 

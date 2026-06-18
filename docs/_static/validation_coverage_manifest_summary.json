@@ -83,15 +83,15 @@
     "spectraxgk.objectives.stellarator_residuals",
     "spectraxgk.objectives.portfolio_artifacts",
     "spectraxgk.objectives.stellarator_portfolio",
-    "spectraxgk.parallel.core",
+    "spectraxgk.parallel.__init__",
     "spectraxgk.parallel.decomposition"
   ],
   "n_direct_modules": 108,
-  "n_excluded_modules": 27,
+  "n_excluded_modules": 26,
   "n_high_priority_open": 85,
   "n_modules": 108,
-  "n_owned_modules": 220,
-  "n_package_modules": 355,
+  "n_owned_modules": 222,
+  "n_package_modules": 356,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -135,6 +135,8 @@
       "spectraxgk.validation.benchmarks.cyclone_linear_paths",
       "spectraxgk.validation.benchmarks.cyclone_scan",
       "spectraxgk.validation.benchmarks.cyclone_scan_branches",
+      "spectraxgk.validation.benchmarks.cyclone_scan_explicit",
+      "spectraxgk.validation.benchmarks.cyclone_scan_seed",
       "spectraxgk.validation.benchmarks.etg",
       "spectraxgk.validation.benchmarks.etg_linear",
       "spectraxgk.validation.benchmarks.etg_scan",
@@ -333,7 +335,7 @@
       "spectraxgk.operators.nonlinear.spectral_tolerances",
       "spectraxgk.operators.nonlinear.spectral_work_models"
     ],
-    "spectraxgk.parallel.core": [
+    "spectraxgk.parallel.__init__": [
       "spectraxgk.parallel.batch",
       "spectraxgk.parallel.identity",
       "spectraxgk.parallel.independent"
@@ -921,7 +923,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 32,
+      "n_owned_modules": 34,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",
@@ -1854,7 +1856,7 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.parallel.core",
+      "module": "spectraxgk.parallel.__init__",
       "n_artifacts": 39,
       "n_fast_tests": 2,
       "n_next_tests": 1,
@@ -1862,7 +1864,7 @@
       "n_owned_modules": 3,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/parallel/core.py",
+      "path": "src/spectraxgk/parallel/__init__.py",
       "status": "active"
     },
     {

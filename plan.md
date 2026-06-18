@@ -2913,3 +2913,10 @@ No long nonlinear audit should be launched from these candidates.
   extrapolation, and reselected-frequency scoring. Focused Cyclone benchmark
   branch tests, lint, py_compile, manifest, type, repository-size, and Sphinx
   gates passed locally.
+
+- Removed the empty `spectraxgk.parallel.core` facade and made
+  `spectraxgk.parallel` import `batch`, `identity`, and `independent` owners
+  directly. The coverage manifest now tracks `spectraxgk.parallel.__init__`
+  as the package-level public surface, and parallel artifact tests read that
+  row for scaling artifacts. Focused parallel/public-API/refactor-manifest,
+  lint, type, repository-size, and Sphinx gates passed locally.

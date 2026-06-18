@@ -78,7 +78,11 @@ def _validate_fast_test_path(resolved: Path, raw: str, module: str) -> None:
         rel = resolved.relative_to(tests_root)
     except ValueError as exc:
         raise ValueError(f"{module}: fast test must live under tests/: {raw}") from exc
-    if rel.parent != Path(".") or not rel.name.startswith("test_") or rel.suffix != ".py":
+    if (
+        rel.parent != Path(".")
+        or not rel.name.startswith("test_")
+        or rel.suffix != ".py"
+    ):
         raise ValueError(
             f"{module}: fast test must be a top-level tests/test_*.py file "
             f"discoverable by run_wide_coverage_gate.py: {raw}"
@@ -168,18 +172,23 @@ def _coverage_xml_summary(
             }
         )
 
-    missing_measured_modules = sorted(module for module in tracked_modules if module not in measured)
+    missing_measured_modules = sorted(
+        module for module in tracked_modules if module not in measured
+    )
     modules_below_target = [
         row["module"]
         for row in module_rows
-        if row["coverage_percent"] is not None and row["coverage_percent"] < row["target_percent"]
+        if row["coverage_percent"] is not None
+        and row["coverage_percent"] < row["target_percent"]
     ]
 
     return {
         "coverage_xml": str(coverage_xml),
         "package_coverage_percent": package_coverage_percent,
         "package_coverage_target_percent": float(package_target),
-        "package_coverage_passed": bool(package_coverage_percent >= float(package_target)),
+        "package_coverage_passed": bool(
+            package_coverage_percent >= float(package_target)
+        ),
         "n_measured_modules": len(measured),
         "n_tracked_modules": len(tracked_modules),
         "n_missing_measured_modules": len(missing_measured_modules),
@@ -216,7 +225,9 @@ def validate_manifest(
         raise ValueError("manifest must contain a [coverage_inventory] table")
     require_all_owned = inventory.get("require_all_package_modules_owned")
     if require_all_owned is not True:
-        raise ValueError("coverage_inventory.require_all_package_modules_owned must be true")
+        raise ValueError(
+            "coverage_inventory.require_all_package_modules_owned must be true"
+        )
     excluded_module_list = _as_nonempty_list(
         inventory.get("excluded_modules"),
         "excluded_modules",
@@ -230,9 +241,13 @@ def validate_manifest(
     excluded_modules = set(excluded_module_list)
     for module in excluded_modules:
         if not module.startswith("spectraxgk."):
-            raise ValueError(f"coverage_inventory: excluded module must start with 'spectraxgk.': {module}")
+            raise ValueError(
+                f"coverage_inventory: excluded module must start with 'spectraxgk.': {module}"
+            )
         if not _module_to_source_path(module).exists():
-            raise ValueError(f"coverage_inventory: excluded module source does not exist: {module}")
+            raise ValueError(
+                f"coverage_inventory: excluded module source does not exist: {module}"
+            )
 
     seen_modules: set[str] = set()
     rows: list[dict[str, Any]] = []
@@ -273,7 +288,9 @@ def validate_manifest(
         if priority not in ALLOWED_PRIORITIES:
             raise ValueError(f"{module}: invalid coverage_priority {priority!r}")
         coverage = entry.get("coverage_target_percent")
-        if not isinstance(coverage, (float, int)) or not (0.0 < float(coverage) <= 100.0):
+        if not isinstance(coverage, (float, int)) or not (
+            0.0 < float(coverage) <= 100.0
+        ):
             raise ValueError(f"{module}: coverage_target_percent must be in (0, 100]")
         target_by_module[module] = float(coverage)
 
@@ -291,13 +308,21 @@ def validate_manifest(
         owned_modules_by_owner[module] = owned_modules
         for owned_module in owned_modules:
             if not owned_module.startswith("spectraxgk."):
-                raise ValueError(f"{module}: owned module must start with 'spectraxgk.': {owned_module}")
+                raise ValueError(
+                    f"{module}: owned module must start with 'spectraxgk.': {owned_module}"
+                )
             if owned_module in seen_modules:
-                raise ValueError(f"{module}: owned_modules must not include direct manifest row: {owned_module}")
+                raise ValueError(
+                    f"{module}: owned_modules must not include direct manifest row: {owned_module}"
+                )
             if owned_module in excluded_modules:
-                raise ValueError(f"{module}: owned_modules must not include excluded module: {owned_module}")
+                raise ValueError(
+                    f"{module}: owned_modules must not include excluded module: {owned_module}"
+                )
             if not _module_to_source_path(owned_module).exists():
-                raise ValueError(f"{module}: owned module source does not exist: {owned_module}")
+                raise ValueError(
+                    f"{module}: owned module source does not exist: {owned_module}"
+                )
             previous_owner = module_owners.setdefault(owned_module, module)
             if previous_owner != module:
                 raise ValueError(
@@ -309,15 +334,21 @@ def validate_manifest(
             resolved = _repo_path(test_path)
             _validate_fast_test_path(resolved, test_path, module)
 
-        artifacts = _as_nonempty_list(entry.get("artifact_paths"), "artifact_paths", module)
+        artifacts = _as_nonempty_list(
+            entry.get("artifact_paths"), "artifact_paths", module
+        )
         _reject_duplicate_values(artifacts, "artifact_paths", module)
         if check_artifacts:
             for artifact in artifacts:
                 resolved_artifact = _repo_path(artifact)
                 if not resolved_artifact.exists():
-                    raise ValueError(f"{module}: artifact path does not exist: {artifact}")
+                    raise ValueError(
+                        f"{module}: artifact path does not exist: {artifact}"
+                    )
                 if not resolved_artifact.is_file():
-                    raise ValueError(f"{module}: artifact path must be a file: {artifact}")
+                    raise ValueError(
+                        f"{module}: artifact path must be a file: {artifact}"
+                    )
 
         rows.append(
             {
@@ -345,18 +376,27 @@ def validate_manifest(
     owned_modules = set(module_owners)
     directly_owned_modules = sorted(direct_modules & owned_modules)
     if directly_owned_modules:
-        raise ValueError(f"direct manifest rows must not be listed as owned modules: {directly_owned_modules}")
-    unowned_modules = sorted(package_modules - direct_modules - owned_modules - excluded_modules)
-    stale_owned_modules = sorted((direct_modules | owned_modules | excluded_modules) - package_modules)
+        raise ValueError(
+            f"direct manifest rows must not be listed as owned modules: {directly_owned_modules}"
+        )
+    unowned_modules = sorted(
+        package_modules - direct_modules - owned_modules - excluded_modules
+    )
+    stale_owned_modules = sorted(
+        (direct_modules | owned_modules | excluded_modules) - package_modules
+    )
     if stale_owned_modules:
-        raise ValueError(f"manifest references missing package modules: {stale_owned_modules}")
+        raise ValueError(
+            f"manifest references missing package modules: {stale_owned_modules}"
+        )
     if unowned_modules:
         raise ValueError(f"package modules lack coverage ownership: {unowned_modules}")
 
     high_priority_open = [
         row["module"]
         for row in rows
-        if row["coverage_priority"] == "high" and row["status"] in {"active", "open", "planned"}
+        if row["coverage_priority"] == "high"
+        and row["status"] in {"active", "open", "planned"}
     ]
     summary = {
         "package_coverage_target_percent": float(target),
@@ -389,7 +429,9 @@ def validate_manifest(
                 coverage_summary["modules_below_target"]
             )
             if failures:
-                raise ValueError(f"module coverage below manifest target or missing: {failures}")
+                raise ValueError(
+                    f"module coverage below manifest target or missing: {failures}"
+                )
     elif enforce_package_coverage or enforce_module_coverage:
         raise ValueError("coverage enforcement requires --coverage-xml")
     return summary

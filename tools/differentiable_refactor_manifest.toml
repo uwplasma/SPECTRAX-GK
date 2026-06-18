@@ -3736,7 +3736,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.parallel.identity"
 source_path = "src/spectraxgk/parallel/identity.py"
-facade_module = "spectraxgk.parallel.core"
+facade_module = "spectraxgk.parallel"
 status = "active"
 responsibility = "numerical-identity reports and pytree error statistics for serial-vs-parallel gates"
 moved_exports = [
@@ -3749,7 +3749,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.parallel.batch"
 source_path = "src/spectraxgk/parallel/batch.py"
-facade_module = "spectraxgk.parallel.core"
+facade_module = "spectraxgk.parallel"
 status = "active"
 responsibility = "JAX-array independent batch mapping, padding, balanced ky chunks, and vmap/pmap identity gates"
 moved_exports = [
@@ -3765,7 +3765,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.parallel.independent"
 source_path = "src/spectraxgk/parallel/independent.py"
-facade_module = "spectraxgk.parallel.core"
+facade_module = "spectraxgk.parallel"
 status = "active"
 responsibility = "ordered Python independent-task execution, worker metadata, exception provenance, and ensemble provenance gates"
 moved_exports = [

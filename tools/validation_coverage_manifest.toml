@@ -19,7 +19,6 @@ excluded_modules = [
   "spectraxgk.operators.__init__",
   "spectraxgk.operators.linear.__init__",
   "spectraxgk.operators.nonlinear.__init__",
-  "spectraxgk.parallel.__init__",
   "spectraxgk.solvers.__init__",
   "spectraxgk.solvers.linear.__init__",
   "spectraxgk.solvers.nonlinear.__init__",
@@ -3846,8 +3845,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.parallel.core"
-path = "src/spectraxgk/parallel/core.py"
+module = "spectraxgk.parallel.__init__"
+path = "src/spectraxgk/parallel/__init__.py"
 owned_modules = [
   "spectraxgk.parallel.batch",
   "spectraxgk.parallel.identity",
