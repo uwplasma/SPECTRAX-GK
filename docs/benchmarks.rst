@@ -17,6 +17,22 @@ curated comparison traces in ``docs/_static``.
 Figure generation
 -----------------
 
+Lightweight benchmark drivers and runtime TOML inputs live in the repository
+root under ``benchmarks/``. They are intentionally separated from
+``examples/``: examples teach workflows, while benchmarks reproduce validation
+panels and paper-facing comparison traces. Generated outputs should go to
+``tools_out/`` or another scratch directory; only reviewed, compressed summary
+figures and small CSV/JSON metadata are tracked in ``docs/_static``.
+
+Quick driver examples:
+
+.. code-block:: bash
+
+   python benchmarks/cyclone_linear_benchmark.py --outdir tools_out/cyclone_benchmark
+   python benchmarks/kbm_beta_scan.py
+   python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
+   python benchmarks/secondary_slab_workflow.py
+
 Regenerate the atlas figures with:
 
 .. code-block:: bash

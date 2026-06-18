@@ -802,7 +802,7 @@ zonal-energy proxy for intermediate checks, but it is no longer the target
 observable for the final paper lane.
 
 The first case-specific shaped-Miller pilot for this lane is now reproducible
-through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
+through ``benchmarks/runtime_miller_zonal_response.toml`` and
 ``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
@@ -834,7 +834,7 @@ the clean higher-moment run. The shipped artifact therefore remains on the
 without moving the benchmark-scale damping gate.
 
 The next literature lane now has a dedicated runtime contract as well:
-``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
+``benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
 ``tools/generate_w7x_zonal_response_panel.py`` define the W7-X high-mirror
 bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
 tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]``. The runtime

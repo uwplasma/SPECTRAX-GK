@@ -19,6 +19,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
+from spectraxgk.diagnostics.modes import ModeSelection
 from spectraxgk.geometry import (
     SAlphaGeometry,
     apply_geometry_grid_defaults,
@@ -2887,7 +2888,6 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
 def test_runtime_linear_secondary_slab_example_runs() -> None:
     cfg_path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_secondary_slab.toml"
     )
@@ -3909,7 +3909,7 @@ def test_run_linear_case_uses_toml_output_path(
             ky=0.2,
             gamma=0.1,
             omega=0.2,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     monkeypatch.setattr(
@@ -4101,7 +4101,7 @@ def test_run_linear_case_without_output_path_prints_summary_only(
             ky=0.25,
             gamma=0.11,
             omega=0.22,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     monkeypatch.setattr(
@@ -4178,7 +4178,7 @@ def test_run_runtime_scan_serial_forwards_per_ky(
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     import spectraxgk.runtime as runtime
@@ -4219,7 +4219,7 @@ def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
             quasilinear={
                 "ky": ky,
                 "gamma": ky + 1.0,
@@ -4272,7 +4272,7 @@ def test_run_runtime_scan_parallel_config_batch_selects_independent_workers(
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
@@ -4321,7 +4321,7 @@ def test_run_runtime_scan_explicit_workers_override_parallel_config(
             ky=ky,
             gamma=ky,
             omega=-ky,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
