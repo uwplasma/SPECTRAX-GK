@@ -2585,10 +2585,12 @@ module = "spectraxgk.workflows.runtime.execution"
 source_path = "src/spectraxgk/workflows/runtime/execution.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "configured runtime linear and nonlinear dispatch across full-GK and reduced cETG models with dependency-injected patch seams"
+responsibility = "configured runtime linear and nonlinear dispatch plus dependency assembly across full-GK and reduced cETG models with patchable runtime facade seams"
 moved_exports = [
   "RuntimeLinearDispatchDeps",
   "RuntimeNonlinearDispatchDeps",
+  "build_runtime_linear_dispatch_deps",
+  "build_runtime_nonlinear_dispatch_deps",
   "run_runtime_linear_impl",
   "run_runtime_nonlinear_impl",
 ]

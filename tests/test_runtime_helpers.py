@@ -179,6 +179,18 @@ def test_runtime_command_helpers_have_single_canonical_owner() -> None:
         assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
 
 
+def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
+    linear_deps = runtime._runtime_linear_dispatch_deps()
+    nonlinear_deps = runtime._runtime_nonlinear_dispatch_deps()
+
+    assert linear_deps.full_deps.build_runtime_geometry is runtime.build_runtime_geometry
+    assert linear_deps.full_deps.build_linear_cache is runtime.build_linear_cache
+    assert linear_deps.cetg_deps.build_runtime_term_config is runtime.build_runtime_term_config
+    assert nonlinear_deps.full_deps.build_runtime_geometry is runtime.build_runtime_geometry
+    assert nonlinear_deps.full_deps.integrate_nonlinear_from_config is runtime.integrate_nonlinear_from_config
+    assert nonlinear_deps.cetg_deps.run_adaptive_runtime_chunk_loop is runtime.run_adaptive_runtime_chunk_loop
+
+
 def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:
     cfg = replace(
         _base_cfg(),

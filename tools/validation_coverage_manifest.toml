@@ -200,8 +200,7 @@ artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
 ]
 next_tests = [
-  "add direct coverage for combined-ky scan policy once runtime scan dispatch is split",
-  "keep legacy spectraxgk.runtime exports object-identical until the next major API cleanup",
+  "keep spectraxgk.runtime compatibility exports object-identical until the next major API cleanup",
 ]
 
 [[modules]]
