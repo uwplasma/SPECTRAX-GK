@@ -804,6 +804,10 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.etg_scan
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.etg_scan_paths
+   :members:
+   :private-members:
+
 .. automodule:: spectraxgk.validation.benchmarks.kinetic
    :members:
    :no-index:

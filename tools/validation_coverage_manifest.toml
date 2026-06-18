@@ -1387,6 +1387,7 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.etg",
   "spectraxgk.validation.benchmarks.etg_linear",
   "spectraxgk.validation.benchmarks.etg_scan",
+  "spectraxgk.validation.benchmarks.etg_scan_paths",
   "spectraxgk.validation.benchmarks.fit_signals",
   "spectraxgk.validation.benchmarks.initialization",
   "spectraxgk.validation.benchmarks.kbm",

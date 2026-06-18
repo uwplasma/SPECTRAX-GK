@@ -1,3 +1,12 @@
+- 2026-06-18: Continued the ETG scan benchmark refactor by moving Krylov
+  continuation, streaming-fit handling, saved-signal time integration, and
+  fallback fit/appending policy from
+  `spectraxgk.validation.benchmarks.etg_scan` into
+  `spectraxgk.validation.benchmarks.etg_scan_paths`. The scan runner now owns
+  case setup, batching, parameter construction, and public result packaging,
+  while the path owner keeps existing ETG facade monkeypatch seams through
+  explicit hook synchronization. Focused ETG scan tests, Ruff, py_compile,
+  manifest, mypy, Sphinx, and repository-size gates passed locally.
 - 2026-06-18: Continued the Cyclone single-mode benchmark refactor by moving
   Krylov seed/branch selection and time-integration fit policy from
   `spectraxgk.validation.benchmarks.cyclone_linear` into

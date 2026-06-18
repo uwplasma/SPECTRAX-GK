@@ -473,7 +473,10 @@ runner. The public runner still owns per-beta setup and time/diffrax fallback.
 Kinetic-electron ITG/TEM runners are split into ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` behind the ``spectraxgk.validation.benchmarks.kinetic`` facade with the same public facade guarantees. ETG single-point and scan implementations live in
 ``spectraxgk.validation.benchmarks.etg_linear`` and
 ``spectraxgk.validation.benchmarks.etg_scan`` behind the stable
-``spectraxgk.validation.benchmarks.etg`` facade;
+``spectraxgk.validation.benchmarks.etg`` facade. The scan runner delegates
+Krylov continuation, streaming fit, saved-signal integration, and fallback
+fit/appending policy to ``spectraxgk.validation.benchmarks.etg_scan_paths``
+while keeping benchmark-family setup and result packaging in the scan module.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable
