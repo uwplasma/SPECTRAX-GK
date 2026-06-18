@@ -656,6 +656,27 @@ Normalization
 .. automodule:: spectraxgk.diagnostics.normalization
    :members:
 
+Energy Diagnostics
+------------------
+
+.. automodule:: spectraxgk.diagnostics.energy
+   :members:
+   :private-members:
+
+Transport Diagnostics
+---------------------
+
+.. automodule:: spectraxgk.diagnostics.transport
+   :members:
+   :private-members:
+
+Resolved Diagnostics
+--------------------
+
+.. automodule:: spectraxgk.diagnostics.resolved
+   :members:
+   :private-members:
+
 Runtime Config
 --------------
 

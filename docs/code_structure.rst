@@ -74,6 +74,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
+   - ``diagnostics/energy.py``
+   - ``diagnostics/transport.py``
+   - ``diagnostics/resolved.py``
    - ``diagnostics/modes.py``
    - ``diagnostics/growth_rates.py``
    - ``workflows/runtime/diagnostics.py``
@@ -152,6 +155,10 @@ Completed extractions:
   fitting:
   ``diagnostics/modes.py`` and ``diagnostics/growth_rates.py``. The public
   ``diagnostics.analysis`` module remains a small compatibility facade.
+- scalar energy, species transport/heating, and resolved spectral diagnostics:
+  ``diagnostics/energy.py``, ``diagnostics/transport.py``, and
+  ``diagnostics/resolved.py``. The public ``diagnostics.core`` module remains
+  a compatibility facade re-exported by ``spectraxgk.diagnostics``.
 - explicit linear step kernels, explicit CFL/frequency-bound policy, and
   progress formatting:
   ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_cfl.py``, and

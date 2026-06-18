@@ -1318,7 +1318,10 @@ module = "spectraxgk.diagnostics.core"
 path = "src/spectraxgk/diagnostics/core.py"
 owned_modules = [
   "spectraxgk.diagnostics.channels",
+  "spectraxgk.diagnostics.energy",
   "spectraxgk.diagnostics.metadata",
+  "spectraxgk.diagnostics.resolved",
+  "spectraxgk.diagnostics.transport",
   "spectraxgk.diagnostics.weights",
 ]
 owner_lane = "scalar, resolved, flux, and zonal diagnostics"

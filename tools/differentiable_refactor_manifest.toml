@@ -262,6 +262,68 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.diagnostics.energy"
+source_path = "src/spectraxgk/diagnostics/energy.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "scalar distribution free-energy, electrostatic field-energy, magnetic field-energy, and total-energy diagnostics"
+moved_exports = [
+  "_masked_abs2",
+  "distribution_free_energy",
+  "electrostatic_field_energy",
+  "electrostatic_field_energy_krehm",
+  "magnetic_vector_potential_energy",
+  "magnetic_vector_potential_energy_krehm",
+  "runtime_energy_total",
+  "total_energy",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.transport"
+source_path = "src/spectraxgk/diagnostics/transport.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "species heat flux, particle flux, channel flux, and turbulent-heating diagnostics"
+moved_exports = [
+  "heat_flux_channel_species",
+  "heat_flux_species",
+  "heat_flux_total",
+  "particle_flux_channel_species",
+  "particle_flux_species",
+  "particle_flux_total",
+  "turbulent_heating_species",
+  "turbulent_heating_total",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_quasilinear.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.resolved"
+source_path = "src/spectraxgk/diagnostics/resolved.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "resolved spectral reductions, field-energy spectra, transport spectra, heating spectra, and signed zonal diagnostics"
+moved_exports = [
+  "_reduce_scalar_kykxz",
+  "_reduce_species_kykxz",
+  "distribution_free_energy_resolved",
+  "electrostatic_field_energy_resolved",
+  "heat_flux_channel_resolved_species",
+  "heat_flux_resolved_species",
+  "magnetic_vector_potential_energy_resolved",
+  "particle_flux_channel_resolved_species",
+  "particle_flux_resolved_species",
+  "phi2_resolved",
+  "turbulent_heating_resolved_species",
+  "zonal_phi_line_kxt",
+  "zonal_phi_mode_kxt",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.solvers.time.explicit_steps"
 source_path = "src/spectraxgk/solvers/time/explicit_steps.py"
 facade_module = "spectraxgk.solvers.time.explicit"
