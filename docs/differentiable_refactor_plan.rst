@@ -241,10 +241,13 @@ High-Risk Module Split Plan
   injected compatibility seams.
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
-  in ``solvers/nonlinear/explicit.py``. Explicit and IMEX diagnostic integration
-  orchestration now lives in ``solvers/nonlinear/diagnostics.py`` with
-  facade-injected geometry, cache, RHS, diagnostic, time-step, solve-step,
-  progress, and sampled-scan seams. The shared IMEX nonlinear-term closure, GMRES solve-step
+  in ``solvers/nonlinear/explicit.py``. Public cached RHS/state integration now
+  lives in ``spectraxgk.nonlinear_core`` and public diagnostic entry points live
+  in ``spectraxgk.nonlinear_diagnostics``; ``spectraxgk.nonlinear`` is a small
+  facade that re-exports the validated surface. Explicit and IMEX diagnostic
+  integration orchestration now lives in ``solvers/nonlinear/diagnostics.py``
+  with owner-module-injected geometry, cache, RHS, diagnostic, time-step,
+  solve-step, progress, and sampled-scan seams. The shared IMEX nonlinear-term closure, GMRES solve-step
   closure, diagnostic step construction, fixed diagnostic scan execution,
   cached scan policy, fixed-point/GMRES solve, and SSPX3 stage-composition
   policies live in ``solvers/nonlinear/imex.py``. The public nonlinear facade

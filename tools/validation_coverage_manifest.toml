@@ -622,6 +622,8 @@ next_tests = [
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
+  "spectraxgk.nonlinear_core",
+  "spectraxgk.nonlinear_diagnostics",
   "spectraxgk.terms.brackets",
   "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
@@ -631,8 +633,8 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "Cyclone and Cyclone-Miller nonlinear GX transport windows",
-  "KBM, HSX, and W7-X nonlinear GX parity envelopes",
+  "Cyclone and Cyclone-Miller nonlinear transport-window comparison artifacts",
+  "KBM, HSX, and W7-X nonlinear parity envelopes from independent-code comparisons",
 ]
 physics_contracts = [
   "nonlinear acceptance uses window statistics rather than one-time samples",
@@ -670,6 +672,7 @@ artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.png",
 ]
 next_tests = [
+  "keep nonlinear_core and nonlinear_diagnostics owner-module tests on the fast path",
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",

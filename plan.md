@@ -1,3 +1,9 @@
+- 2026-06-18: Split the 706-line public nonlinear driver into a 98-line
+  `spectraxgk.nonlinear` facade plus `spectraxgk.nonlinear_core` for cached
+  RHS/state integration and `spectraxgk.nonlinear_diagnostics` for explicit and
+  IMEX diagnostic entry points. Tests now patch owner modules directly instead
+  of treating the public facade as the implementation owner. Focused nonlinear,
+  runtime, public API, and Ruff gates passed locally.
 - 2026-06-18: Split the 710-line Diffrax time-integrator module into a 41-line
   `spectraxgk.solvers.time.diffrax` facade plus focused core policy/helper,
   linear integration, streaming growth/frequency, and nonlinear integration
