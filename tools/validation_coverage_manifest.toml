@@ -3132,6 +3132,154 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_contracts"
+path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
+owner_lane = "aspect-constrained QA low-turbulence reduced optimization contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "microstability optimization reporting with explicit observable and residual names",
+  "JSON-stable reduced optimization artifacts for manuscript figure builders",
+]
+physics_contracts = [
+  "design names distinguish QA constraints-only and transport-aware reduced objectives",
+  "observable names expose constraint, linear, quasilinear, and reduced nonlinear-envelope quantities separately",
+]
+numerics_contracts = [
+  "result serialization preserves scalar, residual, observable, and covariance gates",
+  "configuration stores late-window and finite-difference tolerances explicitly",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.json",
+]
+next_tests = [
+  "add schema-level serialization tests for every QALowTurbulenceResult field",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_model"
+path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
+owner_lane = "reduced QA low-turbulence differentiable observable model"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear growth, quasilinear proxy, and smooth nonlinear-envelope screening before full nonlinear promotion",
+  "finite-difference validation of reduced differentiable transport observables",
+]
+physics_contracts = [
+  "reduced growth, quasilinear heat flux, and nonlinear envelope remain separate observables",
+  "density and temperature gradient dependence is explicit in the heat-flux trace",
+]
+numerics_contracts = [
+  "fixed-step RK2 envelope integration remains JAX-transformable",
+  "late-window metrics provide mean, CV, trend, slope, and start-index diagnostics",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_time_horizon_audit.json",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.png",
+]
+next_tests = [
+  "add direct monotonic drive-response tests across density and temperature gradients",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_residuals"
+path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
+owner_lane = "QA low-turbulence residual and sensitivity gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "AD-vs-finite-difference validation for scalar, residual, and observable maps",
+  "Gauss-Newton covariance diagnostics for reduced stellarator optimization",
+]
+physics_contracts = [
+  "residual vectors expose aspect, iota, quasisymmetry, helical shaping, regularization, and optional transport terms separately",
+  "transport residuals remain reduced-envelope diagnostics until full nonlinear audits pass",
+]
+numerics_contracts = [
+  "scalar objective and residual Jacobian gates use precision-aware finite-difference tolerances",
+  "covariance diagnostics use the same weighted residual map as the optimizer",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.json",
+]
+next_tests = [
+  "add rank-deficiency and covariance-conditioning failure fixtures",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_optimizer"
+path = "src/spectraxgk/objectives/qa_low_turbulence_optimizer.py"
+owner_lane = "QA low-turbulence reduced optimizer loop"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "gradient-based reduced stellarator screening before production VMEC/Boozer optimization",
+  "optimization-history artifact contracts for manuscript-ready comparisons",
+]
+physics_contracts = [
+  "constraints-only and transport-aware designs start from the same seed",
+  "optimizer results include initial/final observables and AD/FD gate outputs",
+]
+numerics_contracts = [
+  "Adam update history records objective, gradient norm, parameters, and observables",
+  "final accepted designs are evaluated by scalar, residual, and observable finite-difference gates",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.summary.csv",
+]
+next_tests = [
+  "add optimizer regression tests for zero steps and rejected non-finite parameters",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_artifacts"
+path = "src/spectraxgk/objectives/qa_low_turbulence_artifacts.py"
+owner_lane = "QA low-turbulence comparison and figure payload builders"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication-ready reduced QA low-turbulence comparison panels",
+  "late-window convergence reporting for reduced heat-flux traces",
+]
+physics_contracts = [
+  "surface and LCFS |B| payloads remain labeled as reduced visualizations, not solved VMEC equilibria",
+  "fixed-gradient trace payloads include convergence gates before entering figure summaries",
+]
+numerics_contracts = [
+  "density-gradient scans report axes, means, CVs, trends, growth rates, and fitted slopes",
+  "long-window gates fail closed when late-window samples are insufficient or drift exceeds tolerance",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.png",
+  "docs/_static/qa_low_turbulence_comparison.scan.csv",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.csv",
+]
+next_tests = [
+  "add direct artifact-payload tests for failed long-window convergence and insufficient samples",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.portfolio_contracts"
 path = "src/spectraxgk/objectives/portfolio_contracts.py"
 owner_lane = "backend-free multi-surface, multi-alpha, multi-ky objective-table shape and weight contracts"

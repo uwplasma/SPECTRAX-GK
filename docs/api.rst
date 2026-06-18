@@ -978,6 +978,39 @@ QA Low-Turbulence Optimization
 
 .. automodule:: spectraxgk.objectives.qa_low_turbulence
    :members:
+   :no-index:
+
+QA Low-Turbulence Contracts
+---------------------------
+
+.. automodule:: spectraxgk.objectives.qa_low_turbulence_contracts
+   :members:
+
+QA Low-Turbulence Reduced Model
+-------------------------------
+
+.. automodule:: spectraxgk.objectives.qa_low_turbulence_model
+   :members:
+   :private-members:
+
+QA Low-Turbulence Residual Gates
+--------------------------------
+
+.. automodule:: spectraxgk.objectives.qa_low_turbulence_residuals
+   :members:
+
+QA Low-Turbulence Optimizer
+---------------------------
+
+.. automodule:: spectraxgk.objectives.qa_low_turbulence_optimizer
+   :members:
+
+QA Low-Turbulence Artifacts
+---------------------------
+
+.. automodule:: spectraxgk.objectives.qa_low_turbulence_artifacts
+   :members:
+   :private-members:
 
 VMEC-JAX Transport Objective
 ----------------------------

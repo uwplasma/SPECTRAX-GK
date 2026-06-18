@@ -1588,6 +1588,76 @@ fast_tests = ["tests/test_stellarator_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_contracts"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "QA low-turbulence configuration, stable design/observable names, and JSON-ready result contract"
+moved_exports = [
+  "QA_LOW_TURBULENCE_DESIGN_NAMES",
+  "QA_LOW_TURBULENCE_OBSERVABLE_NAMES",
+  "QALowTurbulenceConfig",
+  "QALowTurbulenceResult",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_model"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "reduced QA/ITG feature map, heat-flux envelope integration, late-window metrics, and observable vector"
+moved_exports = [
+  "default_qa_low_turbulence_initial_params",
+  "qa_low_turbulence_heat_flux_trace",
+  "qa_low_turbulence_observable_vector",
+  "qa_low_turbulence_observables",
+  "qa_low_turbulence_window_metrics",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_residuals"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "weighted residual vectors, scalar objective, AD/FD sensitivity reports, and covariance diagnostics"
+moved_exports = [
+  "qa_low_turbulence_objective",
+  "qa_low_turbulence_observable_sensitivity_report",
+  "qa_low_turbulence_residual_names",
+  "qa_low_turbulence_residual_vector",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_optimizer"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_optimizer.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "Adam optimizer loop and optimization-history row construction for reduced QA low-turbulence designs"
+moved_exports = ["optimize_qa_low_turbulence"]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_artifacts"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_artifacts.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "reduced boundary/LCFS visualization payloads, density-gradient scans, long-window convergence gates, and comparison payload assembly"
+moved_exports = [
+  "qa_low_turbulence_comparison_payload",
+  "reduced_boundary_surface",
+  "reduced_lcfs_bmag",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_transport_config"
 source_path = "src/spectraxgk/objectives/vmec_transport_config.py"
 facade_module = "spectraxgk.objectives.vmec_transport"
