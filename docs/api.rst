@@ -1187,6 +1187,21 @@ VMEC-JAX Transport Admission
 .. automodule:: spectraxgk.validation.stellarator.transport_admission
    :members:
 
+.. automodule:: spectraxgk.validation.stellarator.transport_policies
+   :members:
+
+.. automodule:: spectraxgk.validation.stellarator.transport_samples
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.stellarator.transport_nonlinear
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.stellarator.transport_selection
+   :members:
+   :private-members:
+
 VMEC-JAX Transport Gradient
 ---------------------------
 

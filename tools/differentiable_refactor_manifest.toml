@@ -1546,6 +1546,63 @@ moved_exports = [
 fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_policies"
+source_path = "src/spectraxgk/validation/stellarator/transport_policies.py"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
+status = "active"
+responsibility = "VMEC-JAX transport admission policy dataclasses and finite-float helper"
+moved_exports = [
+  "DEFAULT_TRANSPORT_METRIC_KEYS",
+  "VMECJAXNonlinearAuditPolicy",
+  "VMECJAXNonlinearCampaignPolicy",
+  "VMECJAXReducedPrelaunchPolicy",
+  "VMECJAXTransportAdmissionPolicy",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_samples"
+source_path = "src/spectraxgk/validation/stellarator/transport_samples.py"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
+status = "active"
+responsibility = "transport metric selection and multi-surface/field-line/ky sample coverage gates"
+moved_exports = [
+  "candidate_transport_metric",
+  "transport_objective_sample_summary",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_nonlinear"
+source_path = "src/spectraxgk/validation/stellarator/transport_nonlinear.py"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
+status = "active"
+responsibility = "nonlinear landscape, reduced prelaunch, campaign, and redesign admission reports"
+moved_exports = [
+  "build_nonlinear_audit_redesign_report",
+  "build_nonlinear_campaign_admission_report",
+  "build_nonlinear_landscape_admission_report",
+  "build_reduced_nonlinear_audit_prelaunch_report",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_vmec_jax_qa_transport_optimization_status.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_selection"
+source_path = "src/spectraxgk/validation/stellarator/transport_selection.py"
+facade_module = "spectraxgk.validation.stellarator.transport_admission"
+status = "active"
+responsibility = "candidate physical-gate blockers, relative-improvement scoring, and promoted transport-candidate selection"
+moved_exports = [
+  "build_transport_admission_report",
+  "select_admitted_transport_candidate",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

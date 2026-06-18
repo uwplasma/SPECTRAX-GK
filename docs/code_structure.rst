@@ -403,6 +403,15 @@ Cyclone single-mode and scan implementations now live in
 patch that facade directly while examples and downstream
 scripts keep importing through ``spectraxgk.benchmarks``.
 
+VMEC-JAX transport admission gates are split into focused policy,
+sample-coverage, nonlinear-audit, and candidate-selection modules:
+``spectraxgk.validation.stellarator.transport_policies``,
+``spectraxgk.validation.stellarator.transport_samples``,
+``spectraxgk.validation.stellarator.transport_nonlinear``, and
+``spectraxgk.validation.stellarator.transport_selection``. The historical
+``spectraxgk.validation.stellarator.transport_admission`` module remains a
+stable facade for public imports.
+
 The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public compatibility facade while
 moving optional backend lookup and strict AD/finite-difference gate utilities
