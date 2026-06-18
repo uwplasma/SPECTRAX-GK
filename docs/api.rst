@@ -767,6 +767,10 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.cyclone_linear
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.cyclone_linear_paths
+   :members:
+   :private-members:
+
 .. automodule:: spectraxgk.validation.benchmarks.cyclone_scan
    :members:
 

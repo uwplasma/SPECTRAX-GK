@@ -1,3 +1,12 @@
+- 2026-06-18: Continued the Cyclone single-mode benchmark refactor by moving
+  Krylov seed/branch selection and time-integration fit policy from
+  `spectraxgk.validation.benchmarks.cyclone_linear` into
+  `spectraxgk.validation.benchmarks.cyclone_linear_paths`. The public
+  single-mode runner now owns setup, parameter construction, fallback
+  orchestration, and result packaging, while the new owner module preserves the
+  existing facade monkeypatch seams through explicit hook synchronization.
+  Focused Cyclone branch tests, Ruff, py_compile, manifest, mypy, Sphinx, and
+  repository-size gates passed locally.
 - 2026-06-18: Split the 699-line runtime orchestration module into a 40-line
   `spectraxgk.workflows.runtime.orchestration` facade plus focused scan,
   progress, and nonlinear artifact/restart handoff owner modules. Runtime

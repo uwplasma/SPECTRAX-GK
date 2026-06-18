@@ -477,7 +477,10 @@ Kinetic-electron ITG/TEM runners are split into ``spectraxgk.validation.benchmar
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable
-``spectraxgk.validation.benchmarks.cyclone`` facade. The scan runner delegates
+``spectraxgk.validation.benchmarks.cyclone`` facade. The single-mode runner
+keeps grid, geometry, parameter, and fallback orchestration local while
+delegating Krylov seeding/branch selection and time-integration fit policy to
+``spectraxgk.validation.benchmarks.cyclone_linear_paths``. The scan runner delegates
 Krylov branch-following and reference-aligned explicit-time reselection to
 ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
 hook bundle, so tests can still patch the public facade while the solver policy
