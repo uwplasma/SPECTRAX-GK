@@ -514,6 +514,20 @@ Nonlinear Replicate Follow-Up
 .. automodule:: spectraxgk.validation.nonlinear_transport.replicate_followup
    :members:
 
+Production Nonlinear Optimization Guard
+---------------------------------------
+
+.. automodule:: spectraxgk.validation.nonlinear_transport.optimization_guard
+   :members:
+
+.. automodule:: spectraxgk.validation.nonlinear_transport.optimization_policy
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.nonlinear_transport.optimization_reports
+   :members:
+   :private-members:
+
 Nonlinear Gradient Follow-Up
 ----------------------------
 

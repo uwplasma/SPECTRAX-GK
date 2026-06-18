@@ -3051,6 +3051,8 @@ owned_modules = [
   "spectraxgk.objectives.stellarator_contracts",
   "spectraxgk.objectives.stellarator_reduced",
   "spectraxgk.validation.nonlinear_transport.optimization_guard",
+  "spectraxgk.validation.nonlinear_transport.optimization_policy",
+  "spectraxgk.validation.nonlinear_transport.optimization_reports",
   "spectraxgk.validation.stellarator.candidate_gate",
   "spectraxgk.validation.stellarator.transport_admission",
   "spectraxgk.validation.stellarator.transport_nonlinear",

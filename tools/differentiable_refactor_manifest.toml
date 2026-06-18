@@ -3413,3 +3413,23 @@ responsibility = "linear fixed-step diagnostic sampling for phi, density, and He
 moved_exports = ["integrate_linear_diagnostics"]
 fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_transport.optimization_policy"
+source_path = "src/spectraxgk/validation/nonlinear_transport/optimization_policy.py"
+facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
+status = "active"
+responsibility = "production nonlinear optimization guard configuration, artifact claim-scope helpers, and reduced-artifact safety reports"
+moved_exports = ["ProductionNonlinearOptimizationGuardConfig", "optimization_artifact_reduction_scope", "reduced_artifact_scope_report"]
+fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_transport.optimization_reports"
+source_path = "src/spectraxgk/validation/nonlinear_transport/optimization_reports.py"
+facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
+status = "active"
+responsibility = "replicated long-window, optimized-equilibrium, and matched baseline-to-optimized nonlinear transport audit extractors"
+moved_exports = ["matched_optimized_transport_report", "optimized_equilibrium_transport_report", "replicated_transport_ensemble_report"]
+fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

@@ -2825,3 +2825,9 @@ No long nonlinear audit should be launched from these candidates.
   the same `integrate_linear_diagnostics` entry point and patchable dependency
   seams. Linear, helper, runtime routing, manifest, ruff, and docs gates passed
   locally.
+
+- Continued the nonlinear turbulent-flux optimization validation refactor by
+  splitting `validation/nonlinear_transport/optimization_guard.py` into policy/
+  scope helpers, replicated transport report extractors, and a public promotion
+  facade. Nonlinear transport optimization, guard tool import, public API, ruff,
+  manifest, and docs gates passed locally.

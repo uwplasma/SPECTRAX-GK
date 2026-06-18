@@ -263,6 +263,11 @@ Completed extractions:
   ``objectives/vmec_boozer_line_search.py``. The public
   ``objectives.stellarator_portfolio`` module remains a small facade for
   existing imports.
+- production nonlinear turbulent-flux optimization guardrails are split into
+  scope/policy helpers (``validation/nonlinear_transport/optimization_policy.py``),
+  replicated transport report extractors
+  (``validation/nonlinear_transport/optimization_reports.py``), and the public
+  promotion facade (``validation/nonlinear_transport/optimization_guard.py``).
 - quasilinear nonlinear-window convergence metadata is split into focused
   config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
   modules under ``validation/quasilinear/window_*.py``. The public
