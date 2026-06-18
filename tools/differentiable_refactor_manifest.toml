@@ -842,10 +842,22 @@ module = "spectraxgk.geometry.vmec_boozer_core"
 source_path = "src/spectraxgk/geometry/vmec_boozer_core.py"
 facade_module = "spectraxgk.geometry.differentiable"
 status = "active"
-responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mapping, including Boozer constants prewarm/cache and solver-ready core arrays"
+responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mapping and solver-ready core arrays"
 moved_exports = [
-  "prewarm_vmec_boozer_equal_arc_cache",
   "vmec_jax_boozer_equal_arc_core_profiles_from_state",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boozer_constants"
+source_path = "src/spectraxgk/geometry/vmec_boozer_constants.py"
+facade_module = "spectraxgk.geometry.vmec_boozer_core"
+status = "active"
+responsibility = "Boozer transform constant preparation and equal-arc cache prewarm helpers for optional vmec_jax/booz_xform_jax paths"
+moved_exports = [
+  "_cached_booz_xform_constants",
+  "prewarm_vmec_boozer_equal_arc_cache",
 ]
 fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

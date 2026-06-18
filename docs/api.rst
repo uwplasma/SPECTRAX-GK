@@ -177,6 +177,13 @@ Differentiable VMEC Boozer Core
    :members:
    :private-members:
 
+Differentiable VMEC Boozer Constants
+------------------------------------
+
+.. automodule:: spectraxgk.geometry.vmec_boozer_constants
+   :members:
+   :private-members:
+
 Differentiable VMEC Flux-Tube Reports
 -------------------------------------
 
