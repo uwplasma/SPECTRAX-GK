@@ -11,6 +11,15 @@
   Arnoldi/power kernels now have direct owner modules. Updated API/code
   structure docs plus refactor and coverage manifests; local Krylov core tests
   passed before broader gates.
+- 2026-06-18: Split the cETG reduced-model implementation out of the legacy
+  `spectraxgk.terms.cetg` file. The old import path is now a small facade,
+  while `spectraxgk.terms.reduced.cetg_model`,
+  `spectraxgk.terms.reduced.cetg_state`,
+  `spectraxgk.terms.reduced.cetg_rhs`, and
+  `spectraxgk.terms.reduced.cetg_integrator` own the runtime contract, spectral
+  state projection, field/RHS physics, and explicit diagnostic integrator.
+  The split removed one duplicated adaptive-timestep `linear_omega` assignment
+  without changing behavior; focused cETG tests passed after the move.
 - 2026-06-17: Removed duplicate runtime startup helper implementations from
   `spectraxgk.runtime`. The public runtime facade now aliases
   `_centered_glibc_random_pairs`, `_dealiased_initial_mode_pairs`, and

@@ -1422,6 +1422,56 @@ fast_tests = ["tests/test_nonlinear_exb.py", "tests/test_cetg.py", "tests/test_n
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.terms.cetg"
+source_path = "src/spectraxgk/terms/cetg.py"
+facade_module = "spectraxgk.terms.reduced"
+status = "active"
+responsibility = "compatibility facade for the collisional-slab ETG reduced-model contract, field solve, RHS, and explicit diagnostics integrator"
+moved_exports = ["CETGModelParams", "validate_cetg_runtime_config", "build_cetg_model_params", "cetg_fields", "cetg_rhs", "integrate_cetg_explicit_diagnostics_state"]
+fast_tests = ["tests/test_cetg.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_model"
+source_path = "src/spectraxgk/terms/reduced/cetg_model.py"
+facade_module = "spectraxgk.terms.cetg"
+status = "active"
+responsibility = "cETG runtime contract validation and coefficient construction from runtime species, geometry, and collision inputs"
+moved_exports = ["CETGModelParams", "validate_cetg_runtime_config", "build_cetg_model_params"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_state"
+source_path = "src/spectraxgk/terms/reduced/cetg_state.py"
+facade_module = "spectraxgk.terms.cetg"
+status = "active"
+responsibility = "cETG external/internal state layout conversion, spectral masks, z-filtering, derivatives, and Hermitian projection"
+moved_exports = ["_to_internal_state", "_from_internal_state", "_kz_grid", "_project_state"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_rhs"
+source_path = "src/spectraxgk/terms/reduced/cetg_rhs.py"
+facade_module = "spectraxgk.terms.cetg"
+status = "active"
+responsibility = "cETG electrostatic field solve, linear collisional closure terms, nonlinear bracket, and CFL frequency estimates"
+moved_exports = ["cetg_fields", "cetg_rhs", "_cetg_linear_omega_max", "_cetg_nonlinear_omega_components"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_integrator"
+source_path = "src/spectraxgk/terms/reduced/cetg_integrator.py"
+facade_module = "spectraxgk.terms.cetg"
+status = "active"
+responsibility = "cETG explicit fixed/adaptive diagnostic timestepper and SimulationDiagnostics assembly"
+moved_exports = ["integrate_cetg_explicit_diagnostics_state", "_compute_cetg_diag"]
+fast_tests = ["tests/test_cetg.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.rhs"
 source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
 facade_module = "spectraxgk.operators.nonlinear"
