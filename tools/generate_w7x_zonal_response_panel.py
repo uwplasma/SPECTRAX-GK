@@ -48,7 +48,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=ROOT / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml",
+        default=ROOT / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml",
         help="Runtime TOML for the W7-X test-4 zonal-response benchmark.",
     )
     parser.add_argument(

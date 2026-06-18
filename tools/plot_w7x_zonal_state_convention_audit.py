@@ -35,7 +35,7 @@ from spectraxgk.terms.assembly import compute_fields_cached  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = ROOT / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
+DEFAULT_CONFIG = ROOT / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
 DEFAULT_OUT = ROOT / "docs" / "_static" / "w7x_zonal_state_convention_audit.png"
 
 

@@ -1195,27 +1195,9 @@ fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.operators.nonlinear.spectral_identity"
-source_path = "src/spectraxgk/operators/nonlinear/spectral_identity.py"
-facade_module = "spectraxgk.operators.nonlinear.parallel"
-status = "active"
-responsibility = "stable facade for logical nonlinear spectral identity gates"
-moved_exports = [
-  "nonlinear_spectral_communication_identity_gate",
-  "nonlinear_spectral_communication_identity_report",
-  "nonlinear_spectral_rhs_identity_gate",
-  "nonlinear_spectral_rhs_identity_report",
-  "logical_decomposed_nonlinear_spectral_rhs",
-  "nonlinear_spectral_integrator_identity_gate",
-  "integrate_logical_decomposed_nonlinear_spectral",
-]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_identity_reports"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_reports.py"
-facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "fail-closed communication and RHS report construction for logical nonlinear spectral decomposition"
 moved_exports = [
@@ -1229,7 +1211,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_identity_rhs"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_rhs.py"
-facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "logical output-tile nonlinear spectral RHS routing plus serial-vs-decomposed identity gating"
 moved_exports = [
@@ -1242,7 +1224,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_identity_integrator"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_integrator.py"
-facade_module = "spectraxgk.operators.nonlinear.spectral_identity"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "fixed-window logical nonlinear spectral integrator identity gates and observable traces"
 moved_exports = [
@@ -3562,23 +3544,9 @@ fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.operators.nonlinear.parallel_contracts"
-source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts.py"
-facade_module = "spectraxgk.operators.nonlinear.parallel"
-status = "active"
-responsibility = "stable facade for nonlinear parallelization contracts, DTOs, and readiness policy"
-moved_exports = [
-  "NonlinearDomainDecompositionPlan",
-  "NonlinearSpectralDomainWorkModel",
-  "NonlinearParallelStrategy",
-]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_domain_parallel.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.parallel_contracts_domain"
 source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_domain.py"
-facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "state-domain decomposition plans, identity reports, transport-window reports, and fail-closed plan blockers"
 moved_exports = [
@@ -3592,7 +3560,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.parallel_contracts_spectral"
 source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_spectral.py"
-facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "spectral communication/RHS/integrator reports and nonlinear spectral work-model DTOs"
 moved_exports = [
@@ -3607,7 +3575,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.parallel_contracts_strategy"
 source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_strategy.py"
-facade_module = "spectraxgk.operators.nonlinear.parallel_contracts"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "nonlinear parallel strategy readiness contracts and strategy table metadata"
 moved_exports = [

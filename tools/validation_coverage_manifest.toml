@@ -869,7 +869,6 @@ next_tests = [
 module = "spectraxgk.operators.nonlinear.parallel"
 path = "src/spectraxgk/operators/nonlinear/parallel.py"
 owned_modules = [
-  "spectraxgk.operators.nonlinear.parallel_contracts",
   "spectraxgk.operators.nonlinear.parallel_contracts_domain",
   "spectraxgk.operators.nonlinear.parallel_contracts_spectral",
   "spectraxgk.operators.nonlinear.parallel_contracts_strategy",
@@ -919,7 +918,6 @@ module = "spectraxgk.operators.nonlinear.spectral_core"
 path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
 owned_modules = [
   "spectraxgk.operators.nonlinear.spectral_brackets",
-  "spectraxgk.operators.nonlinear.spectral_identity",
   "spectraxgk.operators.nonlinear.spectral_identity_reports",
   "spectraxgk.operators.nonlinear.spectral_identity_rhs",
   "spectraxgk.operators.nonlinear.spectral_identity_integrator",

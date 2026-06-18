@@ -876,13 +876,6 @@ Nonlinear Parallel Spectral Core
    :members:
    :private-members:
 
-Nonlinear Spectral Identity Gates
----------------------------------
-
-.. automodule:: spectraxgk.operators.nonlinear.spectral_identity
-   :members:
-   :private-members:
-
 Nonlinear Domain Decomposition
 ------------------------------
 
@@ -896,12 +889,6 @@ Nonlinear Parallel Device-Z Core
 .. automodule:: spectraxgk.operators.nonlinear.device_z
    :members:
    :private-members:
-
-Nonlinear Parallel Contracts
-----------------------------
-
-.. automodule:: spectraxgk.operators.nonlinear.parallel_contracts
-   :members:
 
 Velocity Sharding Plans
 -----------------------

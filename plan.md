@@ -1,3 +1,18 @@
+- 2026-06-18: Retired the nonlinear parallelization compatibility facades
+  `spectraxgk.operators.nonlinear.parallel_contracts` and
+  `spectraxgk.operators.nonlinear.spectral_identity`. Public nonlinear
+  parallelization imports now route through `spectraxgk.operators.nonlinear.parallel`,
+  while contract DTOs and logical spectral identity reports/RHS/integrator gates
+  live directly in focused owner modules. Added a root-level
+  `benchmarks/results/manifest.toml` index so promoted benchmark outputs are
+  discoverable from the root `benchmarks/` directory without copying raw run
+  artifacts, updated docs to show the tracked benchmark result set, and fixed
+  the runtime-core CI shard to load Miller/W7-X zonal TOMLs from the root
+  benchmark directory. Local gates passed: benchmark-results manifest tests,
+  benchmark-atlas/runtime-memory tests, nonlinear parallel/domain/spectral
+  tests, runtime-core shard, validation/refactor manifest tests, validation
+  summary regeneration, repository-size check, Ruff, mypy over 345 source
+  files, Sphinx docs build, and `git diff --check`.
 - 2026-06-18: Continued the Cyclone scan refactor by moving the standard
   saved-time, Diffrax-streaming, auto-fit, and invalid-growth Krylov fallback
   batch loop from `spectraxgk.validation.benchmarks.cyclone_scan` into

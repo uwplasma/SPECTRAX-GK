@@ -66,7 +66,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=ROOT / "examples" / "benchmarks" / "runtime_miller_zonal_response.toml",
+        default=ROOT / "benchmarks" / "runtime_miller_zonal_response.toml",
         help="Runtime TOML for the shaped-Miller zonal-response pilot.",
     )
     parser.add_argument(

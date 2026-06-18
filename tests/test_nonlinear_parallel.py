@@ -9,10 +9,14 @@ import pytest
 
 import spectraxgk
 import spectraxgk.operators.nonlinear.parallel as nonlinear_parallel
-import spectraxgk.operators.nonlinear.parallel_contracts as nonlinear_parallel_contracts
+import spectraxgk.operators.nonlinear.parallel_contracts_domain as nonlinear_parallel_contracts_domain
+import spectraxgk.operators.nonlinear.parallel_contracts_spectral as nonlinear_parallel_contracts_spectral
+import spectraxgk.operators.nonlinear.parallel_contracts_strategy as nonlinear_parallel_contracts_strategy
 import spectraxgk.operators.nonlinear.device_z as nonlinear_parallel_device_z
 import spectraxgk.operators.nonlinear.spectral_core as nonlinear_parallel_spectral_core
-import spectraxgk.operators.nonlinear.spectral_identity as spectral_identity
+import spectraxgk.operators.nonlinear.spectral_identity_integrator as spectral_identity_integrator
+import spectraxgk.operators.nonlinear.spectral_identity_reports as spectral_identity_reports
+import spectraxgk.operators.nonlinear.spectral_identity_rhs as spectral_identity_rhs
 from spectraxgk.operators.nonlinear.parallel import (
     NonlinearDomainDecompositionPlan,
     NonlinearDomainIdentityReport,
@@ -58,15 +62,15 @@ def test_nonlinear_parallel_facade_reexports_device_z_core() -> None:
 def test_nonlinear_parallel_facade_reexports_spectral_identity_core() -> None:
     assert (
         nonlinear_parallel.nonlinear_spectral_communication_identity_gate
-        is spectral_identity.nonlinear_spectral_communication_identity_gate
+        is spectral_identity_reports.nonlinear_spectral_communication_identity_gate
     )
     assert (
         nonlinear_parallel.nonlinear_spectral_rhs_identity_gate
-        is spectral_identity.nonlinear_spectral_rhs_identity_gate
+        is spectral_identity_rhs.nonlinear_spectral_rhs_identity_gate
     )
     assert (
         nonlinear_parallel.integrate_logical_decomposed_nonlinear_spectral
-        is spectral_identity.integrate_logical_decomposed_nonlinear_spectral
+        is spectral_identity_integrator.integrate_logical_decomposed_nonlinear_spectral
     )
 
 
@@ -168,11 +172,12 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
 
 
 def test_nonlinear_parallel_facade_reexports_contract_objects() -> None:
-    contract_names = (
+    domain_names = (
         "NonlinearDomainDecompositionPlan",
         "NonlinearDomainIdentityReport",
         "NonlinearDomainTransportWindowReport",
-        "NonlinearParallelStrategy",
+    )
+    spectral_names = (
         "NonlinearSpectralCommunicationReport",
         "NonlinearSpectralDevicePencilFFTBatchModel",
         "NonlinearSpectralDevicePencilRHSIdentityReport",
@@ -183,12 +188,25 @@ def test_nonlinear_parallel_facade_reexports_contract_objects() -> None:
         "NonlinearSpectralPencilTransportWindowReport",
         "NonlinearSpectralPencilWorkModel",
         "NonlinearSpectralRHSIdentityReport",
+    )
+    strategy_names = (
+        "NonlinearParallelStrategy",
         "ParallelReadiness",
     )
 
-    for name in contract_names:
+    for name in domain_names:
         assert getattr(nonlinear_parallel, name) is getattr(
-            nonlinear_parallel_contracts,
+            nonlinear_parallel_contracts_domain,
+            name,
+        )
+    for name in spectral_names:
+        assert getattr(nonlinear_parallel, name) is getattr(
+            nonlinear_parallel_contracts_spectral,
+            name,
+        )
+    for name in strategy_names:
+        assert getattr(nonlinear_parallel, name) is getattr(
+            nonlinear_parallel_contracts_strategy,
             name,
         )
 
@@ -217,7 +235,7 @@ def test_nonlinear_parallel_facade_reexports_spectral_core_helpers() -> None:
 
 
 def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
-    invalid_plan = nonlinear_parallel_contracts.NonlinearDomainDecompositionPlan(
+    invalid_plan = nonlinear_parallel_contracts_domain.NonlinearDomainDecompositionPlan(
         state_shape=(),
         axis=2,
         chunk_sizes=(),
@@ -225,7 +243,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
     )
 
     assert invalid_plan.boundary_indices == ()
-    assert nonlinear_parallel_contracts._nonlinear_domain_plan_blockers(
+    assert nonlinear_parallel_contracts_domain._nonlinear_domain_plan_blockers(
         invalid_plan
     ) == (
         "state_shape_empty",
@@ -234,18 +252,18 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         "chunk_sizes_empty",
     )
 
-    non_positive_plan = nonlinear_parallel_contracts.NonlinearDomainDecompositionPlan(
+    non_positive_plan = nonlinear_parallel_contracts_domain.NonlinearDomainDecompositionPlan(
         state_shape=(0, 4),
         axis=0,
         chunk_sizes=(0, 1),
     )
     assert non_positive_plan.boundary_indices == ()
     assert set(
-        nonlinear_parallel_contracts._nonlinear_domain_plan_blockers(non_positive_plan)
+        nonlinear_parallel_contracts_domain._nonlinear_domain_plan_blockers(non_positive_plan)
     ) >= {"state_shape_non_positive", "chunk_size_non_positive"}
     assert (
         "serial_shape_does_not_match_plan"
-        in nonlinear_parallel_contracts._nonlinear_domain_identity_blockers(
+        in nonlinear_parallel_contracts_domain._nonlinear_domain_identity_blockers(
             jnp.zeros((2, 4)),
             jnp.zeros((2, 3)),
             non_positive_plan,
@@ -257,7 +275,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         y_chunks=(8, 8),
         x_chunks=(8, 8),
     )
-    rhs_report = nonlinear_parallel_contracts.NonlinearSpectralPencilRHSIdentityReport(
+    rhs_report = nonlinear_parallel_contracts_spectral.NonlinearSpectralPencilRHSIdentityReport(
         state_shape=work_model.state_shape,
         y_chunks=work_model.y_chunks,
         x_chunks=work_model.x_chunks,
@@ -277,7 +295,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         claim_scope="unit nested report",
     )
     transport_report = (
-        nonlinear_parallel_contracts.NonlinearSpectralPencilTransportWindowReport(
+        nonlinear_parallel_contracts_spectral.NonlinearSpectralPencilTransportWindowReport(
             state_shape=work_model.state_shape,
             y_chunks=work_model.y_chunks,
             x_chunks=work_model.x_chunks,
@@ -306,7 +324,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         )
     )
     device_rhs_report = (
-        nonlinear_parallel_contracts.NonlinearSpectralDevicePencilRHSIdentityReport(
+        nonlinear_parallel_contracts_spectral.NonlinearSpectralDevicePencilRHSIdentityReport(
             state_shape=work_model.state_shape,
             sharded_axis="z",
             axis_name="z",
@@ -324,7 +342,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         )
     )
     device_transport_report = (
-        nonlinear_parallel_contracts.NonlinearSpectralDevicePencilTransportWindowReport(
+        nonlinear_parallel_contracts_spectral.NonlinearSpectralDevicePencilTransportWindowReport(
             state_shape=work_model.state_shape,
             sharded_axis="z",
             axis_name="z",
@@ -356,7 +374,7 @@ def test_nonlinear_parallel_contract_blockers_and_nested_reports() -> None:
         work_model.state_shape,
         device_count=2,
     )
-    blocked_strategy = nonlinear_parallel_contracts.NonlinearParallelStrategy(
+    blocked_strategy = nonlinear_parallel_contracts_strategy.NonlinearParallelStrategy(
         name="whole_state_kx_ky",
         readiness="blocked",
         independent_work=False,

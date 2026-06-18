@@ -17,12 +17,13 @@ curated comparison traces in ``docs/_static``.
 Figure generation
 -----------------
 
-Lightweight benchmark drivers and runtime TOML inputs live in the repository
-root under ``benchmarks/``. They are intentionally separated from
-``examples/``: examples teach workflows, while benchmarks reproduce validation
-panels and paper-facing comparison traces. Generated outputs should go to
-``tools_out/`` or another scratch directory; only reviewed, compressed summary
-figures and small CSV/JSON metadata are tracked in ``docs/_static``.
+Lightweight benchmark drivers, runtime TOML inputs, and result-index pointers
+live in the repository root under ``benchmarks/``. They are intentionally
+separated from ``examples/``: examples teach workflows, while benchmarks
+reproduce validation panels and paper-facing comparison traces. Generated
+outputs should go to ``tools_out/`` or another scratch directory; only reviewed,
+compressed summary figures and small CSV/JSON metadata are tracked in
+``docs/_static``.
 
 Quick driver examples:
 
@@ -45,6 +46,44 @@ The atlas builder now reads its inputs from
 explicit.
 Future velocity-space convergence panels should use the same JSON-ready
 gate-report convention before they are promoted into the publication stack.
+
+Tracked results index
+---------------------
+
+The root-level result index is ``benchmarks/results/manifest.toml``. It points
+to the promoted benchmark figures and machine-readable tables without moving or
+duplicating large run products. The current tracked result set is:
+
+.. list-table:: Promoted benchmark result artifacts
+   :header-rows: 1
+   :widths: 26 32 42
+
+   * - Result
+     - Tracked artifact
+     - Regeneration path
+   * - Core linear atlas
+     - ``docs/_static/benchmark_core_linear_atlas.png``
+     - ``python tools/make_benchmark_atlas.py``
+   * - Core nonlinear atlas
+     - ``docs/_static/benchmark_core_nonlinear_atlas.png``
+     - ``python tools/make_benchmark_atlas.py``
+   * - README benchmark panel
+     - ``docs/_static/benchmark_readme_panel.png``
+     - ``python tools/make_benchmark_atlas.py``
+   * - Extended linear stress matrix
+     - ``docs/_static/benchmark_extended_linear_panel.png``
+     - ``python tools/make_benchmark_atlas.py``
+   * - Runtime and memory comparison
+     - ``docs/_static/runtime_memory_benchmark.png``
+     - ``python tools/benchmark_runtime_memory.py`` using
+       ``tools/runtime_memory_manifest.toml``
+   * - Runtime and memory rows
+     - ``docs/_static/runtime_memory_results_ship_refresh.csv``
+     - machine-readable rows behind the tracked runtime/memory panel
+
+This keeps the repository light: ``benchmarks/`` stores drivers and pointers,
+``docs/_static`` stores reviewed compact figures/tables, and raw solver output
+directories remain untracked.
 
 This produces the tracked atlas panels:
 

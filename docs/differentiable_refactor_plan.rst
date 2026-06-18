@@ -194,14 +194,13 @@ High-Risk Module Split Plan
   reductions, and profiling. Required gates: serial-vs-decomposed RHS identity,
   physical transport-window identity, profiler artifact schema, and no speedup
   claim without matched CPU/GPU artifacts. Domain, spectral, and strategy
-  report contracts now live in focused ``parallel_contracts_*`` modules behind
-  the unchanged ``operators/nonlinear/parallel_contracts.py`` facade. Local spectral-state construction,
+  report contracts now live in focused ``parallel_contracts_*`` modules and are
+  re-exported only through the public ``operators/nonlinear/parallel.py`` surface. Local spectral-state construction,
   chunk/layout utilities, communication/work models, pencil FFT/bracket
   primitives, RHS micro-routes, and tolerance helpers now live in focused
   ``operators/nonlinear/spectral_*`` modules behind the unchanged
   ``spectraxgk.operators.nonlinear.parallel`` facade. Logical spectral communication,
-  RHS, and fixed-window integrator identity gates now live in
-  ``operators/nonlinear/spectral_identity.py`` as a stable facade over focused
+  RHS, and fixed-window integrator identity gates now live directly in focused
   report, RHS-routing, and fixed-window integrator identity modules. The local
   domain prototype gates and device-z shard-map route now live in
   ``operators/nonlinear/domain_decomposition.py`` and

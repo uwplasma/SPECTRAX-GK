@@ -88,8 +88,8 @@
   "n_excluded_modules": 26,
   "n_high_priority_open": 83,
   "n_modules": 106,
-  "n_owned_modules": 215,
-  "n_package_modules": 347,
+  "n_owned_modules": 213,
+  "n_package_modules": 345,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -307,7 +307,6 @@
     "spectraxgk.operators.nonlinear.diagnostic_state": [],
     "spectraxgk.operators.nonlinear.diagnostics": [],
     "spectraxgk.operators.nonlinear.parallel": [
-      "spectraxgk.operators.nonlinear.parallel_contracts",
       "spectraxgk.operators.nonlinear.parallel_contracts_domain",
       "spectraxgk.operators.nonlinear.parallel_contracts_spectral",
       "spectraxgk.operators.nonlinear.parallel_contracts_strategy",
@@ -318,7 +317,6 @@
     "spectraxgk.operators.nonlinear.rhs": [],
     "spectraxgk.operators.nonlinear.spectral_core": [
       "spectraxgk.operators.nonlinear.spectral_brackets",
-      "spectraxgk.operators.nonlinear.spectral_identity",
       "spectraxgk.operators.nonlinear.spectral_identity_reports",
       "spectraxgk.operators.nonlinear.spectral_identity_rhs",
       "spectraxgk.operators.nonlinear.spectral_identity_integrator",
@@ -743,7 +741,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 5,
+      "n_owned_modules": 4,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/nonlinear/parallel.py",
@@ -757,7 +755,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 9,
+      "n_owned_modules": 8,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/nonlinear/spectral_core.py",

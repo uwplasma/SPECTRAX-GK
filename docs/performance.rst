@@ -1167,6 +1167,12 @@ The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
 - ``tools_out/runtime_memory_logs/*.stderr.log``
 - ``docs/_static/runtime_memory_benchmark.png``
 
+The promoted runtime/memory result files are also indexed from the root-level
+``benchmarks/results/manifest.toml`` so users can find benchmark outputs without
+searching through scratch directories. Raw logs and NetCDF files should stay in
+``tools_out/`` or another scratch location; only the reviewed summary CSV/JSON
+and compressed panel are tracked.
+
 The manifest is designed to hold three rows per case:
 
 - ``spectrax_cpu``

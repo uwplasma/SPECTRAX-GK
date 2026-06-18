@@ -740,7 +740,6 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
 def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_miller_zonal_response.toml"
     )
@@ -769,7 +768,6 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
 def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_w7x_zonal_response_vmec.toml"
     )
@@ -779,7 +777,12 @@ def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file == str(
-        (path.parents[1] / "vmec" / "wout_nfp3_QI_fixed_resolution_final.nc").resolve()
+        (
+            Path(__file__).resolve().parents[1]
+            / "examples"
+            / "vmec"
+            / "wout_nfp3_QI_fixed_resolution_final.nc"
+        ).resolve()
     )
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.geometry.alpha == pytest.approx(0.0)
