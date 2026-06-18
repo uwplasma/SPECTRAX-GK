@@ -1260,9 +1260,6 @@ Quasilinear Transport
 Quasilinear Calibration
 -----------------------
 
-.. automodule:: spectraxgk.validation.quasilinear.calibration
-   :members:
-
 .. automodule:: spectraxgk.validation.quasilinear.calibration_core
    :members:
    :private-members:
@@ -1276,10 +1273,6 @@ Quasilinear Calibration
 
 Quasilinear Nonlinear-Window Gates
 ----------------------------------
-
-.. automodule:: spectraxgk.validation.quasilinear.window
-   :members:
-   :no-index:
 
 .. automodule:: spectraxgk.validation.quasilinear.window_config
    :members:

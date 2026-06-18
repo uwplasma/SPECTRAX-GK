@@ -2167,7 +2167,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.calibration_core"
 source_path = "src/spectraxgk/validation/quasilinear/calibration_core.py"
-facade_module = "spectraxgk.validation.quasilinear.calibration"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "quasilinear calibration points, train-scale fitting, scaling application, and train/holdout report assembly"
 moved_exports = [
@@ -2182,7 +2182,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.calibration_spectrum"
 source_path = "src/spectraxgk/validation/quasilinear/calibration_spectrum.py"
-facade_module = "spectraxgk.validation.quasilinear.calibration"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "quasilinear spectrum-column integration into scalar heat-flux estimates"
 moved_exports = [
@@ -2194,7 +2194,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.calibration_io"
 source_path = "src/spectraxgk/validation/quasilinear/calibration_io.py"
-facade_module = "spectraxgk.validation.quasilinear.calibration"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "nonlinear window CSV/NetCDF ingestion, convergence attachment, calibration-point construction, and report JSON writing"
 moved_exports = [
@@ -3157,7 +3157,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_config"
 source_path = "src/spectraxgk/validation/quasilinear/window_config.py"
-facade_module = "spectraxgk.validation.quasilinear.window"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "nonlinear transport-window convergence, ensemble, and manifest gate configuration contracts"
 moved_exports = [
@@ -3171,7 +3171,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_statistics"
 source_path = "src/spectraxgk/validation/quasilinear/window_statistics.py"
-facade_module = "spectraxgk.validation.quasilinear.window"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "late-window finite-sample, drift, terminal-window, block, and bootstrap statistics for nonlinear heat-flux traces"
 moved_exports = [
@@ -3190,7 +3190,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_io"
 source_path = "src/spectraxgk/validation/quasilinear/window_io.py"
-facade_module = "spectraxgk.validation.quasilinear.window"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "CSV and summary-JSON readers for nonlinear transport-window convergence reports"
 moved_exports = [
@@ -3204,7 +3204,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_promotion"
 source_path = "src/spectraxgk/validation/quasilinear/window_promotion.py"
-facade_module = "spectraxgk.validation.quasilinear.window"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "promotion-readiness checks for individual and ensemble nonlinear transport-window metadata"
 moved_exports = [
@@ -3218,7 +3218,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_ensemble"
 source_path = "src/spectraxgk/validation/quasilinear/window_ensemble.py"
-facade_module = "spectraxgk.validation.quasilinear.window"
+facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "replicated nonlinear-window ensemble uncertainty gates and seed/timestep artifact-readiness manifests"
 moved_exports = [

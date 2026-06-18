@@ -16,8 +16,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.quasilinear.window import (  # noqa: E402
+from spectraxgk.validation.quasilinear.window_config import (  # noqa: E402
     NonlinearWindowEnsembleConfig,
+)
+from spectraxgk.validation.quasilinear.window_ensemble import (  # noqa: E402
     nonlinear_window_ensemble_report,
 )
 

@@ -1251,10 +1251,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.quasilinear.calibration"
-path = "src/spectraxgk/validation/quasilinear/calibration.py"
+module = "spectraxgk.validation.quasilinear.calibration_core"
+path = "src/spectraxgk/validation/quasilinear/calibration_core.py"
 owned_modules = [
-  "spectraxgk.validation.quasilinear.calibration_core",
   "spectraxgk.validation.quasilinear.calibration_io",
   "spectraxgk.validation.quasilinear.calibration_spectrum",
   "spectraxgk.validation.quasilinear.holdout_admission",
@@ -1328,10 +1327,9 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.quasilinear.window"
-path = "src/spectraxgk/validation/quasilinear/window.py"
+module = "spectraxgk.validation.quasilinear.window_config"
+path = "src/spectraxgk/validation/quasilinear/window_config.py"
 owned_modules = [
-  "spectraxgk.validation.quasilinear.window_config",
   "spectraxgk.validation.quasilinear.window_ensemble",
   "spectraxgk.validation.quasilinear.window_io",
   "spectraxgk.validation.quasilinear.window_promotion",

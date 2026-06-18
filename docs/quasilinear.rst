@@ -407,7 +407,9 @@ Implementation map
      - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
-     - :mod:`spectraxgk.validation.quasilinear.calibration`
+     - :mod:`spectraxgk.validation.quasilinear.calibration_core`,
+       :mod:`spectraxgk.validation.quasilinear.calibration_io`, and
+       :mod:`spectraxgk.validation.quasilinear.calibration_spectrum`
      - train/holdout/audit schemas, nonlinear-window ingestion, scale fitting,
        and report scoring
    * - Plotting tools
@@ -587,13 +589,14 @@ quasilinear derivation and saturation-rule validation philosophy in
 Calibration reports
 -------------------
 
-Calibration artifacts should use ``spectraxgk.validation.quasilinear.calibration`` so
+Calibration artifacts should use ``spectraxgk.validation.quasilinear.calibration_core``
+and ``spectraxgk.validation.quasilinear.calibration_io`` so
 training, holdout, and audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
-``spectraxgk.validation.quasilinear.window`` or
+``spectraxgk.validation.quasilinear.window_statistics`` or
 ``tools/check_nonlinear_window_convergence.py`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
@@ -603,7 +606,7 @@ from an uncalibrated
 saturation rule.
 
 Replicated nonlinear windows should additionally be checked with
-``spectraxgk.validation.quasilinear.window.nonlinear_window_ensemble_report`` before they
+``spectraxgk.validation.quasilinear.window_ensemble.nonlinear_window_ensemble_report`` before they
 are used as seed, initial-condition, or timestep-robust transport evidence.
 The ensemble gate consumes already-built nonlinear-window convergence reports,
 requires each input window to be promotion-ready by default, and checks the

@@ -29,8 +29,10 @@ from spectraxgk.validation.nonlinear_gradient.evidence import (
     nonlinear_turbulence_gradient_finite_difference_report,
     summarize_window_evidence,
 )
-from spectraxgk.validation.quasilinear.window import (
+from spectraxgk.validation.quasilinear.window_config import (
     NonlinearWindowConvergenceConfig,
+)
+from spectraxgk.validation.quasilinear.window_statistics import (
     nonlinear_window_convergence_report,
 )
 

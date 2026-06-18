@@ -294,12 +294,12 @@ Quasilinear model-selection state:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
 - ``tools/check_nonlinear_window_convergence.py`` and
-  ``spectraxgk.validation.quasilinear.window`` provide the reusable late-window
+  ``spectraxgk.validation.quasilinear.window_statistics`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
-- ``spectraxgk.validation.quasilinear.window.nonlinear_window_ensemble_report`` provides
+- ``spectraxgk.validation.quasilinear.window_ensemble.nonlinear_window_ensemble_report`` provides
   the next guardrail for replicated windows: seed, initial-condition, timestep,
   or restart variants must have individually passed late-window reports and
   mutually consistent late means before a nonlinear turbulent-flux optimization

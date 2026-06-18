@@ -2976,3 +2976,17 @@ No long nonlinear audit should be launched from these candidates.
   gates passed: portfolio reducer/sensitivity tests, reduced-portfolio guard
   tests, validation/refactor manifest tests, validation summary regeneration,
   repository-size check, ruff, mypy, Sphinx docs build, and `git diff --check`.
+
+- 2026-06-18: Retired the legacy quasilinear validation facades
+  `spectraxgk.validation.quasilinear.calibration` and
+  `spectraxgk.validation.quasilinear.window`. Calibration callers now import
+  from `calibration_core.py`, `calibration_io.py`, and
+  `calibration_spectrum.py`; late-window callers import from `window_config.py`,
+  `window_statistics.py`, `window_io.py`, `window_ensemble.py`, and
+  `window_promotion.py`. The public `spectraxgk.validation` API continues to
+  re-export the user-facing names directly from those owners. Updated source,
+  tests, tools, authored docs, and both validation/refactor manifests, then
+  regenerated the validation coverage summary. Local gates passed: quasilinear
+  calibration/window tests, nonlinear-gradient evidence tests, validation and
+  refactor manifest tests, validation summary regeneration, repository-size
+  check, ruff, mypy, Sphinx docs build, and `git diff --check`.
