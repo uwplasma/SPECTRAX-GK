@@ -241,6 +241,19 @@ Linear Cache
    :members:
    :private-members:
 
+.. automodule:: spectraxgk.operators.linear.cache_model
+   :members:
+   :no-index:
+
+.. automodule:: spectraxgk.operators.linear.cache_arrays
+   :members:
+   :private-members:
+   :no-index:
+
+.. automodule:: spectraxgk.operators.linear.cache_builder
+   :members:
+   :no-index:
+
 Linear Moments
 --------------
 

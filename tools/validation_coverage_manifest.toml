@@ -342,6 +342,11 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.linear.cache"
 path = "src/spectraxgk/operators/linear/cache.py"
+owned_modules = [
+  "spectraxgk.operators.linear.cache_model",
+  "spectraxgk.operators.linear.cache_arrays",
+  "spectraxgk.operators.linear.cache_builder",
+]
 owner_lane = "linear geometry cache construction and damping factors"
 status = "active"
 coverage_priority = "medium"

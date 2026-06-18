@@ -2081,10 +2081,46 @@ module = "spectraxgk.operators.linear.cache"
 source_path = "src/spectraxgk/operators/linear/cache.py"
 facade_module = "spectraxgk.operators.linear"
 status = "active"
-responsibility = "linear geometry, gyroaverage, damping, linked-boundary, and moment-cache construction"
+responsibility = "linear cache compatibility facade over the pytree model, array factories, damping factors, and geometry-dependent builder"
 moved_exports = ["LinearCache", "build_linear_cache", "collision_damping", "hypercollision_damping"]
 fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_model"
+source_path = "src/spectraxgk/operators/linear/cache_model.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "LinearCache JAX pytree data model and deterministic flatten/unflatten contract"
+moved_exports = ["LinearCache"]
+fast_tests = ["tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_arrays"
+source_path = "src/spectraxgk/operators/linear/cache_arrays.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "moment, damping, end-damping, and gyroaverage array factories used by linear and nonlinear operators"
+moved_exports = [
+  "_build_end_damping_profile_array",
+  "_build_gyroaverage_cache_arrays",
+  "_build_low_rank_moment_cache_arrays",
+  "collision_damping",
+  "hypercollision_damping",
+]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_builder"
+source_path = "src/spectraxgk/operators/linear/cache_builder.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "geometry-dependent LinearCache construction, linked-boundary metadata, and nonlinear-dealias cache fields"
+moved_exports = ["build_linear_cache"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.rhs"

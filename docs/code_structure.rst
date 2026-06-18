@@ -276,9 +276,12 @@ Completed extractions:
   pytrees, cache-backed RHS assembly, implicit linear GMRES/preconditioner
   policy, fixed-step/diagnostic integration policy, eigenmode policy/operator/
   branch-selection/preconditioner/Krylov algorithms, and velocity-parallel RHS
-  dispatch live under ``operators/linear/`` and ``solvers/linear/``. The public
-  Krylov import path remains ``solvers/linear/krylov.py``; focused developer
-  helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
+  dispatch live under ``operators/linear/`` and ``solvers/linear/``. The cache
+  path is split into ``cache_model.py`` for the JAX pytree, ``cache_arrays.py``
+  for moment/damping/gyroaverage array factories, and ``cache_builder.py`` for
+  geometry-dependent construction; ``cache.py`` remains the stable public
+  facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
+  focused developer helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
   ``eigen_selection.py``, ``eigen_preconditioners.py``, and
   ``krylov_algorithms.py``. The obsolete root ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
