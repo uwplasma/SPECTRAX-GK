@@ -1,3 +1,11 @@
+- 2026-06-18: Continued the differentiable objective refactor by splitting the
+  723-line `spectraxgk.objectives.solver_gradients` module into a 133-line
+  public facade plus `spectraxgk.objectives.solver_vmec` for VMEC/Boozer
+  objective wrappers and `spectraxgk.objectives.solver_gradient_reports` for
+  solver-ready, branch-locality, and mode-21 gradient reports. Public exports
+  and top-level API identities are preserved, while validation monkeypatch seams
+  now target the implementation owner module directly. Focused solver-objective
+  differentiability tests and Ruff passed locally.
 - 2026-06-18: Split the 1235-line internal VMEC imported-geometry backend into
   a 50-line `spectraxgk.geometry_backends.vmec` facade plus focused backend
   discovery, numerical helper, field-line assembly, flux-tube remap, NetCDF IO,

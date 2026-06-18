@@ -3021,6 +3021,8 @@ next_tests = [
 module = "spectraxgk.objectives.solver_gradients"
 path = "src/spectraxgk/objectives/solver_gradients.py"
 owned_modules = [
+  "spectraxgk.objectives.solver_gradient_reports",
+  "spectraxgk.objectives.solver_vmec",
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
   "spectraxgk.objectives.stellarator_reduced",

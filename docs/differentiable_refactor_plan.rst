@@ -208,9 +208,10 @@ High-Risk Module Split Plan
   ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``, and
-  ``objectives/vmec_boozer_line_search.py`` while
-  ``solver_objective_gradients.py`` remains the higher-level public objective
-  surface.
+  ``objectives/vmec_boozer_line_search.py``,
+  ``objectives/solver_vmec.py``, and ``objectives/solver_gradient_reports.py``
+  while ``solver_objective_gradients.py`` remains the higher-level public
+  objective surface.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
