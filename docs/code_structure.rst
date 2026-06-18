@@ -452,6 +452,10 @@ and moves runtime linear, runtime scan, and runtime nonlinear command execution
 into ``spectraxgk.workflows.runtime.commands``. The generic ``run`` executable
 path attaches the already-loaded runtime config/data to the parser namespace
 before dispatch, so command execution does not parse the same TOML twice.
+Linear, scan, and nonlinear command flags are resolved once into typed
+command-option records before solver calls are made, which keeps precedence
+between CLI flags, TOML sections, and runtime defaults inspectable without
+spreading executable policy across command bodies.
 ``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and
 re-exports the command helpers only for compatibility; path override, progress,
 quasilinear override, and preload-reuse policies have one canonical workflow

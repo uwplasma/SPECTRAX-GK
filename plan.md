@@ -1,3 +1,17 @@
+- 2026-06-18: Continued runtime/executable simplification by moving repeated
+  CLI/TOML/default option precedence in `spectraxgk.workflows.runtime.commands`
+  into typed command-option records for linear, ky-scan, and nonlinear runtime
+  executable workflows. This keeps the parser in `spectraxgk.cli`, keeps
+  command execution in the runtime workflow owner, avoids adding another module,
+  and makes solver-call inputs inspectable before execution. The root
+  `benchmarks/` directory remains the canonical lightweight benchmark location
+  and is already documented through `docs/benchmarks.rst` and
+  `benchmarks/results/manifest.toml`. Local gates passed: focused CLI runtime
+  command tests, focused runtime-command helper tests, Ruff on touched Python
+  command files, mypy on executable/runtime command modules, `py_compile` on
+  the runtime command owner, differentiable-refactor manifest, validation
+  coverage manifest regeneration, repository-size manifest, warning-free Sphinx
+  build, and `git diff --check`.
 - 2026-06-18: Continued runtime/executable consolidation by adding an explicit
   preloaded runtime-config handoff between the generic `spectraxgk run`
   dispatcher and `spectraxgk.workflows.runtime.commands`. The generic run path
