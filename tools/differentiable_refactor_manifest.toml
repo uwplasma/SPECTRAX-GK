@@ -304,25 +304,11 @@ fast_tests = ["tests/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.kbm"
-source_path = "src/spectraxgk/validation/benchmarks/kbm.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "KBM benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
-moved_exports = [
-  "run_kbm_linear",
-  "run_kbm_scan",
-  "run_kbm_beta_scan",
-]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_beta"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_beta.py"
-facade_module = "spectraxgk.validation.benchmarks.kbm"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "KBM fixed-ky beta-scan runner, per-beta setup, time/diffrax integration fallback, and public compatibility seam"
+responsibility = "KBM fixed-ky beta-scan runner, per-beta setup, time/diffrax integration fallback, and public result packaging"
 moved_exports = [
   "run_kbm_beta_scan",
 ]
@@ -348,7 +334,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
-facade_module = "spectraxgk.validation.benchmarks.kbm"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "KBM single-ky geometry setup, generic saved-time fitting, and public result packaging"
 moved_exports = [
@@ -375,7 +361,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_scan"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_scan.py"
-facade_module = "spectraxgk.validation.benchmarks.kbm"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays into the beta-scan runner"
 moved_exports = [
@@ -2168,7 +2154,6 @@ current_reason = "large benchmark-family orchestration file mixing physics cases
 target_packages = [
   "spectraxgk.validation.benchmarks.etg_linear",
   "spectraxgk.validation.benchmarks.etg_scan",
-  "spectraxgk.validation.benchmarks.kbm",
   "spectraxgk.validation.benchmarks.tem",
   "spectraxgk.validation.reference_data",
   "spectraxgk.validation.fit_policies",

@@ -9,7 +9,8 @@ import pytest
 import jax.numpy as jnp
 
 import spectraxgk.validation.benchmarks.fit_signals as benchmark_fit_signals
-import spectraxgk.validation.benchmarks.kbm as benchmark_kbm
+import spectraxgk.validation.benchmarks.kbm_beta as benchmark_kbm_beta
+import spectraxgk.validation.benchmarks.kbm_linear as benchmark_kbm_linear
 import spectraxgk.validation.benchmarks.kinetic_linear as benchmark_kinetic
 import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
@@ -1065,12 +1066,12 @@ def test_run_kbm_linear_explicit_time_uses_requested_mode_extractor(monkeypatch)
         return 0.25, 1.5, 0.0, 0.0
 
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
-    monkeypatch.setattr(benchmark_kbm, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(benchmark_kbm_linear, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm_linear, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             AssertionError("unexpected reference-ratio fit")
@@ -1142,13 +1143,13 @@ def test_run_kbm_linear_uses_linked_boundary_end_damping_by_default(monkeypatch)
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmark_kbm, "build_linear_cache", _fake_build_linear_cache)
+    monkeypatch.setattr(benchmark_kbm_linear, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm_linear, "build_linear_cache", _fake_build_linear_cache)
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
@@ -1196,10 +1197,10 @@ def test_run_kbm_linear_explicit_time_uses_reference_aligned_rk4_cfl_factor_by_d
         return t, phi_t, gamma_t, omega_t, diag
 
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
@@ -1245,10 +1246,10 @@ def test_run_kbm_linear_explicit_time_preserves_explicit_cfl_factor(monkeypatch)
         return t, phi_t, gamma_t, omega_t, diag
 
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
@@ -1302,10 +1303,10 @@ def test_run_kbm_linear_explicit_time_uses_method_default_cfl_factor(monkeypatch
         return t, phi_t, gamma_t, omega_t, diag
 
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
@@ -1352,13 +1353,13 @@ def test_run_kbm_linear_disables_linked_boundary_end_damping_when_requested(
     def _fake_integrate(*_args, **_kwargs):
         return np.array([0.0]), np.zeros((1, 1, 1, 4), dtype=np.complex64)
 
-    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm_linear, "_two_species_params", _fake_two_species_params)
     monkeypatch.setattr(
-        benchmark_kbm, "build_linear_cache", lambda *_args, **_kwargs: object()
+        benchmark_kbm_linear, "build_linear_cache", lambda *_args, **_kwargs: object()
     )
-    monkeypatch.setattr(benchmark_kbm, "integrate_linear", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm_linear, "integrate_linear", _fake_integrate)
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_linear,
         "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0),
     )
@@ -1422,12 +1423,12 @@ def test_run_kbm_beta_scan_explicit_time_keeps_project_mode(monkeypatch):
         return 0.15, 0.9, 0.0, 0.0
 
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_beta, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
-    monkeypatch.setattr(benchmark_kbm, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmark_kbm, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(benchmark_kbm_beta, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm_beta, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_beta,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             AssertionError("unexpected reference-ratio fit")
@@ -1495,15 +1496,15 @@ def test_run_kbm_beta_scan_uses_linked_boundary_end_damping_by_default(monkeypat
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmark_kbm, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm_beta, "_two_species_params", _fake_two_species_params)
     monkeypatch.setattr(
-        benchmark_kbm, "build_linear_cache", lambda *_args, **_kwargs: object()
+        benchmark_kbm_beta, "build_linear_cache", lambda *_args, **_kwargs: object()
     )
     monkeypatch.setattr(
-        benchmark_kbm, "integrate_linear_explicit_diagnostics", _fake_integrate
+        benchmark_kbm_beta, "integrate_linear_explicit_diagnostics", _fake_integrate
     )
     monkeypatch.setattr(
-        benchmark_kbm,
+        benchmark_kbm_beta,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
@@ -1542,9 +1543,9 @@ def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch)
             phi=np.zeros(np.asarray(vec).shape[-3:], dtype=np.complex64)
         )
 
-    monkeypatch.setattr(benchmark_kbm, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kbm_linear, "dominant_eigenpair", _fake_dominant_eigenpair)
     monkeypatch.setattr(
-        benchmark_kbm, "compute_fields_cached", _fake_compute_fields_cached
+        benchmark_kbm_linear, "compute_fields_cached", _fake_compute_fields_cached
     )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
@@ -1586,7 +1587,7 @@ def test_run_kbm_beta_scan_krylov_explicit_shift_bypasses_multi_target(monkeypat
         calls.append(kwargs)
         return 0.2 - 1.1j, np.zeros_like(np.asarray(v0))
 
-    monkeypatch.setattr(benchmark_kbm, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kbm_beta, "dominant_eigenpair", _fake_dominant_eigenpair)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KBMBaseCase(grid=grid)

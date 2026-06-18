@@ -636,31 +636,31 @@ def test_run_etg_linear_explicit_time_config_phi_path_uses_config_integrator(
 
 def test_run_kbm_linear_explicit_time_uses_omega_series_fallback(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_flux_tube_geometry",
+        "spectraxgk.validation.benchmarks.kbm_linear.build_flux_tube_geometry",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.apply_geometry_grid_defaults",
+        "spectraxgk.validation.benchmarks.kbm_linear.apply_geometry_grid_defaults",
         lambda geom, grid: grid,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_spectral_grid",
+        "spectraxgk.validation.benchmarks.kbm_linear.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_ky_grid",
+        "spectraxgk.validation.benchmarks.kbm_linear.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_linear_cache",
+        "spectraxgk.validation.benchmarks.kbm_linear.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._build_initial_condition",
+        "spectraxgk.validation.benchmarks.kbm_linear._build_initial_condition",
         lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.integrate_linear_explicit_diagnostics",
+        "spectraxgk.validation.benchmarks.kbm_linear.integrate_linear_explicit_diagnostics",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -670,15 +670,15 @@ def test_run_kbm_linear_explicit_time_uses_omega_series_fallback(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.instantaneous_growth_rate_from_phi",
+        "spectraxgk.validation.benchmarks.kbm_linear.instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no fit")),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.windowed_growth_rate_from_omega_series",
+        "spectraxgk.validation.benchmarks.kbm_linear.windowed_growth_rate_from_omega_series",
         lambda *args, **kwargs: (0.35, -0.22, None, None),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._normalize_growth_rate",
+        "spectraxgk.validation.benchmarks.kbm_linear._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -703,31 +703,31 @@ def test_run_kbm_beta_scan_multi_target_resolves_near_marginal_branch(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_spectral_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_ky_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.SAlphaGeometry.from_config",
+        "spectraxgk.validation.benchmarks.kbm_beta.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._two_species_params",
+        "spectraxgk.validation.benchmarks.kbm_beta._two_species_params",
         lambda *args, **kwargs: SimpleNamespace(rho_star=1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_linear_cache",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._build_initial_condition",
+        "spectraxgk.validation.benchmarks.kbm_beta._build_initial_condition",
         _fake_initial_condition,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._normalize_growth_rate",
+        "spectraxgk.validation.benchmarks.kbm_beta._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -739,7 +739,7 @@ def test_run_kbm_beta_scan_multi_target_resolves_near_marginal_branch(
         return next(eigs), np.zeros_like(np.asarray(G0))
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.dominant_eigenpair", _fake_eigenpair
+        "spectraxgk.validation.benchmarks.kbm_beta.dominant_eigenpair", _fake_eigenpair
     )
 
     scan = run_kbm_beta_scan(
@@ -1465,7 +1465,7 @@ def test_run_kbm_scan_forwards_per_mode_arrays(monkeypatch) -> None:
         return SimpleNamespace(gamma=np.array([ky + 1.0]), omega=np.array([-ky - 2.0]))
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.run_kbm_beta_scan",
+        "spectraxgk.validation.benchmarks.kbm_scan.run_kbm_beta_scan",
         _fake_run_kbm_beta_scan,
     )
 
@@ -1500,7 +1500,7 @@ def test_run_kbm_scan_uses_cfg_beta_and_sequence_pick(monkeypatch) -> None:
 
     cfg = replace(KBMBaseCase(), model=replace(KBMBaseCase().model, beta=2.5e-3))
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.run_kbm_beta_scan",
+        "spectraxgk.validation.benchmarks.kbm_scan.run_kbm_beta_scan",
         _fake_run_kbm_beta_scan,
     )
 
@@ -1532,15 +1532,15 @@ def test_run_kbm_beta_scan_rejects_invalid_species_indices() -> None:
 
 def test_run_kbm_linear_rejects_invalid_fit_and_species_indices(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_flux_tube_geometry",
+        "spectraxgk.validation.benchmarks.kbm_linear.build_flux_tube_geometry",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.apply_geometry_grid_defaults",
+        "spectraxgk.validation.benchmarks.kbm_linear.apply_geometry_grid_defaults",
         lambda geom, grid: grid,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_spectral_grid",
+        "spectraxgk.validation.benchmarks.kbm_linear.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     with pytest.raises(ValueError, match="fit_signal"):
@@ -1576,42 +1576,42 @@ def test_run_kbm_beta_scan_auto_krylov_invalid_growth_falls_back_to_time(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_spectral_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_ky_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.SAlphaGeometry.from_config",
+        "spectraxgk.validation.benchmarks.kbm_beta.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_linear_cache",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._two_species_params",
+        "spectraxgk.validation.benchmarks.kbm_beta._two_species_params",
         lambda *args, **kwargs: SimpleNamespace(rho_star=1.0, nu=0.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._build_initial_condition",
+        "spectraxgk.validation.benchmarks.kbm_beta._build_initial_condition",
         lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_kbm_solver_auto",
+        "spectraxgk.validation.benchmarks.kbm_beta.select_kbm_solver_auto",
         lambda *args, **kwargs: "krylov",
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.dominant_eigenpair",
+        "spectraxgk.validation.benchmarks.kbm_beta.dominant_eigenpair",
         lambda *args, **kwargs: (
             -0.1 + 0.2j,
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.integrate_linear_diagnostics",
+        "spectraxgk.validation.benchmarks.kbm_beta.integrate_linear_diagnostics",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1619,15 +1619,15 @@ def test_run_kbm_beta_scan_auto_krylov_invalid_growth_falls_back_to_time(
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._select_fit_signal",
+        "spectraxgk.validation.benchmarks.kbm_beta._select_fit_signal",
         lambda *args, **kwargs: np.array([1.0 + 0.0j, 2.0 + 0.0j]),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.fit_growth_rate_auto",
+        "spectraxgk.validation.benchmarks.kbm_beta.fit_growth_rate_auto",
         lambda *args, **kwargs: (0.15, -0.07, 0.0, 1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._normalize_growth_rate",
+        "spectraxgk.validation.benchmarks.kbm_beta._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -1650,35 +1650,35 @@ def test_run_kbm_beta_scan_explicit_time_diagnostic_fallback_ladder(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_spectral_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_ky_grid",
+        "spectraxgk.validation.benchmarks.kbm_beta.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.SAlphaGeometry.from_config",
+        "spectraxgk.validation.benchmarks.kbm_beta.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.build_linear_cache",
+        "spectraxgk.validation.benchmarks.kbm_beta.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._two_species_params",
+        "spectraxgk.validation.benchmarks.kbm_beta._two_species_params",
         lambda *args, **kwargs: SimpleNamespace(rho_star=1.0, nu=0.0),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._build_initial_condition",
+        "spectraxgk.validation.benchmarks.kbm_beta._build_initial_condition",
         lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.select_kbm_solver_auto",
+        "spectraxgk.validation.benchmarks.kbm_beta.select_kbm_solver_auto",
         lambda *args, **kwargs: "explicit_time",
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm._normalize_growth_rate",
+        "spectraxgk.validation.benchmarks.kbm_beta._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -1754,23 +1754,23 @@ def test_run_kbm_beta_scan_explicit_time_diagnostic_fallback_ladder(
 
     current: dict[str, object] = {}
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.integrate_linear_explicit_diagnostics",
+        "spectraxgk.validation.benchmarks.kbm_beta.integrate_linear_explicit_diagnostics",
         _fake_integrate,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.instantaneous_growth_rate_from_phi",
+        "spectraxgk.validation.benchmarks.kbm_beta.instantaneous_growth_rate_from_phi",
         _fake_growth,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.windowed_growth_rate_from_omega_series",
+        "spectraxgk.validation.benchmarks.kbm_beta.windowed_growth_rate_from_omega_series",
         _fake_omega_series,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.extract_mode_time_series",
+        "spectraxgk.validation.benchmarks.kbm_beta.extract_mode_time_series",
         lambda *args, **kwargs: np.ones(2, dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm.fit_growth_rate_auto", _fake_fit
+        "spectraxgk.validation.benchmarks.kbm_beta.fit_growth_rate_auto", _fake_fit
     )
 
     observed_gamma = []

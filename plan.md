@@ -1,3 +1,16 @@
+- 2026-06-18: Retired the KBM benchmark-family compatibility module. Public
+  KBM benchmark imports now route from `spectraxgk.benchmarks` directly to
+  `spectraxgk.validation.benchmarks.kbm_linear`,
+  `spectraxgk.validation.benchmarks.kbm_scan`, and
+  `spectraxgk.validation.benchmarks.kbm_beta`; tests patch those owner modules
+  directly. Updated API/code-structure/refactor-plan docs and the
+  validation/refactor manifests so the benchmark ownership map reflects the
+  maintained modules only. Regenerated the validation coverage summary and kept
+  root `benchmarks/` as the lightweight tracked benchmark-output index. Local
+  gates passed: KBM runner-branch tests, KBM integration selection with
+  integration filtering disabled, benchmark-result/runtime-config tests,
+  validation/refactor manifest tests, repository-size check, Ruff, mypy over
+  342 source files, Sphinx docs build, and `git diff --check`.
 - 2026-06-18: Retired the Cyclone benchmark-family compatibility module. Public
   Cyclone benchmark imports now route from `spectraxgk.benchmarks` directly to
   `spectraxgk.validation.benchmarks.cyclone_linear` and
@@ -774,9 +787,9 @@
 
 - 2026-06-14: Continued the behavior-preserving benchmark refactor by moving
   the KBM benchmark-family runners (`run_kbm_linear`, `run_kbm_scan`, and
-  `run_kbm_beta_scan`) into `spectraxgk.validation.benchmarks.kbm` behind the existing
-  `spectraxgk.benchmarks` public facade. KBM-specific regression tests now
-  patch the implementation module directly, preserving public imports while
+  `run_kbm_beta_scan`) into focused linear, scan, and beta-scan owner modules
+  behind the existing `spectraxgk.benchmarks` public facade. KBM-specific
+  regression tests patch the implementation owners directly, preserving public imports while
   making the largest benchmark file smaller and the KBM lane easier to test
   independently.
 

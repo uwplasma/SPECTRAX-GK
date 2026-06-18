@@ -770,10 +770,6 @@ Benchmarking
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kbm
-   :members:
-   :no-index:
-
 .. automodule:: spectraxgk.validation.benchmarks.kbm_beta
    :members:
 
