@@ -355,7 +355,11 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.kbm_scan``, ``spectraxgk.validation.benchmarks.tem``,
   ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The obsolete benchmark helper bridge has been removed;
-  runners and tests import focused benchmark modules directly. The
+  runners and tests import focused benchmark modules directly.
+  ``spectraxgk.diagnostics.quasilinear_transport`` owns the core
+  linear-state quasilinear transport weights and differentiable saturation
+  objectives while ``spectraxgk.quasilinear`` remains the stable public facade.
+  The
   first differentiable-geometry support split also lives in this phase:
   ``spectraxgk.geometry.backend_discovery`` owns
   optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and

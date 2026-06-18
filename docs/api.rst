@@ -1221,10 +1221,17 @@ Runtime Artifact Nonlinear Diagnostics
    :members:
    :private-members:
 
-Quasilinear Transport
----------------------
+Quasilinear Transport Facade
+----------------------------
 
 .. automodule:: spectraxgk.quasilinear
+   :members:
+   :no-index:
+
+Quasilinear Transport Diagnostics
+---------------------------------
+
+.. automodule:: spectraxgk.diagnostics.quasilinear_transport
    :members:
 
 Quasilinear Calibration

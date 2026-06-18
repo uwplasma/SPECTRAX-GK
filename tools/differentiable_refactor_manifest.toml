@@ -613,6 +613,28 @@ fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_quasilinear.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.diagnostics.quasilinear_transport"
+source_path = "src/spectraxgk/diagnostics/quasilinear_transport.py"
+facade_module = "spectraxgk.quasilinear"
+status = "active"
+responsibility = "linear-state quasilinear heat/particle-flux weights, spectral amplitude normalization, and differentiable saturation-model objectives"
+moved_exports = [
+  "QuasilinearTransportResult",
+  "compute_quasilinear_from_linear_state",
+  "effective_kperp2",
+  "mixing_length_amplitude2_jax",
+  "normalize_quasilinear_channels",
+  "phi_norm2",
+  "quasilinear_feature_objective",
+  "saturation_amplitude2",
+  "saturated_flux_from_linear_weight",
+  "shape_aware_power_law_objective",
+  "spectral_phi_weights",
+]
+fast_tests = ["tests/test_quasilinear.py", "tests/test_autodiff_validation.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.resolved"
 source_path = "src/spectraxgk/diagnostics/resolved.py"
 facade_module = "spectraxgk.diagnostics.core"

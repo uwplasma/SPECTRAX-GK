@@ -1,3 +1,14 @@
+- 2026-06-18: Moved the core quasilinear transport diagnostic implementation
+  from the root `spectraxgk.quasilinear` module into
+  `spectraxgk.diagnostics.quasilinear_transport`. The root module is now a
+  small stable public facade, while internal runtime/objective/API code imports
+  the diagnostics-domain owner directly. Added facade identity coverage,
+  documented the owner/facade split in API/code-structure/refactor-plan docs,
+  and registered the new owner in the validation/refactor manifests. Local
+  gates passed: quasilinear/autodiff-focused tests, public facade identity
+  import check, Ruff on touched Python modules, mypy on touched source modules,
+  validation/refactor manifests, repository-size check, warning-free Sphinx
+  docs build, and `git diff --check`.
 - 2026-06-18: Moved benchmark-family case presets out of the generic runtime
   schema in `spectraxgk.config` and into
   `spectraxgk.validation.benchmarks.case_configs`. `spectraxgk.config` remains

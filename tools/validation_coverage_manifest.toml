@@ -1194,6 +1194,7 @@ next_tests = [
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
+  "spectraxgk.diagnostics.quasilinear_transport",
   "spectraxgk.validation.quasilinear.model_selection",
   "spectraxgk.validation.external_holdout",
 ]
