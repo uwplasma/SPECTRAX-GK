@@ -1992,6 +1992,81 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_plan"
+source_path = "src/spectraxgk/parallel/velocity_plan.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "velocity-space decomposition metadata, axis normalization, chunking, and JSON-friendly sharding-plan construction"
+moved_exports = [
+  "VelocityShardingPlan",
+  "build_velocity_sharding_plan",
+]
+fast_tests = ["tests/test_velocity_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_hermite"
+source_path = "src/spectraxgk/parallel/velocity_hermite.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "Hermite-neighbor exchange, Hermite shifts, and velocity-field reduction reference/shard-map gates"
+moved_exports = [
+  "hermite_neighbor_reference",
+  "hermite_neighbor_shard_map",
+  "hermite_shift_reference",
+  "hermite_shift_shard_map",
+  "velocity_field_reduce_reference",
+  "velocity_field_reduce_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_hermite_exchange_gate.py",
+  "tests/test_generate_velocity_field_reduce_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_streaming"
+source_path = "src/spectraxgk/parallel/velocity_streaming.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "Hermite streaming, periodic streaming, mirror-drift, and curvature/grad-B drift reference/shard-map gates"
+moved_exports = [
+  "curvature_gradb_drift_reference",
+  "curvature_gradb_drift_shard_map",
+  "hermite_streaming_ladder_reference",
+  "hermite_streaming_ladder_shard_map",
+  "mirror_drift_reference",
+  "mirror_drift_shard_map",
+  "periodic_streaming_reference",
+  "periodic_streaming_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_periodic_streaming_microkernel_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_drive"
+source_path = "src/spectraxgk/parallel/velocity_drive.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "electrostatic field-reduction and diamagnetic-drive reference/shard-map gates"
+moved_exports = [
+  "diamagnetic_drive_reference",
+  "diamagnetic_drive_shard_map",
+  "electrostatic_phi_reference",
+  "electrostatic_phi_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_electrostatic_field_reduce_gate.py",
+  "tests/test_generate_electrostatic_diamagnetic_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.window_config"
 source_path = "src/spectraxgk/validation/quasilinear/window_config.py"
 facade_module = "spectraxgk.validation.quasilinear.window"

@@ -123,8 +123,8 @@ Physics / Numerics / IO Map
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``terms/brackets.py``, ``terms/gyroaveraging.py``, ``terms/nonlinear.py``
      - RHS routing, bracket payload, explicit stepping, explicit diagnostic orchestration, cached IMEX scan policy, diagnostic tuple assembly, fixed-mode, collision-split, transport-window tests
    * - Parallelization policy and helpers
-     - ``parallel.py``, ``sharding.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
-     - identity gates, one-device fallback, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
+     - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_identity.py``, ``operators/nonlinear/device_z.py``
+     - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, spectral-core work models, logical spectral identity gates, device-z routing gates, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, linear-fit diagnostics, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
@@ -242,6 +242,13 @@ Completed extractions:
   ``operators/nonlinear/domain_decomposition.py``,
   ``operators/nonlinear/spectral_core.py``,
   ``operators/nonlinear/device_z.py``
+- velocity-space parallelization is split into decomposition metadata
+  (``parallel/velocity_plan.py``), Hermite exchange and velocity-field
+  reductions (``parallel/velocity_hermite.py``), streaming/magnetic-drift
+  microkernels (``parallel/velocity_streaming.py``), and electrostatic/
+  diamagnetic field-drive microkernels (``parallel/velocity_drive.py``). The
+  public ``parallel/velocity.py`` module remains the stable facade used by
+  tools and performance gates.
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
   ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear

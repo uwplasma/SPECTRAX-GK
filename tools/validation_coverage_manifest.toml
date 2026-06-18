@@ -2049,6 +2049,10 @@ owned_modules = [
   "spectraxgk.parallel.integrators",
   "spectraxgk.utils.callbacks",
   "spectraxgk.parallel.velocity",
+  "spectraxgk.parallel.velocity_drive",
+  "spectraxgk.parallel.velocity_hermite",
+  "spectraxgk.parallel.velocity_plan",
+  "spectraxgk.parallel.velocity_streaming",
 ]
 owner_lane = "JAX parallelization policy for CPU/GPU scans and ensemble workloads"
 status = "active"
@@ -2072,6 +2076,7 @@ fast_tests = [
   "tests/test_sharded_integrators.py",
   "tests/test_parallel.py",
   "tests/test_generate_parallel_ky_scan_gate.py",
+  "tests/test_velocity_sharding.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",

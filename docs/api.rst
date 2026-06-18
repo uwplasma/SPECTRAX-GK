@@ -646,6 +646,22 @@ Velocity Sharding Plans
 
 .. automodule:: spectraxgk.parallel.velocity
    :members:
+   :no-index:
+
+.. automodule:: spectraxgk.parallel.velocity_plan
+   :members:
+
+.. automodule:: spectraxgk.parallel.velocity_hermite
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.parallel.velocity_streaming
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.parallel.velocity_drive
+   :members:
+   :private-members:
 
 State Sharding Policy
 ---------------------
