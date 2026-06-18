@@ -1596,6 +1596,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.validation.autodiff"
 path = "src/spectraxgk/validation/autodiff.py"
+owned_modules = [
+  "spectraxgk.validation.autodiff_finite_difference",
+]
 owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
 status = "active"
 coverage_priority = "high"
@@ -1611,6 +1614,7 @@ physics_contracts = [
 numerics_contracts = [
   "Gauss-Newton covariance is symmetric positive semidefinite under regularized normal equations",
   "finite-difference and autodiff Jacobians agree within explicit tolerances",
+  "finite-difference helper ownership remains re-exported through validation.autodiff for public API compatibility",
 ]
 fast_tests = [
   "tests/test_autodiff_validation.py",

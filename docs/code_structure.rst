@@ -238,6 +238,9 @@ Completed extractions:
   ``validation/gates.py`` facade with metric containers in
   ``validation/gate_types.py`` and scalar/report policies in
   ``validation/gate_reports.py``
+- autodiff validation helpers:
+  ``validation/autodiff.py`` facade with finite-difference Jacobian and
+  Gauss-Newton covariance helpers in ``validation/autodiff_finite_difference.py``
 - benchmark-harness eigenfunction utilities, diagnostic time-series loading,
   physics metric extraction, and scan/mode orchestration:
   ``validation/benchmarks/harness_eigenfunctions.py``,

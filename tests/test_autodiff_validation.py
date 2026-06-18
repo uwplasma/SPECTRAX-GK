@@ -7,6 +7,7 @@ import pytest
 
 import spectraxgk
 import spectraxgk.validation.autodiff as adv
+import spectraxgk.validation.autodiff_finite_difference as afd
 from spectraxgk.validation.autodiff import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
@@ -126,6 +127,8 @@ def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> Non
         spectraxgk.autodiff_finite_difference_report
         is autodiff_finite_difference_report
     )
+    assert adv.autodiff_finite_difference_report is afd.autodiff_finite_difference_report
+    assert adv.covariance_diagnostics is afd.covariance_diagnostics
     assert (
         spectraxgk.central_finite_difference_jacobian
         is central_finite_difference_jacobian

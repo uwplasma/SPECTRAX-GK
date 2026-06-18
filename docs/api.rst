@@ -803,6 +803,9 @@ Autodiff Validation
 .. automodule:: spectraxgk.validation.autodiff
    :members:
 
+.. automodule:: spectraxgk.validation.autodiff_finite_difference
+   :members:
+
 Parallelization
 ---------------
 
