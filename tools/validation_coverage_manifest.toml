@@ -3049,9 +3049,97 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.objectives.portfolio_contracts"
+path = "src/spectraxgk/objectives/portfolio_contracts.py"
+owner_lane = "backend-free multi-surface, multi-alpha, multi-ky objective-table shape and weight contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-field-line and multi-surface stellarator microstability optimization",
+  "weighted portfolio reductions used by differentiable geometry objectives",
+]
+physics_contracts = [
+  "fixed surface/alpha/ky sample tables are reduced explicitly before any geometry-wide optimization claim",
+  "sample and objective weights remain visible, normalized, and independent of backend-specific row production",
+]
+numerics_contracts = [
+  "objective rows are real finite four-dimensional tensors with positive sample axes",
+  "sample and objective weights are finite, non-negative, normalized, and shape checked",
+]
+fast_tests = [
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_objective_portfolio_gate.json",
+  "docs/_static/stellarator_objective_portfolio_gate.png",
+]
+next_tests = [
+  "extend aggregate-weight tests to sparse held-out surface/alpha/ky portfolio slices",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.portfolio_sensitivity"
+path = "src/spectraxgk/objectives/portfolio_sensitivity.py"
+owner_lane = "AD/FD, conditioning, and covariance gates for objective portfolios"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
+  "conditioning diagnostics for inverse-design and uncertainty quantification objectives",
+]
+physics_contracts = [
+  "portfolio sensitivity gates validate rows before promoting geometry-wide optimization claims",
+  "a scalar-gradient pass cannot hide rank-deficient sample-row sensitivities",
+]
+numerics_contracts = [
+  "aggregate scalar objectives pass reverse-mode and central finite-difference parity",
+  "row-Jacobian conditioning and covariance diagnostics are reported with explicit rank gates",
+]
+fast_tests = [
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_objective_portfolio_gate.json",
+]
+next_tests = [
+  "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.portfolio_artifacts"
+path = "src/spectraxgk/objectives/portfolio_artifacts.py"
+owner_lane = "artifact-level promotion guards for real VMEC/Boozer reduced objective portfolios"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "held-out surface and field-line validation for stellarator microstability optimization",
+  "release guardrails that separate reduced growth/QL rows from nonlinear turbulent-flux claims",
+]
+physics_contracts = [
+  "real VMEC/Boozer reduced portfolios must include growth and quasilinear objectives before promotion",
+  "artifact guard must fail closed for nonlinear turbulent-transport optimization claims",
+]
+numerics_contracts = [
+  "artifact tables reconstruct rectangular surface/alpha/ky tensors with finite weights",
+  "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
+]
+fast_tests = [
+  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
+]
+next_tests = [
+  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.stellarator_portfolio"
 path = "src/spectraxgk/objectives/stellarator_portfolio.py"
-owner_lane = "backend-free and artifact-level multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
+owner_lane = "public facade for backend-free stellarator objective portfolio contracts, gates, and artifact guards"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0

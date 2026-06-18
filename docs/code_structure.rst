@@ -117,7 +117,7 @@ Physics / Numerics / IO Map
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
      - manufactured solutions, observed-order, eigenfunction and branch tests
    * - Solver objectives and eigen-AD gates
-     - ``solver_objective_gradients.py``, ``objectives/gradient_gates.py``, ``objectives/vmec_boozer_gradients.py``, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/sampling.py``, ``objectives/geometry.py``, ``objectives/nonlinear_window.py``, ``objectives/stellarator.py``, ``objectives/stellarator_contracts.py``, ``objectives/stellarator_reduced.py``, ``objectives/vmec_state.py``, ``objectives/vmec_boozer.py``, ``objectives/vmec_boozer_fd.py``, ``objectives/vmec_boozer_line_search.py``
+     - ``solver_objective_gradients.py``, ``objectives/gradient_gates.py``, ``objectives/vmec_boozer_gradients.py``, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/sampling.py``, ``objectives/portfolio_contracts.py``, ``objectives/portfolio_sensitivity.py``, ``objectives/portfolio_artifacts.py``, ``objectives/geometry.py``, ``objectives/nonlinear_window.py``, ``objectives/stellarator.py``, ``objectives/stellarator_contracts.py``, ``objectives/stellarator_reduced.py``, ``objectives/vmec_state.py``, ``objectives/vmec_boozer.py``, ``objectives/vmec_boozer_fd.py``, ``objectives/vmec_boozer_line_search.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, solver-ready and VMEC/Boozer gradient gates, reduced nonlinear-window metrics, VMEC-state coefficient helpers, and finite-difference line-search tests
    * - Nonlinear operators
      - ``nonlinear.py``, ``operators/nonlinear/rhs.py``, ``operators/nonlinear/diagnostic_state.py``, ``operators/nonlinear/diagnostics.py``, ``solvers/nonlinear/explicit.py``, ``solvers/nonlinear/diagnostics.py``, ``solvers/nonlinear/imex.py``, ``terms/brackets.py``, ``terms/gyroaveraging.py``, ``terms/nonlinear.py``
@@ -201,15 +201,22 @@ Completed extractions:
   weights:
   ``objectives/sampling.py``
 - solver-ready geometry objective gates, reduced nonlinear-window metrics,
-  solver-ready gradient gates, mode-21 VMEC/Boozer gradient gates, VMEC/Boozer
-  state coefficient helpers, VMEC/Boozer objective-table plumbing, and
-  VMEC/Boozer finite-difference/line-search gates:
+  solver-ready gradient gates, mode-21 VMEC/Boozer gradient gates,
+  backend-free portfolio row/weight contracts, portfolio AD/FD sensitivity
+  gates, artifact promotion guards, VMEC/Boozer state coefficient helpers,
+  VMEC/Boozer objective-table plumbing, and VMEC/Boozer finite-difference/
+  line-search gates:
   ``objectives/geometry.py``, ``objectives/nonlinear_window.py``,
   ``objectives/gradient_gates.py``,
-  ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_state.py``,
+  ``objectives/vmec_boozer_gradients.py``,
+  ``objectives/portfolio_contracts.py``,
+  ``objectives/portfolio_sensitivity.py``,
+  ``objectives/portfolio_artifacts.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``,
-  ``objectives/vmec_boozer_line_search.py``
+  ``objectives/vmec_boozer_line_search.py``. The public
+  ``objectives.stellarator_portfolio`` module remains a small facade for
+  existing imports.
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts.py``,
