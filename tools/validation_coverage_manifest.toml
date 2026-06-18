@@ -3269,9 +3269,145 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.artifacts.plot_style"
+path = "src/spectraxgk/artifacts/plot_style.py"
+owner_lane = "shared publication plotting style"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "README/docs publication panels and manuscript figure stack",
+]
+physics_contracts = [
+  "style helpers do not encode physics claims; they keep validation figures readable and consistent",
+]
+numerics_contracts = [
+  "font sizes, grid alpha, and dpi are deterministic across generated figures",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+]
+artifact_paths = [
+  "docs/_static/manuscript_readiness_status.png",
+]
+next_tests = [
+  "add image-content smoke tests for key publication panels where practical",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.runtime_plots"
+path = "src/spectraxgk/artifacts/runtime_plots.py"
+owner_lane = "publication-quality plotting from saved linear and nonlinear runtime outputs"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "executable saved-output plotting and user-facing runtime diagnostics",
+]
+physics_contracts = [
+  "linear plots show growth history and normalized eigenfunction components",
+  "nonlinear plots show transport traces when heat-flux diagnostics are available",
+]
+numerics_contracts = [
+  "log axes use positive floors and saved-output bundle inference is deterministic",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+  "tests/test_check_nonlinear_runtime_outputs.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add a direct nonlinear NetCDF plotting fixture with missing optional diagnostics",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.benchmark_plots"
+path = "src/spectraxgk/artifacts/benchmark_plots.py"
+owner_lane = "benchmark, scan, and linear-validation publication panels"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear benchmark atlas and manuscript comparison figures",
+]
+physics_contracts = [
+  "figures reveal overlapping reference and SPECTRAX-GK curves instead of hiding parity",
+]
+numerics_contracts = [
+  "scan axes and normalized eigenfunction rows remain readable across mixed ky ranges",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+  "tests/test_make_gx_publication_panel.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add image-content smoke tests for legend visibility on crowded validation panels",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.diagnostic_plots"
+path = "src/spectraxgk/artifacts/diagnostic_plots.py"
+owner_lane = "growth-fit and eigenfunction diagnostic plots"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "late-time growth/frequency and eigenfunction reference overlays",
+]
+physics_contracts = [
+  "growth-fit plots show the fitted window used for reported growth rates",
+  "eigenfunction overlays report overlap and relative L2 error",
+]
+numerics_contracts = [
+  "fit overlays use the same fit routine as diagnostics and preserve phase-aligned references",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
+]
+next_tests = [
+  "add finite-difference/tangent checks to autodiff figure scripts",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.zonal_plots"
+path = "src/spectraxgk/artifacts/zonal_plots.py"
+owner_lane = "zonal-response trace and envelope publication plots"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "zonal-flow response and damping/recurrence validation figures",
+]
+physics_contracts = [
+  "zonal figures show residual response, fit window, envelope peaks, damping, and GAM frequency",
+]
+numerics_contracts = [
+  "time and response arrays are one-dimensional and length-matched before plotting",
+]
+fast_tests = [
+  "tests/test_plot_zonal_flow_response_from_output.py",
+  "tests/test_generate_miller_zonal_response_pilot.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_zonal_response_panel.png",
+]
+next_tests = [
+  "add image-content smoke tests for residual and envelope annotations",
+]
+
+[[modules]]
 module = "spectraxgk.artifacts.plotting"
 path = "src/spectraxgk/artifacts/plotting.py"
-owner_lane = "publication-quality plotting from outputs, gates, and benchmark summaries"
+owner_lane = "public facade for publication plotting families"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0

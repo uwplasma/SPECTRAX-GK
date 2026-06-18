@@ -132,8 +132,8 @@ Physics / Numerics / IO Map
      - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``
      - mode selection, eigenfunction extraction, automatic fit-window selection, late-time growth/frequency tests
    * - Artifacts and plots
-     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plotting.py``
-     - serialization, reload, restart append schema, dealiased-axis contracts, plotting contract tests
+     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
+     - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
      - ``validation/benchmarks/harness.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
@@ -188,6 +188,12 @@ Completed extractions:
   ``workflows/nonlinear.py``
 - executable reduced-model runtime workflows:
   ``workflows/reduced_models.py``
+- shared plot style plus runtime-output, benchmark/scan, diagnostic, and
+  zonal-response figure families:
+  ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``,
+  ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, and
+  ``artifacts/zonal_plots.py``. The public ``artifacts.plotting`` module
+  remains a stable import facade for examples and user scripts.
 - validation gate dataclasses and JSON-ready gate helpers:
   ``validation/gates.py``
 - zonal-response reference/trace normalization helpers:

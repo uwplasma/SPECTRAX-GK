@@ -638,11 +638,44 @@ Growth-Rate Diagnostics
    :members:
    :private-members:
 
-Plotting
---------
+Plot Style
+----------
+
+.. automodule:: spectraxgk.artifacts.plot_style
+   :members:
+
+Runtime Output Plots
+--------------------
+
+.. automodule:: spectraxgk.artifacts.runtime_plots
+   :members:
+   :private-members:
+
+Benchmark And Scan Plots
+------------------------
+
+.. automodule:: spectraxgk.artifacts.benchmark_plots
+   :members:
+
+Diagnostic Plots
+----------------
+
+.. automodule:: spectraxgk.artifacts.diagnostic_plots
+   :members:
+   :private-members:
+
+Zonal Response Plots
+--------------------
+
+.. automodule:: spectraxgk.artifacts.zonal_plots
+   :members:
+
+Plotting Facade
+---------------
 
 .. automodule:: spectraxgk.artifacts.plotting
    :members:
+   :no-index:
 
 Config
 ------
