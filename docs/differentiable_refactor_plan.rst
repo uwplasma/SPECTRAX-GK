@@ -172,8 +172,8 @@ High-Risk Module Split Plan
   report contracts now live in focused ``parallel_contracts_*`` modules behind
   the unchanged ``operators/nonlinear/parallel_contracts.py`` facade. Local spectral-state construction,
   chunk/layout utilities, communication/work models, pencil FFT/bracket
-  primitives, RHS micro-routes, and tolerance helpers now live in
-  ``operators/nonlinear/spectral_core.py`` behind the unchanged
+  primitives, RHS micro-routes, and tolerance helpers now live in focused
+  ``operators/nonlinear/spectral_*`` modules behind the unchanged
   ``spectraxgk.operators.nonlinear.parallel`` facade. Logical spectral communication,
   RHS, and fixed-window integrator identity gates now live in
   ``operators/nonlinear/spectral_identity.py`` as a stable facade over focused

@@ -2887,3 +2887,78 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_state"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_state.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "deterministic nonlinear spectral states and canonical spectral-state shape validation"
+moved_exports = [
+  "deterministic_nonlinear_spectral_state",
+  "_validate_spectral_state_shape",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_layout"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_layout.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "chunk validation, layout round trips, tile bounds, logical tile extraction, and tile reconstruction"
+moved_exports = [
+  "_chunk_offsets",
+  "_logical_spectral_tiles",
+  "_reconstruct_logical_spectral_tiles",
+  "_spectral_layout_round_trip",
+  "_spectral_tile_bounds",
+  "_validate_chunks",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_work_models"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_work_models.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "communication/work preflight models for logical, pencil, and device-z nonlinear spectral routes"
+moved_exports = [
+  "device_z_pencil_fft_batch_pressure_model",
+  "nonlinear_spectral_domain_work_model",
+  "nonlinear_spectral_pencil_work_model",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_profile_nonlinear_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_brackets"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_brackets.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "pseudo-spectral field solve, serial bracket, pencil-FFT bracket, z-chunked bracket, and RHS micro-routes"
+moved_exports = [
+  "_field_from_state",
+  "_pencil_spectral_bracket",
+  "_pencil_spectral_bracket_z_chunked",
+  "_serial_nonlinear_spectral_rhs",
+  "_spectral_bracket",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_tolerances"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_tolerances.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "JAX/host max-error helpers, allclose-style gates, and host-staging helper for explicit device sharding"
+moved_exports = [
+  "_host_max_abs_rel_error",
+  "_host_staged_array_for_sharding",
+  "_max_abs_rel_error",
+  "_within_abs_or_rel_tolerance",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
