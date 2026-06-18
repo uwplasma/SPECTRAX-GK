@@ -230,7 +230,9 @@ Completed extractions:
   ``workflows/runtime/orchestration_progress.py``, and
   ``workflows/runtime/orchestration_artifacts.py``. Scan dependency-bundle
   builders live with the scan owner and read the public ``runtime.py`` facade
-  only as a patchable symbol source.
+  only as a patchable symbol source. Nonlinear artifact handoff keeps restart
+  input resolution, append-history loading, checkpoint chunk sizing, and
+  diagnostic-history merging as explicit policies in the artifact owner.
 - saved runtime-output plotting command routing:
   ``workflows/runtime/commands.py``. The public ``cli.py`` facade still owns
   executable parser dispatch and renderer/runtime-command patch seams, while

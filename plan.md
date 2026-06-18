@@ -1,3 +1,17 @@
+- 2026-06-18: Continued runtime artifact-handoff simplification inside the
+  existing owner, `spectraxgk.workflows.runtime.orchestration_artifacts`, without
+  adding source files. Restart input resolution, append-on-restart history
+  loading, checkpoint chunk-size selection, restart-next-chunk config updates,
+  diagnostic-history merging, and checkpoint-loop termination are now explicit
+  helper policies instead of inline branches inside
+  `run_runtime_nonlinear_artifact_handoff`. This makes the NetCDF/restart path
+  easier to audit and extend while preserving the public handoff API and output
+  schema. Local gates passed so far: focused restart/history/adaptive/live-output
+  shard, full `tests/test_runtime_artifacts.py`, Ruff on touched runtime artifact
+  files, mypy on the artifact handoff owner, and `py_compile` on the touched
+  owner. The differentiable-refactor manifest, validation coverage manifest
+  regeneration, repository-size manifest, warning-free Sphinx build, and `git
+  diff --check` also pass.
 - 2026-06-18: Completed a source-level comparison-code terminology cleanup
   pass. The only remaining `GX`/`gx_` identifiers under `src/spectraxgk` were
   ETG validation benchmark fit-window options, so they were renamed from
