@@ -2589,7 +2589,7 @@ module = "spectraxgk.workflows.runtime.orchestration"
 source_path = "src/spectraxgk/workflows/runtime/orchestration.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime progress formatting, combined-ky scan batching, serial/worker ky-scan orchestration, and nonlinear artifact handoff policy behind the public runtime facade"
+responsibility = "runtime orchestration facade preserving scan, progress, and artifact handoff exports for the public runtime facade"
 moved_exports = [
   "NonlinearArtifactPolicy",
   "RuntimeArtifactHandoffDeps",
@@ -2606,6 +2606,51 @@ moved_exports = [
 fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_scan"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_scan.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "runtime ky-scan orchestration, independent worker planning, and combined-ky batch scan policy"
+moved_exports = [
+  "RuntimeScanBatchDeps",
+  "RuntimeScanDeps",
+  "run_runtime_scan_batch",
+  "run_runtime_scan_orchestration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_progress"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_progress.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "runtime progress snapshot, duration formatting, and ETA/progress message construction"
+moved_exports = [
+  "RuntimeProgressSnapshot",
+  "build_runtime_progress_message",
+  "format_duration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_chunks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_artifacts"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_artifacts.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "nonlinear runtime NetCDF/restart/checkpoint artifact handoff and cumulative diagnostic policy"
+moved_exports = [
+  "NonlinearArtifactPolicy",
+  "RuntimeArtifactHandoffDeps",
+  "resolve_nonlinear_artifact_policy",
+  "run_runtime_nonlinear_artifact_handoff",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.harness_eigenfunctions"

@@ -978,6 +978,18 @@ Runtime Orchestration
    :members:
    :private-members:
 
+.. automodule:: spectraxgk.workflows.runtime.orchestration_scan
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.workflows.runtime.orchestration_progress
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.workflows.runtime.orchestration_artifacts
+   :members:
+   :private-members:
+
 Runtime TOML Inputs
 -------------------
 

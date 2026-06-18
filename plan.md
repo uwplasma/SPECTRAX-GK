@@ -1,3 +1,8 @@
+- 2026-06-18: Split the 699-line runtime orchestration module into a 40-line
+  `spectraxgk.workflows.runtime.orchestration` facade plus focused scan,
+  progress, and nonlinear artifact/restart handoff owner modules. Runtime
+  helper, runtime artifact, runtime chunk, public API, Ruff, manifest, and docs
+  gates passed locally.
 - 2026-06-18: Split the 701-line kinetic-electron benchmark runner into an
   8-line `spectraxgk.validation.benchmarks.kinetic` facade plus focused
   `kinetic_linear` and `kinetic_scan` owner modules. Branch tests now patch the

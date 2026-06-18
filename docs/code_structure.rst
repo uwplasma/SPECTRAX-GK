@@ -82,7 +82,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
-   - ``workflows/runtime/orchestration.py``
+   - ``workflows/runtime/orchestration.py`` facade plus ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, and ``workflows/runtime/orchestration_artifacts.py``
    - ``workflows/runtime/artifacts.py``
    - ``artifacts/``
    - ``artifacts/plotting.py``
@@ -212,8 +212,8 @@ Completed extractions:
 - runtime result containers and nonlinear result assembly:
   ``workflows/runtime/results.py``
 - runtime progress formatting, combined-``ky`` scan batching, serial/worker
-  scan orchestration, and nonlinear artifact handoff policy:
-  ``workflows/runtime/orchestration.py``
+  scan orchestration, progress formatting, and nonlinear artifact handoff policy:
+  ``workflows/runtime/orchestration.py`` facade plus ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, and ``workflows/runtime/orchestration_artifacts.py``
 - full-GK executable linear runtime workflow:
   ``workflows/linear.py``
 - full-GK executable nonlinear runtime workflow:

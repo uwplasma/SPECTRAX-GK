@@ -209,6 +209,9 @@ module = "spectraxgk.workflows.runtime.orchestration"
 path = "src/spectraxgk/workflows/runtime/orchestration.py"
 owned_modules = [
   "spectraxgk.workflows.runtime.chunks",
+  "spectraxgk.workflows.runtime.orchestration_artifacts",
+  "spectraxgk.workflows.runtime.orchestration_progress",
+  "spectraxgk.workflows.runtime.orchestration_scan",
   "spectraxgk.workflows.runtime.results",
 ]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
@@ -236,7 +239,7 @@ artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
 ]
 next_tests = [
-  "add direct combined-ky scan orchestration fixtures that bypass the legacy runtime wrapper",
+  "keep scan/progress/artifact owner modules covered by runtime helper and artifact tests",
   "split CLI plotting/output dispatch once CLI ownership is available in a later tranche",
 ]
 
