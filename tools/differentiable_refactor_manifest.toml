@@ -3294,8 +3294,18 @@ module = "spectraxgk.geometry_backends.vmec_fieldlines"
 source_path = "src/spectraxgk/geometry_backends/vmec_fieldlines.py"
 facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
-responsibility = "VMEC/Boozer radial spline construction, Boozer field-line tensor assembly, and local-equilibrium corrections"
+responsibility = "VMEC/Boozer field-line tensor assembly, Boozer backend fallback, and local-equilibrium corrections"
 moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_splines"
+source_path = "src/spectraxgk/geometry_backends/vmec_splines.py"
+facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
+status = "active"
+responsibility = "VMEC/Boozer radial spline construction and imported-equilibrium metadata extraction"
+moved_exports = ["_vmec_splines"]
 fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 

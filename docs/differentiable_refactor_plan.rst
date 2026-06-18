@@ -186,7 +186,8 @@ High-Risk Module Split Plan
   JVP/VJP/finite-difference agreement, and conditioning diagnostics. The
   internal file-backed VMEC imported-geometry backend is now split behind the
   unchanged ``geometry_backends.vmec`` facade into focused discovery,
-  numerics, field-line assembly, remap, IO, and pipeline modules.
+  numerics, radial spline construction, field-line assembly, remap, IO, and
+  pipeline modules.
 
 ``operators/nonlinear/parallel.py``
   Split domain plans, spectral communication, device-z pencil route, observable

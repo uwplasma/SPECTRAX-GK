@@ -1679,6 +1679,7 @@ owned_modules = [
   "spectraxgk.geometry_backends.vmec_numerics",
   "spectraxgk.geometry_backends.vmec_pipeline",
   "spectraxgk.geometry_backends.vmec_remap",
+  "spectraxgk.geometry_backends.vmec_splines",
   "spectraxgk.geometry_backends.vmec_types",
   "spectraxgk.geometry.miller_eik",
   "spectraxgk.geometry.vmec_eik",

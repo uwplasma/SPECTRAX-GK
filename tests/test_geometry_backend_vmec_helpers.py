@@ -14,6 +14,7 @@ import spectraxgk.geometry_backends.vmec_io as vmec_io
 import spectraxgk.geometry_backends.vmec_numerics as vmec_numerics
 import spectraxgk.geometry_backends.vmec_pipeline as vmec_pipeline
 import spectraxgk.geometry_backends.vmec_remap as vmec_remap
+import spectraxgk.geometry_backends.vmec_splines as vmec_splines
 from spectraxgk.geometry_backends.vmec import (
     _apply_flux_tube_cut,
     _booz_read_wout_square_layout_failure,
@@ -39,6 +40,7 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_facade.nperiod_set is vmec_numerics.nperiod_set
     assert vmec_facade.dermv is vmec_numerics.dermv
     assert vmec_facade._vmec_splines is vmec_fieldlines._vmec_splines
+    assert vmec_fieldlines._vmec_splines is vmec_splines._vmec_splines
     assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
     assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
     assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
