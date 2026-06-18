@@ -345,7 +345,8 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.fit_signals`` owns fit-signal and diagnostic
   normalization policies, ``spectraxgk.validation.benchmarks.batching`` owns scan batching
   and streaming windows, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
-  branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone``,
+  branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``,
+  ``spectraxgk.validation.benchmarks.cyclone_scan``,
   ``spectraxgk.validation.benchmarks.kbm``, ``spectraxgk.validation.benchmarks.tem``,
   ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The obsolete benchmark helper bridge has been removed;

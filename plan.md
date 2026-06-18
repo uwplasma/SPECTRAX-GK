@@ -1,3 +1,15 @@
+- 2026-06-18: Retired the Cyclone benchmark-family compatibility module. Public
+  Cyclone benchmark imports now route from `spectraxgk.benchmarks` directly to
+  `spectraxgk.validation.benchmarks.cyclone_linear` and
+  `spectraxgk.validation.benchmarks.cyclone_scan`; tests patch those owner
+  modules directly. Updated API/code-structure/refactor-plan docs and the
+  validation/refactor manifests so the benchmark ownership map reflects the
+  maintained modules only. Regenerated the validation coverage summary and kept
+  root `benchmarks/` as the lightweight tracked benchmark-output index. Local
+  gates passed: Cyclone runner-branch tests, affected Cyclone integration node
+  IDs with integration filtering disabled, benchmark-result/runtime-config
+  tests, validation/refactor manifest tests, repository-size check, Ruff, mypy
+  over 343 source files, Sphinx docs build, and `git diff --check`.
 - 2026-06-18: Retired the ETG benchmark-family compatibility module. Public
   ETG benchmark imports now route from `spectraxgk.benchmarks` directly to
   `spectraxgk.validation.benchmarks.etg_linear` and
@@ -732,9 +744,9 @@
   finite-difference report orchestration.
 
 - 2026-06-14: Split the Cyclone benchmark-family runners
-  (`run_cyclone_linear` and `run_cyclone_scan`) into
-  `spectraxgk.validation.benchmarks.cyclone` behind the unchanged
-  `spectraxgk.benchmarks` public facade. This turns `benchmarks.py` into a
+  (`run_cyclone_linear` and `run_cyclone_scan`) into focused linear and scan
+  owner modules behind the unchanged `spectraxgk.benchmarks` public facade.
+  This turns `benchmarks.py` into a
   small compatibility facade for benchmark constants, helper exports, config
   classes, and public runners while preserving legacy imports such as
   `ModeSelection`, `ExplicitTimeConfig`, and `KrylovConfig`.

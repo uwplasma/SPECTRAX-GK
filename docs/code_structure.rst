@@ -147,7 +147,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``validation/gates.py`` facade plus ``validation/gate_types.py`` and ``validation/gate_reports.py``, ``validation/zonal.py``
+     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``validation/gates.py`` facade plus ``validation/gate_types.py`` and ``validation/gate_reports.py``, ``validation/zonal.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -487,8 +487,8 @@ fit/appending policy to ``spectraxgk.validation.benchmarks.etg_scan_paths``
 while keeping benchmark-family setup and result packaging in the scan module.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
-``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable
-``spectraxgk.validation.benchmarks.cyclone`` facade. The single-mode runner
+``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through
+``spectraxgk.benchmarks``. The single-mode runner
 keeps grid, geometry, parameter, and fallback orchestration local while
 delegating Krylov seeding/branch selection and time-integration fit policy to
 ``spectraxgk.validation.benchmarks.cyclone_linear_paths``. The scan runner delegates

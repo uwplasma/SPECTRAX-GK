@@ -692,7 +692,7 @@ def test_cyclone_krylov_smoke():
 
 
 def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
-    import spectraxgk.validation.benchmarks.cyclone as benchmark_cyclone
+    import spectraxgk.validation.benchmarks.cyclone_linear as benchmark_cyclone_linear
 
     def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
         phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
@@ -700,29 +700,29 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
         return np.array([0.0, 0.1], dtype=float), phi_t, density_t
 
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_linear,
         "_select_fit_signal_auto",
         lambda *args, **kwargs: (np.ones_like(args[0]), "phi", np.nan, np.nan),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_linear,
         "integrate_linear_diagnostics",
         _fake_integrate_linear_diagnostics,
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_linear,
         "integrate_linear_explicit",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             ValueError("seed unavailable in branch test")
         ),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_linear,
         "dominant_eigenpair",
         lambda G0, *_args, **_kwargs: (0.2 - 0.3j, np.zeros_like(np.asarray(G0))),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_linear,
         "compute_fields_cached",
         lambda *_args, **_kwargs: SimpleNamespace(
             phi=np.zeros((1, 1, 8), dtype=np.complex64)
@@ -745,16 +745,16 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
     assert np.isfinite(result.omega)
 
 
-def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_gx_growth_is_unavailable(
+def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_reference_growth_unavailable(
     monkeypatch,
 ):
-    import spectraxgk.validation.benchmarks.cyclone as benchmark_cyclone
+    import spectraxgk.validation.benchmarks.cyclone_scan as benchmark_cyclone_scan
 
     monkeypatch.setattr(
-        benchmark_cyclone, "build_linear_cache", lambda *_args, **_kwargs: object()
+        benchmark_cyclone_scan, "build_linear_cache", lambda *_args, **_kwargs: object()
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_scan,
         "integrate_linear_explicit",
         lambda *_args, **_kwargs: (
             np.array([0.0, 0.1], dtype=float),
@@ -764,14 +764,14 @@ def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_gx_growth_is_unava
         ),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_scan,
         "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(
             ValueError("No finite instantaneous growth-rate samples available")
         ),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_scan,
         "dominant_eigenpair",
         lambda *_args, **_kwargs: (
             0.3 - 0.8j,
@@ -779,7 +779,7 @@ def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_gx_growth_is_unava
         ),
     )
     monkeypatch.setattr(
-        benchmark_cyclone,
+        benchmark_cyclone_scan,
         "_normalize_growth_rate",
         lambda gamma, omega, *_args, **_kwargs: (float(gamma), float(omega)),
     )

@@ -220,22 +220,9 @@ fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "Cyclone benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
-moved_exports = [
-  "run_cyclone_linear",
-  "run_cyclone_scan",
-]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.cyclone_linear"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "Cyclone single-ky linear benchmark setup, parameter construction, solver fallback orchestration, and public result packaging"
 moved_exports = [
@@ -261,9 +248,9 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.cyclone_scan"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone"
+facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "Cyclone ky-scan runner setup and batched time integration behind the public benchmark facade"
+responsibility = "Cyclone ky-scan runner setup and batched time integration behind the public benchmark API"
 moved_exports = [
   "run_cyclone_scan",
 ]
@@ -2179,7 +2166,6 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
-  "spectraxgk.validation.benchmarks.cyclone",
   "spectraxgk.validation.benchmarks.etg_linear",
   "spectraxgk.validation.benchmarks.etg_scan",
   "spectraxgk.validation.benchmarks.kbm",
