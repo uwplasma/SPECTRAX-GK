@@ -2085,33 +2085,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.artifacts.nonlinear_netcdf_restart"
-path = "src/spectraxgk/artifacts/nonlinear_netcdf_restart.py"
-owner_lane = "nonlinear NetCDF restart-state writer"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "restartable nonlinear output bundles used by long-window transport studies",
-]
-physics_contracts = [
-  "restart files preserve the evolved distribution state needed for continuation",
-]
-numerics_contracts = [
-  "restart state is stored in deterministic real/imag NetCDF layout with finite final-time metadata",
-]
-fast_tests = [
-  "tests/test_runtime_artifacts.py",
-  "tests/test_restart.py",
-]
-artifact_paths = [
-  "docs/_static/runtime_memory_benchmark.png",
-]
-next_tests = [
-  "add a restart-layout roundtrip test for multispecies non-square kx/ky grids",
-]
-
-[[modules]]
 module = "spectraxgk.artifacts.nonlinear_netcdf_fields"
 path = "src/spectraxgk/artifacts/nonlinear_netcdf_fields.py"
 owner_lane = "nonlinear NetCDF final-field big-file writer"

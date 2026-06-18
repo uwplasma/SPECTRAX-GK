@@ -1687,18 +1687,6 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.artifacts.nonlinear_netcdf_restart"
-source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_restart.py"
-facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
-status = "active"
-responsibility = "nonlinear NetCDF restart-state writing"
-moved_exports = [
-  "_write_restart_netcdf",
-]
-fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.artifacts.nonlinear_netcdf_fields"
 source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_fields.py"
 facade_module = "spectraxgk.artifacts.nonlinear_netcdf"

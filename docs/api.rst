@@ -1223,13 +1223,6 @@ Nonlinear Output NetCDF Geometry
    :members:
    :private-members:
 
-Nonlinear Output NetCDF Restart Writer
---------------------------------------
-
-.. automodule:: spectraxgk.artifacts.nonlinear_netcdf_restart
-   :members:
-   :private-members:
-
 Nonlinear Output NetCDF Field Writer
 ------------------------------------
 

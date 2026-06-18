@@ -385,7 +385,6 @@ Completed extractions:
   ``artifacts/nonlinear_netcdf.py``,
   ``artifacts/nonlinear_netcdf_diagnostics.py``,
   ``artifacts/nonlinear_netcdf_geometry.py``,
-  ``artifacts/nonlinear_netcdf_restart.py``,
   ``artifacts/nonlinear_netcdf_fields.py``,
   ``artifacts/nonlinear_diagnostics.py``. The obsolete root
   ``runtime_artifact_*`` helper modules were removed; import implementation

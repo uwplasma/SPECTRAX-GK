@@ -2931,3 +2931,10 @@ No long nonlinear audit should be launched from these candidates.
   documented transport admission API unchanged. Focused stellarator validation
   tests, manifests, lint, and compile gates passed locally before the broader
   gate run.
+
+- Folded the single-use nonlinear NetCDF restart writer into
+  `spectraxgk.artifacts.nonlinear_netcdf` and deleting the old dedicated
+  restart-writer module. Restart output still uses the same deterministic
+  real/imag state layout and final-time metadata, but the output bundle writer
+  now owns its restart sidecar directly. Focused runtime artifact, restart,
+  lint, compile, and manifest gates passed locally before the broader gate run.

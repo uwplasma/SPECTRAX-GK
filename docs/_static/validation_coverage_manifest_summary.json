@@ -36,7 +36,6 @@
     "spectraxgk.artifacts.nonlinear",
     "spectraxgk.artifacts.spectral_layout",
     "spectraxgk.artifacts.nonlinear_netcdf_geometry",
-    "spectraxgk.artifacts.nonlinear_netcdf_restart",
     "spectraxgk.artifacts.nonlinear_netcdf_fields",
     "spectraxgk.artifacts.nonlinear_netcdf_diagnostics",
     "spectraxgk.artifacts.nonlinear_netcdf",
@@ -86,12 +85,12 @@
     "spectraxgk.parallel.__init__",
     "spectraxgk.parallel.decomposition"
   ],
-  "n_direct_modules": 108,
+  "n_direct_modules": 107,
   "n_excluded_modules": 26,
-  "n_high_priority_open": 85,
-  "n_modules": 108,
+  "n_high_priority_open": 84,
+  "n_modules": 107,
   "n_owned_modules": 220,
-  "n_package_modules": 354,
+  "n_package_modules": 353,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -115,7 +114,6 @@
     "spectraxgk.artifacts.nonlinear_netcdf_diagnostics": [],
     "spectraxgk.artifacts.nonlinear_netcdf_fields": [],
     "spectraxgk.artifacts.nonlinear_netcdf_geometry": [],
-    "spectraxgk.artifacts.nonlinear_netcdf_restart": [],
     "spectraxgk.artifacts.plot_style": [],
     "spectraxgk.artifacts.plotting": [],
     "spectraxgk.artifacts.runtime_plots": [],
@@ -1177,20 +1175,6 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/nonlinear_netcdf_geometry.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "high",
-      "coverage_target_percent": 95.0,
-      "module": "spectraxgk.artifacts.nonlinear_netcdf_restart",
-      "n_artifacts": 1,
-      "n_fast_tests": 2,
-      "n_next_tests": 1,
-      "n_numerics_contracts": 1,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 1,
-      "n_reference_anchors": 1,
-      "path": "src/spectraxgk/artifacts/nonlinear_netcdf_restart.py",
       "status": "active"
     },
     {
