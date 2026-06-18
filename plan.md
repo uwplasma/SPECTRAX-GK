@@ -1,3 +1,14 @@
+- 2026-06-18: Confirmed the root `benchmarks/` directory is the canonical
+  tracked benchmark location and kept it lightweight: only drivers, TOML
+  inputs, and `benchmarks/results/manifest.toml` live there, while raw outputs
+  stay in ignored scratch directories. Tightened README/docs/code-structure
+  wording so benchmark results are discoverable from the root manifest and the
+  benchmark-family tests patch implementation owner modules directly rather
+  than retired family compatibility modules. Local gates passed: stale
+  benchmark-path/facade wording audit, benchmark result/runtime manifest tests,
+  focused benchmark-runner branch shard, validation/refactor manifests,
+  repository-size check, Ruff on touched Python modules, mypy on touched
+  benchmark modules, Sphinx docs build, and `git diff --check`.
 - 2026-06-18: Retired the KBM benchmark-family compatibility module. Public
   KBM benchmark imports now route from `spectraxgk.benchmarks` directly to
   `spectraxgk.validation.benchmarks.kbm_linear`,
@@ -82,7 +93,7 @@
   `spectraxgk.validation.benchmarks.etg_scan` into
   `spectraxgk.validation.benchmarks.etg_scan_paths`. The scan runner now owns
   case setup, batching, parameter construction, and public result packaging,
-  while the path owner keeps existing ETG facade monkeypatch seams through
+  while the path owner keeps existing ETG owner-module monkeypatch seams through
   explicit hook synchronization. Focused ETG scan tests, Ruff, py_compile,
   manifest, mypy, Sphinx, and repository-size gates passed locally.
 - 2026-06-18: Continued the Cyclone single-mode benchmark refactor by moving
@@ -2894,8 +2905,8 @@ No long nonlinear audit should be launched from these candidates.
 - Continued the performance/parallelization refactor by splitting the 1103-line velocity-space sharding module into focused plan, Hermite exchange/reduction, streaming/drift, and electrostatic/diamagnetic drive modules. The public `spectraxgk.parallel.velocity` facade is now 122 lines and preserves existing public exports plus private compatibility hooks used by current gates. Focused velocity-sharding, generator, validation-manifest, refactor-manifest, ruff, and Sphinx gates passed. This preserves numerical identity paths while making future CPU/GPU velocity-parallel work easier to profile and extend.
 - Continued the validation/benchmark refactor by splitting the 1055-line benchmark harness into focused eigenfunction-reference, diagnostics time-series, physics-metric, and scan-orchestration modules. The stable public `spectraxgk.validation.benchmarks.harness` facade preserves existing imports and monkeypatch seams for benchmark tests and tools. Focused benchmark/runtime shards, validation-manifest, refactor-manifest, ruff, and Sphinx gates passed. This is behavior-preserving and makes linear/zonal/nonlinear validation metrics easier to test independently.
 - Continued the benchmark-family refactor by splitting the 1380-line Cyclone runner into `cyclone_linear.py` for single-ky linear runs and `cyclone_scan.py` for ky scans. The 169-line `cyclone.py` facade preserves the public import path plus existing monkeypatch seams used by branch-policy tests. Ruff, Cyclone branch tests, full-operator smoke, parallel ky-scan gate, and profile-scaling smoke passed locally; this is an organization-only change to the existing Cyclone validation workflow.
-- Continued the benchmark-family refactor by splitting the 1288-line KBM runner into `kbm_beta.py`, `kbm_linear.py`, and `kbm_scan.py`, with `kbm.py` kept as a 179-line compatibility facade that synchronizes existing monkeypatch seams. KBM branch tests, comparison/overlay shards, ruff, manifest, and docs gates passed locally. This preserves KBM physics/branch-selection behavior while making beta-scan, single-ky, and ky-scan policies separately testable.
-- Continued the benchmark-family refactor by splitting the 1005-line ETG runner into `etg_linear.py` and `etg_scan.py`, with `etg.py` kept as a 158-line facade that synchronizes existing branch-test monkeypatch seams. ETG branch tests, ETG asset/CLI shards, ruff, manifest, and docs gates passed locally. This keeps ETG physics behavior unchanged while separating single-ky, streaming-density, and scan fallback policies.
+- Continued the benchmark-family refactor by splitting the 1288-line KBM runner into `kbm_beta.py`, `kbm_linear.py`, and `kbm_scan.py`, with a temporary KBM compatibility layer retained at that point for existing monkeypatch seams. KBM branch tests, comparison/overlay shards, ruff, manifest, and docs gates passed locally. This preserved KBM physics/branch-selection behavior while making beta-scan, single-ky, and ky-scan policies separately testable; the temporary family layer was retired in a later tranche.
+- Continued the benchmark-family refactor by splitting the 1005-line ETG runner into `etg_linear.py` and `etg_scan.py`, with a temporary ETG compatibility layer retained at that point for existing branch-test monkeypatch seams. ETG branch tests, ETG asset/CLI shards, ruff, manifest, and docs gates passed locally. This kept ETG physics behavior unchanged while separating single-ky, streaming-density, and scan fallback policies; the temporary family layer was retired in a later tranche.
 - Continued the differentiable-stellarator validation refactor by splitting the 1030-line transport-admission module into focused policy, sample-coverage, nonlinear-audit, and candidate-selection modules. The 56-line `transport_admission.py` facade preserves public imports and top-level API identities. Transport admission/status tests, ruff, manifest, and docs gates passed locally; behavior and claim-scope guardrails are unchanged.
 - Continued the quasilinear validation refactor by splitting the 778-line calibration helper into core report/scale fitting, spectrum integration, and nonlinear-window artifact IO modules. The 49-line `validation/quasilinear/calibration.py` facade preserves public imports and private NetCDF helper compatibility used by tests. Quasilinear calibration/model-selection tests, ruff, manifest, and docs gates passed locally; calibration semantics and guardrails are unchanged.
 - Continued the Cyclone benchmark refactor by extracting ky-scan Krylov branch-following and reference-aligned explicit-time reselection into `spectraxgk.validation.benchmarks.cyclone_scan_branches`. The public `cyclone_scan.py` runner now owns setup and batched time integration while passing explicit hook bundles into the branch module, preserving facade monkeypatch seams and benchmark behavior. Focused Cyclone scan branch tests and Ruff passed locally before the manifest/docs gate run.
@@ -2993,7 +3004,7 @@ No long nonlinear audit should be launched from these candidates.
   lint, compile, and manifest gates passed locally before the broader gate run.
 
 - 2026-06-18: Moved the lightweight benchmark drivers and runtime TOML inputs
-  from `examples/benchmarks/` to the root `benchmarks/` directory, added a
+  from the previous examples-tree location to the root `benchmarks/` directory, added a
   root benchmark README, updated docs/static provenance paths, and included
   the benchmark scripts/TOMLs in the source distribution manifest. Generated
   benchmark outputs remain excluded through `tools_out/` and docs-static review
@@ -3012,7 +3023,7 @@ No long nonlinear audit should be launched from these candidates.
   physical runtime/backend path in `spectraxgk.geometry.vmec_eik` and
   `spectraxgk.geometry_backends.vmec_*`. The same tranche removed the stub-only
   tests, dropped the stale mypy/coverage-manifest row, regenerated the validation
-  coverage summary, and fixed the remaining `examples/benchmarks` test path to
+  coverage summary, and fixed the remaining benchmark test path to
   the root `benchmarks/` directory. Local gates passed: standalone Miller plus
   real VMEC EIK tests, runtime benchmark TOML loader test, validation/refactor
   manifest tests, VMEC backend helper tests, validation coverage summary

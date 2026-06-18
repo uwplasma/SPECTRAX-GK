@@ -498,11 +498,11 @@ standard saved-time/streaming scan execution to
 hook bundle. Trace-seed branch initialization lives in
 ``spectraxgk.validation.benchmarks.cyclone_scan_seed`` and reference-aligned
 explicit-time reselection lives in
-``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The old branch
-module re-exports those helpers for compatibility, so tests can still patch the
-public facade while the solver policies are isolated for review.
-Family-specific branch tests patch that facade directly while examples and
-downstream scripts keep importing through ``spectraxgk.benchmarks``.
+``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The branch module
+owns the patchable hook bundle used by Cyclone scan tests while the solver
+policies stay isolated for review. Family-specific branch tests now patch the
+family owner modules directly, and examples/downstream scripts keep importing
+through ``spectraxgk.benchmarks``.
 
 Quasilinear calibration is split into ``calibration_core`` for
 train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral

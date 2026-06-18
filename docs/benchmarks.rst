@@ -11,14 +11,17 @@ pattern:
 - compact panels that separate exact diagnostic closures from broader stress
   lanes.
 
-The figures in this page are generated directly from tracked CSV assets and
-curated comparison traces in ``docs/_static``.
+The figures in this page are generated directly from tracked CSV assets,
+curated comparison traces, and the small root-level result index under
+``benchmarks/results``. Large run directories are deliberately excluded from
+git.
 
 Figure generation
 -----------------
 
 Lightweight benchmark drivers, runtime TOML inputs, and result-index pointers
-live in the repository root under ``benchmarks/``. They are intentionally
+live in the repository root under ``benchmarks/``. This is the canonical
+benchmark entry-point directory for users and developers. It is intentionally
 separated from ``examples/``: examples teach workflows, while benchmarks
 reproduce validation panels and paper-facing comparison traces. Generated
 outputs should go to ``tools_out/`` or another scratch directory; only reviewed,
@@ -81,9 +84,10 @@ duplicating large run products. The current tracked result set is:
      - ``docs/_static/runtime_memory_results_ship_refresh.csv``
      - machine-readable rows behind the tracked runtime/memory panel
 
-This keeps the repository light: ``benchmarks/`` stores drivers and pointers,
-``docs/_static`` stores reviewed compact figures/tables, and raw solver output
-directories remain untracked.
+This keeps the repository light: ``benchmarks/`` stores only drivers and
+pointers, ``docs/_static`` stores reviewed compact figures/tables, and raw
+solver output directories remain untracked. The tracked ``benchmarks/`` payload
+is intentionally on the order of tens of kilobytes.
 
 This produces the tracked atlas panels:
 
