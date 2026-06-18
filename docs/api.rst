@@ -430,28 +430,22 @@ Nonlinear Term Assembly
 Reduced cETG Model
 ------------------
 
-.. automodule:: spectraxgk.terms.cetg
-   :members:
-   :private-members:
+.. automodule:: spectraxgk.terms.reduced
 
 .. automodule:: spectraxgk.terms.reduced.cetg_model
    :members:
-   :no-index:
 
 .. automodule:: spectraxgk.terms.reduced.cetg_state
    :members:
    :private-members:
-   :no-index:
 
 .. automodule:: spectraxgk.terms.reduced.cetg_rhs
    :members:
    :private-members:
-   :no-index:
 
 .. automodule:: spectraxgk.terms.reduced.cetg_integrator
    :members:
    :private-members:
-   :no-index:
 
 Nonlinear Explicit Step
 -----------------------

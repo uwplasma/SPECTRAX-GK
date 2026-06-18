@@ -295,7 +295,6 @@ owned_modules = [
   "spectraxgk.diagnostics.growth_windows",
   "spectraxgk.diagnostics.modes",
   "spectraxgk.core.velocity",
-  "spectraxgk.terms.cetg",
   "spectraxgk.terms.reduced.cetg_integrator",
   "spectraxgk.terms.reduced.cetg_model",
   "spectraxgk.terms.reduced.cetg_rhs",

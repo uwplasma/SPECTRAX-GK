@@ -2889,3 +2889,10 @@ No long nonlinear audit should be launched from these candidates.
   to validation/benchmark compatibility parameters or comparison-specific tools.
   Focused VMEC backend tests, lint, manifests, architecture, and repository-size
   gates passed locally.
+
+- Removed the old `spectraxgk.terms.cetg` compatibility facade and made
+  `spectraxgk.terms.reduced` plus the focused cETG owner modules the canonical
+  reduced-model import path. Runtime and cETG tests now import the owner modules
+  directly, API docs no longer list the deleted facade, and the validation/
+  refactor manifests dropped the stale module. Local cETG/runtime, lint, type,
+  manifest, architecture, repository-size, and docs gates passed.

@@ -8,17 +8,23 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.terms.cetg import (
-    _from_internal_state,
+from spectraxgk.terms.reduced.cetg_integrator import (
+    integrate_cetg_explicit_diagnostics_state,
+)
+from spectraxgk.terms.reduced.cetg_model import (
+    build_cetg_model_params,
+    validate_cetg_runtime_config,
+)
+from spectraxgk.terms.reduced.cetg_rhs import (
     _cetg_linear_omega_max,
+    cetg_fields,
+    cetg_rhs,
+)
+from spectraxgk.terms.reduced.cetg_state import (
+    _from_internal_state,
     _kz_grid,
     _project_state,
     _to_internal_state,
-    build_cetg_model_params,
-    cetg_fields,
-    cetg_rhs,
-    integrate_cetg_explicit_diagnostics_state,
-    validate_cetg_runtime_config,
 )
 from spectraxgk.config import (
     GeometryConfig,
