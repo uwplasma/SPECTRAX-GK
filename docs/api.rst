@@ -669,6 +669,10 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.cyclone_scan
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.cyclone_scan_branches
+   :members:
+   :private-members:
+
 .. automodule:: spectraxgk.validation.benchmarks.kbm
    :members:
    :no-index:

@@ -406,9 +406,13 @@ the same public facade guarantees. ETG single-point and scan implementations liv
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable
-``spectraxgk.validation.benchmarks.cyclone`` facade. Family-specific branch tests
-patch that facade directly while examples and downstream
-scripts keep importing through ``spectraxgk.benchmarks``.
+``spectraxgk.validation.benchmarks.cyclone`` facade. The scan runner delegates
+Krylov branch-following and reference-aligned explicit-time reselection to
+``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
+hook bundle, so tests can still patch the public facade while the solver policy
+is isolated for review. Family-specific branch tests patch that facade directly
+while examples and downstream scripts keep importing through
+``spectraxgk.benchmarks``.
 
 Quasilinear calibration is split into ``calibration_core`` for
 train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral

@@ -249,11 +249,25 @@ module = "spectraxgk.validation.benchmarks.cyclone_scan"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan.py"
 facade_module = "spectraxgk.validation.benchmarks.cyclone"
 status = "active"
-responsibility = "Cyclone ky-scan runner, batched time integration, explicit-time branch tracking, and Krylov mode following"
+responsibility = "Cyclone ky-scan runner setup and batched time integration behind the public benchmark facade"
 moved_exports = [
   "run_cyclone_scan",
 ]
 fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan"
+status = "active"
+responsibility = "Cyclone ky-scan Krylov branch following and reference-aligned explicit-time reselection policies"
+moved_exports = [
+  "CycloneScanHooks",
+  "run_explicit_time_cyclone_scan",
+  "run_krylov_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
