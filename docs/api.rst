@@ -871,6 +871,25 @@ VMEC-JAX Candidate Gates
 .. automodule:: spectraxgk.validation.stellarator.candidate_gate
    :members:
 
+Stellarator ITG Objectives
+--------------------------
+
+.. automodule:: spectraxgk.objectives.stellarator
+   :members:
+
+Stellarator ITG Contracts
+-------------------------
+
+.. automodule:: spectraxgk.objectives.stellarator_contracts
+   :members:
+
+Stellarator Reduced ITG Model
+-----------------------------
+
+.. automodule:: spectraxgk.objectives.stellarator_reduced
+   :members:
+   :private-members:
+
 Stellarator Objective Portfolios
 --------------------------------
 

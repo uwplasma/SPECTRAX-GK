@@ -2810,6 +2810,8 @@ module = "spectraxgk.objectives.solver_gradients"
 path = "src/spectraxgk/objectives/solver_gradients.py"
 owned_modules = [
   "spectraxgk.objectives.stellarator",
+  "spectraxgk.objectives.stellarator_contracts",
+  "spectraxgk.objectives.stellarator_reduced",
   "spectraxgk.validation.nonlinear_transport.optimization_guard",
   "spectraxgk.validation.stellarator.candidate_gate",
   "spectraxgk.validation.stellarator.transport_admission",
