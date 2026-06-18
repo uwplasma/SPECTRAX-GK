@@ -257,6 +257,56 @@ fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_p
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm"
+source_path = "src/spectraxgk/validation/benchmarks/kbm.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "KBM benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
+moved_exports = [
+  "run_kbm_linear",
+  "run_kbm_scan",
+  "run_kbm_beta_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_beta"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_beta.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm"
+status = "active"
+responsibility = "KBM fixed-ky beta-scan runner, explicit-time diagnostics fallback, multi-target Krylov branch policy, and time-fit fallback"
+moved_exports = [
+  "run_kbm_beta_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_compare_gx_kbm.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_linear"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm"
+status = "active"
+responsibility = "KBM single-ky linear runner, geometry defaulting, explicit-time and Krylov paths, and fit-window policy"
+moved_exports = [
+  "run_kbm_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_kbm_reference_overlay.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_scan"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_scan.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm"
+status = "active"
+responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays into the beta-scan runner"
+moved_exports = [
+  "run_kbm_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.etg"
 source_path = "src/spectraxgk/validation/benchmarks/etg.py"
 facade_module = "spectraxgk.benchmarks"

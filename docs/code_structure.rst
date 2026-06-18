@@ -383,10 +383,13 @@ solver-selection policies live in ``spectraxgk.validation.benchmarks.fit_signals
 ``spectraxgk.validation.benchmarks.batching``, and
 ``spectraxgk.validation.benchmarks.solver_policy``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are
-moved. The KBM benchmark family runner now lives in
-``spectraxgk.validation.benchmarks.kbm`` while ``spectraxgk.benchmarks`` remains the
-public compatibility facade for ``run_kbm_linear``, ``run_kbm_scan``, and
-``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
+moved. KBM beta-scan, single-point, and ky-scan implementations live in
+``spectraxgk.validation.benchmarks.kbm_beta``,
+``spectraxgk.validation.benchmarks.kbm_linear``, and
+``spectraxgk.validation.benchmarks.kbm_scan`` behind the stable
+``spectraxgk.validation.benchmarks.kbm`` facade, while
+``spectraxgk.benchmarks`` remains the public compatibility facade for
+``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
 Kinetic-electron ITG/TEM runners are in ``spectraxgk.validation.benchmarks.kinetic`` with
 the same public facade guarantees. ETG runners are in

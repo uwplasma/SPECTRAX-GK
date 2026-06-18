@@ -614,6 +614,19 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.cyclone_scan
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.kbm
+   :members:
+   :no-index:
+
+.. automodule:: spectraxgk.validation.benchmarks.kbm_beta
+   :members:
+
+.. automodule:: spectraxgk.validation.benchmarks.kbm_linear
+   :members:
+
+.. automodule:: spectraxgk.validation.benchmarks.kbm_scan
+   :members:
+
 Validation Gates
 ----------------
 
