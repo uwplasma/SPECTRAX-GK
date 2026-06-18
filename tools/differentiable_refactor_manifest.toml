@@ -262,6 +262,57 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_steps"
+source_path = "src/spectraxgk/solvers/time/explicit_steps.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit linear RK/SSP/K10 step kernels, post-step masks, and instantaneous growth/frequency samples"
+moved_exports = [
+  "_apply_completed_step_state_mask",
+  "_completed_step_state_mask",
+  "_diagnostic_midplane_index",
+  "_growth_rate_mode_mask",
+  "_instantaneous_growth_rate_step",
+  "_linear_explicit_step",
+  "_linear_term_config",
+  "_rk3_heun_step",
+  "_rk4_step",
+]
+fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_cfl"
+source_path = "src/spectraxgk/solvers/time/explicit_cfl.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit CFL wavenumber policy, geometry frequency maxima, and linear frequency-bound estimates"
+moved_exports = [
+  "_cfl_wavenumber_arrays",
+  "_geometry_frequency_maxima",
+  "_gradient_ratio_max",
+  "_laguerre_velocity_max",
+  "_linear_frequency_bound",
+  "_non_twist_shift_frequency_max",
+  "_parallel_periods_from_grid",
+]
+fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_progress"
+source_path = "src/spectraxgk/solvers/time/explicit_progress.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit integration wall-time and progress-message formatting"
+moved_exports = [
+  "_emit_time_progress",
+  "_format_wall_time",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.modes"
 source_path = "src/spectraxgk/diagnostics/modes.py"
 facade_module = "spectraxgk.diagnostics.analysis"

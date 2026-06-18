@@ -311,6 +311,27 @@ Explicit Time Integrators
    :members:
    :private-members:
 
+Explicit Step Kernels
+---------------------
+
+.. automodule:: spectraxgk.solvers.time.explicit_steps
+   :members:
+   :private-members:
+
+Explicit CFL Policy
+-------------------
+
+.. automodule:: spectraxgk.solvers.time.explicit_cfl
+   :members:
+   :private-members:
+
+Explicit Progress Helpers
+-------------------------
+
+.. automodule:: spectraxgk.solvers.time.explicit_progress
+   :members:
+   :private-members:
+
 Diffrax Time Integrators
 ------------------------
 

@@ -67,6 +67,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``linear.py``
    - ``nonlinear.py``
    - ``solvers/time/explicit.py``
+   - ``solvers/time/explicit_steps.py``
+   - ``solvers/time/explicit_cfl.py``
+   - ``solvers/time/explicit_progress.py``
    - ``solvers/time/diffrax.py``
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
@@ -149,6 +152,12 @@ Completed extractions:
   fitting:
   ``diagnostics/modes.py`` and ``diagnostics/growth_rates.py``. The public
   ``diagnostics.analysis`` module remains a small compatibility facade.
+- explicit linear step kernels, explicit CFL/frequency-bound policy, and
+  progress formatting:
+  ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_cfl.py``, and
+  ``solvers/time/explicit_progress.py``. The public
+  ``solvers.time.explicit`` module remains the import facade for existing
+  debug tools and tests.
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
