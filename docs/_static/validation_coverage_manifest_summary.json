@@ -70,8 +70,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 65,
   "n_modules": 82,
-  "n_owned_modules": 84,
-  "n_package_modules": 191,
+  "n_owned_modules": 85,
+  "n_package_modules": 192,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -143,6 +143,7 @@
       "spectraxgk.terms.validation"
     ],
     "spectraxgk.nonlinear": [
+      "spectraxgk.terms.brackets",
       "spectraxgk.terms.nonlinear"
     ],
     "spectraxgk.objectives.core": [],
@@ -464,7 +465,7 @@
       "n_fast_tests": 13,
       "n_next_tests": 4,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 1,
+      "n_owned_modules": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/nonlinear.py",

@@ -5,24 +5,26 @@ from spectraxgk.config import GridConfig
 from spectraxgk.core.velocity import bessel_j0, bessel_j1, laguerre_transform
 from spectraxgk.core.grid import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms import nonlinear as nonlinear_terms_module
+from spectraxgk.terms.brackets import (
+    _apply_mask_xy,
+    _broadcast_grid,
+    _broadcast_mask,
+    _broadcast_to_G,
+    _spectral_bracket,
+    _spectral_bracket_multi,
+    _stack_fields,
+)
 from spectraxgk.terms.nonlinear import (
     _apply_flutter,
     exb_nonlinear_contribution,
     nonlinear_em_contribution,
     nonlinear_em_components,
-    _apply_mask_xy,
-    _broadcast_grid,
-    _broadcast_mask,
-    _broadcast_to_G,
     _laguerre_bpar_correction,
     _laguerre_bpar_correction_precomputed,
     _laguerre_j0_field,
     _laguerre_j0_field_precomputed,
     _laguerre_to_grid,
     _laguerre_to_spectral,
-    _spectral_bracket,
-    _spectral_bracket_multi,
-    _stack_fields,
     placeholder_nonlinear_contribution,
 )
 

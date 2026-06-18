@@ -1054,6 +1054,30 @@ fast_tests = ["tests/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.terms.brackets"
+source_path = "src/spectraxgk/terms/brackets.py"
+facade_module = "spectraxgk.terms.nonlinear"
+status = "active"
+responsibility = "pseudo-spectral E cross B Poisson-bracket FFT kernels, mask/grid broadcasting, real-FFT Hermitian reconstruction, and multi-field bracket batching"
+moved_exports = [
+  "_apply_mask_xy",
+  "_broadcast_grid",
+  "_broadcast_mask",
+  "_broadcast_to_G",
+  "_fft2_xy",
+  "_ifft2_xy",
+  "_spectral_bracket",
+  "_spectral_bracket_full",
+  "_spectral_bracket_multi",
+  "_spectral_bracket_multi_full",
+  "_spectral_bracket_multi_real_fft",
+  "_spectral_bracket_real_fft",
+  "_stack_fields",
+]
+fast_tests = ["tests/test_nonlinear_exb.py", "tests/test_cetg.py", "tests/test_nonlinear_rhs.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.rhs"
 source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
 facade_module = "spectraxgk.operators.nonlinear"

@@ -242,6 +242,20 @@ Nonlinear RHS
    :members:
    :private-members:
 
+Nonlinear Bracket Kernels
+-------------------------
+
+.. automodule:: spectraxgk.terms.brackets
+   :members:
+   :private-members:
+
+Nonlinear Term Assembly
+-----------------------
+
+.. automodule:: spectraxgk.terms.nonlinear
+   :members:
+   :private-members:
+
 Nonlinear Explicit Step
 -----------------------
 
