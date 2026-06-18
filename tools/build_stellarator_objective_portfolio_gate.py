@@ -27,7 +27,7 @@ for path in (SRC, ROOT):
         sys.path.insert(0, str(path))
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.objectives.stellarator_portfolio import (  # noqa: E402
+from spectraxgk.objectives.portfolio_contracts import (  # noqa: E402
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,

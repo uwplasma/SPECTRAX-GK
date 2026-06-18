@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from spectraxgk.objectives.stellarator_portfolio import (
+from spectraxgk.objectives.portfolio_artifacts import (
     ReducedPortfolioArtifactGuardConfig,
     reduced_portfolio_artifact_guard_report,
 )

@@ -1566,13 +1566,6 @@ Stellarator Objective Portfolio Artifact Guards
    :members:
    :private-members:
 
-Stellarator Objective Portfolio Facade
---------------------------------------
-
-.. automodule:: spectraxgk.objectives.stellarator_portfolio
-   :members:
-   :no-index:
-
 Runtime Runner
 --------------
 

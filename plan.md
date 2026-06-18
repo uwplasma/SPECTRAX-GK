@@ -2965,3 +2965,14 @@ No long nonlinear audit should be launched from these candidates.
   manifest tests, VMEC backend helper tests, validation coverage summary
   regeneration, refactor manifest check, repository-size check, ruff, mypy,
   Sphinx docs build, and `git diff --check`.
+
+- 2026-06-18: Retired the legacy `spectraxgk.objectives.stellarator_portfolio`
+  facade. Portfolio contracts, AD/FD sensitivity reports, and reduced-artifact
+  guards now import directly from `objectives/portfolio_contracts.py`,
+  `objectives/portfolio_sensitivity.py`, and `objectives/portfolio_artifacts.py`;
+  the top-level `spectraxgk.objectives` API still re-exports the public helper
+  names. Updated tests, tools, API docs, code-structure docs, and validation
+  coverage manifests, then regenerated the validation coverage summary. Local
+  gates passed: portfolio reducer/sensitivity tests, reduced-portfolio guard
+  tests, validation/refactor manifest tests, validation summary regeneration,
+  repository-size check, ruff, mypy, Sphinx docs build, and `git diff --check`.

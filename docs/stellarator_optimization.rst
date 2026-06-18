@@ -1891,7 +1891,7 @@ separate two contracts:
   optimizer or UQ ensemble.
 
 The lightweight reducer in
-:mod:`spectraxgk.objectives.stellarator_portfolio` validates the second contract
+:mod:`spectraxgk.objectives.portfolio_contracts` validates the second contract
 without importing optional VMEC or Boozer backends. It requires a real numeric
 ``(surface, alpha, ky, objective)`` table, finite non-negative normalized
 weights, and an explicit reduction policy. The gate below checks the weighted

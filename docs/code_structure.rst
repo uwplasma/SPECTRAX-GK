@@ -275,9 +275,9 @@ Completed extractions:
   ``objectives/portfolio_artifacts.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``,
-  ``objectives/vmec_boozer_line_search.py``. The public
-  ``objectives.stellarator_portfolio`` module remains a small facade for
-  existing imports.
+  ``objectives/vmec_boozer_line_search.py``. The top-level
+  ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
+  these owner modules.
 - production nonlinear turbulent-flux optimization guardrails are split into
   scope/policy helpers (``validation/nonlinear_transport/optimization_policy.py``),
   replicated transport report extractors

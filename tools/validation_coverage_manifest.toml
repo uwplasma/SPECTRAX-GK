@@ -3782,39 +3782,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.stellarator_portfolio"
-path = "src/spectraxgk/objectives/stellarator_portfolio.py"
-owner_lane = "public facade for backend-free stellarator objective portfolio contracts, gates, and artifact guards"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "multi-field-line and multi-surface stellarator microstability optimization",
-  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
-]
-physics_contracts = [
-  "fixed surface/alpha/ky sample tables are reduced explicitly before any geometry-wide optimization claim",
-  "backend-free reducer gates do not promote VMEC/Boozer geometry-gradient or nonlinear heat-flux optimization claims",
-]
-numerics_contracts = [
-  "sample and objective weights are finite, non-negative, normalized, and shape checked",
-  "aggregate scalar objectives pass reverse-mode, JVP, and central finite-difference directional derivative parity",
-]
-fast_tests = [
-  "tests/test_stellarator_objective_portfolio.py",
-  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
-]
-artifact_paths = [
-  "docs/_static/stellarator_objective_portfolio_gate.json",
-  "docs/_static/stellarator_objective_portfolio_gate.png",
-  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
-]
-next_tests = [
-  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
-  "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
-]
-
-[[modules]]
 module = "spectraxgk.parallel.__init__"
 path = "src/spectraxgk/parallel/__init__.py"
 owned_modules = [
