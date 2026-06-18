@@ -23,10 +23,15 @@ Core modules
 - ``spectraxgk.operators.nonlinear.diagnostics``: sampling, resolved-diagnostic
   packing, and ``SimulationDiagnostics`` construction shared by nonlinear
   diagnostic scans.
-- ``spectraxgk.operators.nonlinear.policies``: Hermitian/fixed-mode projectors,
-  diagnostic cache/weight/projection setup, fixed-mode omega masks used by
-  comparison parity audits, collision-split policies, and reusable nonlinear
-  IMEX operator construction.
+- ``spectraxgk.operators.nonlinear.projection``: Hermitian and fixed-mode state
+  projections used by compressed-real-FFT nonlinear scans and fixed-mode
+  diagnostics.
+- ``spectraxgk.operators.nonlinear.collisions``: diagonal collision and
+  hypercollision split policies shared by explicit and IMEX nonlinear scans.
+- ``spectraxgk.operators.nonlinear.policies``: diagnostic cache/weight/projection
+  setup, adaptive time-step policy, fixed-mode omega masks used by comparison
+  parity audits, reusable nonlinear IMEX operator construction, and compatibility
+  re-exports for the focused projection/collision owners.
 - ``spectraxgk.runtime`` / ``spectraxgk.workflows.runtime.config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
 - ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.

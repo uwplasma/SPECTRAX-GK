@@ -1030,7 +1030,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.nonlinear.policies"
 path = "src/spectraxgk/operators/nonlinear/policies.py"
-owner_lane = "nonlinear diagnostic setup, time-step policy, collision split policies, fixed-mode omega masks, IMEX operator construction, and compatibility projection re-exports"
+owner_lane = "nonlinear diagnostic setup, time-step policy, fixed-mode omega masks, IMEX operator construction, and compatibility projection/collision re-exports"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -1038,12 +1038,11 @@ reference_anchors = [
   "adaptive nonlinear CFL bounds used by long fixed/adaptive transport windows",
   "shared nonlinear diagnostic setup used by explicit and IMEX scan paths",
   "fixed-mode nonlinear diagnostics and omega masks",
-  "split collision/hypercollision nonlinear updates and reusable IMEX solves",
+  "reusable IMEX solves",
 ]
 physics_contracts = [
   "adaptive time-step policy combines linear frequency bounds and nonlinear E cross B CFL bounds before clipping",
   "diagnostic setup preserves caller-selected geometry, field-line weights, monitored z index, and fixed-mode policy",
-  "collision and hypercollision weights remain explicit before split updates are applied",
   "explicit and IMEX diagnostic scans share the same composed fixed-mode/Hermitian projection convention",
 ]
 numerics_contracts = [
@@ -1063,6 +1062,39 @@ artifact_paths = [
 next_tests = [
   "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
   "add direct helper parity coverage when the IMEX diagnostics loop is split further",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.collisions"
+path = "src/spectraxgk/operators/nonlinear/collisions.py"
+owner_lane = "nonlinear collision and hypercollision split policy"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "long nonlinear transport windows use split collision and hypercollision updates to avoid mixing diagonal damping with explicit bracket stability limits",
+  "explicit and IMEX nonlinear scans share identical collision-split damping weights and update formulas",
+]
+physics_contracts = [
+  "collision and hypercollision weights remain explicit before split updates are applied",
+  "inactive collision splitting leaves the RHS term configuration unchanged",
+  "active collision splitting removes collision terms from the explicit RHS and returns a diagonal damping tensor",
+]
+numerics_contracts = [
+  "implicit and IMEX split updates use the same diagonal backward-Euler formula",
+  "explicit, STS, and RKC split updates use the same diagonal exponential formula",
+  "species-squeezed damping preserves the state layout used by single-species nonlinear scans",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep collision split helper behavior object-identical through the nonlinear compatibility facade until the next major API cleanup",
 ]
 
 [[modules]]

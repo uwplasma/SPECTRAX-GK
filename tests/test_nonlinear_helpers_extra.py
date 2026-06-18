@@ -9,6 +9,7 @@ import pytest
 
 from spectraxgk import nonlinear as nonlinear_mod
 from spectraxgk.solvers.nonlinear import state_integration as nonlinear_state_integration_mod
+from spectraxgk.operators.nonlinear import collisions as nonlinear_collisions
 from spectraxgk.operators.nonlinear import diagnostics as nonlinear_diagnostics
 from spectraxgk.operators.nonlinear import policies as nonlinear_helpers
 from spectraxgk.operators.nonlinear import projection as nonlinear_projection
@@ -388,6 +389,8 @@ def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:
 def test_nonlinear_helpers_preserve_legacy_exports() -> None:
     for name in nonlinear_helpers.__all__:
         assert getattr(nonlinear_mod, name) is getattr(nonlinear_helpers, name)
+    for name in nonlinear_collisions.__all__:
+        assert getattr(nonlinear_helpers, name) is getattr(nonlinear_collisions, name)
     for name in nonlinear_projection.__all__:
         assert getattr(nonlinear_helpers, name) is getattr(nonlinear_projection, name)
 
@@ -631,7 +634,7 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     params = SimpleNamespace(nu=0.1)
     term_cfg = TermConfig(collisions=0.5, hypercollisions=2.0)
     monkeypatch.setattr(
-        "spectraxgk.operators.nonlinear.policies.hypercollision_damping",
+        "spectraxgk.operators.nonlinear.collisions.hypercollision_damping",
         lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype) * 3.0,
     )
     damp = _collision_damping(
@@ -641,7 +644,7 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
 
     cache6 = SimpleNamespace(lb_lam=jnp.ones((1, 2, 2, 1, 1, 1), dtype=jnp.float32))
     monkeypatch.setattr(
-        "spectraxgk.operators.nonlinear.policies.hypercollision_damping",
+        "spectraxgk.operators.nonlinear.collisions.hypercollision_damping",
         lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype),
     )
     squeezed = _collision_damping(
@@ -658,7 +661,7 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
         b=jnp.zeros((1, 1, 1, 1), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        "spectraxgk.operators.nonlinear.policies.hypercollision_damping",
+        "spectraxgk.operators.nonlinear.collisions.hypercollision_damping",
         lambda cache, params, dtype: jnp.ones((1, 2, 2, 1, 1, 1), dtype=dtype),
     )
     squeezed_low_rank = _collision_damping(

@@ -378,6 +378,13 @@ Nonlinear Diagnostic State
    :members:
    :private-members:
 
+Nonlinear Collision Split Helpers
+---------------------------------
+
+.. automodule:: spectraxgk.operators.nonlinear.collisions
+   :members:
+   :private-members:
+
 Nonlinear Helpers
 -----------------
 

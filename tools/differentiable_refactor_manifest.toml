@@ -1856,7 +1856,7 @@ module = "spectraxgk.operators.nonlinear.policies"
 source_path = "src/spectraxgk/operators/nonlinear/policies.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, collision-split policy construction, omega-mask, reusable IMEX operator policies, and compatibility re-exports for projection helpers"
+responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, omega-mask, reusable IMEX operator policies, and compatibility re-exports for projection/collision helpers"
 moved_exports = [
   "IMEXLinearOperator",
   "NonlinearCollisionSplitPolicy",
@@ -1876,6 +1876,21 @@ moved_exports = [
 ]
 fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.collisions"
+source_path = "src/spectraxgk/operators/nonlinear/collisions.py"
+facade_module = "spectraxgk.operators.nonlinear.policies"
+status = "active"
+responsibility = "nonlinear collision and hypercollision damping assembly plus diagonal split-update policy"
+moved_exports = [
+  "NonlinearCollisionSplitPolicy",
+  "_apply_collision_split",
+  "_collision_damping",
+  "build_nonlinear_collision_split_policy",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/architecture.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.projection"
@@ -2465,6 +2480,7 @@ target_packages = [
   "spectraxgk.operators.nonlinear.rhs",
   "spectraxgk.operators.nonlinear.diagnostic_state",
   "spectraxgk.operators.nonlinear.diagnostics",
+  "spectraxgk.operators.nonlinear.collisions",
   "spectraxgk.operators.nonlinear.policies",
   "spectraxgk.operators.nonlinear.projection",
   "spectraxgk.solvers.nonlinear.explicit",
