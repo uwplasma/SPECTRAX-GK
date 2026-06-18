@@ -2922,14 +2922,13 @@ module = "spectraxgk.validation.benchmarks.harness_metrics"
 source_path = "src/spectraxgk/validation/benchmarks/harness_metrics.py"
 facade_module = "spectraxgk.validation.benchmarks.harness"
 status = "active"
-responsibility = "late-time linear, nonlinear transport-window, heat-flux convergence, observed-order, branch-continuity, and zonal-response metric extraction"
+responsibility = "late-time linear, nonlinear transport-window, heat-flux convergence, observed-order, and branch-continuity metric extraction"
 moved_exports = [
   "branch_continuity_metrics",
   "estimate_observed_order",
   "late_time_linear_metrics",
   "nonlinear_heat_flux_convergence_metrics",
   "windowed_nonlinear_metrics",
-  "zonal_flow_response_metrics",
 ]
 fast_tests = [
   "tests/test_benchmarking.py",
@@ -2938,6 +2937,22 @@ fast_tests = [
   "tests/test_terms_integrators.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_zonal_metrics"
+source_path = "src/spectraxgk/validation/benchmarks/harness_zonal_metrics.py"
+facade_module = "spectraxgk.validation.benchmarks.harness_metrics"
+status = "active"
+responsibility = "zonal-flow residual, GAM frequency, and damping metric extraction"
+moved_exports = [
+  "zonal_flow_response_metrics",
+]
+fast_tests = [
+  "tests/test_validation_gates.py",
+  "tests/test_generate_miller_zonal_response_pilot.py",
+  "tests/test_plot_zonal_flow_response_from_output.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/testing.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.harness_scan"
