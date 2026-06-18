@@ -1603,6 +1603,47 @@ moved_exports = [
 fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_core"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_core.py"
+facade_module = "spectraxgk.validation.quasilinear.calibration"
+status = "active"
+responsibility = "quasilinear calibration points, train-scale fitting, scaling application, and train/holdout report assembly"
+moved_exports = [
+  "QuasilinearCalibrationPoint",
+  "apply_heat_flux_scale",
+  "fit_train_heat_flux_scale",
+  "quasilinear_calibration_report",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_spectrum"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_spectrum.py"
+facade_module = "spectraxgk.validation.quasilinear.calibration"
+status = "active"
+responsibility = "quasilinear spectrum-column integration into scalar heat-flux estimates"
+moved_exports = [
+  "integrated_quasilinear_flux_from_spectrum",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_io"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_io.py"
+facade_module = "spectraxgk.validation.quasilinear.calibration"
+status = "active"
+responsibility = "nonlinear window CSV/NetCDF ingestion, convergence attachment, calibration-point construction, and report JSON writing"
+moved_exports = [
+  "calibration_point_from_nonlinear_window_summary",
+  "calibration_point_from_spectrum_and_nonlinear_window",
+  "write_quasilinear_calibration_report",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py", "tests/test_quasilinear_promotion_guardrails.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"

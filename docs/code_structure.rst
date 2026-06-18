@@ -403,6 +403,12 @@ Cyclone single-mode and scan implementations now live in
 patch that facade directly while examples and downstream
 scripts keep importing through ``spectraxgk.benchmarks``.
 
+Quasilinear calibration is split into ``calibration_core`` for
+train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral
+integration, and ``calibration_io`` for nonlinear-window CSV/NetCDF ingestion.
+The historical ``validation/quasilinear/calibration.py`` module remains a
+stable facade for tools and public API exports.
+
 VMEC-JAX transport admission gates are split into focused policy,
 sample-coverage, nonlinear-audit, and candidate-selection modules:
 ``spectraxgk.validation.stellarator.transport_policies``,
