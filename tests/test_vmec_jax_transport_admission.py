@@ -3,6 +3,10 @@ from __future__ import annotations
 import json
 
 import spectraxgk
+import spectraxgk.validation.stellarator.transport_audit as transport_audit
+import spectraxgk.validation.stellarator.transport_campaign as transport_campaign
+import spectraxgk.validation.stellarator.transport_landscape as transport_landscape
+import spectraxgk.validation.stellarator.transport_prelaunch as transport_prelaunch
 from spectraxgk.validation.stellarator.transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
@@ -180,6 +184,10 @@ def test_nonlinear_landscape_admission_selects_uncertainty_resolved_candidate() 
     assert report["selected_candidate"]["uncertainty_z_score"] > 17.0
     assert all(row["admitted"] for row in report["candidates"])
     assert spectraxgk.build_nonlinear_landscape_admission_report is build_nonlinear_landscape_admission_report
+    assert (
+        build_nonlinear_landscape_admission_report
+        is transport_landscape.build_nonlinear_landscape_admission_report
+    )
     json.dumps(report, allow_nan=False)
 
 
@@ -257,6 +265,10 @@ def test_reduced_nonlinear_audit_prelaunch_passes_calibrated_landscape_margin() 
     assert (
         spectraxgk.build_reduced_nonlinear_audit_prelaunch_report
         is build_reduced_nonlinear_audit_prelaunch_report
+    )
+    assert (
+        build_reduced_nonlinear_audit_prelaunch_report
+        is transport_prelaunch.build_reduced_nonlinear_audit_prelaunch_report
     )
 
 
@@ -354,6 +366,10 @@ def test_campaign_admission_combines_reduced_and_replicated_landscape_gates() ->
         spectraxgk.build_nonlinear_campaign_admission_report
         is build_nonlinear_campaign_admission_report
     )
+    assert (
+        build_nonlinear_campaign_admission_report
+        is transport_campaign.build_nonlinear_campaign_admission_report
+    )
     json.dumps(report, allow_nan=False)
 
 
@@ -444,6 +460,10 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
     assert all(gate["passed"] for gate in report["gates"])
     assert spectraxgk.VMECJAXNonlinearAuditPolicy is VMECJAXNonlinearAuditPolicy
     assert spectraxgk.build_nonlinear_audit_redesign_report is build_nonlinear_audit_redesign_report
+    assert (
+        build_nonlinear_audit_redesign_report
+        is transport_audit.build_nonlinear_audit_redesign_report
+    )
     assert spectraxgk.transport_objective_sample_summary is transport_objective_sample_summary
 
 

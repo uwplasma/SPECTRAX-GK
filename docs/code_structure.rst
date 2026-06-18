@@ -493,7 +493,9 @@ VMEC-JAX transport admission gates are split into focused policy,
 sample-coverage, nonlinear-audit, and candidate-selection modules:
 ``spectraxgk.validation.stellarator.transport_policies``,
 ``spectraxgk.validation.stellarator.transport_samples``,
-``spectraxgk.validation.stellarator.transport_nonlinear``, and
+``spectraxgk.validation.stellarator.transport_nonlinear`` facade plus
+``transport_landscape``, ``transport_prelaunch``, ``transport_campaign``,
+``transport_audit`` report owners, and
 ``spectraxgk.validation.stellarator.transport_selection``. The historical
 ``spectraxgk.validation.stellarator.transport_admission`` module remains a
 stable facade for public imports.
