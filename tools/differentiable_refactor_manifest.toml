@@ -311,13 +311,37 @@ module = "spectraxgk.validation.benchmarks.etg"
 source_path = "src/spectraxgk/validation/benchmarks/etg.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "ETG benchmark-family linear and ky-scan runners behind the public benchmarks facade"
+responsibility = "ETG benchmark-family compatibility facade that preserves public imports and monkeypatch seams"
 moved_exports = [
   "run_etg_linear",
   "run_etg_scan",
 ]
-fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.etg_linear"
+source_path = "src/spectraxgk/validation/benchmarks/etg_linear.py"
+facade_module = "spectraxgk.validation.benchmarks.etg"
+status = "active"
+responsibility = "ETG single-ky linear benchmark runner, streaming density branch, Krylov fallback, and fit-window policy"
+moved_exports = [
+  "run_etg_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.etg_scan"
+source_path = "src/spectraxgk/validation/benchmarks/etg_scan.py"
+facade_module = "spectraxgk.validation.benchmarks.etg"
+status = "active"
+responsibility = "ETG ky-scan runner, batched time integration, streaming density fits, and fallback-to-Krylov policy"
+moved_exports = [
+  "run_etg_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.geometry.backend_discovery"

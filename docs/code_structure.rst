@@ -392,8 +392,10 @@ moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
 Kinetic-electron ITG/TEM runners are in ``spectraxgk.validation.benchmarks.kinetic`` with
-the same public facade guarantees. ETG runners are in
-``spectraxgk.validation.benchmarks.etg`` for ``run_etg_linear`` and ``run_etg_scan``;
+the same public facade guarantees. ETG single-point and scan implementations live in
+``spectraxgk.validation.benchmarks.etg_linear`` and
+``spectraxgk.validation.benchmarks.etg_scan`` behind the stable
+``spectraxgk.validation.benchmarks.etg`` facade;
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` behind the stable

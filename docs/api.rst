@@ -627,6 +627,16 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.kbm_scan
    :members:
 
+.. automodule:: spectraxgk.validation.benchmarks.etg
+   :members:
+   :no-index:
+
+.. automodule:: spectraxgk.validation.benchmarks.etg_linear
+   :members:
+
+.. automodule:: spectraxgk.validation.benchmarks.etg_scan
+   :members:
+
 Validation Gates
 ----------------
 
