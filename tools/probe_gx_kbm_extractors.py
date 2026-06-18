@@ -230,7 +230,7 @@ def main() -> None:
                     fit_signal="phi",
                     mode_method="z_index",
                     diagnostic_norm="rho_star",
-                    gx_reference=True,
+                    reference_aligned=True,
                     auto_window=False,
                     tmin=args.tmin,
                     tmax=args.tmax,

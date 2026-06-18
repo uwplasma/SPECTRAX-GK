@@ -221,7 +221,7 @@ def main() -> None:
         fit_signal="phi",
         mode_method="project",
         diagnostic_norm="rho_star",
-        gx_reference=True,
+        reference_aligned=True,
         auto_window=False,
         tmin=fit_tmin,
         tmax=fit_tmax,

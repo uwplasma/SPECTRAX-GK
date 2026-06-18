@@ -2896,3 +2896,10 @@ No long nonlinear audit should be launched from these candidates.
   directly, API docs no longer list the deleted facade, and the validation/
   refactor manifests dropped the stale module. Local cETG/runtime, lint, type,
   manifest, architecture, repository-size, and docs gates passed.
+
+- Removed the benchmark-runner `gx_reference` compatibility keyword and kept
+  `reference_aligned` as the canonical physics/numerics policy name. GX-specific
+  comparison tools now call the canonical keyword, while GX-specific names remain
+  confined to comparison-tool loaders/tests. Focused benchmark branch, runtime,
+  comparison-tool, lint, type, manifest, architecture, repository-size, and docs
+  gates passed locally.
