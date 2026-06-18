@@ -21,14 +21,14 @@ from spectraxgk.cli import (
     _cmd_scan_runtime_linear,
     _default_example_config_path,
     _is_runtime_toml,
-    _load_scan_ky,
     _resolve_case,
-    _runtime_output_path,
     _should_show_progress,
     main,
 )
 from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
+from spectraxgk.workflows.named_cases import load_scan_ky
+from spectraxgk.workflows.runtime.commands import runtime_output_path
 from spectraxgk.workflows.runtime.config import RuntimeConfig
 
 
@@ -152,9 +152,9 @@ def test_cli_cyclone_kperp(capsys, monkeypatch):
 def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
     cfg = RuntimeConfig()
     args = argparse.Namespace(out="explicit.out", progress=False, no_progress=False)
-    assert _runtime_output_path(args, cfg) == "explicit.out"
+    assert runtime_output_path(args, cfg) == "explicit.out"
     args.out = None
-    assert _runtime_output_path(args, cfg) == cfg.output.path
+    assert runtime_output_path(args, cfg) == cfg.output.path
 
     assert _is_runtime_toml({"physics": {}}) is True
     assert _is_runtime_toml({"case": "cyclone"}) is False
@@ -171,8 +171,8 @@ def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
     with pytest.raises(ValueError):
         _resolve_case("bad")
 
-    assert np.allclose(_load_scan_ky({"scan": {"ky": [0.1, 0.2]}}), np.array([0.1, 0.2]))
-    assert _load_scan_ky({}).size == 0
+    assert np.allclose(load_scan_ky({"scan": {"ky": [0.1, 0.2]}}), np.array([0.1, 0.2]))
+    assert load_scan_ky({}).size == 0
 
 
 def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:

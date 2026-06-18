@@ -1,3 +1,17 @@
+- 2026-06-18: Simplified executable parser ownership by splitting the dense
+  `spectraxgk.cli.build_parser` body into generic-run, named-case, and runtime
+  parser builders while keeping `spectraxgk.cli` as the single parser owner.
+  The central `build_parser` function is now a short coordinator instead of a
+  command-registration hotspot. Removed private CLI wrapper aliases for runtime
+  output-path and named-case scan-ky loading; focused tests now import those
+  contracts from `spectraxgk.workflows.runtime.commands` and
+  `spectraxgk.workflows.named_cases`, respectively. Local gates passed: full
+  CLI test shard, focused runtime-helper owner shard, Ruff on touched Python
+  files, mypy on `spectraxgk.cli`, `py_compile` on touched Python files,
+  executable help smoke checks for top-level, generic-run, and runtime-scan
+  commands, differentiable-refactor manifest, validation coverage manifest
+  regeneration, repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
 - 2026-06-18: Continued runtime/executable simplification by moving repeated
   CLI/TOML/default option precedence in `spectraxgk.workflows.runtime.commands`
   into typed command-option records for linear, ky-scan, and nonlinear runtime

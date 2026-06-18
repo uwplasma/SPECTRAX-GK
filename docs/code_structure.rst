@@ -447,11 +447,12 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
-Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``
-and moves runtime linear, runtime scan, and runtime nonlinear command execution
-into ``spectraxgk.workflows.runtime.commands``. The generic ``run`` executable
-path attaches the already-loaded runtime config/data to the parser namespace
-before dispatch, so command execution does not parse the same TOML twice.
+Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``,
+with parser registration split by command family, and moves runtime linear,
+runtime scan, and runtime nonlinear command execution into
+``spectraxgk.workflows.runtime.commands``. The generic ``run`` executable path
+attaches the already-loaded runtime config/data to the parser namespace before
+dispatch, so command execution does not parse the same TOML twice.
 Linear, scan, and nonlinear command flags are resolved once into typed
 command-option records before solver calls are made, which keeps precedence
 between CLI flags, TOML sections, and runtime defaults inspectable without
