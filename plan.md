@@ -1,3 +1,14 @@
+- 2026-06-18: Completed a source-level comparison-code terminology cleanup
+  pass. The only remaining `GX`/`gx_` identifiers under `src/spectraxgk` were
+  ETG validation benchmark fit-window options, so they were renamed from
+  `gx_growth` / `gx_navg_fraction` to
+  `reference_growth_window` / `reference_navg_fraction`. Comparison-specific
+  docs, tools, and benchmark artifact paths still mention GX where they are
+  explicitly about benchmark/reference comparison. Local gates passed so far:
+  ETG benchmark branch tests, ETG asset-helper test, Ruff on touched ETG/test
+  files, mypy on touched ETG modules, and `py_compile` on touched ETG modules.
+  The source terminology audit, repository-size manifest, and `git diff
+  --check` also pass.
 - 2026-06-18: Continued core linear-term simplification without adding source
   files by centralizing Hermite-mode drive insertion in
   `spectraxgk.terms.linear_terms._hermite_mode_drive`. Linked streaming,
