@@ -1328,6 +1328,7 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.initialization",
   "spectraxgk.validation.benchmarks.kbm",
   "spectraxgk.validation.benchmarks.kbm_beta",
+  "spectraxgk.validation.benchmarks.kbm_beta_solver_paths",
   "spectraxgk.validation.benchmarks.kbm_linear",
   "spectraxgk.validation.benchmarks.kbm_scan",
   "spectraxgk.validation.benchmarks.kinetic",

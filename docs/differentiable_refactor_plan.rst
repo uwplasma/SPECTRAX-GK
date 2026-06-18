@@ -168,6 +168,11 @@ High-Risk Module Split Plan
   Split into benchmark-family modules, reference-data loaders, and fit policies.
   Keep ``spectraxgk.benchmarks`` as the public facade. Required gates: Cyclone,
   ETG, KBM, TEM, W7-X/HSX where applicable, and branch-continuity policies.
+  KBM beta scans now keep the public runner in
+  ``validation.benchmarks.kbm_beta`` while explicit-time diagnostics fallback
+  and multi-target Krylov branch selection live in
+  ``validation.benchmarks.kbm_beta_solver_paths`` with patchable hooks for
+  benchmark tests.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
