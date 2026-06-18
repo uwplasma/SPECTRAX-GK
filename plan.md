@@ -1,3 +1,9 @@
+- 2026-06-18: Split the 710-line Diffrax time-integrator module into a 41-line
+  `spectraxgk.solvers.time.diffrax` facade plus focused core policy/helper,
+  linear integration, streaming growth/frequency, and nonlinear integration
+  modules. Public Diffrax imports are preserved; optional-dependency monkeypatch
+  tests now target `spectraxgk.solvers.time.diffrax_core`, which owns `dfx/eqx`.
+  Focused Diffrax core/smoke tests and Ruff passed locally.
 - 2026-06-18: Split the 719-line term-wise RHS assembly module into a 59-line
   `spectraxgk.terms.assembly` facade plus focused cached RHS, per-term
   diagnostic decomposition, field-only solve, and helper-policy owner modules.

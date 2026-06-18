@@ -70,7 +70,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``solvers/time/explicit_steps.py``
    - ``solvers/time/explicit_cfl.py``
    - ``solvers/time/explicit_progress.py``
-   - ``solvers/time/diffrax.py``
+   - ``solvers/time/diffrax.py`` facade plus ``solvers/time/diffrax_*`` owner modules
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
@@ -181,6 +181,11 @@ Completed extractions:
   ``solvers/time/explicit_progress.py``. The public
   ``solvers.time.explicit`` module remains the import facade for existing
   debug tools and tests.
+- Diffrax time-integration internals. ``solvers/time/diffrax.py`` remains the
+  public facade while optional dependency/policy helpers, linear save-path
+  integration, streaming growth/frequency fits, and nonlinear integration live
+  in ``solvers/time/diffrax_core.py``, ``diffrax_linear.py``,
+  ``diffrax_streaming.py``, and ``diffrax_nonlinear.py``.
 - term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in

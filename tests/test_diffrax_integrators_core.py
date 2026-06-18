@@ -74,7 +74,7 @@ def test_diffrax_helper_functions() -> None:
 
 
 def test_require_diffrax_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    import spectraxgk.solvers.time.diffrax as di
+    import spectraxgk.solvers.time.diffrax_core as di
 
     monkeypatch.setattr(di, "dfx", None)
     monkeypatch.setattr(di, "eqx", None)

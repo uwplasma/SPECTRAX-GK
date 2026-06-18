@@ -1526,6 +1526,68 @@ fast_tests = ["tests/test_cetg.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax"
+source_path = "src/spectraxgk/solvers/time/diffrax.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "stable public facade for Diffrax linear, streaming-fit, and nonlinear time integrators"
+moved_exports = [
+  "integrate_linear_diffrax",
+  "integrate_linear_diffrax_streaming",
+  "integrate_nonlinear_diffrax",
+]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_core"
+source_path = "src/spectraxgk/solvers/time/diffrax_core.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "optional Diffrax/Eqx dependency loading, solver/controller/adjoint policy, complex-state packing, RHS and density helpers"
+moved_exports = [
+  "_require_diffrax",
+  "_solver_from_name",
+  "_stepsize_controller",
+  "_adjoint",
+  "_pack_complex_state",
+  "_unpack_complex_state",
+  "_density_from_G_cached",
+]
+fast_tests = ["tests/test_diffrax_integrators_core.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_linear"
+source_path = "src/spectraxgk/solvers/time/diffrax_linear.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax linear integration with state/field/mode/density save paths and optional state sharding"
+moved_exports = ["integrate_linear_diffrax"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_streaming"
+source_path = "src/spectraxgk/solvers/time/diffrax_streaming.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax streaming linear growth/frequency accumulation without storing full time histories"
+moved_exports = ["integrate_linear_diffrax_streaming"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_nonlinear"
+source_path = "src/spectraxgk/solvers/time/diffrax_nonlinear.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax nonlinear explicit/IMEX integration and nonlinear bracket RHS routing"
+moved_exports = ["integrate_nonlinear_diffrax"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.rhs"
 source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
 facade_module = "spectraxgk.operators.nonlinear"
