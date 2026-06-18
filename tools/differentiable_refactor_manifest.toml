@@ -262,6 +262,49 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry.boundaries"
+source_path = "src/spectraxgk/geometry/boundaries.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "zero-shear boundary promotion shared by analytic geometry and grid-default policy"
+moved_exports = [
+  "ZERO_SHAT_THRESHOLD",
+  "effective_boundary",
+  "zero_shear_enabled",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.analytic"
+source_path = "src/spectraxgk/geometry/analytic.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "closed-form s-alpha and slab flux-tube geometry models"
+moved_exports = [
+  "SAlphaGeometry",
+  "SlabGeometry",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.flux_tube"
+source_path = "src/spectraxgk/geometry/flux_tube.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "sampled solver-ready flux-tube contract, analytic sampling, imported NetCDF/eik loading, and mirror-term reconstruction"
+moved_exports = [
+  "FluxTubeGeometryData",
+  "_bgrad_from_bmag",
+  "_periodic_spectral_derivative",
+  "load_imported_geometry_netcdf",
+  "sample_flux_tube_geometry",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.autodiff_checks"
 source_path = "src/spectraxgk/geometry/autodiff_checks.py"
 facade_module = "spectraxgk.geometry.differentiable"

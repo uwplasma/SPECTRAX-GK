@@ -33,6 +33,26 @@ Geometry Core
    :members:
    :private-members:
 
+Geometry Boundaries
+-------------------
+
+.. automodule:: spectraxgk.geometry.boundaries
+   :members:
+
+Analytic Geometry
+-----------------
+
+.. automodule:: spectraxgk.geometry.analytic
+   :members:
+   :private-members:
+
+Flux-Tube Geometry
+------------------
+
+.. automodule:: spectraxgk.geometry.flux_tube
+   :members:
+   :private-members:
+
 Miller EIK Generation
 ---------------------
 

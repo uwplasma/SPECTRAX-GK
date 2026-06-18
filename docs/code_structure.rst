@@ -103,7 +103,7 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``
+     - ``geometry/boundaries.py``, ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/vmec.py``
      - parser, remap, normalization, geometry-response tests
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py``
@@ -136,6 +136,10 @@ modules.
 
 Completed extractions:
 
+- zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
+  sampled/imported flux-tube geometry data/loading:
+  ``geometry/boundaries.py``, ``geometry/analytic.py``, and
+  ``geometry/flux_tube.py``
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
@@ -333,8 +337,12 @@ interpolation, radial derivative, Boozer half-mesh, Fourier field-line, and
 periodic sampling helpers live in ``spectraxgk.geometry.numerics``. This
 separates import-side effects, validation-report plumbing, public contract
 validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
-Analytic, slab, sampled, imported-NetCDF, twist-shift, and grid-default
-geometry contracts live in ``spectraxgk.geometry.core``. The
+Zero-shear boundary policy lives in ``spectraxgk.geometry.boundaries``.
+Analytic s-alpha and slab geometry models live in
+``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic
+sampling, imported-NetCDF loading, and periodic mirror-term reconstruction live
+in ``spectraxgk.geometry.flux_tube``. Twist-shift and grid-default geometry
+policy live in ``spectraxgk.geometry.core``. The
 ``spectraxgk.geometry`` package remains a thin compatibility facade that
 re-exports the same classes and functions for existing user code.
 Geometry sensitivity, inverse-design, and local UQ reports live in

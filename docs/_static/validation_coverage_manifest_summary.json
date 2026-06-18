@@ -70,8 +70,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 65,
   "n_modules": 82,
-  "n_owned_modules": 91,
-  "n_package_modules": 198,
+  "n_owned_modules": 94,
+  "n_package_modules": 201,
   "owned_modules_by_owner": {
     "spectraxgk.artifacts.__init__": [],
     "spectraxgk.artifacts.io": [],
@@ -104,7 +104,11 @@
       "spectraxgk.diagnostics.metadata",
       "spectraxgk.diagnostics.weights"
     ],
-    "spectraxgk.geometry.core": [],
+    "spectraxgk.geometry.core": [
+      "spectraxgk.geometry.analytic",
+      "spectraxgk.geometry.boundaries",
+      "spectraxgk.geometry.flux_tube"
+    ],
     "spectraxgk.geometry.differentiable": [
       "spectraxgk.geometry.autodiff_checks",
       "spectraxgk.geometry.backend_discovery",
@@ -807,7 +811,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 3,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/geometry/core.py",
