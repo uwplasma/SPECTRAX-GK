@@ -2938,3 +2938,17 @@ No long nonlinear audit should be launched from these candidates.
   real/imag state layout and final-time metadata, but the output bundle writer
   now owns its restart sidecar directly. Focused runtime artifact, restart,
   lint, compile, and manifest gates passed locally before the broader gate run.
+
+- 2026-06-18: Moved the lightweight benchmark drivers and runtime TOML inputs
+  from `examples/benchmarks/` to the root `benchmarks/` directory, added a
+  root benchmark README, updated docs/static provenance paths, and included
+  the benchmark scripts/TOMLs in the source distribution manifest. Generated
+  benchmark outputs remain excluded through `tools_out/` and docs-static review
+  policy. The same tranche fixed the fast-coverage CI threshold to track the
+  current `workflows/runtime/artifacts.py` owner and updated runtime tests to
+  import `ModeSelection` from the diagnostics owner rather than the runtime
+  facade. Local gates passed: benchmark path tests, CI-style runtime-runner
+  shard, fast-coverage threshold parser, release/docs tests, validation
+  coverage manifest regeneration, repository-size check, refactor manifest,
+  ruff, mypy, Sphinx build, release readiness, and sdist/wheel build with
+  benchmark files verified in the sdist.
