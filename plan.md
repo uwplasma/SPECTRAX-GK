@@ -2882,3 +2882,10 @@ No long nonlinear audit should be launched from these candidates.
   owns only Gaussian/random/restart state construction and Hermitian ky expansion.
   Focused runtime, manifest, architecture, size, type, and docs gates were run
   locally before commit.
+
+- Cleaned non-benchmark comparison-code terminology from the VMEC imported-geometry
+  pipeline by renaming the equal-arc remap payload from `arrays_gx` to
+  `arrays_equal_arc`. The remaining `gx_*` names in `src/spectraxgk` are confined
+  to validation/benchmark compatibility parameters or comparison-specific tools.
+  Focused VMEC backend tests, lint, manifests, architecture, and repository-size
+  gates passed locally.

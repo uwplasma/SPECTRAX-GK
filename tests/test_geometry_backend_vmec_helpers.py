@@ -827,7 +827,7 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
     calls: dict[str, object] = {}
 
     theta_out = np.linspace(-np.pi, np.pi, 9)
-    arrays_gx = {
+    arrays_equal_arc = {
         "theta": theta_out,
         "theta_PEST": theta_out,
         "bmag": np.linspace(1.0, 2.0, theta_out.size),
@@ -883,7 +883,7 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
 
     def _mock_remap(**kwargs):
         calls["remap"] = kwargs
-        return 0.5, arrays_gx
+        return 0.5, arrays_equal_arc
 
     def _mock_write(
         path: Path, profiles: dict[str, object], *, request: object
