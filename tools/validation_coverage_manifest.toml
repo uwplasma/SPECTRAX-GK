@@ -1258,6 +1258,10 @@ module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
   "spectraxgk.validation.benchmarks.harness",
+  "spectraxgk.validation.benchmarks.harness_eigenfunctions",
+  "spectraxgk.validation.benchmarks.harness_metrics",
+  "spectraxgk.validation.benchmarks.harness_scan",
+  "spectraxgk.validation.benchmarks.harness_timeseries",
   "spectraxgk.validation.benchmarks.batching",
   "spectraxgk.validation.benchmarks.cyclone",
   "spectraxgk.validation.benchmarks.etg",

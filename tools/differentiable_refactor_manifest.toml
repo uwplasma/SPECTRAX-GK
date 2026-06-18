@@ -1992,6 +1992,77 @@ doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 [[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_eigenfunctions"
+source_path = "src/spectraxgk/validation/benchmarks/harness_eigenfunctions.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "benchmark eigenfunction normalization, global phase alignment, comparison metrics, and reference bundle IO"
+moved_exports = [
+  "compare_eigenfunctions",
+  "load_eigenfunction_reference_bundle",
+  "normalize_eigenfunction",
+  "phase_align_eigenfunction",
+  "save_eigenfunction_reference_bundle",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_generate_w7x_reference_overlay.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_timeseries"
+source_path = "src/spectraxgk/validation/benchmarks/harness_timeseries.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "NetCDF diagnostic time-series loading, late/leading/explicit window helpers, analytic-signal construction, and real-FFT ky-grid inference"
+moved_exports = [
+  "_analytic_signal",
+  "_explicit_time_window",
+  "_leading_window",
+  "_tail_stats",
+  "_tail_window",
+  "infer_triple_dealiased_ny",
+  "late_time_window",
+  "load_diagnostic_time_series",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_plot_zonal_flow_response_from_output.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_metrics"
+source_path = "src/spectraxgk/validation/benchmarks/harness_metrics.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "late-time linear, nonlinear transport-window, heat-flux convergence, observed-order, branch-continuity, and zonal-response metric extraction"
+moved_exports = [
+  "branch_continuity_metrics",
+  "estimate_observed_order",
+  "late_time_linear_metrics",
+  "nonlinear_heat_flux_convergence_metrics",
+  "windowed_nonlinear_metrics",
+  "zonal_flow_response_metrics",
+]
+fast_tests = [
+  "tests/test_benchmarking.py",
+  "tests/test_runtime_runner.py",
+  "tests/test_runtime_helpers.py",
+  "tests/test_terms_integrators.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_scan"
+source_path = "src/spectraxgk/validation/benchmarks/harness_scan.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "linear ky-scan orchestration and representative eigenfunction extraction with fit-window metadata"
+moved_exports = [
+  "ScanAndModeResult",
+  "run_linear_scan",
+  "run_scan_and_mode",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.parallel.velocity_plan"
 source_path = "src/spectraxgk/parallel/velocity_plan.py"
 facade_module = "spectraxgk.parallel.velocity"

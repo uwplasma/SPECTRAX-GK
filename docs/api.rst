@@ -588,6 +588,21 @@ Benchmarking
 
 .. automodule:: spectraxgk.validation.benchmarks.harness
    :members:
+   :no-index:
+
+.. automodule:: spectraxgk.validation.benchmarks.harness_eigenfunctions
+   :members:
+
+.. automodule:: spectraxgk.validation.benchmarks.harness_timeseries
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.benchmarks.harness_metrics
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.validation.benchmarks.harness_scan
+   :members:
 
 Validation Gates
 ----------------

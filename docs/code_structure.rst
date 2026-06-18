@@ -138,8 +138,8 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``validation/benchmarks/harness.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
-     - late-time/windowed gate tests, reference loading, fallback policy tests
+     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone.py``, ``validation/benchmarks/etg.py``, ``validation/benchmarks/kbm.py``, ``validation/benchmarks/kinetic.py``, ``validation/benchmarks/tem.py``, ``validation/gates.py``, ``validation/zonal.py``
+     - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
 ----------------
@@ -204,6 +204,14 @@ Completed extractions:
   remains a stable import facade for examples and user scripts.
 - validation gate dataclasses and JSON-ready gate helpers:
   ``validation/gates.py``
+- benchmark-harness eigenfunction utilities, diagnostic time-series loading,
+  physics metric extraction, and scan/mode orchestration:
+  ``validation/benchmarks/harness_eigenfunctions.py``,
+  ``validation/benchmarks/harness_timeseries.py``,
+  ``validation/benchmarks/harness_metrics.py``, and
+  ``validation/benchmarks/harness_scan.py``. The public
+  ``validation/benchmarks/harness.py`` facade keeps existing imports and test
+  monkeypatch seams stable.
 - zonal-response reference/trace normalization helpers:
   ``validation/zonal.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:
