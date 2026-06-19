@@ -4318,3 +4318,18 @@ No long nonlinear audit should be launched from these candidates.
   terminology scans, and `git diff --check`. The broad `tests/test_benchmarks.py`
   subset returned pytest exit 5 in this environment because no tests were
   collected, so it was not used as a gate for this tranche.
+
+- 2026-06-19: Simplified the kinetic-electron ky-scan runner inside
+  `validation/benchmarks/kinetic_scan.py` without adding another module. The
+  public `run_kinetic_scan` orchestration now delegates setup normalization,
+  species-index validation, batch-state/cache construction, Krylov fitting,
+  Diffrax streaming fitting, saved/configured trajectory integration, and
+  sampled-signal fitting to focused private helpers in the same owner module.
+  This keeps the existing module-level monkeypatch seams for tests while
+  reducing `run_kinetic_scan` from roughly 358 lines to 169 lines, with helper
+  functions under 70 lines. Local gates passed: kinetic-scan benchmark branch
+  shard, py_compile, ruff, mypy, refactor manifest, validation coverage
+  manifest, repository-size manifest, Sphinx docs build, and
+  `git diff --check`. The broad `tests/test_benchmarks.py` kinetic smoke
+  selection was deselected by the repository marker policy in this environment,
+  so it was not used as a gate for this tranche.

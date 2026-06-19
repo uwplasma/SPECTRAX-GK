@@ -467,7 +467,7 @@ module = "spectraxgk.validation.benchmarks.kinetic_scan"
 source_path = "src/spectraxgk/validation/benchmarks/kinetic_scan.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "kinetic-electron ky-scan runner with batching, streaming fits, time-config routing, and Krylov branch support"
+responsibility = "kinetic-electron ky-scan runner with focused setup, batch-state construction, streaming-fit, sampled-fit, time-config, and Krylov branch helpers"
 moved_exports = [
   "run_kinetic_scan",
 ]

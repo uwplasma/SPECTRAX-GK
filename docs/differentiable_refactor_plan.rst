@@ -213,7 +213,11 @@ High-Risk Module Split Plan
   ``validation.benchmarks.cyclone_linear_paths``.
   Kinetic-electron single-ky saved-time fitting shares one automatic-fit
   keyword policy for primary auto-window and invalid-window fallback fits in
-  ``validation.benchmarks.kinetic_linear``.
+  ``validation.benchmarks.kinetic_linear``. Kinetic-electron ky scans keep the
+  stable public owner ``validation.benchmarks.kinetic_scan`` while setup
+  normalization, batch-state construction, Krylov fitting, Diffrax streaming
+  fitting, configured trajectory integration, and sampled-signal fitting are
+  explicit private helper seams inside that owner.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
