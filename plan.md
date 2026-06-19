@@ -4167,6 +4167,12 @@ No long nonlinear audit should be launched from these candidates.
   directly, API docs no longer list the deleted facade, and the validation/
   refactor manifests dropped the stale module. Local cETG/runtime, lint, type,
   manifest, architecture, repository-size, and docs gates passed.
+- Continued the reduced cETG cleanup in place by staging the explicit diagnostic
+  integrator into method-policy validation, projected-state startup,
+  scan-context construction, scan/progress wrappers, diagnostic-series sampling,
+  and `SimulationDiagnostics` packaging. The public cETG integrator API and
+  return schema are unchanged; the dedicated cETG test shard, Ruff, mypy, and
+  compile gates passed locally.
 
 - Removed the benchmark-runner `gx_reference` compatibility keyword and kept
   `reference_aligned` as the canonical physics/numerics policy name. GX-specific

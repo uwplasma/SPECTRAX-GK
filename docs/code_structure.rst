@@ -555,6 +555,13 @@ and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
 
+Reduced cETG integration keeps one owner module,
+``spectraxgk.terms.reduced.cetg_integrator``, but separates the public
+integrator into explicit method validation, startup projection, scan-context
+construction, JAX scan stepping/progress wrapping, diagnostic-series sampling,
+and ``SimulationDiagnostics`` packaging stages. This keeps the reduced-model
+workflow easy to audit without adding another file for a small model.
+
 Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``,
 with parser registration split by command family, and moves runtime linear,
 runtime scan, and runtime nonlinear command execution into
