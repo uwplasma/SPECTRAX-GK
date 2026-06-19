@@ -1,9 +1,8 @@
 # Full-GK nonlinear ETG pilot lane.
 # This is the shipped full-GK ETG nonlinear pilot contract.
-# The matched GX startup path is Gaussian, not single-mode:
-# in GX the `init_single` toggle lives under `[Expert]`, so keeping
-# `gaussian_init = true` and `init_single = false` here reproduces the
-# audited GX pilot startup state.
+# The audited startup path is Gaussian, not single-mode.
+# Keep `gaussian_init = true` and `init_single = false` for the
+# shipped ETG pilot initialization contract.
 # For parity-sensitive reproduction, prefer:
 #   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml
 # For faster exploratory runs, leave JAX_ENABLE_X64 unset.

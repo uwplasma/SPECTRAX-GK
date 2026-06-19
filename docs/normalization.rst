@@ -46,7 +46,7 @@ This is the single source of truth for case defaults:
      - ``0.8``
      - ``none``
 
-These contracts are consumed by benchmark constants for backward compatibility
+These contracts are consumed by benchmark constants for the stable script API
 (``CYCLONE_OMEGA_D_SCALE``, etc.), so existing scripts keep working while all
 new calibration updates flow through one module.
 

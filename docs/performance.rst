@@ -492,7 +492,7 @@ kernel-localization evidence rather than a full nonlinear runtime claim.
 Parallelization scaling guardrail
 ---------------------------------
 
-The legacy two-device linear scaling figure remains an engineering artifact, not
+The earlier two-device linear scaling figure remains an engineering artifact, not
 the headline production parallelization claim. Current user-facing scaling
 claims should point to the independent ``k_y`` scan and quasilinear/UQ ensemble
 figures below, because those paths preserve serial ordering and have explicit
@@ -1054,7 +1054,7 @@ each device count gets a clean JAX runtime:
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
    :align: center
 
-The May 10, 2026 large sweep is retained as historical engineering evidence:
+The May 10, 2026 large sweep is retained as archived engineering evidence:
 it passed the final-state identity gate at every tracked point, the CPU
 logical-device path saturated at about ``1.39x``, and the two-RTX-A4000 GPU path
 was slower than one GPU even for the larger

@@ -85,7 +85,7 @@ def _sample_mapping() -> dict[str, object]:
 
 
 def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> None:
-    """The legacy geometry bridge remains a compatibility facade."""
+    """The public geometry bridge remains a stable facade."""
 
     assert diff_geom._candidate_paths is backend_discovery._candidate_paths
     assert (

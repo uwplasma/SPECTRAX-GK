@@ -409,7 +409,7 @@ Differentiable-Physics Figures
        blocked until true long-window outputs are available. The Boozer-LCFS
        ``|B|`` row is drawn with unfilled contours rather than a filled density
        map to expose quasisymmetry deterioration. The old projected-weight
-       nonlinear audits remain historical single-point evidence tied to an
+       nonlinear audits remain archived single-point evidence tied to an
        earlier baseline and should not be conflated with this strict-baseline
        panel.
    * - Boundary-coefficient transport landscape

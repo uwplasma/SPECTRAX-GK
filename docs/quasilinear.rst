@@ -70,7 +70,7 @@ research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
 validated absolute nonlinear flux predictor. The current 12-case
 train/holdout calibration portfolio validates the input plumbing and rejects
-the legacy one-constant family, with CTH-like and shaped-pressure external VMEC
+the one-constant saturation-rule family, with CTH-like and shaped-pressure external VMEC
 admitted only through explicit high-grid policies and QP and Solovev admitted
 through replicated seed/timestep ensembles. The QI candidate remains negative evidence:
 it is finite at ``t=250`` but its ``n48/n64`` late-window heat-flux means differ

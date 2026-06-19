@@ -1,3 +1,13 @@
+- 2026-06-19: Tightened user-facing naming around the refactor and validation
+  lanes without changing solver behavior. The root `benchmarks/` directory was
+  rechecked as the canonical lightweight benchmark location, and nonessential
+  "legacy"/comparison-code wording was removed from README text, docs wording,
+  the shipped ETG nonlinear example comment, and small plotting-tool help text.
+  Explicit benchmark/comparison tools and docs keep comparison-code names where
+  they refer to validation artifacts. Planned local gates: focused docs/tool
+  lint, touched tests, Sphinx warning-as-error build, repository-size manifest,
+  and `git diff --check`.
+
 - 2026-06-19: Continued runtime facade simplification inside `runtime.py`
   without changing public runtime signatures, patchable dependency builders, or
   scan semantics. `run_runtime_linear`, `run_runtime_scan`, and

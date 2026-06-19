@@ -152,7 +152,7 @@ def build_uq_summary(payload: dict[str, Any]) -> dict[str, Any]:
                 "executor": "thread",
                 "finite_difference_workers": 1,
                 "finite_difference_executor": "thread",
-                "identity_contract": "serial payload or legacy artifact",
+                "identity_contract": "serial payload or archived artifact",
             },
         ),
         "results": rows,
