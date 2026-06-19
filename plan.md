@@ -4132,6 +4132,12 @@ No long nonlinear audit should be launched from these candidates.
   scope helpers, replicated transport report extractors, and a public promotion
   facade. Nonlinear transport optimization, guard tool import, public API, ruff,
   manifest, and docs gates passed locally.
+- Refined the public nonlinear turbulent-flux optimization guard facade in
+  place. The report now stages optimization-scope normalization, artifact-row
+  classification, safety gates, promotion gates, evidence-gap accounting, and
+  summary assembly through named helpers while preserving the JSON schema and
+  explicit release-safe vs production-promoted distinction. The nonlinear
+  transport optimization shard, Ruff, mypy, and docs gates passed locally.
 
 - Continued the runtime/executable refactor by moving electrostatic-potential
   initial-condition inversion into `spectraxgk.workflows.runtime.initial_phi`.
