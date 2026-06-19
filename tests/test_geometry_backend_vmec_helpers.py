@@ -50,6 +50,9 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_fieldlines._flux_surface_hngc_averages is (
         vmec_fieldline_numerics._flux_surface_hngc_averages
     )
+    assert vmec_fieldlines._fieldline_boozer_tensors is (
+        vmec_fieldline_numerics._fieldline_boozer_tensors
+    )
     assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
     assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
     assert vmec_facade.write_vmec_eik_netcdf is vmec_io.write_vmec_eik_netcdf
@@ -714,6 +717,62 @@ def test_vmec_fieldline_boozer_trig_basis_preserves_mode_axis() -> None:
     np.testing.assert_allclose(msin[1], np.sin(angle[1]))
     np.testing.assert_allclose(ncos[1], -np.cos(angle[1]))
     np.testing.assert_allclose(nsin[2], 3.0 * np.sin(angle[2]))
+
+
+def test_vmec_fieldline_tensor_helpers_match_circular_surface() -> None:
+    theta = np.linspace(-np.pi, np.pi, 9)[None, None, :]
+    phi = theta.copy()
+    xm = np.array([0.0, 1.0])
+    xn = np.array([0.0, 0.0])
+    angle = vmec_fieldline_numerics._boozer_mode_angle(
+        xm, xn, theta, phi, flipit=False
+    )
+    cosangle, sinangle, mcos, msin, ncos, nsin = (
+        vmec_fieldline_numerics._boozer_trig_basis(xm, xn, angle)
+    )
+    r0, r1, z1 = 2.0, 0.2, 0.3
+
+    tensors = vmec_fieldline_numerics._fieldline_boozer_tensors(
+        rmnc_b=np.array([[r0, r1]]),
+        zmns_b=np.array([[0.0, z1]]),
+        numns_b=np.array([[0.0, 0.0]]),
+        d_rmnc_b_d_s=np.array([[0.05, 0.01]]),
+        d_zmns_b_d_s=np.array([[0.0, 0.02]]),
+        d_numns_b_d_s=np.array([[0.0, 0.0]]),
+        gmnc_b=np.array([[1.0, 0.0]]),
+        bmnc_b=np.array([[1.0, 0.1]]),
+        d_bmnc_b_d_s=np.array([[0.01, 0.02]]),
+        cosangle_b=cosangle,
+        sinangle_b=sinangle,
+        mcosangle_b=mcos,
+        msinangle_b=msin,
+        ncosangle_b=ncos,
+        nsinangle_b=nsin,
+    )
+
+    expected_r = r0 + r1 * np.cos(theta[0, 0])
+    np.testing.assert_allclose(tensors.R_b[0, 0], expected_r)
+    np.testing.assert_allclose(tensors.d_R_b_d_theta_b[0, 0], -r1 * np.sin(theta[0, 0]))
+    np.testing.assert_allclose(tensors.d_Z_b_d_theta_b[0, 0], z1 * np.cos(theta[0, 0]))
+    np.testing.assert_allclose(tensors.d_B_b_d_s[0, 0], 0.01 + 0.02 * np.cos(theta[0, 0]))
+
+    cartesian = vmec_fieldline_numerics._fieldline_cartesian_derivatives(
+        tensors=tensors, phi_b=phi
+    )
+    np.testing.assert_allclose(
+        cartesian.d_X_d_phi_b[0, 0],
+        -expected_r * np.sin(theta[0, 0]),
+    )
+    gradients = vmec_fieldline_numerics._fieldline_coordinate_gradients(
+        tensors=tensors,
+        cartesian=cartesian,
+        edge_toroidal_flux_over_2pi=2.0,
+    )
+    np.testing.assert_allclose(
+        gradients.grad_psi_Z,
+        cartesian.d_X_d_theta_b * cartesian.d_Y_d_phi_b
+        - cartesian.d_Y_d_theta_b * cartesian.d_X_d_phi_b,
+    )
 
 
 def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:

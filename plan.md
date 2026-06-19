@@ -1,3 +1,15 @@
+- 2026-06-19: Continued imported-VMEC geometry refactoring by moving the
+  Boozer field-line spectral tensor, cylindrical derivative, and
+  coordinate-gradient algebra out of `_vmec_fieldlines` into focused helpers in
+  `geometry_backends.vmec_fieldline_numerics`. This keeps the existing
+  imported-geometry facade and VMEC/Boozer equations unchanged while shrinking
+  `geometry_backends.vmec_fieldlines` from 486 to 458 lines and
+  `_vmec_fieldlines` from 424 to 393 lines. Added a circular-surface helper
+  regression for the imported backend and updated the refactor manifest/docs
+  so the tensor-algebra owner is explicit. Local gates passed: full
+  `tests/test_geometry_backend_vmec_helpers.py`, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-19: Continued differentiable VMEC/Boozer geometry refactoring by
   moving Boozer field-line spectral sums, cylindrical derivatives, and
   coordinate-gradient algebra out of `geometry.vmec_boozer_core` into the
