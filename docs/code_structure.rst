@@ -519,8 +519,10 @@ moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.benchmarks``, while
 ``spectraxgk.validation.benchmarks.kbm_beta_solver_paths`` owns the explicit-time
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
-runner. The single-point runner delegates explicit-time diagnostics and
-single/multi-target Krylov branch selection to
+runner. Its beta-scan Krylov path shares one forwarded-key policy for
+multi-target branch selection and continuation/shifted solves, so target and
+shift variants cannot silently diverge. The single-point runner delegates
+explicit-time diagnostics and single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
 setup, generic saved-time fitting, and result packaging. The public beta runner
 still owns per-beta setup and time/diffrax fallback.

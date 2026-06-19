@@ -1,3 +1,12 @@
+- 2026-06-19: Continued KBM benchmark-path simplification inside
+  `validation.benchmarks.kbm_beta_solver_paths` without adding modules. The
+  KBM beta Krylov path now forwards dominant-eigenpair configuration through
+  one shared `_dominant_kbm_eigenpair` helper and explicit forwarded-key list,
+  so multi-target branch selection and continuation/shifted solves use the
+  same numerical policy. Public KBM scan APIs and patchable hook dataclasses
+  remain unchanged. The module dropped from 783 to 779 lines. Local gates
+  passed: focused KBM beta branch/tests shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued differentiable-geometry report simplification inside
   `geometry.vmec_flux_tube_reports` without adding modules. The VMEC flux-tube
   parity path now shares array-metric, worst-error, and optional Boozer
