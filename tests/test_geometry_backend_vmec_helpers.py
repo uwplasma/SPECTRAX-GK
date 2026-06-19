@@ -738,6 +738,25 @@ def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
     np.testing.assert_allclose(centered[0, 0], theta, atol=1.0e-12)
 
 
+def test_vmec_fieldline_helper_flux_surface_hngc_averages() -> None:
+    d1, d2 = vmec_fieldlines._flux_surface_hngc_averages(
+        xm_b=np.array([0.0, 1.0]),
+        xn_b=np.array([0.0, 0.0]),
+        flipit=False,
+        lambmnc_b=np.array([[0.0, 0.0]]),
+        rmnc_b=np.array([[3.0, 0.4]]),
+        zmns_b=np.array([[0.0, 0.4]]),
+        numns_b=np.array([[0.0, 0.0]]),
+        gmnc_b=np.array([[1.0, 0.0]]),
+        res_theta=31,
+        res_phi=29,
+    )
+
+    assert np.isfinite(d1)
+    assert d1 > 0.0
+    assert d2 == pytest.approx(0.0, abs=1.0e-14)
+
+
 def test_vmec_fieldline_helper_samples_boozer_mode_table() -> None:
     s = np.array([0.25, 0.75])
 
