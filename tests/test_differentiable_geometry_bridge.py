@@ -676,6 +676,76 @@ def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> N
     }
 
 
+def test_vmec_state_rms_with_floor_matches_tensor_rms_contract() -> None:
+    values = jnp.asarray([3.0, 4.0])
+
+    rms = vmec_state_sensitivity._rms_with_floor(values, 1.0e-6)
+
+    assert float(rms) == pytest.approx(float(jnp.sqrt(12.5 + 1.0e-6)))
+    assert float(vmec_state_sensitivity._rms_with_floor(jnp.zeros(4), 1.0e-8)) == (
+        pytest.approx(1.0e-4)
+    )
+
+
+def test_vmec_state_field_line_sampling_coordinates_validate_iota_contract() -> None:
+    wout = types.SimpleNamespace(iotas=jnp.asarray([0.0, 0.5, -0.25]))
+
+    iota_line, iota_safe, theta_line, theta_vmec, zeta_line = (
+        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
+            wout,
+            surface_index=1,
+            alpha=0.3,
+            ntheta=8,
+            dtype=jnp.float32,
+        )
+    )
+
+    assert float(iota_line) == pytest.approx(0.5)
+    assert float(iota_safe) == pytest.approx(0.5)
+    assert theta_line.shape == (8,)
+    assert theta_vmec.shape == zeta_line.shape == (8,)
+    expected_zeta = jnp.mod((theta_vmec - 0.3) / iota_safe, 2.0 * jnp.pi)
+    np.testing.assert_allclose(
+        np.asarray(zeta_line),
+        np.asarray(expected_zeta),
+        atol=5.0e-6,
+    )
+
+    _zero_iota, zero_safe, *_ = vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
+        wout,
+        surface_index=0,
+        alpha=0.0,
+        ntheta=4,
+        dtype=jnp.float32,
+    )
+    assert float(zero_safe) == pytest.approx(1.0e-12)
+
+    with pytest.raises(ValueError, match="ntheta"):
+        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
+            wout,
+            surface_index=1,
+            alpha=0.0,
+            ntheta=3,
+            dtype=jnp.float32,
+        )
+    with pytest.raises(RuntimeError, match="iotas profile"):
+        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
+            types.SimpleNamespace(iotas=jnp.ones((2, 2))),
+            surface_index=1,
+            alpha=0.0,
+            ntheta=4,
+            dtype=jnp.float32,
+        )
+    with pytest.raises(RuntimeError, match="iotas profile"):
+        vmec_state_sensitivity._vmec_field_line_sampling_coordinates(
+            wout,
+            surface_index=5,
+            alpha=0.0,
+            ntheta=4,
+            dtype=jnp.float32,
+        )
+
+
 def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
     None
 ):

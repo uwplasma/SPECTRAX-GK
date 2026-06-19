@@ -1,3 +1,14 @@
+- 2026-06-19: Continued differentiable VMEC state-sensitivity cleanup
+  without changing optional-backend report schemas. Field-line tensor sampling
+  coordinates now live in `_vmec_field_line_sampling_coordinates`, which owns
+  the ntheta gate, iota-profile compatibility check, zero-iota floor, and
+  VMEC theta/zeta convention. Metric and field-line tensor reports also share
+  `_rms_with_floor` for smooth RMS observables. Added direct tests for the
+  field-line coordinate contract, malformed iota profiles, zero-iota handling,
+  and RMS floor policy. Local gates passed: focused differentiable-geometry
+  sensitivity tests, Ruff, mypy, `py_compile`, package-architecture manifest,
+  differentiable-refactor manifest, repository-size manifest, and source
+  terminology audits.
 - 2026-06-19: Continued nonlinear device-z performance-gate cleanup
   without changing routed RHS numerics. The transport-window identity decision
   now lives in `_device_z_transport_identity_passed`, so final-state,
