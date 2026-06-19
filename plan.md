@@ -1,3 +1,12 @@
+- 2026-06-19: Continued VMEC imported-geometry simplification in
+  `spectraxgk.geometry_backends.vmec_fieldlines` without changing Boozer
+  algebra or sampled geometry outputs. Reference-scale validation and
+  iota/shear override handling now live in named helper policies, including
+  explicit coverage for invalid minor radius rejection and the zero-shear
+  floor used by the local flux-tube coordinates. Local gates passed: VMEC
+  field-line helper tests, edited runtime/CLI/geometry test shard, Ruff,
+  mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, and source terminology audit.
 - 2026-06-19: Continued runtime workflow simplification without adding new
   source files. Runtime executable commands now route linear, quasilinear, and
   scan artifact persistence through focused output-policy helpers, and

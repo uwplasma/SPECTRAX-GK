@@ -749,6 +749,31 @@ def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
     np.testing.assert_allclose(centered[0, 0], theta, atol=1.0e-12)
 
 
+def test_vmec_fieldline_reference_scale_and_override_policies() -> None:
+    vs = SimpleNamespace(Aminor_p=2.0, raxis_cc=np.array([3.5]))
+
+    L_reference, B_reference, R_mag_ax = vmec_fieldlines._validated_reference_scales(
+        vs, edge_toroidal_flux_over_2pi=-4.0
+    )
+
+    assert L_reference == pytest.approx(2.0)
+    assert B_reference == pytest.approx(2.0)
+    assert R_mag_ax == pytest.approx(3.5)
+
+    with pytest.raises(ValueError, match="positive finite minor radius"):
+        vmec_fieldlines._validated_reference_scales(
+            SimpleNamespace(Aminor_p=0.0, raxis_cc=np.array([3.5])),
+            edge_toroidal_flux_over_2pi=-4.0,
+        )
+
+    assert vmec_fieldlines._input_iota_shear(
+        np.array([0.62]), np.array([0.0]), None, None
+    ) == (pytest.approx(0.62), pytest.approx(1.0e-8))
+    assert vmec_fieldlines._input_iota_shear(
+        np.array([0.62]), np.array([0.2]), 0.7, 0.3
+    ) == (pytest.approx(0.7), pytest.approx(0.3))
+
+
 def test_vmec_fieldline_helper_flux_surface_hngc_averages() -> None:
     d1, d2 = vmec_fieldlines._flux_surface_hngc_averages(
         xm_b=np.array([0.0, 1.0]),
