@@ -452,7 +452,10 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.backend_discovery`` owns
   optional ``vmec_jax`` / ``booz_xform_jax`` path discovery and
   ``spectraxgk.geometry.autodiff_checks`` owns finite-difference Jacobians,
-  AD/FD reports, conditioning metadata, and strict JSON sanitation.
+  AD/FD reports, conditioning metadata, and strict JSON sanitation. Its public
+  observable-gradient report is now an orchestration layer over parameter
+  validation, observable flattening, AD/FD Jacobian construction, tangent
+  checks, conditioning gates, failure reasons, and JSON report assembly.
   ``spectraxgk.geometry.flux_tube_contract`` owns solver-ready in-memory
   flux-tube mapping validation and geometry-observable reductions.
   ``spectraxgk.geometry.sensitivity`` owns geometry sensitivity,

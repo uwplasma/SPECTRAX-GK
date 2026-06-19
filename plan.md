@@ -4470,3 +4470,18 @@ No long nonlinear audit should be launched from these candidates.
   touched source module, and all 20 focused Krylov core tests covering branch
   dispatch, shift-source behavior, target-frequency signs, fallback policy, and
   progress/status messages.
+
+- 2026-06-19: Simplified the geometry AD/FD observable-gradient validation
+  helper in `geometry/autodiff_checks.py` while preserving the strict JSON
+  report schema used by differentiable-geometry and stellarator-optimization
+  gates. The public `observable_gradient_validation_report` now delegates input
+  validation, observable flattening, AD/finite-difference Jacobian construction,
+  tangent-direction checks, per-entry error tables, finite-data flags,
+  conditioning gates, failure-reason assembly, and final JSON sanitation to
+  named private stages. This removed the differentiability report from the
+  top long-function hotspot list by reducing the public validator from roughly
+  251 lines to 116 lines. Local gates passed: py_compile, ruff, mypy for the
+  touched source module, `tests/test_differentiable_geometry.py`,
+  `tests/test_differentiable_geometry_bridge.py`,
+  `tests/test_solver_objective_gradients.py`, and
+  `tests/test_stellarator_optimization.py`.

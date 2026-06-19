@@ -682,6 +682,10 @@ interpolation, radial derivative, Boozer half-mesh, Fourier field-line, and
 periodic sampling helpers live in ``spectraxgk.geometry.numerics``. This
 separates import-side effects, validation-report plumbing, public contract
 validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
+The AD/FD validation owner stages parameter validation, observable flattening,
+Jacobian construction, tangent checks, conditioning gates, failure reasons, and
+strict JSON report assembly so differentiability tests can target each
+research-grade gate directly.
 Imported VMEC/Boozer radial spline construction lives in
 ``spectraxgk.geometry_backends.vmec_splines`` and is re-exported through
 ``spectraxgk.geometry_backends.vmec_fieldlines`` for the existing VMEC backend
