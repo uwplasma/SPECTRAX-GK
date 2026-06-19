@@ -1,3 +1,14 @@
+- 2026-06-18: Continued differentiable VMEC/Boozer boundary-chain
+  simplification inside the existing `spectraxgk.geometry.vmec_boundary_chain`
+  owner without adding source files. Scalar error construction for exact-FD,
+  frozen-axis JVP/VJP, optional explicit tangent columns, and raw-branch
+  diagnostics now lives in `_boundary_chain_error_metrics`, while the release
+  gate pass/fail policy lives in `_boundary_chain_passes`. This leaves the
+  public summary JSON schema and classification strings unchanged but makes
+  VMEC/Boozer derivative-convention gates directly unit-testable without
+  launching VMEC solves. Added focused helper coverage for missing optional
+  linear tangent columns plus the existing boundary-chain summary, collection,
+  projected line-search, and transport admission shards.
 - 2026-06-18: Continued nonlinear parallelization testability inside the
   existing `spectraxgk.operators.nonlinear.device_z` owner without adding
   source files. The device-z transport-window identity gate now uses explicit

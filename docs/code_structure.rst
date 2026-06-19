@@ -617,7 +617,10 @@ Boozer, metric-tensor, and field-line AD/FD gates stay on one setup contract.
 VMEC boundary-gradient
 probe classification, collection row assembly, and projected-transport
 line-search admission summaries live in
-``spectraxgk.geometry.vmec_boundary_chain``.
+``spectraxgk.geometry.vmec_boundary_chain``. Boundary-chain scalar error
+construction and pass/fail policy helpers are kept explicit in that owner so
+VMEC/Boozer finite-difference, JVP, and VJP convention gates can be tested
+without launching expensive VMEC solves.
 
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append

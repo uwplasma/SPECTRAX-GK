@@ -6,11 +6,48 @@ import math
 import pytest
 
 import spectraxgk
+import spectraxgk.geometry.vmec_boundary_chain as boundary_chain
 from spectraxgk.geometry.vmec_boundary_chain import (
     boundary_chain_summary_from_probe,
     build_boundary_chain_collection_summary,
     build_boundary_chain_summary,
 )
+
+
+def test_boundary_chain_error_and_pass_helpers_handle_optional_linear_values() -> None:
+    errors = boundary_chain._boundary_chain_error_metrics(
+        exact=1.0,
+        final=1.02,
+        frozen_jvp=0.91,
+        frozen_vjp=0.91 + 1.0e-12,
+        frozen_linear_jvp=None,
+        frozen_linear_vjp=None,
+        tangent_diff_abs=None,
+        tangent_diff_rel=None,
+        raw=None,
+        absolute_tolerance=1.0e-10,
+    )
+
+    assert errors["final_state_vs_exact_fd_rel"] == pytest.approx(
+        0.01960784313725492
+    )
+    assert errors["frozen_axis_fd_jvp_vs_linear_jvp_abs"] is None
+    assert errors["frozen_axis_fd_vjp_vs_linear_vjp_rel"] is None
+    assert errors["raw_initial_vs_exact_fd_abs"] is None
+
+    passes = boundary_chain._boundary_chain_passes(
+        errors,
+        raw=None,
+        exact_relative_tolerance=0.1,
+        internal_relative_tolerance=1.0e-8,
+        absolute_tolerance=1.0e-10,
+    )
+
+    assert passes["final_state_matches_exact_fd"] is True
+    assert passes["frozen_axis_matches_exact_fd"] is True
+    assert passes["frozen_axis_jvp_vjp_consistent"] is True
+    assert passes["frozen_axis_convention_verified"] is False
+    assert passes["raw_initial_matches_exact_fd"] is False
 
 
 def test_boundary_chain_summary_classifies_frozen_axis_branch_sensitivity() -> None:
