@@ -1,3 +1,11 @@
+- 2026-06-19: Continued VMEC imported-geometry cleanup by centralizing
+  Boozer trigonometric basis construction. `_boozer_trig_basis` now owns the
+  shape-generic `cos/sin`, `m cos`, `m sin`, `n cos`, and `n sin` arrays used by
+  both Hegna-Nakajima flux-surface averages and the main field-line assembly.
+  Added direct tests for mode-axis preservation and weighted derivative arrays.
+  Local gates passed: focused VMEC field-line helper tests, Ruff, mypy,
+  `py_compile`, package-architecture manifest, differentiable-refactor manifest,
+  repository-size manifest, and source terminology audits.
 - 2026-06-19: Continued differentiable-geometry facade simplification
   without changing public bridge exports or optional-backend routing. Temporary
   facade hook patching now uses `_patched_module_attrs`, so Boozer, VMEC-state,

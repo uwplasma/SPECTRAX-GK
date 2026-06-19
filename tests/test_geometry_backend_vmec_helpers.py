@@ -690,6 +690,25 @@ def test_vmec_fieldline_boozer_mode_sum_preserves_surface_axis() -> None:
     np.testing.assert_allclose(out[1], coeff[1, 0] * basis[0, 1] + coeff[1, 1] * basis[1, 1])
 
 
+def test_vmec_fieldline_boozer_trig_basis_preserves_mode_axis() -> None:
+    xm = np.array([0.0, 1.0, 2.0])
+    xn = np.array([0.0, -1.0, 3.0])
+    angle = np.linspace(0.0, 0.5, 3 * 2 * 4).reshape(3, 2, 4)
+
+    cosangle, sinangle, mcos, msin, ncos, nsin = (
+        vmec_fieldlines._boozer_trig_basis(xm, xn, angle)
+    )
+
+    assert cosangle.shape == angle.shape
+    assert sinangle.shape == angle.shape
+    np.testing.assert_allclose(cosangle, np.cos(angle))
+    np.testing.assert_allclose(sinangle, np.sin(angle))
+    np.testing.assert_allclose(mcos[2], 2.0 * np.cos(angle[2]))
+    np.testing.assert_allclose(msin[1], np.sin(angle[1]))
+    np.testing.assert_allclose(ncos[1], -np.cos(angle[1]))
+    np.testing.assert_allclose(nsin[2], 3.0 * np.sin(angle[2]))
+
+
 def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
     theta1d = np.array([0.0, 1.0])
     alpha_arr = np.array([0.0, 0.5])
