@@ -1,3 +1,12 @@
+- 2026-06-19: Continued VMEC-state differentiability gate simplification inside
+  `geometry.vmec_state_sensitivity` without changing report schemas or optional
+  backend behavior. Metric-tensor and field-line tensor AD/FD reports now share
+  one `_load_vmec_geom_sensitivity_context` helper for VMEC example loading,
+  `vmec_jax.geom` import, and coefficient/surface index resolution, keeping
+  tensor sensitivity gates aligned before their observable-specific sampling
+  paths. Local gates passed: focused differentiable-geometry sensitivity shard,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued TEM benchmark-path simplification inside
   `validation.benchmarks.tem_paths` without changing public runner APIs or
   branch semantics. The single-ky time path now resolves time-config, `dt`,

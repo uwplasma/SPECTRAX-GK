@@ -417,7 +417,9 @@ Phase 1: introduce protocols and containers
   VMEC field-line tensor AD/FD gates, including shared VMEC example loading,
   coefficient-index validation, coefficient perturbation policy, and the
   common tensor-observable AD/finite-difference payload builder used by the
-  metric and field-line gates.
+  metric and field-line gates. Metric and field-line tensor gates share one
+  VMEC geometry context/index helper before their observable-specific tensor
+  sampling paths.
   ``spectraxgk.geometry.vmec_boozer_core`` owns the ``vmec_jax`` state to
   ``booz_xform_jax`` equal-arc core-profile bridge and solver-facing core
   arrays, including Boozer radial-profile interpolation and equal-arc
