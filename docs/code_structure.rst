@@ -650,11 +650,12 @@ Imported VMEC/Boozer radial spline construction lives in
 facade. The VMEC field-line backend keeps Boozer-object fallback,
 Boozer-mode table sampling, alpha-line coordinate construction, axisymmetric
 flip detection, angle construction, resonant-denominator guarding,
-field-line tensor algebra, coordinate-gradient construction,
-flux-surface averaging, and centered field-line integral policies as focused
-helpers inside ``spectraxgk.geometry_backends.vmec_fieldline_numerics`` so the
-imported-geometry equations remain in one owner while the numerical kernels are
-unit-testable.
+field-line tensor algebra, alpha/coordinate-gradient construction, local
+shear, metric/drift coefficient assembly, flux-surface averaging, and centered
+field-line integral policies as focused helpers inside
+``spectraxgk.geometry_backends.vmec_fieldline_numerics`` so the
+imported-geometry equations remain in one owner while the numerical kernels
+are unit-testable.
 Zero-shear boundary policy lives in ``spectraxgk.geometry.boundaries``.
 Analytic s-alpha and slab geometry models live in
 ``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic

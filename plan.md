@@ -1,3 +1,15 @@
+- 2026-06-19: Continued imported-VMEC field-line refactoring by moving
+  alpha-gradient, local-shear, and normalized metric/drift coefficient algebra
+  out of `_vmec_fieldlines` into `geometry_backends.vmec_fieldline_numerics`.
+  The VMEC/Boozer backend fallback, dataset lifecycle, Boozer mode sampling,
+  Hegna-Nakajima formulas, normalization, and final `_Struct` schema are
+  unchanged, while `_vmec_fieldlines` drops from 393 to 300 lines and the
+  field-line driver is now mostly orchestration over numerical helper owners.
+  Added direct helper coverage for `grad(alpha)` and local-shear formulas plus
+  facade-owner assertions for the new helpers. Local gates passed: full VMEC
+  helper file, Ruff, mypy, `py_compile`, refactor/coverage/size manifests,
+  Sphinx docs, and `git diff --check`.
+
 - 2026-06-19: Continued the benchmark-family refactor inside
   `validation.benchmarks.etg_linear` without changing ETG solver choices,
   fit-window formulas, normalization, or public monkeypatch seams. The

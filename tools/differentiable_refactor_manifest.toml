@@ -3729,7 +3729,7 @@ module = "spectraxgk.geometry_backends.vmec_fieldline_numerics"
 source_path = "src/spectraxgk/geometry_backends/vmec_fieldline_numerics.py"
 facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
 status = "active"
-responsibility = "Boozer field-line angle/basis contractions, field-line tensor algebra, coordinate gradients, field-line integrals, reference-scale validation, and Hegna-Nakajima local-equilibrium correction numerics"
+responsibility = "Boozer field-line angle/basis contractions, field-line tensor algebra, alpha/coordinate gradients, metric/drift coefficients, field-line integrals, reference-scale validation, and Hegna-Nakajima local-equilibrium correction numerics"
 moved_exports = [
   "_MU_0",
   "_sample_boozer_mode_table",
@@ -3739,6 +3739,9 @@ moved_exports = [
   "_fieldline_boozer_tensors",
   "_fieldline_cartesian_derivatives",
   "_fieldline_coordinate_gradients",
+  "_fieldline_alpha_gradients",
+  "_fieldline_local_shear",
+  "_fieldline_metric_drifts",
   "_fieldline_boozer_coordinates",
   "_axisym_flip_required",
   "_safe_mode_denominator",

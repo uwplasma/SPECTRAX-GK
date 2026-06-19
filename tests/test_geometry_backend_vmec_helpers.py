@@ -53,6 +53,15 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_fieldlines._fieldline_boozer_tensors is (
         vmec_fieldline_numerics._fieldline_boozer_tensors
     )
+    assert vmec_fieldlines._fieldline_alpha_gradients is (
+        vmec_fieldline_numerics._fieldline_alpha_gradients
+    )
+    assert vmec_fieldlines._fieldline_local_shear is (
+        vmec_fieldline_numerics._fieldline_local_shear
+    )
+    assert vmec_fieldlines._fieldline_metric_drifts is (
+        vmec_fieldline_numerics._fieldline_metric_drifts
+    )
     assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
     assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
     assert vmec_facade.write_vmec_eik_netcdf is vmec_io.write_vmec_eik_netcdf
@@ -773,6 +782,102 @@ def test_vmec_fieldline_tensor_helpers_match_circular_surface() -> None:
         cartesian.d_X_d_theta_b * cartesian.d_Y_d_phi_b
         - cartesian.d_Y_d_theta_b * cartesian.d_X_d_phi_b,
     )
+
+
+def test_vmec_fieldline_alpha_gradient_and_local_shear_helpers() -> None:
+    shape = (1, 1, 3)
+    gradients = vmec_fieldline_numerics._FieldlineCoordinateGradients(
+        grad_psi_X=np.ones(shape),
+        grad_psi_Y=2.0 * np.ones(shape),
+        grad_psi_Z=3.0 * np.ones(shape),
+        grad_theta_b_X=0.5 * np.ones(shape),
+        grad_theta_b_Y=0.25 * np.ones(shape),
+        grad_theta_b_Z=-0.75 * np.ones(shape),
+        grad_phi_b_X=0.1 * np.ones(shape),
+        grad_phi_b_Y=0.2 * np.ones(shape),
+        grad_phi_b_Z=0.3 * np.ones(shape),
+    )
+    phi_b = np.array([[[0.0, 0.5, 1.0]]])
+    zeta_center = 0.1
+    d_iota_d_s = np.array([0.2])
+    iota = np.array([0.4])
+    etf = 2.0
+
+    alpha = vmec_fieldline_numerics._fieldline_alpha_gradients(
+        gradients=gradients,
+        phi_b=phi_b,
+        zeta_center=zeta_center,
+        d_iota_d_s=d_iota_d_s,
+        iota=iota,
+        edge_toroidal_flux_over_2pi=etf,
+    )
+
+    radial_shear = -(phi_b - zeta_center) * d_iota_d_s[:, None, None] / etf
+    expected_x = (
+        radial_shear * gradients.grad_psi_X + 0.5 - iota[:, None, None] * 0.1
+    )
+    expected_y = (
+        radial_shear * gradients.grad_psi_Y + 0.25 - iota[:, None, None] * 0.2
+    )
+    expected_z = (
+        radial_shear * gradients.grad_psi_Z - 0.75 - iota[:, None, None] * 0.3
+    )
+    expected_g = 1.0**2 + 2.0**2 + 3.0**2
+    expected_dot = expected_x + 2.0 * expected_y + 3.0 * expected_z
+
+    np.testing.assert_allclose(alpha.grad_alpha_X, expected_x)
+    np.testing.assert_allclose(alpha.grad_alpha_Y, expected_y)
+    np.testing.assert_allclose(alpha.grad_alpha_Z, expected_z)
+    np.testing.assert_allclose(alpha.g_sup_psi_psi, expected_g)
+    np.testing.assert_allclose(alpha.grad_alpha_dot_grad_psi, expected_dot)
+
+    d_iota_d_s_1 = np.array([0.3])
+    d_pressure_d_s_1 = np.array([0.2])
+    Vprime = np.array([1.2])
+    G = np.array([2.0])
+    boozer_i = np.array([0.1])
+    intinv_g = np.array([[[0.1, 0.2, 0.3]]])
+    int_lam_div_g = np.array([[[0.05, 0.07, 0.11]]])
+    D1 = 1.7
+    D2 = 0.4
+    shear = vmec_fieldline_numerics._fieldline_local_shear(
+        edge_toroidal_flux_over_2pi=etf,
+        d_iota_d_s=d_iota_d_s,
+        d_iota_d_s_1=d_iota_d_s_1,
+        d_pressure_d_s_1=d_pressure_d_s_1,
+        Vprime=Vprime,
+        G=G,
+        iota=iota,
+        boozer_i=boozer_i,
+        phi_b=phi_b,
+        zeta_center=zeta_center,
+        intinv_g=intinv_g,
+        int_lam_div_g=int_lam_div_g,
+        D1=D1,
+        D2=D2,
+        g_sup_psi_psi=alpha.g_sup_psi_psi,
+        grad_alpha_dot_grad_psi=alpha.grad_alpha_dot_grad_psi,
+    )
+    expected_D = (
+        d_iota_d_s_1[:, None, None] * (intinv_g / D1 - phi_b + zeta_center)
+        - d_pressure_d_s_1[:, None, None]
+        * Vprime[:, None, None]
+        * (G[:, None, None] + iota[:, None, None] * boozer_i[:, None, None])
+        * (int_lam_div_g - D2 * intinv_g / D1)
+    ) / etf
+    expected_L0 = -(
+        expected_dot / expected_g
+        + d_iota_d_s[:, None, None] * (phi_b - zeta_center) / etf
+    )
+    expected_L1 = (
+        -d_iota_d_s_1[:, None, None] * (phi_b - zeta_center) / etf
+        + expected_dot / expected_g
+        - expected_D
+    )
+
+    np.testing.assert_allclose(shear.D_HNGC, expected_D)
+    np.testing.assert_allclose(shear.L0, expected_L0)
+    np.testing.assert_allclose(shear.L1, expected_L1)
 
 
 def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
