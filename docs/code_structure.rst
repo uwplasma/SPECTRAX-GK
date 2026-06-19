@@ -572,6 +572,15 @@ messages can be tested without launching solver runs.
 re-exports the command helpers only for public executable dispatch; path override, progress,
 quasilinear override, and preload-reuse policies have one canonical workflow
 owner.
+Runtime initial-condition construction is staged inside
+``spectraxgk.workflows.runtime.initial_conditions``. Validation of initializer
+options, restart-state scaling, kinetic-species targeting, single-mode profile
+assembly, random/Gaussian multimode seeding, electrostatic-potential seeding,
+Hermitian full-``ky`` completion, and restart merge policy now have named helper
+stages. The startup facade still exposes the same ``_build_initial_condition``
+entry point for runtime workflows and tests, but the implementation no longer
+mixes restart I/O, moment normalization policy, and phi-inversion cache setup in
+one long branch.
 
 The benchmark helper split now uses focused domain modules directly.
 Benchmark case presets live in ``spectraxgk.validation.benchmarks.case_configs``

@@ -4146,6 +4146,13 @@ No long nonlinear audit should be launched from these candidates.
   owns only Gaussian/random/restart state construction and Hermitian ky expansion.
   Focused runtime, manifest, architecture, size, type, and docs gates were run
   locally before commit.
+- Continued the runtime initializer cleanup in place by splitting
+  `spectraxgk.workflows.runtime.initial_conditions` into staged validation,
+  restart scaling, species-target selection, single-mode profile construction,
+  random/Gaussian multimode seeding, lazy phi-seed cache setup, and final
+  restart/Hermitian merge helpers. Public startup behavior is unchanged; the
+  focused runtime-helper shard, selected integration runtime-runner initializer
+  tests, Ruff, mypy, and compile gates passed locally.
 
 - Cleaned non-benchmark comparison-code terminology from the VMEC imported-geometry
   pipeline by renaming the equal-arc remap payload from `arrays_gx` to
