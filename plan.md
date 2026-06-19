@@ -1,3 +1,15 @@
+- 2026-06-19: Continued differentiable VMEC/Boozer bridge simplification inside
+  `geometry.vmec_boozer_core` without adding modules or changing public
+  facades. Optional backend discovery, `vmec_jax -> booz_xform_jax` execution,
+  Boozer surface-stencil selection, and half-mesh radial-grid validation now
+  live behind focused private helpers, leaving
+  `vmec_jax_boozer_equal_arc_core_profiles_from_state` to read as request
+  resolution, profile interpolation, metric/drift assembly, and final mapping.
+  The public bridge function is about sixty lines shorter while the same
+  optional-backend monkeypatch seams remain available. Local gates passed:
+  focused Boozer equal-arc shard, full `tests/test_differentiable_geometry_bridge.py`
+  shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued TEM benchmark-path simplification inside
   `validation.benchmarks.tem_paths` without adding modules. The TEM Krylov
   path now forwards dominant-eigenpair configuration through one explicit

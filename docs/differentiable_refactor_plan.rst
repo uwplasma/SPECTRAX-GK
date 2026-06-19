@@ -191,7 +191,9 @@ High-Risk Module Split Plan
   internal file-backed VMEC imported-geometry backend is now split behind the
   unchanged ``geometry_backends.vmec`` facade into focused discovery,
   numerics, radial spline construction, field-line assembly, remap, IO, and
-  pipeline modules.
+  pipeline modules. The in-memory VMEC/Boozer equal-arc core bridge keeps its
+  public facade stable while optional backend execution and Boozer radial-grid
+  validation are isolated behind private helper seams.
 
 ``operators/nonlinear/parallel.py``
   Split domain plans, spectral communication, device-z pencil route, observable
