@@ -1,3 +1,15 @@
+- 2026-06-19: Continued nonlinear IMEX diagnostic integration refactoring
+  inside `solvers.nonlinear.imex_diagnostics` without changing fixed-step IMEX
+  numerics, implicit-operator dtype policy, collision-split behavior,
+  diagnostic tuple schema, or injected dependency seams. The IMEX diagnostic
+  integrator now delegates state/operator preparation, collision/nonlinear/
+  linear-solve operator construction, state-to-diagnostic closure construction,
+  scan-step construction, and scan finalization to focused helpers. The public
+  integrator body drops from 206 to 109 lines, and the longest new helper is
+  77 lines. Focused nonlinear IMEX/diagnostic shards passed locally, along with
+  Ruff, mypy, `py_compile`, refactor/coverage/size manifests, Sphinx docs,
+  repository-size policy, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear diagnostic integration refactoring inside
   `solvers.nonlinear.diagnostics` without changing public runtime signatures,
   dependency-injected seams, explicit scan tuple carry, sampling policy, or

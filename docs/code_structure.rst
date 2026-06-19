@@ -220,8 +220,8 @@ Completed extractions:
   facade while cached RHS/state integration lives in ``solvers/nonlinear/state_integration.py`` and
   explicit/IMEX diagnostic entry points live in ``solvers/nonlinear/diagnostic_integration.py``.
   Lower-level nonlinear RHS, diagnostic-state, policy, explicit-step, explicit
-  diagnostic scan preparation/finalization, and IMEX mechanics remain owned by
-  ``operators/nonlinear/*`` and
+  and IMEX diagnostic scan preparation/finalization, and IMEX mechanics remain
+  owned by ``operators/nonlinear/*`` and
   ``solvers/nonlinear/*`` modules.
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
