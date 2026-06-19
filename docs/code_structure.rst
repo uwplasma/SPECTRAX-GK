@@ -656,10 +656,12 @@ saved-time scan fitting.
 Kinetic-electron ITG/TEM runners now live directly in ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan``; the supported public import remains ``spectraxgk.benchmarks``. The kinetic single-ky saved-time path shares one automatic-fit keyword policy between primary auto-window fitting and invalid-window fallback fitting. The kinetic scan owner keeps public setup and result packaging local while delegating setup normalization, batch-state construction, Krylov fitting, Diffrax streaming fitting, saved/configured trajectory integration, and sampled-signal fitting to focused private helpers in the same module. ETG single-point and scan implementations live in
 ``spectraxgk.validation.benchmarks.etg_linear`` and
 ``spectraxgk.validation.benchmarks.etg_scan`` and are re-exported through
-``spectraxgk.benchmarks``. The scan runner delegates
+``spectraxgk.benchmarks``. The scan runner keeps geometry/species setup,
+electrostatic term defaults, fit-window policy construction, ky-batch state
+construction, and per-batch result packaging in focused local helpers while delegating
 Krylov continuation, streaming fit, saved-signal integration, and fallback
 fit/appending policy to ``spectraxgk.validation.benchmarks.etg_scan_paths``
-while keeping benchmark-family setup and result packaging in the scan module.
+for solver-path details.
 ETG single-point and scan Krylov paths share one forwarded-key policy, with
 scan continuation overrides applied explicitly for carried shifts. The ETG
 single-point saved-time direct-fit path also shares one automatic-fit keyword

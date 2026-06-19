@@ -1,3 +1,17 @@
+- 2026-06-19: Continued ETG benchmark scan refactoring inside
+  `validation.benchmarks.etg_scan` without changing ETG normalization,
+  electrostatic term defaults, Krylov continuation semantics, Diffrax
+  streaming fit policy, saved-signal fit policy, or public
+  `spectraxgk.benchmarks.run_etg_scan` output schema. The scan owner now has
+  explicit setup, fit-policy, ky-batching, batch-state, and per-batch dispatch
+  helpers, while `validation.benchmarks.etg_scan_paths` remains the owner of
+  solver-path details. This keeps patchable benchmark seams local and reduces
+  `run_etg_scan` from 266 to 139 lines; the tradeoff is a longer owner module
+  because helper stages remain in-place rather than adding another file.
+  Focused ETG scan branch and benchmark tests passed locally, along with Ruff,
+  mypy, `py_compile`, refactor/coverage/size manifests, Sphinx docs,
+  repository-size policy, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear IMEX diagnostic integration refactoring
   inside `solvers.nonlinear.imex_diagnostics` without changing fixed-step IMEX
   numerics, implicit-operator dtype policy, collision-split behavior,
