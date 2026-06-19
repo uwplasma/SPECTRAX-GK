@@ -1,3 +1,14 @@
+- 2026-06-19: Continued runtime startup simplification by making the
+  VMEC/Miller geometry routing policy shared instead of duplicated between
+  `spectraxgk.runtime` and `workflows.runtime.startup`.
+  `runtime_geometry_config_for_builder` now lives in the startup workflow layer
+  and accepts explicit EIK-generation callbacks so the public runtime facade
+  keeps its patchable test/user surface. Added integration coverage for the
+  shared startup helper while preserving the fast runtime-facade geometry
+  builder test. Local gates passed: focused runtime-helper test, explicit
+  integration startup-geometry test, Ruff, mypy, `py_compile`,
+  package-architecture manifest, differentiable-refactor manifest,
+  repository-size manifest, source terminology audits, and `git diff --check`.
 - 2026-06-19: Continued runtime facade simplification by separating runtime
   geometry routing from flux-tube geometry construction.
   `_runtime_geometry_config_for_builder` now owns VMEC and Miller EIK

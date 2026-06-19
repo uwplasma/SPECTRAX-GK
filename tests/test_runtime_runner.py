@@ -322,6 +322,28 @@ def test_runtime_startup_model_and_geometry_branches(
     miller_cfg = replace(base, geometry=replace(base.geometry, model="miller"))
     default_cfg = replace(base, geometry=replace(base.geometry, model="s-alpha"))
 
+    vmec_geom_cfg = startup.runtime_geometry_config_for_builder(
+        vmec_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+    miller_geom_cfg = startup.runtime_geometry_config_for_builder(
+        miller_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+    default_geom_cfg = startup.runtime_geometry_config_for_builder(
+        default_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+
+    assert vmec_geom_cfg.model == "vmec-eik"
+    assert vmec_geom_cfg.geometry_file.endswith("vmec.eik.nc")
+    assert miller_geom_cfg.model == "imported-eik"
+    assert miller_geom_cfg.geometry_file.endswith("miller.eik.nc")
+    assert default_geom_cfg is default_cfg.geometry
+
     assert startup.build_runtime_geometry(vmec_cfg).s_hat == pytest.approx(0.8)
     assert captured[-1].model == "vmec-eik"
     assert captured[-1].geometry_file.endswith("vmec.eik.nc")
