@@ -1,3 +1,13 @@
+- 2026-06-19: Continued TEM benchmark-path simplification inside
+  `validation.benchmarks.tem_paths` without changing public runner APIs or
+  branch semantics. The single-ky time path now resolves time-config, `dt`,
+  `steps`, and stride once, then dispatches through one density-diagnostics
+  branch, one configured-phi branch, or one explicit-phi branch. This removes
+  duplicated density diagnostic integration/unpacking while preserving
+  saved-time and configured-time behavior. The module dropped from 659 to 640
+  lines. Local gates passed: focused TEM branch shard, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-19: Continued VMEC/Boozer equal-arc bridge simplification inside
   `geometry.vmec_boozer_core` without changing formulas, backend calls, or
   public geometry APIs. The core profile assembly now defines one local

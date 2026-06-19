@@ -554,7 +554,10 @@ batch loop through an explicit hook bundle. The TEM Krylov path shares one
 forwarded-key policy for dominant-eigenpair configuration, matching the KBM
 benchmark-path guard against target/shift policy drift. The TEM single-ky
 saved-time path shares one automatic-fit keyword policy between primary
-auto-window fitting and invalid-window fallback fitting.
+auto-window fitting and invalid-window fallback fitting. The same single-ky
+time path resolves time-config, ``dt``/``steps``, and stride once before
+dispatching to density diagnostics, configured ``phi``, or explicit ``phi``
+integration, so those saved-time branches cannot drift.
 Kinetic-electron ITG/TEM runners now live directly in ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan``; the supported public import remains ``spectraxgk.benchmarks``. The kinetic single-ky saved-time path shares one automatic-fit keyword policy between primary auto-window fitting and invalid-window fallback fitting. ETG single-point and scan implementations live in
 ``spectraxgk.validation.benchmarks.etg_linear`` and
 ``spectraxgk.validation.benchmarks.etg_scan`` and are re-exported through

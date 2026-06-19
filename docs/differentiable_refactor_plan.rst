@@ -190,7 +190,9 @@ High-Risk Module Split Plan
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``validation.benchmarks.tem_paths``. TEM single-ky saved-time fits share
-  one primary/fallback automatic-fit keyword policy in the same path module.
+  one primary/fallback automatic-fit keyword policy in the same path module,
+  and the single-ky time path resolves time configuration before dispatching
+  to density, configured-phi, or explicit-phi integration.
   ETG single-point and scan Krylov paths now share one forwarded-key policy in
   ``validation.benchmarks.etg_linear`` and
   ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
