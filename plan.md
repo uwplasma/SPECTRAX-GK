@@ -3841,3 +3841,15 @@ No long nonlinear audit should be launched from these candidates.
   branch test shard, KBM branch shard, explicit KBM node-id pass, py_compile,
   ruff, mypy, refactor manifest, validation coverage manifest, repository-size
   manifest, source terminology scans, and `git diff --check`.
+
+- 2026-06-19: Simplified the internal KBM beta saved-time path inside
+  `kbm_beta_solver_paths.py` without adding another module. The public
+  `fit_kbm_beta_time_sample` now delegates to focused private helpers for
+  per-sample time configuration, diffrax streaming fits, saved/configured
+  trajectory integration, and signal selection/fitting. This increases local
+  helper code in the existing owner but removes nested branch complexity and
+  keeps KBM beta setup/dispatch in `kbm_beta.py` separate from solver-path
+  policy. Local gates passed: KBM benchmark branch shard, full benchmark branch
+  test shard, py_compile, ruff, mypy, refactor manifest, validation coverage
+  manifest, repository-size manifest, source terminology scans, and
+  `git diff --check`.
