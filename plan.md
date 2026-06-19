@@ -1,3 +1,13 @@
+- 2026-06-19: Continued VMEC imported-geometry simplification in
+  `spectraxgk.geometry_backends.vmec_fieldlines` without changing Boozer-mode
+  sums or field-line outputs. Hegna-Nakajima shear and pressure correction
+  factors now live in `_hngc_shear_correction` and `_hngc_pressure_correction`,
+  separating physics switch/floor policies from the main field-line assembly.
+  Added direct tests for enabled and disabled shear/pressure variation plus the
+  small-pressure-gradient floor. Local gates passed: focused VMEC field-line
+  helper tests, Ruff, mypy, `py_compile`, package-architecture manifest,
+  differentiable-refactor manifest, repository-size manifest, and source
+  terminology audits.
 - 2026-06-19: Continued runtime executable refactor in the named-case path
   without changing CLI/TOML behavior. Named linear run and scan commands now
   resolve CLI overrides, TOML values, defaults, fit-window options, scan ky

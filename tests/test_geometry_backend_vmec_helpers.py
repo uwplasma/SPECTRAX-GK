@@ -774,6 +774,69 @@ def test_vmec_fieldline_reference_scale_and_override_policies() -> None:
     ) == (pytest.approx(0.7), pytest.approx(0.3))
 
 
+def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
+    d_iota_d_s_1, sfac = vmec_fieldlines._hngc_shear_correction(
+        s_val=0.5,
+        iota=np.array([0.6]),
+        shat=np.array([0.2]),
+        iota_input_val=0.7,
+        s_hat_input_val=0.4,
+        include_shear_variation=True,
+    )
+
+    np.testing.assert_allclose(d_iota_d_s_1, np.array([-0.16]))
+    assert sfac == pytest.approx(0.5)
+
+    disabled_shear, disabled_sfac = vmec_fieldlines._hngc_shear_correction(
+        s_val=0.5,
+        iota=np.array([0.6]),
+        shat=np.array([0.2]),
+        iota_input_val=0.7,
+        s_hat_input_val=0.4,
+        include_shear_variation=False,
+    )
+
+    np.testing.assert_allclose(disabled_shear, np.zeros(1))
+    assert disabled_sfac == pytest.approx(1.0)
+
+    d_pressure_d_s_1, pfac = vmec_fieldlines._hngc_pressure_correction(
+        s_val=0.25,
+        betaprim=0.2,
+        B_reference=2.0,
+        d_pressure_d_s=np.array([0.5]),
+        include_pressure_variation=True,
+    )
+
+    drive = 0.2 * 2.0**2 / (4.0 * np.sqrt(0.25))
+    np.testing.assert_allclose(
+        d_pressure_d_s_1,
+        np.array([drive - vmec_fieldlines._MU_0 * 0.5]),
+    )
+    assert pfac == pytest.approx(drive / (vmec_fieldlines._MU_0 * 0.5))
+
+    floored_pressure, floored_pfac = vmec_fieldlines._hngc_pressure_correction(
+        s_val=0.25,
+        betaprim=0.2,
+        B_reference=2.0,
+        d_pressure_d_s=np.array([0.0]),
+        include_pressure_variation=True,
+    )
+
+    np.testing.assert_allclose(floored_pressure, np.array([drive]))
+    assert floored_pfac == pytest.approx(drive / (vmec_fieldlines._MU_0 * 1.0e-8))
+
+    disabled_pressure, disabled_pfac = vmec_fieldlines._hngc_pressure_correction(
+        s_val=0.25,
+        betaprim=0.2,
+        B_reference=2.0,
+        d_pressure_d_s=np.array([0.5]),
+        include_pressure_variation=False,
+    )
+
+    np.testing.assert_allclose(disabled_pressure, np.zeros(1))
+    assert disabled_pfac == pytest.approx(1.0)
+
+
 def test_vmec_fieldline_helper_flux_surface_hngc_averages() -> None:
     d1, d2 = vmec_fieldlines._flux_surface_hngc_averages(
         xm_b=np.array([0.0, 1.0]),
