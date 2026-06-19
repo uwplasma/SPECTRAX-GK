@@ -4357,3 +4357,15 @@ No long nonlinear audit should be launched from these candidates.
   Local gates passed: full Cyclone scan branch shard, public Cyclone scan
   tests from `tests/test_benchmarks.py` with marker filtering overridden,
   py_compile, ruff, and mypy for the touched source module.
+
+- 2026-06-19: Simplified the linear cache builder inside
+  `operators/linear/cache_builder.py` without adding another module. The public
+  `build_linear_cache` orchestration now delegates twist-shift policy,
+  perpendicular-wavenumber/drift arrays, Laguerre gyroaverage arrays, and
+  linked-boundary metadata construction to focused private helper stages while
+  preserving the stable `operators.linear.cache` facade. This reduced the main
+  builder from roughly 327 lines to 176 lines, with the numerical policy stages
+  separated for targeted tests and future extension work. Local gates passed:
+  py_compile, ruff, mypy for the touched source module, focused linear cache
+  tests, extra linear-helper cache tests, and the imported-geometry linked
+  streaming test.

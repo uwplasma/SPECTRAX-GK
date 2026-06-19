@@ -400,8 +400,11 @@ Completed extractions:
   dispatch live under ``operators/linear/`` and ``solvers/linear/``. The cache
   path is split into ``cache_model.py`` for the JAX pytree, ``cache_arrays.py``
   for moment/damping/gyroaverage array factories, and ``cache_builder.py`` for
-  geometry-dependent construction; ``cache.py`` remains the stable public
-  facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
+  geometry-dependent construction. The builder itself now has explicit private
+  stages for twist-shift policy, perpendicular wavenumber/drift arrays,
+  Laguerre gyroaverage construction, and linked-boundary metadata so extension
+  work can test one numerical policy at a time; ``cache.py`` remains the stable
+  public facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
   focused developer helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
   ``eigen_selection.py``, ``eigen_preconditioners.py``, and
   ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were

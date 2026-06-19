@@ -2834,10 +2834,10 @@ module = "spectraxgk.operators.linear.cache_builder"
 source_path = "src/spectraxgk/operators/linear/cache_builder.py"
 facade_module = "spectraxgk.operators.linear.cache"
 status = "active"
-responsibility = "geometry-dependent LinearCache construction, linked-boundary metadata, and nonlinear-dealias cache fields"
+responsibility = "geometry-dependent LinearCache construction staged into twist-shift policy, k-perp/drift arrays, Laguerre gyroaverages, linked-boundary metadata, and nonlinear-dealias cache fields"
 moved_exports = ["build_linear_cache"]
 fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.rhs"

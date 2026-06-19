@@ -489,6 +489,11 @@ Phase 1: introduce protocols and containers
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and
   diagnostic kernels first. These have the clearest unit and numerical tests.
+  The linear cache builder now keeps one public construction function but
+  delegates twist-shift policy, perpendicular-wavenumber/drift arrays,
+  Laguerre gyroaverage arrays, and linked-boundary metadata to focused private
+  stages. Future linear-cache work should extend or test those stages before
+  changing the final ``LinearCache`` assembly.
 
 Phase 3: split differentiable geometry
   Move the remaining VMEC/Boozer bridge and parity routines behind in-memory
