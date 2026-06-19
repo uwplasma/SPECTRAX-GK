@@ -4179,6 +4179,14 @@ No long nonlinear audit should be launched from these candidates.
   log-linear candidate search, and fallback-window policy. Public fit-window
   APIs are unchanged; focused analysis fit-window tests, Ruff, mypy, and compile
   gates passed locally.
+- Consolidated production and diagnostic RHS assembly staging by moving shared
+  state normalization, species/scalar expansion, field/Hamiltonian construction,
+  term contribution assembly, fixed-order summation, and species-axis restoration
+  into `spectraxgk.terms.assembly_helpers`. `assemble_rhs_cached` and
+  `assemble_rhs_terms_cached` are now compact facades over the same numerical
+  policy, preserving the `assembly_core.build_H` monkeypatch seam used by
+  electrostatic branch tests. Focused term assembly, hyperdiffusion, terms
+  package, and low-level RHS consumer tests passed locally.
 
 - Removed the benchmark-runner `gx_reference` compatibility keyword and kept
   `reference_aligned` as the canonical physics/numerics policy name. GX-specific
