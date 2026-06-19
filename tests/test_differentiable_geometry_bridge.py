@@ -210,6 +210,27 @@ def test_differentiable_geometry_facade_preserves_split_symbol_identity() -> Non
     )
 
 
+def test_differentiable_geometry_patch_context_restores_module_attrs() -> None:
+    module = types.SimpleNamespace(first="original-first", second="original-second")
+
+    with diff_geom._patched_module_attrs(
+        module, {"first": "patched-first", "second": "patched-second"}
+    ):
+        assert module.first == "patched-first"
+        assert module.second == "patched-second"
+
+    assert module.first == "original-first"
+    assert module.second == "original-second"
+
+    with pytest.raises(RuntimeError, match="forced"):
+        with diff_geom._patched_module_attrs(module, {"first": "patched-again"}):
+            assert module.first == "patched-again"
+            raise RuntimeError("forced")
+
+    assert module.first == "original-first"
+    assert module.second == "original-second"
+
+
 def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
     assert (

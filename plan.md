@@ -1,3 +1,11 @@
+- 2026-06-19: Continued differentiable-geometry facade simplification
+  without changing public bridge exports or optional-backend routing. Temporary
+  facade hook patching now uses `_patched_module_attrs`, so Boozer, VMEC-state,
+  tensor-mapping, VMEC/Boozer-core, and VMEC report wrappers share one restore
+  policy. Added direct restoration coverage for successful calls and exception
+  paths. Local gates passed: focused differentiable-geometry facade tests,
+  Ruff, mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, and source terminology audits.
 - 2026-06-19: Continued executable facade simplification in
   `spectraxgk.cli` without changing command-line behavior. Direct TOML
   shorthand dispatch now routes through `_toml_shorthand_command` and
