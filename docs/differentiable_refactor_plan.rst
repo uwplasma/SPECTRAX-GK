@@ -388,7 +388,9 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.vmec_state_sensitivity`` owns optional-backend
   ``VMECState`` sensitivity reports for VMEC-to-Boozer, VMEC metric tensor, and
   VMEC field-line tensor AD/FD gates, including shared VMEC example loading,
-  coefficient-index validation, and coefficient perturbation policy.
+  coefficient-index validation, coefficient perturbation policy, and the
+  common tensor-observable AD/finite-difference payload builder used by the
+  metric and field-line gates.
   ``spectraxgk.geometry.vmec_boozer_core`` owns the ``vmec_jax`` state to
   ``booz_xform_jax`` equal-arc core-profile bridge and solver-facing core
   arrays, including Boozer radial-profile interpolation and equal-arc

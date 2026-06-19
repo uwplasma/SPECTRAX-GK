@@ -1,3 +1,13 @@
+- 2026-06-19: Continued differentiable VMEC-state sensitivity refactoring
+  inside `geometry.vmec_state_sensitivity` without adding modules or changing
+  public report schemas. Metric-tensor and field-line tensor reports now share
+  one tensor-observable AD/finite-difference payload builder, and their
+  observable construction is isolated behind private helper seams. This keeps
+  the report bodies focused on optional-backend discovery, VMEC-state loading,
+  coefficient-index selection, metadata, and fail-closed behavior. Local gates
+  passed: focused VMEC-state sensitivity shard, full differentiable-geometry
+  bridge shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued reduced-model integrator simplification inside
   `terms.reduced.cetg_integrator` without adding modules or changing runtime
   behavior. The cETG explicit Euler/RK/SSPx3/K10 method ladder now lives in a

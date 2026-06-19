@@ -624,7 +624,9 @@ so existing monkeypatch-based optional-backend tests still target
 tensor, and VMEC field-line tensor AD/FD sensitivity reports live in
 ``spectraxgk.geometry.vmec_state_sensitivity``; the public facade uses the
 same hook-preserving wrapper pattern, while the implementation owns shared
-VMEC example loading, coefficient-index validation, and perturbation policy.
+VMEC example loading, coefficient-index validation, perturbation policy, and
+the common tensor-observable AD/finite-difference payload builder used by
+metric and field-line gates.
 Boozer constant preparation and equal-arc cache prewarm helpers live in
 ``spectraxgk.geometry.vmec_boozer_constants``. Core Boozer equal-arc profile
 construction, radial Boozer-profile interpolation, and equal-arc remapping
