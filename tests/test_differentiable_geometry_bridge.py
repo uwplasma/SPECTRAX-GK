@@ -639,6 +639,43 @@ def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() 
     assert metadata["surface_index"] == 0
 
 
+def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> None:
+    def observables(params: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray(
+            [
+                params[0] + 2.0 * params[1],
+                params[0] * params[0] - params[1],
+            ]
+        )
+
+    report = vmec_state_sensitivity._ad_fd_jacobian_diagnostics(
+        observables,
+        jnp.asarray([0.3, -0.2]),
+        fd_step=1.0e-3,
+        observable_names=("linear_combo", "quadratic_combo"),
+        relative_floor=1.0e-10,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(report["jacobian_ad"]),
+        np.asarray([[1.0, 2.0], [0.6, -1.0]]),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(report["jacobian_fd"]),
+        np.asarray(report["jacobian_ad"]),
+        rtol=1.0e-4,
+        atol=1.0e-4,
+    )
+    assert float(report["max_abs_ad_fd_error"]) < 1.0e-4
+    assert report["conditioning"]["sensitivity_map_rank"] == 2
+    assert report["conditioning"]["worst_rel_error"]["observable_name"] in {
+        "linear_combo",
+        "quadratic_combo",
+    }
+
+
 def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
     None
 ):
