@@ -1,3 +1,11 @@
+- 2026-06-18: Continued executable runtime-command simplification inside
+  `spectraxgk.workflows.runtime.commands` without adding source files. The
+  nonlinear runtime command now uses explicit `print_nonlinear_run_header` and
+  `print_nonlinear_run_summary` helpers, matching the linear command structure
+  and making user-facing progress/final-summary output testable without
+  launching a real nonlinear simulation. Added focused coverage for
+  diagnostics-present and diagnostics-absent nonlinear summary branches, and
+  reconfirmed the full runtime-helper and CLI shards.
 - 2026-06-18: Continued differentiable VMEC/Boozer boundary-chain
   simplification inside the existing `spectraxgk.geometry.vmec_boundary_chain`
   owner without adding source files. Scalar error construction for exact-FD,

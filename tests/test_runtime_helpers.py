@@ -17,7 +17,10 @@ from spectraxgk.workflows.runtime.diagnostics import (
     RuntimeQuasilinearFinalizationDeps,
     finalize_runtime_linear_quasilinear,
 )
-from spectraxgk.workflows.runtime.results import RuntimeLinearResult
+from spectraxgk.workflows.runtime.results import (
+    RuntimeLinearResult,
+    RuntimeNonlinearResult,
+)
 from spectraxgk.workflows.runtime.orchestration import (
     build_runtime_progress_message,
     format_duration,
@@ -199,6 +202,48 @@ def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.Capt
 
     assert runtime_commands.plot_saved_output_command(["--plot"], plot_saved_output=_renderer) == 1
     assert "usage: spectraxgk --plot" in capsys.readouterr().out
+
+
+def test_runtime_nonlinear_command_print_helpers(capsys: pytest.CaptureFixture[str]) -> None:
+    runtime_commands.print_nonlinear_run_header(
+        config_path="case.toml",
+        ky=0.2,
+        Nl=4,
+        Nm=6,
+        method="rk2",
+        dt=0.05,
+        steps=None,
+        grid_shape=(8, 10, 12),
+        diagnostics=True,
+        show_progress=False,
+    )
+
+    diag = _diag()
+    assert runtime_commands.print_nonlinear_run_summary(
+        RuntimeNonlinearResult(
+            t=diag.t,
+            diagnostics=diag,
+            ky_selected=0.2,
+            kx_selected=-0.1,
+        )
+    ) is True
+    assert runtime_commands.print_nonlinear_run_summary(
+        RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=None,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        )
+    ) is False
+
+    out = capsys.readouterr().out
+    assert "starting runtime nonlinear run" in out
+    assert "steps=auto" in out
+    assert "diagnostics=on progress=off" in out
+    assert "nonlinear: t=0.2" in out
+    assert "ky_sel=0.2" in out
+    assert "Wphi=2.1" in out
+    assert "nonlinear run completed" in out
 
 
 def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
