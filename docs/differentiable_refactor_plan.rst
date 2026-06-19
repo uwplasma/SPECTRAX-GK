@@ -316,7 +316,10 @@ High-Risk Module Split Plan
   reduced-model linear and nonlinear runtime paths now delegate to
   ``spectraxgk.workflows.reduced_models`` through injected runtime dependencies
   so reduced-model execution is separated from the full-GK runtime facade
-  without breaking existing monkeypatch seams.
+  without breaking existing monkeypatch seams. The cETG nonlinear diagnostic
+  integrator keeps its explicit Euler/RK/SSPx3/K10 method ladder in a private
+  step-policy helper so the scan loop owns only timestep, diagnostic, progress,
+  and output-packing concerns.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
   restart/output schema, and public import contracts.
 

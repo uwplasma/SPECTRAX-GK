@@ -1,3 +1,12 @@
+- 2026-06-19: Continued reduced-model integrator simplification inside
+  `terms.reduced.cetg_integrator` without adding modules or changing runtime
+  behavior. The cETG explicit Euler/RK/SSPx3/K10 method ladder now lives in a
+  focused `_cetg_explicit_step` policy helper, leaving the diagnostic scan loop
+  to own adaptive timestep selection, field reuse, diagnostics, progress
+  callbacks, and output packing. The module dropped from 465 to 454 lines.
+  Local gates passed: full `tests/test_cetg.py`, runtime cETG smoke shard,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued differentiable VMEC/Boozer bridge simplification inside
   `geometry.vmec_boozer_core` without adding modules or changing public
   facades. Optional backend discovery, `vmec_jax -> booz_xform_jax` execution,
