@@ -393,7 +393,8 @@ Phase 1: introduce protocols and containers
   tensor, Boozer equal-arc, and imported-geometry comparison paths. It consumes
   the same shared VMEC-state loading, coefficient-index validation, and
   perturbation policy as the Boozer, metric-tensor, and field-line sensitivity
-  reports.
+  reports. Direct-array parity and optional Boozer equal-arc parity now share
+  private array-metric and worst-error helpers in that owner.
   ``spectraxgk.geometry.vmec_boundary_chain`` owns VMEC boundary-gradient
   probe classification, collection row assembly, and projected-transport
   line-search admission summaries.

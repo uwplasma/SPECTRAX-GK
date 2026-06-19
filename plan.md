@@ -1,3 +1,14 @@
+- 2026-06-19: Continued differentiable-geometry report simplification inside
+  `geometry.vmec_flux_tube_reports` without adding modules. The VMEC flux-tube
+  parity path now shares array-metric, worst-error, and optional Boozer
+  equal-arc parity helpers instead of embedding the full optional-backend
+  branch inside the public array-parity report. Public report keys and
+  differentiable-geometry facade imports remain unchanged, while
+  `vmec_flux_tube_reports.py` dropped from 519 to 497 lines and the public
+  report now reads as direct-parity setup plus optional equal-arc parity plus
+  final JSON assembly. Local gates passed: focused differentiable-geometry
+  flux-tube shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued differentiable-geometry validation refactor by
   simplifying solved-equilibrium candidate gates and VMEC/Boozer objective
   line-search gates without adding modules. `validation.stellarator.
