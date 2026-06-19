@@ -1,3 +1,12 @@
+- 2026-06-18: Removed remaining source-level legacy/historical terminology and
+  old Cyclone scan private alias shims. Cyclone scan branch code now imports
+  explicit-time reselection and seed policies by their canonical public helper
+  names, while the seed and explicit-time owner modules no longer export
+  duplicated underscored aliases. The CLI named-case detector now uses
+  `_NAMED_CASE_TOP_LEVEL_KEYS`, and maintained facades now describe documented
+  public seams rather than historical compatibility surfaces. Focused Cyclone
+  benchmark, CLI, runtime-helper/artifact, stellarator-objective, Ruff, mypy,
+  and `py_compile` gates passed.
 - 2026-06-18: Centralized runtime executable artifact-output writing inside
   `spectraxgk.workflows.runtime.commands._write_command_outputs`. Linear,
   linear-scan, and standalone quasilinear command helpers now share one
