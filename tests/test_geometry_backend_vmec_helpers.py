@@ -9,6 +9,7 @@ import pytest
 
 import spectraxgk.geometry_backends.vmec as vmec_facade
 import spectraxgk.geometry_backends.vmec_backend_discovery as vmec_backend_discovery
+import spectraxgk.geometry_backends.vmec_fieldline_numerics as vmec_fieldline_numerics
 import spectraxgk.geometry_backends.vmec_fieldlines as vmec_fieldlines
 import spectraxgk.geometry_backends.vmec_io as vmec_io
 import spectraxgk.geometry_backends.vmec_numerics as vmec_numerics
@@ -43,6 +44,12 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_facade._vmec_splines is vmec_fieldlines._vmec_splines
     assert vmec_fieldlines._vmec_splines is vmec_splines._vmec_splines
     assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
+    assert vmec_fieldlines._boozer_trig_basis is (
+        vmec_fieldline_numerics._boozer_trig_basis
+    )
+    assert vmec_fieldlines._flux_surface_hngc_averages is (
+        vmec_fieldline_numerics._flux_surface_hngc_averages
+    )
     assert vmec_facade._apply_flux_tube_cut is vmec_remap._apply_flux_tube_cut
     assert vmec_facade._equal_arc_remap is vmec_remap._equal_arc_remap
     assert vmec_facade.write_vmec_eik_netcdf is vmec_io.write_vmec_eik_netcdf

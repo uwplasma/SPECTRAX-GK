@@ -3526,11 +3526,37 @@ fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_fieldline_numerics"
+source_path = "src/spectraxgk/geometry_backends/vmec_fieldline_numerics.py"
+facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
+status = "active"
+responsibility = "Boozer field-line angle/basis contractions, field-line integrals, reference-scale validation, and Hegna-Nakajima local-equilibrium correction numerics"
+moved_exports = [
+  "_MU_0",
+  "_sample_boozer_mode_table",
+  "_boozer_mode_angle",
+  "_boozer_mode_sum",
+  "_boozer_trig_basis",
+  "_fieldline_boozer_coordinates",
+  "_axisym_flip_required",
+  "_safe_mode_denominator",
+  "_surface_average_2d",
+  "_centered_fieldline_integral",
+  "_validated_reference_scales",
+  "_input_iota_shear",
+  "_hngc_shear_correction",
+  "_hngc_pressure_correction",
+  "_flux_surface_hngc_averages",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry_backends.vmec_fieldlines"
 source_path = "src/spectraxgk/geometry_backends/vmec_fieldlines.py"
 facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
-responsibility = "VMEC/Boozer field-line tensor assembly, Boozer backend fallback, and local-equilibrium corrections"
+responsibility = "VMEC/Boozer field-line tensor assembly, Boozer backend fallback, and normalized flux-tube coefficient packaging"
 moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
 fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

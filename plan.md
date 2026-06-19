@@ -1,3 +1,16 @@
+- 2026-06-19: Continued differentiable-geometry/refactor cleanup by extracting
+  pure Boozer field-line numerics from `geometry_backends.vmec_fieldlines` into
+  `geometry_backends.vmec_fieldline_numerics`. Boozer mode angle/basis
+  contractions, mode-table sampling, field-line integrals, reference-scale
+  validation, and Hegna-Nakajima shear/pressure correction policy now have a
+  focused owner, while `vmec_fieldlines` keeps backend fallback, dataset
+  lifecycle, VMEC/Boozer tensor assembly, and normalized flux-tube coefficient
+  packaging. Private helper re-exports are preserved and directly tested.
+  `vmec_fieldlines.py` dropped from 787 to 486 lines and the new numerical
+  helper module is 345 lines. Local gates passed: full VMEC backend helper
+  shard, Ruff, mypy, `py_compile`, package-architecture manifest,
+  differentiable-refactor manifest, repository-size manifest, source terminology
+  audits, and `git diff --check`.
 - 2026-06-19: Continued executable/runtime simplification by extracting pure
   runtime command option policy into `workflows.runtime.command_options`.
   Option dataclasses, CLI/TOML/default resolution, ky scan parsing, fit-config
