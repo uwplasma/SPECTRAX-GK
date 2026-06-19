@@ -1,3 +1,16 @@
+- 2026-06-19: Continued nonlinear device-z refactor/performance lane by
+  extracting fail-closed device-z RHS and transport-window report policy into
+  `operators.nonlinear.device_z_reports`. The sharded operator route now owns
+  only z-sharding, fused RHS execution, observable collection, and explicit
+  transport-window stepping; report construction, trace freezing, and identity
+  tolerance policy are tested through the existing device-z helper surface.
+  `device_z.py` dropped from 651 to 440 lines, the generic spectral identity
+  report module stayed focused at 369 lines, and the new report-policy module is
+  290 lines. Updated the differentiable refactor manifest to record the new
+  owner. Local gates passed: focused device-z identity/report tests, full
+  nonlinear parallel shard, Ruff, mypy, `py_compile`, package-architecture
+  manifest, differentiable-refactor manifest, repository-size manifest, source
+  terminology audits, and `git diff --check`.
 - 2026-06-19: Continued performance/refactor cleanup in nonlinear
   parallelization by moving pencil-FFT RHS identity and pencil transport-window
   identity implementations out of the public `operators.nonlinear.parallel`

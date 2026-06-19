@@ -1237,11 +1237,30 @@ fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.device_z_reports"
+source_path = "src/spectraxgk/operators/nonlinear/device_z_reports.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "fail-closed device-z RHS and transport-window report construction, scalar trace freezing, and identity tolerance policy"
+moved_exports = [
+  "_new_transport_trace_dict",
+  "_transport_trace_tuples",
+  "_transport_trace_error_pairs",
+  "_device_z_transport_identity_passed",
+  "_blocked_device_z_rhs_report",
+  "_blocked_device_z_transport_window_report",
+  "_device_z_rhs_identity_report",
+  "_device_z_transport_window_report",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.device_z"
 source_path = "src/spectraxgk/operators/nonlinear/device_z.py"
 facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
-responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window identity gates"
+responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window execution"
 moved_exports = [
   "device_z_pencil_nonlinear_spectral_rhs",
   "device_z_pencil_nonlinear_spectral_transport_window_identity_gate",
