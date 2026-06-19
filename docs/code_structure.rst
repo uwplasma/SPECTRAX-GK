@@ -659,7 +659,10 @@ Boozer constant preparation and equal-arc cache prewarm helpers live in
 construction, radial Boozer-profile interpolation, and equal-arc remapping
 live in ``spectraxgk.geometry.vmec_boozer_core``; optional backend execution
 and Boozer radial-grid validation are private helper seams so the public
-state-to-profile bridge stays focused on physics profile assembly. Direct ``vmec_jax`` tensor sampling
+state-to-profile bridge stays focused on physics profile assembly. The core
+profile assembly shares one dtype-aware numerical floor across ``|B|``,
+``gradpar``, Jacobian, metric, curvature, and ``q`` denominators so
+regularization policy is visible and consistent. Direct ``vmec_jax`` tensor sampling
 and conversion into the solver-ready flux-tube mapping contract lives in
 ``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
 array-parity report orchestration lives in

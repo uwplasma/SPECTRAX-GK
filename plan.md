@@ -1,3 +1,13 @@
+- 2026-06-19: Continued VMEC/Boozer equal-arc bridge simplification inside
+  `geometry.vmec_boozer_core` without changing formulas, backend calls, or
+  public geometry APIs. The core profile assembly now defines one local
+  dtype-aware `eps` floor and reuses it for `|B|`, `gradpar`, Jacobian,
+  metric, curvature, and `q` safety denominators. This removes repeated
+  `jnp.asarray(1e-30, dtype=...)` casts and keeps numerical-floor policy
+  inspectable in one place. The module dropped from 682 to 669 lines. Local
+  gates passed: VMEC/Boozer static checks, refactor/validation/size manifests,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued runtime facade simplification inside `runtime.py`
   without changing public executable/runtime signatures or monkeypatch seams.
   Restart-state loading now builds one shared shape-keyword payload for both
