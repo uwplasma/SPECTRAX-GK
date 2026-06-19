@@ -638,6 +638,54 @@ def test_device_z_transport_trace_helpers_build_fail_closed_reports() -> None:
     assert report.blocked_reasons == ("requires_at_least_two_devices",)
 
 
+def test_device_z_rhs_report_helpers_classify_identity_gates() -> None:
+    blocked = nonlinear_parallel_device_z._blocked_device_z_rhs_report(
+        state_shape=(2, 3, 6, 4, 2),
+        axis_name="zdev",
+        requested_count=1,
+        active_count=0,
+        atol=1.0e-6,
+        rtol=1.0e-4,
+        blocked_reasons=("requires_at_least_two_devices",),
+    )
+
+    assert blocked.identity_passed is False
+    assert blocked.device_sharding_active is False
+    assert blocked.decomposed_path_enabled is False
+    assert blocked.axis_name == "zdev"
+    assert blocked.blocked_reasons == ("requires_at_least_two_devices",)
+    assert np.isinf(blocked.rhs_max_abs_error)
+
+    passed = nonlinear_parallel_device_z._device_z_rhs_identity_report(
+        state_shape=(2, 3, 6, 4, 2),
+        axis_name="z",
+        requested_count=2,
+        active_count=2,
+        atol=1.0e-6,
+        rtol=1.0e-4,
+        rhs_abs=5.0e-7,
+        rhs_rel=2.0e-5,
+    )
+    assert passed.identity_passed is True
+    assert passed.device_sharding_active is True
+    assert passed.decomposed_path_enabled is True
+    assert passed.blocked_reasons == ()
+
+    failed = nonlinear_parallel_device_z._device_z_rhs_identity_report(
+        state_shape=(2, 3, 6, 4, 2),
+        axis_name="z",
+        requested_count=2,
+        active_count=2,
+        atol=1.0e-6,
+        rtol=1.0e-4,
+        rhs_abs=2.0e-6,
+        rhs_rel=2.0e-5,
+    )
+    assert failed.identity_passed is False
+    assert failed.decomposed_path_enabled is False
+    assert failed.blocked_reasons == ("device_z_pencil_rhs_identity_failed",)
+
+
 def test_device_z_transport_window_observable_mode_fails_closed() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((1, 1, 4, 4, 2))
 

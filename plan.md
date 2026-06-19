@@ -1,3 +1,11 @@
+- 2026-06-18: Continued nonlinear parallelization testability inside the
+  existing `spectraxgk.operators.nonlinear.device_z` owner without adding source
+  files. Device-z fused RHS identity report construction now lives in explicit
+  fail-closed and post-comparison helper policies, matching the earlier
+  transport-window report split and keeping the sharded route focused on RHS
+  computation and gated selection. Added direct helper coverage for topology
+  blockers, passing identity reports, and failed candidate-comparison blockers;
+  the nonlinear-parallel shard, Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Continued executable runtime-command simplification inside the
   existing `spectraxgk.workflows.runtime.commands` owner without adding source
   files. Linear, scan, standalone quasilinear, and nonlinear artifact writing /
