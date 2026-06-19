@@ -3853,3 +3853,14 @@ No long nonlinear audit should be launched from these candidates.
   test shard, py_compile, ruff, mypy, refactor manifest, validation coverage
   manifest, repository-size manifest, source terminology scans, and
   `git diff --check`.
+
+- 2026-06-19: Simplified the VMEC-JAX/Boozer equal-arc bridge setup in
+  `geometry/vmec_boozer_core.py`. Request validation, reference length/field
+  normalization, and Boozer surface-stencil selection now live in explicit
+  private helpers and records, while the metric/drift JAX algebra remains in
+  the public core-profile builder unchanged. This makes the differentiable
+  geometry path easier to audit and test without moving numerical formulas or
+  changing public APIs. Local gates passed: full differentiable geometry bridge
+  test shard, py_compile, ruff, mypy, refactor manifest, validation coverage
+  manifest, repository-size manifest, source terminology scans, and
+  `git diff --check`.
