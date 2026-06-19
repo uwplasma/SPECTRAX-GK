@@ -1,3 +1,12 @@
+- 2026-06-19: Continued runtime executable refactor in the named-case path
+  without changing CLI/TOML behavior. Named linear run and scan commands now
+  resolve CLI overrides, TOML values, defaults, fit-window options, scan ky
+  arrays, and progress policy through explicit option objects before command
+  execution. Added direct tests for single-run precedence, scan parsing,
+  remaining fit-window options, and empty-scan rejection. Local gates passed:
+  focused named-case and CLI shorthand tests, full runtime-helper shard, Ruff,
+  mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, and source terminology audits.
 - 2026-06-19: Continued differentiable VMEC state-sensitivity cleanup
   without changing optional-backend report schemas. Field-line tensor sampling
   coordinates now live in `_vmec_field_line_sampling_coordinates`, which owns

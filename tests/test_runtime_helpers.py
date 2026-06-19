@@ -9,6 +9,7 @@ import pytest
 
 import spectraxgk.runtime as runtime
 import spectraxgk.workflows.cases as runtime_cases
+import spectraxgk.workflows.named_cases as named_cases
 import spectraxgk.workflows.runtime.commands as runtime_commands
 import spectraxgk.workflows.runtime.policies as runtime_policies
 from spectraxgk.diagnostics.analysis import ModeSelection
@@ -541,6 +542,110 @@ def test_runtime_command_artifact_output_helpers(
         "saved nonlinear.diag.nc",
         "saved restart.nc",
     ]
+
+
+def test_named_linear_run_options_resolve_cli_before_toml_defaults() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        ky=0.7,
+        Nl=None,
+        Nm=11,
+        solver=None,
+        fit_signal=None,
+        method="rk4",
+        dt=None,
+        steps=15,
+        sample_stride=None,
+    )
+    data = {
+        "run": {
+            "ky": 0.2,
+            "Nl": 5,
+            "Nm": 7,
+            "solver": "time",
+            "fit_signal": "ignored-here",
+            "method": "rk2",
+            "dt": 0.04,
+            "steps": 8,
+            "sample_stride": 3,
+        },
+        "fit": {"fit_signal": "phi", "window_fraction": 0.25},
+    }
+    deps = SimpleNamespace(should_show_progress=lambda _args, _configured: True)
+
+    opts = named_cases._resolve_named_linear_run_options(
+        args,
+        cfg,
+        data,
+        deps=deps,  # type: ignore[arg-type]
+    )
+
+    assert opts.ky == 0.7
+    assert opts.Nl == 5
+    assert opts.Nm == 11
+    assert opts.solver == "time"
+    assert opts.fit_signal == "phi"
+    assert opts.method == "rk4"
+    assert opts.dt == 0.04
+    assert opts.steps == 15
+    assert opts.sample_stride == 3
+    assert opts.show_progress is True
+    assert opts.fit_kwargs == {"window_fraction": 0.25}
+
+
+def test_named_linear_scan_options_parse_overrides_and_window_policy() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        ky_values="0.1, 0.2, ,0.4",
+        Nl=9,
+        Nm=None,
+        solver="krylov",
+        fit_signal="phi",
+        method=None,
+        dt=0.03,
+        steps=None,
+    )
+    data = {
+        "scan": {
+            "ky": [0.5],
+            "Nl": 5,
+            "Nm": 7,
+            "solver": "auto",
+            "method": "rk2",
+            "dt": 0.04,
+            "steps": 8,
+        },
+        "fit": {"auto_window": False, "window_fraction": 0.25},
+    }
+
+    opts = named_cases._resolve_named_linear_scan_options(args, cfg, data)
+
+    np.testing.assert_allclose(opts.ky_values, np.asarray([0.1, 0.2, 0.4]))
+    assert opts.Nl == 9
+    assert opts.Nm == 7
+    assert opts.solver == "krylov"
+    assert opts.fit_signal == "phi"
+    assert opts.auto_window is False
+    assert opts.method == "rk2"
+    assert opts.dt == 0.03
+    assert opts.steps == 8
+    assert opts.fit_kwargs == {"window_fraction": 0.25}
+
+
+def test_named_linear_scan_options_reject_empty_scan() -> None:
+    args = SimpleNamespace(
+        ky_values=None,
+        Nl=None,
+        Nm=None,
+        solver=None,
+        fit_signal=None,
+        method=None,
+        dt=None,
+        steps=None,
+    )
+
+    with pytest.raises(ValueError, match="No ky values"):
+        named_cases._resolve_named_linear_scan_options(args, _base_cfg(), {})
 
 
 def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
