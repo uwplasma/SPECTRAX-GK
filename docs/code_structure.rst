@@ -160,8 +160,8 @@ modules.
 Completed extractions:
 
 - domain-organized public API registry in ``spectraxgk.api.*``. The root
-  ``spectraxgk`` package is now a small facade that preserves the exact
-  historical ``__all__`` order while the grouped API modules make the exported
+  ``spectraxgk`` package is now a small facade that keeps a stable documented
+  ``__all__`` order while the grouped API modules make the exported
   configuration, geometry, solver, validation, parallelization, objective, and
   plotting surfaces easier to audit.
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
@@ -347,7 +347,7 @@ Completed extractions:
   ``parallel/__init__.py`` modules remain stable facades for user imports.
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
-  ``operators/nonlinear/diagnostic_state.py``. The obsolete root nonlinear
+  ``operators/nonlinear/diagnostic_state.py``. The old root nonlinear
   helper shims were removed; normal users should use ``spectraxgk.nonlinear``
   and developer helpers should import from ``spectraxgk.operators.nonlinear``.
 - fixed-step linear integration keeps public dispatch in
@@ -377,7 +377,7 @@ Completed extractions:
   facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
   focused developer helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
   ``eigen_selection.py``, ``eigen_preconditioners.py``, and
-  ``krylov_algorithms.py``. The obsolete root ``linear_*`` helper shims were
+  ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
   API or import focused developer helpers from the domain packages.
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
@@ -414,7 +414,7 @@ Completed extractions:
   ``artifacts/nonlinear_netcdf_diagnostics.py``,
   ``artifacts/nonlinear_netcdf_geometry.py``,
   ``artifacts/nonlinear_netcdf_fields.py``,
-  ``artifacts/nonlinear_diagnostics.py``. The obsolete root
+  ``artifacts/nonlinear_diagnostics.py``. The old root
   ``runtime_artifact_*`` helper modules were removed; import implementation
   helpers from ``spectraxgk.artifacts`` instead.
 
@@ -489,7 +489,7 @@ and optional artifact writing for linear, scan, quasilinear, and nonlinear
 commands also live in focused command-output helpers so user-facing executable
 messages can be tested without launching solver runs.
 ``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and
-re-exports the command helpers only for compatibility; path override, progress,
+re-exports the command helpers only for public executable dispatch; path override, progress,
 quasilinear override, and preload-reuse policies have one canonical workflow
 owner.
 

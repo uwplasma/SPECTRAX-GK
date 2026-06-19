@@ -1,3 +1,11 @@
+- 2026-06-18: Aligned the architecture docs and differentiable-refactor
+  manifest with the stable public-facade policy. The executable manifest now
+  uses `public_facade_policy` rather than `compatibility_policy`, the manifest
+  checker validates that field, and architecture/code-structure/differentiable
+  refactor docs now describe public facades plus removal of old helper shims
+  instead of a compatibility-facade target. This keeps the active plan aligned
+  with the source cleanup that already removed legacy/historical terminology
+  from `src/spectraxgk`.
 - 2026-06-18: Removed remaining source-level legacy/historical terminology and
   old Cyclone scan private alias shims. Cyclone scan branch code now imports
   explicit-time reselection and seed policies by their canonical public helper

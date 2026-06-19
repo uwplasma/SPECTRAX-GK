@@ -13,7 +13,7 @@ The new target is a small set of domain packages with stable public facades,
 private implementation modules, explicit contracts, and tests that mirror the
 package structure. The goal is not minimal file count at all costs. The goal is
 clear ownership, research-grade validation, strong JAX transformability, and a
-code layout that a new developer can understand without knowing the historical
+code layout that a new developer can understand without knowing the previous
 refactor sequence.
 
 Plan Authority And Conflict Resolution
@@ -25,7 +25,7 @@ migration order, and acceptance gates.
 - :doc:`code_structure` documents the current source tree and public facades.
   It should not be read as the target architecture.
 - :doc:`differentiable_refactor_plan` is now a technical appendix for
-  differentiability contracts, historical split inventory, and validation-gate
+  differentiability contracts, completed split inventory, and validation-gate
   traceability. It does not override this page's target package layout or
   naming rules.
 - ``tools/differentiable_refactor_manifest.toml`` remains the executable
@@ -109,7 +109,7 @@ and JAX codes:
   motivate explicit global/local layout contracts for CPU/GPU parallel paths.
 
 These references point to the same practical rule: user workflows should be
-simple, but internals should be separated by responsibility, not by historical
+simple, but internals should be separated by responsibility, not by previous
 file prefix.
 
 Non-Negotiable Constraints
@@ -147,7 +147,7 @@ Simpler for users
 Simpler for developers
   Domain packages with one responsibility, public facades with documented
   exports, private helper modules with narrow contracts, tests that live next
-  to the behavior they protect, and no need to know the historical migration
+  to the behavior they protect, and no need to know the migration
   sequence.
 
 Simpler for reviewers
@@ -184,7 +184,7 @@ Small public surface, private implementation modules
 Stable facades during migration
   ``spectraxgk.linear``, ``spectraxgk.nonlinear``, ``spectraxgk.runtime``,
   ``spectraxgk.geometry``, ``spectraxgk.quasilinear``, and
-  ``spectraxgk.benchmarks`` remain compatibility facades while internals move.
+  ``spectraxgk.benchmarks`` remain public facades while internals move.
 
 Explicit contracts at package boundaries
   Shared dataclasses, protocols, and PyTree containers live in ``core`` and
@@ -487,7 +487,7 @@ Phase A: architecture lock
   Add this plan, an architecture manifest, and a checker that fails if new
   root-level prefix modules are added without a migration entry.
 
-Phase B: package skeletons and compatibility facades
+Phase B: package skeletons and public facades
   Create only the packages needed for the first concrete moves. Re-export
   public names from existing facades. Add import-identity tests before moving
   implementation.
@@ -496,7 +496,7 @@ Phase C: nonlinear package consolidation
   Move nonlinear implementation helpers into ``operators/nonlinear`` and
   ``solvers/nonlinear``. ``spectraxgk.nonlinear`` remains the public nonlinear
   API, while developer imports use ``spectraxgk.operators.nonlinear`` and
-  ``spectraxgk.solvers.nonlinear`` directly. The obsolete root nonlinear helper
+  ``spectraxgk.solvers.nonlinear`` directly. The old root nonlinear helper
   shims were removed after package-level tests covered the canonical imports.
 
 Phase D: runtime and output consolidation
@@ -530,8 +530,8 @@ Phase I: tests mirror packages
   Convert top-level test files into package directories:
   ``tests/operators``, ``tests/solvers``, ``tests/geometry``,
   ``tests/objectives``, ``tests/optimization``, ``tests/workflows``,
-  ``tests/io``, and ``tests/validation``. Keep a small set of compatibility
-  import tests at top level.
+  ``tests/io``, and ``tests/validation``. Keep a small set of public import
+  contract tests at top level.
 
 Phase J: remove migration scaffolding
   After all public imports are covered by facades and docs, remove temporary
@@ -641,7 +641,7 @@ The test tree should mirror the source tree:
      workflows/
      io/
      validation/
-     compatibility/
+     import_contracts/
 
 Large top-level tests should be split by behavior, not by original file name.
 For example, ``test_runtime_runner.py`` should become focused workflow, config,
@@ -674,7 +674,7 @@ Longer-Term Success Criteria
 The refactor is successful when:
 
 - the root package contains only public facades, version metadata, and small
-  compatibility modules;
+  import-contract modules;
 - most implementation code lives in domain packages;
 - tests mirror the domain packages;
 - public APIs are smaller and easier to document;

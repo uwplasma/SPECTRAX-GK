@@ -3,7 +3,7 @@
 
 This checker keeps the large refactor plan executable. It does not prove that
 future refactors are done; it proves that every planned high-risk split declares
-source ownership, compatibility facade, tests, parity gates, literature anchors,
+source ownership, public facade, tests, parity gates, literature anchors,
 autodiff gates, and extension points before implementation starts.
 """
 
@@ -104,7 +104,7 @@ def _validate_metadata(data: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("manifest must contain [metadata]")
     if metadata.get("schema_version") != 1:
         raise ValueError("metadata.schema_version must be 1")
-    for field in ("title", "owner_lane", "status", "compatibility_policy"):
+    for field in ("title", "owner_lane", "status", "public_facade_policy"):
         _as_nonempty_string(metadata.get(field), field, "metadata")
     status = metadata["status"]
     if status not in ALLOWED_STATUSES:
@@ -303,7 +303,7 @@ def _validate_hotspots(data: dict[str, Any]) -> list[dict[str, Any]]:
         )
         if public_facade != module:
             raise ValueError(
-                f"{module}: public_facade must match module for compatibility planning"
+                f"{module}: public_facade must match module for public-facade planning"
             )
         line_target = raw.get("line_target")
         if not isinstance(line_target, int) or line_target <= 0:

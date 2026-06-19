@@ -12,7 +12,7 @@ differentiate through while preserving the validated physics behavior.
 Authority note: :doc:`architecture_refactor_plan` is the authoritative plan for
 future package layout, file naming, migration order, and conflict resolution.
 This page is a technical appendix for differentiability contracts, active
-manifest rows, historical split inventory, and AD/physics/performance gate
+manifest rows, completed split inventory, and AD/physics/performance gate
 requirements. If a layout or naming detail here conflicts with
 :doc:`architecture_refactor_plan`, the architecture plan wins and this appendix
 or ``tools/differentiable_refactor_manifest.toml`` should be updated.
@@ -213,7 +213,7 @@ High-Risk Module Split Plan
   gradient gates. Required gates: branch-locality, spectral-gap guards,
   finite-difference/JVP/VJP checks, UQ covariance, and objective conditioning.
   The dominant-growth implicit eigenpair VJP and branch-locality report now
-  live in ``objectives/eigen.py`` and remain re-exported by the legacy
+  live in ``objectives/eigen.py`` and remain re-exported by the public
   solver-objective facade. Solver-objective sampling axes, physical-``ky`` grid
   construction, and aggregate weights now live in
   ``objectives/sampling.py`` behind the same facade. Core
@@ -241,7 +241,7 @@ High-Risk Module Split Plan
   parity-preserving output schemas. The nonlinear RHS linear-path routing and
   electromagnetic bracket composition now live in
   ``operators/nonlinear/rhs.py`` while
-  ``spectraxgk.nonlinear`` remains the compatibility facade for public imports,
+  ``spectraxgk.nonlinear`` remains the public facade for public imports,
   monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
   IMEX state-to-diagnostic tuple assembly now lives in
   ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
@@ -254,7 +254,7 @@ High-Risk Module Split Plan
   quadrature-weight, omega-mask, z-index, state-projection setup, reusable IMEX
   operator setup, collision-split policy construction, and fixed/adaptive
   nonlinear time-step policy now live in ``spectraxgk.operators.nonlinear.policies`` with
-  injected compatibility seams.
+  injected public-facade seams.
   Explicit RK/SSP/K10 one-step policy, cached explicit scan dispatch, explicit
   diagnostic step construction, and diagnostic scan-selection policy now live
   in ``solvers/nonlinear/explicit.py``. Public cached RHS/state integration now
@@ -308,7 +308,7 @@ High-Risk Module Split Plan
   so reduced-model execution is separated from the full-GK runtime facade
   without breaking existing monkeypatch seams.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
-  restart/output schema, and import compatibility.
+  restart/output schema, and public import contracts.
 
 ``workflows/runtime/artifacts.py``
   Split artifact schema, NetCDF persistence, restart append, and provenance.
@@ -336,7 +336,7 @@ Phase 1: introduce protocols and containers
   collision operators, field solvers, RHS assembly, diagnostics, objective
   reports, and artifact schemas. Avoid behavior changes. The first Phase-1
   tranche now lives in ``spectraxgk.core.contracts`` and
-  ``spectraxgk.core.extension_points``. The first compatibility-preserving
+  ``spectraxgk.core.extension_points``. The first behavior-preserving
   benchmark split also lives in this phase:
   ``spectraxgk.validation.benchmarks.case_configs`` owns benchmark-family
   case presets while ``spectraxgk.config`` remains the stable public import
@@ -354,7 +354,7 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.kbm_linear``,
   ``spectraxgk.validation.benchmarks.kbm_scan``, ``spectraxgk.validation.benchmarks.tem``,
   ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
-  benchmark entry point. The obsolete benchmark helper bridge has been removed;
+  benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core
   linear-state quasilinear transport weights and differentiable saturation
@@ -406,7 +406,7 @@ Phase 1: introduce protocols and containers
   ``geometry_backends.miller_*`` modules.
   ``spectraxgk.geometry.differentiable`` retains object-identical re-exports
   for pure helpers and thin wrappers for optional-backend bridge functions whose
-  legacy tests patch facade-level backend discovery.
+  tests patch facade-level backend discovery.
 
 Phase 2: split pure kernels
   Move basis, gyroaverage, field-solve, linear-term, nonlinear-bracket, and

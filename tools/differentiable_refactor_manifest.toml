@@ -6,7 +6,7 @@ status = "planned"
 created = "2026-06-14"
 layout_authority = "docs/architecture_refactor_plan.rst"
 manifest_scope = "active migration ledger and differentiability-gate inventory; package layout and naming are governed by docs/architecture_refactor_plan.rst"
-compatibility_policy = "public behavior and numerical parity must be preserved behind compatibility facades"
+public_facade_policy = "public behavior and numerical parity must be preserved behind stable public facades while old helper shims are removed after canonical owners are covered"
 max_public_module_lines_target = 800
 max_internal_module_lines_target = 1200
 
@@ -1527,7 +1527,7 @@ module = "spectraxgk.workflows.cases"
 source_path = "src/spectraxgk/workflows/cases.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "runtime TOML case workflows for public runtime facade compatibility, including linear and nonlinear TOML override dispatch"
+responsibility = "runtime TOML case workflows for public runtime facade, including linear and nonlinear TOML override dispatch"
 moved_exports = [
   "RUNTIME_CASE_FIT_KEYS",
   "RuntimeCaseDeps",
@@ -1923,7 +1923,7 @@ module = "spectraxgk.operators.nonlinear.policies"
 source_path = "src/spectraxgk/operators/nonlinear/policies.py"
 facade_module = "spectraxgk.nonlinear"
 status = "active"
-responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, omega-mask, reusable IMEX operator policies, and compatibility re-exports for projection/collision helpers"
+responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, omega-mask, reusable IMEX operator policies, and public re-exports for projection/collision helpers"
 moved_exports = [
   "IMEXLinearOperator",
   "NonlinearCollisionSplitPolicy",
@@ -2604,7 +2604,7 @@ module = "spectraxgk.operators.linear.cache"
 source_path = "src/spectraxgk/operators/linear/cache.py"
 facade_module = "spectraxgk.operators.linear"
 status = "active"
-responsibility = "linear cache compatibility facade over the pytree model, array factories, damping factors, and geometry-dependent builder"
+responsibility = "linear cache public facade over the pytree model, array factories, damping factors, and geometry-dependent builder"
 moved_exports = ["LinearCache", "build_linear_cache", "collision_damping", "hypercollision_damping"]
 fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
@@ -2717,7 +2717,7 @@ module = "spectraxgk.solvers.linear.krylov"
 source_path = "src/spectraxgk/solvers/linear/krylov.py"
 facade_module = "spectraxgk.solvers.linear"
 status = "active"
-responsibility = "public compatibility facade and status-reporting wrapper for matrix-free Krylov eigenmode solves"
+responsibility = "public facade and status-reporting wrapper for matrix-free Krylov eigenmode solves"
 moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
 fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
@@ -3259,7 +3259,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[hotspots]]
 module = "spectraxgk.runtime"
 source_path = "src/spectraxgk/runtime.py"
-current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration compatibility code"
+current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration facade code"
 target_packages = [
   "spectraxgk.workflows.runtime.linear",
   "spectraxgk.workflows.runtime.nonlinear",
@@ -3310,7 +3310,7 @@ extension_points = ["ArtifactSchema", "ArtifactWriter", "RestartPolicy"]
 [[hotspots]]
 module = "spectraxgk.linear"
 source_path = "src/spectraxgk/linear.py"
-current_reason = "public linear API still combines field solves, RHS assembly, integrators, diagnostics, and compatibility exports"
+current_reason = "public linear API still combines field solves, RHS assembly, integrators, diagnostics, and public re-exports"
 target_packages = [
   "spectraxgk.solvers.linear.rhs",
   "spectraxgk.solvers.linear.fields",
