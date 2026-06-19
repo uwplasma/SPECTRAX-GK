@@ -1,3 +1,10 @@
+- 2026-06-19: Continued differentiable-objective cleanup in
+  `spectraxgk.objectives.zonal`. Zonal-flow artifact row-table serialization
+  now lives in `_zonal_row_table`, using precomputed surface/alpha/kx index
+  maps instead of repeated list scans inside the public artifact builder. The
+  public payload schema and objective reductions are unchanged. Local gates
+  passed: zonal objective tests, zonal-flow objective gate tests, stellarator
+  portfolio tests, Ruff, mypy, and `py_compile` on touched files.
 - 2026-06-19: Continued Cyclone benchmark branch simplification inside
   `spectraxgk.validation.benchmarks.cyclone_scan_branches` without changing
   solver kernels or reference-data comparisons. The time-branch auto-solver
