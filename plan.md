@@ -1,3 +1,14 @@
+- 2026-06-19: Continued runtime command simplification by moving command
+  artifact display ordering and optional artifact write/print helpers from
+  `workflows.runtime.commands` into `workflows.runtime.orchestration_artifacts`.
+  Runtime commands now resolve options and dispatch runs, while artifact
+  orchestration owns saved-path ordering for linear, quasilinear, scan, and
+  nonlinear outputs. Added direct tests against the artifact helper ownership
+  and preserved executable command-output behavior through focused CLI/runtime
+  tests. Local gates passed: focused runtime artifact-output tests, focused CLI
+  artifact tests, Ruff, mypy, `py_compile`, package-architecture manifest,
+  differentiable-refactor manifest, repository-size manifest, source terminology
+  audits, and `git diff --check`.
 - 2026-06-19: Continued runtime scan-orchestration simplification by moving
   per-ky scan task execution from the public `spectraxgk.runtime` facade into
   `workflows.runtime.orchestration_scan`. The runtime facade now injects its

@@ -10,6 +10,7 @@ import pytest
 import spectraxgk.runtime as runtime
 import spectraxgk.workflows.cases as runtime_cases
 import spectraxgk.workflows.named_cases as named_cases
+import spectraxgk.workflows.runtime.orchestration_artifacts as runtime_artifacts
 import spectraxgk.workflows.runtime.commands as runtime_commands
 import spectraxgk.workflows.runtime.policies as runtime_policies
 from spectraxgk.diagnostics.analysis import ModeSelection
@@ -448,30 +449,30 @@ def test_runtime_command_artifact_output_helpers(
     )
 
     assert (
-        runtime_commands._write_command_outputs(
+        runtime_artifacts.write_command_outputs(
             None,
             result,
             writer=deps.write_runtime_linear_artifacts,
-            display_keys=runtime_commands._LINEAR_ARTIFACT_DISPLAY_KEYS,
+            display_keys=runtime_artifacts.COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS,
         )
         == {}
     )
     assert (
-        runtime_commands._write_command_outputs(
+        runtime_artifacts.write_command_outputs(
             None,
             result.quasilinear,
             writer=deps.write_quasilinear_artifacts,
-            display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+            display_keys=runtime_artifacts.COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
         )
         == {}
     )
     no_ql = replace(result, quasilinear=None)
     assert (
-        runtime_commands._write_command_outputs(
+        runtime_artifacts.write_command_outputs(
             "ql.json",
             no_ql.quasilinear,
             writer=deps.write_quasilinear_artifacts,
-            display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+            display_keys=runtime_artifacts.COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
         )
         == {}
     )
@@ -513,7 +514,7 @@ def test_runtime_command_artifact_output_helpers(
         "summary": "scan.summary.json",
         "scan": "scan.csv",
     }
-    runtime_commands.print_nonlinear_command_outputs(
+    runtime_artifacts.print_nonlinear_command_outputs(
         {
             "restart": "restart.nc",
             "summary": "nonlinear.summary.json",
@@ -521,7 +522,7 @@ def test_runtime_command_artifact_output_helpers(
         },
         enabled=True,
     )
-    runtime_commands.print_nonlinear_command_outputs(
+    runtime_artifacts.print_nonlinear_command_outputs(
         {"summary": "not-printed.json"}, enabled=False
     )
 
