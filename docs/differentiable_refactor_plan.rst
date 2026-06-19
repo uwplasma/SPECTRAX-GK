@@ -289,8 +289,10 @@ High-Risk Module Split Plan
   monkeypatch-based diagnostics, and runtime workflows. Duplicated explicit and
   IMEX state-to-diagnostic tuple assembly now lives in
   ``operators/nonlinear/diagnostic_state.py`` with facade-injected diagnostic
-  kernels so existing debug seams remain intact. That module also owns the
-  shared state-to-diagnostic closure factory used by explicit and IMEX scans.
+  kernels so existing debug seams remain intact. That module owns separate
+  helpers for field defaulting, growth/frequency mode extraction, scalar
+  diagnostics, and resolved spectra/channel packing, plus the shared
+  state-to-diagnostic closure factory used by explicit and IMEX scans.
   Shared sampled-scan interval routing, diagnostic-stride selection, progress
   callback routing, scan-output sampling/finalization, resolved diagnostic
   packing, and ``SimulationDiagnostics`` construction now live in

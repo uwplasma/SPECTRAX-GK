@@ -2051,8 +2051,12 @@ module = "spectraxgk.operators.nonlinear.diagnostic_state"
 source_path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
 facade_module = "spectraxgk.operators.nonlinear"
 status = "active"
-responsibility = "nonlinear state-to-diagnostic tuple assembly and scan-closure construction shared by explicit and IMEX diagnostic scans with injected diagnostic kernels"
+responsibility = "nonlinear state-to-diagnostic tuple assembly, scalar/resolved diagnostic branch packing, and scan-closure construction shared by explicit and IMEX diagnostic scans with injected diagnostic kernels"
 moved_exports = [
+  "_compute_resolved_diagnostic_tuple",
+  "_compute_unresolved_diagnostic_tuple",
+  "_diagnostic_field_pair",
+  "_mode_growth_frequency",
   "NonlinearDiagnosticKernels",
   "compute_nonlinear_diagnostic_tuple",
   "make_nonlinear_diagnostic_tuple_fn",

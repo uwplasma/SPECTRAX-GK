@@ -370,9 +370,12 @@ Completed extractions:
   ``parallel/__init__.py`` modules remain stable facades for user imports.
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
-  ``operators/nonlinear/diagnostic_state.py``. The old root nonlinear
-  helper shims were removed; normal users should use ``spectraxgk.nonlinear``
-  and developer helpers should import from ``spectraxgk.operators.nonlinear``.
+  ``operators/nonlinear/diagnostic_state.py``. The diagnostic-state owner
+  separates field defaulting, growth/frequency mode extraction, scalar
+  diagnostics, and resolved spectra/channel packing while preserving the
+  explicit/IMEX scan tuple schema. The old root nonlinear helper shims were
+  removed; normal users should use ``spectraxgk.nonlinear`` and developer
+  helpers should import from ``spectraxgk.operators.nonlinear``.
 - fixed-step linear integration keeps public dispatch in
   ``solvers/linear/integrators.py`` while diagnostic sampling lives in
   ``solvers/linear/integrator_diagnostics.py``. The facade preserves the

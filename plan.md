@@ -1,3 +1,14 @@
+- 2026-06-19: Continued nonlinear diagnostic-state refactoring inside
+  `operators.nonlinear.diagnostic_state` without changing explicit/IMEX scan
+  tuple schema, diagnostic kernel injection, or resolved diagnostic ordering.
+  Present/previous field defaulting, growth/frequency mode extraction,
+  scalar diagnostics, and resolved spectra/channel packing now live in
+  focused helpers, while `compute_nonlinear_diagnostic_tuple` drops from 335
+  to 75 lines. Existing marker-order tests for the 58 resolved entries and
+  scalar/unresolved tests passed, along with the nonlinear operator package
+  identity shard. Local gates passed: Ruff, mypy, `py_compile`,
+  refactor/coverage/size manifests, Sphinx docs, and `git diff --check`.
+
 - 2026-06-19: Continued imported-VMEC field-line refactoring by moving
   alpha-gradient, local-shear, and normalized metric/drift coefficient algebra
   out of `_vmec_fieldlines` into `geometry_backends.vmec_fieldline_numerics`.
