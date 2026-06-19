@@ -3830,3 +3830,14 @@ No long nonlinear audit should be launched from these candidates.
   Cyclone benchmark-branch tests, benchmark smoke tests, py_compile, ruff, mypy,
   refactor manifest, validation coverage manifest, repository-size manifest,
   source terminology scans, and `git diff --check`.
+
+- 2026-06-19: Moved the remaining saved-time and diffrax-streaming KBM
+  beta-scan fitting path from `kbm_beta.py` into the existing
+  `kbm_beta_solver_paths.py` owner. The public benchmark runner now handles
+  scan setup, sample-state construction, and dispatch, while explicit-time,
+  Krylov, and saved-time fitting policies live together behind patchable hook
+  dataclasses. This avoided creating another module while reducing the runner
+  from roughly 520 lines to 352 lines. Local gates passed: full benchmark
+  branch test shard, KBM branch shard, explicit KBM node-id pass, py_compile,
+  ruff, mypy, refactor manifest, validation coverage manifest, repository-size
+  manifest, source terminology scans, and `git diff --check`.
