@@ -1,3 +1,10 @@
+- 2026-06-18: Continued executable runtime-command simplification inside the
+  existing `spectraxgk.workflows.runtime.commands` owner without adding source
+  files. Linear, scan, standalone quasilinear, and nonlinear artifact writing /
+  save-message ordering now lives in focused command-output helpers rather than
+  inline command bodies. Added direct helper coverage for skip behavior,
+  save-order determinism, quasilinear availability, and nonlinear output gating;
+  the runtime-helper/CLI shard, Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Continued nonlinear solver simplification inside the existing
   `spectraxgk.solvers.nonlinear.imex` owner without adding source files.
   Cached IMEX implicit-operator resolution and initial-state shape normalization

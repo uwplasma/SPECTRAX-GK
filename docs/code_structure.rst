@@ -481,7 +481,10 @@ dispatch, so command execution does not parse the same TOML twice.
 Linear, scan, and nonlinear command flags are resolved once into typed
 command-option records before solver calls are made, which keeps precedence
 between CLI flags, TOML sections, and runtime defaults inspectable without
-spreading executable policy across command bodies.
+spreading executable policy across command bodies. Saved-artifact display order
+and optional artifact writing for linear, scan, quasilinear, and nonlinear
+commands also live in focused command-output helpers so user-facing executable
+messages can be tested without launching solver runs.
 ``spectraxgk.workflows.cases`` remains the TOML case-workflow owner and
 re-exports the command helpers only for compatibility; path override, progress,
 quasilinear override, and preload-reuse policies have one canonical workflow

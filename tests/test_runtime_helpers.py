@@ -246,6 +246,92 @@ def test_runtime_nonlinear_command_print_helpers(capsys: pytest.CaptureFixture[s
     assert "nonlinear run completed" in out
 
 
+def test_runtime_command_artifact_output_helpers(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls: list[tuple[str, str]] = []
+    deps = SimpleNamespace(
+        write_runtime_linear_artifacts=lambda path, _result: calls.append(
+            ("linear", str(path))
+        )
+        or {
+            "state": "linear.state.nc",
+            "summary": "linear.summary.json",
+            "timeseries": "linear.timeseries.csv",
+        },
+        write_runtime_linear_scan_artifacts=lambda path, _scan: calls.append(
+            ("scan", str(path))
+        )
+        or {
+            "quasilinear_spectrum": "scan.ql.csv",
+            "summary": "scan.summary.json",
+            "scan": "scan.csv",
+        },
+        write_quasilinear_artifacts=lambda path, _ql: calls.append(
+            ("quasilinear", str(path))
+        )
+        or {
+            "quasilinear_species": "ql.species.csv",
+            "quasilinear_summary": "ql.summary.json",
+        },
+    )
+    result = RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.3,
+        omega=-0.4,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        quasilinear={"model": "test"},
+    )
+
+    assert runtime_commands.write_linear_command_outputs(None, result, deps=deps) == {}
+    assert (
+        runtime_commands.write_quasilinear_command_outputs(None, result, deps=deps)
+        == {}
+    )
+    no_ql = replace(result, quasilinear=None)
+    assert (
+        runtime_commands.write_quasilinear_command_outputs("ql.json", no_ql, deps=deps)
+        == {}
+    )
+    assert calls == []
+
+    runtime_commands.write_linear_command_outputs("linear.json", result, deps=deps)
+    runtime_commands.write_linear_scan_command_outputs(
+        "scan.json", SimpleNamespace(), deps=deps
+    )
+    runtime_commands.write_quasilinear_command_outputs("ql.json", result, deps=deps)
+    runtime_commands.print_nonlinear_command_outputs(
+        {
+            "restart": "restart.nc",
+            "summary": "nonlinear.summary.json",
+            "diagnostics": "nonlinear.diag.nc",
+        },
+        enabled=True,
+    )
+    runtime_commands.print_nonlinear_command_outputs(
+        {"summary": "not-printed.json"}, enabled=False
+    )
+
+    assert calls == [
+        ("linear", "linear.json"),
+        ("scan", "scan.json"),
+        ("quasilinear", "ql.json"),
+    ]
+    assert capsys.readouterr().out.splitlines() == [
+        "saved linear.summary.json",
+        "saved linear.timeseries.csv",
+        "saved linear.state.nc",
+        "saved scan.summary.json",
+        "saved scan.csv",
+        "saved scan.ql.csv",
+        "saved ql.summary.json",
+        "saved ql.species.csv",
+        "saved nonlinear.summary.json",
+        "saved nonlinear.diag.nc",
+        "saved restart.nc",
+    ]
+
+
 def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
     linear_deps = runtime._runtime_linear_dispatch_deps()
     nonlinear_deps = runtime._runtime_nonlinear_dispatch_deps()
