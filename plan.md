@@ -1,3 +1,14 @@
+- 2026-06-19: Continued executable facade simplification by moving direct
+  TOML shorthand classification from `spectraxgk.cli` into
+  `workflows.runtime.toml`. Runtime-vs-named-case TOML detection, known-command
+  guards, missing-file guards, and shorthand argument construction now live next
+  to TOML loading/path-resolution policy. The CLI keeps only thin wrappers so
+  tests and downstream patch surfaces still see the existing private names and
+  the facade-injected `load_toml`. Added direct workflow-level tests for
+  runtime/named-case classification and shorthand guard behavior. Local gates
+  passed: explicit CLI compatibility tests, TOML policy test, Ruff, mypy,
+  `py_compile`, package-architecture manifest, differentiable-refactor manifest,
+  repository-size manifest, source terminology audits, and `git diff --check`.
 - 2026-06-19: Continued runtime startup simplification by making the
   VMEC/Miller geometry routing policy shared instead of duplicated between
   `spectraxgk.runtime` and `workflows.runtime.startup`.

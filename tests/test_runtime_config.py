@@ -9,7 +9,12 @@ import sys
 
 import pytest
 
-from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import (
+    direct_config_shorthand_args,
+    is_runtime_toml,
+    load_runtime_from_toml,
+    toml_shorthand_command,
+)
 from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeParallelConfig,
@@ -113,6 +118,31 @@ axis = " KY "
     assert cfg.output.restart_to_file == "$SPECTRAX_TEST_MISSING/restart.nc"
     assert cfg.parallel.strategy == "serial"
     assert cfg.parallel.axis == "ky"
+
+
+def test_toml_shorthand_policy_resolves_runtime_and_named_cases(
+    tmp_path: Path,
+) -> None:
+    cfg_path = tmp_path / "case.toml"
+    cfg_path.write_text("[physics]\n", encoding="utf-8")
+
+    assert is_runtime_toml({"physics": {}}) is True
+    assert is_runtime_toml({"case": "cyclone"}) is False
+    assert is_runtime_toml({}) is True
+    assert toml_shorthand_command({"physics": {}}) == "run"
+    assert toml_shorthand_command({"case": "cyclone"}) == "run-linear"
+    assert direct_config_shorthand_args(
+        [str(cfg_path), "--no-progress"],
+        load_toml_func=lambda _path: {"physics": {}},
+    ) == ["run", "--config", str(cfg_path), "--no-progress"]
+    assert direct_config_shorthand_args(
+        [str(cfg_path), "--plot"],
+        load_toml_func=lambda _path: {"case": "cyclone"},
+    ) == ["run-linear", "--config", str(cfg_path), "--plot"]
+    assert direct_config_shorthand_args([]) is None
+    assert direct_config_shorthand_args(["--version"]) is None
+    assert direct_config_shorthand_args(["run", "--config", str(cfg_path)]) is None
+    assert direct_config_shorthand_args([str(tmp_path / "missing.toml")]) is None
 
 
 def test_load_runtime_from_toml_rejects_single_species_table(tmp_path: Path) -> None:
