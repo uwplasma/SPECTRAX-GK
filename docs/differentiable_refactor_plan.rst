@@ -406,6 +406,11 @@ High-Risk Module Split Plan
   Split linear RHS, field solves, integrators, and diagnostics. Required gates:
   field solve identity, late-time growth/frequency metrics, eigenfunction
   overlap, branch continuity, and JAX transform consistency.
+  Fixed-step diagnostic sampling now keeps the public
+  ``integrate_linear_diagnostics`` facade while ``solvers/linear/integrator_diagnostics.py``
+  owns explicit stages for sample validation, cache/state setup, damping
+  assembly, explicit/IMEX/RK step policy, density and Hermite-Laguerre
+  observables, progress callbacks, and every-step versus strided scans.
 
 Execution Phases
 ----------------

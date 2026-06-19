@@ -4498,3 +4498,17 @@ No long nonlinear audit should be launched from these candidates.
   reducing it from roughly 242 lines to 35 lines. Local gates passed:
   py_compile, ruff, mypy for the touched source module,
   `tests/test_terms_assembly.py`, and `tests/test_compare_gx_rhs_terms.py`.
+
+- 2026-06-19: Simplified the fixed-step linear diagnostic integrator inside
+  `solvers/linear/integrator_diagnostics.py` without changing the public
+  `integrate_linear_diagnostics` facade. The diagnostic owner now delegates
+  sample validation, cache/state setup, damping assembly, explicit/IMEX/RK step
+  policy, density and Hermite-Laguerre observables, progress callbacks, and
+  every-step versus strided scans to named private stages. This reduced the
+  public integrator body from roughly 242 lines to 61 lines while keeping the
+  existing monkeypatch/import surface stable. Local gates passed: py_compile,
+  ruff, mypy for the touched source module, the 9 focused
+  `integrate_linear_diagnostics` tests, and the full 59-test
+  `tests/test_linear_helpers_extra.py` shard. `tests/test_linear.py` currently
+  has no collected tests in this branch, so its bounded run returned pytest code
+  5 and was treated as non-applicable rather than a failure.

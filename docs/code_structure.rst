@@ -394,7 +394,10 @@ Completed extractions:
   helpers should import from ``spectraxgk.operators.nonlinear``.
 - fixed-step linear integration keeps public dispatch in
   ``solvers/linear/integrators.py`` while diagnostic sampling lives in
-  ``solvers/linear/integrator_diagnostics.py``. The facade preserves the
+  ``solvers/linear/integrator_diagnostics.py``. The diagnostic owner now keeps
+  sampling validation, cache/state setup, damping assembly, explicit/IMEX/RK
+  step policy, density/Hermite-Laguerre observables, progress callbacks, and
+  every-step versus strided scans in named stages. The facade preserves the
   public ``integrate_linear_diagnostics`` import and test monkeypatch seams.
 - velocity-parallel linear RHS routing is split into common eligibility/device
   policy (``solvers/linear/parallel_common.py``), Hermite streaming routes
