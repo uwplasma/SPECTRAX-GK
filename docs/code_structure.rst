@@ -392,6 +392,12 @@ Completed extractions:
   explicit/IMEX scan tuple schema. The old root nonlinear helper shims were
   removed; normal users should use ``spectraxgk.nonlinear`` and developer
   helpers should import from ``spectraxgk.operators.nonlinear``.
+- full-GK nonlinear executable orchestration lives in
+  ``workflows/nonlinear.py`` behind the public ``spectraxgk.runtime`` facade.
+  The owner separates runtime context construction, fixed-mode/source policy,
+  diagnostic keyword forwarding, adaptive/fixed diagnostic execution,
+  final-state integration, and result assembly so runtime branch tests can
+  exercise each policy without duplicating executable wiring.
 - fixed-step linear integration keeps public dispatch in
   ``solvers/linear/integrators.py`` while diagnostic sampling lives in
   ``solvers/linear/integrator_diagnostics.py``. The diagnostic owner now keeps

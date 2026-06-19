@@ -1603,7 +1603,7 @@ module = "spectraxgk.workflows.nonlinear"
 source_path = "src/spectraxgk/workflows/nonlinear.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "full-GK executable nonlinear runtime workflow, including diagnostics routing, adaptive chunks, fixed-mode/source policy, and final-state integration behind the public runtime facade"
+responsibility = "full-GK executable nonlinear runtime workflow, including context setup, diagnostics routing, adaptive chunks, fixed-mode/source policy, final-state integration, and result assembly behind the public runtime facade"
 moved_exports = [
   "FullNonlinearRuntimeDeps",
   "run_full_nonlinear_runtime",

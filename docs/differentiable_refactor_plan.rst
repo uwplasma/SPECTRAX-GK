@@ -371,8 +371,8 @@ High-Risk Module Split Plan
   future differentiable time-policy work can test context, integration, fit, and
   finalization behavior independently. The full-GK nonlinear runtime workflow
   now delegates to ``spectraxgk.workflows.nonlinear`` through the same facade pattern, including
-  diagnostics routing, adaptive chunks, fixed-mode/source policy, and
-  final-state integration. The
+  runtime context setup, diagnostics routing, adaptive chunks,
+  fixed-mode/source policy, final-state integration, and result assembly. The
   default no-input educational demo now delegates to
   ``spectraxgk.workflows.demo``; named Cyclone/ETG linear executable workflows
   now delegate to ``spectraxgk.workflows.named_cases``; and runtime linear,

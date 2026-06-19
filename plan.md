@@ -4512,3 +4512,19 @@ No long nonlinear audit should be launched from these candidates.
   `tests/test_linear_helpers_extra.py` shard. `tests/test_linear.py` currently
   has no collected tests in this branch, so its bounded run returned pytest code
   5 and was treated as non-applicable rather than a failure.
+
+- 2026-06-19: Simplified the full-GK nonlinear executable workflow inside
+  `workflows/nonlinear.py` without changing the public `spectraxgk.runtime`
+  facade or dependency-injected monkeypatch seams. The public
+  `run_full_nonlinear_runtime` body now delegates runtime context construction,
+  diagnostics/fixed-mode/source policy, diagnostic keyword forwarding,
+  adaptive/fixed diagnostic execution, final-state integration, and result
+  assembly to named private stages. This reduced the public workflow body from
+  roughly 238 lines to 80 lines; the owner module grew locally so the stages
+  could stay in one workflow file rather than adding another module. Local gates
+  passed: py_compile, ruff, mypy for the touched source module,
+  `tests/test_runtime_helpers.py -k run_runtime_nonlinear`,
+  `tests/test_runtime_artifacts.py -k run_runtime_nonlinear`, and the explicit
+  integration-marked nonlinear runtime shard
+  `tests/test_runtime_runner.py -k "runtime_nonlinear or run_nonlinear_case"`
+  with `-o addopts=''` (24 passed in 33.54 s).
