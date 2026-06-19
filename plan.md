@@ -1,3 +1,13 @@
+- 2026-06-19: Continued differentiable solver-objective gate simplification
+  inside `objectives.gradient_gates` without adding modules or changing report
+  schemas. Branch-continuity and geometry-gradient objective functions now
+  share one normalized linear transport-weight helper for heat-flux and
+  particle-flux eigenmode observables. This keeps growth-rate, quasilinear
+  proxy, heat-weight, and particle-weight AD/finite-difference gates aligned
+  with the same quadrature and normalization path. The module dropped by two
+  lines. Local gates passed: focused solver-objective gradient-report shard,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued validation-gate simplification inside
   `validation.gate_reports` without changing public gate APIs or JSON schemas.
   Nonlinear heat-flux convergence, eigenfunction mismatch, observed-order

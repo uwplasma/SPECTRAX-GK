@@ -311,7 +311,10 @@ Completed extractions:
   ``objectives/vmec_boozer_line_search.py``. Scalar and aggregate
   VMEC/Boozer line-search reports share one private curvature-gated
   one-parameter search loop, keeping finite-difference, training, and
-  held-out aggregate gates on the same accept/reject policy. The top-level
+  held-out aggregate gates on the same accept/reject policy. Solver-ready
+  gradient gates share one normalized heat/particle transport-weight helper
+  for eigenmode observables so linear-growth, quasilinear, and particle-flux
+  AD checks use the same quadrature and normalization path. The top-level
   ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
   these owner modules.
 - production nonlinear turbulent-flux optimization guardrails are split into

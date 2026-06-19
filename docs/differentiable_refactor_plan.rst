@@ -250,7 +250,10 @@ High-Risk Module Split Plan
   objective surface. Scalar and aggregate
   VMEC/Boozer line-search reports share one private curvature-gated
   one-parameter search loop so training, holdout, and finite-difference gates
-  use the same accept/reject policy.
+  use the same accept/reject policy. Solver-ready gradient gates share one
+  normalized heat/particle transport observable helper so growth-rate,
+  quasilinear, and particle-flux finite-difference checks use the same
+  field-line quadrature path.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
