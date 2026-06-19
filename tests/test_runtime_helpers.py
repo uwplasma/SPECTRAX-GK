@@ -236,6 +236,50 @@ def test_prepare_runtime_command_config_applies_explicit_override_policy() -> No
     assert untouched.quasilinear.enabled is False
 
 
+def test_runtime_command_option_helpers_normalize_cli_and_toml_values() -> None:
+    cfg = _base_cfg()
+    section = {
+        "Nm": "7",
+        "solver": "explicit_time",
+        "method": "rk4",
+        "steps": "16",
+        "sample_stride": "3",
+    }
+    args = SimpleNamespace(
+        Nl="9",
+        Nm=None,
+        solver=None,
+        fit_signal="phi",
+        method=None,
+        dt="0.05",
+        steps=None,
+        sample_stride=None,
+    )
+
+    assert runtime_commands._resolve_grid_time_options(args, section, cfg) == (
+        9,
+        7,
+        "rk4",
+        0.05,
+        16,
+        3,
+    )
+    assert runtime_commands._resolve_linear_fit_options(args, section) == (
+        "explicit_time",
+        "phi",
+    )
+
+    empty_args = SimpleNamespace(Nl=None, Nm=None, method=None, dt=None, steps=None)
+    assert runtime_commands._resolve_grid_time_options(empty_args, {}, cfg) == (
+        24,
+        12,
+        None,
+        None,
+        None,
+        cfg.time.sample_stride,
+    )
+
+
 def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.CaptureFixture[str]) -> None:
     captured: dict[str, object] = {}
 
