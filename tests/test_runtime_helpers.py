@@ -161,9 +161,13 @@ def test_runtime_small_helper_functions() -> None:
     assert _runtime_model_key(cfg) == "gyrokinetic"
 
 
-def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
+def test_runtime_policy_helpers_preserve_public_runtime_facade_exports() -> None:
     for name in runtime_policies.__all__:
         assert getattr(runtime, name) is getattr(runtime_policies, name)
+
+
+def test_runtime_facade_module_is_patchable_public_surface() -> None:
+    assert runtime._runtime_facade_module() is runtime
 
 
 def test_runtime_command_helpers_have_single_canonical_owner() -> None:
