@@ -2464,6 +2464,20 @@ fast_tests = ["tests/test_stellarator_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.objectives.zonal_records"
+source_path = "src/spectraxgk/objectives/zonal_records.py"
+facade_module = "spectraxgk.objectives.zonal"
+status = "active"
+responsibility = "zonal-flow metric record normalization, complete surface/alpha/kx tensor assembly, and objective row-table construction"
+moved_exports = [
+  "MissingDampingPolicy",
+  "_finite_metric_tensor_from_records",
+  "_zonal_row_table",
+]
+fast_tests = ["tests/test_zonal_objective.py", "tests/test_build_zonal_flow_objective_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.objectives.qa_low_turbulence_contracts"
 source_path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
 facade_module = "spectraxgk.objectives.qa_low_turbulence"

@@ -1,3 +1,14 @@
+- 2026-06-19: Continued differentiable zonal-flow objective refactor by
+  extracting record normalization, complete surface/alpha/kx tensor assembly,
+  missing-damping policy, and objective row-table construction from
+  `objectives.zonal` into `objectives.zonal_records`. The public zonal
+  objective, reduced scalar, artifact builder, and AD/FD sensitivity report
+  remain available through `objectives.zonal`, while the non-differentiable
+  artifact-ingestion layer now has a focused owner. `zonal.py` dropped from 581
+  to 374 lines and the new record helper module is 239 lines. Local gates
+  passed: zonal objective/artifact tests, Ruff, mypy, `py_compile`,
+  architecture/refactor/validation-coverage/size manifests, terminology audits,
+  and `git diff --check`.
 - 2026-06-19: Continued quasilinear validation refactor by extracting
   model-selection input normalization and optimized-equilibrium audit summaries
   from `validation.quasilinear.model_selection` into

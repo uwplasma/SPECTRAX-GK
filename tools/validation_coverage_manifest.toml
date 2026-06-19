@@ -1631,6 +1631,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.objectives.zonal"
 path = "src/spectraxgk/objectives/zonal.py"
+owned_modules = [
+  "spectraxgk.objectives.zonal_records",
+]
 owner_lane = "reduced zonal-flow objective, AD/FD gates, and stellarator optimization bridge"
 status = "active"
 coverage_priority = "high"
