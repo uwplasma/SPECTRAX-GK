@@ -8,11 +8,11 @@ import pytest
 from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.workflows.runtime.chunks import (
     _effective_diagnostics_stride,
-    _format_duration,
     _next_elapsed_time,
     _offset_chunk_diagnostics_time,
     run_adaptive_runtime_chunk_loop,
 )
+from spectraxgk.workflows.runtime.orchestration import format_duration
 from spectraxgk.terms.config import FieldState
 
 
@@ -36,9 +36,9 @@ def _diag(times: list[float]) -> SimulationDiagnostics:
 
 
 def test_format_duration_compacts_minutes_and_hours() -> None:
-    assert _format_duration(5.0) == "00:05"
-    assert _format_duration(65.0) == "01:05"
-    assert _format_duration(3665.0) == "1:01:05"
+    assert format_duration(5.0) == "00:05"
+    assert format_duration(65.0) == "01:05"
+    assert format_duration(3665.0) == "1:01:05"
 
 
 def test_adaptive_chunk_time_helpers_lock_accumulated_time_axis() -> None:

@@ -1,3 +1,9 @@
+- 2026-06-18: Removed the private adaptive-chunk `_format_duration`
+  compatibility wrapper. Runtime chunk tests now import the canonical
+  orchestration progress formatter directly, leaving
+  `spectraxgk.workflows.runtime.chunks` focused on adaptive chunk execution,
+  time-axis validation, truncation, striding, and result assembly. Focused
+  runtime chunk/helper tests, Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Removed a stale runtime diagnostic-array compatibility hop.
   `spectraxgk.workflows.runtime.diagnostics` now owns only linear fit and
   quasilinear finalization helpers; finite-value checks and diagnostic slicing,

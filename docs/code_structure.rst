@@ -221,7 +221,9 @@ Completed extractions:
   ``workflows/runtime/diagnostic_arrays.py``. These helpers are imported
   directly from this owner rather than through the runtime fit module.
 - adaptive chunk execution used by runtime and comparison artifacts:
-  ``workflows/runtime/chunks.py``
+  ``workflows/runtime/chunks.py``. Progress/ETA formatting is imported from the
+  canonical runtime orchestration formatter rather than wrapped in the chunk
+  owner.
 - runtime result containers and nonlinear result assembly:
   ``workflows/runtime/results.py``
 - runtime progress formatting, combined-``ky`` scan batching, serial/worker
