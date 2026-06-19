@@ -558,13 +558,17 @@ explicit before fitting; Diffrax-streaming samples read the same
 ``ScanFitWindowPolicy`` for their resolved fit window. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
-setup, generic saved-time fitting, and result packaging. The public beta runner
-still owns per-beta setup and time/diffrax fallback.
+setup, state/cache construction, saved/configured trajectory integration,
+saved-signal fitting, and result packaging through focused helper seams in the
+public owner. The public beta runner still owns per-beta setup and time/diffrax
+fallback.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
 The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
-policy between primary auto-window fitting and invalid-window fallback fitting.
+policy between primary auto-window fitting and invalid-window fallback fitting,
+and configured-time versus fixed-time integration is split before signal
+selection so stride and density-output policy cannot drift.
 The TEM public owner now keeps setup, parameter construction, and species
 validation local while ``spectraxgk.validation.benchmarks.tem_paths`` owns the
 single-ky Krylov path, saved-time fit path, streaming scan branch, and scan

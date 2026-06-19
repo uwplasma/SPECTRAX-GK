@@ -191,7 +191,12 @@ High-Risk Module Split Plan
   fallback candidate selection is isolated from solve orchestration in a local
   helper.
   KBM single-point saved-time direct fits also share one automatic-fit keyword
-  policy for primary auto-window and invalid-window fallback fits.
+  policy for primary auto-window and invalid-window fallback fits. The
+  single-point owner now keeps setup, state/cache construction,
+  configured-time versus fixed-time trajectory integration, automatic signal
+  selection, and saved-signal fitting in focused helpers while explicit-time
+  diagnostics and single/multi-target Krylov paths stay in
+  ``validation.benchmarks.kbm_linear_paths``.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``validation.benchmarks.tem_paths``. TEM single-ky saved-time fits share

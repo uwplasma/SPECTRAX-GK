@@ -347,7 +347,7 @@ module = "spectraxgk.validation.benchmarks.kbm_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "KBM single-ky geometry setup, generic saved-time fitting, and public result packaging"
+responsibility = "KBM single-ky setup, state/cache construction, saved-time integration, saved-signal fitting, and public result packaging"
 moved_exports = [
   "run_kbm_linear",
 ]

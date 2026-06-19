@@ -4333,3 +4333,16 @@ No long nonlinear audit should be launched from these candidates.
   `git diff --check`. The broad `tests/test_benchmarks.py` kinetic smoke
   selection was deselected by the repository marker policy in this environment,
   so it was not used as a gate for this tranche.
+
+- 2026-06-19: Simplified the KBM single-ky runner inside
+  `validation/benchmarks/kbm_linear.py` without adding another module. The
+  public `run_kbm_linear` orchestration now delegates setup normalization,
+  species-index validation, state/cache construction, configured-time versus
+  fixed-time saved trajectory integration, automatic signal selection, and
+  saved-signal fitting to focused private helpers while preserving the existing
+  `kbm_linear_paths.py` explicit-time and Krylov branch owners. This reduced
+  `run_kbm_linear` from roughly 328 lines to 156 lines, with new helper
+  functions at 66 lines or shorter. Local gates passed: KBM linear benchmark
+  branch shard, targeted KBM linear regression tests from `tests/test_benchmarks.py`
+  with marker filtering overridden, explicit-history and imported-geometry KBM
+  checks, py_compile, ruff, and mypy for the touched source module.
