@@ -1,3 +1,19 @@
+- 2026-06-19: Continued kinetic-electron single-run benchmark refactoring
+  inside `validation.benchmarks.kinetic_linear` without changing the public
+  `run_kinetic_linear` signature, default reference-aligned species/term
+  contract, species-index validation messages, Krylov option forwarding,
+  configured/unconfigured time-history branch order, fit-window semantics, or
+  `LinearRunResult` schema. The runner now delegates setup normalization,
+  selected-state construction, Krylov solving, configured and unconfigured
+  saved-time integration, sampled-signal fitting, and result packing to named
+  local stages. The public runner drops from 261 to 81 lines, and the longest
+  helper is 65 lines; the tradeoff is a longer owner module because the
+  existing patchable benchmark hooks remain local rather than adding another
+  file. Focused kinetic linear branch tests and the explicit integration smoke
+  passed locally, along with Ruff, mypy, `py_compile`,
+  refactor/coverage/size manifests, Sphinx docs, repository-size policy, and
+  `git diff --check`.
+
 - 2026-06-19: Continued imported Miller geometry refactoring inside
   `geometry_backends.miller_profiles` without changing the public
   `assemble_miller_profiles` signature, EIK profile dictionary keys, Bishop
