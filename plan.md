@@ -1,3 +1,15 @@
+- 2026-06-19: Continued nonlinear diagnostic wiring simplification inside
+  `solvers.nonlinear.diagnostic_integration` without adding a module. The
+  explicit and IMEX public entry-point wrappers now use the shared option-key
+  tables for forwarding into their injected implementation owners instead of
+  duplicating long keyword lists. The IMEX method branch set is also centralized
+  in `_IMEX_METHODS`. This keeps all public signatures and monkeypatch seams
+  unchanged while reducing the wiring module from 495 to 445 lines and making
+  future diagnostic options a one-table update. Local gates passed: nonlinear
+  forwarding tests, nonlinear/IMEX/package identity shard, py_compile, Ruff,
+  mypy, refactor manifest, validation coverage manifest, repository size
+  manifest, source terminology scans, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear solver refactor by moving IMEX diagnostic
   integration orchestration from `solvers.nonlinear.diagnostics` into the
   existing `solvers.nonlinear.imex_diagnostics` owner. The explicit diagnostic
