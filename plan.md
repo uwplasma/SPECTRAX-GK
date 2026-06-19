@@ -1,3 +1,16 @@
+- 2026-06-19: Continued performance/refactor cleanup in nonlinear
+  parallelization by moving pencil-FFT RHS identity and pencil transport-window
+  identity implementations out of the public `operators.nonlinear.parallel`
+  facade. Pencil RHS routing now lives with `spectral_identity_rhs`, and the
+  fixed-window physical-transport trace gate now lives with
+  `spectral_identity_integrator`. The public parallel module now re-exports
+  these identity-gated routes instead of owning their numerical implementation,
+  while preserving fail-closed behavior and avoiding new speedup claims. Added
+  facade re-export tests for the moved functions. Local gates passed: full
+  nonlinear parallel test shard, focused pencil RHS/transport-window gates,
+  Ruff, mypy, `py_compile`, package-architecture manifest,
+  differentiable-refactor manifest, repository-size manifest, source terminology
+  audits, and `git diff --check`.
 - 2026-06-19: Continued runtime command simplification by moving command
   artifact display ordering and optional artifact write/print helpers from
   `workflows.runtime.commands` into `workflows.runtime.orchestration_artifacts`.

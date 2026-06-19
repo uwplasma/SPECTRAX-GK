@@ -72,6 +72,18 @@ def test_nonlinear_parallel_facade_reexports_spectral_identity_core() -> None:
         nonlinear_parallel.integrate_logical_decomposed_nonlinear_spectral
         is spectral_identity_integrator.integrate_logical_decomposed_nonlinear_spectral
     )
+    assert (
+        nonlinear_parallel.nonlinear_spectral_pencil_transport_window_identity_gate
+        is spectral_identity_integrator.nonlinear_spectral_pencil_transport_window_identity_gate
+    )
+    assert (
+        nonlinear_parallel.nonlinear_spectral_pencil_rhs_identity_gate
+        is spectral_identity_rhs.nonlinear_spectral_pencil_rhs_identity_gate
+    )
+    assert (
+        nonlinear_parallel.pencil_decomposed_nonlinear_spectral_rhs
+        is spectral_identity_rhs.pencil_decomposed_nonlinear_spectral_rhs
+    )
 
 
 def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
