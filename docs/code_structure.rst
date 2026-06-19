@@ -401,7 +401,10 @@ Completed extractions:
   ``validation/nonlinear_gradient/followup_plan.py``,
   ``validation/nonlinear_gradient/followup_ql_seed.py``,
   ``validation/nonlinear_gradient/followup_state_runbook.py``,
-  ``validation/nonlinear_gradient/followup_variance.py``
+  ``validation/nonlinear_gradient/followup_variance.py``. Variance-reduction,
+  control-mean campaign, and control-mean gate reports share one
+  control-variate candidate parsing/ranking policy so noisy follow-up campaign
+  decisions stay deterministic.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central

@@ -1,3 +1,14 @@
+- 2026-06-19: Continued nonlinear-gradient follow-up simplification inside
+  `validation.nonlinear_gradient.followup_variance` without changing report
+  schemas or public follow-up APIs. Control-variate candidate parsing,
+  uncertainty/reduction ranking, and best-candidate fallback selection now live
+  in one private policy used by the variance-reduction plan, independent
+  control-mean campaign planner, and control-mean gate. This keeps noisy
+  nonlinear-gradient campaign decisions deterministic across all follow-up
+  reports. The module dropped by two lines. Local gates passed: full
+  nonlinear-gradient evidence shard, focused variance/control shard, Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-19: Continued differentiable solver-objective gate simplification
   inside `objectives.gradient_gates` without adding modules or changing report
   schemas. Branch-continuity and geometry-gradient objective functions now
