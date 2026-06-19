@@ -1,4 +1,16 @@
 - 2026-06-19: Continued nonlinear artifact-writer simplification inside
+  `artifacts.nonlinear_netcdf_diagnostics` by extracting Phi2 reduction,
+  Phi2 variable writes, and zonal-potential NetCDF writes into focused helpers.
+  The saved schema, active-axis condensation, complex real/imag packing, and
+  Phi2 consistency rule are unchanged, while `_write_diagnostics_group` drops
+  from 361 to 296 lines and the module stays below 500 lines without adding a
+  new source file. Local gate passed before this log update: focused nonlinear
+  NetCDF artifact shard covering active resolved axes, full nonlinear NetCDF
+  bundle, and append schema preservation. Planned final gates for this tranche:
+  Ruff, mypy, `py_compile`, refactor/coverage/size manifests, Sphinx docs, and
+  `git diff --check`.
+
+- 2026-06-19: Continued nonlinear artifact-writer simplification inside
   `artifacts.nonlinear_netcdf_diagnostics` without changing the saved NetCDF
   schema. Base resolved metrics, electrostatic/Apar/Bpar split metrics, and
   turbulent-heating spectra now share `_write_resolved_species_spectra` for
