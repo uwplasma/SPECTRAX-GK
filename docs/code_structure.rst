@@ -269,7 +269,9 @@ Completed extractions:
 - validation gate dataclasses and JSON-ready gate helpers:
   ``validation/gates.py`` facade with metric containers in
   ``validation/gate_types.py`` and scalar/report policies in
-  ``validation/gate_reports.py``
+  ``validation/gate_reports.py``. Report builders share one private
+  upper-limit scalar-gate policy for convergence, mismatch, deficit, and
+  branch-jump thresholds so tolerance semantics remain auditable.
 - autodiff validation helpers:
   ``validation/autodiff.py`` facade with finite-difference Jacobian and
   Gauss-Newton covariance helpers in ``validation/autodiff_finite_difference.py``

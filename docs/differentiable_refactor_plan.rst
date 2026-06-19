@@ -164,7 +164,9 @@ Validation gates also follow this facade/owner split:
 ``validation.gates`` remains the public import point, while
 ``validation.gate_types`` owns frozen metric/result containers and
 ``validation.gate_reports`` owns scalar tolerance evaluation, JSON
-serialization, and physics/numerics report builders.
+serialization, and physics/numerics report builders. Upper-limit gate
+semantics for convergence, mismatch, deficit, and branch-jump thresholds are
+centralized there instead of repeated in each report builder.
 
 High-Risk Module Split Plan
 ---------------------------

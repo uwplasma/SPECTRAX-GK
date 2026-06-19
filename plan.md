@@ -1,3 +1,14 @@
+- 2026-06-19: Continued validation-gate simplification inside
+  `validation.gate_reports` without changing public gate APIs or JSON schemas.
+  Nonlinear heat-flux convergence, eigenfunction mismatch, observed-order
+  deficit, and branch-continuity jump gates now share one private
+  `_upper_limit_gate` helper for "observed quantity must stay below a
+  documented threshold" policies. This makes tolerance semantics easier to
+  audit while preserving each publication-facing metric name and note. The
+  module dropped by three lines. Local gates passed: full
+  `tests/test_validation_gates.py`, focused benchmark gate-report shard, Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-19: Continued KBM benchmark-path simplification inside
   `validation.benchmarks.kbm_beta` and
   `validation.benchmarks.kbm_beta_solver_paths` without adding modules or
