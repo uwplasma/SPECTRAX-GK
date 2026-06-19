@@ -1,3 +1,12 @@
+- 2026-06-19: Continued runtime facade simplification by separating runtime
+  geometry routing from flux-tube geometry construction.
+  `_runtime_geometry_config_for_builder` now owns VMEC and Miller EIK
+  generation routing plus default geometry pass-through, while
+  `build_runtime_geometry` only calls the flux-tube builder. Added direct tests
+  for VMEC, Miller, and default routing plus existing builder behavior. Local
+  gates passed: focused runtime-helper geometry/dependency tests, Ruff, mypy,
+  `py_compile`, package-architecture manifest, differentiable-refactor manifest,
+  repository-size manifest, source terminology audits, and `git diff --check`.
 - 2026-06-19: Continued VMEC imported-geometry cleanup by centralizing
   Boozer trigonometric basis construction. `_boozer_trig_basis` now owns the
   shape-generic `cos/sin`, `m cos`, `m sin`, `n cos`, and `n sin` arrays used by

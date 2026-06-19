@@ -1246,6 +1246,21 @@ def test_runtime_build_geometry_vmec_and_miller_branches(
         "spectraxgk.runtime.generate_runtime_miller_eik", lambda _cfg: miller_path
     )
 
+    vmec_geom = runtime._runtime_geometry_config_for_builder(
+        replace(cfg, geometry=GeometryConfig(model="vmec"))
+    )
+    miller_geom = runtime._runtime_geometry_config_for_builder(
+        replace(cfg, geometry=GeometryConfig(model="miller"))
+    )
+    default_geom = runtime._runtime_geometry_config_for_builder(cfg)
+
+    assert (vmec_geom.model, vmec_geom.geometry_file) == ("vmec-eik", str(vmec_path))
+    assert (miller_geom.model, miller_geom.geometry_file) == (
+        "imported-eik",
+        str(miller_path),
+    )
+    assert default_geom is cfg.geometry
+
     build_runtime_geometry(replace(cfg, geometry=GeometryConfig(model="vmec")))
     build_runtime_geometry(replace(cfg, geometry=GeometryConfig(model="miller")))
     build_runtime_geometry(cfg)
