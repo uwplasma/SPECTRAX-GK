@@ -180,7 +180,10 @@ Completed extractions:
   ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, and
   ``diagnostics/growth_series.py``. The public ``diagnostics.analysis`` and
   ``diagnostics.growth_rates`` modules remain small facades over focused
-  diagnostic owners.
+  diagnostic owners. Fit-window selection keeps argument validation,
+  least-squares scoring, amplitude/slope thresholds, candidate-window search,
+  and fallback policy as named stages inside ``diagnostics/growth_windows.py``
+  so benchmark auto-windowing can be tested without duplicating fit logic.
 - scalar energy, species transport/heating, and resolved spectral diagnostics:
   ``diagnostics/energy.py``, ``diagnostics/transport.py``, and
   ``diagnostics/resolved.py``. The public ``diagnostics.core`` module remains

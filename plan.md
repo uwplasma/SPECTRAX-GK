@@ -4173,6 +4173,12 @@ No long nonlinear audit should be launched from these candidates.
   and `SimulationDiagnostics` packaging. The public cETG integrator API and
   return schema are unchanged; the dedicated cETG test shard, Ruff, mypy, and
   compile gates passed locally.
+- Continued the diagnostics refactor in place by splitting
+  `spectraxgk.diagnostics.growth_windows` into shared fit-input validation,
+  least-squares/R² scoring, amplitude and slope threshold helpers,
+  log-linear candidate search, and fallback-window policy. Public fit-window
+  APIs are unchanged; focused analysis fit-window tests, Ruff, mypy, and compile
+  gates passed locally.
 
 - Removed the benchmark-runner `gx_reference` compatibility keyword and kept
   `reference_aligned` as the canonical physics/numerics policy name. GX-specific
