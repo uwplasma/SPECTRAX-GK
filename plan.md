@@ -1,3 +1,13 @@
+- 2026-06-19: Continued nonlinear solver refactor by extracting diagnostic
+  IMEX stage and scan policy from `solvers.nonlinear.imex` into
+  `solvers.nonlinear.imex_diagnostics`. Cached IMEX solve policy keeps the
+  fixed-point predictor, GMRES solve-step seam, implicit-operator shape policy,
+  and cached scan, preserving existing monkeypatch and public import surfaces.
+  `imex.py` dropped from 491 to 352 lines and the new diagnostic stepping
+  module is 171 lines. Local gates passed: IMEX unit tests, nonlinear shard,
+  solver package re-export tests, Ruff, mypy, `py_compile`,
+  architecture/refactor/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued VMEC differentiability/refactor cleanup by extracting
   collection-level boundary-chain gate policy from `geometry.vmec_boundary_chain`
   into `geometry.vmec_boundary_collection`. Single-probe scalar chain

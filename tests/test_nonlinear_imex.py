@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.solvers.nonlinear.imex as imex_module
+import spectraxgk.solvers.nonlinear.imex_diagnostics as imex_diagnostics
 from spectraxgk.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
@@ -18,6 +19,18 @@ from spectraxgk.solvers.nonlinear.imex import (
     solve_imex_step,
 )
 from spectraxgk.terms.config import FieldState
+
+
+def test_imex_diagnostic_helpers_have_canonical_owner() -> None:
+    assert imex_module.advance_imex_nonlinear_state is (
+        imex_diagnostics.advance_imex_nonlinear_state
+    )
+    assert imex_module.make_imex_diagnostic_step is (
+        imex_diagnostics.make_imex_diagnostic_step
+    )
+    assert imex_module.run_imex_diagnostic_scan is (
+        imex_diagnostics.run_imex_diagnostic_scan
+    )
 
 
 def test_imex_fixed_point_guess_applies_linear_predictor_iterations() -> None:
