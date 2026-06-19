@@ -1,3 +1,16 @@
+- 2026-06-18: Continued nonlinear parallelization testability inside the
+  existing `spectraxgk.operators.nonlinear.device_z` owner without adding
+  source files. The device-z transport-window identity gate now uses explicit
+  helper policies for trace dictionary creation, trace freezing, trace-error
+  summarization, and fail-closed transport-window report assembly. Added direct
+  helper coverage while preserving the public `device_z_pencil_*` API and the
+  existing fail-closed behavior. This is an identity-gate/refactor tranche
+  only; it does not promote a new nonlinear GPU speedup claim. Local gates
+  passed: selected device-z shard and full `tests/test_nonlinear_parallel.py`,
+  Ruff on touched device-z/test files, mypy and `py_compile` on the device-z
+  owner, source terminology audit, differentiable-refactor/validation-coverage/
+  package-architecture manifests, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
 - 2026-06-18: Continued VMEC imported-geometry simplification inside the
   existing `spectraxgk.geometry_backends.vmec_fieldlines` owner without adding
   source files. Boozer backend fallback, Boozer-mode table sampling, Boozer

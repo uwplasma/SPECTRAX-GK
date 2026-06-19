@@ -594,6 +594,50 @@ def test_spectral_physical_observable_sums_are_z_additive() -> None:
     np.testing.assert_allclose(np.asarray(reassembled), np.asarray(whole), rtol=1.0e-6)
 
 
+def test_device_z_transport_trace_helpers_build_fail_closed_reports() -> None:
+    traces = nonlinear_parallel_device_z._new_transport_trace_dict()
+    assert set(traces) == {
+        "free_energy",
+        "field_energy",
+        "physical_flux",
+        "bracket_rms",
+    }
+    traces["free_energy"].extend([2.0, 3.0])
+    traces["field_energy"].append(0.5)
+    traces["physical_flux"].append(0.25)
+    traces["bracket_rms"].append(0.125)
+
+    frozen = nonlinear_parallel_device_z._transport_trace_tuples(traces)
+    assert frozen["free_energy"] == (2.0, 3.0)
+
+    errors = nonlinear_parallel_device_z._transport_trace_error_pairs(
+        frozen,
+        frozen,
+        floor=1.0e-6,
+    )
+    assert errors["free_energy"] == (0.0, 0.0)
+
+    report = nonlinear_parallel_device_z._blocked_device_z_transport_window_report(
+        state_shape=(2, 3, 6, 4, 2),
+        axis_name="z",
+        requested_count=1,
+        active_count=0,
+        steps=2,
+        dt=0.01,
+        atol=1.0e-6,
+        rtol=1.0e-5,
+        blocked_reasons=("requires_at_least_two_devices",),
+        serial_traces=traces,
+    )
+    assert report.identity_passed is False
+    assert report.device_sharding_active is False
+    assert report.decomposed_path_enabled is False
+    assert report.final_state_max_abs_error == float("inf")
+    assert report.serial_free_energy_trace == (2.0, 3.0)
+    assert report.device_free_energy_trace == ()
+    assert report.blocked_reasons == ("requires_at_least_two_devices",)
+
+
 def test_device_z_transport_window_observable_mode_fails_closed() -> None:
     state = nonlinear_parallel.deterministic_nonlinear_spectral_state((1, 1, 4, 4, 2))
 
