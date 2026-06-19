@@ -4528,3 +4528,18 @@ No long nonlinear audit should be launched from these candidates.
   integration-marked nonlinear runtime shard
   `tests/test_runtime_runner.py -k "runtime_nonlinear or run_nonlinear_case"`
   with `-o addopts=''` (24 passed in 33.54 s).
+
+- 2026-06-19: Simplified the diagnostics-rich explicit linear time integrator
+  inside `solvers/time/explicit_diagnostics.py` without changing the public
+  `solvers.time.explicit` facade, returned tuple schema, or injected explicit
+  step seam. The public `integrate_linear_explicit_diagnostics` body now
+  delegates method/mode validation, adaptive time-policy setup, JIT stepper
+  construction, energy/transport sample assembly, progress rendering, and
+  `SimulationDiagnostics` construction to named private stages. This reduced the
+  public integrator body from roughly 236 lines to 75 lines; the owner module
+  grew locally so the staged sampling/progress/report policies stay in one file
+  rather than adding another module. Local gates passed: py_compile, ruff, mypy
+  for the touched source module, all 45 `tests/test_runtime_diagnostics.py`
+  tests, and the combined explicit-time low-level/benchmark-branch shard (19
+  tests). Renamed two non-benchmark explicit-time test labels to avoid
+  comparison-code terminology outside benchmark/comparison contexts.

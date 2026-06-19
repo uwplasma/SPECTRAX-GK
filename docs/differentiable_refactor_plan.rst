@@ -149,6 +149,11 @@ responsibility groups:
 Existing public modules remain as facades until the planned API cleanup. New
 implementation code should be placed under the domain packages named in
 :doc:`architecture_refactor_plan`, not added as new root-level prefix modules.
+Explicit fixed-step diagnostic integration follows this rule: public imports
+remain on ``solvers.time.explicit`` while
+``solvers/time/explicit_diagnostics.py`` now owns method/time-policy validation,
+JIT stepper construction, energy/transport sampling, progress rendering, and
+``SimulationDiagnostics`` assembly as named stages.
 Term-wise RHS assembly now follows this rule with a small public
 ``terms.assembly`` facade and focused cached-RHS, diagnostic-RHS, field-solve,
 and helper-policy owner modules. The diagnostic-RHS owner now keeps explicit

@@ -702,7 +702,7 @@ module = "spectraxgk.solvers.time.explicit_diagnostics"
 source_path = "src/spectraxgk/solvers/time/explicit_diagnostics.py"
 facade_module = "spectraxgk.solvers.time.explicit"
 status = "active"
-responsibility = "diagnostics-rich explicit linear initial-value integration with energy and transport sampling"
+responsibility = "diagnostics-rich explicit linear initial-value integration, including method/time policy, JIT stepper wiring, energy/transport sampling, progress rendering, and diagnostics assembly"
 moved_exports = [
   "ExplicitTimeConfigLike",
   "integrate_linear_explicit_diagnostics",

@@ -1737,7 +1737,7 @@ def test_term_config_and_rk3_wrapper_delegate_to_linear_step(
     np.testing.assert_allclose(np.asarray(fields.phi), np.asarray(G0[0, 0]))
 
 
-def test_linear_explicit_step_applies_gx_post_step_mask(
+def test_linear_explicit_step_applies_completed_step_mask(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cache = SimpleNamespace(
@@ -1927,7 +1927,7 @@ def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:
     )
 
 
-def test_linear_gx_adaptive_default_dt_max_matches_gx():
+def test_linear_explicit_adaptive_default_dt_max_clamps_to_nominal_dt():
     """When dt_max is unset, the adaptive explicit path should clamp to dt."""
 
     cfg, grid, geom, params, cache = _small_setup()
