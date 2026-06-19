@@ -247,6 +247,10 @@ Completed extractions:
 - runtime restart-state dispatch: the public ``runtime.py`` facade keeps the
   patchable NetCDF/raw state loaders but shares one shape-keyword payload
   between both paths, so restart dimensions cannot drift between loader calls.
+- runtime linear time/fit option forwarding: ``run_runtime_linear``,
+  ``run_runtime_scan``, and the combined-``ky`` batch wrapper share one private
+  option bundle in the public ``runtime.py`` facade, keeping method, timestep,
+  sample-stride, fit-window, mode-method, and fit-signal forwarding aligned.
 - runtime TOML case dependency defaults:
   ``workflows/cases.py``. The public ``runtime.py`` facade owns the stable
   ``run_linear_case`` and ``run_nonlinear_case`` signatures, while

@@ -1,3 +1,14 @@
+- 2026-06-19: Continued runtime facade simplification inside `runtime.py`
+  without changing public runtime signatures, patchable dependency builders, or
+  scan semantics. `run_runtime_linear`, `run_runtime_scan`, and
+  `_run_runtime_scan_batch` now share one `_runtime_linear_time_fit_options`
+  bundle for method, timestep, sample-stride, fit-window, mode-method, and
+  fit-signal forwarding. This removes repeated option blocks while keeping the
+  runtime facade as the single public monkeypatch surface. The module dropped
+  from 569 to 551 lines. Local gates passed: focused runtime facade shard,
+  focused runtime-runner integration shard, quasilinear runtime shard, Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-19: Continued TEM scan-path fit-policy simplification inside
   `validation.benchmarks.tem_paths` without changing public TEM runner
   arguments, integration hooks, or fit formulas. The Diffrax-streaming scan
