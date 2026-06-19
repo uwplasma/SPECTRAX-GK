@@ -1,3 +1,12 @@
+- 2026-06-19: Continued kinetic-electron benchmark-path simplification inside
+  `validation.benchmarks.kinetic_linear` without changing runner APIs or
+  branch order. The saved-time single-ky path now builds one local automatic-fit
+  keyword policy and reuses it for both the primary auto-window fit and the
+  fallback after an invalid requested fit window. This keeps kinetic growth-rate
+  extraction semantics aligned while removing duplicated option forwarding.
+  Local gates passed: focused kinetic branch shard, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-19: Continued Cyclone benchmark-path simplification inside
   `validation.benchmarks.cyclone_linear_paths` without adding modules or
   changing runner APIs. The single-mode time path now builds one local

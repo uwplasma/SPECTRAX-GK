@@ -193,6 +193,9 @@ High-Risk Module Split Plan
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
   policy for auto-signal and direct-signal fits in
   ``validation.benchmarks.cyclone_linear_paths``.
+  Kinetic-electron single-ky saved-time fitting shares one automatic-fit
+  keyword policy for primary auto-window and invalid-window fallback fits in
+  ``validation.benchmarks.kinetic_linear``.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
