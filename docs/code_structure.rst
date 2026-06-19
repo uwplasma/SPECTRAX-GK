@@ -537,7 +537,9 @@ fastest-growth fallback candidate selection lives in a focused local helper so
 the solver path keeps branch-choice policy separate from solve orchestration.
 The explicit-time fallback ladder and saved-time auto-fit branch share the scan
 fit-window policy, so beta-scan fit knobs are not duplicated across
-time-integration paths. The single-point runner delegates
+time-integration paths. Saved-time KBM beta samples also use one dispatcher for
+non-Diffrax time-config and no-config integration, with stride resolution kept
+explicit before fitting. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
 setup, generic saved-time fitting, and result packaging. The public beta runner

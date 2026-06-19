@@ -182,7 +182,9 @@ High-Risk Module Split Plan
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits and saved-time
-  auto-fit selection. Multi-target transition-threshold and fastest-growth
+  auto-fit selection. Saved-time KBM beta samples use one dispatcher for
+  non-Diffrax time-config and no-config integration, with stride resolution
+  kept explicit before fitting. Multi-target transition-threshold and fastest-growth
   fallback candidate selection is isolated from solve orchestration in a local
   helper.
   KBM single-point saved-time direct fits also share one automatic-fit keyword

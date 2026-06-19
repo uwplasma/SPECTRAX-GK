@@ -1,3 +1,13 @@
+- 2026-06-19: Continued KBM beta-scan solver-path simplification inside
+  `validation.benchmarks.kbm_beta_solver_paths` and fixed a latent saved-time
+  auto-fit bug exposed by an integration shard. Non-Diffrax time-config runs
+  and no-config runs now share one saved-time integrator dispatch with explicit
+  stride resolution, while the saved-time auto-fit branch forwards
+  `ScanFitWindowPolicy.auto_kwargs()` exactly once instead of duplicating
+  window-keyword values. The module dropped from 790 to 760 lines. Local gates
+  passed: focused KBM beta branch shard, relevant integration KBM beta nodes,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued VMEC-state differentiability gate simplification inside
   `geometry.vmec_state_sensitivity` without changing report schemas or optional
   backend behavior. Metric-tensor and field-line tensor AD/FD reports now share
