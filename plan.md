@@ -1,3 +1,13 @@
+- 2026-06-19: Continued runtime scan-orchestration simplification by moving
+  per-ky scan task execution from the public `spectraxgk.runtime` facade into
+  `workflows.runtime.orchestration_scan`. The runtime facade now injects its
+  patchable `run_runtime_linear` into `run_runtime_scan_ky_task`, keeping
+  downstream monkeypatch seams intact while making worker-task option forwarding
+  independently testable. Added direct coverage for the forwarded linear
+  options plus existing scan-dependency and parallel-order gates. Local gates
+  passed: focused runtime scan tests, Ruff, mypy, `py_compile`,
+  package-architecture manifest, differentiable-refactor manifest,
+  repository-size manifest, source terminology audits, and `git diff --check`.
 - 2026-06-19: Continued executable facade simplification by moving direct
   TOML shorthand classification from `spectraxgk.cli` into
   `workflows.runtime.toml`. Runtime-vs-named-case TOML detection, known-command

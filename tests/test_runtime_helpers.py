@@ -25,6 +25,7 @@ from spectraxgk.workflows.runtime.results import (
 from spectraxgk.workflows.runtime.orchestration import (
     build_runtime_progress_message,
     format_duration,
+    run_runtime_scan_ky_task,
 )
 from spectraxgk.workflows.reduced_models import (
     CETGLinearRuntimeDeps,
@@ -676,6 +677,68 @@ def test_runtime_scan_deps_are_built_from_patchable_runtime_scope(
     assert orchestration_deps.run_runtime_scan_batch is runtime._run_runtime_scan_batch
     assert batch_deps.build_runtime_geometry is geometry_builder
     assert batch_deps.integrate_linear_diagnostics is runtime.integrate_linear_diagnostics
+
+
+def test_runtime_scan_ky_task_forwards_linear_options() -> None:
+    cfg = _base_cfg()
+    sentinel = object()
+    calls: list[dict[str, object]] = []
+    task = {
+        "cfg": cfg,
+        "ky": "0.4",
+        "Nl": "5",
+        "Nm": "3",
+        "solver": "time",
+        "method": "rk2",
+        "dt": 0.02,
+        "steps": 7,
+        "sample_stride": 2,
+        "auto_window": False,
+        "tmin": 1.0,
+        "tmax": 2.0,
+        "window_fraction": 0.25,
+        "min_points": 6,
+        "start_fraction": 0.1,
+        "growth_weight": 0.3,
+        "require_positive": False,
+        "min_amp_fraction": 0.05,
+        "krylov_cfg": None,
+        "mode_method": "project",
+        "fit_signal": "phi",
+        "show_progress": True,
+    }
+
+    def _runner(cfg_arg, **kwargs):
+        calls.append({"cfg": cfg_arg, **kwargs})
+        return sentinel
+
+    assert run_runtime_scan_ky_task(task, run_runtime_linear=_runner) is sentinel
+    assert calls == [
+        {
+            "cfg": cfg,
+            "ky_target": 0.4,
+            "Nl": 5,
+            "Nm": 3,
+            "solver": "time",
+            "method": "rk2",
+            "dt": 0.02,
+            "steps": 7,
+            "sample_stride": 2,
+            "auto_window": False,
+            "tmin": 1.0,
+            "tmax": 2.0,
+            "window_fraction": 0.25,
+            "min_points": 6,
+            "start_fraction": 0.1,
+            "growth_weight": 0.3,
+            "require_positive": False,
+            "min_amp_fraction": 0.05,
+            "krylov_cfg": None,
+            "mode_method": "project",
+            "fit_signal": "phi",
+            "show_progress": True,
+        }
+    ]
 
 
 def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:
