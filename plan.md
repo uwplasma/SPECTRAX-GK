@@ -1,3 +1,14 @@
+- 2026-06-19: Continued ETG benchmark-path simplification inside
+  `validation.benchmarks.etg_linear` and `validation.benchmarks.etg_scan_paths`
+  without adding modules or changing public runner APIs. ETG single-ky and
+  scan Krylov paths now share one explicit `_ETG_KRYLOV_FORWARD_KEYS` policy,
+  with scan continuation-specific `shift` and `shift_selection` overrides
+  applied after the common defaults. The two modules dropped by 32 total lines.
+  Local gates passed: focused ETG runner branch shard, Ruff, mypy, and
+  `py_compile`. Current `tests/test_benchmarks.py` ETG node collection returned
+  no matching node IDs under this pytest invocation, so that file was not used
+  as a validation gate for this tranche.
+
 - 2026-06-19: Continued differentiable VMEC-state sensitivity refactoring
   inside `geometry.vmec_state_sensitivity` without adding modules or changing
   public report schemas. Metric-tensor and field-line tensor reports now share

@@ -182,6 +182,10 @@ High-Risk Module Split Plan
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``validation.benchmarks.tem_paths``.
+  ETG single-point and scan Krylov paths now share one forwarded-key policy in
+  ``validation.benchmarks.etg_linear`` and
+  ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
+  overrides layered on top for scan branches.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
