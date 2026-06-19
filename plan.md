@@ -4444,3 +4444,16 @@ No long nonlinear audit should be launched from these candidates.
   all 16 focused quasilinear model-selection tests covering scoped promotion,
   absolute-flux overclaim failures, malformed path inputs, missing candidate
   metrics, missing holdout metrics, and optimized-equilibrium audit scope.
+
+- 2026-06-19: Simplified the late-window nonlinear transport convergence report
+  inside `validation/quasilinear/window_statistics.py` while preserving the
+  physics gates used to admit long nonlinear heat-flux windows. The public
+  `nonlinear_window_convergence_report` now delegates validated window
+  selection, empty/default statistics, half-window drift, terminal-window
+  agreement, block/bootstrap uncertainty, finite-window gates, convergence
+  gates, and window metadata assembly to named private stages. This reduced the
+  public report builder from roughly 256 lines to 49 lines; the module grew
+  locally to keep all late-window admission policy in one file rather than
+  adding another module. Local gates passed: py_compile, ruff, mypy for the
+  touched source module, `tests/test_quasilinear_window.py`, and
+  `tests/test_check_nonlinear_window_ensemble.py`.

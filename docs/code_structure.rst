@@ -341,7 +341,10 @@ Completed extractions:
   config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
   modules under ``validation/quasilinear/window_*.py``. The public
   ``validation/quasilinear/window.py`` module remains the stable facade used by
-  calibration and tool scripts.
+  calibration and tool scripts. The statistics owner stages validated
+  late-window selection, finite-sample counts, drift/terminal-window metrics,
+  block/bootstrap uncertainty, and gate-report assembly in one file so
+  nonlinear transport admission rules remain auditable.
 - quasilinear model-selection claim boundaries live in
   ``validation/quasilinear/model_selection.py``. The public owner now separates
   candidate-skill gate rows, absolute-flux overclaim guardrails, optional

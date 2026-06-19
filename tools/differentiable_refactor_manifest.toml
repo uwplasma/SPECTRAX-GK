@@ -3385,7 +3385,7 @@ module = "spectraxgk.validation.quasilinear.window_statistics"
 source_path = "src/spectraxgk/validation/quasilinear/window_statistics.py"
 facade_module = "spectraxgk.api.validation"
 status = "active"
-responsibility = "late-window finite-sample, drift, terminal-window, block, and bootstrap statistics for nonlinear heat-flux traces"
+responsibility = "late-window nonlinear transport convergence reports: validated window selection, finite-sample counts, drift statistics, terminal-window agreement, block/bootstrap uncertainty, and gate-report assembly"
 moved_exports = [
   "_bootstrap_sem",
   "_contiguous_block_means",
