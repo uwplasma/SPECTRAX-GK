@@ -1,3 +1,13 @@
+- 2026-06-19: Continued VMEC differentiability/refactor cleanup by extracting
+  collection-level boundary-chain gate policy from `geometry.vmec_boundary_chain`
+  into `geometry.vmec_boundary_collection`. Single-probe scalar chain
+  classification remains in `vmec_boundary_chain`, while row assembly, stable
+  count payloads, and collection decision policy now have a focused owner
+  re-exported through the existing helper surface. `vmec_boundary_chain.py`
+  dropped from 657 to 480 lines and the new collection module is 197 lines.
+  Local gates passed: boundary-chain collection tests, Ruff, mypy,
+  `py_compile`, architecture/refactor/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued differentiable-geometry/refactor cleanup by extracting
   pure Boozer field-line numerics from `geometry_backends.vmec_fieldlines` into
   `geometry_backends.vmec_fieldline_numerics`. Boozer mode angle/basis
