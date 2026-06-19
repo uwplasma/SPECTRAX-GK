@@ -1,3 +1,12 @@
+- 2026-06-19: Fixed a differentiable VMEC/Boozer core-profile robustness bug
+  inside `geometry.vmec_boozer_core`. The equal-arc metric-gradient path now
+  applies the toroidal-flux denominator floor before all Boozer
+  `grad(theta)`, `grad(phi)`, and `grad(alpha)` divisions, and uses a
+  float32-safe `1e-12` floor rather than the generic tiny `1e-30` denominator.
+  Added a mocked zero-toroidal-flux regression in the surface-stencil bridge
+  test to ensure metric, drift, and Jacobian arrays remain finite. Local gates
+  passed: focused VMEC/Boozer bridge shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued KBM beta-scan fit-policy plumbing simplification
   across `validation.benchmarks.kbm_beta` and
   `validation.benchmarks.kbm_beta_solver_paths` without changing public runner

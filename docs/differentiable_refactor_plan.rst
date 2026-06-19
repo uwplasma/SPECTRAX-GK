@@ -429,7 +429,9 @@ Phase 1: introduce protocols and containers
   arrays, including Boozer radial-profile interpolation and equal-arc
   remapping policy. Its profile assembly shares one dtype-aware numerical
   floor across field, parallel-gradient, Jacobian, metric, curvature, and
-  safety-factor denominators.
+  safety-factor denominators. Boozer metric-gradient terms use a separate
+  float32-safe toroidal-flux denominator floor before ``grad(theta)``,
+  ``grad(phi)``, and ``grad(alpha)`` divisions.
   ``spectraxgk.geometry.vmec_boozer_constants`` owns Boozer constant
   preparation and equal-arc cache prewarm helpers.
   ``spectraxgk.geometry.vmec_tensor_mapping`` owns direct ``vmec_jax`` tensor

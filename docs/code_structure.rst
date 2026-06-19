@@ -670,7 +670,9 @@ and Boozer radial-grid validation are private helper seams so the public
 state-to-profile bridge stays focused on physics profile assembly. The core
 profile assembly shares one dtype-aware numerical floor across ``|B|``,
 ``gradpar``, Jacobian, metric, curvature, and ``q`` denominators so
-regularization policy is visible and consistent. Direct ``vmec_jax`` tensor sampling
+regularization policy is visible and consistent. Boozer metric-gradient terms
+use a separate float32-safe toroidal-flux denominator floor before
+``grad(theta)``, ``grad(phi)``, and ``grad(alpha)`` divisions. Direct ``vmec_jax`` tensor sampling
 and conversion into the solver-ready flux-tube mapping contract lives in
 ``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
 array-parity report orchestration lives in

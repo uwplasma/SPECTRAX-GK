@@ -1026,6 +1026,19 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     assert mapping["boozer_surface_indices"] == [1, 2, 3]
     assert np.all(np.isfinite(np.asarray(mapping["bmag"])))
 
+    zero_flux_mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
+        state,
+        static=object(),
+        indata=object(),
+        wout=types.SimpleNamespace(
+            signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, 0.0]), nfp=4
+        ),
+        ntheta=8,
+        surface_stencil_width=3,
+    )
+    for key in ("gds2", "gds21", "gds22", "grho", "cvdrift", "gbdrift", "jacobian"):
+        assert np.all(np.isfinite(np.asarray(zero_flux_mapping[key])))
+
     with pytest.raises(ValueError, match="surface_stencil_width"):
         vmec_jax_boozer_equal_arc_core_profiles_from_state(
             state,
