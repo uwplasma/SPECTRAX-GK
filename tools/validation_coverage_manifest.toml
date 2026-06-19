@@ -1391,6 +1391,7 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.cyclone_scan",
   "spectraxgk.validation.benchmarks.cyclone_scan_branches",
   "spectraxgk.validation.benchmarks.cyclone_scan_explicit",
+  "spectraxgk.validation.benchmarks.cyclone_scan_krylov",
   "spectraxgk.validation.benchmarks.cyclone_scan_seed",
   "spectraxgk.validation.benchmarks.etg_linear",
   "spectraxgk.validation.benchmarks.etg_scan",

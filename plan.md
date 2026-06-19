@@ -3819,3 +3819,14 @@ No long nonlinear audit should be launched from these candidates.
   tests; validation/refactor manifest tests; validation summary regeneration;
   repository-size check; ruff; mypy across 347 source files; Sphinx docs build;
   and `git diff --check`.
+
+- 2026-06-19: Split the Cyclone ky-scan Krylov branch-following path out of
+  `cyclone_scan_branches.py` into the focused owner
+  `cyclone_scan_krylov.py`. The branch facade now keeps only the hook contract
+  and time-branch orchestration while forwarding Krylov execution through the
+  canonical owner; a regression test checks object identity to prevent duplicate
+  owners from returning. Updated the differentiable-refactor and validation
+  coverage manifests so the new module is tracked. Local gates passed: focused
+  Cyclone benchmark-branch tests, benchmark smoke tests, py_compile, ruff, mypy,
+  refactor manifest, validation coverage manifest, repository-size manifest,
+  source terminology scans, and `git diff --check`.

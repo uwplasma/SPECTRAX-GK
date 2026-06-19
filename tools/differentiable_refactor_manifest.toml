@@ -262,12 +262,23 @@ module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py"
 facade_module = "spectraxgk.validation.benchmarks.cyclone_scan"
 status = "active"
-responsibility = "Cyclone ky-scan Krylov branch following, reference-aligned explicit-time reselection, and standard saved-time/streaming scan execution policies"
+responsibility = "Cyclone ky-scan branch hook contract, reference-aligned explicit-time reselection, and standard saved-time/streaming scan execution policies"
 moved_exports = [
   "CycloneScanHooks",
   "run_explicit_time_cyclone_scan",
-  "run_krylov_cyclone_scan",
   "run_time_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_krylov"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_krylov.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+status = "active"
+responsibility = "Cyclone ky-scan Krylov branch following and explicit-trace seed-shift execution policy"
+moved_exports = [
+  "run_krylov_cyclone_scan",
 ]
 fast_tests = ["tests/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

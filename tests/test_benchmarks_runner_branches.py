@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import replace
 from types import SimpleNamespace
 
@@ -29,6 +30,8 @@ from spectraxgk.benchmarks import (
     run_tem_scan,
     run_tem_linear,
 )
+import spectraxgk.validation.benchmarks.cyclone_scan_branches as cyclone_branches
+import spectraxgk.validation.benchmarks.cyclone_scan_krylov as cyclone_krylov
 from spectraxgk.validation.benchmarks.cyclone_scan_branches import (
     _resolve_time_branch_growth,
 )
@@ -74,6 +77,15 @@ def _fake_initial_condition(grid, *args, **kwargs):
             np.asarray(grid.z).size,
         ),
         dtype=np.complex64,
+    )
+
+
+def test_cyclone_krylov_branch_has_single_canonical_owner() -> None:
+    assert cyclone_branches.run_krylov_cyclone_scan is (
+        cyclone_krylov.run_krylov_cyclone_scan
+    )
+    assert inspect.getmodule(cyclone_branches.run_krylov_cyclone_scan) is (
+        cyclone_krylov
     )
 
 
@@ -206,7 +218,8 @@ def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
         return 0.01 + 1.2j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.dominant_eigenpair", _fake_eigenpair
+        "spectraxgk.validation.benchmarks.cyclone_linear.dominant_eigenpair",
+        _fake_eigenpair,
     )
     monkeypatch.setattr(
         "spectraxgk.validation.benchmarks.cyclone_linear.compute_fields_cached",
@@ -589,7 +602,8 @@ def test_run_etg_linear_honors_explicit_time_config_density_paths(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diffrax", _fake_diffrax
+        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diffrax",
+        _fake_diffrax,
     )
     monkeypatch.setattr(
         "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diagnostics",
@@ -979,7 +993,8 @@ def test_run_cyclone_scan_diffrax_streaming_time_config_batch(monkeypatch) -> No
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid", _select_grid_dynamic
+        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
+        _select_grid_dynamic,
     )
     monkeypatch.setattr(
         "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
