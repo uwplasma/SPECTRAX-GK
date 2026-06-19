@@ -201,7 +201,12 @@ Completed extractions:
   public facade while optional dependency/policy helpers, linear save-path
   integration, streaming growth/frequency fits, and nonlinear integration live
   in ``solvers/time/diffrax_core.py``, ``diffrax_linear.py``,
-  ``diffrax_streaming.py``, and ``diffrax_nonlinear.py``.
+  ``diffrax_streaming.py``, and ``diffrax_nonlinear.py``. The streaming owner
+  stages state/cache preparation, monitored-mode extraction, optimized
+  density-mode extraction, weighted log-derivative accumulation, Diffrax RHS
+  construction, IMEX zero-term routing, and saved-result finalization so
+  differentiable streaming fits can be audited without changing the public
+  ``integrate_linear_diffrax_streaming`` contract.
 - term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in

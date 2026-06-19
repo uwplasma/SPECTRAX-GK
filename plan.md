@@ -1,3 +1,19 @@
+- 2026-06-19: Continued differentiable solver-time refactoring inside
+  `solvers.time.diffrax_streaming` without changing the public
+  `integrate_linear_diffrax_streaming` signature, Diffrax solver selection,
+  custom-VJP policy, IMEX routing, state-sharding behavior, streamed density/
+  phi observable semantics, or returned `(state, gamma, omega)` contract. The
+  streaming owner now has named stages for cache/state preparation, monitored
+  mode extraction, optimized density-mode extraction, weighted log-derivative
+  accumulation, RHS construction, zero IMEX term routing, saved-axis stripping,
+  and final growth/frequency packaging. The public integrator drops from 214
+  to 118 lines, and the longest helper is 61 lines; the tradeoff is a longer
+  module because the optimized density-mode path stays local rather than being
+  replaced by a slower full-density materialization. Focused Diffrax streaming
+  tests passed locally, along with Ruff, mypy, `py_compile`,
+  refactor/coverage/size manifests, Sphinx docs, repository-size policy, and
+  `git diff --check`.
+
 - 2026-06-19: Continued ETG benchmark scan refactoring inside
   `validation.benchmarks.etg_scan` without changing ETG normalization,
   electrostatic term defaults, Krylov continuation semantics, Diffrax
