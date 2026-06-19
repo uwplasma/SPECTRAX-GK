@@ -1,3 +1,18 @@
+- 2026-06-19: Continued KBM benchmark-path simplification inside
+  `validation.benchmarks.kbm_beta` and
+  `validation.benchmarks.kbm_beta_solver_paths` without adding modules or
+  changing public scan APIs. The explicit-time fallback ladder now consumes the
+  same `ScanFitWindowPolicy` object as the saved-time beta-scan path, and the
+  saved-time auto-fit branch now reuses the policy's canonical auto-fit
+  keyword builder instead of carrying a second hard-coded option table. This
+  keeps explicit-time, saved-time, and streaming beta-scan fits aligned while
+  preserving the existing patchable hook dataclasses and branch order. The
+  touched modules dropped by six net lines. Local gates passed: focused KBM
+  beta branch shard, Ruff, mypy, and `py_compile`. A broader
+  `tests/test_benchmarks.py` KBM selector/node-id attempt selected no tests
+  under the current bounded pytest config, so it was not used as a validation
+  gate for this tranche.
+
 - 2026-06-19: Continued ETG benchmark-path simplification inside
   `validation.benchmarks.etg_linear` and `validation.benchmarks.etg_scan_paths`
   without adding modules or changing public runner APIs. ETG single-ky and

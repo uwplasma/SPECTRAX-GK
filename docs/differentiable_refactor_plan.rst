@@ -178,7 +178,9 @@ High-Risk Module Split Plan
   and multi-target Krylov branch selection live in
   ``validation.benchmarks.kbm_beta_solver_paths`` with patchable hooks for
   benchmark tests. That owner now uses one forwarded-key policy for
-  multi-target and continuation/shifted Krylov solves.
+  multi-target and continuation/shifted Krylov solves, and it shares the
+  scan fit-window policy between explicit-time fallback fits and saved-time
+  auto-fit selection.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``validation.benchmarks.tem_paths``.

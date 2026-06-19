@@ -521,7 +521,9 @@ moved. KBM beta-scan, single-point, and ky-scan implementations live in
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
 runner. Its beta-scan Krylov path shares one forwarded-key policy for
 multi-target branch selection and continuation/shifted solves, so target and
-shift variants cannot silently diverge. The single-point runner delegates
+shift variants cannot silently diverge. The explicit-time fallback ladder and
+saved-time auto-fit branch share the scan fit-window policy, so beta-scan fit
+knobs are not duplicated across time-integration paths. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
 setup, generic saved-time fitting, and result packaging. The public beta runner
