@@ -4391,3 +4391,16 @@ No long nonlinear audit should be launched from these candidates.
   coarse-projection path is covered by CI. Local gates passed: py_compile, ruff,
   mypy for the touched source module, and the focused linear implicit/
   shift-invert test shard.
+
+- 2026-06-19: Simplified the VMEC/Boozer equal-arc core bridge inside
+  `geometry/vmec_boozer_core.py` without adding another module or changing the
+  solver-facing mapping contract. The public
+  `vmec_jax_boozer_equal_arc_core_profiles_from_state` bridge now orchestrates
+  radial Boozer-profile interpolation, equal-arc field-line construction,
+  zero-beta metric/drift profile assembly, and final mapping/metadata assembly
+  through focused private stages. This reduced the public bridge from roughly
+  331 lines to 85 lines while keeping the backend execution, Boozer radial-grid
+  validation, and derivative algebra seams explicit. Local gates passed:
+  py_compile, ruff, mypy for the touched source module, and the focused
+  differentiable-geometry bridge shard covering equal-arc core profiles,
+  flux-tube wrapping, and facade identity.

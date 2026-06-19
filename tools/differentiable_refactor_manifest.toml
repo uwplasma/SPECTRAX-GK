@@ -997,7 +997,7 @@ module = "spectraxgk.geometry.vmec_boozer_core"
 source_path = "src/spectraxgk/geometry/vmec_boozer_core.py"
 facade_module = "spectraxgk.geometry.differentiable"
 status = "active"
-responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mapping and solver-ready core arrays"
+responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mapping: radial Boozer-profile interpolation, equal-arc field-line construction, metric/drift profile assembly, and solver-ready core arrays"
 moved_exports = [
   "vmec_jax_boozer_equal_arc_core_profiles_from_state",
 ]

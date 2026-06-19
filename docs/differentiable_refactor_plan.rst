@@ -454,11 +454,14 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.vmec_boozer_core`` owns the ``vmec_jax`` state to
   ``booz_xform_jax`` equal-arc core-profile bridge and solver-facing core
   arrays, including Boozer radial-profile interpolation and equal-arc
-  remapping policy. Its profile assembly shares one dtype-aware numerical
-  floor across field, parallel-gradient, Jacobian, metric, curvature, and
-  safety-factor denominators. Boozer metric-gradient terms use a separate
-  float32-safe toroidal-flux denominator floor before ``grad(theta)``,
-  ``grad(phi)``, and ``grad(alpha)`` divisions.
+  remapping policy. Its public bridge is now an orchestration layer over radial
+  Boozer-profile interpolation, equal-arc field-line construction, zero-beta
+  metric/drift profile assembly, and final solver-ready mapping assembly. The
+  profile assembly shares one dtype-aware numerical floor across field,
+  parallel-gradient, Jacobian, metric, curvature, and safety-factor
+  denominators. Boozer metric-gradient terms use a separate float32-safe
+  toroidal-flux denominator floor before ``grad(theta)``, ``grad(phi)``, and
+  ``grad(alpha)`` divisions.
   ``spectraxgk.geometry.vmec_boozer_constants`` owns Boozer constant
   preparation and equal-arc cache prewarm helpers.
   ``spectraxgk.geometry.vmec_tensor_mapping`` owns direct ``vmec_jax`` tensor

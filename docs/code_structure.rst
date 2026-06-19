@@ -705,11 +705,14 @@ observable-specific sampling paths.
 Boozer constant preparation and equal-arc cache prewarm helpers live in
 ``spectraxgk.geometry.vmec_boozer_constants``. Core Boozer equal-arc profile
 construction, radial Boozer-profile interpolation, and equal-arc remapping
-live in ``spectraxgk.geometry.vmec_boozer_core``; optional backend execution
-and Boozer radial-grid validation are private helper seams so the public
-state-to-profile bridge stays focused on physics profile assembly. The core
-bridge delegates Boozer field-line spectral sums, cylindrical derivatives,
-and coordinate-gradient algebra to
+live in ``spectraxgk.geometry.vmec_boozer_core``. That owner now stages the
+bridge as radial Boozer-profile interpolation, equal-arc field-line
+construction, zero-beta metric/drift profile assembly, and final solver-ready
+mapping assembly; optional backend execution and Boozer radial-grid validation
+remain private helper seams so the public state-to-profile bridge stays
+focused on physics profile assembly. The core bridge delegates Boozer
+field-line spectral sums, cylindrical derivatives, and coordinate-gradient
+algebra to
 ``spectraxgk.geometry.vmec_boozer_derivatives`` so the differentiable geometry
 path has a small, unit-testable tensor-algebra owner rather than one long
 VMEC/Boozer orchestration function. The core
