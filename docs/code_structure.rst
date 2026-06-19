@@ -444,7 +444,8 @@ Completed extractions:
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema
-  writing with shared Phi2/zonal and resolved species-spectra helpers, NetCDF
+  writing with staged Phi2, base species-history, split electromagnetic,
+  zonal-field, resolved species-spectra, and turbulent-heating helpers, NetCDF
   output geometry,
   restart-file writing, final-field big-file writing, nonlinear diagnostic
   reload helpers, and restart-append schema coverage:

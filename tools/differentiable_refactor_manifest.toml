@@ -1806,7 +1806,7 @@ module = "spectraxgk.artifacts.nonlinear_netcdf_diagnostics"
 source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py"
 facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
 status = "active"
-responsibility = "nonlinear NetCDF scalar, species, Phi2/zonal, resolved-species spectra, and split-diagnostic history schema writing"
+responsibility = "nonlinear NetCDF diagnostic-history schema writing: scalar Phi2, base species histories, split electromagnetic histories, zonal fields, resolved spectra, and turbulent-heating channels"
 moved_exports = [
   "_phi2_outputs_for_netcdf",
   "_write_phi2_diagnostics",

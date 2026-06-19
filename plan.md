@@ -4417,3 +4417,16 @@ No long nonlinear audit should be launched from these candidates.
   module, and the focused VMEC imported-geometry fake-backend shard covering
   facade identity, override handling, automatic Boozer fallback, forced-backend
   failure, and degenerate-reference rejection.
+
+- 2026-06-19: Simplified the nonlinear NetCDF diagnostics schema writer inside
+  `artifacts/nonlinear_netcdf_diagnostics.py` without changing the output
+  variable names, spectral-axis condensation, or runtime artifact facade. The
+  public `_write_diagnostics_group` now delegates base species histories, split
+  electromagnetic histories, resolved spectra, and turbulent-heating spectra to
+  focused private helpers. This reduced `_write_diagnostics_group` from roughly
+  296 lines to 58 lines. The first focused NetCDF shard caught and fixed a
+  duplicate `TurbulentHeating_st` write introduced during refactoring; after
+  restoring the old one-write schema, local gates passed: py_compile, ruff,
+  mypy for the touched source module, and the focused runtime-artifact NetCDF
+  shard covering facade identity, nonlinear NetCDF writing, reload behavior,
+  and required diagnostics validation.

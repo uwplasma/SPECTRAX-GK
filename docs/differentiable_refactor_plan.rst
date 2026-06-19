@@ -387,6 +387,10 @@ High-Risk Module Split Plan
   nonlinear diagnostic reload helpers, and finite-value artifact validation now
   live under ``spectraxgk.artifacts``. The root ``workflows/runtime/artifacts.py`` module
   remains the public dispatcher and monkeypatch-compatible executable seam.
+  The nonlinear NetCDF diagnostics writer keeps the schema in one owner module
+  but stages scalar Phi2 output, base species histories, split electromagnetic
+  histories, zonal fields, resolved spectra, and turbulent-heating channels so
+  optional diagnostic additions stay localized.
   Required gates: round-trip persistence, restart append normalization, and
   plot reload contracts.
 
