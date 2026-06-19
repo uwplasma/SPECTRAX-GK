@@ -181,8 +181,9 @@ High-Risk Module Split Plan
   ``validation.benchmarks.kbm_beta_solver_paths`` with patchable hooks for
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves, and it shares the
-  scan fit-window policy between explicit-time fallback fits and saved-time
-  auto-fit selection. Saved-time KBM beta samples use one dispatcher for
+  scan fit-window policy between explicit-time fallback fits, saved-time
+  auto-fit selection, and Diffrax-streaming window resolution.
+  Saved-time KBM beta samples use one dispatcher for
   non-Diffrax time-config and no-config integration, with stride resolution
   kept explicit before fitting; Diffrax-streaming samples read the same
   ``ScanFitWindowPolicy`` for their resolved fit window.

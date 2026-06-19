@@ -1,3 +1,12 @@
+- 2026-06-19: Continued KBM beta-scan explicit-time fit-policy simplification
+  inside `validation.benchmarks.kbm_beta_solver_paths` without changing the
+  explicit-time diagnostic fallback ladder or fixed-window fit semantics. The
+  fallback fit now reuses `ScanFitWindowPolicy.auto_kwargs()` with an explicit
+  `window_method="fixed"` override instead of forwarding each window scalar
+  manually. The module dropped from 752 to 746 lines. Local gates passed:
+  focused KBM beta branch shard, relevant KBM beta integration nodes including
+  the slow shape check, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Fixed a differentiable VMEC/Boozer core-profile robustness bug
   inside `geometry.vmec_boozer_core`. The equal-arc metric-gradient path now
   applies the toroidal-flux denominator floor before all Boozer
