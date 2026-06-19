@@ -1,3 +1,13 @@
+- 2026-06-19: Continued KBM beta-scan solver-path simplification inside
+  `validation.benchmarks.kbm_beta_solver_paths` without changing Krylov target
+  selection, continuation, normalization, or auto-to-time fallback semantics.
+  The multi-target Krylov candidate solve now lives in
+  `_solve_multi_target_kbm_eigenpair`, so `solve_kbm_beta_krylov_sample` only
+  orchestrates continuation state, growth normalization, and fallback decisions.
+  Local gates passed: focused non-integration KBM branch nodes, focused
+  integration KBM beta nodes with explicit marker override, Ruff, mypy,
+  `py_compile`, refactor/coverage/size manifests, and `git diff --check`.
+
 - 2026-06-19: Continued the same reduced-model runtime cleanup by centralizing
   cETG nonlinear runtime result packing in `_build_cetg_nonlinear_result`.
   Fixed-step and adaptive-chunk nonlinear cETG now share selected-mode metadata,
