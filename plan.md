@@ -1,3 +1,16 @@
+- 2026-06-19: Continued executable/runtime simplification by moving runtime
+  command presentation policy from `workflows.runtime.commands` into the
+  existing `workflows.runtime.command_artifacts` owner. Command artifact output
+  now owns saved-path display order, linear/nonlinear executable headers, and
+  nonlinear terminal summaries; `commands.py` keeps command orchestration,
+  option resolution, path/quasilinear overrides, and public re-exports.
+  `commands.py` dropped from 499 to 420 lines while `command_artifacts.py`
+  grew from 113 to 198 lines, with no new module added. Updated code-structure
+  and API docs to record the ownership boundary. Local gates passed: focused
+  runtime command-output tests, full CLI/runtime helper shard, Ruff, mypy,
+  `py_compile`, refactor manifest, validation coverage manifest, repository
+  size manifest, source terminology scans, and `git diff --check`.
+
 - 2026-06-19: Continued linear-operator refactor by extracting collisional
   damping, hypercollisions, perpendicular hyperdiffusion, and linked/end
   damping from `terms.linear_terms` into `terms.linear_dissipation`. The
