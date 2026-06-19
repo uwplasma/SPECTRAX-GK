@@ -182,6 +182,56 @@ def test_runtime_command_helpers_have_single_canonical_owner() -> None:
         assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
 
 
+def test_prepare_runtime_command_config_applies_explicit_override_policy() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        config="case.toml",
+        vmec_file="wout_case.nc",
+        geometry_file=None,
+        init_file=None,
+        quasilinear=True,
+        ql_mode="saturated",
+        ql_saturation_rule=None,
+        ql_csat=None,
+        ql_normalization=None,
+        ql_output="ql_out",
+    )
+    deps = runtime_commands.build_runtime_command_deps(
+        SimpleNamespace(
+            load_runtime_from_toml=lambda _path: (cfg, {"run": {"ky": 0.3}}),
+            run_runtime_linear=lambda *_args, **_kwargs: None,
+            run_runtime_scan=lambda *_args, **_kwargs: None,
+            run_runtime_nonlinear_with_artifacts=lambda *_args, **_kwargs: None,
+            write_runtime_linear_artifacts=lambda *_args, **_kwargs: {},
+            write_runtime_linear_scan_artifacts=lambda *_args, **_kwargs: {},
+            write_quasilinear_artifacts=lambda *_args, **_kwargs: {},
+            resolve_runtime_path=lambda value, **_kwargs: f"resolved::{value}",
+        )
+    )
+
+    prepared, data = runtime_commands._prepare_runtime_command_config(
+        args,
+        deps=deps,
+        path_overrides=True,
+        quasilinear_overrides=True,
+    )
+
+    assert data == {"run": {"ky": 0.3}}
+    assert prepared.geometry.vmec_file == "resolved::wout_case.nc"
+    assert prepared.quasilinear.enabled is True
+    assert prepared.quasilinear.mode == "saturated"
+    assert prepared.quasilinear.output_path == "ql_out"
+
+    untouched, _ = runtime_commands._prepare_runtime_command_config(
+        args,
+        deps=deps,
+        path_overrides=False,
+        quasilinear_overrides=False,
+    )
+    assert untouched.geometry.vmec_file is None
+    assert untouched.quasilinear.enabled is False
+
+
 def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.CaptureFixture[str]) -> None:
     captured: dict[str, object] = {}
 
