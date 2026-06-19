@@ -539,6 +539,8 @@ still owns per-beta setup and time/diffrax fallback.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
+The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
+policy between primary auto-window fitting and invalid-window fallback fitting.
 The TEM public owner now keeps setup, parameter construction, and species
 validation local while ``spectraxgk.validation.benchmarks.tem_paths`` owns the
 single-ky Krylov path, saved-time fit path, streaming scan branch, and scan
@@ -553,7 +555,9 @@ Krylov continuation, streaming fit, saved-signal integration, and fallback
 fit/appending policy to ``spectraxgk.validation.benchmarks.etg_scan_paths``
 while keeping benchmark-family setup and result packaging in the scan module.
 ETG single-point and scan Krylov paths share one forwarded-key policy, with
-scan continuation overrides applied explicitly for carried shifts.
+scan continuation overrides applied explicitly for carried shifts. The ETG
+single-point saved-time direct-fit path also shares one automatic-fit keyword
+policy between primary auto-window fitting and invalid-window fallback fitting.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through

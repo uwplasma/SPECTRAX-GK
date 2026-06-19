@@ -1,3 +1,13 @@
+- 2026-06-19: Continued KBM/ETG single-point benchmark-path simplification
+  inside `validation.benchmarks.kbm_linear` and
+  `validation.benchmarks.etg_linear` without changing public runner APIs or
+  fit-window semantics. Each saved-time direct-fit path now builds one local
+  automatic-fit keyword policy and reuses it for both the primary auto-window
+  fit and the fallback after an invalid requested fit window. This keeps
+  growth-rate extraction behavior aligned across normal and fallback paths
+  while removing duplicated option forwarding. Local gates passed: focused
+  KBM/ETG branch shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued kinetic-electron benchmark-path simplification inside
   `validation.benchmarks.kinetic_linear` without changing runner APIs or
   branch order. The saved-time single-ky path now builds one local automatic-fit

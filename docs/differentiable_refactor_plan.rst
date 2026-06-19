@@ -183,13 +183,16 @@ High-Risk Module Split Plan
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits and saved-time
   auto-fit selection.
+  KBM single-point saved-time direct fits also share one automatic-fit keyword
+  policy for primary auto-window and invalid-window fallback fits.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``validation.benchmarks.tem_paths``.
   ETG single-point and scan Krylov paths now share one forwarded-key policy in
   ``validation.benchmarks.etg_linear`` and
   ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
-  overrides layered on top for scan branches.
+  overrides layered on top for scan branches. ETG single-point saved-time
+  direct fits share the same primary/fallback automatic-fit keyword policy.
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
   policy for auto-signal and direct-signal fits in
   ``validation.benchmarks.cyclone_linear_paths``.
