@@ -532,7 +532,9 @@ still owns per-beta setup and time/diffrax fallback.
 The TEM public owner now keeps setup, parameter construction, and species
 validation local while ``spectraxgk.validation.benchmarks.tem_paths`` owns the
 single-ky Krylov path, saved-time fit path, streaming scan branch, and scan
-batch loop through an explicit hook bundle.
+batch loop through an explicit hook bundle. The TEM Krylov path shares one
+forwarded-key policy for dominant-eigenpair configuration, matching the KBM
+benchmark-path guard against target/shift policy drift.
 Kinetic-electron ITG/TEM runners now live directly in ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan``; the supported public import remains ``spectraxgk.benchmarks``. ETG single-point and scan implementations live in
 ``spectraxgk.validation.benchmarks.etg_linear`` and
 ``spectraxgk.validation.benchmarks.etg_scan`` and are re-exported through

@@ -1,3 +1,14 @@
+- 2026-06-19: Continued TEM benchmark-path simplification inside
+  `validation.benchmarks.tem_paths` without adding modules. The TEM Krylov
+  path now forwards dominant-eigenpair configuration through one explicit
+  `_TEM_KRYLOV_FORWARD_KEYS` policy instead of repeating every Krylov
+  attribute in the solver call. Public TEM runner APIs and patchable hooks
+  remain unchanged. The module dropped from 679 to 665 lines. Local gates
+  passed: focused TEM scan branch shard, Ruff, mypy, and `py_compile`. A
+  `tests/test_benchmarks.py` TEM-only collection check returned no matching
+  node IDs under the current pytest collection config, so it was not used as a
+  validation gate for this tranche.
+
 - 2026-06-19: Continued KBM benchmark-path simplification inside
   `validation.benchmarks.kbm_beta_solver_paths` without adding modules. The
   KBM beta Krylov path now forwards dominant-eigenpair configuration through

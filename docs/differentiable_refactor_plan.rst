@@ -179,6 +179,9 @@ High-Risk Module Split Plan
   ``validation.benchmarks.kbm_beta_solver_paths`` with patchable hooks for
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves.
+  TEM scan paths keep the same public/focused-owner split, with one
+  forwarded-key policy for dominant-eigenpair Krylov configuration in
+  ``validation.benchmarks.tem_paths``.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
