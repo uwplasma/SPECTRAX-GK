@@ -679,6 +679,17 @@ def test_vmec_fieldline_helper_angle_and_denominator_policies() -> None:
     assert safe[0, 1] == pytest.approx(0.5)
 
 
+def test_vmec_fieldline_boozer_mode_sum_preserves_surface_axis() -> None:
+    coeff = np.array([[1.0, 2.0], [3.0, 4.0]])
+    basis = np.arange(2 * 2 * 3 * 4, dtype=float).reshape(2, 2, 3, 4)
+
+    out = vmec_fieldlines._boozer_mode_sum(coeff, basis)
+
+    assert out.shape == (2, 3, 4)
+    np.testing.assert_allclose(out[0], coeff[0, 0] * basis[0, 0] + coeff[0, 1] * basis[1, 0])
+    np.testing.assert_allclose(out[1], coeff[1, 0] * basis[0, 1] + coeff[1, 1] * basis[1, 1])
+
+
 def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
     theta1d = np.array([0.0, 1.0])
     alpha_arr = np.array([0.0, 0.5])
