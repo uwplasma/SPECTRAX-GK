@@ -140,6 +140,8 @@ owned_modules = [
   "spectraxgk.workflows.runtime.execution",
   "spectraxgk.workflows.runtime.initial_conditions",
   "spectraxgk.workflows.runtime.initial_phi",
+  "spectraxgk.workflows.runtime.command_artifacts",
+  "spectraxgk.workflows.runtime.command_options",
   "spectraxgk.workflows.runtime.startup",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
@@ -832,6 +834,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solvers.nonlinear.imex"
 path = "src/spectraxgk/solvers/nonlinear/imex.py"
+owned_modules = [
+  "spectraxgk.solvers.nonlinear.imex_diagnostics",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -959,6 +964,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.operators.nonlinear.device_z"
 path = "src/spectraxgk/operators/nonlinear/device_z.py"
+owned_modules = [
+  "spectraxgk.operators.nonlinear.device_z_reports",
+]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
 coverage_priority = "high"
@@ -1196,6 +1204,7 @@ path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
   "spectraxgk.diagnostics.quasilinear_transport",
   "spectraxgk.validation.quasilinear.model_selection",
+  "spectraxgk.validation.quasilinear.model_selection_inputs",
   "spectraxgk.validation.external_holdout",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
@@ -1739,6 +1748,7 @@ owned_modules = [
   "spectraxgk.geometry_backends.miller_pipeline",
   "spectraxgk.geometry_backends.miller_profiles",
   "spectraxgk.geometry_backends.vmec_backend_discovery",
+  "spectraxgk.geometry_backends.vmec_fieldline_numerics",
   "spectraxgk.geometry_backends.vmec_fieldlines",
   "spectraxgk.geometry_backends.vmec_io",
   "spectraxgk.geometry_backends.vmec_numerics",
@@ -1797,7 +1807,9 @@ owned_modules = [
   "spectraxgk.geometry.sensitivity",
   "spectraxgk.geometry.vmec_boozer_constants",
   "spectraxgk.geometry.vmec_boozer_core",
+  "spectraxgk.geometry.vmec_field_line_sampling",
   "spectraxgk.geometry.vmec_flux_tube_reports",
+  "spectraxgk.geometry.vmec_state_controls",
   "spectraxgk.geometry.vmec_state_sensitivity",
   "spectraxgk.geometry.vmec_tensor_mapping",
 ]
@@ -2479,6 +2491,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
 path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
+owned_modules = [
+  "spectraxgk.validation.nonlinear_gradient.evidence_brackets",
+  "spectraxgk.validation.nonlinear_gradient.evidence_scoring",
+]
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -3167,6 +3183,7 @@ owned_modules = [
   "spectraxgk.validation.stellarator.transport_samples",
   "spectraxgk.validation.stellarator.transport_selection",
   "spectraxgk.geometry.vmec_boundary_chain",
+  "spectraxgk.geometry.vmec_boundary_collection",
   "spectraxgk.objectives.vmec_transport_gradient",
   "spectraxgk.objectives.vmec_transport_line_search",
   "spectraxgk.objectives.vmec_transport",

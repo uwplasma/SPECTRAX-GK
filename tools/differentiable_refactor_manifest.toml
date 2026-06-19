@@ -3367,6 +3367,21 @@ moved_exports = [
 fast_tests = ["tests/test_check_nonlinear_window_ensemble.py", "tests/test_quasilinear_window.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.model_selection_inputs"
+source_path = "src/spectraxgk/validation/quasilinear/model_selection_inputs.py"
+facade_module = "spectraxgk.validation.quasilinear.model_selection"
+status = "active"
+responsibility = "artifact loading, required-candidate metric normalization, and optimized-equilibrium audit summaries for quasilinear model-selection gates"
+moved_exports = [
+  "ABSOLUTE_FLUX_PROMOTED_CLAIM",
+  "_required_candidate_metrics",
+  "_calibration_summary",
+  "_optimized_equilibrium_audit_summary",
+]
+fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
 [[hotspots]]
 module = "spectraxgk.api"
 source_path = "src/spectraxgk/api/__init__.py"

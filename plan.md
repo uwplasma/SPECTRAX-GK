@@ -1,3 +1,17 @@
+- 2026-06-19: Continued quasilinear validation refactor by extracting
+  model-selection input normalization and optimized-equilibrium audit summaries
+  from `validation.quasilinear.model_selection` into
+  `validation.quasilinear.model_selection_inputs`. The public claim-ledger
+  builder now focuses on assembling promotion gates and path-based wrappers,
+  while artifact loading, required-candidate metric normalization, calibration
+  summaries, and scoped nonlinear-audit summaries have a focused owner.
+  `model_selection.py` dropped from 541 to 321 lines and the new input helper
+  module is 239 lines. The same tranche assigned recent split modules to the
+  validation coverage manifest so package-wide coverage ownership remains
+  explicit. Local gates passed: quasilinear model-selection tests, model-
+  selection plotting tests, Ruff, mypy, `py_compile`, architecture/refactor/
+  validation-coverage/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued nonlinear-gradient validation refactor by splitting
   `validation.nonlinear_gradient.evidence_screening` into focused screening
   owners. Candidate ranking remains in `evidence_screening`, same-control

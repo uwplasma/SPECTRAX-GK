@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import json
+import inspect
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+from spectraxgk.validation.quasilinear import model_selection_inputs
 from spectraxgk.validation.quasilinear.model_selection import (
-    _required_candidate_metrics,
     build_quasilinear_model_selection_status,
     build_quasilinear_model_selection_status_from_paths,
+)
+from spectraxgk.validation.quasilinear.model_selection_inputs import (
+    _required_candidate_metrics,
 )
 
 
@@ -85,6 +89,14 @@ def _optimized_equilibrium_audit(*, passed: bool = True) -> dict[str, Any]:
 def _write_json(path: Path, payload: object) -> Path:
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
+
+
+def test_model_selection_input_helpers_have_single_canonical_owner() -> None:
+    assert inspect.getmodule(_required_candidate_metrics) is model_selection_inputs
+    assert (
+        inspect.getmodule(model_selection_inputs._optimized_equilibrium_audit_summary)
+        is model_selection_inputs
+    )
 
 
 def test_required_candidate_metrics_normalize_thresholds_and_payloads() -> None:
