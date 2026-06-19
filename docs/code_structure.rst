@@ -569,7 +569,10 @@ hook bundle. Trace-seed branch initialization lives in
 explicit-time reselection lives in
 ``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The branch module
 owns the patchable hook bundle used by Cyclone scan tests while the solver
-policies stay isolated for review. Family-specific branch tests now patch the
+policies stay isolated for review. The Cyclone single-mode time path shares
+one local automatic-fit keyword policy between automatic signal selection and
+direct signal fitting, avoiding drift in late-window fit semantics.
+Family-specific branch tests now patch the
 family owner modules directly, and examples/downstream scripts keep importing
 through ``spectraxgk.benchmarks``.
 

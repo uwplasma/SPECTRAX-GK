@@ -1,3 +1,12 @@
+- 2026-06-19: Continued Cyclone benchmark-path simplification inside
+  `validation.benchmarks.cyclone_linear_paths` without adding modules or
+  changing runner APIs. The single-mode time path now builds one local
+  automatic-fit keyword policy and reuses it for both automatic signal
+  selection and direct signal fitting, keeping late-time growth/frequency
+  window semantics aligned while removing duplicated option forwarding. The
+  module dropped from 481 to 468 lines. Local gates passed: focused Cyclone
+  linear branch shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued nonlinear-gradient follow-up simplification inside
   `validation.nonlinear_gradient.followup_variance` without changing report
   schemas or public follow-up APIs. Control-variate candidate parsing,

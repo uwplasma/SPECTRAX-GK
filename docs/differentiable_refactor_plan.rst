@@ -190,6 +190,9 @@ High-Risk Module Split Plan
   ``validation.benchmarks.etg_linear`` and
   ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
   overrides layered on top for scan branches.
+  Cyclone single-mode time-path fitting now shares one automatic-fit keyword
+  policy for auto-signal and direct-signal fits in
+  ``validation.benchmarks.cyclone_linear_paths``.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,
