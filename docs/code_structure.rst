@@ -761,10 +761,14 @@ profile assembly shares one dtype-aware numerical floor across ``|B|``,
 ``gradpar``, Jacobian, metric, curvature, and ``q`` denominators so
 regularization policy is visible and consistent. Boozer metric-gradient terms
 use a separate float32-safe toroidal-flux denominator floor before
-``grad(theta)``, ``grad(phi)``, and ``grad(alpha)`` divisions. Direct ``vmec_jax`` tensor sampling
-and conversion into the solver-ready flux-tube mapping contract lives in
-``spectraxgk.geometry.vmec_tensor_mapping``. VMEC flux-tube sensitivity and
-array-parity report orchestration lives in
+``grad(theta)``, ``grad(phi)``, and ``grad(alpha)`` divisions. Direct
+``vmec_jax`` tensor sampling and conversion into the solver-ready flux-tube
+mapping contract lives in ``spectraxgk.geometry.vmec_tensor_mapping``. That
+bridge is staged as surface/reference-scale validation, shared VMEC field-line
+coordinate construction, raw tensor loading, periodic line sampling,
+perpendicular metric assembly, local grad-``B`` drift closure, and final mapping
+packaging. VMEC flux-tube sensitivity and array-parity report orchestration
+lives in
 ``spectraxgk.geometry.vmec_flux_tube_reports``; it reuses the shared
 VMEC-state example loading, coefficient-index validation, and perturbation
 policy from ``spectraxgk.geometry.vmec_state_sensitivity`` so the flux-tube,

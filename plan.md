@@ -3787,7 +3787,12 @@ No long nonlinear audit should be launched from these candidates.
   metric, magnetic-field, shear, drift, and Jacobian tensors into the
   solver-ready flux-tube mapping contract. The compatibility facade retains a
   wrapper that forwards the facade-level periodic sampler hook into the focused
-  implementation.
+  implementation. Follow-up refactor staged that bridge in-place into
+  surface/reference-scale validation, shared VMEC field-line coordinate
+  construction, raw tensor loading, periodic line sampling, perpendicular
+  metric assembly, local grad-``B`` drift closure, and final mapping packaging;
+  a mocked-VMEC fast test now gates the direct tensor path without a full VMEC
+  solve.
 - Continued the differentiable-geometry split by moving the VMEC-to-Boozer
   equal-arc core-profile builder into ``spectraxgk.geometry.vmec_boozer_core``.
   The new module owns Boozer constants caching/prewarm and the

@@ -499,7 +499,11 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.geometry.vmec_boozer_constants`` owns Boozer constant
   preparation and equal-arc cache prewarm helpers.
   ``spectraxgk.geometry.vmec_tensor_mapping`` owns direct ``vmec_jax`` tensor
-  sampling and conversion into the solver-ready flux-tube mapping contract.
+  sampling and conversion into the solver-ready flux-tube mapping contract. It
+  now stages the bridge as surface/reference-scale validation, shared VMEC
+  field-line coordinate construction, raw tensor loading, periodic line
+  sampling, perpendicular metric assembly, local grad-``B`` drift closure, and
+  final mapping packaging without adding another source file.
   ``spectraxgk.geometry.vmec_flux_tube_reports`` owns VMEC flux-tube
   sensitivity and array-parity report orchestration that combines the direct
   tensor, Boozer equal-arc, and imported-geometry comparison paths. It consumes

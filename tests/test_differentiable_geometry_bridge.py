@@ -758,6 +758,114 @@ def test_vmec_field_line_sampling_helpers_have_canonical_owner() -> None:
     )
 
 
+def test_vmec_tensor_mapping_builds_finite_mapping_from_mocked_vmec_modules(
+    monkeypatch,
+) -> None:
+    vmec_pkg = types.ModuleType("vmec_jax")
+    vmec_pkg.__path__ = []  # type: ignore[attr-defined]
+    geom_mod = types.ModuleType("vmec_jax.geom")
+    bcovar_mod = types.ModuleType("vmec_jax.vmec_bcovar")
+    field_mod = types.ModuleType("vmec_jax.field")
+
+    ns, ntheta_grid, nzeta_grid = 5, 6, 5
+    dtype = jnp.float32
+    s = jnp.arange(ns, dtype=dtype)[:, None, None]
+    theta = jnp.linspace(0.0, 2.0 * jnp.pi, ntheta_grid, endpoint=False, dtype=dtype)[
+        None, :, None
+    ]
+    zeta = jnp.linspace(0.0, 2.0 * jnp.pi, nzeta_grid, endpoint=False, dtype=dtype)[
+        None, None, :
+    ]
+    zeros = jnp.zeros((ns, ntheta_grid, nzeta_grid), dtype=dtype)
+
+    def eval_geom(_state, _static):  # noqa: ANN001, ANN202
+        return types.SimpleNamespace(
+            sqrtg=1.0 + 0.02 * s + zeros,
+            g_ss=1.1 + 0.01 * s + zeros,
+            g_st=zeros,
+            g_sp=zeros,
+            g_tt=1.2 + 0.03 * jnp.cos(theta) + zeros,
+            g_tp=zeros,
+            g_pp=1.4 + 0.02 * jnp.sin(zeta) + zeros,
+        )
+
+    def vmec_bcovar_half_mesh_from_wout(**_kwargs):  # noqa: ANN202
+        bsupu = 1.0 + 0.05 * jnp.cos(theta) + zeros
+        bsupv = 0.7 + 0.03 * jnp.sin(zeta) + zeros
+        return types.SimpleNamespace(bsupu=bsupu, bsupv=bsupv)
+
+    def b2_from_bsup(_geom, bsupu, bsupv):  # noqa: ANN001, ANN202
+        return bsupu * bsupu + 0.2 * bsupv * bsupv
+
+    geom_mod.eval_geom = eval_geom
+    bcovar_mod.vmec_bcovar_half_mesh_from_wout = vmec_bcovar_half_mesh_from_wout
+    field_mod.b2_from_bsup = b2_from_bsup
+    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_pkg)
+    monkeypatch.setitem(sys.modules, "vmec_jax.geom", geom_mod)
+    monkeypatch.setitem(sys.modules, "vmec_jax.vmec_bcovar", bcovar_mod)
+    monkeypatch.setitem(sys.modules, "vmec_jax.field", field_mod)
+
+    state = types.SimpleNamespace(Rcos=jnp.ones((ns, 2), dtype=dtype))
+    wout = types.SimpleNamespace(
+        iotas=jnp.asarray([0.2, 0.4, 0.6, 0.8, 1.0], dtype=dtype),
+        Aminor_p=1.3,
+        phi=np.asarray([0.0, 2.0 * np.pi]),
+        nfp=4,
+    )
+
+    mapping = vmec_tensor_mapping.vmec_jax_flux_tube_mapping_from_state(
+        state,
+        static=object(),
+        wout=wout,
+        surface_index=2,
+        alpha=0.2,
+        ntheta=8,
+        reference_length=1.5,
+        reference_b=2.0,
+        drift_scale=0.7,
+    )
+
+    for key in (
+        "theta",
+        "gradpar",
+        "bmag",
+        "gds2",
+        "gds21",
+        "gds22",
+        "gbdrift",
+        "gbdrift0",
+        "jacobian",
+        "grho",
+    ):
+        arr = np.asarray(mapping[key])
+        assert arr.shape == (8,)
+        assert np.all(np.isfinite(arr))
+    assert mapping["R0"] == pytest.approx(1.5)
+    assert mapping["B0"] == pytest.approx(2.0)
+    assert mapping["nfp"] == 4
+    assert float(mapping["q"]) == pytest.approx(1.0 / 0.6, rel=2.0e-6)
+    assert mapping["vmec_jax"]["surface_index"] == 2
+    assert mapping["vmec_jax"]["reference_b"] == pytest.approx(2.0)
+
+
+def test_vmec_tensor_mapping_validates_surface_and_reference_scales() -> None:
+    state = types.SimpleNamespace(Rcos=jnp.ones((4, 2), dtype=jnp.float32))
+    wout = types.SimpleNamespace(
+        iotas=jnp.asarray([0.0, 0.4, 0.5, 0.6], dtype=jnp.float32),
+        Aminor_p=0.0,
+        phi=np.asarray([0.0, 0.0]),
+    )
+
+    with pytest.raises(ValueError, match="interior"):
+        vmec_tensor_mapping._surface(state, wout, surface_index=0)
+
+    scales = vmec_tensor_mapping._reference_scales(
+        wout, reference_length=None, reference_b=None
+    )
+    assert scales.length == pytest.approx(1.0)
+    assert scales.b_ref == pytest.approx(1.0)
+
+
 def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> None:
     def observables(params: jnp.ndarray) -> jnp.ndarray:
         return jnp.asarray(
