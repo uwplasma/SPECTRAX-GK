@@ -262,7 +262,7 @@ module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
 source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py"
 facade_module = "spectraxgk.validation.benchmarks.cyclone_scan"
 status = "active"
-responsibility = "Cyclone ky-scan branch hook contract, reference-aligned explicit-time reselection, and standard saved-time/streaming scan execution policies"
+responsibility = "Cyclone ky-scan branch hook contract, batch setup, reference-aligned explicit-time reselection, streaming fits, saved-history integration, and fit/appending policies"
 moved_exports = [
   "CycloneScanHooks",
   "run_explicit_time_cyclone_scan",

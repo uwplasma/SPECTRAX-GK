@@ -4346,3 +4346,14 @@ No long nonlinear audit should be launched from these candidates.
   branch shard, targeted KBM linear regression tests from `tests/test_benchmarks.py`
   with marker filtering overridden, explicit-history and imported-geometry KBM
   checks, py_compile, ruff, and mypy for the touched source module.
+
+- 2026-06-19: Simplified the Cyclone ky-scan time branch inside
+  `validation/benchmarks/cyclone_scan_branches.py` without adding another
+  module. The public `run_time_cyclone_scan` loop now delegates batch/state
+  construction, per-batch time-configuration resolution, Diffrax streaming
+  growth/frequency fitting, saved/configured trajectory integration, and
+  per-ky fit/appending plus Krylov fallback policy to explicit private helpers.
+  This reduced `run_time_cyclone_scan` from roughly 328 lines to 173 lines.
+  Local gates passed: full Cyclone scan branch shard, public Cyclone scan
+  tests from `tests/test_benchmarks.py` with marker filtering overridden,
+  py_compile, ruff, and mypy for the touched source module.
