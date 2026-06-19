@@ -4,7 +4,9 @@ from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
+import spectraxgk.solvers.nonlinear.imex as imex_module
 from spectraxgk.solvers.nonlinear.imex import (
     advance_imex_nonlinear_state,
     imex_fixed_point_guess,
@@ -172,6 +174,74 @@ def test_make_imex_solve_step_forwards_solver_policy() -> None:
     assert seen["implicit_maxiter"] == 7
     assert seen["implicit_restart"] == 2
     assert seen["implicit_solve_method"] == "batched"
+
+
+def test_imex_operator_resolution_and_state_shape_policies() -> None:
+    provided = SimpleNamespace(name="provided")
+    built: list[dict[str, object]] = []
+
+    def build_operator_fn(G, cache, params, dt, **kwargs):
+        built.append(
+            {
+                "shape": tuple(G.shape),
+                "cache": cache,
+                "params": params,
+                "dt": dt,
+                **kwargs,
+            }
+        )
+        return SimpleNamespace(name="built")
+
+    reused = imex_module._resolve_imex_operator(
+        implicit_operator=provided,
+        G0=jnp.ones((2,), dtype=jnp.complex64),
+        cache="cache",
+        params="params",
+        dt=0.2,
+        linear_cfg="linear",
+        implicit_preconditioner="diag",
+        compressed_real_fft=False,
+        build_operator_fn=build_operator_fn,
+        build_implicit_operator_fn=None,
+    )
+    assert reused is provided
+    assert built == []
+
+    built_op = imex_module._resolve_imex_operator(
+        implicit_operator=None,
+        G0=jnp.ones((2,), dtype=jnp.complex64),
+        cache="cache",
+        params="params",
+        dt=0.2,
+        linear_cfg="linear",
+        implicit_preconditioner="diag",
+        compressed_real_fft=False,
+        build_operator_fn=build_operator_fn,
+        build_implicit_operator_fn=lambda *_args, **_kwargs: (),
+    )
+    assert built_op.name == "built"
+    assert built[0]["terms"] == "linear"
+    assert built[0]["implicit_preconditioner"] == "diag"
+    assert built[0]["compressed_real_fft"] is False
+    assert "build_implicit_operator_fn" in built[0]
+
+    operator = SimpleNamespace(
+        shape=(1, 2),
+        squeeze_species=True,
+        state_dtype=jnp.complex64,
+    )
+    state, shape, squeeze_species = imex_module._state_for_imex_operator(
+        jnp.ones((2,), dtype=jnp.float32), operator
+    )
+    assert shape == (1, 2)
+    assert squeeze_species is True
+    assert state.shape == (1, 2)
+    assert state.dtype == jnp.complex64
+
+    with pytest.raises(ValueError, match="implicit_operator shape mismatch"):
+        imex_module._state_for_imex_operator(
+            jnp.ones((3,), dtype=jnp.float32), operator
+        )
 
 
 def test_advance_imex_nonlinear_state_default_method_solves_rhs() -> None:

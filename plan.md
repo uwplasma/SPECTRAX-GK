@@ -1,3 +1,11 @@
+- 2026-06-18: Continued nonlinear solver simplification inside the existing
+  `spectraxgk.solvers.nonlinear.imex` owner without adding source files.
+  Cached IMEX implicit-operator resolution and initial-state shape normalization
+  are now explicit helper policies, keeping `integrate_cached_imex_scan` focused
+  on assembling nonlinear terms, solve steps, and the scan. Added direct helper
+  coverage for provided-vs-built operators, optional implicit-operator builders,
+  squeeze-species state insertion, dtype casting, and fail-fast shape mismatch;
+  the focused IMEX shard, Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Continued VMEC imported-geometry simplification inside the
   existing `spectraxgk.geometry_backends.vmec_fieldlines` owner without adding
   source files. Field-line Boozer coordinate construction on
