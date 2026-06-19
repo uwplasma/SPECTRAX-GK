@@ -1,3 +1,12 @@
+- 2026-06-19: Continued TEM scan-path fit-policy simplification inside
+  `validation.benchmarks.tem_paths` without changing public TEM runner
+  arguments, integration hooks, or fit formulas. The Diffrax-streaming scan
+  branch now resolves `tmin`/`tmax`, `start_fraction`, and `window_fraction`
+  through the shared `ScanFitWindowPolicy` object instead of receiving
+  duplicate scalar window arguments. The module dropped from 640 to 635 lines.
+  Local gates passed: focused TEM branch shard, explicit TEM streaming branch
+  node, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued KBM beta-scan explicit-time fit-policy simplification
   inside `validation.benchmarks.kbm_beta_solver_paths` without changing the
   explicit-time diagnostic fallback ladder or fixed-window fit semantics. The
