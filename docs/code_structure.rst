@@ -404,7 +404,8 @@ Completed extractions:
   ``operators/nonlinear/rhs.py`` and
   ``operators/nonlinear/diagnostic_state.py``. The diagnostic-state owner
   separates field defaulting, growth/frequency mode extraction, scalar
-  diagnostics, and resolved spectra/channel packing while preserving the
+  diagnostics, resolved field/transport group evaluation, and resolved
+  spectra/channel schema packing while preserving the
   explicit/IMEX scan tuple schema. The old root nonlinear helper shims were
   removed; normal users should use ``spectraxgk.nonlinear`` and developer
   helpers should import from ``spectraxgk.operators.nonlinear``.
