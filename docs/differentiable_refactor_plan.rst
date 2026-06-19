@@ -187,7 +187,8 @@ High-Risk Module Split Plan
   policy for primary auto-window and invalid-window fallback fits.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
-  ``validation.benchmarks.tem_paths``.
+  ``validation.benchmarks.tem_paths``. TEM single-ky saved-time fits share
+  one primary/fallback automatic-fit keyword policy in the same path module.
   ETG single-point and scan Krylov paths now share one forwarded-key policy in
   ``validation.benchmarks.etg_linear`` and
   ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift

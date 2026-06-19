@@ -1,3 +1,12 @@
+- 2026-06-19: Continued benchmark-path simplification in private KBM/TEM path
+  helpers without changing public benchmark APIs. `fit_kbm_window` and the TEM
+  single-ky saved-time path now build one local automatic-fit keyword policy
+  and reuse it for primary auto-window fitting plus invalid-window fallback
+  fitting. This keeps helper-level growth-rate extraction semantics aligned
+  with the public KBM/ETG/kinetic/Cyclone cleanups while removing duplicated
+  option forwarding. Local gates passed: focused KBM/TEM branch shard, Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-19: Continued KBM/ETG single-point benchmark-path simplification
   inside `validation.benchmarks.kbm_linear` and
   `validation.benchmarks.etg_linear` without changing public runner APIs or
