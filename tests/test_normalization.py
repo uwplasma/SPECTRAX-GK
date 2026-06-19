@@ -40,6 +40,7 @@ def test_apply_diagnostic_normalization_modes() -> None:
 def test_benchmark_constants_follow_contract() -> None:
     cyclone = get_normalization_contract("cyclone")
     etg = get_normalization_contract("etg")
+    kinetic = get_normalization_contract("kinetic")
     kbm = get_normalization_contract("kbm")
 
     assert benchmarks.CYCLONE_OMEGA_D_SCALE == pytest.approx(cyclone.omega_d_scale)
@@ -52,12 +53,20 @@ def test_benchmark_constants_follow_contract() -> None:
     assert benchmarks.ETG_OMEGA_STAR_SCALE == pytest.approx(etg.omega_star_scale)
     assert benchmarks.ETG_RHO_STAR == pytest.approx(etg.rho_star)
 
+    assert benchmarks.KINETIC_OMEGA_D_SCALE == pytest.approx(
+        kinetic.omega_d_scale
+    )
+    assert benchmarks.KINETIC_OMEGA_STAR_SCALE == pytest.approx(
+        kinetic.omega_star_scale
+    )
+    assert benchmarks.KINETIC_RHO_STAR == pytest.approx(kinetic.rho_star)
+
     assert benchmarks.KBM_OMEGA_D_SCALE == pytest.approx(kbm.omega_d_scale)
     assert benchmarks.KBM_OMEGA_STAR_SCALE == pytest.approx(kbm.omega_star_scale)
     assert benchmarks.KBM_RHO_STAR == pytest.approx(kbm.rho_star)
 
 
-def test_benchmark_defaults_preserve_benchmarks_compatibility_surface() -> None:
+def test_benchmark_defaults_preserve_benchmarks_public_surface() -> None:
     for name in benchmark_defaults.__all__:
         assert getattr(benchmarks, name) is getattr(benchmark_defaults, name)
 

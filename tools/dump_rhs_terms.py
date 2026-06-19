@@ -19,9 +19,9 @@ from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    Kinetic_OMEGA_D_SCALE,
-    Kinetic_OMEGA_STAR_SCALE,
-    Kinetic_RHO_STAR,
+    KINETIC_OMEGA_D_SCALE,
+    KINETIC_OMEGA_STAR_SCALE,
+    KINETIC_RHO_STAR,
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
@@ -134,14 +134,14 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=Kinetic_OMEGA_D_SCALE,
-            omega_star_scale=Kinetic_OMEGA_STAR_SCALE,
-            rho_star=Kinetic_RHO_STAR,
+            omega_d_scale=KINETIC_OMEGA_D_SCALE,
+            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
+            rho_star=KINETIC_RHO_STAR,
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
             nhermite=args.Nm,
         )
-        return cfg, params, 1, Kinetic_OMEGA_D_SCALE, Kinetic_OMEGA_STAR_SCALE, Kinetic_RHO_STAR
+        return cfg, params, 1, KINETIC_OMEGA_D_SCALE, KINETIC_OMEGA_STAR_SCALE, KINETIC_RHO_STAR
     if case == "tem":
         cfg = TEMBaseCase(
             grid=GridConfig(

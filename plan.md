@@ -1,3 +1,12 @@
+- 2026-06-18: Removed the remaining mixed-case kinetic benchmark
+  normalization constants from the maintained source surface. Kinetic-electron
+  benchmark defaults, public benchmark re-exports, kinetic runners, and
+  diagnostic/debug tools now use the same all-caps ``KINETIC_*`` naming scheme
+  as Cyclone, ETG, KBM, and TEM. This drops a legacy naming wart without
+  changing physics normalization values. Also tightened source and architecture
+  documentation language from "compatibility" wording to stable public-facade
+  ownership where behavior is intentionally maintained. Focused benchmark
+  tests, Ruff, and `py_compile` passed.
 - 2026-06-18: Removed the private adaptive-chunk `_format_duration`
   compatibility wrapper. Runtime chunk tests now import the canonical
   orchestration progress formatter directly, leaving

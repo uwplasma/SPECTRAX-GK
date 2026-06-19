@@ -183,7 +183,7 @@ Completed extractions:
 - scalar energy, species transport/heating, and resolved spectral diagnostics:
   ``diagnostics/energy.py``, ``diagnostics/transport.py``, and
   ``diagnostics/resolved.py``. The public ``diagnostics.core`` module remains
-  a compatibility facade re-exported by ``spectraxgk.diagnostics``.
+  a small facade re-exported by ``spectraxgk.diagnostics``.
 - explicit linear step kernels, diagnostics-rich linear IVP integration,
   explicit CFL/frequency-bound policy, and progress formatting:
   ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_diagnostics.py``,
@@ -517,7 +517,7 @@ single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
 setup, generic saved-time fitting, and result packaging. The public beta runner
 still owns per-beta setup and time/diffrax fallback.
-``spectraxgk.benchmarks`` remains the public compatibility facade for
+``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
 The TEM public owner now keeps setup, parameter construction, and species
@@ -569,7 +569,7 @@ sample-coverage, nonlinear-audit, and candidate-selection modules:
 from these owners.
 
 The first differentiable-geometry split keeps
-``spectraxgk.geometry.differentiable`` as the public compatibility facade while
+``spectraxgk.geometry.differentiable`` as the public facade while
 moving optional backend lookup and strict AD/finite-difference gate utilities
 into ``spectraxgk.geometry.backend_discovery`` and
 ``spectraxgk.geometry.autodiff_checks``. The solver-ready in-memory flux-tube
@@ -595,11 +595,11 @@ Analytic s-alpha and slab geometry models live in
 sampling, imported-NetCDF loading, and periodic mirror-term reconstruction live
 in ``spectraxgk.geometry.flux_tube``. Twist-shift and grid-default geometry
 policy live in ``spectraxgk.geometry.core``. The
-``spectraxgk.geometry`` package remains a thin compatibility facade that
+``spectraxgk.geometry`` package remains a thin public facade that
 re-exports the same classes and functions for existing user code.
 Geometry sensitivity, inverse-design, and local UQ reports live in
 ``spectraxgk.geometry.sensitivity`` so backend bridge modules can depend on
-the report contract without importing the compatibility facade. Bounded VMEC
+the report contract without importing the public facade. Bounded VMEC
 boundary and Boozer-spectrum bridge checks, Boozer ``|B|`` field-line
 evaluation, and Boozer-to-flux-tube sensitivity diagnostics live in
 ``spectraxgk.geometry.booz_xform_bridge``. Pure helper imports retain object

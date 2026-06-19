@@ -20,8 +20,8 @@ or ``tools/differentiable_refactor_manifest.toml`` should be updated.
 The active branch for this work starts with planning infrastructure only:
 ``tools/differentiable_refactor_manifest.toml`` and
 ``tools/check_differentiable_refactor_manifest.py``. Large code moves should
-land in later PRs only after the relevant manifest row, compatibility facade,
-fast tests, parity gates, and documentation have been updated.
+land in later PRs only after the relevant manifest row, public facade, fast
+tests, parity gates, and documentation have been updated.
 
 Design Principles
 -----------------
@@ -29,8 +29,8 @@ Design Principles
 1. Preserve public behavior first.
    Existing user-facing imports such as ``spectraxgk.linear``,
    ``spectraxgk.nonlinear``, ``spectraxgk.runtime``, and
-   ``spectraxgk.geometry.differentiable`` remain compatibility facades while
-   internals are split.
+   ``spectraxgk.geometry.differentiable`` remain public facades while internals
+   are split.
 2. Keep differentiable paths pure.
    Objective functions must take explicit PyTree parameters and arrays and
    return arrays or typed reports. File I/O, plotting, subprocesses, and
@@ -434,8 +434,8 @@ Phase 6: extension registries
   families. Each registry entry must declare tests and docs.
 
 Phase 7: deprecation cleanup
-  Keep compatibility facades through the release series. Remove legacy imports
-  only in a major-version plan after downstream examples have been migrated.
+  Keep stable public facades through the release series. Remove old helper
+  imports once downstream examples, docs, and tests use canonical owners.
 
 Differentiability Contract
 --------------------------
@@ -515,7 +515,8 @@ Developer Checklist For Future PRs
 
 - Update ``tools/differentiable_refactor_manifest.toml`` before moving code.
 - Add or update fast tests before changing numerical behavior.
-- Keep compatibility facades until examples and docs are migrated.
+- Keep stable public facades; remove old helper shims after examples and docs
+  are migrated.
 - Run the manifest checker and the affected fast tests locally.
 - If a gate tolerance changes, update the validation docs and artifact ledger.
 - If a new extension point is added, include one minimal real implementation

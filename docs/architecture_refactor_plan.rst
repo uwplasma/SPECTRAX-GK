@@ -5,7 +5,7 @@ Purpose
 -------
 
 This plan resets the refactor direction for SPECTRAX-GK. The recent
-compatibility-preserving extractions reduced several large files, but they also
+behavior-preserving extractions reduced several large files, but they also
 created too many root-level modules with prefix-based names. That makes the code
 harder to navigate, harder to teach, harder to extend, and harder to test.
 
@@ -22,8 +22,8 @@ Plan Authority And Conflict Resolution
 This page is the authoritative refactor plan for package layout, naming,
 migration order, and acceptance gates.
 
-- :doc:`code_structure` documents the current source tree and compatibility
-  facades. It should not be read as the target architecture.
+- :doc:`code_structure` documents the current source tree and public facades.
+  It should not be read as the target architecture.
 - :doc:`differentiable_refactor_plan` is now a technical appendix for
   differentiability contracts, historical split inventory, and validation-gate
   traceability. It does not override this page's target package layout or
@@ -37,7 +37,7 @@ migration order, and acceptance gates.
   migration scaffolding.
 
 Any future refactor PR should cite this page, list the package ownership it is
-changing, and state which compatibility facade preserves user behavior.
+changing, and state which public facade preserves documented user behavior.
 
 Planning Snapshot
 -----------------
@@ -55,7 +55,7 @@ The planning audit on 2026-06-16 found:
 
 That structure is a transition state, not the desired architecture. Future
 splits should not add more root-level prefix modules unless they are temporary
-compatibility facades tracked in the migration manifest.
+public facades tracked in the migration manifest.
 
 External Design Guidance
 ------------------------
@@ -116,7 +116,8 @@ Non-Negotiable Constraints
 --------------------------
 
 - Preserve documented user behavior during the refactor.
-- Keep public imports as facades until an intentional major-version cleanup.
+- Keep stable public imports as facades, but remove old helper shims once
+  examples, docs, and tests use the canonical package owners.
 - Keep package-wide coverage at or above the release gate.
 - Keep physics parity, validation gates, and benchmark claims unchanged unless
   a dedicated validation artifact promotes a change.
@@ -311,10 +312,10 @@ The target root should be mostly packages plus a few user-facing facades:
      __init__.py
      _version.py
      api.py                    # optional high-level Python API facade
-     linear.py                 # compatibility facade
-     nonlinear.py              # compatibility facade
-     runtime.py                # compatibility facade
-     quasilinear.py            # compatibility facade
+     linear.py                 # public facade
+     nonlinear.py              # public facade
+     runtime.py                # public facade
+     quasilinear.py            # public facade
      artifacts/plotting.py     # user plotting and figure utilities
      benchmarks.py             # validation facade
      cli/
@@ -473,7 +474,7 @@ Specific root-level names to stop adding:
 
 - ``runtime_<thing>.py``
 - ``nonlinear_<thing>.py``
-- ``linear_<thing>.py`` unless it is a compatibility facade
+- ``linear_<thing>.py`` unless it is a deliberate public facade
 - ``solver_<thing>.py``
 - ``vmec_jax_<thing>.py``
 - ``quasilinear_<thing>.py``
