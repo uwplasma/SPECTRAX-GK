@@ -577,7 +577,8 @@ Imported VMEC/Boozer radial spline construction lives in
 ``spectraxgk.geometry_backends.vmec_splines`` and is re-exported through
 ``spectraxgk.geometry_backends.vmec_fieldlines`` for the existing VMEC backend
 facade. The VMEC field-line backend keeps Boozer-object fallback,
-Boozer-mode table sampling, angle construction, resonant-denominator guarding,
+Boozer-mode table sampling, alpha-line coordinate construction, axisymmetric
+flip detection, angle construction, resonant-denominator guarding,
 flux-surface averaging, and centered field-line integral policies as focused
 helpers inside ``spectraxgk.geometry_backends.vmec_fieldlines`` so the
 imported-geometry equations remain in one owner while the small numerical

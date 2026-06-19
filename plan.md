@@ -1,3 +1,11 @@
+- 2026-06-18: Continued VMEC imported-geometry simplification inside the
+  existing `spectraxgk.geometry_backends.vmec_fieldlines` owner without adding
+  source files. Field-line Boozer coordinate construction on
+  `alpha = theta_b - iota * phi_b` and the axisymmetric flip-convention
+  detector are now explicit helper policies instead of inline setup inside
+  `_vmec_fieldlines`. Added direct helper coverage for the alpha-line identity
+  and flip/no-flip branches; the focused VMEC backend helper shard, Ruff, mypy,
+  and `py_compile` passed.
 - 2026-06-18: Continued differentiability objective-gate simplification inside
   `spectraxgk.objectives.gradient_gates` without adding source files. The
   repeated solver-ready linear setup for branch-continuity and geometry-gradient

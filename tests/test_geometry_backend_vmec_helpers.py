@@ -665,6 +665,48 @@ def test_vmec_fieldline_helper_angle_and_denominator_policies() -> None:
     assert safe[0, 1] == pytest.approx(0.5)
 
 
+def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
+    theta1d = np.array([0.0, 1.0])
+    alpha_arr = np.array([0.0, 0.5])
+    iota = np.array([0.5, 1.0])
+
+    theta_b, phi_b = vmec_fieldlines._fieldline_boozer_coordinates(
+        theta1d, alpha_arr, iota
+    )
+
+    assert theta_b.shape == (2, 2, 2)
+    np.testing.assert_allclose(theta_b[1, 0], theta1d)
+    np.testing.assert_allclose(phi_b[0, 1], (theta1d - 0.5) / 0.5)
+    np.testing.assert_allclose(
+        theta_b - iota[:, None, None] * phi_b,
+        np.broadcast_to(alpha_arr[None, :, None], theta_b.shape),
+    )
+
+    xm = np.array([1.0])
+    xn = np.array([0.0])
+    rmnc_b = np.array([[1.0]])
+    zmns_b = np.array([[0.25]])
+
+    assert not vmec_fieldlines._axisym_flip_required(
+        isaxisym=False,
+        xm_b=xm,
+        xn_b=xn,
+        theta_b=theta_b[:1, :1],
+        phi_b=phi_b[:1, :1],
+        rmnc_b=rmnc_b,
+        zmns_b=zmns_b,
+    )
+    assert vmec_fieldlines._axisym_flip_required(
+        isaxisym=True,
+        xm_b=xm,
+        xn_b=xn,
+        theta_b=theta_b[:1, :1],
+        phi_b=phi_b[:1, :1],
+        rmnc_b=rmnc_b,
+        zmns_b=zmns_b,
+    )
+
+
 def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
     theta_grid = np.linspace(-np.pi, np.pi, 21)
     phi_grid = np.linspace(-np.pi, np.pi, 19)
