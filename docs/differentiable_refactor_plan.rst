@@ -182,7 +182,9 @@ High-Risk Module Split Plan
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits and saved-time
-  auto-fit selection.
+  auto-fit selection. Multi-target transition-threshold and fastest-growth
+  fallback candidate selection is isolated from solve orchestration in a local
+  helper.
   KBM single-point saved-time direct fits also share one automatic-fit keyword
   policy for primary auto-window and invalid-window fallback fits.
   TEM scan paths keep the same public/focused-owner split, with one

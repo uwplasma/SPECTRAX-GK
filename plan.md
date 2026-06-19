@@ -1,3 +1,12 @@
+- 2026-06-19: Continued KBM beta-scan branch-policy simplification inside
+  `validation.benchmarks.kbm_beta_solver_paths` without changing solver calls,
+  public runner APIs, or branch-selection semantics. The multi-target Krylov
+  path now delegates transition-threshold and fallback fastest-growth candidate
+  selection to `_select_kbm_beta_eigen_candidate`, leaving
+  `solve_kbm_beta_krylov_sample` focused on orchestration, normalization, and
+  auto-to-time fallback decisions. Local gates passed: focused KBM beta
+  multi-target/fallback branch shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued benchmark-path simplification in private KBM/TEM path
   helpers without changing public benchmark APIs. `fit_kbm_window` and the TEM
   single-ky saved-time path now build one local automatic-fit keyword policy
