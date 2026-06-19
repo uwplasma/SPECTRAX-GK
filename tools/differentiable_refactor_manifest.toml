@@ -1506,20 +1506,43 @@ fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_scoring"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_scoring.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "shared normalized evidence-margin scoring helper for nonlinear turbulence-gradient screening reports"
+moved_exports = [
+  "_metric_margin",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_brackets"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_brackets.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "same-control nonlinear turbulence-gradient bracket-sweep rows, paired-replicate diagnostics, and locality/repetition recommendation report"
+moved_exports = [
+  "_bracket_sweep_recommendation",
+  "_bracket_sweep_row",
+  "_delta_key",
+  "_paired_same_sign_fraction",
+  "_paired_uncertainty_rel",
+  "nonlinear_turbulence_gradient_bracket_sweep_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
 source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
 facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
 status = "active"
-responsibility = "nonlinear turbulence-gradient candidate ranking, bracket-sweep screening, and next-campaign recommendation reports"
+responsibility = "nonlinear turbulence-gradient candidate ranking and next-campaign recommendation report, with bracket-sweep compatibility re-exports"
 moved_exports = [
-  "_bracket_sweep_recommendation",
-  "_bracket_sweep_row",
   "_candidate_next_action",
-  "_delta_key",
   "_metric_margin",
-  "_paired_same_sign_fraction",
-  "_paired_uncertainty_rel",
-  "nonlinear_turbulence_gradient_bracket_sweep_report",
   "nonlinear_turbulence_gradient_candidate_ranking_report",
 ]
 fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]

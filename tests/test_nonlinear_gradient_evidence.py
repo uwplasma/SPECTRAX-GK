@@ -9,10 +9,12 @@ import numpy as np
 import pytest
 
 import spectraxgk.validation.nonlinear_gradient.evidence as evidence
+import spectraxgk.validation.nonlinear_gradient.evidence_brackets as evidence_brackets
 import spectraxgk.validation.nonlinear_gradient.evidence_classification as evidence_classification
 import spectraxgk.validation.nonlinear_gradient.evidence_core as evidence_core
 import spectraxgk.validation.nonlinear_gradient.evidence_fd as evidence_fd
 import spectraxgk.validation.nonlinear_gradient.evidence_gap as evidence_gap
+import spectraxgk.validation.nonlinear_gradient.evidence_scoring as evidence_scoring
 import spectraxgk.validation.nonlinear_gradient.evidence_screening as evidence_screening
 import spectraxgk.validation.nonlinear_gradient.evidence_windows as evidence_windows
 from spectraxgk.validation.nonlinear_gradient.evidence import (
@@ -71,8 +73,10 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
         evidence.classify_gradient_artifact
         is evidence_classification.classify_gradient_artifact
     )
-    assert evidence._metric_margin is evidence_screening._metric_margin
-    assert evidence._bracket_sweep_row is evidence_screening._bracket_sweep_row
+    assert evidence._metric_margin is evidence_scoring._metric_margin
+    assert evidence_screening._metric_margin is evidence_scoring._metric_margin
+    assert evidence._bracket_sweep_row is evidence_brackets._bracket_sweep_row
+    assert evidence_screening._bracket_sweep_row is evidence_brackets._bracket_sweep_row
     assert evidence._ensemble_row is evidence_windows._ensemble_row
     assert (
         evidence.summarize_window_evidence is evidence_windows.summarize_window_evidence
@@ -83,7 +87,11 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
     )
     assert (
         evidence.nonlinear_turbulence_gradient_bracket_sweep_report
-        is evidence_screening.nonlinear_turbulence_gradient_bracket_sweep_report
+        is evidence_brackets.nonlinear_turbulence_gradient_bracket_sweep_report
+    )
+    assert (
+        evidence_screening.nonlinear_turbulence_gradient_bracket_sweep_report
+        is evidence_brackets.nonlinear_turbulence_gradient_bracket_sweep_report
     )
     assert (
         evidence.nonlinear_turbulence_gradient_finite_difference_report

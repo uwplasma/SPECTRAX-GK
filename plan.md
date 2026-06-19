@@ -1,3 +1,14 @@
+- 2026-06-19: Continued nonlinear-gradient validation refactor by splitting
+  `validation.nonlinear_gradient.evidence_screening` into focused screening
+  owners. Candidate ranking remains in `evidence_screening`, same-control
+  bracket-sweep rows/recommendations now live in `evidence_brackets`, and
+  normalized evidence-margin scoring now lives in `evidence_scoring` so both
+  paths share one gate-margin policy. The public `evidence` facade and
+  `evidence_screening` compatibility re-exports are preserved and tested.
+  `evidence_screening.py` dropped from 547 to 285 lines; new modules are 280
+  and 30 lines. Local gates passed: nonlinear-gradient evidence shard, Ruff,
+  mypy, `py_compile`, architecture/refactor/size manifests, terminology audits,
+  and `git diff --check`.
 - 2026-06-19: Continued VMEC differentiability cleanup by extracting JAX-only
   VMEC field-line coordinate construction and differentiable RMS reductions
   from `geometry.vmec_state_sensitivity` into
