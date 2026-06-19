@@ -583,6 +583,62 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
     assert np.asarray(report["bmnc_b"]).shape == (2,)
 
 
+def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() -> None:
+    backend_info = {"vmec_jax_available": False}
+
+    unavailable = vmec_state_sensitivity._unavailable_vmec_state_sensitivity_report(
+        backend_info=backend_info,
+        fd_step=2.0e-5,
+        case_name="case",
+        reason="missing backend",
+    )
+    assert unavailable == {
+        "available": False,
+        "backend_info": backend_info,
+        "sensitivity": None,
+        "fd_step": 2.0e-5,
+        "case_name": "case",
+        "reason": "missing backend",
+    }
+
+    failed = vmec_state_sensitivity._failed_vmec_state_sensitivity_report(
+        backend_info=backend_info,
+        fd_step=1.0e-6,
+        case_name="case",
+        exc=ValueError("bad probe"),
+    )
+    assert failed["available"] is False
+    assert failed["error"] == "ValueError: bad probe"
+
+    ctx = vmec_state_sensitivity._VMECStateContext(
+        input_path=Path("input.example"),
+        wout_path=Path("wout_example.nc"),
+        cfg=object(),
+        indata=object(),
+        static=object(),
+        wout=object(),
+        state=object(),
+        base_Rcos=jnp.ones((3, 4)),
+        base_Zsin=jnp.ones((3, 4)),
+    )
+    metadata = vmec_state_sensitivity._vmec_state_sensitivity_metadata(
+        backend_info={"vmec_jax_available": True},
+        ctx=ctx,
+        case_name="case",
+        params=jnp.asarray([0.1, -0.2]),
+        radial_index=1,
+        mode_index=2,
+        surface_index=0,
+        fd_step=3.0e-5,
+    )
+    assert metadata["available"] is True
+    assert metadata["param_names"] == ["delta_Rcos", "delta_Zsin"]
+    np.testing.assert_allclose(metadata["params"], [0.1, -0.2])
+    assert metadata["state_shape"] == [3, 4]
+    assert metadata["radial_index"] == 1
+    assert metadata["surface_index"] == 0
+
+
 def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
     None
 ):
