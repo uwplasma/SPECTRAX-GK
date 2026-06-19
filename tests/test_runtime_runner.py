@@ -2371,7 +2371,7 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
 
 
-def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(
+def test_runtime_nonlinear_uses_explicit_method_default_cfl_fac(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     captured: dict[str, float] = {}
