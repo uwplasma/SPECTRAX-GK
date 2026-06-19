@@ -10,6 +10,7 @@ import pytest
 import spectraxgk.runtime as runtime
 import spectraxgk.workflows.cases as runtime_cases
 import spectraxgk.workflows.named_cases as named_cases
+import spectraxgk.workflows.runtime.command_artifacts as command_artifacts
 import spectraxgk.workflows.runtime.orchestration_artifacts as runtime_artifacts
 import spectraxgk.workflows.runtime.commands as runtime_commands
 import spectraxgk.workflows.runtime.policies as runtime_policies
@@ -188,6 +189,23 @@ def test_runtime_command_helpers_have_single_canonical_owner() -> None:
 
     for name in command_names:
         assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
+
+
+def test_runtime_command_artifact_helpers_have_single_canonical_owner() -> None:
+    command_artifact_names = [
+        "COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_NONLINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_SCAN_ARTIFACT_DISPLAY_KEYS",
+        "print_nonlinear_command_outputs",
+        "print_saved_paths",
+        "write_command_outputs",
+        "write_linear_runtime_command_outputs",
+        "write_scan_runtime_command_outputs",
+    ]
+
+    for name in command_artifact_names:
+        assert getattr(runtime_artifacts, name) is getattr(command_artifacts, name)
 
 
 def test_prepare_runtime_command_config_applies_explicit_override_policy() -> None:

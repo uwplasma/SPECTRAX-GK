@@ -1,3 +1,15 @@
+- 2026-06-19: Continued executable/runtime refactor by extracting command
+  saved-path display and optional artifact-write stdout policy from
+  `workflows.runtime.orchestration_artifacts` into
+  `workflows.runtime.command_artifacts`. Nonlinear artifact restart/checkpoint
+  handoff stays in `orchestration_artifacts`, while runtime commands now import
+  the command-output helpers from their canonical owner and the old helper
+  surface remains re-exported for tests/users. `orchestration_artifacts.py`
+  dropped from 495 to 411 lines and the new command artifact module is 113
+  lines. Local gates passed: focused runtime command-artifact stdout-order
+  tests, CLI artifact path tests, nonlinear artifact handoff tests, Ruff, mypy,
+  `py_compile`, architecture/refactor/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued nonlinear solver refactor by extracting diagnostic
   IMEX stage and scan policy from `solvers.nonlinear.imex` into
   `solvers.nonlinear.imex_diagnostics`. Cached IMEX solve policy keeps the

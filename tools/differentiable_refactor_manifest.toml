@@ -3046,6 +3046,26 @@ fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_chunks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.command_artifacts"
+source_path = "src/spectraxgk/workflows/runtime/command_artifacts.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration_artifacts"
+status = "active"
+responsibility = "runtime executable saved-path display order, optional artifact write dispatch, and command stdout policy"
+moved_exports = [
+  "COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_NONLINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_SCAN_ARTIFACT_DISPLAY_KEYS",
+  "print_nonlinear_command_outputs",
+  "print_saved_paths",
+  "write_command_outputs",
+  "write_linear_runtime_command_outputs",
+  "write_scan_runtime_command_outputs",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_cli.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration_artifacts"
 source_path = "src/spectraxgk/workflows/runtime/orchestration_artifacts.py"
 facade_module = "spectraxgk.workflows.runtime.orchestration"
