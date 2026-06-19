@@ -1,3 +1,14 @@
+- 2026-06-18: Continued differentiability objective-gate simplification inside
+  `spectraxgk.objectives.gradient_gates` without adding source files. The
+  repeated solver-ready linear setup for branch-continuity and geometry-gradient
+  reports now lives in a shared `_SolverReadyLinearContext`, covering the
+  Cyclone-like grid, selected ky grid, state shape, default linear parameters,
+  term toggles, geometry mapping, cache construction, RHS/phi evaluation, and
+  explicit operator matrix construction. The public report schemas and
+  objective names are unchanged, while the branch objective now also reuses its
+  existing field-line quadrature weights instead of recomputing them for the
+  particle-flux normalization. Added direct context-contract coverage plus the
+  focused solver-objective gradient tests; Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Continued executable runtime-command simplification inside
   `spectraxgk.workflows.runtime.commands` without adding source files. The
   nonlinear runtime command now uses explicit `print_nonlinear_run_header` and

@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.objectives.gradient_gates as gradient_gates
 import spectraxgk.objectives.solver_gradients as sog
 import spectraxgk.objectives.solver_vmec as solver_vmec
 from spectraxgk.objectives.solver_gradients import (
@@ -79,6 +80,26 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
     assert np.all(np.asarray(mapping["bmag"]) > 0.0)
     with pytest.raises(ValueError, match="length-2"):
         solver_ready_geometry_mapping(jnp.ones(3), theta)
+
+
+def test_solver_ready_linear_context_builds_operator_contract() -> None:
+    context = gradient_gates._solver_ready_linear_context(
+        n_laguerre=2,
+        n_hermite=1,
+        source_model="unit_test_solver_ready_context",
+    )
+
+    assert context.state_shape[:2] == (2, 1)
+    assert context.grid.ky.size == 1
+    assert context.grid.kx.size == 1
+    assert context.source_model == "unit_test_solver_ready_context"
+
+    matrix = context.matrix_fn(default_solver_geometry_design_params())
+    assert matrix.shape == (int(np.prod(context.state_shape)),) * 2
+    feature_context = context.quasilinear_feature_context()
+    assert feature_context["state_shape"] == context.state_shape
+    assert callable(feature_context["geometry_for"])
+    assert callable(feature_context["rhs_phi"])
 
 
 def test_tiny_differentiable_objective_gradient_report_is_finite_and_conditioned() -> None:
