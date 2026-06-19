@@ -20,6 +20,7 @@ import spectraxgk.geometry.sensitivity as geom_sensitivity
 import spectraxgk.geometry.vmec_boozer_core as vmec_boozer_core
 import spectraxgk.geometry.vmec_boozer_constants as vmec_boozer_constants
 import spectraxgk.geometry.vmec_flux_tube_reports as vmec_flux_tube_reports
+import spectraxgk.geometry.vmec_state_controls as vmec_state_controls
 import spectraxgk.geometry.vmec_state_sensitivity as vmec_state_sensitivity
 import spectraxgk.geometry.vmec_tensor_mapping as vmec_tensor_mapping
 from spectraxgk.geometry.differentiable import (
@@ -658,6 +659,27 @@ def test_vmec_state_sensitivity_report_helpers_are_fail_closed_and_json_ready() 
     assert metadata["state_shape"] == [3, 4]
     assert metadata["radial_index"] == 1
     assert metadata["surface_index"] == 0
+
+
+def test_vmec_state_control_helpers_have_canonical_owner() -> None:
+    assert vmec_state_sensitivity._VMECStateContext is (
+        vmec_state_controls._VMECStateContext
+    )
+    assert vmec_state_sensitivity._load_vmec_state_context is (
+        vmec_state_controls._load_vmec_state_context
+    )
+    assert vmec_state_sensitivity._resolve_vmec_state_indices is (
+        vmec_state_controls._resolve_vmec_state_indices
+    )
+    assert vmec_state_sensitivity._perturb_vmec_state is (
+        vmec_state_controls._perturb_vmec_state
+    )
+    assert vmec_state_sensitivity._length_two_params is (
+        vmec_state_controls._length_two_params
+    )
+    assert vmec_flux_tube_reports._load_vmec_state_context is (
+        vmec_state_controls._load_vmec_state_context
+    )
 
 
 def test_vmec_state_sensitivity_ad_fd_diagnostics_match_analytic_jacobian() -> None:

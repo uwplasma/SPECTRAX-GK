@@ -931,6 +931,22 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_state_controls"
+source_path = "src/spectraxgk/geometry/vmec_state_controls.py"
+facade_module = "spectraxgk.geometry.vmec_state_sensitivity"
+status = "active"
+responsibility = "shared VMEC-JAX example-state loading, coefficient index resolution, length-two control normalization, and pure state perturbation helpers for differentiable geometry gates"
+moved_exports = [
+  "_VMECStateContext",
+  "_length_two_params",
+  "_load_vmec_state_context",
+  "_perturb_vmec_state",
+  "_resolve_vmec_state_indices",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.vmec_state_sensitivity"
 source_path = "src/spectraxgk/geometry/vmec_state_sensitivity.py"
 facade_module = "spectraxgk.geometry.differentiable"

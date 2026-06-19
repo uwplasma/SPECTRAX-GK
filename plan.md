@@ -1,3 +1,16 @@
+- 2026-06-19: Continued differentiable VMEC/Boozer refactor by extracting
+  shared VMEC-JAX state-control scaffolding from
+  `geometry.vmec_state_sensitivity` into `geometry.vmec_state_controls`.
+  Example-state loading, coefficient index resolution, length-two perturbation
+  normalization, and pure `VMECState` coefficient perturbation now have a
+  focused owner used by both state-sensitivity reports and flux-tube reports.
+  Public report wrappers and optional-backend patch seams remain in
+  `vmec_state_sensitivity`; private helper aliases remain re-exported for
+  existing tests. `vmec_state_sensitivity.py` dropped from 650 to 554 lines and
+  the new controls module is 130 lines. Local gates passed: differentiable
+  geometry bridge shard, refactor manifest tests, Ruff, mypy, `py_compile`,
+  architecture/refactor/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued executable/runtime refactor by extracting command
   saved-path display and optional artifact-write stdout policy from
   `workflows.runtime.orchestration_artifacts` into
