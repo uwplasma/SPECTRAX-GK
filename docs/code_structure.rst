@@ -173,7 +173,11 @@ Completed extractions:
   ``geometry_backends.vmec`` are now stable facades, while numerics,
   field-line/core assembly, remap, IO, optional-backend discovery, and pipeline
   ownership live in smaller ``geometry_backends.miller_*`` and
-  ``geometry_backends.vmec_*`` modules.
+  ``geometry_backends.vmec_*`` modules. Imported Miller profile assembly keeps
+  central-surface normalization, period extension, Bishop coefficients, metric
+  coefficients, magnetic drifts, target-grid interpolation, ballooning
+  conversion, and final EIK profile packing as explicit stages inside
+  ``geometry_backends.miller_profiles``.
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
   ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``,

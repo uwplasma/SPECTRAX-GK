@@ -1,3 +1,19 @@
+- 2026-06-19: Continued imported Miller geometry refactoring inside
+  `geometry_backends.miller_profiles` without changing the public
+  `assemble_miller_profiles` signature, EIK profile dictionary keys, Bishop
+  integral formulas, metric/drift formulas, interpolation targets, ballooning
+  parity policy, or scalar normalization outputs. The assembler now delegates
+  central-surface collection, period extension, Bishop coefficient evaluation,
+  metric coefficient evaluation, drift coefficient evaluation, target-grid
+  interpolation, ballooning conversion, and final EIK profile packing to named
+  stages. The public assembler drops from 198 to 50 lines, and the longest
+  helper is 50 lines. A representative shaped Miller case produced bitwise
+  identical old/new profile outputs for every scalar and array key after
+  preserving the original `kxfac` scalar path. Focused Miller backend and
+  Miller runtime-EIK tests passed locally, along with Ruff, mypy, `py_compile`,
+  an exact old/new output comparison, refactor/coverage/size manifests, Sphinx
+  docs, repository-size policy, and `git diff --check`.
+
 - 2026-06-19: Continued differentiable solver-time refactoring inside
   `solvers.time.diffrax_streaming` without changing the public
   `integrate_linear_diffrax_streaming` signature, Diffrax solver selection,
