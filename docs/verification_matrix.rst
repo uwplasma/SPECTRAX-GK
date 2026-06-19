@@ -146,8 +146,11 @@ The current materialized gate reports are indexed by
 ``docs/_static/validation_gate_index.json`` and
 ``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
 ``gate_index_include=false`` so they remain documented but do not count as
-release blockers. The current release-gate index has ``17/17`` tracked reports
-passing.
+release blockers. The current release-gate index has ``17/18`` tracked reports
+passing. The sole open row is the quasilinear model-selection status, which is
+intentionally fail-closed because the current spectral-envelope candidate is a
+scoped model-development diagnostic rather than a promoted absolute-flux
+predictor.
 
 Stellarator Linear
 ------------------

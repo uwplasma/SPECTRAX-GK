@@ -262,9 +262,11 @@ writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
 schema. The current continuity-first selected branch passes the adjacent
 growth/frequency jump and successive-overlap gates.
 ``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
-``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
+``docs/_static/validation_gate_index.json``, ``.csv``, ``.png``, and ``.pdf`` so the docs
 always have one compact pass/open view of the currently materialized release
-validation gates. The current JSON index has ``14/14`` tracked reports passing.
+validation gates. The current JSON index has ``17/18`` tracked reports passing,
+with the quasilinear model-selection status intentionally open until a
+candidate passes the strict uncertainty and transport-error gates.
 Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
 ``tools/plot_nonlinear_window_statistics.py`` provides the companion

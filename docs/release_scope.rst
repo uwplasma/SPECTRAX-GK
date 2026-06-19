@@ -517,8 +517,10 @@ Nonlinear benchmark state:
   tighter than the broad release envelope, while Cyclone and W7-X remain at the
   ``0.10`` release envelope pending paper-level retuning.
 - ``docs/_static/validation_gate_index.json`` currently records ``17`` passed
-  gate-indexed reports and ``0`` open reports. It is a gate index, not a
-  blanket promotion of every figure under ``docs/_static``.
+  gate-indexed reports and ``1`` open report. The open report is the
+  quasilinear model-selection status, which is intentionally not promoted to
+  an absolute-flux predictor. The index is an audit view, not a blanket
+  promotion of every figure under ``docs/_static``.
 - ``docs/_static/nonlinear_transport_time_horizon_audit.json`` separates
   long post-transient transport windows from startup finite-difference and
   reduced-envelope checks. Startup windows must never be described as saturated
