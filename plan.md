@@ -1,3 +1,14 @@
+- 2026-06-19: Continued nonlinear artifact-writer simplification inside
+  `artifacts.nonlinear_netcdf_diagnostics` without changing the saved NetCDF
+  schema. Base resolved metrics, electrostatic/Apar/Bpar split metrics, and
+  turbulent-heating spectra now share `_write_resolved_species_spectra` for
+  `kxst`, `kyst`, `kxkyst`, and `zst` variables. The main
+  `_write_diagnostics_group` function drops from 415 to 361 lines while
+  preserving condensed active-axis output and electrostatic fallback behavior.
+  Local gates passed: focused nonlinear NetCDF artifact shard covering active
+  resolved axes, full nonlinear NetCDF bundle, turbulent-heating reload, and
+  append schema preservation; Ruff; `py_compile`.
+
 - 2026-06-19: Continued imported-VMEC geometry refactoring by moving the
   Boozer field-line spectral tensor, cylindrical derivative, and
   coordinate-gradient algebra out of `_vmec_fieldlines` into focused helpers in

@@ -1798,9 +1798,10 @@ module = "spectraxgk.artifacts.nonlinear_netcdf_diagnostics"
 source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py"
 facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
 status = "active"
-responsibility = "nonlinear NetCDF scalar, species, spectral, and split-diagnostic history schema writing"
+responsibility = "nonlinear NetCDF scalar, species, spectral, resolved-species spectra, and split-diagnostic history schema writing"
 moved_exports = [
   "_write_diagnostics_group",
+  "_write_resolved_species_spectra",
 ]
 fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
