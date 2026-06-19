@@ -997,6 +997,23 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boozer_derivatives"
+source_path = "src/spectraxgk/geometry/vmec_boozer_derivatives.py"
+facade_module = "spectraxgk.geometry.vmec_boozer_core"
+status = "active"
+responsibility = "Boozer field-line spectral sums, cylindrical derivatives, and coordinate-gradient algebra for differentiable VMEC/Boozer geometry"
+moved_exports = [
+  "BoozerCartesianDerivatives",
+  "BoozerCoordinateGradients",
+  "BoozerFieldLineDerivatives",
+  "boozer_cartesian_derivatives",
+  "boozer_coordinate_gradients",
+  "evaluate_boozer_field_line_derivatives",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.vmec_boozer_constants"
 source_path = "src/spectraxgk/geometry/vmec_boozer_constants.py"
 facade_module = "spectraxgk.geometry.vmec_boozer_core"

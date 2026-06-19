@@ -680,6 +680,11 @@ construction, radial Boozer-profile interpolation, and equal-arc remapping
 live in ``spectraxgk.geometry.vmec_boozer_core``; optional backend execution
 and Boozer radial-grid validation are private helper seams so the public
 state-to-profile bridge stays focused on physics profile assembly. The core
+bridge delegates Boozer field-line spectral sums, cylindrical derivatives,
+and coordinate-gradient algebra to
+``spectraxgk.geometry.vmec_boozer_derivatives`` so the differentiable geometry
+path has a small, unit-testable tensor-algebra owner rather than one long
+VMEC/Boozer orchestration function. The core
 profile assembly shares one dtype-aware numerical floor across ``|B|``,
 ``gradpar``, Jacobian, metric, curvature, and ``q`` denominators so
 regularization policy is visible and consistent. Boozer metric-gradient terms

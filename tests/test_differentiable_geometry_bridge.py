@@ -19,6 +19,7 @@ import spectraxgk.geometry.numerics as geom_numerics
 import spectraxgk.geometry.sensitivity as geom_sensitivity
 import spectraxgk.geometry.vmec_boozer_core as vmec_boozer_core
 import spectraxgk.geometry.vmec_boozer_constants as vmec_boozer_constants
+import spectraxgk.geometry.vmec_boozer_derivatives as vmec_boozer_derivatives
 import spectraxgk.geometry.vmec_field_line_sampling as vmec_field_line_sampling
 import spectraxgk.geometry.vmec_flux_tube_reports as vmec_flux_tube_reports
 import spectraxgk.geometry.vmec_state_controls as vmec_state_controls
@@ -275,6 +276,71 @@ def test_equal_arc_interpolation_keeps_value_gradients_finite() -> None:
 
     assert np.isfinite(float(grad))
     assert float(grad) == pytest.approx(float(fd), rel=2.0e-3, abs=2.0e-5)
+
+
+def test_boozer_field_line_derivative_helpers_match_circular_surface() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 9)
+    out = {"ixm_b": jnp.asarray([0, 1]), "ixn_b": jnp.asarray([0, 0])}
+    r0, r1, z1 = 2.0, 0.2, 0.3
+
+    spectral = vmec_boozer_derivatives.evaluate_boozer_field_line_derivatives(
+        out,
+        theta_closed=theta,
+        alpha=0.0,
+        iota_safe=jnp.asarray(1.0),
+        base_dtype=theta.dtype,
+        bmnc_b=jnp.asarray([1.0, 0.1]),
+        d_bmnc_b_d_s=jnp.asarray([0.01, 0.02]),
+        rmnc_b=jnp.asarray([r0, r1]),
+        d_rmnc_b_d_s=jnp.asarray([0.05, 0.01]),
+        zmns_b=jnp.asarray([0.0, z1]),
+        d_zmns_b_d_s=jnp.asarray([0.0, 0.02]),
+        numns_b=jnp.asarray([0.0, 0.0]),
+        d_numns_b_d_s=jnp.asarray([0.0, 0.0]),
+    )
+
+    expected_r = r0 + r1 * jnp.cos(theta)
+    np.testing.assert_allclose(np.asarray(spectral.r_b), np.asarray(expected_r))
+    np.testing.assert_allclose(
+        np.asarray(spectral.d_r_b_d_theta),
+        np.asarray(-r1 * jnp.sin(theta)),
+        atol=2.0e-7,
+    )
+    np.testing.assert_allclose(
+        np.asarray(spectral.d_z_b_d_theta),
+        np.asarray(z1 * jnp.cos(theta)),
+        atol=2.0e-7,
+    )
+    np.testing.assert_allclose(
+        np.asarray(spectral.d_mod_b_d_phi), np.zeros(theta.shape), atol=2.0e-7
+    )
+
+    cartesian = vmec_boozer_derivatives.boozer_cartesian_derivatives(spectral)
+    np.testing.assert_allclose(
+        np.asarray(cartesian.d_x_d_theta),
+        np.asarray(-r1 * jnp.sin(theta) * jnp.cos(theta)),
+        atol=2.0e-7,
+    )
+    np.testing.assert_allclose(
+        np.asarray(cartesian.d_x_d_phi),
+        np.asarray(-expected_r * jnp.sin(theta)),
+        atol=2.0e-7,
+    )
+
+    gradients = vmec_boozer_derivatives.boozer_coordinate_gradients(
+        spectral=spectral,
+        cartesian=cartesian,
+        sqrt_g_booz=jnp.ones_like(theta),
+        etf_safe=jnp.asarray(2.0),
+    )
+    np.testing.assert_allclose(
+        np.asarray(gradients.grad_psi_z),
+        np.asarray(
+            cartesian.d_x_d_theta * cartesian.d_y_d_phi
+            - cartesian.d_y_d_theta * cartesian.d_x_d_phi
+        ),
+        atol=2.0e-7,
+    )
 
 
 def test_flux_tube_geometry_from_vmec_boozer_state_wraps_in_memory_bridge(

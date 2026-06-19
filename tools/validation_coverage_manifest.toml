@@ -1812,6 +1812,7 @@ owned_modules = [
   "spectraxgk.geometry.sensitivity",
   "spectraxgk.geometry.vmec_boozer_constants",
   "spectraxgk.geometry.vmec_boozer_core",
+  "spectraxgk.geometry.vmec_boozer_derivatives",
   "spectraxgk.geometry.vmec_field_line_sampling",
   "spectraxgk.geometry.vmec_flux_tube_reports",
   "spectraxgk.geometry.vmec_state_controls",

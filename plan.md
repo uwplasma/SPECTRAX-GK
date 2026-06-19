@@ -1,3 +1,15 @@
+- 2026-06-19: Continued differentiable VMEC/Boozer geometry refactoring by
+  moving Boozer field-line spectral sums, cylindrical derivatives, and
+  coordinate-gradient algebra out of `geometry.vmec_boozer_core` into the
+  focused `geometry.vmec_boozer_derivatives` module. The public
+  `vmec_jax_boozer_equal_arc_core_profiles_from_state` bridge keeps the same
+  backend, interpolation, denominator, and metric/drift formulas, while the
+  core file drops from 682 to 658 lines and the tensor algebra now has a
+  direct circular-surface regression test. Updated refactor and coverage
+  manifests to own the new module. Local gates passed: full
+  `tests/test_differentiable_geometry_bridge.py`, Ruff, mypy, `py_compile`,
+  refactor/coverage/size manifests, and `git diff --check`.
+
 - 2026-06-19: Continued KBM beta-scan solver-path simplification inside
   `validation.benchmarks.kbm_beta_solver_paths` without changing Krylov target
   selection, continuation, normalization, or auto-to-time fallback semantics.
