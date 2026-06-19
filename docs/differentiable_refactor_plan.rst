@@ -298,9 +298,12 @@ High-Risk Module Split Plan
   ``objectives/solver_vmec.py``, and ``objectives/solver_gradient_reports.py``
   while ``solver_objective_gradients.py`` remains the higher-level public
   objective surface. Scalar and aggregate
-  VMEC/Boozer line-search reports share one private curvature-gated
-  one-parameter search loop so training, holdout, and finite-difference gates
-  use the same accept/reject policy. Solver-ready gradient gates share one
+  VMEC/Boozer finite-difference reports share one settings validator,
+  VMEC-state coefficient context, perturbation helper, and three-point
+  response/curvature diagnostic. Scalar and aggregate VMEC/Boozer line-search
+  reports share one private curvature-gated one-parameter search loop so
+  training, holdout, and finite-difference gates use the same accept/reject
+  policy. Solver-ready gradient gates share one
   normalized heat/particle transport observable helper so growth-rate,
   quasilinear, and particle-flux finite-difference checks use the same
   field-line quadrature path.

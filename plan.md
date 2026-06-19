@@ -1572,6 +1572,12 @@
   wrapper module has since been removed; `solver_objective_gradients` imports
   the focused gate modules directly while preserving dependency-injected hook
   seams. Focused solver-objective tests, Ruff, and mypy passed locally.
+- 2026-06-19: Refactored `spectraxgk.objectives.vmec_boozer_fd` in place so
+  scalar and aggregate VMEC/Boozer finite-difference reports share settings
+  validation, VMEC-state coefficient context resolution, perturbation,
+  finite-value/response/curvature diagnostics, and public-option filtering.
+  The report schemas and dependency-injected hooks stayed unchanged; focused
+  solver-objective FD and line-search shards passed locally.
 - 2026-06-15: Continued the differentiable solver-objective refactor by moving
   solver-ready branch-continuity and geometry-gradient reports plus mode-21
   VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient

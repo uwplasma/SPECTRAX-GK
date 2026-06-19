@@ -331,7 +331,11 @@ Completed extractions:
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``,
   ``objectives/vmec_boozer_line_search.py``. Scalar and aggregate
-  VMEC/Boozer line-search reports share one private curvature-gated
+  VMEC/Boozer finite-difference reports share one settings validator, one
+  VMEC-state coefficient context, one perturbation helper, and one three-point
+  response/curvature diagnostic so scalar and aggregate sensitivity gates use
+  the same finite-value, response-resolution, and curvature policy. Scalar and
+  aggregate VMEC/Boozer line-search reports share one private curvature-gated
   one-parameter search loop, keeping finite-difference, training, and
   held-out aggregate gates on the same accept/reject policy. Solver-ready
   gradient gates share one normalized heat/particle transport-weight helper
