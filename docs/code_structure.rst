@@ -675,8 +675,12 @@ field-line tensor algebra, alpha/coordinate-gradient construction, local
 shear, metric/drift coefficient assembly, flux-surface averaging, and centered
 field-line integral policies as focused helpers inside
 ``spectraxgk.geometry_backends.vmec_fieldline_numerics`` so the
-imported-geometry equations remain in one owner while the numerical kernels
-are unit-testable.
+imported-geometry equations remain in one owner while the numerical kernels are
+unit-testable. ``spectraxgk.geometry_backends.vmec_fieldlines`` now keeps only
+the imported-geometry orchestration stages in that file: backend fallback,
+scalar VMEC profile sampling, Boozer field-line state assembly,
+Hegna-Nakajima mode corrections, metric/drift coefficient assembly, and
+normalized flux-tube packaging.
 Zero-shear boundary policy lives in ``spectraxgk.geometry.boundaries``.
 Analytic s-alpha and slab geometry models live in
 ``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic

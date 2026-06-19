@@ -473,6 +473,10 @@ Phase 1: introduce protocols and containers
   perturbation policy as the Boozer, metric-tensor, and field-line sensitivity
   reports. Direct-array parity and optional Boozer equal-arc parity now share
   private array-metric and worst-error helpers in that owner.
+  The imported VMEC field-line backend keeps its public facade stable while its
+  implementation is staged as backend fallback, scalar VMEC profile sampling,
+  Boozer field-line state assembly, Hegna-Nakajima mode corrections,
+  metric/drift coefficient assembly, and final normalized flux-tube packaging.
   ``spectraxgk.geometry.vmec_boundary_chain`` owns VMEC boundary-gradient
   probe classification, collection row assembly, and projected-transport
   line-search admission summaries.

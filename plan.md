@@ -4404,3 +4404,16 @@ No long nonlinear audit should be launched from these candidates.
   py_compile, ruff, mypy for the touched source module, and the focused
   differentiable-geometry bridge shard covering equal-arc core profiles,
   flux-tube wrapping, and facade identity.
+
+- 2026-06-19: Simplified the imported VMEC/Boozer field-line backend inside
+  `geometry_backends/vmec_fieldlines.py` without moving code into another file
+  or changing the public `_vmec_fieldlines` facade. The public field-line
+  builder now delegates backend fallback, scalar VMEC profile sampling, Boozer
+  field-line state assembly, Hegna-Nakajima mode corrections, metric/drift
+  coefficient assembly, and final `_Struct` packaging to focused private
+  stages. This reduced `_vmec_fieldlines` from roughly 300 lines to 78 lines,
+  while preserving optional backend monkeypatch seams and dataset-close
+  behavior. Local gates passed: py_compile, ruff, mypy for the touched source
+  module, and the focused VMEC imported-geometry fake-backend shard covering
+  facade identity, override handling, automatic Boozer fallback, forced-backend
+  failure, and degenerate-reference rejection.
