@@ -3864,3 +3864,17 @@ No long nonlinear audit should be launched from these candidates.
   test shard, py_compile, ruff, mypy, refactor manifest, validation coverage
   manifest, repository-size manifest, source terminology scans, and
   `git diff --check`.
+
+- 2026-06-19: Simplified TEM scan-path branching inside
+  `validation/benchmarks/tem_paths.py` without adding another module. The
+  public `run_tem_scan_batches` loop now delegates batch preparation,
+  per-batch time-config resolution, Krylov fitting, diffrax streaming fitting,
+  and saved-trajectory fitting to focused private helpers. This is a complexity
+  split rather than a module-size reduction: the file stays as the single TEM
+  path owner so imports and monkeypatch seams remain stable, while the scan
+  loop itself is shorter and easier to audit. Local gates passed: TEM benchmark
+  branch shard, full benchmark branch shard, py_compile, ruff, mypy, refactor
+  manifest, validation coverage manifest, repository-size manifest, source
+  terminology scans, and `git diff --check`. The broad `tests/test_benchmarks.py`
+  subset returned pytest exit 5 in this environment because no tests were
+  collected, so it was not used as a gate for this tranche.
