@@ -1,3 +1,15 @@
+- 2026-06-19: Continued linear-operator refactor by extracting collisional
+  damping, hypercollisions, perpendicular hyperdiffusion, and linked/end
+  damping from `terms.linear_terms` into `terms.linear_dissipation`. The
+  streaming, mirror, curvature/grad-B, and diamagnetic drive module now stays
+  focused on physical linear drives, while artificial/physical dissipation has
+  its own owner. Existing imports from `terms.linear_terms` remain object-
+  identical re-exports for comparison/profiling tools, and internal RHS
+  assembly now imports dissipation functions from the canonical owner.
+  `linear_terms.py` dropped from 571 to 287 lines and the new dissipation
+  module is 307 lines. Local gates passed: linear/RHS/term-assembly tests,
+  Ruff, mypy, `py_compile`, architecture/refactor/validation-coverage/size
+  manifests, terminology audits, and `git diff --check`.
 - 2026-06-19: Continued differentiable zonal-flow objective refactor by
   extracting record normalization, complete surface/alpha/kx tensor assembly,
   missing-damping policy, and objective row-table construction from

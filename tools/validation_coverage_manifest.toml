@@ -318,6 +318,7 @@ owned_modules = [
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",
   "spectraxgk.terms.integrators",
+  "spectraxgk.terms.linear_dissipation",
   "spectraxgk.terms.linear_terms",
   "spectraxgk.terms.operators",
   "spectraxgk.terms.validation",

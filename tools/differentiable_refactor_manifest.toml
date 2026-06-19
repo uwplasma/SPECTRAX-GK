@@ -2806,6 +2806,21 @@ fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tes
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.terms.linear_dissipation"
+source_path = "src/spectraxgk/terms/linear_dissipation.py"
+facade_module = "spectraxgk.terms.linear_terms"
+status = "active"
+responsibility = "linear collisional, hypercollisional, perpendicular hyperdiffusive, and end-damping RHS contributions"
+moved_exports = [
+  "collisions_contribution",
+  "end_damping_contribution",
+  "hypercollisions_contribution",
+  "hyperdiffusion_contribution",
+]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_gx_consistency.py", "tests/test_terms_assembly.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.terms.assembly"
 source_path = "src/spectraxgk/terms/assembly.py"
 facade_module = "spectraxgk.terms.assembly"

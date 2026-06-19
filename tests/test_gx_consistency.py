@@ -4,6 +4,7 @@ import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.velocity import J_l_all, single_precision_factorial
+from spectraxgk.terms import linear_dissipation as linear_dissipation_module
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
     diamagnetic_contribution,
@@ -202,7 +203,7 @@ def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch)
             "abs_z_linked_fft should not run when hypercollisions_kz is zero"
         )
 
-    monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
+    monkeypatch.setattr(linear_dissipation_module, "abs_z_linked_fft", _fail)
 
     Nl, Nm = 2, 4
     G = jnp.ones((1, Nl, Nm, 1, 1, 2), dtype=jnp.complex64)
@@ -248,7 +249,7 @@ def test_hypercollisions_static_zero_operator_skips_linked_abs_kz(monkeypatch):
             "abs_z_linked_fft should not run for an exactly zero hypercollision operator"
         )
 
-    monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
+    monkeypatch.setattr(linear_dissipation_module, "abs_z_linked_fft", _fail)
 
     Nl, Nm = 2, 4
     G = jnp.ones((1, Nl, Nm, 1, 1, 2), dtype=jnp.complex64)

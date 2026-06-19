@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import replace
 from types import SimpleNamespace
 
@@ -21,6 +22,8 @@ import spectraxgk.solvers.linear.implicit as linear_implicit
 import spectraxgk.solvers.linear.integrators as linear_integrators
 import spectraxgk.solvers.linear.parallel as linear_parallel
 import spectraxgk.operators.linear.params as linear_params
+import spectraxgk.terms.linear_dissipation as linear_dissipation
+import spectraxgk.terms.linear_terms as linear_terms
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -135,6 +138,12 @@ def test_linear_integrator_helpers_preserve_public_exports() -> None:
 def test_linear_parallel_helpers_preserve_public_exports() -> None:
     for name in linear_parallel.__all__:
         assert getattr(linear_mod, name) is getattr(linear_parallel, name)
+
+
+def test_linear_dissipation_terms_have_single_canonical_owner() -> None:
+    for name in linear_dissipation.__all__:
+        assert getattr(linear_terms, name) is getattr(linear_dissipation, name)
+        assert inspect.getmodule(getattr(linear_terms, name)) is linear_dissipation
 
 
 def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
