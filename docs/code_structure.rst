@@ -417,6 +417,10 @@ Completed extractions:
   Laguerre gyroaverage construction, and linked-boundary metadata so extension
   work can test one numerical policy at a time; ``cache.py`` remains the stable
   public facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
+  that facade now keeps option normalization, user-facing progress messages,
+  shift-invert seed selection, shift-selection flags, and fallback policy as
+  explicit private stages while delegating compiled kernels to the focused
+  owner modules;
   ``solvers/linear/implicit.py`` keeps implicit state normalization, damping/
   drift diagonal assembly, linked Hermite-line solves, coarse kx projection,
   preconditioner selection, and matrix-free matvec construction as separate

@@ -4457,3 +4457,16 @@ No long nonlinear audit should be launched from these candidates.
   adding another module. Local gates passed: py_compile, ruff, mypy for the
   touched source module, `tests/test_quasilinear_window.py`, and
   `tests/test_check_nonlinear_window_ensemble.py`.
+
+- 2026-06-19: Simplified the public linear Krylov facade in
+  `solvers/linear/krylov.py` without adding another source file or changing the
+  public import path. The `dominant_eigenpair` wrapper now delegates solver
+  option normalization, status callbacks, power/propagator/Arnoldi dispatch,
+  shift-invert seed selection, target-shift construction, selection flags, and
+  fallback policy to named private stages. This removed the Krylov facade from
+  the top long-function hotspot list by reducing the public dispatcher from
+  roughly 254 lines to 97 lines while keeping matrix-free kernels in the
+  focused eigenmode modules. Local gates passed: py_compile, ruff, mypy for the
+  touched source module, and all 20 focused Krylov core tests covering branch
+  dispatch, shift-source behavior, target-frequency signs, fallback policy, and
+  progress/status messages.

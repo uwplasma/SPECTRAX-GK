@@ -183,6 +183,10 @@ High-Risk Module Split Plan
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits, saved-time
   auto-fit selection, and Diffrax-streaming window resolution.
+  The public Krylov facade now keeps option normalization, shift-source
+  selection, target-frequency shift construction, selection flags, fallback
+  policy, and progress/status messages in named private stages while compiled
+  kernels stay in the focused eigenmode modules.
   Saved-time KBM beta samples use one dispatcher for
   non-Diffrax time-config and no-config integration, with stride resolution
   kept explicit before fitting; Diffrax-streaming samples read the same
