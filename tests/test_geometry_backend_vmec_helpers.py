@@ -15,6 +15,7 @@ import spectraxgk.geometry_backends.vmec_numerics as vmec_numerics
 import spectraxgk.geometry_backends.vmec_pipeline as vmec_pipeline
 import spectraxgk.geometry_backends.vmec_remap as vmec_remap
 import spectraxgk.geometry_backends.vmec_splines as vmec_splines
+from spectraxgk.geometry_backends.vmec_types import _Struct
 from spectraxgk.geometry_backends.vmec import (
     _apply_flux_tube_cut,
     _booz_read_wout_square_layout_failure,
@@ -48,6 +49,19 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert vmec_facade.generate_vmec_eik_internal is (
         vmec_pipeline.generate_vmec_eik_internal
     )
+
+
+def test_vmec_struct_accepts_named_fields_and_remains_mutable() -> None:
+    geom = _Struct(theta=np.array([0.0]), nfp=5)
+
+    np.testing.assert_allclose(geom.theta, [0.0])
+    assert geom.nfp == 5
+
+    geom.iota = 0.41
+    assert geom.iota == pytest.approx(0.41)
+
+    with pytest.raises(AttributeError, match="missing"):
+        _ = geom.missing
 
 
 def test_booz_search_paths_include_env_and_src(monkeypatch, tmp_path: Path) -> None:
