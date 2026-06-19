@@ -29,6 +29,9 @@ from spectraxgk.benchmarks import (
     run_tem_scan,
     run_tem_linear,
 )
+from spectraxgk.validation.benchmarks.cyclone_scan_branches import (
+    _resolve_time_branch_growth,
+)
 
 
 def _grid_full():
@@ -160,7 +163,9 @@ def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
     assert any("building spectral grid" in msg for msg in status)
 
 
-def test_run_cyclone_linear_krylov_uses_gx_seed_and_branch_guard(monkeypatch) -> None:
+def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
+    monkeypatch,
+) -> None:
     status: list[str] = []
     monkeypatch.setattr(
         "spectraxgk.validation.benchmarks.cyclone_linear.build_spectral_grid",
@@ -233,6 +238,69 @@ def test_run_cyclone_linear_krylov_uses_gx_seed_and_branch_guard(monkeypatch) ->
     assert result.t.tolist() == [0.0]
     assert any("estimating frequency seed" in msg for msg in status)
     assert any("Krylov solve complete" in msg for msg in status)
+
+
+def test_cyclone_time_branch_growth_uses_krylov_fallback_only_when_needed() -> None:
+    calls: list[dict[str, object]] = []
+
+    def _fallback(**kwargs):
+        calls.append(dict(kwargs))
+        return SimpleNamespace(gamma=0.42, omega=-0.19)
+
+    hooks = SimpleNamespace(run_cyclone_linear=_fallback)
+    gamma, omega = _resolve_time_branch_growth(
+        0.31,
+        -0.17,
+        ky_value=0.3,
+        n_laguerre=4,
+        n_hermite=8,
+        dt=0.05,
+        steps=40,
+        method="rk2",
+        params=SimpleNamespace(rho_star=1.0),
+        cfg=CycloneBaseCase(),
+        time_cfg=SimpleNamespace(dt=0.05),
+        krylov_cfg=KrylovConfig(),
+        diagnostic_norm="physical",
+        auto_solver=True,
+        require_positive=True,
+        hooks=hooks,  # type: ignore[arg-type]
+        show_progress=False,
+    )
+
+    assert (gamma, omega) == (0.31, -0.17)
+    assert calls == []
+
+    gamma, omega = _resolve_time_branch_growth(
+        -0.01,
+        -0.17,
+        ky_value=0.3,
+        n_laguerre=4,
+        n_hermite=8,
+        dt=0.05,
+        steps=40,
+        method="rk2",
+        params=SimpleNamespace(rho_star=1.0),
+        cfg=CycloneBaseCase(),
+        time_cfg=SimpleNamespace(dt=0.05),
+        krylov_cfg=KrylovConfig(),
+        diagnostic_norm="physical",
+        auto_solver=True,
+        require_positive=True,
+        hooks=hooks,  # type: ignore[arg-type]
+        show_progress=True,
+    )
+
+    assert (gamma, omega) == (0.42, -0.19)
+    assert len(calls) == 1
+    assert calls[0]["ky_target"] == pytest.approx(0.3)
+    assert calls[0]["solver"] == "krylov"
+    assert calls[0]["fit_signal"] == "phi"
+    assert calls[0]["Nl"] == 4
+    assert calls[0]["Nm"] == 8
+    assert calls[0]["dt"] == pytest.approx(0.05)
+    assert calls[0]["steps"] == 40
+    assert calls[0]["show_progress"] is True
 
 
 def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(

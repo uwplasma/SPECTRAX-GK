@@ -1,3 +1,14 @@
+- 2026-06-19: Continued Cyclone benchmark branch simplification inside
+  `spectraxgk.validation.benchmarks.cyclone_scan_branches` without changing
+  solver kernels or reference-data comparisons. The time-branch auto-solver
+  fallback to the Krylov path now lives in `_resolve_time_branch_growth`, so
+  both automatic-signal and fitted-signal paths share the same validity check,
+  fallback arguments, and return convention. Added direct regression coverage
+  for valid time fits and invalid positive-growth fits that must call the
+  Krylov fallback, and renamed a benchmark test from comparison-code seed
+  wording to reference-seed wording. Local gates passed: selected Cyclone
+  fallback tests, full benchmark-runner branch tests, Ruff, mypy, and
+  `py_compile` on touched files.
 - 2026-06-19: Continued the quasilinear validation refactor inside the existing
   `spectraxgk.validation.quasilinear.model_selection` owner without adding
   source files. Required-candidate metric extraction for accepted rules,
