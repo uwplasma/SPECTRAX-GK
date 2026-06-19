@@ -1,3 +1,14 @@
+- 2026-06-19: Continued VMEC differentiability cleanup by extracting JAX-only
+  VMEC field-line coordinate construction and differentiable RMS reductions
+  from `geometry.vmec_state_sensitivity` into
+  `geometry.vmec_field_line_sampling`. Field-line tensor report wrappers keep
+  their optional-backend orchestration and private compatibility aliases, while
+  sampling convention and zero-safe RMS reductions now have a focused owner.
+  `vmec_state_sensitivity.py` dropped further from 554 to 516 lines and the new
+  sampling helper module is 55 lines. Local gates passed: differentiable
+  geometry bridge shard, refactor manifest tests, Ruff, mypy, `py_compile`,
+  architecture/refactor/size manifests, terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued differentiable VMEC/Boozer refactor by extracting
   shared VMEC-JAX state-control scaffolding from
   `geometry.vmec_state_sensitivity` into `geometry.vmec_state_controls`.

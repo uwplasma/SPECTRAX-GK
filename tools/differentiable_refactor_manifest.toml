@@ -947,6 +947,19 @@ fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_field_line_sampling"
+source_path = "src/spectraxgk/geometry/vmec_field_line_sampling.py"
+facade_module = "spectraxgk.geometry.vmec_state_sensitivity"
+status = "active"
+responsibility = "JAX-only VMEC field-line coordinate construction and differentiable RMS reduction helpers for tensor sensitivity gates"
+moved_exports = [
+  "_rms_with_floor",
+  "_vmec_field_line_sampling_coordinates",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.geometry.vmec_state_sensitivity"
 source_path = "src/spectraxgk/geometry/vmec_state_sensitivity.py"
 facade_module = "spectraxgk.geometry.differentiable"
