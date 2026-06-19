@@ -1,3 +1,12 @@
+- 2026-06-19: Continued runtime facade simplification inside `runtime.py`
+  without changing public executable/runtime signatures or monkeypatch seams.
+  Restart-state loading now builds one shared shape-keyword payload for both
+  NetCDF restart files and raw initial-state files, removing duplicated
+  `nspecies`/moment/grid forwarding while preserving the patchable
+  `load_netcdf_restart_state` and startup-loader call paths. Local gates
+  passed: focused runtime initial-state helper shard, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-19: Continued KBM beta-scan branch-policy simplification inside
   `validation.benchmarks.kbm_beta_solver_paths` without changing solver calls,
   public runner APIs, or branch-selection semantics. The multi-target Krylov

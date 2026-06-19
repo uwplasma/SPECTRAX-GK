@@ -244,6 +244,9 @@ Completed extractions:
   ``spectraxgk --plot`` argument validation and runtime command dependency
   construction. Command artifact display, executable headers, and nonlinear
   summaries live with the command-output artifact policy.
+- runtime restart-state dispatch: the public ``runtime.py`` facade keeps the
+  patchable NetCDF/raw state loaders but shares one shape-keyword payload
+  between both paths, so restart dimensions cannot drift between loader calls.
 - runtime TOML case dependency defaults:
   ``workflows/cases.py``. The public ``runtime.py`` facade owns the stable
   ``run_linear_case`` and ``run_nonlinear_case`` signatures, while

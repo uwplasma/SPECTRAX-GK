@@ -322,7 +322,9 @@ High-Risk Module Split Plan
   facade scope at call time, so monkeypatch seams remain explicit without
   keeping dependency-builder bodies in ``spectraxgk.runtime``. Runtime TOML case wrappers now delegate to
   ``spectraxgk.workflows.cases`` through dependency-injected facades so
-  ``spectraxgk.runtime`` remains the public import and monkeypatch surface. The
+  ``spectraxgk.runtime`` remains the public import and monkeypatch surface.
+  Runtime restart-state loading keeps NetCDF/raw loader dispatch in the public
+  facade while sharing one shape-keyword payload between both patchable paths. The
   full-GK linear runtime workflow now delegates to
   ``spectraxgk.workflows.linear`` through a dependency-injected facade, including
   time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear
