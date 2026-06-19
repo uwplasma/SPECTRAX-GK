@@ -218,7 +218,8 @@ Completed extractions:
   ``workflows/runtime/diagnostics.py``
 - finite-value checks plus runtime diagnostic slicing, truncation, striding,
   and concatenation:
-  ``workflows/runtime/diagnostic_arrays.py``
+  ``workflows/runtime/diagnostic_arrays.py``. These helpers are imported
+  directly from this owner rather than through the runtime fit module.
 - adaptive chunk execution used by runtime and comparison artifacts:
   ``workflows/runtime/chunks.py``
 - runtime result containers and nonlinear result assembly:

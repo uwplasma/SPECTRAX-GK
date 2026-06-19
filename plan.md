@@ -1,3 +1,13 @@
+- 2026-06-18: Removed a stale runtime diagnostic-array compatibility hop.
+  `spectraxgk.workflows.runtime.diagnostics` now owns only linear fit and
+  quasilinear finalization helpers; finite-value checks and diagnostic slicing,
+  striding, truncation, and concatenation are imported directly from
+  `spectraxgk.workflows.runtime.diagnostic_arrays`. Updated runtime tests to the
+  canonical owner and removed stale private compatibility imports from the
+  velocity-parallel and linear-cache facades. This tranche is net deletion
+  (25 removed / 5 added before docs/log) and keeps public runtime behavior
+  unchanged. Focused runtime, velocity, linear-cache, Ruff, mypy, and
+  `py_compile` gates passed.
 - 2026-06-18: Continued nonlinear parallelization testability inside the
   existing `spectraxgk.operators.nonlinear.device_z` owner without adding source
   files. Device-z fused RHS identity report construction now lives in explicit
