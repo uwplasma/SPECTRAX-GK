@@ -1557,13 +1557,36 @@ fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.command_options"
+source_path = "src/spectraxgk/workflows/runtime/command_options.py"
+facade_module = "spectraxgk.workflows.runtime.commands"
+status = "active"
+responsibility = "runtime executable option dataclasses, CLI/TOML/default resolution, ky scan parsing, fit-config filtering, and progress-display policy"
+moved_exports = [
+  "RUNTIME_COMMAND_FIT_KEYS",
+  "RuntimeLinearCommandOptions",
+  "RuntimeScanCommandOptions",
+  "RuntimeNonlinearCommandOptions",
+  "_arg_or_section",
+  "_resolve_linear_fit_options",
+  "_resolve_grid_time_options",
+  "_runtime_fit_config",
+  "_resolve_linear_command_options",
+  "_parse_ky_values",
+  "_resolve_scan_command_options",
+  "_resolve_nonlinear_command_options",
+  "should_show_progress",
+]
+fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.commands"
 source_path = "src/spectraxgk/workflows/runtime/commands.py"
 facade_module = "spectraxgk.cli"
 status = "active"
-responsibility = "runtime executable command workflows for linear runs, ky scans, nonlinear runs, path/quasilinear overrides, progress policy, and summary printing"
+responsibility = "runtime executable command workflows for linear runs, ky scans, nonlinear runs, path/quasilinear overrides, command headers, artifact writes, and summary printing"
 moved_exports = [
-  "RUNTIME_COMMAND_FIT_KEYS",
   "RuntimeCommandDeps",
   "apply_quasilinear_overrides",
   "apply_runtime_path_overrides",
@@ -1572,7 +1595,6 @@ moved_exports = [
   "run_runtime_nonlinear_command",
   "runtime_output_path",
   "scan_runtime_linear_command",
-  "should_show_progress",
 ]
 fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]

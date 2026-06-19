@@ -1,3 +1,16 @@
+- 2026-06-19: Continued executable/runtime simplification by extracting pure
+  runtime command option policy into `workflows.runtime.command_options`.
+  Option dataclasses, CLI/TOML/default resolution, ky scan parsing, fit-config
+  filtering, and progress-display policy now have one focused owner; the
+  runtime command workflow module keeps command orchestration, headers,
+  path/quasilinear overrides, artifact writes, and summaries while re-exporting
+  the existing helper surface for tests. `commands.py` dropped from 694 to 499
+  lines and the new option module is 268 lines. Updated the differentiable
+  refactor manifest to record the new owner. Local gates passed: focused
+  runtime command option tests, full runtime helper shard, CLI shard, Ruff,
+  mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, source terminology audits, and
+  `git diff --check`.
 - 2026-06-19: Continued nonlinear device-z refactor/performance lane by
   extracting fail-closed device-z RHS and transport-window report policy into
   `operators.nonlinear.device_z_reports`. The sharded operator route now owns
