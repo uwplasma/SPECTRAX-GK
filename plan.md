@@ -1,3 +1,16 @@
+- 2026-06-19: Continued the benchmark-family refactor inside
+  `validation.benchmarks.etg_linear` without changing ETG solver choices,
+  fit-window formulas, normalization, or public monkeypatch seams. The
+  single-ky ETG runner now delegates solver-ready setup, electrostatic default
+  term construction, Krylov result packing, time-config resolution, and
+  saved-trace fitting to focused helpers in the same module. This keeps
+  branch tests and asset-generation tools patching the same names while
+  shrinking `run_etg_linear` from 389 to 256 lines. Focused ETG branch tests
+  covering streaming density, explicit time-config density paths, configured
+  phi integration, explicit params, and electrostatic default terms passed.
+  Local gates passed: Ruff, mypy, `py_compile`, refactor/coverage/size
+  manifests, Sphinx docs, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear artifact-writer simplification inside
   `artifacts.nonlinear_netcdf_diagnostics` by extracting Phi2 reduction,
   Phi2 variable writes, and zonal-potential NetCDF writes into focused helpers.

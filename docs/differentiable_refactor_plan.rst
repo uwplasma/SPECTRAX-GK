@@ -204,7 +204,10 @@ High-Risk Module Split Plan
   ``validation.benchmarks.etg_linear`` and
   ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
   overrides layered on top for scan branches. ETG single-point saved-time
-  direct fits share the same primary/fallback automatic-fit keyword policy.
+  direct fits share the same primary/fallback automatic-fit keyword policy, and
+  the single-point runner now keeps setup, Krylov result packing,
+  time-configuration resolution, and saved-trace fitting in focused helpers
+  while preserving the existing module-level monkeypatch hooks.
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
   policy for auto-signal and direct-signal fits in
   ``validation.benchmarks.cyclone_linear_paths``.

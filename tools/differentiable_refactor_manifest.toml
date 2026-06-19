@@ -406,8 +406,16 @@ module = "spectraxgk.validation.benchmarks.etg_linear"
 source_path = "src/spectraxgk/validation/benchmarks/etg_linear.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "ETG single-ky linear benchmark runner, streaming density branch, Krylov fallback, and fit-window policy"
+responsibility = "ETG single-ky linear benchmark setup, Krylov/time-path orchestration, streaming density branch, and fit-window policy"
 moved_exports = [
+  "_build_etg_linear_setup",
+  "_default_etg_params",
+  "_default_etg_terms",
+  "_etg_linear_result",
+  "_fit_etg_time_trace",
+  "_resolve_etg_time_config",
+  "_run_etg_krylov_path",
+  "_valid_etg_growth",
   "run_etg_linear",
 ]
 fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]

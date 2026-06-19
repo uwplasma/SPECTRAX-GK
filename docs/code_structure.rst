@@ -586,6 +586,9 @@ ETG single-point and scan Krylov paths share one forwarded-key policy, with
 scan continuation overrides applied explicitly for carried shifts. The ETG
 single-point saved-time direct-fit path also shares one automatic-fit keyword
 policy between primary auto-window fitting and invalid-window fallback fitting.
+The single-point runner keeps patchable solver hooks in the public ETG module
+but now separates setup, Krylov result packing, time-configuration resolution,
+and saved-trace fitting into focused helpers.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through
