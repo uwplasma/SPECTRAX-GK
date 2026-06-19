@@ -280,6 +280,63 @@ def test_boundary_chain_collection_count_helper_tracks_gate_categories() -> None
     assert boundary_chain._empty_boundary_chain_counts()["n_total"] == 0
 
 
+def test_boundary_chain_collection_decision_policy_is_explicit() -> None:
+    base = boundary_chain._empty_boundary_chain_counts() | {
+        "n_total": 2,
+        "n_finite": 2,
+        "n_frozen_axis_internal_pass": 2,
+    }
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_finite": 1}
+    )
+    assert finite is False
+    assert classification == "nonfinite_boundary_chain_collection"
+    assert "repair nonfinite" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_frozen_axis_internal_pass": 1}
+    )
+    assert finite is True
+    assert classification == "internal_replay_failure"
+    assert "exact-tape replay" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 2}
+    )
+    assert finite is True
+    assert classification == "all_components_exact_fd_and_frozen_axis_consistent"
+    assert "sparse-FD gates" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 1, "n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "mixed_exact_fd_consistency_with_branch_sensitive_modes"
+    assert "regularize branch-sensitive modes" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_frozen_axis_convention_verified": 2}
+    )
+    assert finite is True
+    assert classification == "all_components_frozen_axis_convention_verified"
+    assert "nonlinear-audit gates" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 1, "n_frozen_axis_convention_verified": 1, "n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "mixed_exact_or_frozen_axis_convention_verified"
+    assert "unresolved branch-sensitive modes" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "branch_sensitive_boundary_chain_collection"
+    assert "better-conditioned finite-difference protocol" in action
+
+
 def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
     branch_sensitive = {
         "index": 22,

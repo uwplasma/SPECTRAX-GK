@@ -1,3 +1,13 @@
+- 2026-06-19: Continued differentiable VMEC boundary-chain refactoring
+  without changing artifact schemas. Boundary-chain collection classification
+  now lives in `_boundary_chain_collection_decision`, separating row counting
+  from the promotion/diagnostic decision ladder for nonfinite, internal replay,
+  exact-FD, frozen-axis-convention, and branch-sensitive cases. Added direct
+  tests for each collection decision branch so future VMEC-JAX derivative
+  gate changes cannot silently relax the policy. Local gates passed:
+  VMEC boundary-chain tests, projected line-search boundary-chain tests, Ruff,
+  mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, and source terminology audits.
 - 2026-06-19: Continued VMEC imported-geometry simplification in
   `spectraxgk.geometry_backends.vmec_fieldlines` without changing Boozer
   algebra or sampled geometry outputs. Reference-scale validation and
