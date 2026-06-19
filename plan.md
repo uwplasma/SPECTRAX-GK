@@ -1,3 +1,16 @@
+- 2026-06-19: Continued differentiable-geometry validation refactor by
+  simplifying solved-equilibrium candidate gates and VMEC/Boozer objective
+  line-search gates without adding modules. `validation.stellarator.
+  candidate_gate` now builds aspect, mean-iota, iota-profile, and pass/fail
+  checks through shared private helpers, keeping the publication-facing JSON
+  schema stable. `objectives.vmec_boozer_line_search` now routes scalar and
+  aggregate one-parameter searches through one shared curvature-gated loop,
+  while public scalar, aggregate, and holdout report functions retain their
+  signatures and report fields. The touched modules dropped from 999 to 961
+  total lines. Local gates passed: candidate-gate shard, QA optimization-driver
+  candidate shard, VMEC/Boozer line-search/holdout shards, Ruff, mypy,
+  `py_compile`, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear diagnostic wiring simplification inside
   `solvers.nonlinear.diagnostic_integration` without adding a module. The
   explicit and IMEX public entry-point wrappers now use the shared option-key

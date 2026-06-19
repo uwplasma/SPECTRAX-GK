@@ -306,7 +306,10 @@ Completed extractions:
   ``objectives/portfolio_artifacts.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
   ``objectives/vmec_boozer_fd.py``,
-  ``objectives/vmec_boozer_line_search.py``. The top-level
+  ``objectives/vmec_boozer_line_search.py``. Scalar and aggregate
+  VMEC/Boozer line-search reports share one private curvature-gated
+  one-parameter search loop, keeping finite-difference, training, and
+  held-out aggregate gates on the same accept/reject policy. The top-level
   ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
   these owner modules.
 - production nonlinear turbulent-flux optimization guardrails are split into
@@ -568,7 +571,11 @@ sample-coverage, nonlinear-audit, and candidate-selection modules:
 ``spectraxgk.validation.stellarator.transport_samples``,
 ``transport_landscape``, ``transport_prelaunch``, ``transport_campaign``,
 ``transport_audit`` nonlinear report owners, and
-``spectraxgk.validation.stellarator.transport_selection``. The public
+``spectraxgk.validation.stellarator.transport_selection``. Solved-equilibrium
+candidate admission in ``validation.stellarator.candidate_gate`` shares
+private aspect, iota, profile, and pass/fail helpers so optimizer-state and
+authoritative-WOUT gates keep identical JSON schema and threshold semantics.
+The public
 ``spectraxgk.validation`` API re-exports user-facing admission helpers directly
 from these owners.
 

@@ -229,11 +229,14 @@ High-Risk Module Split Plan
   ``objectives/vmec_boozer_gradients.py``,
   ``objectives/vmec_boozer_context.py``, ``objectives/vmec_state.py``,
   ``objectives/vmec_boozer.py``,
-  ``objectives/vmec_boozer_fd.py``, and
+  ``objectives/vmec_boozer_fd.py``,
   ``objectives/vmec_boozer_line_search.py``,
   ``objectives/solver_vmec.py``, and ``objectives/solver_gradient_reports.py``
   while ``solver_objective_gradients.py`` remains the higher-level public
-  objective surface.
+  objective surface. Scalar and aggregate
+  VMEC/Boozer line-search reports share one private curvature-gated
+  one-parameter search loop so training, holdout, and finite-difference gates
+  use the same accept/reject policy.
 
 ``nonlinear.py``
   Split RHS kernels, integrator policies, nonlinear diagnostics, and IMEX paths.
