@@ -709,6 +709,45 @@ def test_implicit_preconditioner_hermite_line_shape_and_finite():
     assert jnp.all(jnp.isfinite(jnp.imag(y)))
 
 
+def test_implicit_preconditioner_linked_hermite_line_coarse_shape_and_finite():
+    """Linked Hermite-line coarse preconditioner should preserve finite vectors."""
+
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.28, Ly=6.28, boundary="linked")
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        omega_d_scale=0.1,
+        omega_star_scale=0.1,
+        kpar_scale=float(geom.gradpar()),
+    )
+    Nl, Nm = 2, 4
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
+    G0 = jnp.zeros(
+        (1, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size),
+        dtype=base_dtype,
+    )
+    _G, _shape, size, _dt_val, precond_op, matvec, _squeeze = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.05,
+            terms=LinearTerms(),
+            implicit_preconditioner="hermite-line-coarse",
+        )
+    )
+    x = jnp.ones((size,), dtype=base_dtype)
+    y = precond_op(x)
+    z = matvec(x)
+    assert y.shape == (size,)
+    assert z.shape == (size,)
+    assert jnp.all(jnp.isfinite(jnp.real(y)))
+    assert jnp.all(jnp.isfinite(jnp.imag(y)))
+    assert jnp.all(jnp.isfinite(jnp.real(z)))
+
+
 def test_shift_invert_preconditioner_hermite_line_runs():
     """Shift-invert Krylov path should run with the Hermite-line preconditioner."""
 

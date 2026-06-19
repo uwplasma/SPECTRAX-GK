@@ -408,6 +408,10 @@ Completed extractions:
   Laguerre gyroaverage construction, and linked-boundary metadata so extension
   work can test one numerical policy at a time; ``cache.py`` remains the stable
   public facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
+  ``solvers/linear/implicit.py`` keeps implicit state normalization, damping/
+  drift diagonal assembly, linked Hermite-line solves, coarse kx projection,
+  preconditioner selection, and matrix-free matvec construction as separate
+  private stages;
   focused developer helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
   ``eigen_selection.py``, ``eigen_preconditioners.py``, and
   ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were

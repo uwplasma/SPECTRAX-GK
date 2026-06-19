@@ -4379,3 +4379,15 @@ No long nonlinear audit should be launched from these candidates.
   with helper stages at 82 lines or shorter. Local gates passed: py_compile,
   ruff, mypy for the touched source module, targeted runtime linear branch
   tests, runtime helper/quasilinear tests, and quasilinear runtime-state tests.
+
+- 2026-06-19: Simplified the implicit linear operator builder inside
+  `solvers/linear/implicit.py` without adding another module. The public
+  `_build_implicit_operator` now delegates state normalization, damping/drift
+  diagonal assembly, linked Hermite-line solves, coarse `kx` projection,
+  preconditioner selection, and matrix-free matvec construction to focused
+  private stages. This reduced `_build_implicit_operator` from roughly 317 lines
+  to 35 lines, with helper stages at 99 lines or shorter. Added a linked-boundary
+  Hermite-line coarse preconditioner regression test so the linked scatter and
+  coarse-projection path is covered by CI. Local gates passed: py_compile, ruff,
+  mypy for the touched source module, and the focused linear implicit/
+  shift-invert test shard.

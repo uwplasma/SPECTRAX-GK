@@ -496,6 +496,12 @@ Phase 2: split pure kernels
   Laguerre gyroaverage arrays, and linked-boundary metadata to focused private
   stages. Future linear-cache work should extend or test those stages before
   changing the final ``LinearCache`` assembly.
+  The implicit linear solver now follows the same rule: the public operator
+  builder delegates state normalization, preconditioner-diagonal assembly,
+  linked Hermite-line solves, coarse kx projection, preconditioner selection,
+  and matrix-free matvec construction to private stages. Future implicit-solver
+  changes should add identity/finite gates for the relevant stage before
+  changing GMRES integration behavior.
 
 Phase 3: split differentiable geometry
   Move the remaining VMEC/Boozer bridge and parity routines behind in-memory
