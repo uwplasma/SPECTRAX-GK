@@ -269,7 +269,7 @@ The ``[run]`` and ``[scan]`` sections accept ``solver`` and ``fit_signal`` keys:
 * ``solver = "auto"`` (default): choose time vs Krylov and fall back if needed
 * ``solver = "time"``: always use time integration
 * ``solver = "explicit_time"``: force the explicit single-mode time integrator
-  used by the legacy compatibility path
+  used by controlled explicit-time comparisons
 * ``solver = "krylov"``: always use the matrix-free eigen solver
 
 * ``fit_signal = "auto"`` (default): pick ``phi`` vs density based on fit quality
@@ -390,8 +390,8 @@ Notable runtime-only keys:
   ``"cetg"`` and ``"krehm"`` are accepted as explicit boundary markers, but
   the runtime currently raises ``NotImplementedError`` for them instead of
   silently routing those inputs through the wrong full-GK equations.
-* ``[collisions] damp_ends_scale_by_dt``: compatibility escape hatch for older
-  per-step inputs. The reference-compatible default is ``false`` because
+* ``[collisions] damp_ends_scale_by_dt``: opt-in per-step damping-rate scaling
+  for controlled reproduction studies. The reference-compatible default is ``false`` because
   ``damp_ends_amp`` is already a per-unit-time damping rate.
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
   the reference-compatible ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
@@ -466,7 +466,7 @@ Notable runtime-only keys:
   the relevant explicit method for ``secondary`` and collisional-ETG benchmark
   families. Plain ``rk3`` now follows the three-stage Heun-style timestepper;
   ``rk3_classic`` keeps the older classical RK3 update if you need it for
-  controlled comparisons, and ``rk3_heun`` remains as a compatibility alias.
+  controlled comparisons, and ``rk3_heun`` remains as an explicit alias.
 * ``[terms]``: each key is a pure multiplicative operator weight:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,

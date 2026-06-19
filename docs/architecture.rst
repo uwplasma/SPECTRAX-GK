@@ -30,15 +30,15 @@ Core modules
   hypercollision split policies shared by explicit and IMEX nonlinear scans.
 - ``spectraxgk.operators.nonlinear.policies``: diagnostic cache/weight/projection
   setup, adaptive time-step policy, fixed-mode omega masks used by comparison
-  parity audits, reusable nonlinear IMEX operator construction, and compatibility
-  re-exports for the focused projection/collision owners.
+  parity audits, reusable nonlinear IMEX operator construction, and public
+  facades for the focused projection/collision owners.
 - ``spectraxgk.runtime`` / ``spectraxgk.workflows.runtime.config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
-- ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
+- ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable public-facade seams.
 - ``spectraxgk.validation.benchmarks.defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
 - ``spectraxgk.validation.benchmarks.reference`` / ``spectraxgk.validation.benchmarks.fit_signals`` / ``spectraxgk.validation.benchmarks.species``: reference data loaders, result containers, fitting policies, and benchmark species policies.
 - ``spectraxgk.validation.benchmarks.scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
-- ``spectraxgk.benchmarks``: public benchmark runners and compatibility import surface.
+- ``spectraxgk.benchmarks``: public benchmark runners and stable import surface.
 - ``spectraxgk.artifacts.plotting``: reusable, publication-ready plotting utilities.
 
 Term-level source mapping

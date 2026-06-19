@@ -195,7 +195,7 @@ GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
 SPECTRAX-GK now also supports a direct VMEC runtime bridge with
-``geometry.model = "vmec"``. This path uses the existing compatibility helper
+``geometry.model = "vmec"``. This path uses the VMEC field-line helper
 to produce an imported ``*.eik.nc`` file and then re-enters the same
 imported-geometry contract described above. The bridge is cached by input
 content and VMEC file timestamp when SPECTRAX chooses the output path itself.
@@ -210,9 +210,9 @@ SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the helper input, which
 was generating the wrong HSX/W7-X ``*.eik.nc`` files.
 When ``booz_xform_jax`` is not installed into the active environment, point
 SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
-``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
-``booz_xform`` install is only needed as fallback compatibility for older
-helper environments.
+``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A
+``booz_xform`` install is only needed as an automatic fallback reader for
+older helper environments.
 Differentiable VMEC/Boozer transport-gradient audits require a
 ``booz_xform_jax`` checkout at or after upstream commit ``1d5e8c``. That
 revision replaces inactive zero-mode Fourier divisions by safe denominators in

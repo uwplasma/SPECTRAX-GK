@@ -157,7 +157,7 @@ throughout:
 - real frequency ``omega``
 - ion heat flux
 - free energy
-- electrostatic field energy (legacy variable name ``Wphi``)
+- electrostatic field energy (output variable ``Wphi``)
 - magnetic field energy when ``A_parallel`` or ``B_parallel`` are active
 
 At the README level, these metrics are intentionally packed into one compact
@@ -242,7 +242,7 @@ runtime defaults for the solver or the shipped example drivers.
 Benchmark runner internals
 --------------------------
 
-The public compatibility surface remains ``spectraxgk.benchmarks``. Shared
+The public benchmark surface remains ``spectraxgk.benchmarks``. Shared
 scan policies that are easy to test without launching a solver live in
 ``spectraxgk.validation.benchmarks.scan``: fit-signal key validation, mode-only extraction
 coercion, explicit-window fallback, and fixed-shape ``k_y`` batching

@@ -83,7 +83,7 @@ The remaining work should be closed in this order.
 
 1. **Freeze module contracts before moving code.**
    For each large file, write or update tests for current public behavior, then
-   extract only cohesive helpers. Keep compatibility exports until examples,
+   extract only cohesive helpers. Keep public facades stable until examples,
    docs, and benchmark scripts use the new module boundaries.
 
 2. **Finish the high-priority refactor modules.**
