@@ -1,3 +1,14 @@
+- 2026-06-19: Continued reduced-model runtime simplification inside
+  `workflows/reduced_models.py` without changing cETG public runtime behavior,
+  dependency injection, or integrator numerics. Linear cETG, fixed-step
+  nonlinear cETG, and adaptive-chunk nonlinear cETG now share one
+  `_cetg_integration_kwargs` payload for timestep, selected mode, CFL,
+  compressed-real FFT, diagnostic stride, and fixed/adaptive forwarding. This
+  intentionally centralizes the integrator contract even though the helper adds
+  a few net lines, because it prevents drift between the three executable cETG
+  branches. Planned local gates: focused cETG runtime helper/runner shards,
+  Ruff, mypy, `py_compile`, refactor manifest, and `git diff --check`.
+
 - 2026-06-19: Tightened user-facing naming around the refactor and validation
   lanes without changing solver behavior. The root `benchmarks/` directory was
   rechecked as the canonical lightweight benchmark location, and nonessential

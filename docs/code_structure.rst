@@ -266,7 +266,10 @@ Completed extractions:
 - full-GK executable nonlinear runtime workflow:
   ``workflows/nonlinear.py``
 - executable reduced-model runtime workflows:
-  ``workflows/reduced_models.py``
+  ``workflows/reduced_models.py``. The cETG linear, fixed-step nonlinear, and
+  adaptive-chunk nonlinear paths share one explicit-integrator option payload,
+  keeping timestep, CFL, selected-mode, compressed-FFT, and diagnostic-stride
+  forwarding aligned.
 - shared plot style plus runtime-output, benchmark/scan, diagnostic, and
   zonal-response figure families:
   ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``,
