@@ -1,3 +1,16 @@
+- 2026-06-19: Continued nonlinear diagnostic integration refactoring inside
+  `solvers.nonlinear.diagnostics` without changing public runtime signatures,
+  dependency-injected seams, explicit scan tuple carry, sampling policy, or
+  final diagnostic schema. The explicit diagnostic integrator now delegates
+  setup/state preparation, timestep/collision policy construction, nonlinear
+  RHS closure construction, state-to-diagnostic closure construction, scan-step
+  construction, and scan finalization to focused helpers. This keeps the
+  user-facing executable path stable while making the explicit diagnostic
+  runtime stages independently readable and easier to test. Focused nonlinear
+  operator package and diagnostic helper shards passed locally, along with
+  Ruff, mypy, `py_compile`, refactor/coverage/size manifests, repository-size
+  policy, Sphinx docs, and `git diff --check`.
+
 - 2026-06-19: Continued nonlinear diagnostic-state refactoring inside
   `operators.nonlinear.diagnostic_state` without changing explicit/IMEX scan
   tuple schema, diagnostic kernel injection, or resolved diagnostic ordering.
