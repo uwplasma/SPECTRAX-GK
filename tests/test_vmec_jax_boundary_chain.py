@@ -243,6 +243,43 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
     assert summary["passes"]["frozen_axis_convention_verified"] is True
 
 
+def test_boundary_chain_collection_count_helper_tracks_gate_categories() -> None:
+    rows = [
+        {
+            "finite": True,
+            "frozen_axis_jvp_vjp_consistent": True,
+            "frozen_axis_convention_verified": False,
+            "frozen_axis_matches_exact_fd": True,
+            "classification": "exact_fd_and_frozen_axis_replay_consistent",
+            "growth_branch_locality_checked": True,
+            "growth_branch_locality_passed": True,
+        },
+        {
+            "finite": True,
+            "frozen_axis_jvp_vjp_consistent": True,
+            "frozen_axis_convention_verified": True,
+            "frozen_axis_matches_exact_fd": False,
+            "classification": (
+                "frozen_axis_convention_verified_but_exact_fd_branch_sensitive"
+            ),
+            "growth_branch_locality_checked": True,
+            "growth_branch_locality_passed": False,
+        },
+    ]
+
+    assert boundary_chain._boundary_chain_collection_counts(rows) == {
+        "n_total": 2,
+        "n_finite": 2,
+        "n_frozen_axis_internal_pass": 2,
+        "n_frozen_axis_convention_verified": 1,
+        "n_exact_fd_consistent": 1,
+        "n_branch_sensitive": 1,
+        "n_growth_branch_locality_checked": 2,
+        "n_growth_branch_locality_passed": 1,
+    }
+    assert boundary_chain._empty_boundary_chain_counts()["n_total"] == 0
+
+
 def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
     branch_sensitive = {
         "index": 22,
