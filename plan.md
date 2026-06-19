@@ -1,3 +1,13 @@
+- 2026-06-19: Continued nonlinear device-z performance-gate cleanup
+  without changing routed RHS numerics. The transport-window identity decision
+  now lives in `_device_z_transport_identity_passed`, so final-state,
+  free-energy, field-energy, physical-flux, and bracket-RMS tolerances are
+  checked by one auditable policy before any decomposed path is enabled. Added
+  direct pass/fail tests for the helper. Local gates passed: device-z nonlinear
+  parallel tests (with expected multi-device skip when unavailable), Ruff,
+  mypy, `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, parallel-scaling artifact manifest, repository-size manifest, and
+  source terminology audits.
 - 2026-06-19: Continued differentiable VMEC boundary-chain refactoring
   without changing artifact schemas. Boundary-chain collection classification
   now lives in `_boundary_chain_collection_decision`, separating row counting

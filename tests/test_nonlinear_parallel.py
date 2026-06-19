@@ -616,6 +616,22 @@ def test_device_z_transport_trace_helpers_build_fail_closed_reports() -> None:
         floor=1.0e-6,
     )
     assert errors["free_energy"] == (0.0, 0.0)
+    assert nonlinear_parallel_device_z._device_z_transport_identity_passed(
+        state_abs=2.0e-7,
+        state_rel=1.0e-2,
+        trace_errors=errors,
+        atol=1.0e-6,
+        rtol=1.0e-5,
+    )
+    failing_errors = dict(errors)
+    failing_errors["bracket_rms"] = (2.0e-4, 2.0e-3)
+    assert not nonlinear_parallel_device_z._device_z_transport_identity_passed(
+        state_abs=2.0e-7,
+        state_rel=1.0e-2,
+        trace_errors=failing_errors,
+        atol=1.0e-6,
+        rtol=1.0e-5,
+    )
 
     report = nonlinear_parallel_device_z._blocked_device_z_transport_window_report(
         state_shape=(2, 3, 6, 4, 2),
