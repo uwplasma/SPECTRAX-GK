@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from spectraxgk.validation.quasilinear.model_selection import (
+    _required_candidate_metrics,
     build_quasilinear_model_selection_status,
     build_quasilinear_model_selection_status_from_paths,
 )
@@ -84,6 +85,50 @@ def _optimized_equilibrium_audit(*, passed: bool = True) -> dict[str, Any]:
 def _write_json(path: Path, payload: object) -> Path:
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
+
+
+def test_required_candidate_metrics_normalize_thresholds_and_payloads() -> None:
+    candidate = _candidate_payload()
+    metrics = _required_candidate_metrics(
+        candidate,
+        candidate["promotion_gate"],
+        required_candidate="spectral_envelope_ridge",
+        transport_gate=0.3,
+        interval_coverage_gate=0.8,
+    )
+
+    assert metrics["accepted"] == ["spectral_envelope_ridge"]
+    assert metrics["candidate_error"] == 0.24
+    assert metrics["candidate_coverage"] == 0.86
+    assert metrics["transport_threshold"] == 0.3
+    assert metrics["coverage_threshold"] == 0.8
+    assert metrics["null_error"] == 0.82
+    assert metrics["linear_error"] == 0.93
+    assert metrics["promotion_eligible"] is True
+
+    malformed = {
+        "candidates": {"spectral_envelope_ridge": "not-a-dict"},
+    }
+    gate = {
+        "accepted_rules": ["spectral_envelope_ridge"],
+        "transport_mean_relative_error_gate": "0.35",
+        "interval_coverage_gate": "0.75",
+    }
+    missing_metrics = _required_candidate_metrics(
+        malformed,
+        gate,
+        required_candidate="spectral_envelope_ridge",
+        transport_gate=None,
+        interval_coverage_gate=None,
+    )
+
+    assert missing_metrics["accepted"] == ["spectral_envelope_ridge"]
+    assert missing_metrics["required_payload"] == {}
+    assert missing_metrics["candidate_error"] is None
+    assert missing_metrics["candidate_coverage"] is None
+    assert missing_metrics["transport_threshold"] == 0.35
+    assert missing_metrics["coverage_threshold"] == 0.75
+    assert missing_metrics["promotion_eligible"] is True
 
 
 def test_model_selection_path_inputs_reject_malformed_json_payloads(

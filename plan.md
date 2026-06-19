@@ -1,3 +1,17 @@
+- 2026-06-19: Continued the quasilinear validation refactor inside the existing
+  `spectraxgk.validation.quasilinear.model_selection` owner without adding
+  source files. Required-candidate metric extraction for accepted rules,
+  transport-error thresholds, interval-coverage thresholds, null/linear
+  baselines, and promotion eligibility now lives in one helper policy used by
+  the model-selection ledger. Added direct regression coverage for threshold
+  overrides, accepted-rule fallback, and malformed candidate payloads. Local
+  gates passed: quasilinear model-selection tests, model-selection plot tests,
+  Ruff, mypy, `py_compile`, source terminology audits, differentiable-refactor,
+  package-architecture, performance, repository-size, release-artifact,
+  release-version, validation-coverage, quasilinear-guardrail, and
+  parallel-scaling artifact manifests. Regenerating the validation gate index
+  still exposes a pre-existing stale QL status artifact, so the generated
+  index files were not included in this behavior-preserving source tranche.
 - 2026-06-18: Aligned the architecture docs and differentiable-refactor
   manifest with the stable public-facade policy. The executable manifest now
   uses `public_facade_policy` rather than `compatibility_policy`, the manifest
