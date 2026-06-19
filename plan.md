@@ -4485,3 +4485,16 @@ No long nonlinear audit should be launched from these candidates.
   `tests/test_differentiable_geometry_bridge.py`,
   `tests/test_solver_objective_gradients.py`, and
   `tests/test_stellarator_optimization.py`.
+
+- 2026-06-19: Simplified the term-wise linear RHS diagnostic assembler inside
+  `terms/assembly_diagnostics.py` without changing contribution names, summing
+  order, or the public `assemble_rhs_terms_cached` debug/parity API. The public
+  diagnostic path now delegates state/species normalization, scalar parameter
+  conversion, term-weight construction, field/Hamiltonian construction,
+  streaming, drift, diamagnetic, collision/hypercollision/hyperdiffusion/end
+  damping contribution assembly, fixed-order summation, and species-axis
+  restoration to named private stages. This removed
+  `assemble_rhs_terms_cached` from the top long-function hotspot list by
+  reducing it from roughly 242 lines to 35 lines. Local gates passed:
+  py_compile, ruff, mypy for the touched source module,
+  `tests/test_terms_assembly.py`, and `tests/test_compare_gx_rhs_terms.py`.

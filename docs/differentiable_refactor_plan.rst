@@ -151,7 +151,11 @@ implementation code should be placed under the domain packages named in
 :doc:`architecture_refactor_plan`, not added as new root-level prefix modules.
 Term-wise RHS assembly now follows this rule with a small public
 ``terms.assembly`` facade and focused cached-RHS, diagnostic-RHS, field-solve,
-and helper-policy owner modules. Diffrax time integration follows the same
+and helper-policy owner modules. The diagnostic-RHS owner now keeps explicit
+private stages for state/species normalization, field/Hamiltonian construction,
+drift/drive/dissipation contribution assembly, fixed-order summation, and
+species-axis restoration so term-level parity audits exercise named physics
+pieces instead of one monolithic debug function. Diffrax time integration follows the same
 pattern: public imports stay on ``solvers.time.diffrax`` while optional
 dependency/policy helpers, linear save paths, streaming fits, and nonlinear
 paths live in focused owner modules.

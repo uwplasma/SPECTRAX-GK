@@ -200,7 +200,11 @@ Completed extractions:
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in
   ``terms/assembly_core.py``, ``terms/assembly_diagnostics.py``,
-  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``. Linear
+  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``. The
+  diagnostic decomposition owner stages state/species normalization, field and
+  Hamiltonian construction, drift/drive/dissipation contribution assembly,
+  fixed-order term summation, and species-axis restoration behind the stable
+  ``assemble_rhs_terms_cached`` debug API. Linear
   contribution kernels keep Hermite-mode drive insertion centralized in
   ``terms/linear_terms.py`` so streaming, diamagnetic, and collision
   corrections share one reviewed convention.
