@@ -77,6 +77,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
+    RuntimeOutputConfig,
     RuntimeParallelConfig,
     RuntimePhysicsConfig,
     RuntimeQuasilinearConfig,
@@ -280,6 +281,69 @@ def test_runtime_command_option_helpers_normalize_cli_and_toml_values() -> None:
     )
 
 
+def test_runtime_case_option_helpers_resolve_python_overrides() -> None:
+    raw = {
+        "run": {
+            "ky": "0.2",
+            "Nl": "4",
+            "Nm": "6",
+            "solver": "time",
+            "method": "rk2",
+            "dt": "0.05",
+            "steps": "12",
+        },
+        "time": {"sample_stride": "3", "diagnostics_stride": "5"},
+        "fit": {"fit_signal": "phi", "ignored": "value"},
+    }
+
+    assert runtime_cases._runtime_case_fit_config(raw) == {"fit_signal": "phi"}
+    assert runtime_cases._linear_case_run_kwargs(
+        raw,
+        {
+            "ky": 0.4,
+            "Nl": None,
+            "Nm": 7,
+            "solver": None,
+            "method": "rk4",
+            "dt": None,
+            "steps": 20,
+            "sample_stride": None,
+        },
+    ) == {
+        "ky_target": 0.4,
+        "Nl": 4,
+        "Nm": 7,
+        "solver": "time",
+        "method": "rk4",
+        "dt": "0.05",
+        "steps": 20,
+        "sample_stride": "3",
+    }
+    assert runtime_cases._nonlinear_case_run_kwargs(
+        raw,
+        {
+            "ky": None,
+            "Nl": 8,
+            "Nm": None,
+            "method": None,
+            "dt": 0.02,
+            "steps": None,
+            "sample_stride": 2,
+            "diagnostics_stride": None,
+        },
+    ) == {
+        "ky_target": 0.2,
+        "Nl": 8,
+        "Nm": 6,
+        "method": "rk2",
+        "dt": 0.02,
+        "steps": "12",
+        "sample_stride": 2,
+        "diagnostics_stride": "5",
+        "diagnostics": True,
+    }
+
+
 def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.CaptureFixture[str]) -> None:
     captured: dict[str, object] = {}
 
@@ -411,24 +475,42 @@ def test_runtime_command_artifact_output_helpers(
     )
     assert calls == []
 
-    runtime_commands._write_command_outputs(
-        "linear.json",
+    cfg = replace(
+        _base_cfg(),
+        output=RuntimeOutputConfig(path="linear.json"),
+        quasilinear=RuntimeQuasilinearConfig(output_path="ql.json"),
+    )
+    args = SimpleNamespace(out=None, ql_output=None)
+    assert runtime_commands._write_linear_runtime_command_outputs(
+        args,
+        cfg,
         result,
-        writer=deps.write_runtime_linear_artifacts,
-        display_keys=runtime_commands._LINEAR_ARTIFACT_DISPLAY_KEYS,
+        deps=deps,  # type: ignore[arg-type]
+    ) == {
+        "linear": {
+            "state": "linear.state.nc",
+            "summary": "linear.summary.json",
+            "timeseries": "linear.timeseries.csv",
+        },
+        "quasilinear": {
+            "quasilinear_species": "ql.species.csv",
+            "quasilinear_summary": "ql.summary.json",
+        },
+    }
+    scan_cfg = replace(
+        _base_cfg(),
+        quasilinear=RuntimeQuasilinearConfig(output_path="scan.json"),
     )
-    runtime_commands._write_command_outputs(
-        "scan.json",
+    assert runtime_commands._write_scan_runtime_command_outputs(
+        args,
+        scan_cfg,
         SimpleNamespace(),
-        writer=deps.write_runtime_linear_scan_artifacts,
-        display_keys=runtime_commands._SCAN_ARTIFACT_DISPLAY_KEYS,
-    )
-    runtime_commands._write_command_outputs(
-        "ql.json",
-        result.quasilinear,
-        writer=deps.write_quasilinear_artifacts,
-        display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
-    )
+        deps=deps,  # type: ignore[arg-type]
+    ) == {
+        "quasilinear_spectrum": "scan.ql.csv",
+        "summary": "scan.summary.json",
+        "scan": "scan.csv",
+    }
     runtime_commands.print_nonlinear_command_outputs(
         {
             "restart": "restart.nc",
@@ -443,18 +525,18 @@ def test_runtime_command_artifact_output_helpers(
 
     assert calls == [
         ("linear", "linear.json"),
-        ("scan", "scan.json"),
         ("quasilinear", "ql.json"),
+        ("scan", "scan.json"),
     ]
     assert capsys.readouterr().out.splitlines() == [
         "saved linear.summary.json",
         "saved linear.timeseries.csv",
         "saved linear.state.nc",
+        "saved ql.summary.json",
+        "saved ql.species.csv",
         "saved scan.summary.json",
         "saved scan.csv",
         "saved scan.ql.csv",
-        "saved ql.summary.json",
-        "saved ql.species.csv",
         "saved nonlinear.summary.json",
         "saved nonlinear.diag.nc",
         "saved restart.nc",

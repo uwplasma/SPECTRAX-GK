@@ -1,3 +1,14 @@
+- 2026-06-19: Continued runtime workflow simplification without adding new
+  source files. Runtime executable commands now route linear, quasilinear, and
+  scan artifact persistence through focused output-policy helpers, and
+  programmatic TOML case workflows now resolve Python-argument/TOML/default
+  precedence through table-driven linear and nonlinear case policies instead
+  of inline fallback blocks. Added direct regression coverage for command
+  output policies and case-option precedence. Public executable and runtime
+  facade behavior is unchanged. Local gates passed: runtime-helper and CLI
+  test shard, focused runtime-case tests, Ruff, mypy, `py_compile`, package
+  architecture manifest, differentiable-refactor manifest, repository-size
+  manifest, and source terminology audit.
 - 2026-06-19: Refreshed the validation gate index to match the current
   scoped quasilinear claim boundary. The index now records 17/18 tracked
   gate reports passing and shows the quasilinear model-selection status as
