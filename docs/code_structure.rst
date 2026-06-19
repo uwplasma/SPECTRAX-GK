@@ -576,7 +576,12 @@ validation, and small numerical kernels from the VMEC/Boozer field-line bridge.
 Imported VMEC/Boozer radial spline construction lives in
 ``spectraxgk.geometry_backends.vmec_splines`` and is re-exported through
 ``spectraxgk.geometry_backends.vmec_fieldlines`` for the existing VMEC backend
-facade.
+facade. The VMEC field-line backend keeps Boozer-object fallback,
+Boozer-mode table sampling, angle construction, resonant-denominator guarding,
+flux-surface averaging, and centered field-line integral policies as focused
+helpers inside ``spectraxgk.geometry_backends.vmec_fieldlines`` so the
+imported-geometry equations remain in one owner while the small numerical
+policies are unit-testable.
 Zero-shear boundary policy lives in ``spectraxgk.geometry.boundaries``.
 Analytic s-alpha and slab geometry models live in
 ``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic

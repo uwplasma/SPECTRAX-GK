@@ -1,3 +1,17 @@
+- 2026-06-18: Continued VMEC imported-geometry simplification inside the
+  existing `spectraxgk.geometry_backends.vmec_fieldlines` owner without adding
+  source files. Boozer backend fallback, Boozer-mode table sampling, Boozer
+  angle construction, resonant-denominator guarding, flux-surface averaging,
+  and centered field-line integrals are now explicit helper policies instead
+  of inline branches inside `_vmec_fieldlines`. Added direct helper regressions
+  for the angle/denominator, surface-average/centered-integral, and mode-table
+  sampling policies while keeping the existing fake-VMEC field-line assembly
+  tests unchanged. Local gates passed: full
+  `tests/test_geometry_backend_vmec_helpers.py`, selected VMEC EIK and
+  differentiable-geometry bridge shard, Ruff on touched files, mypy and
+  `py_compile` on the VMEC field-line owner, source terminology audit,
+  differentiable-refactor/validation-coverage/package-architecture manifests,
+  repository-size manifest, warning-free Sphinx build, and `git diff --check`.
 - 2026-06-18: Continued runtime artifact-handoff simplification inside the
   existing owner, `spectraxgk.workflows.runtime.orchestration_artifacts`, without
   adding source files. Restart input resolution, append-on-restart history

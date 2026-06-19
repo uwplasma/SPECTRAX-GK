@@ -643,6 +643,74 @@ def test_vmec_splines_builds_interpolants_and_metadata() -> None:
     assert out.d_iota_d_s(0.5) == pytest.approx(0.4, abs=1.0e-10)
 
 
+def test_vmec_fieldline_helper_angle_and_denominator_policies() -> None:
+    theta = np.array([[[0.0, 1.0]]])
+    phi = np.array([[[0.25, 0.25]]])
+    xm = np.array([1.0, 2.0])
+    xn = np.array([0.0, 1.0])
+
+    angle = vmec_fieldlines._boozer_mode_angle(xm, xn, theta, phi, flipit=False)
+    np.testing.assert_allclose(angle[0, 0, 0], theta[0, 0])
+    np.testing.assert_allclose(angle[1, 0, 0], 2.0 * theta[0, 0] - 0.25)
+
+    flipped = vmec_fieldlines._boozer_mode_angle(xm, xn, theta, phi, flipit=True)
+    np.testing.assert_allclose(flipped[0] - angle[0], np.pi)
+    np.testing.assert_allclose(flipped[1] - angle[1], 2.0 * np.pi)
+
+    safe = vmec_fieldlines._safe_mode_denominator(
+        np.array([0.0, 2.0, 3.0]), np.array([0.0, 1.0, 1.0]), np.array([0.5])
+    )
+    assert safe.shape == (1, 2)
+    assert safe[0, 0] == pytest.approx(1.0e-30)
+    assert safe[0, 1] == pytest.approx(0.5)
+
+
+def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
+    theta_grid = np.linspace(-np.pi, np.pi, 21)
+    phi_grid = np.linspace(-np.pi, np.pi, 19)
+    constant = np.full((phi_grid.size, theta_grid.size), 2.5)
+
+    assert vmec_fieldlines._surface_average_2d(
+        constant, theta_grid, phi_grid
+    ) == pytest.approx(2.5)
+
+    theta = np.linspace(-np.pi, np.pi, 17)
+    fieldline = theta[None, None, :]
+    centered = vmec_fieldlines._centered_fieldline_integral(
+        np.ones_like(fieldline), fieldline, theta
+    )
+    np.testing.assert_allclose(centered[0, 0], theta, atol=1.0e-12)
+
+
+def test_vmec_fieldline_helper_samples_boozer_mode_table() -> None:
+    s = np.array([0.25, 0.75])
+
+    def _family(scale: float) -> list:
+        return [lambda x, j=j: scale * (j + np.asarray(x)) for j in range(3)]
+
+    vs = SimpleNamespace(
+        mnbooz=3,
+        rmnc_b=_family(1.0),
+        zmns_b=_family(2.0),
+        numns_b=_family(3.0),
+        d_rmnc_b_d_s=_family(4.0),
+        d_zmns_b_d_s=_family(5.0),
+        d_numns_b_d_s=_family(6.0),
+        gmnc_b=_family(7.0),
+        bmnc_b=_family(8.0),
+        d_bmnc_b_d_s=_family(9.0),
+    )
+
+    rmnc_b, zmns_b, *_, d_bmnc_b_d_s = vmec_fieldlines._sample_boozer_mode_table(
+        vs, s, ns=2
+    )
+
+    assert rmnc_b.shape == (2, 3)
+    np.testing.assert_allclose(rmnc_b[:, 2], 2.0 + s)
+    np.testing.assert_allclose(zmns_b[:, 1], 2.0 * (1.0 + s))
+    np.testing.assert_allclose(d_bmnc_b_d_s[:, 0], 9.0 * s)
+
+
 def test_vmec_fieldlines_respects_overrides_and_closes_dataset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
