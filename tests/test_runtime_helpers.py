@@ -283,23 +283,54 @@ def test_runtime_command_artifact_output_helpers(
         quasilinear={"model": "test"},
     )
 
-    assert runtime_commands.write_linear_command_outputs(None, result, deps=deps) == {}
     assert (
-        runtime_commands.write_quasilinear_command_outputs(None, result, deps=deps)
+        runtime_commands._write_command_outputs(
+            None,
+            result,
+            writer=deps.write_runtime_linear_artifacts,
+            display_keys=runtime_commands._LINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
+        == {}
+    )
+    assert (
+        runtime_commands._write_command_outputs(
+            None,
+            result.quasilinear,
+            writer=deps.write_quasilinear_artifacts,
+            display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
         == {}
     )
     no_ql = replace(result, quasilinear=None)
     assert (
-        runtime_commands.write_quasilinear_command_outputs("ql.json", no_ql, deps=deps)
+        runtime_commands._write_command_outputs(
+            "ql.json",
+            no_ql.quasilinear,
+            writer=deps.write_quasilinear_artifacts,
+            display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
         == {}
     )
     assert calls == []
 
-    runtime_commands.write_linear_command_outputs("linear.json", result, deps=deps)
-    runtime_commands.write_linear_scan_command_outputs(
-        "scan.json", SimpleNamespace(), deps=deps
+    runtime_commands._write_command_outputs(
+        "linear.json",
+        result,
+        writer=deps.write_runtime_linear_artifacts,
+        display_keys=runtime_commands._LINEAR_ARTIFACT_DISPLAY_KEYS,
     )
-    runtime_commands.write_quasilinear_command_outputs("ql.json", result, deps=deps)
+    runtime_commands._write_command_outputs(
+        "scan.json",
+        SimpleNamespace(),
+        writer=deps.write_runtime_linear_scan_artifacts,
+        display_keys=runtime_commands._SCAN_ARTIFACT_DISPLAY_KEYS,
+    )
+    runtime_commands._write_command_outputs(
+        "ql.json",
+        result.quasilinear,
+        writer=deps.write_quasilinear_artifacts,
+        display_keys=runtime_commands._QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+    )
     runtime_commands.print_nonlinear_command_outputs(
         {
             "restart": "restart.nc",

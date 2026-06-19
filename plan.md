@@ -1,3 +1,11 @@
+- 2026-06-18: Centralized runtime executable artifact-output writing inside
+  `spectraxgk.workflows.runtime.commands._write_command_outputs`. Linear,
+  linear-scan, and standalone quasilinear command helpers now share one
+  destination/payload/write/print policy, and the old internal wrapper helpers
+  were removed so command bodies use the canonical writer directly. Also removed the last source-level
+  "compatibility" wording from the nonlinear restart help text by describing
+  restart files as matching distribution states. Focused runtime-helper/CLI
+  tests, Ruff, mypy, and `py_compile` passed.
 - 2026-06-18: Removed the remaining mixed-case kinetic benchmark
   normalization constants from the maintained source surface. Kinetic-electron
   benchmark defaults, public benchmark re-exports, kinetic runners, and
