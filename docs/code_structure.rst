@@ -539,7 +539,8 @@ The explicit-time fallback ladder and saved-time auto-fit branch share the scan
 fit-window policy, so beta-scan fit knobs are not duplicated across
 time-integration paths. Saved-time KBM beta samples also use one dispatcher for
 non-Diffrax time-config and no-config integration, with stride resolution kept
-explicit before fitting. The single-point runner delegates
+explicit before fitting; Diffrax-streaming samples read the same
+``ScanFitWindowPolicy`` for their resolved fit window. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
 ``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
 setup, generic saved-time fitting, and result packaging. The public beta runner

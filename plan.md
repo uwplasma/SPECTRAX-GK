@@ -1,3 +1,14 @@
+- 2026-06-19: Continued KBM beta-scan fit-policy plumbing simplification
+  across `validation.benchmarks.kbm_beta` and
+  `validation.benchmarks.kbm_beta_solver_paths` without changing public runner
+  arguments, solver hooks, or fit formulas. The public beta runner now forwards
+  the shared `ScanFitWindowPolicy` object once to the time-path helper, and the
+  Diffrax-streaming window calculation reads `start_fraction` and
+  `window_fraction` from that policy instead of receiving duplicate scalar
+  arguments. Local gates passed: focused KBM beta branch shard, relevant KBM
+  beta integration nodes including the slow shape check, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-19: Continued KBM beta-scan solver-path simplification inside
   `validation.benchmarks.kbm_beta_solver_paths` and fixed a latent saved-time
   auto-fit bug exposed by an integration shard. Non-Diffrax time-config runs
