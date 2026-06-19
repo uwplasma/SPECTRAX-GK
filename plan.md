@@ -1,3 +1,12 @@
+- 2026-06-19: Continued executable facade simplification in
+  `spectraxgk.cli` without changing command-line behavior. Direct TOML
+  shorthand dispatch now routes through `_toml_shorthand_command` and
+  `_direct_config_shorthand_args`, separating runtime-vs-named-case TOML
+  classification from `main()`. Added direct tests for runtime shorthand,
+  named-case shorthand, known-command guards, flag guards, and missing-file
+  guards. Local gates passed: focused CLI shorthand tests, Ruff, mypy,
+  `py_compile`, package-architecture manifest, differentiable-refactor
+  manifest, repository-size manifest, and source terminology audits.
 - 2026-06-19: Continued VMEC imported-geometry simplification in
   `spectraxgk.geometry_backends.vmec_fieldlines` without changing Boozer-mode
   sums or field-line outputs. Hegna-Nakajima shear and pressure correction

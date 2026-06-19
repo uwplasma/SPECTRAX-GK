@@ -21,9 +21,11 @@ from spectraxgk.cli import (
     _cmd_scan_linear,
     _cmd_scan_runtime_linear,
     _default_example_config_path,
+    _direct_config_shorthand_args,
     _is_runtime_toml,
     _resolve_case,
     _should_show_progress,
+    _toml_shorthand_command,
     main,
 )
 from spectraxgk.diagnostics import SimulationDiagnostics
@@ -175,6 +177,8 @@ def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
     assert _is_runtime_toml({"physics": {}}) is True
     assert _is_runtime_toml({"case": "cyclone"}) is False
     assert _is_runtime_toml({}) is True
+    assert _toml_shorthand_command({"physics": {}}) == "run"
+    assert _toml_shorthand_command({"case": "cyclone"}) == "run-linear"
 
     monkeypatch.setattr("sys.stdout.isatty", lambda: False)
     assert _should_show_progress(argparse.Namespace(progress=True, no_progress=False), False) is True
@@ -189,6 +193,34 @@ def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
 
     assert np.allclose(load_scan_ky({"scan": {"ky": [0.1, 0.2]}}), np.array([0.1, 0.2]))
     assert load_scan_ky({}).size == 0
+
+
+def test_direct_config_shorthand_args_resolve_command_and_guards(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cfg_path = tmp_path / "case.toml"
+    cfg_path.write_text("[physics]\n", encoding="utf-8")
+
+    monkeypatch.setattr("spectraxgk.cli.load_toml", lambda _path: {"physics": {}})
+    assert _direct_config_shorthand_args([str(cfg_path), "--no-progress"]) == [
+        "run",
+        "--config",
+        str(cfg_path),
+        "--no-progress",
+    ]
+
+    monkeypatch.setattr("spectraxgk.cli.load_toml", lambda _path: {"case": "cyclone"})
+    assert _direct_config_shorthand_args([str(cfg_path), "--plot"]) == [
+        "run-linear",
+        "--config",
+        str(cfg_path),
+        "--plot",
+    ]
+
+    assert _direct_config_shorthand_args([]) is None
+    assert _direct_config_shorthand_args(["--version"]) is None
+    assert _direct_config_shorthand_args(["run", "--config", str(cfg_path)]) is None
+    assert _direct_config_shorthand_args([str(tmp_path / "missing.toml")]) is None
 
 
 def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:
