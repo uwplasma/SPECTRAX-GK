@@ -3441,6 +3441,21 @@ fast_tests = ["tests/test_check_nonlinear_window_ensemble.py", "tests/test_quasi
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.model_selection"
+source_path = "src/spectraxgk/validation/quasilinear/model_selection.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "quasilinear model-selection claim ledger, candidate gate assembly, claim-boundary guardrails, scoped optimized-equilibrium audit routing, and path-based artifact wrapper"
+moved_exports = [
+  "ABSOLUTE_FLUX_PROMOTED_CLAIM",
+  "DEFAULT_REQUIRED_CANDIDATE",
+  "build_quasilinear_model_selection_status",
+  "build_quasilinear_model_selection_status_from_paths",
+]
+fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py", "tests/test_plot_quasilinear_model_selection_status.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.validation.quasilinear.model_selection_inputs"
 source_path = "src/spectraxgk/validation/quasilinear/model_selection_inputs.py"
 facade_module = "spectraxgk.validation.quasilinear.model_selection"

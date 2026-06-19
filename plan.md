@@ -4430,3 +4430,17 @@ No long nonlinear audit should be launched from these candidates.
   mypy for the touched source module, and the focused runtime-artifact NetCDF
   shard covering facade identity, nonlinear NetCDF writing, reload behavior,
   and required diagnostics validation.
+
+- 2026-06-19: Simplified the quasilinear model-selection claim ledger inside
+  `validation/quasilinear/model_selection.py` while preserving the strict
+  absolute-flux claim boundary. The public
+  `build_quasilinear_model_selection_status` builder now delegates promotion
+  gate extraction, calibration-report claim checks, optimized-equilibrium audit
+  checks, required-candidate gate rows, claim-boundary gate rows, claim-level
+  selection, and absolute-flux status assembly to named private stages. This
+  reduced the public builder from roughly 256 lines to 120 lines; the module
+  grew modestly to keep the staged policy local instead of adding another file.
+  Local gates passed: py_compile, ruff, mypy for the touched source module, and
+  all 16 focused quasilinear model-selection tests covering scoped promotion,
+  absolute-flux overclaim failures, malformed path inputs, missing candidate
+  metrics, missing holdout metrics, and optimized-equilibrium audit scope.

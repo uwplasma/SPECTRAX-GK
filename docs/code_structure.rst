@@ -342,6 +342,12 @@ Completed extractions:
   modules under ``validation/quasilinear/window_*.py``. The public
   ``validation/quasilinear/window.py`` module remains the stable facade used by
   calibration and tool scripts.
+- quasilinear model-selection claim boundaries live in
+  ``validation/quasilinear/model_selection.py``. The public owner now separates
+  candidate-skill gate rows, absolute-flux overclaim guardrails, optional
+  optimized-equilibrium audit gates, and final ledger assembly, while
+  ``validation/quasilinear/model_selection_inputs.py`` owns artifact loading and
+  required-candidate metric normalization.
 - nonlinear parallelization policy metadata, local domain prototypes, and
   spectral-core work models/RHS primitives plus device-z shard-map routes:
   ``operators/nonlinear/parallel.py``,
@@ -639,7 +645,10 @@ integration, and ``calibration_io`` for nonlinear-window CSV/NetCDF ingestion.
 Quasilinear calibration and late-window validation now import directly from the
 focused ``validation/quasilinear/calibration_*`` and
 ``validation/quasilinear/window_*`` owner modules; the public
-``spectraxgk.validation`` API re-exports user-facing helpers.
+``spectraxgk.validation`` API re-exports user-facing helpers. Model-selection
+status construction keeps scoped candidate-skill gates and absolute-flux claim
+guardrails in ``validation/quasilinear/model_selection.py``, with input
+normalization in ``validation/quasilinear/model_selection_inputs.py``.
 
 VMEC-JAX transport admission gates are split into focused policy,
 sample-coverage, nonlinear-audit, and candidate-selection modules:
