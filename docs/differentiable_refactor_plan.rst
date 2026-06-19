@@ -260,13 +260,14 @@ High-Risk Module Split Plan
   in ``solvers/nonlinear/explicit.py``. Public cached RHS/state integration now
   lives in ``spectraxgk.solvers.nonlinear.state_integration`` and public diagnostic entry points live
   in ``spectraxgk.solvers.nonlinear.diagnostic_integration``; ``spectraxgk.nonlinear`` is a small
-  facade that re-exports the validated surface. Explicit and IMEX diagnostic
-  integration orchestration now lives in ``solvers/nonlinear/diagnostics.py``
-  with owner-module-injected geometry, cache, RHS, diagnostic, time-step,
-  solve-step, progress, and sampled-scan seams. The shared IMEX nonlinear-term closure, GMRES solve-step
-  closure, diagnostic step construction, fixed diagnostic scan execution,
-  cached scan policy, fixed-point/GMRES solve, and SSPX3 stage-composition
-  policies live in ``solvers/nonlinear/imex.py``. The public nonlinear facade
+  facade that re-exports the validated surface. Explicit diagnostic integration
+  orchestration lives in ``solvers/nonlinear/diagnostics.py`` with
+  owner-module-injected geometry, cache, RHS, diagnostic, time-step, progress,
+  and sampled-scan seams. IMEX diagnostic integration orchestration and the
+  fixed diagnostic scan step live in ``solvers/nonlinear/imex_diagnostics.py``.
+  The shared IMEX nonlinear-term closure, GMRES solve-step closure, cached scan
+  policy, fixed-point/GMRES solve, and SSPX3 stage-composition policies live in
+  ``solvers/nonlinear/imex.py``. The public nonlinear facade
   is now below the active line-count target; repeated explicit/IMEX diagnostic
   option forwarding is centralized in a small policy table so future solver
   options are added in one place.

@@ -1,3 +1,18 @@
+- 2026-06-19: Continued nonlinear solver refactor by moving IMEX diagnostic
+  integration orchestration from `solvers.nonlinear.diagnostics` into the
+  existing `solvers.nonlinear.imex_diagnostics` owner. The explicit diagnostic
+  implementation remains in `diagnostics.py`, while IMEX diagnostic dependency
+  wiring, implicit-operator setup, nonlinear-term/solve-step closure assembly,
+  fixed diagnostic scan, and final diagnostic packing now live with the IMEX
+  diagnostic step policy. `diagnostics.py` dropped from 499 to 267 lines and
+  `imex_diagnostics.py` grew from 171 to 420 lines, with no new module added.
+  `diagnostics.py` retains explicit `__all__` re-exports so public imports from
+  `spectraxgk.solvers.nonlinear.diagnostics` remain stable. Updated
+  code-structure and differentiable-refactor docs. Local gates passed: IMEX
+  unit/package-identity tests, nonlinear diagnostic helper shard, py_compile,
+  Ruff, mypy, refactor manifest, validation coverage manifest, repository size
+  manifest, source terminology scans, and `git diff --check`.
+
 - 2026-06-19: Continued executable/runtime simplification by moving runtime
   command presentation policy from `workflows.runtime.commands` into the
   existing `workflows.runtime.command_artifacts` owner. Command artifact output
