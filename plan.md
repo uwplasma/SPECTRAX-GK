@@ -1,3 +1,13 @@
+- 2026-06-19: Continued the same reduced-model runtime cleanup by centralizing
+  cETG nonlinear runtime result packing in `_build_cetg_nonlinear_result`.
+  Fixed-step and adaptive-chunk nonlinear cETG now share selected-mode metadata,
+  optional final-state return, diagnostics-disabled field summary, and runtime
+  result schema forwarding. This preserves runtime behavior while making the
+  reduced-model workflow less branch-divergent. Local gates passed: focused
+  cETG helper shard, focused cETG nonlinear integration shard, Ruff, mypy,
+  `py_compile`, refactor/coverage/size manifests, Sphinx warning-as-error docs
+  build, and `git diff --check`.
+
 - 2026-06-19: Continued reduced-model runtime simplification inside
   `workflows/reduced_models.py` without changing cETG public runtime behavior,
   dependency injection, or integrator numerics. Linear cETG, fixed-step

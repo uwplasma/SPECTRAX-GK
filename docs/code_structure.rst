@@ -269,7 +269,9 @@ Completed extractions:
   ``workflows/reduced_models.py``. The cETG linear, fixed-step nonlinear, and
   adaptive-chunk nonlinear paths share one explicit-integrator option payload,
   keeping timestep, CFL, selected-mode, compressed-FFT, and diagnostic-stride
-  forwarding aligned.
+  forwarding aligned. The cETG fixed-step and adaptive nonlinear branches also
+  share one runtime-result packer, so selected-mode metadata, optional final
+  state return, and diagnostics-disabled field summaries cannot drift.
 - shared plot style plus runtime-output, benchmark/scan, diagnostic, and
   zonal-response figure families:
   ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``,
