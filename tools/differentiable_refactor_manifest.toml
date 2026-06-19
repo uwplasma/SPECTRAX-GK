@@ -1617,7 +1617,7 @@ module = "spectraxgk.workflows.linear"
 source_path = "src/spectraxgk/workflows/linear.py"
 facade_module = "spectraxgk.runtime"
 status = "active"
-responsibility = "full-GK executable linear runtime workflow, including time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear finalization behind the public runtime facade"
+responsibility = "full-GK executable linear runtime workflow, including context preparation, time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear finalization behind the public runtime facade"
 moved_exports = [
   "FullLinearRuntimeDeps",
   "run_full_linear_runtime",

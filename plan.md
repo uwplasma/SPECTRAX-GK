@@ -4369,3 +4369,13 @@ No long nonlinear audit should be launched from these candidates.
   py_compile, ruff, mypy for the touched source module, focused linear cache
   tests, extra linear-helper cache tests, and the imported-geometry linked
   streaming test.
+
+- 2026-06-19: Simplified the full-GK linear runtime workflow inside
+  `workflows/linear.py` without adding another module. The public
+  `run_full_linear_runtime` now dispatches through private context-preparation,
+  Krylov, time-integration, fit, and quasilinear-finalization stages while
+  keeping the dependency-injected runtime facade and monkeypatch seams intact.
+  This reduced the public workflow body from roughly 319 lines to 125 lines,
+  with helper stages at 82 lines or shorter. Local gates passed: py_compile,
+  ruff, mypy for the touched source module, targeted runtime linear branch
+  tests, runtime helper/quasilinear tests, and quasilinear runtime-state tests.

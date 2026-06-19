@@ -358,9 +358,11 @@ High-Risk Module Split Plan
   fit-window, mode-method, and fit-signal forwarding cannot drift. The full-GK
   linear runtime workflow now delegates to
   ``spectraxgk.workflows.linear`` through a dependency-injected facade, including
-  time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear
-  post-processing. The full-GK nonlinear runtime workflow now delegates to
-  ``spectraxgk.workflows.nonlinear`` through the same facade pattern, including
+  context preparation, time/Krylov dispatch, auto-fallback, fit wiring, and
+  quasilinear post-processing. The workflow body is split into private stages so
+  future differentiable time-policy work can test context, integration, fit, and
+  finalization behavior independently. The full-GK nonlinear runtime workflow
+  now delegates to ``spectraxgk.workflows.nonlinear`` through the same facade pattern, including
   diagnostics routing, adaptive chunks, fixed-mode/source policy, and
   final-state integration. The
   default no-input educational demo now delegates to

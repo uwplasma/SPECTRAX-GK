@@ -262,7 +262,10 @@ Completed extractions:
   scratch directories and promoted benchmark results are displayed from
   :doc:`benchmarks`.
 - full-GK executable linear runtime workflow:
-  ``workflows/linear.py``
+  ``workflows/linear.py``. Context preparation, time integration, Krylov
+  fallback, linear fitting, and quasilinear finalization are separate private
+  stages so runtime dispatch can stay compact while preserving the public
+  ``spectraxgk.runtime`` facade and monkeypatch seams.
 - full-GK executable nonlinear runtime workflow:
   ``workflows/nonlinear.py``
 - executable reduced-model runtime workflows:
