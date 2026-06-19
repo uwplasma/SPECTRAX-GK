@@ -638,6 +638,42 @@ def test_device_z_transport_trace_helpers_build_fail_closed_reports() -> None:
     assert report.blocked_reasons == ("requires_at_least_two_devices",)
 
 
+def test_device_z_observable_appender_routes_host_and_sharded_reduce() -> None:
+    state = nonlinear_parallel.deterministic_nonlinear_spectral_state((1, 1, 4, 4, 2))
+
+    host_traces = nonlinear_parallel_device_z._new_transport_trace_dict()
+    nonlinear_parallel_device_z._append_device_z_transport_observables(
+        host_traces,
+        state,
+        observable_mode="host_gather",
+        sharded_observables_fn=None,
+    )
+    assert all(len(values) == 1 for values in host_traces.values())
+    assert all(np.isfinite(values[0]) for values in host_traces.values())
+
+    reduced_traces = nonlinear_parallel_device_z._new_transport_trace_dict()
+    nonlinear_parallel_device_z._append_device_z_transport_observables(
+        reduced_traces,
+        state,
+        observable_mode="sharded_reduce",
+        sharded_observables_fn=lambda _state: jnp.asarray([1.0, 2.0, 3.0, 4.0]),
+    )
+    assert reduced_traces == {
+        "free_energy": [1.0],
+        "field_energy": [2.0],
+        "physical_flux": [3.0],
+        "bracket_rms": [4.0],
+    }
+
+    with pytest.raises(ValueError, match="sharded observable reducer"):
+        nonlinear_parallel_device_z._append_device_z_transport_observables(
+            reduced_traces,
+            state,
+            observable_mode="sharded_reduce",
+            sharded_observables_fn=None,
+        )
+
+
 def test_device_z_rhs_report_helpers_classify_identity_gates() -> None:
     blocked = nonlinear_parallel_device_z._blocked_device_z_rhs_report(
         state_shape=(2, 3, 6, 4, 2),
