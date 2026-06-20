@@ -677,7 +677,11 @@ single-point saved-time direct-fit path also shares one automatic-fit keyword
 policy between primary auto-window fitting and invalid-window fallback fitting.
 The single-point runner keeps patchable solver hooks in the public ETG module
 but now separates setup, Krylov result packing, time-configuration resolution,
-and saved-trace fitting into focused helpers.
+streaming-density fitting, configured/unconfigured saved-history integration,
+and saved-trace fitting into focused helpers. The saved-time path carries one
+private fit-policy object through those stages so ``phi``, density, automatic,
+and reference-window fits cannot silently diverge in their normalization or
+window-selection rules.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through

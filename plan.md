@@ -1,3 +1,21 @@
+- 2026-06-19: Continued ETG single-ky benchmark refactoring inside
+  `validation.benchmarks.etg_linear` without changing the public
+  `run_etg_linear` signature, ETG electrostatic default terms, normalization,
+  Krylov auto-fallback semantics, streaming-density fit behavior,
+  configured/unconfigured saved-time paths, or `LinearRunResult` schema. The
+  owner now delegates solver-ready setup, Krylov solve/result packing,
+  shared automatic-fit option packing, reference-window fitting, automatic
+  signal selection, selected-signal fitting, streaming density fitting,
+  configured and unconfigured saved-history integration, and final trace
+  result packing to focused local stages. A private `_ETGTimePathOptions`
+  object carries fit and streaming policy through the time path so the `phi`,
+  density, automatic, and reference-window branches share one set of window and
+  normalization inputs. The private time-path dispatcher drops from 103 to 73
+  lines after policy packing; the public runner remains API-compatible and is
+  now 102 lines, dominated by the intentionally preserved public signature.
+  Focused ETG linear branch tests and ETG integration-marked physics nodes
+  passed locally, along with Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued kinetic-electron single-run benchmark refactoring
   inside `validation.benchmarks.kinetic_linear` without changing the public
   `run_kinetic_linear` signature, default reference-aligned species/term
