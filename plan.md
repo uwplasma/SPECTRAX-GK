@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC/Boozer scalar objective finite-difference reports now
+  separate injected dependency resolution, scalar point evaluation, three-point
+  FD triplet construction, diagnostic calculation, and public payload assembly
+  from the report function; focused solver-gradient module tests, focused
+  scalar FD tests, mypy, Ruff, architecture, repository-size, and
+  differentiable-refactor manifests passed locally.
 - this checkpoint: VMEC/Boozer mode-21 quasilinear and reduced nonlinear-window
   gradient gates now share an explicit enriched linear context helper, and the
   nonlinear-window gate separates observable construction, objective-pass
