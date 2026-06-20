@@ -1,3 +1,17 @@
+- 2026-06-20: Continued differentiable VMEC transport branch-locality
+  simplification inside `objectives.vmec_transport_branch` without changing the
+  public `vmec_jax_transport_growth_branch_locality_report_from_states` API,
+  facade monkeypatch seams, branch-locality report schema, truncation policy,
+  sample-count semantics, solver-matrix construction, or fail-closed blocker
+  names. The public owner now delegates config/step/grid setup, VMEC/Boozer
+  geometry construction, solver linear-matrix construction, sample metadata,
+  per-sample branch evaluation, sample iteration/truncation, blocker
+  classification, SPECTRAX-GK config payload construction, and report packing
+  to private helpers. The public branch-locality report dropped from 204 to 43
+  lines. Local gates passed: focused VMEC-JAX transport objective shard, Ruff,
+  mypy, `py_compile`, differentiable-refactor manifest, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued nonlinear-gradient finite-difference evidence
   simplification inside `validation.nonlinear_gradient.evidence_fd` without
   changing the public
