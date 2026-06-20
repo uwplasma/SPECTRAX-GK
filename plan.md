@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: TEM scan batching now separates runtime scan options,
+  scalar/fixed-width ky iteration, branch routing, and mutable output
+  accumulation from the public scan wrapper; focused TEM scan tests, broader
+  TEM benchmark-runner tests, mypy, architecture, repository-size, and diff
+  hygiene passed locally.
 - this checkpoint: ETG scan orchestration now separates runtime scan options
   and mutable batch accumulation from the public scan wrapper while preserving
   Krylov continuation state; focused ETG runner branch tests, benchmark runner
