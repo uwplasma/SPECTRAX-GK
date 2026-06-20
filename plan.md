@@ -203,6 +203,10 @@ Recent behavior-preserving refactor commits on this branch include:
   guardrails, and VMEC/Boozer differentiability claims. Bounded wide-coverage
   shards 9 and 10 also passed under the documented 48-shard workflow; full
   package-wide coverage remains a CI/combine gate before release.
+- this checkpoint: release-scope tests now guard core source modules against
+  comparison-code terminology outside the validation benchmark package, keeping
+  benchmark/reference-code names from leaking back into the main solver,
+  geometry, objective, runtime, and artifact APIs.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
