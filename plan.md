@@ -550,6 +550,13 @@ Recent behavior-preserving refactor commits on this branch include:
   streamed growth/frequency semantics are unchanged; focused Diffrax streaming
   tests, benchmark streaming-hook tests, static checks, architecture,
   repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: VMEC-state differentiability reports now separate Boozer
+  context loading, VMEC-to-Boozer mapping closure construction, Boozer
+  flux-tube report packing, and VMEC field-line tensor payload construction.
+  Public optional-backend report APIs and fail-closed behavior are unchanged;
+  VMEC/Boozer optional-backend report tests, facade and refactor-manifest tests,
+  AD/FD helper tests, static checks, architecture, repository-size, and
+  diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
