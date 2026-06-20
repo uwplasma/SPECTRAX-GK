@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: the public Cyclone scan wrapper now routes through a typed
+  request object and small fit-policy/setup/execution-option stages, preserving
+  the public API while removing duplicated scan-control construction from the
+  wrapper; targeted Cyclone scan branch/entrypoint tests, mypy, Ruff,
+  architecture, repository-size, and differentiable-refactor manifests passed
+  locally.
 - this checkpoint: Cyclone time-scan branch orchestration now routes public
   scan arguments through a typed private input bundle, removing duplicated
   keyword forwarding between the public wrapper and shared run/fit controls;
