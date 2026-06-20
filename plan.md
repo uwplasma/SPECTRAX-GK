@@ -481,6 +481,13 @@ Recent behavior-preserving refactor commits on this branch include:
   are unchanged; method-amplification, observed-order, projection, progress,
   nonlinear smoke, architecture, repository-size, and diff-hygiene gates passed
   locally.
+- this checkpoint: explicit adaptive-CFL frequency bounds now separate spectral
+  grid bounds, species/gradient scales, effective geometry/non-twist scales,
+  radial drift, binormal/diamagnetic drift, electron pressure, and parallel
+  streaming/Alfven guards. The public ``_linear_frequency_bound`` policy and
+  return schema are unchanged; static checks, selected-ky CFL preservation,
+  nonlinear CFL component gates, integration-marked adaptive-dt caps,
+  architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
