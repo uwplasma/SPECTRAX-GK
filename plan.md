@@ -877,6 +877,20 @@ The next version should be cut only after these finite gates are satisfied:
 4. Use `office` GPUs only for a specific post-release science/performance lane
    or if a GPU-specific gate is needed.
 
+## Latest Refactor Log
+
+- 2026-06-20: split `run_cyclone_linear` into a stable public facade plus a
+  typed `_CycloneLinearRequest`, request-to-fit-policy assembly, status routing,
+  and private request runner.  This preserved the public API and Cyclone result
+  schema while dropping the public wrapper from 108 lines to 41 lines.
+- Focused gates passed for this tranche: Ruff, mypy, Cyclone linear branch
+  tests, explicit integration invalid-option entrypoint test, differentiable
+  refactor manifest, architecture manifest, repository-size manifest, and
+  `git diff --check`.
+- Remaining source functions at or above 100 lines: 8, concentrated in
+  Cyclone time-path routing, ETG scan wrappers, kinetic scan control assembly,
+  KBM/TEM linear wrappers, and KBM beta/ETG linear scan drivers.
+
 ## Latest Release Log
 
 - `v1.6.7` was merged to `main`, tagged, published to PyPI, and released on
