@@ -162,6 +162,11 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC/Boozer aggregate line-search holdout reports now
+  separate injected report dependencies, held-out improvement validation,
+  train/holdout report execution, and public payload assembly from the public
+  report function; focused aggregate holdout tests, mypy, Ruff, architecture,
+  repository-size, and differentiable-refactor manifests passed locally.
 - this checkpoint: VMEC/Boozer scalar objective finite-difference reports now
   separate injected dependency resolution, scalar point evaluation, three-point
   FD triplet construction, diagnostic calculation, and public payload assembly
