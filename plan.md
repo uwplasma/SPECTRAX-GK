@@ -220,6 +220,14 @@ Recent behavior-preserving refactor commits on this branch include:
   conditioning/covariance payload assembly; focused stellarator/portfolio
   sensitivity tests, mypy, architecture, repository-size, and diff hygiene
   passed locally.
+- this checkpoint: observable-gradient AD/FD validation now separates
+  conditioning-array validation, SVD/norm statistics, worst-entry extraction,
+  finite-difference step metadata, derivative construction, gate evaluation,
+  and report assembly. The tangent AD/FD acceptance gate now uses the same
+  entrywise absolute-or-relative tolerance semantics as the Jacobian gate,
+  fixing a zero-reference tangent regression; differentiable-geometry and
+  full differentiable-geometry-bridge shards, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
