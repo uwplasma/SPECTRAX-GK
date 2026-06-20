@@ -700,8 +700,11 @@ Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through
 ``spectraxgk.benchmarks``. The single-mode runner
-keeps grid, geometry, parameter, and fallback orchestration local while
-delegating Krylov seeding/branch selection and time-integration fit policy to
+keeps public setup and solver fallback orchestration local while staging
+default parameter/term construction, reference-aligned geometry policy,
+fit-signal validation, resolved run setup, time/Krylov dispatch, and
+``CycloneRunResult`` packing into private helpers. It delegates Krylov
+seeding/branch selection and time-integration fit policy to
 ``spectraxgk.validation.benchmarks.cyclone_linear_paths``. The Krylov path now
 separates explicit frequency-seed fitting, primary/reduced seed fallback,
 shift-target construction, dominant-eigenpair option forwarding, branch-guard

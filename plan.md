@@ -1,3 +1,17 @@
+- 2026-06-20: Continued Cyclone single-mode owner simplification inside
+  `validation.benchmarks.cyclone_linear` without changing the public
+  `run_cyclone_linear` API, status messages, reference-aligned policy,
+  auto/time/Krylov dispatch semantics, path-hook monkeypatch seams, or
+  `CycloneRunResult` schema. The public owner now delegates default parameter
+  and term construction, reference-aligned geometry policy, fit-signal
+  validation, resolved setup construction, Krylov/time dispatch, growth
+  validity checks, and result packing to private helpers while preserving the
+  path implementations in `cyclone_linear_paths`. The public runner dropped
+  from 211 to 108 lines. Local gates passed: full benchmark runner branch
+  shard, focused Cyclone linear branch shard, Ruff, mypy, `py_compile`,
+  differentiable-refactor manifest, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
+
 - 2026-06-19: Continued Cyclone ky-scan owner refactoring inside
   `validation.benchmarks.cyclone_scan` without changing the public
   `run_cyclone_scan` signature, default species/term construction,
