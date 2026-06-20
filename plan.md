@@ -85,13 +85,13 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate report builders, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
+| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
-| Production nonlinear domain decomposition | 82% | Identity-gated decomposed RHS/integrator helpers are clearer; device-z route and CPU/GPU profiling still required before claims. |
+| Production nonlinear domain decomposition | 84% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; CPU/GPU profiling and production speedup evidence still required before claims. |
 | Docs/readme/release polish | 95% | Final pass after refactor and performance artifacts settle. |
 
 ## Current Refactor Queue
@@ -113,7 +113,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 5. Parallel/performance hotspots, only with identity gates:
    - `operators/nonlinear/domain_decomposition.py` closed for this checkpoint; reopen only if local domain trace/report policy grows again.
    - `operators/nonlinear/spectral_identity_integrator.py` closed for this checkpoint; reopen only if spectral transport-window trace/report policy grows again.
-   - `operators/nonlinear/device_z.py`
+   - `operators/nonlinear/device_z.py` closed for this checkpoint; reopen only if device-sharding setup, RHS, or transport-window routing policy grows again.
    - `parallel/independent.py`
 
 ## Recent Checkpoint
@@ -170,6 +170,10 @@ Recent behavior-preserving refactor commits on this branch include:
   now separate trace collection, trace-error scoring, fail-closed blockers, and
   report packing while preserving diagnostic-only claim scope; focused nonlinear
   parallel tests passed locally.
+- this checkpoint: device-z nonlinear spectral routes now separate sharding
+  setup, fail-closed blockers, sharded RHS execution, transport-window sampling,
+  and final report packing while preserving single-device fallback behavior;
+  focused nonlinear parallel tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

@@ -477,7 +477,11 @@ Completed extractions:
   and pencil-transport gates use the same structure in
   ``operators/nonlinear/spectral_identity_integrator.py`` so future
   profiler-backed nonlinear decomposition work can change routing without
-  weakening the numerical-identity policy.
+  weakening the numerical-identity policy. The device-z route keeps sharding
+  setup, fail-closed topology checks, shard-map RHS execution, transport-window
+  sampling, and final report packing as separate stages inside
+  ``operators/nonlinear/device_z.py`` while report-schema construction remains
+  in ``operators/nonlinear/device_z_reports.py``.
 - velocity-space parallelization is split into decomposition metadata
   (``parallel/velocity_plan.py``), Hermite exchange and velocity-field
   reductions (``parallel/velocity_hermite.py``), streaming/magnetic-drift
