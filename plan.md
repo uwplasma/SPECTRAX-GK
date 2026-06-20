@@ -235,6 +235,12 @@ Recent behavior-preserving refactor commits on this branch include:
   construction, duplicate-aware tensor fill, and finite tensor completeness
   checks; focused zonal objective tests, mypy, architecture, repository-size,
   and diff hygiene passed locally.
+- this checkpoint: reduced zonal-flow objective artifact assembly now separates
+  normalized record tensor packing, objective row/reduced-value evaluation,
+  promotion-claim metadata, axes/metric serialization, and final JSON payload
+  construction while preserving the public artifact schema; focused zonal
+  objective tests, mypy, architecture, repository-size, and diff hygiene passed
+  locally.
 - this checkpoint: KBM single-point linear paths now separate explicit
   integrator policy construction, projected-rate fallbacks, direct trace
   fitting, Krylov target eigenpair evaluation, multi-target branch selection,
