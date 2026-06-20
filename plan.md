@@ -1,3 +1,17 @@
+- 2026-06-20: Continued Diffrax nonlinear-integration simplification inside
+  `solvers.time.diffrax_nonlinear` without changing the public
+  `integrate_nonlinear_diffrax` API, explicit/IMEX term split, adaptive-step
+  policy, adjoint/checkpoint selection, state-sharding constraints,
+  nonlinear-bracket options, saved-`phi` history, or `FieldState` return
+  schema. The public owner now stages state/cache preparation, packed-state
+  sharding, linear RHS construction, nonlinear RHS construction, full-RHS
+  composition, IMEX term routing, save-function construction, solve execution,
+  and final packing through named helpers. `integrate_nonlinear_diffrax`
+  dropped from 152 to 83 lines. Local gates passed: full Diffrax
+  integrator/core shard, targeted nonlinear Diffrax shard, Ruff, mypy,
+  `py_compile`, differentiable-refactor manifest, repository-size manifest,
+  warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued Diffrax linear-integration simplification inside
   `solvers.time.diffrax_linear` without changing the public
   `integrate_linear_diffrax` API, save-field strings, mode-selection behavior,

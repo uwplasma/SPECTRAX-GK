@@ -215,6 +215,10 @@ Completed extractions:
   sharding, RHS construction, save-field/mode extraction, save-time policy,
   Diffrax solve execution, and final unpacking while keeping the public
   ``integrate_linear_diffrax`` contract stable.
+  The nonlinear owner stages state/cache preparation, packed-state sharding,
+  linear and nonlinear RHS construction, IMEX term routing, saved-``phi``
+  extraction, solve execution, and final ``FieldState`` packing while keeping
+  the public ``integrate_nonlinear_diffrax`` contract stable.
 - term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in
