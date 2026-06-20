@@ -524,6 +524,12 @@ Recent behavior-preserving refactor commits on this branch include:
   unchanged; Krylov core tests, the integration-marked Hermite-line
   shift-invert run, benchmark shift-policy helper tests, static checks,
   architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: plain Arnoldi and IMEX-propagator Krylov extraction now share
+  frequency/sign mask construction, target/overlap mode selection, and Ritz
+  vector reconstruction helpers while preserving their distinct fallback
+  policies. The public jitted solver signatures are unchanged; the full Krylov
+  core shard, integration-marked shift-invert smoke run, static checks,
+  architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
