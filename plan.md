@@ -557,6 +557,13 @@ Recent behavior-preserving refactor commits on this branch include:
   VMEC/Boozer optional-backend report tests, facade and refactor-manifest tests,
   AD/FD helper tests, static checks, architecture, repository-size, and
   diff-hygiene gates passed locally.
+- this checkpoint: Boozer-transform differentiable bridge helpers now separate
+  Boozer output preparation, field-line sampling, smooth metric/drift closure
+  construction, flux-tube mapping packing, two-parameter demo input
+  construction, fail-closed sensitivity reports, and successful report packing.
+  The public Boozer mapping and AD/FD sensitivity report contracts are
+  unchanged; focused Boozer bridge tests, facade tests, static checks,
+  architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
