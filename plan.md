@@ -564,6 +564,13 @@ Recent behavior-preserving refactor commits on this branch include:
   The public Boozer mapping and AD/FD sensitivity report contracts are
   unchanged; focused Boozer bridge tests, facade tests, static checks,
   architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: linear hypercollision contribution assembly now separates
+  inactive-operator early exits, static ``k_z`` branch skips, and the
+  linked-field-line parallel hypercollision contribution from the public
+  physics API. The formula, linked FFT routing, and zero-operator behavior are
+  unchanged; direct hypercollision formula/skip/link tests, profiling helper
+  tests, static checks, architecture, repository-size, and diff-hygiene gates
+  passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
