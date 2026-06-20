@@ -1,9 +1,9 @@
 # SPECTRAX-GK Completion Plan
 
-This file is the active engineering plan for the differentiable-refactor and
-research-grade validation branch.  Older chronological logs are intentionally not
+This file is the active engineering plan after the `v1.6.7` differentiable
+architecture/refactor release.  Older chronological logs are intentionally not
 kept in this working-tree file to keep the repository light; detailed history is
-available from git commits on `codex/differentiable-refactor-plan`.
+available from git commits and release notes.
 
 ## Mission
 
@@ -23,8 +23,9 @@ Make SPECTRAX-GK a research-grade gyrokinetic code that is:
 
 ## Current Branch Policy
 
-- Branch: `codex/differentiable-refactor-plan`.
-- Keep one draft PR until this plan is complete; do not split into new PRs.
+- Branch: `main` after the merged `v1.6.7` refactor release.
+- Use focused commits for post-release tranches; create a branch/PR only when
+  the tranche is large enough that review isolation is useful.
 - Commit and push frequently after focused, gated changes.
 - Do not add large outputs or transient artifacts to git.
 - Keep the tracked repository below the repository-size manifest cap.
@@ -85,14 +86,14 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched in this branch are closed for the current release checkpoint. Remaining large functions are mostly validation/report orchestration; handle them only if a release gate, docs claim, or developer-usability issue requires it. |
-| Package coverage/release infrastructure | 99% | Local release-readiness, technical-release, architecture, size, performance, parallel, and quasilinear guardrail checks pass on this branch. Before tagging, confirm the final pushed commit has a green CI run rather than relying on an older checkpoint. |
+| Refactor/testability | 99.9% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched in the `v1.6.7` release are closed for that checkpoint. Remaining large functions are mostly validation/report/artifact orchestration; handle them only when they improve developer usability, tested policy boundaries, or release evidence. |
+| Package coverage/release infrastructure | 100% for `v1.6.7` | PR CI, post-merge CI, release workflow, GitHub release, and PyPI publish passed for `v1.6.7`. Keep the gate active for subsequent commits. |
 | Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
 | Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 98% | Release guardrails and docs status artifacts are current; tracked docs evidence is slimmer. Do one final README/docs consistency pass only after current-head CI is confirmed. |
+| Docs/readme/release polish | 100% for `v1.6.7` | Release guardrails and docs status artifacts are current for the shipped release. Future docs changes must preserve scoped claims and reproducible figure provenance. |
 
 ## Current Refactor Queue
 
@@ -116,12 +117,12 @@ spaghetti.  The most important remaining large-file clusters are:
 - workflow/report orchestration (`workflows/reduced_models.py`,
   `workflows/runtime/*`, nonlinear IMEX diagnostics, and validation reports).
 
-Efficient release decision: do **not** try to collapse all of these before
-`v1.6.7`.  The current architecture, repository-size, technical-release,
-release-readiness, package-build, and focused release-scope gates already pass
-locally.  A broad pre-release collapse would mainly touch validation/report
-drivers and would risk destabilizing CI and documented artifacts without
-changing the release-scoped claims.
+Release decision now closed: `v1.6.7` shipped with architecture,
+repository-size, technical-release, release-readiness, package-build, focused
+release-scope, full PR CI, post-merge CI, and PyPI/GitHub release gates passing.
+A broad pre-release collapse was intentionally deferred because the remaining
+hotspots are mostly validation/report drivers rather than release-blocking core
+runtime issues.
 
 Efficient next refactor after `v1.6.7`:
 
@@ -713,19 +714,8 @@ These remain explicit until stronger evidence exists:
 
 ## Actual Open Lanes
 
-Release-blocking technical lanes are now narrow:
-
-1. Confirm CI on the final branch head. A green CI result is required for the
-   exact commit that will be merged or tagged.
-2. Run a final README/docs/release-scope consistency pass after current-head CI
-   is green, focused on stale claims and scoped wording rather than new figures.
-3. Run final local release gates immediately before tagging:
-   architecture, repository size, technical release status, release readiness,
-   package build, distribution metadata, and selected fast tests.
-4. Bump/tag/release only after the above are green and the branch is merged or
-   otherwise intentionally shipped.
-
-Deferred or non-blocking science/performance lanes:
+Release-blocking technical lanes for `v1.6.7` are closed.  Remaining lanes are
+post-release research/performance/completeness lanes:
 
 - Universal absolute quasilinear heat-flux prediction remains explicitly not
   promoted; current release scope is model-development and screening guardrails.
@@ -736,23 +726,92 @@ Deferred or non-blocking science/performance lanes:
 - W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
   extensions remain post-release science lanes.
 
+## Post-Release Refactor Audit
+
+The current refactor target is not "more files".  The package already has the
+domain layout needed for maintainability; the next release should reduce
+navigation cost and stabilize extension boundaries.
+
+Current audited structure:
+
+- package Python files: roughly 359;
+- package source lines: roughly 103k;
+- no blocked root-prefix modules remain under the architecture manifest;
+- remaining long functions are mostly 100-123 lines and are concentrated in
+  validation scans, calibration/report writers, artifact handoff, geometry
+  metric construction, and objective/gradient reports.
+
+Efficient refactor policy for the next version:
+
+1. Split a function only when the split creates a reusable tested policy
+   boundary, removes duplicated logic, or makes an AD path side-effect-free.
+2. Avoid new one-off modules unless the new module is an extension boundary
+   such as geometry backends, objectives, solvers, or validation gates.
+3. Consolidate single-use helper modules back into nearby domain files when that
+   improves developer navigation without increasing public-function length.
+4. Keep short public facades and private implementation helpers; remove legacy
+   aliases and examples when they describe workflows we no longer support.
+5. Continue replacing non-benchmark comparison-code terminology with physical
+   or numerical terminology.
+6. Keep performance changes separate from cleanup unless an identity gate and
+   profiler artifact are produced in the same tranche.
+
+Highest-value remaining refactor tranches:
+
+| Tranche | Scope | Done When |
+| --- | --- | --- |
+| Artifact/report orchestration | NetCDF writers, runtime artifact handoff, report payload builders | Schemas unchanged, focused artifact tests pass, each long writer is staged into grid/data/metadata helpers. |
+| Validation scan drivers | Cyclone/ETG/KBM/TEM scan wrappers still above 100 lines | Scan controls, per-point execution, fitting, and result packing are separated with focused branch tests. |
+| Objective/gradient reports | VMEC/Boozer FD, line-search, portfolio, nonlinear-window reports | Pure objective evaluation, finite-difference/tangent checks, and plotting/report assembly are separated. |
+| Geometry metric construction | VMEC field-line metric coefficients and Boozer bridge reports | Metric, drift, interpolation, and parity/gradient gates are independently testable. |
+| Naming cleanup | non-benchmark `gx`, `runtime_`, and legacy reduced-model naming | Names describe physics or numerics; benchmark-only references remain scoped. |
+
+## Next-Version Closure Plan
+
+The next version should be cut only after these finite gates are satisfied:
+
+1. **Technical gates**
+   - local fast tests for touched modules pass;
+   - `ruff`, focused `mypy`, architecture, repository-size, and release-status
+     checks pass;
+   - package-wide coverage remains above 95% in CI;
+   - docs build if README/docs/source API changed.
+2. **Refactor gates**
+   - no new source bloat from transient helpers;
+   - no schema-breaking artifact change unless docs/tests are updated in the
+     same commit;
+   - no new compatibility layer for old examples or legacy output names.
+3. **Science gates**
+   - quasilinear claims remain screening/model-development unless held-out
+     nonlinear transport-error gates pass;
+   - nonlinear turbulent optimization claims require long post-transient
+     replicated transport windows;
+   - VMEC/Boozer optimization claims require geometry parity and gradient gates.
+4. **Performance gates**
+   - nonlinear domain-decomposition claims require serial-vs-decomposed
+     numerical identity and CPU/GPU profiler-backed speedup;
+   - runtime/memory panel refreshes must be from fresh measured artifacts.
+5. **Release gates**
+   - update version only after the above gates pass on the pushed commit;
+   - tag and release from `main`;
+   - verify GitHub release workflow and PyPI publish.
+
 ## Immediate Next Steps
 
-1. Confirm current-head CI and fix only concrete failures.
-2. If CI is green, do one focused docs/readme/release-scope sweep.
-3. Run final local release gates and package build.
-4. Tag and publish `v1.6.7` after the final pushed commit is green; the
-   previous `v1.6.6` tag already points to `main`, so this branch needs the
-   patch-version bump for the next release.
-5. Use `office` GPUs only for a specific post-release science/performance lane
-   or if release validation exposes a GPU-specific failure.
+1. Continue low-risk refactor tranches in remaining artifact/validation/report
+   hotspots, with focused tests and no schema changes.
+2. Resume performance work only with identity gates and profiler evidence before
+   updating runtime or speedup claims.
+3. Resume science lanes with long-window nonlinear evidence before promoting
+   stronger quasilinear or turbulent-optimization claims.
+4. Use `office` GPUs only for a specific post-release science/performance lane
+   or if a GPU-specific gate is needed.
 
-## Latest Release-Prep Log
+## Latest Release Log
 
-- Bumped project metadata to `1.6.7` because `v1.6.6` is already the current
-  `main` release tag.
-- `python tools/check_release_version.py --tag v1.6.7 --check-pypi` passed:
-  PyPI has no duplicate `spectraxgk==1.6.7` release at check time.
-- Local release-readiness, repository-size, architecture, release-artifact,
-  technical-release, and release-scope focused tests pass after the version
-  bump.
+- `v1.6.7` was merged to `main`, tagged, published to PyPI, and released on
+  GitHub on 2026-06-20.
+- Exact-head PR CI, post-merge main CI, release readiness, repository-size,
+  architecture, release-artifact, technical-release, package-build, Twine
+  metadata, docs build, and PyPI publish gates passed.
+- PyPI lists `spectraxgk==1.6.7` with wheel and source distribution artifacts.
