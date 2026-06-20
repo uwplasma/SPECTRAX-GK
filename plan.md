@@ -1,3 +1,14 @@
+- 2026-06-20: Continued nonlinear-term simplification inside
+  `terms.nonlinear` without changing E×B/flutter formulas, Laguerre-grid vs
+  spectral mode selection, electrostatic fast paths, masking semantics, or
+  component report keys. Shared preparation, Laguerre/spectral chi-field
+  construction, weighted/squeezed output, production contribution branches, and
+  diagnostic component branches now live in private helpers. Public owners
+  dropped to 99 lines (`nonlinear_em_contribution`) and 91 lines
+  (`nonlinear_em_components`). Local gates passed: full nonlinear ExB shard,
+  Ruff, mypy, `py_compile`, differentiable-refactor manifest, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued autodiff validation simplification inside
   `validation.autodiff` without changing public exports, eigenbranch selector
   strings, finite-difference comparison semantics, implicit left/right
