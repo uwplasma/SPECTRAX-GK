@@ -382,7 +382,11 @@ Completed extractions:
   calibration and tool scripts. The statistics owner stages validated
   late-window selection, finite-sample counts, drift/terminal-window metrics,
   block/bootstrap uncertainty, and gate-report assembly in one file so
-  nonlinear transport admission rules remain auditable.
+  nonlinear transport admission rules remain auditable. The ensemble owner
+  stages replicate-row normalization, uncertainty statistics, gate packing,
+  artifact grouping, missing-replicate hints, and readiness-manifest packing
+  so seed/timestep promotion evidence can be tested without rerunning
+  simulations.
 - quasilinear model-selection claim boundaries live in
   ``validation/quasilinear/model_selection.py``. The public owner now separates
   candidate-skill gate rows, absolute-flux overclaim guardrails, optional

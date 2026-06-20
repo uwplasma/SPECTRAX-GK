@@ -1,3 +1,19 @@
+- 2026-06-20: Continued quasilinear nonlinear-window ensemble simplification
+  inside `validation.quasilinear.window_ensemble` without changing public
+  report schemas, readiness-manifest schemas, seed/timestep replicate
+  requirements, promotion-readiness checks, or missing-artifact hints. The
+  ensemble report now stages row normalization, finite-statistics assembly,
+  gate construction, and final report packing. The artifact manifest stages
+  axis normalization, record normalization, case grouping, missing-replicate
+  construction, gates, and final manifest packing. Public owners dropped to
+  42 lines (`nonlinear_window_ensemble_report`) and 40 lines
+  (`nonlinear_window_ensemble_artifact_manifest`). Local gates passed:
+  nonlinear-window ensemble tool/readiness shards, quasilinear window and
+  calibration shards, replicate bundle shards, nonlinear-gradient evidence
+  shard, Ruff, mypy, `py_compile`, differentiable-refactor manifest,
+  repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Continued linear-operator cache-builder simplification inside
   `operators.linear.cache_builder` without changing the public
   `build_linear_cache` API, `LinearCache` schema, twist-shift policy,
