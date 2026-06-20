@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC/Boozer mode-21 quasilinear and reduced nonlinear-window
+  gradient gates now share an explicit enriched linear context helper, and the
+  nonlinear-window gate separates observable construction, objective-pass
+  classification, and public config payload assembly from the report function;
+  focused solver-gradient gate tests, focused mypy, Ruff, architecture,
+  repository-size, and differentiable-refactor manifests passed locally.
 - this checkpoint: nonlinear-gradient composite-control candidate rows now
   separate canonical metric extraction, per-condition gate evaluation, blocker
   construction, and JSON metric payload assembly from the row constructor; the
