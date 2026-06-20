@@ -231,6 +231,11 @@ Recent behavior-preserving refactor commits on this branch include:
   fitting, eigenfunction extraction, and result packing. A focused regression
   test covers automatic selection of the higher-scored density channel so the
   executable fit-signal policy remains stable after the split.
+- this checkpoint: nonlinear adaptive-CFL frequency evaluation now separates
+  rFFT-compressed gradients, full-complex gradients, electromagnetic Apar/Bpar
+  speed accumulation, and final x/y frequency reduction. The public helper keeps
+  the same CPU/GPU batching policy and is covered by zero/finite and spectral
+  gradient CFL tests.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
