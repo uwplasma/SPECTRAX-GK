@@ -241,6 +241,11 @@ Recent behavior-preserving refactor commits on this branch include:
   construction while preserving the public artifact schema; focused zonal
   objective tests, mypy, architecture, repository-size, and diff hygiene passed
   locally.
+- this checkpoint: zonal-response plotting now separates trace validation,
+  metric extraction, branchwise extrema overlays, normalized-response rendering,
+  envelope-fit rendering, annotation text, and axis styling while preserving the
+  public ``zonal_flow_response_figure`` contract; the full plotting test file,
+  mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: KBM single-point linear paths now separate explicit
   integrator policy construction, projected-rate fallbacks, direct trace
   fitting, Krylov target eigenpair evaluation, multi-target branch selection,
