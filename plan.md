@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 95% | Continue high-value hotspots; avoid adding file sprawl; keep focused tests green. |
+| Refactor/testability | 96% | Continue high-value hotspots; avoid adding file sprawl; keep focused tests green. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -99,7 +99,6 @@ Percentages are engineering estimates, not completion claims.
 Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 1. Validation/benchmark scan runners:
-   - `validation/benchmarks/kinetic_scan.py`
    - `validation/benchmarks/etg_scan_paths.py`
    - `validation/benchmarks/kbm_linear.py`
 2. Nonlinear transport/optimization reports:
@@ -127,6 +126,9 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: Cyclone scan time-branch fitting now uses explicit run,
   fit, output, and per-batch routing objects; focused Cyclone benchmark branch
   tests and benchmark-scan tests passed locally.
+- this checkpoint: kinetic-electron scan batching now uses explicit run, fit,
+  output, and per-batch routing objects; focused kinetic scan branch tests and
+  benchmark kinetic smoke tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

@@ -749,7 +749,11 @@ dispatching to density diagnostics, configured ``phi``, or explicit ``phi``
 integration, so those saved-time branches cannot drift. TEM scan streaming
 also resolves its fit window through the same ``ScanFitWindowPolicy`` used by
 saved-time scan fitting.
-Kinetic-electron ITG/TEM runners now live directly in ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan``; the supported public import remains ``spectraxgk.benchmarks``. The kinetic single-ky owner keeps the public API and result schema local while staging setup normalization, species-index validation, selected-state construction, Krylov solving, configured and unconfigured time-history integration, sampled-signal fitting, and result packing in focused private helpers in the same module. The kinetic scan owner keeps public setup and result packaging local while delegating setup normalization, batch-state construction, Krylov fitting, Diffrax streaming fitting, saved/configured trajectory integration, and sampled-signal fitting to focused private helpers in the same module. ETG single-point and scan implementations live in
+Kinetic-electron ITG/TEM runners now live directly in ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan``; the supported public import remains ``spectraxgk.benchmarks``. The kinetic single-ky owner keeps the public API and result schema local while staging setup normalization, species-index validation, selected-state construction, Krylov solving, configured and unconfigured time-history integration, sampled-signal fitting, and result packing in focused private helpers in the same module. The kinetic scan owner keeps public setup and result packaging local while delegating setup normalization, batch-state construction, Krylov fitting, Diffrax streaming fitting, saved/configured trajectory integration, and sampled-signal fitting to focused private helpers in the same module.
+The kinetic scan path carries separate run-options, fit-options, and output
+containers through a single batch router, keeping Krylov, Diffrax streaming, and
+sampled-history branches testable without changing the public scan signature.
+ETG single-point and scan implementations live in
 ``spectraxgk.validation.benchmarks.etg_linear`` and
 ``spectraxgk.validation.benchmarks.etg_scan`` and are re-exported through
 ``spectraxgk.benchmarks``. The scan runner keeps geometry/species setup,
