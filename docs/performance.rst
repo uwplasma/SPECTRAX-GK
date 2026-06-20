@@ -77,7 +77,7 @@ route and no all-to-all or collective-permute operations. The matching two-GPU
 artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
 passes the transport-window identity gate (``max_abs_error=7.45e-9``), but only
-reaches ``1.20x`` versus one GPU. Its Perfetto/TensorBoard trace was written
+reaches ``1.48x`` versus one GPU. Its Perfetto/TensorBoard trace was written
 under ``/tmp/spectrax_traces`` during generation, and its HLO summary likewise
 shows no collectives. The GPU blocker is therefore speedup/work granularity,
 not numerical identity or a hidden global reconstruction. This remains a

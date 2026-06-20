@@ -91,7 +91,7 @@ Percentages are engineering estimates, not completion claims.
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
-| Production nonlinear domain decomposition | 85% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU transport-window profiling is identity-clean and faster, but GPU/end-to-end production speedup evidence is still required before claims. |
+| Production nonlinear domain decomposition | 86% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
 | Docs/readme/release polish | 95% | Final pass after refactor and performance artifacts settle. |
 
 ## Current Refactor Queue
@@ -184,6 +184,11 @@ Recent behavior-preserving refactor commits on this branch include:
   bracket RMS, and the fixed-window micro-route reached ``1.77x`` on two CPU
   devices and ``3.38x`` on four while full-solver production speedup remains
   blocked until GPU/end-to-end gates pass.
+- this checkpoint: the matching two-GPU device-z transport-window profile was
+  rerun on ``office`` from a fresh shallow clone at commit ``06113c5``; identity
+  passed with maximum final-state absolute error ``7.45e-9`` and speedup
+  improved to ``1.48x``, but the route remains below the configured ``1.5x``
+  production speedup gate.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

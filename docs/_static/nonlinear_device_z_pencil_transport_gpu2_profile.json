@@ -1,33 +1,39 @@
 {
   "atol": 5e-06,
+  "auto_z_chunk_size": true,
   "backend": "gpu",
   "claim_scope": "device z-sharded shard_map nonlinear transport-window timing; serial-vs-sharded final-state and scalar-trace identity are required before any micro-route speedup claim, and this is not yet a full production nonlinear turbulent-transport solve",
   "device_count_available": 2,
   "dt": 0.0025,
-  "hlo": {
-    "device_2": {
-      "all_reduce": 0,
-      "all_to_all": 0,
-      "collective_permute": 0,
-      "copy": 0,
-      "fft": 24,
-      "fusion": 0,
-      "line_count": 215,
-      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_gpu2_device2.hlo.txt"
-    },
-    "serial": {
-      "all_reduce": 0,
-      "all_to_all": 0,
-      "collective_permute": 0,
-      "copy": 0,
-      "fft": 38,
-      "fusion": 0,
-      "line_count": 507,
-      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_gpu2_serial.hlo.txt"
-    }
+  "fft_batch_pressure_model": {
+    "chunked_fft_batch_count": 49152,
+    "chunking_active": true,
+    "chunking_required": true,
+    "claim_scope": "cuFFT batch-pressure preflight for device-z pencil profiling; suggests z chunking before launching expensive CPU/GPU runs and does not constitute a nonlinear speedup claim",
+    "device_count": 2,
+    "disable_gpu_preallocation_recommended": true,
+    "effective_z_chunk_size": 8,
+    "feasibility_blockers": [],
+    "local_z_extent": 16,
+    "max_fft_axis_extent": 96,
+    "max_fft_batch_count": 65536,
+    "profiling_candidate": true,
+    "state_shape": [
+      4,
+      16,
+      96,
+      96,
+      32
+    ],
+    "suggested_z_chunk_size": 8,
+    "unchunked_fft_batch_count": 98304
   },
+  "hlo": {},
   "kind": "nonlinear_device_z_pencil_transport_window_profile",
+  "max_fft_batch_count": 65536,
   "min_speedup": 1.5,
+  "observable_mode": "host_gather",
+  "observable_repeats": 0,
   "repeats": 3,
   "rows": [
     {
@@ -36,19 +42,24 @@
       "device_count": 1,
       "final_state_max_abs_error": 0.0,
       "final_state_max_rel_error": 0.0,
+      "identity_gate_elapsed_s": null,
       "identity_passed": true,
-      "median_s": 0.04432008508592844,
+      "median_s": 0.04431663919240236,
+      "observable_gate_median_s": null,
+      "observable_gate_overhead_vs_compute": null,
+      "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 0.0,
       "physical_flux_trace_max_rel_error": 0.0,
       "speedup_gate_passed": false,
       "speedup_vs_serial": 1.0,
       "stats": {
-        "max": 0.04437245801091194,
-        "mean": 0.04430899831155936,
-        "median": 0.04432008508592844,
-        "min": 0.044234451837837696,
-        "std": 5.688358507268934e-05
+        "max": 0.04432731121778488,
+        "mean": 0.04426374472677708,
+        "median": 0.04431663919240236,
+        "min": 0.044147283770143986,
+        "std": 8.246550327808715e-05
       },
+      "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true
     },
     {
@@ -59,19 +70,24 @@
       "device_count": 2,
       "final_state_max_abs_error": 7.450580596923828e-09,
       "final_state_max_rel_error": 8.765812825071403e-09,
+      "identity_gate_elapsed_s": 7.719743736088276,
       "identity_passed": true,
-      "median_s": 0.03708607144653797,
+      "median_s": 0.030026826076209545,
+      "observable_gate_median_s": null,
+      "observable_gate_overhead_vs_compute": null,
+      "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 8.881784197001252e-15,
       "physical_flux_trace_max_rel_error": 1.7763568394002505e-09,
       "speedup_gate_passed": false,
-      "speedup_vs_serial": 1.195060122499596,
+      "speedup_vs_serial": 1.4759015514968041,
       "stats": {
-        "max": 0.037284898571670055,
-        "mean": 0.03706213800857464,
-        "median": 0.03708607144653797,
-        "min": 0.03681544400751591,
-        "std": 0.00019239976445039047
+        "max": 0.03003453090786934,
+        "mean": 0.03002703965951999,
+        "median": 0.030026826076209545,
+        "min": 0.030019761994481087,
+        "std": 6.0312748260103754e-06
       },
+      "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true,
       "transport_window_report": {
         "active_device_count": 2,
@@ -116,7 +132,7 @@
         "field_energy_trace_max_abs_error": 7.152557373046875e-07,
         "field_energy_trace_max_rel_error": 1.996990022234968e-07,
         "final_state_max_abs_error": 4.8488645916222595e-06,
-        "final_state_max_rel_error": 0.020623141899704933,
+        "final_state_max_rel_error": 0.020623745396733284,
         "free_energy_trace_max_abs_error": 0.001953125,
         "free_energy_trace_max_rel_error": 4.047973334309063e-07,
         "identity_passed": true,
@@ -167,11 +183,11 @@
   ],
   "rtol": 0.0001,
   "serial_stats_s": {
-    "max": 0.04437245801091194,
-    "mean": 0.04430899831155936,
-    "median": 0.04432008508592844,
-    "min": 0.044234451837837696,
-    "std": 5.688358507268934e-05
+    "max": 0.04432731121778488,
+    "mean": 0.04426374472677708,
+    "median": 0.04431663919240236,
+    "min": 0.044147283770143986,
+    "std": 8.246550327808715e-05
   },
   "shape": [
     4,
@@ -184,18 +200,14 @@
   "summary": {
     "all_active_identity_passed": true,
     "full_solver_speedup_claim_allowed": false,
-    "max_speedup_vs_serial": 1.195060122499596,
+    "max_speedup_vs_serial": 1.4759015514968041,
     "status": "identity_timed_no_transport_speedup",
     "transport_window_speedup_claim_allowed": false
   },
+  "timing_scope": "speedup rows time compute-only fixed-step final-state updates; observable_gate_* fields optionally time the scalar identity/transport diagnostics separately and are not included in the speedup gate",
   "trace": {
-    "file_count": 2,
-    "requested": true,
-    "sample_files": [
-      "pop-os.trace.json.gz",
-      "pop-os.xplane.pb"
-    ],
-    "trace_dir": "/tmp/spectrax_traces/nonlinear_device_z_pencil_transport_gpu2/device2"
+    "requested": false
   },
-  "warmups": 1
+  "warmups": 1,
+  "z_chunk_size": 8
 }
