@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC/Boozer reduced objective-portfolio artifact guards now
+  separate canonical artifact input extraction, portfolio coverage checks,
+  full objective-table checks, scalar reducer validation, and final promotion
+  gate assembly from the public report function; the dedicated portfolio guard
+  and stellarator objective portfolio tests, focused mypy, Ruff, architecture,
+  repository-size, and differentiable-refactor manifests passed locally.
 - this checkpoint: nonlinear-gradient replicated-window evidence now separates
   input artifact row classification, unsupported-artifact handling,
   convergence-window row construction, derived ensemble construction,
