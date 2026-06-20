@@ -535,7 +535,11 @@ Completed extractions:
   follow-up campaign decisions stay deterministic. Matched-replicate follow-up planning is staged
   as config validation, artifact metric extraction, scalar gate classification,
   replicate-count estimation, planned-run annotation, candidate grouping, and
-  report packing so campaign actions remain fail-closed and auditable.
+  report packing so campaign actions remain fail-closed and auditable. Candidate
+  campaign design now separates artifact metrics, scalar gate status, bracket
+  and replicate-count estimates, action/recommendation selection, payload
+  packing, and summary grouping so the nonlinear turbulent-flux optimization
+  evidence lane can be audited without reading one monolithic decision routine.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central

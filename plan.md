@@ -1,3 +1,13 @@
+- 2026-06-20: Continued nonlinear turbulence-gradient candidate-design
+  simplification inside `validation.nonlinear_gradient.followup_candidate`
+  without changing public APIs, exported private test seams, JSON report schema,
+  action labels, gate names, recommendation text, or config validation
+  semantics. Candidate design now stages artifact metrics, gate status,
+  bracket/replicate estimates, action selection, JSON payload packing, metadata
+  validation, candidate grouping, and report summary assembly through named
+  helpers. Local gates passed: full nonlinear-gradient follow-up shard, Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-20: Continued nonlinear replicate follow-up simplification inside
   `validation.nonlinear_transport.replicate_followup` without changing public
   APIs, JSON report schema, classification names, planned-run labels, GPU
