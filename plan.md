@@ -120,6 +120,10 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: external-VMEC holdout runbook generation now separates
+  gap-report context extraction, candidate ranking, launch-command construction,
+  and fail-closed acceptance-gate policy; focused external-holdout/runbook tests,
+  mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone single-mode time-path routing now uses an explicit
   saved-trace object plus separate fit-policy construction and integrator
   routing helpers; focused Cyclone linear time-path tests, mypy, architecture,
