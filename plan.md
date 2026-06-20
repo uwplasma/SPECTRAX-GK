@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: reduced zonal-flow record normalization now separates
+  per-record metric parsing, optional damping/recurrence accounting, axis
+  construction, duplicate-aware tensor fill, and finite tensor completeness
+  checks; focused zonal objective tests, mypy, architecture, repository-size,
+  and diff hygiene passed locally.
 - this checkpoint: KBM single-point linear paths now separate explicit
   integrator policy construction, projected-rate fallbacks, direct trace
   fitting, Krylov target eigenpair evaluation, multi-target branch selection,
