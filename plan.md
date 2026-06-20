@@ -206,7 +206,9 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: release-scope tests now guard core source modules against
   comparison-code terminology outside the validation benchmark package, keeping
   benchmark/reference-code names from leaking back into the main solver,
-  geometry, objective, runtime, and artifact APIs.
+  geometry, objective, runtime, and artifact APIs. The guard is also routed
+  through the fast release-artifacts CI shard so regressions are caught before
+  the full wide-coverage combine.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
