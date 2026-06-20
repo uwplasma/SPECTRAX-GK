@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.6% | Explicit linear time integration, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
+| Refactor/testability | 99.7% | Explicit linear and nonlinear diagnostic integration, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -106,7 +106,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
    - Closed for this checkpoint; reopen only for new duplicated payload or gate logic.
 4. Core numerics/geometry hotspots, only with stronger local gates:
    - `solvers/time/explicit.py` closed for this checkpoint; reopen only if new loop-policy duplication appears.
-   - `solvers/nonlinear/diagnostics.py`
+   - `solvers/nonlinear/diagnostics.py` closed for this checkpoint; reopen only if explicit diagnostic option plumbing grows again.
    - `geometry/flux_tube.py`
    - `geometry/vmec_boozer_core.py`
    - `geometry_backends/vmec_fieldline_numerics.py`
@@ -149,6 +149,10 @@ Recent behavior-preserving refactor commits on this branch include:
   collection, progress emission, and array packaging behind the stable
   `integrate_linear_explicit` facade; focused explicit/runtime tests passed
   locally.
+- this checkpoint: explicit nonlinear runtime diagnostics now pack the broad
+  public signature into one private options object, build state/policy/closure
+  components in named stages, and keep scan finalization isolated; focused
+  nonlinear runtime-diagnostics tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

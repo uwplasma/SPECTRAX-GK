@@ -251,7 +251,13 @@ Completed extractions:
   Lower-level nonlinear RHS, diagnostic-state, policy, explicit-step, explicit
   and IMEX diagnostic scan preparation/finalization, and IMEX mechanics remain
   owned by ``operators/nonlinear/*`` and
-  ``solvers/nonlinear/*`` modules.
+  ``solvers/nonlinear/*`` modules. The explicit nonlinear diagnostic
+  implementation keeps the broad public signature as a facade, then packs
+  method, timestep, stride, Fourier-layout, selected-mode, collision, and
+  output-resolution knobs into a private options object before constructing
+  state/policy/closure scan components. This keeps runtime diagnostics
+  patchable while making the numerical stages testable without a monolithic
+  integration body.
 - startup/loading/initial-condition helpers:
   ``workflows/runtime/startup.py``
 - runtime mode-index, nonlinear step-count, external-source, parallel-scan,
