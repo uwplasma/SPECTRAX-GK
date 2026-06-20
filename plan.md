@@ -166,6 +166,10 @@ Recent behavior-preserving refactor commits on this branch include:
   dominant-vs-nearest slope comparison, classification, and payload packing;
   focused solver-objective gradient tests, mypy, architecture, repository-size,
   and diff hygiene passed locally.
+- this checkpoint: fixed-beta KBM ky-scan orchestration now separates fixed-beta
+  case resolution, scan option packing, per-ky beta-scan dispatch, mutable row
+  accumulation, and public result assembly; focused KBM scan branch tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
