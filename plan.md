@@ -209,6 +209,11 @@ Recent behavior-preserving refactor commits on this branch include:
   mutable beta/growth/frequency accumulation, and public result assembly;
   focused KBM branch tests, selected marker-overridden KBM benchmark tests,
   mypy, architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: nonlinear turbulence-gradient composite-control reporting
+  now separates config validation, candidate metadata normalization, row
+  construction, descent-control scaling, and launch-plan text construction; the
+  full nonlinear-gradient follow-up test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
