@@ -86,13 +86,13 @@ Percentages are engineering estimates, not completion claims.
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
 | Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, independent-work provenance helpers, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
-| Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
+| Package coverage/release infrastructure | 98% | Latest local technical-release gates and targeted wide-coverage shards pass; confirm the queued CI run and rerun/verify the full package-wide coverage combine before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
 | Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 95% | Final pass after refactor and performance artifacts settle. |
+| Docs/readme/release polish | 96% | Release guardrails and docs status artifacts are current; final pass after CI and any remaining refactor/performance artifacts settle. |
 
 ## Current Refactor Queue
 
@@ -197,6 +197,12 @@ Recent behavior-preserving refactor commits on this branch include:
   mismatch, which is now fixed by comparing final states on the compute-only
   jitted route used by the profiler while keeping scalar traces on the
   instrumented path.
+- this checkpoint: local release-hygiene gates passed for release artifacts,
+  package architecture, release readiness, validation/coverage manifest,
+  technical release status, parallelization completion status, quasilinear
+  guardrails, and VMEC/Boozer differentiability claims. Bounded wide-coverage
+  shards 9 and 10 also passed under the documented 48-shard workflow; full
+  package-wide coverage remains a CI/combine gate before release.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

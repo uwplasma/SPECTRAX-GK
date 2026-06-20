@@ -498,7 +498,7 @@
         "passed": true
       },
       {
-        "detail": "nearby index text mentions JSON companion",
+        "detail": "docs/_static/quasilinear_model_selection_status.json",
         "metric": "ql_figure_index_mentions_json_sidecar:docs/_static/quasilinear_model_selection_status",
         "passed": true
       },
