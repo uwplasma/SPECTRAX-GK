@@ -387,8 +387,10 @@ Completed extractions:
   public report functions remain the physics-facing entry points for linear,
   quasilinear, and reduced nonlinear-window differentiability claims. Scalar and
   aggregate VMEC/Boozer line-search reports share one private curvature-gated
-  one-parameter search loop, keeping finite-difference, training, and
-  held-out aggregate gates on the same accept/reject policy. Solver-ready
+  one-parameter search loop plus focused scalar/aggregate probe builders,
+  common payload assembly, and explicit held-out training/probe helpers,
+  keeping finite-difference, training, and held-out aggregate gates on the same
+  accept/reject policy. Solver-ready
   gradient gates share one normalized heat/particle transport-weight helper
   for eigenmode observables so linear-growth, quasilinear, and particle-flux
   AD checks use the same quadrature and normalization path. Solver-ready
