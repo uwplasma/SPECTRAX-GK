@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
+| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, independent-work provenance helpers, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -114,7 +114,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
    - `operators/nonlinear/domain_decomposition.py` closed for this checkpoint; reopen only if local domain trace/report policy grows again.
    - `operators/nonlinear/spectral_identity_integrator.py` closed for this checkpoint; reopen only if spectral transport-window trace/report policy grows again.
    - `operators/nonlinear/device_z.py` closed for this checkpoint; reopen only if device-sharding setup, RHS, or transport-window routing policy grows again.
-   - `parallel/independent.py`
+   - `parallel/independent.py` closed for this checkpoint; reopen only if independent-work provenance or ordered-map execution policy grows again.
 
 ## Recent Checkpoint
 
@@ -174,6 +174,10 @@ Recent behavior-preserving refactor commits on this branch include:
   setup, fail-closed blockers, sharded RHS execution, transport-window sampling,
   and final report packing while preserving single-device fallback behavior;
   focused nonlinear parallel tests passed locally.
+- this checkpoint: independent-work parallel execution now separates indexed
+  payload collection, reconstruction contracts, identity reports, exception
+  provenance, ordered executor routing, and metadata packing while preserving
+  ordered-thread/process behavior; focused parallel tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

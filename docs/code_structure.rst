@@ -494,6 +494,10 @@ Completed extractions:
   (``parallel/batch.py``), and ordered Python ensemble execution
   (``parallel/independent.py``). The public ``parallel/core.py`` and
   ``parallel/__init__.py`` modules remain stable facades for user imports.
+  ``parallel/independent.py`` keeps indexed payload collection, reconstruction
+  contracts, identity report construction, exception provenance, ordered
+  executor routing, and metadata packing as separate helpers so UQ and
+  optimization ensembles stay auditable without changing solver layout.
 - nonlinear RHS composition and state-to-diagnostic tuple assembly:
   ``operators/nonlinear/rhs.py`` and
   ``operators/nonlinear/diagnostic_state.py``. The diagnostic-state owner
