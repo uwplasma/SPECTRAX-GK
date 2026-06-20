@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: nonlinear-gradient composite-control candidate rows now
+  separate canonical metric extraction, per-condition gate evaluation, blocker
+  construction, and JSON metric payload assembly from the row constructor; the
+  full nonlinear-gradient follow-up test file, focused mypy, Ruff,
+  architecture, repository-size, and differentiable-refactor manifests passed
+  locally.
 - this checkpoint: VMEC/Boozer reduced objective-portfolio artifact guards now
   separate canonical artifact input extraction, portfolio coverage checks,
   full objective-table checks, scalar reducer validation, and final promotion
