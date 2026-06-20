@@ -120,6 +120,10 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: Cyclone single-mode time-path routing now uses an explicit
+  saved-trace object plus separate fit-policy construction and integrator
+  routing helpers; focused Cyclone linear time-path tests, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone scan time-branch fitting now uses explicit run,
   fit, output, and per-batch routing objects; focused Cyclone benchmark branch
   tests and benchmark-scan tests passed locally.
