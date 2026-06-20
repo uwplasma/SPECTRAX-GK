@@ -516,6 +516,14 @@ Recent behavior-preserving refactor commits on this branch include:
   focused log-linear validation/fallback tests, the full analysis diagnostic
   shard, static checks, architecture, repository-size, and diff-hygiene gates
   passed locally.
+- this checkpoint: shift-invert Krylov mode extraction now separates GMRES
+  operator/preconditioner construction, transformed Ritz-spectrum recovery,
+  frequency/sign masks, nearest-shift fallback selection, growth/target/overlap
+  selection, and per-restart vector reconstruction. The jitted
+  ``dominant_eigenpair_shift_invert_cached`` signature and numerical policy are
+  unchanged; Krylov core tests, the integration-marked Hermite-line
+  shift-invert run, benchmark shift-policy helper tests, static checks,
+  architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
