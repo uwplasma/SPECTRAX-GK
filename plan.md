@@ -190,6 +190,11 @@ Recent behavior-preserving refactor commits on this branch include:
   timeseries/eigenfunction/state writers, and quasilinear bundle merging while
   preserving saved-output schemas; the combined runtime artifact and CLI test
   files, mypy, architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: the internal VMEC-to-imported-geometry pipeline now
+  separates request validation, theta-grid construction, flux-tube cut policy,
+  beta-prime evaluation, field-line solve dispatch, profile packing, and
+  atomic NetCDF emission; the full VMEC backend/eik test pair, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
