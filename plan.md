@@ -700,6 +700,18 @@ Deferred or non-blocking science/performance lanes:
 1. Confirm current-head CI and fix only concrete failures.
 2. If CI is green, do one focused docs/readme/release-scope sweep.
 3. Run final local release gates and package build.
-4. Prepare version bump, tag, and release notes for the next version.
+4. Tag and publish `v1.6.7` after the final pushed commit is green; the
+   previous `v1.6.6` tag already points to `main`, so this branch needs the
+   patch-version bump for the next release.
 5. Use `office` GPUs only for a specific post-release science/performance lane
    or if release validation exposes a GPU-specific failure.
+
+## Latest Release-Prep Log
+
+- Bumped project metadata to `1.6.7` because `v1.6.6` is already the current
+  `main` release tag.
+- `python tools/check_release_version.py --tag v1.6.7 --check-pypi` passed:
+  PyPI has no duplicate `spectraxgk==1.6.7` release at check time.
+- Local release-readiness, repository-size, architecture, release-artifact,
+  technical-release, and release-scope focused tests pass after the version
+  bump.
