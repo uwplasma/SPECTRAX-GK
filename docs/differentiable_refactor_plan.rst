@@ -512,8 +512,9 @@ Phase 1: introduce protocols and containers
   tensor, Boozer equal-arc, and imported-geometry comparison paths. It consumes
   the same shared VMEC-state loading, coefficient-index validation, and
   perturbation policy as the Boozer, metric-tensor, and field-line sensitivity
-  reports. Direct-array parity and optional Boozer equal-arc parity now share
-  private array-metric and worst-error helpers in that owner.
+  reports. Direct-array parity, imported-EIK loading, optional Boozer equal-arc
+  parity, production parity metrics, and final JSON packing now have separate
+  private stages in that owner, while the public report schema remains stable.
   The imported VMEC field-line backend keeps its public facade stable while its
   implementation is staged as backend fallback, scalar VMEC profile sampling,
   Boozer field-line state assembly, Hegna-Nakajima mode corrections,

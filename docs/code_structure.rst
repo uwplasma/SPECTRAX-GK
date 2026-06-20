@@ -833,9 +833,11 @@ lives in
 VMEC-state example loading, coefficient-index validation, and perturbation
 policy from ``spectraxgk.geometry.vmec_state_sensitivity`` so the flux-tube,
 Boozer, metric-tensor, and field-line AD/FD gates stay on one setup contract.
-Direct-array parity and optional Boozer equal-arc parity share private
-array-metric and worst-error helpers in that owner, keeping public reports
-focused on setup and JSON assembly.
+Direct-array parity, imported-EIK loading, optional Boozer equal-arc parity,
+production parity metrics, and final JSON packing now have separate private
+stages in that owner. The public report functions remain schema-preserving
+facades over those stages, which keeps the VMEC/Boozer differentiability and
+parity gates easier to review without adding another module.
 VMEC boundary-gradient
 probe classification, collection row assembly, and projected-transport
 line-search admission summaries live in

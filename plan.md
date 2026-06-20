@@ -482,6 +482,17 @@
   no matching node IDs under this pytest invocation, so that file was not used
   as a validation gate for this tranche.
 
+- 2026-06-20: Continued VMEC flux-tube report staging inside
+  `geometry.vmec_flux_tube_reports` without adding modules or changing public
+  report keys. The sensitivity report now delegates VMEC-state perturbation and
+  JSON packing to private helpers. The array-parity report now reads as
+  resolution validation, optional-backend availability, direct VMEC tensor
+  geometry construction, imported-EIK construction, production parity metrics,
+  optional Boozer equal-arc parity, and final report packing. Local gates
+  passed: focused VMEC differentiable-geometry report shard, Ruff, mypy,
+  `py_compile`, differentiable-refactor manifest, repository-size manifest,
+  warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-19: Continued differentiable VMEC-state sensitivity refactoring
   inside `geometry.vmec_state_sensitivity` without adding modules or changing
   public report schemas. Metric-tensor and field-line tensor reports now share
