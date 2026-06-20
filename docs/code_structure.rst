@@ -501,11 +501,14 @@ Completed extractions:
   ``validation/nonlinear_gradient/evidence_windows.py``,
   ``validation/nonlinear_gradient/evidence_fd.py``,
   ``validation/nonlinear_gradient/evidence_screening.py``,
-  ``validation/nonlinear_gradient/evidence_gap.py``. Candidate ranking is staged
-  as artifact classification, conditioning metric extraction, normalized margin
-  scoring, pass/fail group construction, recommendation selection, and
-  JSON-ready report packing, keeping nonlinear-gradient promotion guardrails
-  explicit.
+  ``validation/nonlinear_gradient/evidence_gap.py``. The central
+  finite-difference gate is staged as matched-window normalization,
+  transport-response extraction, uncertainty propagation, source/window
+  quality gates, gradient-resolution gates, and JSON-ready report packing.
+  Candidate ranking is staged as artifact classification, conditioning metric
+  extraction, normalized margin scoring, pass/fail group construction,
+  recommendation selection, and JSON-ready report packing, keeping
+  nonlinear-gradient promotion guardrails explicit.
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema

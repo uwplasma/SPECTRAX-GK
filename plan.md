@@ -1,3 +1,19 @@
+- 2026-06-20: Continued nonlinear-gradient finite-difference evidence
+  simplification inside `validation.nonlinear_gradient.evidence_fd` without
+  changing the public
+  `nonlinear_turbulence_gradient_finite_difference_report` API, report schema,
+  central finite-difference formulas, source/window gate policy, gradient
+  acceptance thresholds, paired-replicate diagnostics, or compatibility
+  re-export. The public owner now delegates input/delta validation, matched
+  ensemble row normalization, mean/SEM extraction, transport-response
+  calculation, uncertainty propagation, source/window/gradient gate
+  construction, metric payload construction, and report packing to private
+  helpers. The public finite-difference report dropped from 196 to 54 lines.
+  Local gates passed: full nonlinear-gradient evidence shard, focused
+  finite-difference/evidence shard, Ruff, mypy, `py_compile`,
+  differentiable-refactor manifest, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued nonlinear-gradient evidence-screening simplification
   inside `validation.nonlinear_gradient.evidence_screening` without changing the
   candidate-ranking report schema, score thresholds, evidence classification,
