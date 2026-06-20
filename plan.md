@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: reduced stellarator ITG optimization now separates initial
+  parameter validation, Adam state/update, optimization history, objective
+  AD/FD gate, residual covariance metadata, and nonlinear-window trace payloads;
+  the full stellarator optimization test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: geometry inverse-design reporting now separates input
   validation, selected-observable construction, and Gauss-Newton iteration from
   the AD/FD/UQ payload assembly; focused differentiable-geometry tests, mypy,
