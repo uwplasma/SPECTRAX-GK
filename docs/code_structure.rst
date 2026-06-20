@@ -390,7 +390,11 @@ Completed extractions:
   one-parameter search loop plus focused scalar/aggregate probe builders,
   common payload assembly, and explicit held-out training/probe helpers,
   keeping finite-difference, training, and held-out aggregate gates on the same
-  accept/reject policy. Solver-ready
+  accept/reject policy. Reduced QA low-turbulence comparison artifacts keep
+  optimized-design generation, per-design diagnostic payloads, gate booleans,
+  comparison metrics, and differentiability-plumbing metadata in separate
+  helpers so publication JSON structure and optimization diagnostics can evolve
+  independently. Solver-ready
   gradient gates share one normalized heat/particle transport-weight helper
   for eigenmode observables so linear-growth, quasilinear, and particle-flux
   AD checks use the same quadrature and normalization path. Solver-ready

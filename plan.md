@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99% | Validation scan runners, differentiability gradient reports, and VMEC/Boozer line-search reports now share focused seams. |
+| Refactor/testability | 99.5% | Validation scan runners and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -103,7 +103,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 2. Nonlinear transport/optimization reports:
    - Continue only if new hotspots appear after the next scan.
 3. Differentiability/objective reports:
-   - `objectives/qa_low_turbulence_artifacts.py`
+   - Closed for this checkpoint; reopen only for new duplicated payload or gate logic.
 4. Core numerics/geometry hotspots, only with stronger local gates:
    - `solvers/time/explicit.py`
    - `solvers/nonlinear/diagnostics.py`
@@ -140,6 +140,10 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: VMEC/Boozer line-search reports now share scalar/aggregate
   probe builders, common payload assembly, and explicit held-out training/probe
   helpers; focused line-search tests passed locally.
+- this checkpoint: reduced QA low-turbulence comparison artifacts now split
+  optimized-design generation, per-design diagnostics, gate booleans,
+  comparison metrics, and differentiability-plumbing metadata into focused
+  helpers; focused QA payload/artifact tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
