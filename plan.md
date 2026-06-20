@@ -1,3 +1,16 @@
+- 2026-06-20: Continued linear-operator cache-builder simplification inside
+  `operators.linear.cache_builder` without changing the public
+  `build_linear_cache` API, `LinearCache` schema, twist-shift policy,
+  drift/kperp formulas, gyro/moment arrays, or linked-boundary semantics.
+  The public owner now stages grid arrays, sampled/imported geometry arrays,
+  twist policy, drift/kperp arrays, Laguerre gyroaverages, moment caches,
+  linked-boundary caches, and final cache packing through named helpers.
+  `build_linear_cache` dropped from 176 to 74 lines. Local gates passed:
+  focused `test_linear.py` cache shard with integration-marker override,
+  cache helper shard, adjacent linear operator shards, Ruff, mypy,
+  `py_compile`, differentiable-refactor manifest, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued nonlinear-term simplification inside
   `terms.nonlinear` without changing E×B/flutter formulas, Laguerre-grid vs
   spectral mode selection, electrostatic fast paths, masking semantics, or
