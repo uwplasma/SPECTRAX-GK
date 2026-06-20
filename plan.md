@@ -125,6 +125,11 @@ Recent behavior-preserving refactor commits on this branch include:
   predicates, Krylov reselection fallback, and previous-frequency continuation
   updates; focused Cyclone scan branch tests, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: kinetic-electron ky-scan orchestration now separates
+  setup/control resolution, growth-window policy construction, runtime option
+  packing, batch execution, and public result assembly from the scan wrapper;
+  focused kinetic scan branch tests, mypy, architecture, repository-size, and
+  diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
@@ -194,9 +199,6 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: Cyclone scan time-branch fitting now uses explicit run,
   fit, output, and per-batch routing objects; focused Cyclone benchmark branch
   tests and benchmark-scan tests passed locally.
-- this checkpoint: kinetic-electron scan batching now uses explicit run, fit,
-  output, and per-batch routing objects; focused kinetic scan branch tests and
-  benchmark kinetic smoke tests passed locally.
 - this checkpoint: ETG scan time-path integration and saved-fit appending now
   use explicit batch/fit contexts with staged streaming, configured-history,
   unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers;
