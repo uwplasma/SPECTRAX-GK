@@ -1,3 +1,10 @@
+- 2026-06-20: Simplified `validation.nonlinear_gradient.followup_state_runbook`
+  without changing launch-runbook schemas, blocker ordering, mapping semantics,
+  or tool outputs. The public report now stages config validation, QL-screen
+  state, mapping quality gates, row packing, launch fragments, and summary
+  assembly. Local gates passed: state-runbook plus VMEC mapping launch-writer
+  shards, Ruff, mypy, and `py_compile`.
+
 - 2026-06-20: Continued nonlinear-gradient QL-seed screen simplification inside
   `validation.nonlinear_gradient.followup_ql_seed` without changing public APIs,
   exported private test seams, JSON report schema, blocker ordering, state

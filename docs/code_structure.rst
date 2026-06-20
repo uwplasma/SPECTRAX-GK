@@ -536,7 +536,10 @@ Completed extractions:
   separates artifact context, objective-gate metrics, blocker ordering, primary
   control grouping, sign-consistency admission, and report summaries so
   nonlinear-gradient control selection remains deterministic before spending
-  nonlinear GPU runs. Matched-replicate follow-up planning is staged
+  nonlinear GPU runs. State-control runbooks stage QL-screen validation, mapping
+  lookup, mapping-quality gates, launch-fragment packing, and report summaries
+  so VMEC-state controls only become nonlinear launch inputs after an explicit
+  conditioned mapping. Matched-replicate follow-up planning is staged
   as config validation, artifact metric extraction, scalar gate classification,
   replicate-count estimation, planned-run annotation, candidate grouping, and
   report packing so campaign actions remain fail-closed and auditable. Candidate
