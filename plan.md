@@ -925,8 +925,15 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the kinetic scan tranche: Ruff, mypy, kinetic scan
   branch tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 2, concentrated in KBM beta
-  scan and ETG linear drivers.
+- 2026-06-20: split `run_kbm_beta_scan` into a stable public facade plus a
+  `_KBMBetaScanRequest` and private request runner.  Existing beta-scan setup,
+  fit-policy, option, and per-beta loop helpers were reused, preserving fixed-ky
+  beta-scan behavior and output schema.
+- Focused gates passed for the KBM beta tranche: Ruff, mypy, KBM beta branch
+  tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 1, concentrated in the ETG
+  linear driver.
 
 ## Latest Release Log
 
