@@ -402,7 +402,9 @@ Completed extractions:
   The facade now stages optimization-scope normalization, artifact-row
   classification, safety gates, promotion gates, evidence-gap accounting, and
   summary assembly as separate helpers so release-safety and production-claim
-  promotion remain auditable. Replicate-spread follow-up planning in
+  promotion remain auditable; the guard report keeps artifact maps, row groups,
+  gate status, and final payload packing separate so release safety and
+  production promotion cannot be conflated. Replicate-spread follow-up planning in
   ``validation/nonlinear_transport/replicate_followup.py`` separates report
   normalization, classification-specific cross-run selection, dedupe/limits,
   state-plan packing, and config serialization so GPU follow-up campaigns stay
