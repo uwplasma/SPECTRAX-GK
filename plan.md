@@ -242,6 +242,12 @@ Recent behavior-preserving refactor commits on this branch include:
   parity schema and thresholds; focused flux-tube parity tests, the full
   differentiable-geometry-bridge shard, mypy, architecture, repository-size,
   and diff hygiene passed locally.
+- this checkpoint: nonlinear NetCDF artifact writing now separates bundle path
+  resolution, required diagnostics validation, output-grid/geometry layout,
+  dimension creation, grid-variable writing, primary ``.out.nc`` writing, and
+  optional restart/``.big.nc`` writing while preserving the saved-output schema;
+  direct nonlinear NetCDF artifact tests, saved-output plotting tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
