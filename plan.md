@@ -902,9 +902,16 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the ETG scan tranche: Ruff, mypy, ETG scan branch
   tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 5, concentrated in kinetic
-  scan control assembly, KBM/TEM linear wrappers, and KBM beta/ETG linear scan
-  drivers.
+- 2026-06-20: split `run_tem_linear` into a stable public facade plus
+  `_TEMLinearRequest`, setup/state helpers, and private Krylov/time dispatch.
+  TEM scan species-index validation now reuses the same helper.  This preserved
+  TEM result schemas and solver branch behavior while removing the TEM linear
+  wrapper hotspot.
+- Focused gates passed for the TEM tranche: Ruff, mypy, TEM branch tests,
+  differentiable refactor manifest, architecture manifest, repository-size
+  manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 4, concentrated in kinetic
+  scan control assembly, KBM linear, KBM beta scan, and ETG linear drivers.
 
 ## Latest Release Log
 
