@@ -125,7 +125,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
-- pending: Refactor stellarator transport prelaunch report.
+- `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
 - `2885a231` Refactor nonlinear gradient state runbook.
