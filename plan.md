@@ -1,3 +1,13 @@
+- 2026-06-20: Continued core field-solve simplification inside
+  `terms.fields` without changing the public `solve_fields` API, custom-VJP
+  boundary, electrostatic/adiabatic-electron quasineutrality convention,
+  electromagnetic `apar`/`bpar` toggles, mask-zeroing behavior, or
+  `FieldState` schema. `_solve_fields_impl` now stages coefficient casting,
+  gyrocenter moments, electrostatic potential, compressional `bpar` coupling,
+  parallel `apar` solve, and final packing through named helpers, dropping
+  from 161 to 33 lines. Local gates passed: field-solve custom-VJP shard,
+  adjacent term/assembly/consistency shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-20: Continued VMEC/Boozer finite-difference objective-gate
   simplification inside `objectives.vmec_boozer_fd` without changing public
   APIs, report schemas, injected test seams, aggregate sampling semantics,

@@ -230,6 +230,11 @@ Completed extractions:
   fixed-order term summation, and species-axis restoration. This keeps
   ``assemble_rhs_cached`` and ``assemble_rhs_terms_cached`` numerically aligned
   without duplicating RHS policy. Linear
+  electromagnetic field solves in ``terms/fields.py`` are staged as
+  coefficient casting, gyrocenter moments, electrostatic potential,
+  compressional ``bpar`` coupling, parallel ``apar`` solve, and final
+  ``FieldState`` packing, while the public custom-VJP wrapper keeps the same
+  differentiability boundary. Linear
   contribution kernels keep Hermite-mode drive insertion centralized in
   ``terms/linear_terms.py`` so streaming, diamagnetic, and collision
   corrections share one reviewed convention.
