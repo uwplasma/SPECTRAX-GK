@@ -14,9 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
-from spectraxgk.nonlinear_gradient_followup import (  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
     NonlinearGradientFollowupConfig,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_plan import (  # noqa: E402
     nonlinear_gradient_followup_plan,
 )
 

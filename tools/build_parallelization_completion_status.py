@@ -400,7 +400,7 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]
+    from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]
 
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")

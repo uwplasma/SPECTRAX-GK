@@ -22,14 +22,14 @@ from spectraxgk.benchmarks import (
     KBM_RHO_STAR,
     CycloneBaseCase,
     KBMBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
 )
 from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -46,11 +46,11 @@ from spectraxgk.terms.linear_terms import (
     end_damping_contribution,
     hypercollisions_contribution,
     mirror_contribution,
-    streaming_contribution_gx,
+    linked_streaming_contribution,
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 
 from tools.compare_gx_imported_linear import (
     _load_gx_input_contract,
@@ -222,7 +222,7 @@ def _manual_linear_contributions_from_fields(
     zero = jnp.zeros_like(G_arr)
 
     contrib: dict[str, jnp.ndarray] = {}
-    contrib["streaming"] = streaming_contribution_gx(
+    contrib["streaming"] = linked_streaming_contribution(
         G_arr,
         phi=phi_j,
         apar=apar_j,
@@ -403,7 +403,7 @@ def _build_runtime_compare_context(
         ),
     )
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     term_cfg = replace(build_runtime_term_config(cfg_use), hypercollisions=0.0, end_damping=0.0)
@@ -443,7 +443,7 @@ def _build_imported_compare_context(
     else:
         if geometry_file is None:
             raise ValueError("--geometry-file is required with --gx-input for non-slab imported cases")
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=geometry_file, runtime_config=None))
 
     lx = 2.0 * np.pi * y0_use if boundary_eff == "periodic" else 62.8
     grid_cfg = GridConfig(
@@ -457,7 +457,7 @@ def _build_imported_compare_context(
         nperiod=max(1, int(gx_contract.nperiod)),
         ntheta=max(1, int(gx_contract.ntheta)),
     )
-    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    grid_full = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, grid_cfg))
     params = build_linear_params(
         gx_contract.species,
         tau_e=float(gx_contract.tau_e),
@@ -466,7 +466,7 @@ def _build_imported_compare_context(
         fapar=float(gx_contract.fapar),
     )
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=int(nm))
+        params = _apply_reference_hypercollisions(params, nhermite=int(nm))
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
@@ -598,7 +598,7 @@ def main() -> None:
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm_use)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm_use)
         grid_full = build_spectral_grid(cfg.grid)
         term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     else:

@@ -63,7 +63,7 @@ D_hyper = 5.0e-4
 
 [normalization]
 contract = "kinetic"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [terms]
 streaming = 1.0

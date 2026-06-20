@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_SPECTRUM = ROOT / "docs/_static/quasilinear_vmec_qi_seed_linear_spectrum_scan.quasilinear_spectrum.csv"

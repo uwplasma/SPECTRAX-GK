@@ -110,7 +110,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.velocity_sharding.diamagnetic_drive_shard_map",
+  "source": "spectraxgk.parallel.velocity.diamagnetic_drive_shard_map",
   "state_shape": [
     2,
     8,

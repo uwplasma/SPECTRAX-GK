@@ -11,11 +11,38 @@ pattern:
 - compact panels that separate exact diagnostic closures from broader stress
   lanes.
 
-The figures in this page are generated directly from tracked CSV assets and
-curated comparison traces in ``docs/_static``.
+The figures in this page are generated directly from tracked CSV assets,
+curated comparison traces, and the small root-level result index under
+``benchmarks/results``. Large run directories are deliberately excluded from
+git.
 
 Figure generation
 -----------------
+
+Lightweight benchmark drivers, runtime TOML inputs, and result-index pointers
+live in the repository root under ``benchmarks/``. This is the canonical
+benchmark entry-point directory for users and developers. It is intentionally
+separated from ``examples/``: examples teach workflows, while benchmarks
+reproduce validation panels and paper-facing comparison traces. Generated
+outputs should go to ``tools_out/`` or another scratch directory; only reviewed,
+compressed summary figures and small CSV/JSON metadata are tracked in
+``docs/_static``.
+
+The repository-size contract for this directory is deliberately strict:
+``benchmarks/`` should stay at the scale of small scripts and manifests, not
+simulation products. The tracked result manifest under
+``benchmarks/results/manifest.toml`` is the docs-facing index for promoted
+figures and tables, while NetCDF files, restart files, logs, profiler traces,
+and exploratory plots remain outside git.
+
+Quick driver examples:
+
+.. code-block:: bash
+
+   python benchmarks/cyclone_linear_benchmark.py --outdir tools_out/cyclone_benchmark
+   python benchmarks/kbm_beta_scan.py
+   python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
+   python benchmarks/secondary_slab_workflow.py
 
 Regenerate the atlas figures with:
 
@@ -29,6 +56,63 @@ The atlas builder now reads its inputs from
 explicit.
 Future velocity-space convergence panels should use the same JSON-ready
 gate-report convention before they are promoted into the publication stack.
+
+Tracked results index
+---------------------
+
+The root-level result index is ``benchmarks/results/manifest.toml``. It points
+to the promoted benchmark figures and machine-readable tables without moving or
+duplicating large run products. The current tracked result set is:
+
+.. list-table:: Promoted benchmark result artifacts
+   :header-rows: 1
+   :widths: 22 30 18 30
+
+   * - Result
+     - Tracked artifact
+     - Claim scope
+     - Regeneration path
+   * - Core linear benchmark atlas
+     - ``docs/_static/benchmark_core_linear_atlas.png``
+     - headline linear validation atlas
+     - ``python tools/make_benchmark_atlas.py``
+   * - Core nonlinear benchmark atlas
+     - ``docs/_static/benchmark_core_nonlinear_atlas.png``
+     - headline nonlinear validation atlas
+     - ``python tools/make_benchmark_atlas.py``
+   * - README benchmark summary panel
+     - ``docs/_static/benchmark_readme_panel.png``
+     - compact publication-facing benchmark summary
+     - ``python tools/make_benchmark_atlas.py``
+   * - Extended linear stress matrix
+     - ``docs/_static/benchmark_extended_linear_panel.png``
+     - stress and provisional lanes, not headline validation claims
+     - ``python tools/make_benchmark_atlas.py``
+   * - Runtime and memory comparison
+     - ``docs/_static/runtime_memory_benchmark.png``
+     - tracked wall-time and memory comparison rows
+     - ``python tools/benchmark_runtime_memory.py --summary-glob ...``
+   * - Runtime and memory result rows
+     - ``docs/_static/runtime_memory_results_ship_refresh.csv``
+     - machine-readable runtime/memory rows used by the tracked panel
+     - ``python tools/benchmark_runtime_memory.py``
+   * - Runtime and memory summary
+     - ``docs/_static/runtime_memory_summary_ship_refresh.json``
+     - machine-readable summary for runtime/memory panel generation
+     - ``python tools/benchmark_runtime_memory.py``
+   * - Core linear atlas inputs
+     - ``tools/benchmark_atlas_manifest.toml``
+     - manifest of small tracked benchmark inputs
+     - ``python tools/make_benchmark_atlas.py``
+
+This keeps the repository light: ``benchmarks/`` stores only drivers and
+pointers, ``docs/_static`` stores reviewed compact figures/tables, and raw
+solver output directories remain untracked. The tracked ``benchmarks/`` payload
+is intentionally on the order of tens of kilobytes.
+
+The manifest above is the docs-facing source of truth for promoted benchmark
+results. If a new result is added to ``benchmarks/results/manifest.toml``, it
+must either appear in this table or remain unpromoted in scratch storage.
 
 This produces the tracked atlas panels:
 
@@ -73,7 +157,7 @@ throughout:
 - real frequency ``omega``
 - ion heat flux
 - free energy
-- electrostatic field energy (legacy variable name ``Wphi``)
+- electrostatic field energy (output variable ``Wphi``)
 - magnetic field energy when ``A_parallel`` or ``B_parallel`` are active
 
 At the README level, these metrics are intentionally packed into one compact
@@ -158,9 +242,9 @@ runtime defaults for the solver or the shipped example drivers.
 Benchmark runner internals
 --------------------------
 
-The public compatibility surface remains ``spectraxgk.benchmarks``. Shared
+The public benchmark surface remains ``spectraxgk.benchmarks``. Shared
 scan policies that are easy to test without launching a solver live in
-``spectraxgk.benchmark_scan``: fit-signal key validation, mode-only extraction
+``spectraxgk.validation.benchmarks.scan``: fit-signal key validation, mode-only extraction
 coercion, explicit-window fallback, and fixed-shape ``k_y`` batching
 eligibility. The runner module imports those policies so Cyclone, ETG,
 kinetic-electron, TEM, and KBM scans keep the same window and ordering

@@ -9,15 +9,15 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_response_metrics
-from spectraxgk.plotting import zonal_flow_response_figure
+from spectraxgk.validation.benchmarks.harness import load_diagnostic_time_series, zonal_flow_response_metrics
+from spectraxgk.artifacts.plotting import zonal_flow_response_figure
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("output", type=Path, help="GX-style out.nc file")
+    parser.add_argument("output", type=Path, help="SPECTRAX-GK out.nc diagnostics file")
     parser.add_argument(
         "--var",
         default="Phi2_zonal_t",

@@ -65,7 +65,9 @@ def _configure_env(args: argparse.Namespace) -> None:
         ]
         os.environ["XLA_FLAGS"] = " ".join([flags] + dump_flags).strip()
     if args.debug_log_cache:
-        os.environ.setdefault("JAX_DEBUG_LOG_MODULES", "jax._src.compiler,jax._src.lru_cache")
+        os.environ.setdefault(
+            "JAX_DEBUG_LOG_MODULES", "jax._src.compiler,jax._src.lru_cache"
+        )
         os.environ.setdefault("JAX_LOGGING_LEVEL", "DEBUG")
     if args.explain_cache_misses:
         os.environ.setdefault("JAX_EXPLAIN_CACHE_MISSES", "1")
@@ -96,7 +98,9 @@ def _time_phase(
         out = fn()
         if block:
             _block_tree(out)
-    timings.append(PhaseTiming(phase=phase, seconds=time.perf_counter() - t0, note=note))
+    timings.append(
+        PhaseTiming(phase=phase, seconds=time.perf_counter() - t0, note=note)
+    )
     return out
 
 
@@ -109,7 +113,9 @@ def _write_phase_csv(path: Path, timings: list[PhaseTiming]) -> None:
             writer.writerow(asdict(row))
 
 
-def _write_phase_json(path: Path, timings: list[PhaseTiming], metadata: dict[str, Any]) -> None:
+def _write_phase_json(
+    path: Path, timings: list[PhaseTiming], metadata: dict[str, Any]
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "metadata": metadata,
@@ -127,11 +133,14 @@ def main() -> None:
     import jax.numpy as jnp
     import numpy as np
     from jax import profiler
-    from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-    from spectraxgk.grids import build_spectral_grid
-    from spectraxgk.io import load_runtime_from_toml
+    from spectraxgk.geometry import apply_imported_geometry_grid_defaults
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
     from spectraxgk.linear import build_linear_cache
-    from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics_state, nonlinear_rhs_cached
+    from spectraxgk.nonlinear import (
+        integrate_nonlinear_explicit_diagnostics_state,
+        nonlinear_rhs_cached,
+    )
     from spectraxgk.runtime import (
         _build_initial_condition,
         _runtime_external_phi,
@@ -162,21 +171,38 @@ def main() -> None:
             note=str(args.config),
         )
         cfg, _ = cfg_loaded
-        geom = _time_phase(timings, "build_runtime_geometry", lambda: build_runtime_geometry(cfg), block=True)
+        geom = _time_phase(
+            timings,
+            "build_runtime_geometry",
+            lambda: build_runtime_geometry(cfg),
+            block=True,
+        )
         grid_cfg = _time_phase(
             timings,
             "apply_geometry_grid_defaults",
-            lambda: apply_gx_geometry_grid_defaults(geom, cfg.grid),
+            lambda: apply_imported_geometry_grid_defaults(geom, cfg.grid),
         )
-        grid = _time_phase(timings, "build_spectral_grid", lambda: build_spectral_grid(grid_cfg), block=True)
+        grid = _time_phase(
+            timings,
+            "build_spectral_grid",
+            lambda: build_spectral_grid(grid_cfg),
+            block=True,
+        )
         params = _time_phase(
             timings,
             "build_runtime_linear_params",
             lambda: build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom),
             block=True,
         )
-        term_cfg = _time_phase(timings, "build_runtime_term_config", lambda: build_runtime_term_config(cfg))
-        external_phi = _time_phase(timings, "resolve_external_phi", lambda: _runtime_external_phi(cfg), block=True)
+        term_cfg = _time_phase(
+            timings, "build_runtime_term_config", lambda: build_runtime_term_config(cfg)
+        )
+        external_phi = _time_phase(
+            timings,
+            "resolve_external_phi",
+            lambda: _runtime_external_phi(cfg),
+            block=True,
+        )
         ky_index, kx_index = _time_phase(
             timings,
             "select_mode_indices",
@@ -187,7 +213,11 @@ def main() -> None:
                 use_dealias_mask=bool(cfg.time.nonlinear_dealias),
             ),
         )
-        laguerre_mode = cfg.time.laguerre_nonlinear_mode if args.laguerre_mode is None else str(args.laguerre_mode)
+        laguerre_mode = (
+            cfg.time.laguerre_nonlinear_mode
+            if args.laguerre_mode is None
+            else str(args.laguerre_mode)
+        )
         G0 = _time_phase(
             timings,
             "build_initial_condition",
@@ -213,9 +243,15 @@ def main() -> None:
 
         G0 = jnp.asarray(G0)
         linear_term_cfg = replace(term_cfg, nonlinear=0.0)
-        field_fn = jax.jit(lambda G: compute_fields_cached(G, cache, params, terms=term_cfg, external_phi=external_phi))
+        field_fn = jax.jit(
+            lambda G: compute_fields_cached(
+                G, cache, params, terms=term_cfg, external_phi=external_phi
+            )
+        )
         linear_rhs_fn = jax.jit(
-            lambda G: assemble_rhs_cached_jit(G, cache, params, linear_term_cfg, external_phi=external_phi)
+            lambda G: assemble_rhs_cached_jit(
+                G, cache, params, linear_term_cfg, external_phi=external_phi
+            )
         )
         full_rhs_fn = jax.jit(
             lambda G: nonlinear_rhs_cached(
@@ -223,7 +259,7 @@ def main() -> None:
                 cache,
                 params,
                 term_cfg,
-                gx_real_fft=bool(cfg.time.gx_real_fft),
+                compressed_real_fft=bool(cfg.time.compressed_real_fft),
                 laguerre_mode=laguerre_mode,
                 external_phi=external_phi,
             )
@@ -260,7 +296,7 @@ def main() -> None:
         integrator_out = _time_phase(
             timings,
             "compile_first_integrator_run",
-            lambda: integrate_nonlinear_gx_diagnostics_state(
+            lambda: integrate_nonlinear_explicit_diagnostics_state(
                 G0,
                 grid,
                 geom,
@@ -273,7 +309,7 @@ def main() -> None:
                 sample_stride=int(args.sample_stride),
                 diagnostics_stride=int(args.diagnostics_stride),
                 use_dealias_mask=bool(cfg.time.nonlinear_dealias),
-                gx_real_fft=bool(cfg.time.gx_real_fft),
+                compressed_real_fft=bool(cfg.time.compressed_real_fft),
                 laguerre_mode=laguerre_mode,
                 omega_ky_index=int(ky_index),
                 omega_kx_index=int(kx_index),

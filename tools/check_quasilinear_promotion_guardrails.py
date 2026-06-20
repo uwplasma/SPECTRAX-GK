@@ -90,7 +90,7 @@ def nonlinear_window_stats_promotion_ready(
     """Return whether serialized nonlinear-window metadata supports promotion.
 
     This duplicates the lightweight schema check from
-    ``spectraxgk.quasilinear_window`` so the CI repo-hygiene job can run before
+    ``spectraxgk.validation.quasilinear.window_promotion`` so the CI repo-hygiene job can run before
     installing JAX and the rest of the runtime stack.
     """
 

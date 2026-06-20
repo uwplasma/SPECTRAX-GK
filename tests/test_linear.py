@@ -8,7 +8,7 @@ pytestmark = pytest.mark.integration
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     _build_linked_fft_maps,
     _x64_enabled,
@@ -31,8 +31,8 @@ from spectraxgk.linear import (
     streaming_term,
 )
 from spectraxgk.terms.operators import grad_z_linked_fft
-from spectraxgk.gyroaverage import J_l_all
-from spectraxgk.linear_krylov import dominant_eigenpair
+from spectraxgk.core.velocity import J_l_all
+from spectraxgk.solvers.linear.krylov import dominant_eigenpair
 from spectraxgk.terms.linear_terms import collisions_contribution
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
@@ -69,8 +69,8 @@ def test_build_linked_fft_maps_keeps_real_fft_positive_ky_modes():
 def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_damping():
     from spectraxgk.geometry import SlabGeometry, apply_geometry_grid_defaults
     from spectraxgk.config import GeometryConfig
-    from spectraxgk.grids import select_real_fft_ky_grid
-    from spectraxgk.species import Species, build_linear_params
+    from spectraxgk.core.grid import select_real_fft_ky_grid
+    from spectraxgk.core.species import Species, build_linear_params
 
     geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=1.0e-8, zero_shat=True))
     grid_cfg = apply_geometry_grid_defaults(
@@ -707,6 +707,45 @@ def test_implicit_preconditioner_hermite_line_shape_and_finite():
     assert y.shape == (size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
     assert jnp.all(jnp.isfinite(jnp.imag(y)))
+
+
+def test_implicit_preconditioner_linked_hermite_line_coarse_shape_and_finite():
+    """Linked Hermite-line coarse preconditioner should preserve finite vectors."""
+
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.28, Ly=6.28, boundary="linked")
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        omega_d_scale=0.1,
+        omega_star_scale=0.1,
+        kpar_scale=float(geom.gradpar()),
+    )
+    Nl, Nm = 2, 4
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
+    G0 = jnp.zeros(
+        (1, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size),
+        dtype=base_dtype,
+    )
+    _G, _shape, size, _dt_val, precond_op, matvec, _squeeze = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.05,
+            terms=LinearTerms(),
+            implicit_preconditioner="hermite-line-coarse",
+        )
+    )
+    x = jnp.ones((size,), dtype=base_dtype)
+    y = precond_op(x)
+    z = matvec(x)
+    assert y.shape == (size,)
+    assert z.shape == (size,)
+    assert jnp.all(jnp.isfinite(jnp.real(y)))
+    assert jnp.all(jnp.isfinite(jnp.imag(y)))
+    assert jnp.all(jnp.isfinite(jnp.real(z)))
 
 
 def test_shift_invert_preconditioner_hermite_line_runs():

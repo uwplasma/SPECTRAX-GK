@@ -21,10 +21,10 @@ from tools.compare_gx_imported_linear import (
 from tools.compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from tools.compare_gx_runtime_startup import _select_ky_block
 from spectraxgk.config import GeometryConfig
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 from spectraxgk.terms.assembly import compute_fields_cached
 
 
@@ -108,8 +108,8 @@ def main() -> None:
             )
         )
     else:
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
-    grid_cfg = apply_gx_geometry_grid_defaults(
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
+    grid_cfg = apply_imported_geometry_grid_defaults(
         geom,
         gx_contract_to_grid(
             gx_contract=gx_contract,

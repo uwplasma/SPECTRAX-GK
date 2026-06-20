@@ -18,7 +18,7 @@ from spectraxgk import (
     vmec_jax_transport_growth_branch_locality_report_from_states,
     vmec_jax_transport_objective_from_state,
 )
-from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES
+from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 
 
 def _fake_geometry() -> SimpleNamespace:
@@ -53,7 +53,7 @@ def _fake_solver_rows(scale: float = 1.0) -> jnp.ndarray:
 
 
 def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     calls: list[dict[str, object]] = []
     growth_calls: list[dict[str, object]] = []
@@ -93,7 +93,7 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
 
 
 def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -138,7 +138,7 @@ def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(mon
 
 
 def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_branch(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(state, *_args, **kwargs):
         return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
@@ -178,7 +178,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_bra
 
 
 def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(state, *_args, **kwargs):
         return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
@@ -213,7 +213,7 @@ def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch
 
 
 def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     scale = {"value": 1.0}
 
@@ -239,7 +239,7 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(m
 
 
 def test_vmec_jax_transport_objective_transform_scales_large_residuals(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -279,7 +279,7 @@ def test_vmec_jax_transport_objective_transform_scales_large_residuals(monkeypat
 
 
 def test_vmec_jax_transport_objective_vmec_callback_builds_reference_wout(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     captured: dict[str, object] = {}
 
@@ -323,7 +323,7 @@ def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
 
 
 def test_vmec_jax_transport_objective_pins_imported_backend_paths(monkeypatch, tmp_path) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     vmec_root = tmp_path / "vmec_jax_repo"
     vmec_pkg = vmec_root / "vmec_jax"
@@ -355,7 +355,7 @@ def test_vmec_jax_transport_objective_pins_imported_backend_paths(monkeypatch, t
 
 
 def test_module_search_root_handles_paths_and_missing_modules(monkeypatch, tmp_path) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     namespace_root = tmp_path / "namespace_backend"
     namespace_root.mkdir()
@@ -378,7 +378,7 @@ def test_module_search_root_handles_paths_and_missing_modules(monkeypatch, tmp_p
 
 
 def test_pin_current_optional_backend_paths_respects_explicit_environment(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def unexpected_search(module_name: str):
         raise AssertionError(f"backend search should be skipped for {module_name}")
@@ -397,7 +397,7 @@ def test_pin_current_optional_backend_paths_respects_explicit_environment(monkey
 
 
 def test_static_grid_options_maps_integer_ky_multiples_to_solver_grid() -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     options = mod._static_grid_options_from_ky_values((0.15, 0.45), min_ny=12)
 
@@ -421,7 +421,7 @@ def test_static_grid_options_rejects_invalid_ky_values(
     ky_values: tuple[float, ...],
     message: str,
 ) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     with pytest.raises(ValueError, match=message):
         mod._static_grid_options_from_ky_values(ky_values, min_ny=3)
@@ -466,7 +466,7 @@ def test_vmec_jax_transport_config_objective_options_filter_none_values() -> Non
 
 
 def test_geometry_transport_weights_use_safe_defaults_for_minimal_geometry() -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     theta = jnp.linspace(-jnp.pi, jnp.pi, 6, endpoint=False)
     kperp, heat_weight, particle_weight = mod._geometry_transport_weights(
@@ -484,7 +484,7 @@ def test_geometry_transport_weights_use_safe_defaults_for_minimal_geometry() -> 
 
 
 def test_transport_feature_table_rejects_empty_sample_rows() -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     config = SimpleNamespace(
         sample_set=SimpleNamespace(surfaces=(), alphas=(0.0,), ky_values=(0.2,)),
@@ -503,7 +503,7 @@ def test_transport_feature_table_rejects_empty_sample_rows() -> None:
 
 
 def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     def fake_geom(*_args, **_kwargs):
         return _fake_geometry()
@@ -522,7 +522,7 @@ def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
 
 
 def test_vmec_objective_term_prepares_and_prewarms_backend(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     constructed_terms: list[SimpleNamespace] = []
     prewarm_calls: list[dict[str, object]] = []
@@ -575,7 +575,7 @@ def test_vmec_objective_term_prepares_and_prewarms_backend(monkeypatch) -> None:
 
 
 def test_spectrax_transport_objective_tuple_uses_config_and_wout_reference(monkeypatch) -> None:
-    import spectraxgk.vmec_jax_transport_objective as mod
+    import spectraxgk.objectives.vmec_transport as mod
 
     captured: dict[str, object] = {}
     wout_reference = object()

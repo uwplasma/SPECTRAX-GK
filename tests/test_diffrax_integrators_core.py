@@ -8,9 +8,9 @@ import pytest
 diffrax = pytest.importorskip("diffrax")
 pytest.importorskip("equinox")
 
-from spectraxgk.analysis import ModeSelection, ModeSelectionBatch
+from spectraxgk.diagnostics.analysis import ModeSelection, ModeSelectionBatch
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diffrax_integrators import (
+from spectraxgk.solvers.time.diffrax import (
     _adjoint,
     _density_from_G_cached,
     _is_imex_solver,
@@ -26,9 +26,9 @@ from spectraxgk.diffrax_integrators import (
     integrate_nonlinear_diffrax,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.core.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 from dataclasses import replace
 import jax
@@ -74,7 +74,7 @@ def test_diffrax_helper_functions() -> None:
 
 
 def test_require_diffrax_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    import spectraxgk.diffrax_integrators as di
+    import spectraxgk.solvers.time.diffrax_core as di
 
     monkeypatch.setattr(di, "dfx", None)
     monkeypatch.setattr(di, "eqx", None)

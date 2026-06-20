@@ -6,8 +6,10 @@ import numpy as np
 import pytest
 
 import spectraxgk
-from spectraxgk import benchmarking
-from spectraxgk.validation_gates import (
+import spectraxgk.validation.benchmarks.harness as benchmark_harness
+import spectraxgk.validation.benchmarks.harness_metrics as benchmark_harness_metrics
+import spectraxgk.validation.benchmarks.harness_zonal_metrics as benchmark_zonal_metrics
+from spectraxgk.validation.gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,
     GateReport,
@@ -30,12 +32,32 @@ from spectraxgk.validation_gates import (
 )
 
 
-def test_validation_gate_primitives_are_public_and_backward_compatible() -> None:
+def test_validation_gate_facade_points_to_focused_modules() -> None:
+    import spectraxgk.validation.gate_reports as gate_reports
+    import spectraxgk.validation.gate_types as gate_types
+    import spectraxgk.validation.gates as gates
+
+    assert gates.LateTimeLinearMetrics is gate_types.LateTimeLinearMetrics
+    assert gates.NonlinearWindowMetrics is gate_types.NonlinearWindowMetrics
+    assert gates.GateReport is gate_types.GateReport
+    assert gates.evaluate_scalar_gate is gate_reports.evaluate_scalar_gate
+    assert gates.gate_report_to_dict is gate_reports.gate_report_to_dict
+    assert gates.observed_order_gate_report is gate_reports.observed_order_gate_report
+
+
+def test_validation_gate_primitives_are_public_and_available_to_benchmark_harness() -> None:
     assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
-    assert benchmarking.evaluate_scalar_gate is evaluate_scalar_gate
-    assert benchmarking.observed_order_gate_report is observed_order_gate_report
-    assert benchmarking.branch_continuity_gate_report is branch_continuity_gate_report
-    assert benchmarking.nonlinear_heat_flux_convergence_gate_report is nonlinear_heat_flux_convergence_gate_report
+    assert benchmark_harness.evaluate_scalar_gate is evaluate_scalar_gate
+    assert (
+        benchmark_harness_metrics.zonal_flow_response_metrics
+        is benchmark_zonal_metrics.zonal_flow_response_metrics
+    )
+    assert benchmark_harness.observed_order_gate_report is observed_order_gate_report
+    assert benchmark_harness.branch_continuity_gate_report is branch_continuity_gate_report
+    assert (
+        benchmark_harness.nonlinear_heat_flux_convergence_gate_report
+        is nonlinear_heat_flux_convergence_gate_report
+    )
 
 
 def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:

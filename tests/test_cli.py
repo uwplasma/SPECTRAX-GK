@@ -10,7 +10,8 @@ import numpy as np
 import pytest
 
 from spectraxgk import __version__
-from spectraxgk.analysis import ModeSelection
+import spectraxgk.cli as cli
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.cli import (
     _cmd_default_demo,
     _cmd_run,
@@ -20,16 +21,18 @@ from spectraxgk.cli import (
     _cmd_scan_linear,
     _cmd_scan_runtime_linear,
     _default_example_config_path,
+    _direct_config_shorthand_args,
     _is_runtime_toml,
-    _load_scan_ky,
     _resolve_case,
-    _runtime_output_path,
     _should_show_progress,
+    _toml_shorthand_command,
     main,
 )
 from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.workflows.named_cases import load_scan_ky
+from spectraxgk.workflows.runtime.commands import runtime_output_path
+from spectraxgk.workflows.runtime.config import RuntimeConfig
 
 
 def _project_version() -> str:
@@ -131,6 +134,21 @@ def test_cli_plot_usage_errors(capsys, monkeypatch) -> None:
     assert "usage: spectraxgk --plot" in capsys.readouterr().out
 
 
+def test_runtime_command_deps_are_built_from_patchable_cli_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = object()
+    writer = object()
+
+    monkeypatch.setattr(cli, "run_runtime_scan", runner)
+    monkeypatch.setattr(cli, "write_runtime_linear_artifacts", writer)
+
+    deps = cli._runtime_command_deps()
+
+    assert deps.run_runtime_scan is runner
+    assert deps.write_runtime_linear_artifacts is writer
+
+
 def test_cli_cyclone_info(capsys, monkeypatch):
     """The cyclone-info command should print default parameters."""
     monkeypatch.setattr(sys, "argv", ["spectrax-gk", "cyclone-info"])
@@ -152,13 +170,15 @@ def test_cli_cyclone_kperp(capsys, monkeypatch):
 def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
     cfg = RuntimeConfig()
     args = argparse.Namespace(out="explicit.out", progress=False, no_progress=False)
-    assert _runtime_output_path(args, cfg) == "explicit.out"
+    assert runtime_output_path(args, cfg) == "explicit.out"
     args.out = None
-    assert _runtime_output_path(args, cfg) == cfg.output.path
+    assert runtime_output_path(args, cfg) == cfg.output.path
 
     assert _is_runtime_toml({"physics": {}}) is True
     assert _is_runtime_toml({"case": "cyclone"}) is False
     assert _is_runtime_toml({}) is True
+    assert _toml_shorthand_command({"physics": {}}) == "run"
+    assert _toml_shorthand_command({"case": "cyclone"}) == "run-linear"
 
     monkeypatch.setattr("sys.stdout.isatty", lambda: False)
     assert _should_show_progress(argparse.Namespace(progress=True, no_progress=False), False) is True
@@ -171,8 +191,36 @@ def test_cli_helper_predicates_and_dispatch_utils(monkeypatch, capsys) -> None:
     with pytest.raises(ValueError):
         _resolve_case("bad")
 
-    assert np.allclose(_load_scan_ky({"scan": {"ky": [0.1, 0.2]}}), np.array([0.1, 0.2]))
-    assert _load_scan_ky({}).size == 0
+    assert np.allclose(load_scan_ky({"scan": {"ky": [0.1, 0.2]}}), np.array([0.1, 0.2]))
+    assert load_scan_ky({}).size == 0
+
+
+def test_direct_config_shorthand_args_resolve_command_and_guards(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cfg_path = tmp_path / "case.toml"
+    cfg_path.write_text("[physics]\n", encoding="utf-8")
+
+    monkeypatch.setattr("spectraxgk.cli.load_toml", lambda _path: {"physics": {}})
+    assert _direct_config_shorthand_args([str(cfg_path), "--no-progress"]) == [
+        "run",
+        "--config",
+        str(cfg_path),
+        "--no-progress",
+    ]
+
+    monkeypatch.setattr("spectraxgk.cli.load_toml", lambda _path: {"case": "cyclone"})
+    assert _direct_config_shorthand_args([str(cfg_path), "--plot"]) == [
+        "run-linear",
+        "--config",
+        str(cfg_path),
+        "--plot",
+    ]
+
+    assert _direct_config_shorthand_args([]) is None
+    assert _direct_config_shorthand_args(["--version"]) is None
+    assert _direct_config_shorthand_args(["run", "--config", str(cfg_path)]) is None
+    assert _direct_config_shorthand_args([str(tmp_path / "missing.toml")]) is None
 
 
 def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:
@@ -196,7 +244,63 @@ def test_cmd_run_handles_load_error_and_dispatches(monkeypatch, capsys) -> None:
     assert _cmd_run(args) == 9
 
 
-def test_main_shorthand_dispatches_runtime_and_legacy(monkeypatch, tmp_path: Path) -> None:
+def test_cmd_run_reuses_loaded_runtime_config_for_linear_dispatch(
+    monkeypatch,
+) -> None:
+    cfg = RuntimeConfig()
+    load_calls: list[str] = []
+    captured: dict[str, object] = {}
+
+    def _load_runtime(path):
+        load_calls.append(str(path))
+        return cfg, {"run": {"ky": 0.2}}
+
+    def _run_runtime_linear(cfg_in, **kwargs):
+        captured["cfg"] = cfg_in
+        captured["kwargs"] = kwargs
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            t=np.asarray([0.0, 1.0]),
+            signal=np.asarray([1.0, 1.2]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.load_runtime_from_toml", _load_runtime)
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _run_runtime_linear)
+    args = argparse.Namespace(
+        config="case.toml",
+        ky=None,
+        Nl=None,
+        Nm=None,
+        solver=None,
+        fit_signal=None,
+        method=None,
+        dt=None,
+        steps=None,
+        sample_stride=None,
+        progress=False,
+        no_progress=True,
+        out=None,
+        vmec_file=None,
+        geometry_file=None,
+        quasilinear=False,
+        ql_mode=None,
+        ql_saturation_rule=None,
+        ql_csat=None,
+        ql_normalization=None,
+        ql_output=None,
+    )
+
+    assert _cmd_run(args) == 0
+    assert load_calls == ["case.toml"]
+    assert captured["kwargs"]["ky_target"] == pytest.approx(0.2)
+
+
+def test_main_shorthand_dispatches_runtime_and_named_cases(
+    monkeypatch, tmp_path: Path
+) -> None:
     cfg_path = tmp_path / "case.toml"
     cfg_path.write_text("[physics]\n", encoding="utf-8")
     captured: list[list[str]] = []
@@ -1082,7 +1186,7 @@ path = "artifacts/direct_shorthand"
     assert (tmp_path / "artifacts" / "direct_shorthand.summary.json").exists()
 
 
-def test_cli_direct_config_shorthand_legacy_case_uses_run_linear_path(
+def test_cli_direct_config_shorthand_named_case_uses_run_linear_path(
     capsys, monkeypatch, tmp_path: Path
 ) -> None:
     cfg = """
@@ -1121,8 +1225,8 @@ R_over_Ln = 2.2
     code = main()
     out = capsys.readouterr().out
     assert code == 0
-    assert "starting legacy linear cyclone run" in out
-    assert "detected legacy case TOML; using run-linear path" in out
+    assert "starting named linear cyclone run" in out
+    assert "detected named case TOML; using run-linear path" in out
     assert "gamma=" in out
 
 

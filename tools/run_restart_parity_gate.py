@@ -13,15 +13,22 @@ from typing import Any
 
 import numpy as np
 
-from spectraxgk.io import load_runtime_from_toml, load_toml
-from spectraxgk.restart import write_gx_restart_state
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml, load_toml
+from spectraxgk.artifacts.restart import write_netcdf_restart_state
 from spectraxgk.runtime import RuntimeNonlinearResult, run_runtime_nonlinear
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--manifest", type=Path, required=True, help="TOML manifest describing each restart gate lane.")
-    p.add_argument("--lane", type=str, default=None, help="Optional single lane key to run.")
+    p.add_argument(
+        "--manifest",
+        type=Path,
+        required=True,
+        help="TOML manifest describing each restart gate lane.",
+    )
+    p.add_argument(
+        "--lane", type=str, default=None, help="Optional single lane key to run."
+    )
     p.add_argument(
         "--outdir",
         type=Path,
@@ -172,30 +179,50 @@ def _lane_gate_summary(
             diagnostics_stride=diagnostics_stride,
             return_state=True,
         )
-        full = run_runtime_nonlinear(cfg_gate, steps=steps_first + steps_second, **common)
+        full = run_runtime_nonlinear(
+            cfg_gate, steps=steps_first + steps_second, **common
+        )
         part1 = run_runtime_nonlinear(cfg_gate, steps=steps_first, **common)
         if full.state is None or part1.state is None:
-            raise RuntimeError("Restart parity gate requires return_state=True results.")
+            raise RuntimeError(
+                "Restart parity gate requires return_state=True results."
+            )
 
         restart_path = out_dir / "restart.bin"
-        write_gx_restart_state(restart_path, np.asarray(part1.state, dtype=np.complex64))
+        write_netcdf_restart_state(
+            restart_path, np.asarray(part1.state, dtype=np.complex64)
+        )
         cfg_restart = replace(
             cfg_gate,
-            init=replace(cfg_gate.init, init_file=str(restart_path), init_file_scale=1.0, init_file_mode="replace"),
+            init=replace(
+                cfg_gate.init,
+                init_file=str(restart_path),
+                init_file_scale=1.0,
+                init_file_mode="replace",
+            ),
         )
         cont = run_runtime_nonlinear(cfg_restart, steps=steps_second, **common)
         if cont.state is None:
             raise RuntimeError("Restart continuation did not return a final state.")
 
-        state_metrics = _complex_rel_metrics(np.asarray(full.state), np.asarray(cont.state))
+        state_metrics = _complex_rel_metrics(
+            np.asarray(full.state), np.asarray(cont.state)
+        )
         diag_full = _diag_scalar_map(full)
         diag_cont = _diag_scalar_map(cont)
         diag_metrics = {
-            name: _scalar_rel(diag_full[name], diag_cont[name]) for name in diag_full.keys() & diag_cont.keys()
+            name: _scalar_rel(diag_full[name], diag_cont[name])
+            for name in diag_full.keys() & diag_cont.keys()
         }
 
-        state_ok = bool(state_metrics["max_abs"] <= state_atol or state_metrics["max_rel"] <= state_rtol)
-        diag_ok = all(values["abs"] <= diag_atol or values["rel"] <= diag_rtol for values in diag_metrics.values())
+        state_ok = bool(
+            state_metrics["max_abs"] <= state_atol
+            or state_metrics["max_rel"] <= state_rtol
+        )
+        diag_ok = all(
+            values["abs"] <= diag_atol or values["rel"] <= diag_rtol
+            for values in diag_metrics.values()
+        )
         ok = bool(state_ok and diag_ok)
 
         summary = {
@@ -215,7 +242,9 @@ def _lane_gate_summary(
             "diag_tolerances": {"rtol": diag_rtol, "atol": diag_atol},
             "ok": ok,
         }
-        (out_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+        (out_dir / "summary.json").write_text(
+            json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
+        )
         return summary
 
 
@@ -235,7 +264,9 @@ def main() -> None:
         lane_cfg = lanes.get(lane_key)
         if not isinstance(lane_cfg, dict):
             raise SystemExit(f"Lane config must be a table: lane.{lane_key}")
-        config_path = _resolve_manifest_path(lane_cfg["config"], manifest_dir=manifest_dir)
+        config_path = _resolve_manifest_path(
+            lane_cfg["config"], manifest_dir=manifest_dir
+        )
         lane_out = out_root / lane_key
         lane_out.mkdir(parents=True, exist_ok=True)
         lane_summary = _lane_gate_summary(config_path, lane_cfg, out_dir=lane_out)
@@ -244,7 +275,9 @@ def main() -> None:
             failed.append(lane_key)
 
     summary_path = out_root / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(f"saved {summary_path}")
     if failed:
         raise SystemExit(f"Restart parity gate failed for lanes: {', '.join(failed)}")

@@ -109,7 +109,7 @@
     }
   ],
   "rtol": 2e-06,
-  "source": "spectraxgk.velocity_sharding.periodic_streaming_shard_map",
+  "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
   "state_shape": [
     2,
     8,

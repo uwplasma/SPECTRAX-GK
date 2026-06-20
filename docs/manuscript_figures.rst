@@ -231,8 +231,8 @@ Core Validation Figures
      - current artifact base: ``docs/_static/nonlinear_transport_time_horizon_audit.png`` with CSV/JSON/PDF companions. It audits the actual simulated time and claim scope for release nonlinear gates, startup finite-difference audits, reduced nonlinear-window estimators, and external-VMEC feasibility pilots. The new QH reduced-grid nonlinear pilot is extended from the earlier startup-scale ``t=20`` trace to ``t=150`` and reaches a meaningful late heat-flux window with mean about ``19.6``; it remains a feasibility result until a grid/window convergence gate passes. This panel prevents startup ``1e-11``-scale heat fluxes or reduced-envelope outputs from being described as post-transient nonlinear transport averages.
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
-     - Closed for currently tracked gates
-     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``17/17`` passed after adding the scoped CTH-like high-grid admission gate.
+     - Current release-gate audit with quasilinear model-selection deliberately open
+     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for materialized release-window gates. The current index records ``17/18`` passed: the shaped-pressure external-VMEC high-grid admission gate is included as a passed scoped holdout, while ``docs/_static/quasilinear_model_selection_status.json`` remains open because the required spectral-envelope candidate misses the strict transport-error gate and is not promoted as an absolute-flux predictor.
    * - Open research lane status
      - ``tools/build_open_research_lane_status.py``
      - Closed as a claim-scope audit; underlying physics lanes remain scoped
@@ -282,7 +282,7 @@ Core Validation Figures
      - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked
      - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON companion. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has twelve cases, two explicit training geometries, and ten held-out geometries. That is sufficient for the one-parameter linear-weight candidate, the two-parameter shape-power-law candidate, the three-parameter ``spectral_envelope_ridge`` candidate, and the five-parameter ``linear_state_ridge`` model at the configured leave-one-out train-to-parameter threshold. The gate still fails closed because the downstream candidate-skill gate is not passed on the expanded ledger.
    * - Quasilinear model-selection status
-     - ``tools/plot_quasilinear_model_selection_status.py`` and :mod:`spectraxgk.quasilinear_model_selection`
+     - ``tools/plot_quasilinear_model_selection_status.py`` and :mod:`spectraxgk.validation.quasilinear.model_selection`
      - Model-selection lane demoted by the expanded CTH-like and shaped-pressure holdouts; screening remains unpromoted
      - current artifact base: ``docs/_static/quasilinear_model_selection_status.png`` with CSV/JSON companion. It consolidates the dataset-sufficiency gate, uncertainty/skill gate, and tracked train/holdout calibration reports into one claim-boundary panel. The required ``spectral_envelope_ridge`` candidate reaches leave-one-geometry-out mean relative error about ``0.697`` with prediction-interval coverage ``11/12``. It beats the calibrated linear-weight baseline but misses the ``0.35`` transport gate and no longer passes the strict screening gates, so the model-selection artifact is ``passed=false`` with blockers ``dataset_sufficiency_passed``, ``candidate_uncertainty_passed``, ``required_candidate_accepted``, and ``required_candidate_transport_error``.
    * - Quasilinear holdout-gap report
@@ -290,7 +290,7 @@ Core Validation Figures
      - Absolute-flux promotion boundary quantified; frozen-ledger model blockers explicit
      - current artifact base: ``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON companion. It keeps ``absolute_flux_promoted=false`` and records both ``absolute_flux_promotion_requirements`` and ``screening_promotion_requirements`` blocks. After adding the replicated Solovev holdout, the current absolute train/holdout error is about ``6.49`` against the ``0.35`` gate, no full-portfolio or held-out-only screening model is accepted, and the independent-holdout-count blocker is closed. The CTH-like, shaped-pressure, QP, and Solovev admissions strengthen external-VMEC coverage enough for this tranche; the report now requires a substantially better saturation model and held-out transport skill on the existing ledger before absolute-flux promotion can be reconsidered.
    * - External-VMEC next-holdout runbook
-     - ``tools/build_external_vmec_holdout_runbook.py`` and :mod:`spectraxgk.external_holdout_plan`
+     - ``tools/build_external_vmec_holdout_runbook.py`` and :mod:`spectraxgk.validation.external_holdout`
      - Solovev replicated holdout admitted as negative absolute-QL evidence; QH remains negative evidence
      - current artifact base: ``docs/_static/external_vmec_next_holdout_runbook.png`` with CSV/JSON companions. It converts the holdout-gap report and external-VMEC linear screen into a fail-closed nonlinear launch plan. The CTH-like modified-protocol harvest is admitted only through ``tools/check_external_vmec_high_grid_admission.py``: the full ``n48/n64/n80`` sidecar fails due to the coarse grid, the retained ``n64/n80`` high-grid gates, late time-horizon gate, and ``n80`` seed/timestep ensemble pass. The shaped-tokamak-pressure repair now follows the same policy: the full ``n48/n64/n80`` ``t=450`` sidecar fails only coarse-grid agreement with pairwise heat-flux shift about ``0.469``, while retained ``n64/n80`` gates pass at ``t=450``/``t=650`` and the ``n80`` seed/timestep ensemble passes on ``t=[325,650]`` with mean heat flux about ``7.16``. Both are scoped high-grid holdouts, not full coarse-to-high-grid convergence claims. The corrected ``nfp4_QH_warm_start`` modified-protocol ladder reached ``t=250``, ``t=450``, and ``t=700`` at ``n64/n80`` and ``dt=0.04``, but all relaxed 20% high-grid gates fail; the final ``t=700`` common-window and least-window heat-flux differences are about ``0.349`` and ``0.367``. A new bounded linear screen added ``wout_solovev_reference.nc`` with ``gamma≈0.0944`` at ``ky≈0.2857`` and ``wout_up_down_asymmetric_tokamak_reference.nc`` with ``gamma≈0.0360`` at ``ky≈0.4762``. Since up-down asymmetric is already represented, Solovev was run as the next independent nonlinear holdout. Its repaired ``n48/t250`` seed/timestep ensemble passes with ``<Q_i>=1.409`` and mean-relative spread ``0.1599`` under the explicit ``20%`` gate. This is not an absolute-flux promotion; Solovev enters calibration as negative transfer evidence.
    * - Pre-manuscript closure action runbook
@@ -324,7 +324,7 @@ Core Validation Figures
    * - Velocity-space convergence panel
      - ``tools/generate_observed_order_gate.py`` plus dedicated full convergence refresh script to add
      - Open
-     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The CSV-backed Cyclone velocity-space artifact is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; the current office/GPU ``ky=0.30`` sweep passes the strict pairwise-order and final-error gate.
+     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.validation.benchmarks.harness.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The CSV-backed Cyclone velocity-space artifact is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; the current office/GPU ``ky=0.30`` sweep passes the strict pairwise-order and final-error gate.
    * - Stellarator validation panel
      - dedicated script to add
      - Open
@@ -409,7 +409,7 @@ Differentiable-Physics Figures
        blocked until true long-window outputs are available. The Boozer-LCFS
        ``|B|`` row is drawn with unfilled contours rather than a filled density
        map to expose quasisymmetry deterioration. The old projected-weight
-       nonlinear audits remain historical single-point evidence tied to an
+       nonlinear audits remain archived single-point evidence tied to an
        earlier baseline and should not be conflated with this strict-baseline
        panel.
    * - Boundary-coefficient transport landscape

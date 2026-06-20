@@ -16,7 +16,7 @@ import numpy as np
 
 from spectraxgk.benchmarks import CycloneScanResult, run_cyclone_scan
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.plotting import set_plot_style
+from spectraxgk.artifacts.plotting import set_plot_style
 
 
 matplotlib.use("Agg")

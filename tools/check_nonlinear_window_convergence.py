@@ -13,8 +13,10 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.quasilinear_window import (
+from spectraxgk.validation.quasilinear.window_config import (
     NonlinearWindowConvergenceConfig,
+)
+from spectraxgk.validation.quasilinear.window_io import (
     nonlinear_window_convergence_from_csv,
     nonlinear_window_convergence_from_summary,
 )

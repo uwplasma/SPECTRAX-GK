@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.secondary import build_secondary_stage2_config, run_secondary_modes, run_secondary_seed
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from spectraxgk.validation.benchmarks.secondary import build_secondary_stage2_config, run_secondary_modes, run_secondary_seed
 
 
 DEFAULT_MODES = (
@@ -132,7 +132,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/benchmarks/runtime_secondary_slab.toml"),
+        default=Path("benchmarks/runtime_secondary_slab.toml"),
         help="Stage-1 secondary runtime config.",
     )
     parser.add_argument("--gx-out", type=Path, default=None, help="GX kh01a out.nc file.")

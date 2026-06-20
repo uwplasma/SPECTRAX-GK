@@ -1,9 +1,33 @@
 {
   "atol": 5e-06,
+  "auto_z_chunk_size": false,
   "backend": "cpu",
   "claim_scope": "device z-sharded shard_map nonlinear transport-window timing; serial-vs-sharded final-state and scalar-trace identity are required before any micro-route speedup claim, and this is not yet a full production nonlinear turbulent-transport solve",
   "device_count_available": 4,
   "dt": 0.0025,
+  "fft_batch_pressure_model": {
+    "chunked_fft_batch_count": 49152,
+    "chunking_active": false,
+    "chunking_required": false,
+    "claim_scope": "cuFFT batch-pressure preflight for device-z pencil profiling; suggests z chunking before launching expensive CPU/GPU runs and does not constitute a nonlinear speedup claim",
+    "device_count": 4,
+    "disable_gpu_preallocation_recommended": false,
+    "effective_z_chunk_size": 8,
+    "feasibility_blockers": [],
+    "local_z_extent": 8,
+    "max_fft_axis_extent": 96,
+    "max_fft_batch_count": 65536,
+    "profiling_candidate": true,
+    "state_shape": [
+      4,
+      16,
+      96,
+      96,
+      32
+    ],
+    "suggested_z_chunk_size": null,
+    "unchunked_fft_batch_count": 49152
+  },
   "hlo": {
     "device_2": {
       "all_reduce": 0,
@@ -13,7 +37,7 @@
       "fft": 36,
       "fusion": 0,
       "line_count": 213,
-      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_device2.hlo.txt"
+      "path": "/tmp/spectrax_device_z_cpu4_hlo_device2.hlo.txt"
     },
     "device_4": {
       "all_reduce": 0,
@@ -23,7 +47,7 @@
       "fft": 36,
       "fusion": 0,
       "line_count": 213,
-      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_device4.hlo.txt"
+      "path": "/tmp/spectrax_device_z_cpu4_hlo_device4.hlo.txt"
     },
     "serial": {
       "all_reduce": 0,
@@ -33,11 +57,14 @@
       "fft": 78,
       "fusion": 0,
       "line_count": 507,
-      "path": "/tmp/spectrax_hlo/nonlinear_device_z_pencil_transport_cpu4_serial.hlo.txt"
+      "path": "/tmp/spectrax_device_z_cpu4_hlo_serial.hlo.txt"
     }
   },
   "kind": "nonlinear_device_z_pencil_transport_window_profile",
+  "max_fft_batch_count": 65536,
   "min_speedup": 1.5,
+  "observable_mode": "host_gather",
+  "observable_repeats": 0,
   "repeats": 3,
   "rows": [
     {
@@ -46,19 +73,24 @@
       "device_count": 1,
       "final_state_max_abs_error": 0.0,
       "final_state_max_rel_error": 0.0,
+      "identity_gate_elapsed_s": null,
       "identity_passed": true,
-      "median_s": 0.6340955829946324,
+      "median_s": 0.6420480830129236,
+      "observable_gate_median_s": null,
+      "observable_gate_overhead_vs_compute": null,
+      "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 0.0,
       "physical_flux_trace_max_rel_error": 0.0,
       "speedup_gate_passed": false,
       "speedup_vs_serial": 1.0,
       "stats": {
-        "max": 0.6580973330419511,
-        "mean": 0.6197236386748651,
-        "median": 0.6340955829946324,
-        "min": 0.566977999988012,
-        "std": 0.03856248437446715
+        "max": 0.6563038339372724,
+        "mean": 0.6104011112668862,
+        "median": 0.6420480830129236,
+        "min": 0.5328514168504626,
+        "std": 0.05514389018235102
       },
+      "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true
     },
     {
@@ -67,19 +99,24 @@
       "device_count": 2,
       "final_state_max_abs_error": 7.450580596923828e-09,
       "final_state_max_rel_error": 8.765812825071403e-09,
+      "identity_gate_elapsed_s": 5.592096082866192,
       "identity_passed": true,
-      "median_s": 0.38137416599784046,
+      "median_s": 0.397802707972005,
+      "observable_gate_median_s": null,
+      "observable_gate_overhead_vs_compute": null,
+      "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 0.0,
       "physical_flux_trace_max_rel_error": 0.0,
       "speedup_gate_passed": true,
-      "speedup_vs_serial": 1.6626600318759477,
+      "speedup_vs_serial": 1.6139862050866358,
       "stats": {
-        "max": 0.3867154580075294,
-        "mean": 0.3795099580117191,
-        "median": 0.38137416599784046,
-        "min": 0.3704402500297874,
-        "std": 0.0067738247315839665
+        "max": 0.4004376670345664,
+        "mean": 0.39783491667670506,
+        "median": 0.397802707972005,
+        "min": 0.39526437502354383,
+        "std": 0.002112110415093763
       },
+      "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true,
       "transport_window_report": {
         "active_device_count": 2,
@@ -178,19 +215,24 @@
       "device_count": 4,
       "final_state_max_abs_error": 7.450580596923828e-09,
       "final_state_max_rel_error": 8.765812825071403e-09,
+      "identity_gate_elapsed_s": 4.224432250019163,
       "identity_passed": true,
-      "median_s": 0.2038312079384923,
+      "median_s": 0.2053748748730868,
+      "observable_gate_median_s": null,
+      "observable_gate_overhead_vs_compute": null,
+      "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 0.0,
       "physical_flux_trace_max_rel_error": 0.0,
       "speedup_gate_passed": true,
-      "speedup_vs_serial": 3.1108856656826362,
+      "speedup_vs_serial": 3.1262250721257057,
       "stats": {
-        "max": 0.2048675420228392,
-        "mean": 0.20165329162652293,
-        "median": 0.2038312079384923,
-        "min": 0.19626112491823733,
-        "std": 0.0038362389081888115
+        "max": 0.2061943330336362,
+        "mean": 0.20365688864452144,
+        "median": 0.2053748748730868,
+        "min": 0.19940145802684128,
+        "std": 0.003027583769899688
       },
+      "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true,
       "transport_window_report": {
         "active_device_count": 4,
@@ -286,11 +328,11 @@
   ],
   "rtol": 0.0001,
   "serial_stats_s": {
-    "max": 0.6580973330419511,
-    "mean": 0.6197236386748651,
-    "median": 0.6340955829946324,
-    "min": 0.566977999988012,
-    "std": 0.03856248437446715
+    "max": 0.6563038339372724,
+    "mean": 0.6104011112668862,
+    "median": 0.6420480830129236,
+    "min": 0.5328514168504626,
+    "std": 0.05514389018235102
   },
   "shape": [
     4,
@@ -303,20 +345,20 @@
   "summary": {
     "all_active_identity_passed": true,
     "full_solver_speedup_claim_allowed": false,
-    "max_speedup_vs_serial": 3.1108856656826362,
+    "max_speedup_vs_serial": 3.1262250721257057,
     "status": "transport_window_speedup_candidate",
     "transport_window_speedup_claim_allowed": true
   },
+  "timing_scope": "speedup rows time compute-only fixed-step final-state updates; observable_gate_* fields optionally time the scalar identity/transport diagnostics separately and are not included in the speedup gate",
   "trace": {
-    "file_count": 4,
+    "file_count": 2,
     "requested": true,
     "sample_files": [
       "Rogerios-MacBook-Pro.local.trace.json.gz",
-      "Rogerios-MacBook-Pro.local.trace.json.gz",
-      "Rogerios-MacBook-Pro.local.xplane.pb",
       "Rogerios-MacBook-Pro.local.xplane.pb"
     ],
-    "trace_dir": "/tmp/spectrax_traces/nonlinear_device_z_pencil_transport_cpu4/device4"
+    "trace_dir": "/tmp/spectrax_traces/device_z_cpu4/device4"
   },
-  "warmups": 1
+  "warmups": 1,
+  "z_chunk_size": null
 }

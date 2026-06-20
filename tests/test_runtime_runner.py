@@ -10,19 +10,29 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import spectraxgk.runtime_startup as startup
-from spectraxgk.benchmarking import late_time_linear_metrics
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+import spectraxgk.workflows.runtime.startup as startup
+from spectraxgk.validation.benchmarks.harness import late_time_linear_metrics
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
-from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.diagnostics.modes import ModeSelection
+from spectraxgk.geometry import (
+    SAlphaGeometry,
+    apply_geometry_grid_defaults,
+    sample_flux_tube_geometry,
+)
+from spectraxgk.core.grid import build_spectral_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
-    _gx_centered_random_pairs,
-    _gx_init_mode_pairs,
-    _gx_periodic_zp,
+    _centered_glibc_random_pairs,
+    _dealiased_initial_mode_pairs,
+    _periodic_zp_from_grid,
     _infer_runtime_nonlinear_steps,
     RuntimeLinearResult,
     RuntimeLinearScanResult,
@@ -35,7 +45,7 @@ from spectraxgk.runtime import (
     run_runtime_nonlinear,
     run_runtime_scan,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeExpertConfig,
@@ -54,9 +64,13 @@ pytestmark = pytest.mark.integration
 def _base_runtime_cfg() -> RuntimeConfig:
     return RuntimeConfig(
         grid=GridConfig(Nx=1, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="periodic"),
-        time=TimeConfig(t_max=0.2, dt=0.01, method="rk2", use_diffrax=False, sample_stride=1),
+        time=TimeConfig(
+            t_max=0.2, dt=0.01, method="rk2", use_diffrax=False, sample_stride=1
+        ),
         geometry=GeometryConfig(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778),
-        init=InitializationConfig(init_field="density", init_amp=1.0e-8, gaussian_init=False),
+        init=InitializationConfig(
+            init_field="density", init_amp=1.0e-8, gaussian_init=False
+        ),
         terms=RuntimeTermsConfig(hypercollisions=0.0, end_damping=0.0),
     )
 
@@ -84,7 +98,13 @@ def _gx_c_rand_pairs(seed: int, count: int) -> np.ndarray:
 
 def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
     ion = RuntimeSpeciesConfig(
-        name="ion", charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=2.49, fprim=0.8
+        name="ion",
+        charge=1.0,
+        mass=1.0,
+        density=1.0,
+        temperature=1.0,
+        tprim=2.49,
+        fprim=0.8,
     )
     electron = RuntimeSpeciesConfig(
         name="electron",
@@ -99,13 +119,17 @@ def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
     cyclone = replace(
         _base_runtime_cfg(),
         species=(ion,),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     etg = replace(
         _base_runtime_cfg(),
         species=(electron,),
-        normalization=RuntimeNormalizationConfig(contract="etg", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="etg", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(
             adiabatic_electrons=False,
             adiabatic_ions=True,
@@ -116,9 +140,13 @@ def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
     kbm = replace(
         _base_runtime_cfg(),
         grid=GridConfig(Nx=1, Ny=8, Nz=16, Lx=62.8, Ly=62.8, boundary="periodic"),
-        init=InitializationConfig(init_field="all", init_amp=1.0e-8, gaussian_init=False),
+        init=InitializationConfig(
+            init_field="all", init_amp=1.0e-8, gaussian_init=False
+        ),
         species=(ion, electron),
-        normalization=RuntimeNormalizationConfig(contract="kbm", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kbm", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(
             adiabatic_electrons=False,
             electrostatic=False,
@@ -158,7 +186,9 @@ def test_runtime_linear_etg_defaults_to_frequency_targeted_krylov(
     cfg = replace(
         _base_runtime_cfg(),
         species=(electron,),
-        normalization=RuntimeNormalizationConfig(contract="etg", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="etg", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(
             adiabatic_electrons=False,
             adiabatic_ions=True,
@@ -172,7 +202,9 @@ def test_runtime_linear_etg_defaults_to_frequency_targeted_krylov(
     def fake_dominant_eigenpair(_g0, _cache, _params, terms=None, **kwargs):
         captured["terms"] = terms
         captured.update(kwargs)
-        return np.asarray(0.2 + 0.3j, dtype=np.complex64), np.zeros_like(np.asarray(_g0))
+        return np.asarray(0.2 + 0.3j, dtype=np.complex64), np.zeros_like(
+            np.asarray(_g0)
+        )
 
     monkeypatch.setattr(runtime, "dominant_eigenpair", fake_dominant_eigenpair)
 
@@ -191,7 +223,9 @@ def test_runtime_terms_and_params_follow_toggles() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="rho_star"
+        ),
         physics=RuntimePhysicsConfig(
             electrostatic=False,
             electromagnetic=True,
@@ -240,7 +274,7 @@ def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
     assert float(params_nm16.p_hyper_m) == 8.0
 
 
-def test_runtime_end_damping_defaults_follow_gx_rate_contract() -> None:
+def test_runtime_end_damping_defaults_use_unscaled_reference_rate() -> None:
     base = _base_runtime_cfg()
     cfg = replace(
         base,
@@ -264,7 +298,9 @@ def test_runtime_end_damping_can_explicitly_scale_by_dt() -> None:
     assert float(params.damp_ends_widthfrac) == pytest.approx(0.125)
 
 
-def test_runtime_startup_model_and_geometry_branches(monkeypatch, tmp_path: Path) -> None:
+def test_runtime_startup_model_and_geometry_branches(
+    monkeypatch, tmp_path: Path
+) -> None:
     base = _base_runtime_cfg()
     captured = []
 
@@ -272,43 +308,80 @@ def test_runtime_startup_model_and_geometry_branches(monkeypatch, tmp_path: Path
         captured.append(geom_cfg)
         return SimpleNamespace(s_hat=0.8, gradpar=lambda: 1.0)
 
-    monkeypatch.setattr(startup, "build_flux_tube_geometry", fake_build_flux_tube_geometry)
-    monkeypatch.setattr(startup, "generate_runtime_vmec_eik", lambda _cfg: tmp_path / "vmec.eik.nc")
-    monkeypatch.setattr(startup, "generate_runtime_miller_eik", lambda _cfg: tmp_path / "miller.eik.nc")
+    monkeypatch.setattr(
+        startup, "build_flux_tube_geometry", fake_build_flux_tube_geometry
+    )
+    monkeypatch.setattr(
+        startup, "generate_runtime_vmec_eik", lambda _cfg: tmp_path / "vmec.eik.nc"
+    )
+    monkeypatch.setattr(
+        startup, "generate_runtime_miller_eik", lambda _cfg: tmp_path / "miller.eik.nc"
+    )
 
     vmec_cfg = replace(base, geometry=replace(base.geometry, model="vmec"))
     miller_cfg = replace(base, geometry=replace(base.geometry, model="miller"))
     default_cfg = replace(base, geometry=replace(base.geometry, model="s-alpha"))
 
+    vmec_geom_cfg = startup.runtime_geometry_config_for_builder(
+        vmec_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+    miller_geom_cfg = startup.runtime_geometry_config_for_builder(
+        miller_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+    default_geom_cfg = startup.runtime_geometry_config_for_builder(
+        default_cfg,
+        vmec_eik_builder=startup.generate_runtime_vmec_eik,
+        miller_eik_builder=startup.generate_runtime_miller_eik,
+    )
+
+    assert vmec_geom_cfg.model == "vmec-eik"
+    assert vmec_geom_cfg.geometry_file.endswith("vmec.eik.nc")
+    assert miller_geom_cfg.model == "imported-eik"
+    assert miller_geom_cfg.geometry_file.endswith("miller.eik.nc")
+    assert default_geom_cfg is default_cfg.geometry
+
     assert startup.build_runtime_geometry(vmec_cfg).s_hat == pytest.approx(0.8)
     assert captured[-1].model == "vmec-eik"
     assert captured[-1].geometry_file.endswith("vmec.eik.nc")
     assert startup.build_runtime_geometry(miller_cfg).s_hat == pytest.approx(0.8)
-    assert captured[-1].model == "gx-eik"
+    assert captured[-1].model == "imported-eik"
     assert captured[-1].geometry_file.endswith("miller.eik.nc")
     assert startup.build_runtime_geometry(default_cfg).s_hat == pytest.approx(0.8)
     assert captured[-1].model == "s-alpha"
 
 
 def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> None:
-    no_kinetic = replace(_base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="adiabatic", kinetic=False),))
+    no_kinetic = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="adiabatic", kinetic=False),),
+    )
     with pytest.raises(ValueError, match="kinetic species"):
         startup._species_to_linear(no_kinetic.species)
 
-    cetg = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="cetg"))
+    cetg = replace(
+        _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="cetg")
+    )
     assert startup._resolve_runtime_hl_dims(cetg, Nl=None, Nm=None) == (2, 1)
     with pytest.raises(ValueError, match="cETG"):
         startup._resolve_runtime_hl_dims(cetg, Nl=3, Nm=1)
     with pytest.raises(NotImplementedError, match="cetg"):
         startup._require_full_gk_runtime_model(cetg)
 
-    krehm = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="krehm"))
+    krehm = replace(
+        _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="krehm")
+    )
     with pytest.raises(NotImplementedError, match="krehm"):
         startup._resolve_runtime_hl_dims(krehm, Nl=None, Nm=None)
     with pytest.raises(NotImplementedError, match="krehm"):
         startup._require_full_gk_runtime_model(krehm)
 
-    unknown = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="not-a-model"))
+    unknown = replace(
+        _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="not-a-model")
+    )
     with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
         startup._resolve_runtime_hl_dims(unknown, Nl=None, Nm=None)
     with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
@@ -316,7 +389,10 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
 
     fake_geom = SimpleNamespace(s_hat=0.8, gradpar=lambda: 1.25)
     monkeypatch.setattr(startup, "build_runtime_geometry", lambda _cfg: fake_geom)
-    ion_cfg = replace(_base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),))
+    ion_cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),),
+    )
     params = startup.build_runtime_linear_params(ion_cfg, Nm=2)
     assert float(params.kpar_scale) == pytest.approx(1.25)
 
@@ -363,7 +439,9 @@ def test_runtime_scan_batch_matches_serial() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     ky_vals = [0.1, 0.2]
     serial = run_runtime_scan(
@@ -397,7 +475,9 @@ def test_runtime_linear_time_solver_can_return_state() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     res = run_runtime_linear(
         cfg,
@@ -420,7 +500,9 @@ def test_runtime_linear_records_fit_window_metadata() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     res = run_runtime_linear(
         cfg,
@@ -445,7 +527,9 @@ def test_runtime_linear_progress_with_sample_stride_gt_one() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         time=replace(_base_runtime_cfg().time, sample_stride=2),
     )
     res = run_runtime_linear(
@@ -464,11 +548,13 @@ def test_runtime_linear_progress_with_sample_stride_gt_one() -> None:
     assert np.isfinite(res.omega)
 
 
-def test_runtime_linear_gx_time_rejects_return_state() -> None:
+def test_runtime_linear_explicit_time_rejects_return_state() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     with pytest.raises(ValueError, match="return_state"):
         run_runtime_linear(
@@ -476,7 +562,7 @@ def test_runtime_linear_gx_time_rejects_return_state() -> None:
             ky_target=0.1,
             Nl=3,
             Nm=4,
-            solver="gx_time",
+            solver="explicit_time",
             method="rk4",
             dt=0.01,
             steps=2,
@@ -488,7 +574,9 @@ def test_runtime_linear_rejects_invalid_fit_signal() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     with pytest.raises(ValueError, match="fit_signal"):
         run_runtime_linear(
@@ -503,19 +591,29 @@ def test_runtime_linear_rejects_invalid_fit_signal() -> None:
         )
 
 
-def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_auto_fit_prefers_density_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64
+        ),
+    )
     monkeypatch.setattr(
         runtime,
         "integrate_linear_diagnostics",
@@ -528,19 +626,31 @@ def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.Monk
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda arr, sel, method="project": np.asarray([1.0, 1.1, 1.2], dtype=np.complex128)
-        if np.max(np.abs(arr)) < 2.0
-        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+        lambda arr, sel, method="project": (
+            np.asarray([1.0, 1.1, 1.2], dtype=np.complex128)
+            if np.max(np.abs(arr)) < 2.0
+            else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)
+        ),
     )
     monkeypatch.setattr(
         runtime,
         "fit_growth_rate_auto_with_stats",
-        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
-        if np.max(np.abs(signal)) < 2.0
-        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+        lambda t, signal, **kwargs: (
+            (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+            if np.max(np.abs(signal)) < 2.0
+            else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0)
+        ),
     )
-    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
-    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+    monkeypatch.setattr(
+        runtime,
+        "extract_eigenfunction",
+        lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "apply_diagnostic_normalization",
+        lambda gamma, omega, **kwargs: (gamma, omega),
+    )
 
     res = run_runtime_linear(
         cfg,
@@ -559,7 +669,9 @@ def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.Monk
     assert res.fit_window_tmax == pytest.approx(0.03)
 
 
-def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
@@ -574,7 +686,9 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
     monkeypatch.setattr(
         runtime,
         "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64
+        ),
     )
 
     def _fake_integrate_linear_from_config(*args, **kwargs):
@@ -582,17 +696,29 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
         phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
         return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
 
-    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config
+    )
     gamma_ref = 0.25
     omega_ref = -0.12
     t_saved = np.asarray([0.01, 0.02, 0.03], dtype=float)
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda phi_t, sel, method="project": np.exp((gamma_ref - 1j * omega_ref) * t_saved).astype(np.complex128),
+        lambda phi_t, sel, method="project": np.exp(
+            (gamma_ref - 1j * omega_ref) * t_saved
+        ).astype(np.complex128),
     )
-    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
-    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+    monkeypatch.setattr(
+        runtime,
+        "extract_eigenfunction",
+        lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "apply_diagnostic_normalization",
+        lambda gamma, omega, **kwargs: (gamma, omega),
+    )
 
     res = run_runtime_linear(
         cfg,
@@ -612,14 +738,20 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
     assert metrics.omega_fit == pytest.approx(omega_ref, rel=1.0e-3)
 
 
-def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_forwards_velocity_parallel_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
     cfg = replace(
         cfg0,
-        time=replace(cfg0.time, use_diffrax=False, sample_stride=1, dt=0.01, t_max=0.03),
-        parallel=RuntimeParallelConfig(strategy="velocity", axis="hermite", backend="auto", num_devices=1),
+        time=replace(
+            cfg0.time, use_diffrax=False, sample_stride=1, dt=0.01, t_max=0.03
+        ),
+        parallel=RuntimeParallelConfig(
+            strategy="velocity", axis="hermite", backend="auto", num_devices=1
+        ),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
@@ -629,7 +761,9 @@ def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.Mo
     monkeypatch.setattr(
         runtime,
         "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64
+        ),
     )
 
     def _fake_integrate_linear_from_config(*args, **kwargs):
@@ -637,15 +771,29 @@ def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.Mo
         phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
         return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
 
-    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config
+    )
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
         lambda *args, **kwargs: np.asarray([1.0, 1.1, 1.2], dtype=np.complex128),
     )
-    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.05, -0.02, 0.01, 0.03))
-    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
-    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+    monkeypatch.setattr(
+        runtime,
+        "fit_growth_rate_auto",
+        lambda *args, **kwargs: (0.05, -0.02, 0.01, 0.03),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "extract_eigenfunction",
+        lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "apply_diagnostic_normalization",
+        lambda gamma, omega, **kwargs: (gamma, omega),
+    )
 
     res = run_runtime_linear(
         cfg,
@@ -671,7 +819,9 @@ def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.Mo
         )
 
 
-def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg0 = _base_runtime_cfg()
@@ -686,7 +836,9 @@ def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypa
     monkeypatch.setattr(
         runtime,
         "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64
+        ),
     )
 
     def _fake_integrate_linear_from_config(*args, **kwargs):
@@ -694,25 +846,42 @@ def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypa
         assert kwargs["save_field"] == "phi+density"
         phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
         density_t = 3.0 * np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
-        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), (phi_t, density_t)
+        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), (
+            phi_t,
+            density_t,
+        )
 
-    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config
+    )
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda arr, sel, method="project": np.asarray([1.0, 1.1, 1.2], dtype=np.complex128)
-        if np.max(np.abs(arr)) < 2.0
-        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+        lambda arr, sel, method="project": (
+            np.asarray([1.0, 1.1, 1.2], dtype=np.complex128)
+            if np.max(np.abs(arr)) < 2.0
+            else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)
+        ),
     )
     monkeypatch.setattr(
         runtime,
         "fit_growth_rate_auto_with_stats",
-        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
-        if np.max(np.abs(signal)) < 2.0
-        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+        lambda t, signal, **kwargs: (
+            (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+            if np.max(np.abs(signal)) < 2.0
+            else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0)
+        ),
     )
-    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
-    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+    monkeypatch.setattr(
+        runtime,
+        "extract_eigenfunction",
+        lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "apply_diagnostic_normalization",
+        lambda gamma, omega, **kwargs: (gamma, omega),
+    )
 
     res = run_runtime_linear(
         cfg,
@@ -728,20 +897,30 @@ def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypa
     assert np.allclose(res.signal, np.array([1.0, 2.0, 4.0]))
 
 
-def test_runtime_linear_auto_solver_falls_back_to_krylov(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_auto_solver_falls_back_to_krylov(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     status: list[str] = []
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64
+        ),
+    )
     monkeypatch.setattr(
         runtime,
         "integrate_linear_from_config",
@@ -750,15 +929,30 @@ def test_runtime_linear_auto_solver_falls_back_to_krylov(monkeypatch: pytest.Mon
             np.ones((3, 1, 1, grid.z.size), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(runtime, "extract_mode_time_series", lambda *args, **kwargs: np.asarray([1.0, 0.9, 0.8], dtype=np.complex128))
-    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (-0.1, 0.2, 0.01, 0.03))
-    monkeypatch.setattr(runtime, "build_linear_cache", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda *args, **kwargs: np.asarray([1.0, 0.9, 0.8], dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (-0.1, 0.2, 0.01, 0.03)
+    )
+    monkeypatch.setattr(
+        runtime, "build_linear_cache", lambda *args, **kwargs: SimpleNamespace()
+    )
     monkeypatch.setattr(
         runtime,
         "dominant_eigenpair",
-        lambda *args, **kwargs: (np.asarray(0.3 + 0.4j, dtype=np.complex64), np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64)),
+        lambda *args, **kwargs: (
+            np.asarray(0.3 + 0.4j, dtype=np.complex64),
+            np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+        ),
     )
-    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+    monkeypatch.setattr(
+        runtime,
+        "apply_diagnostic_normalization",
+        lambda gamma, omega, **kwargs: (gamma, omega),
+    )
 
     res = run_runtime_linear(
         cfg,
@@ -777,7 +971,9 @@ def test_runtime_linear_auto_solver_falls_back_to_krylov(monkeypatch: pytest.Mon
     assert any("falling back to Krylov solve" in msg for msg in status)
 
 
-def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     base = _base_runtime_cfg()
@@ -786,13 +982,21 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
     geom = SAlphaGeometry.from_config(cfg.geometry)
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
-    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
+    )
     monkeypatch.setattr(
         runtime,
-        "integrate_cetg_gx_diagnostics_state",
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(
+        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
+    )
+    monkeypatch.setattr(
+        runtime,
+        "integrate_cetg_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.1, 0.2, 0.3]),
             type(
@@ -806,10 +1010,16 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
                 },
             )(),
             np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-            FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+            FieldState(
+                phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64),
+                apar=None,
+                bpar=None,
+            ),
         ),
     )
-    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.1, 0.3))
+    monkeypatch.setattr(
+        runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.1, 0.3)
+    )
 
     out = run_runtime_linear(
         cfg,
@@ -831,7 +1041,9 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
         run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="krylov")
 
 
-def test_runtime_linear_cetg_validates_solver_and_time_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_cetg_validates_solver_and_time_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     base = _base_runtime_cfg()
@@ -840,17 +1052,29 @@ def test_runtime_linear_cetg_validates_solver_and_time_inputs(monkeypatch: pytes
     grid = build_spectral_grid(cfg.grid)
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+    )
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
+    )
 
     with pytest.raises(ValueError):
         run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="mystery")
     with pytest.raises(ValueError, match="dt must be > 0"):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.0, steps=2)
+        run_runtime_linear(
+            cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.0, steps=2
+        )
     with pytest.raises(ValueError, match="steps must be >= 1"):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.1, steps=0)
+        run_runtime_linear(
+            cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.1, steps=0
+        )
 
 
 def test_runtime_nonlinear_smoke() -> None:
@@ -861,12 +1085,16 @@ def test_runtime_nonlinear_smoke() -> None:
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
         terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
     )
-    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=3, sample_stride=1)
+    res = run_runtime_nonlinear(
+        cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=3, sample_stride=1
+    )
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
 
 
-def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     base = _base_runtime_cfg()
@@ -878,19 +1106,35 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
     geom = SAlphaGeometry.from_config(cfg.geometry)
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
-    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
-    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0)
+    )
     monkeypatch.setattr(
         runtime,
-        "integrate_cetg_gx_diagnostics_state",
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
+    )
+    monkeypatch.setattr(
+        runtime, "build_runtime_term_config", lambda *args, **kwargs: object()
+    )
+    monkeypatch.setattr(
+        runtime,
+        "integrate_cetg_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.1, 0.2]),
             type("Diag", (), {"t": np.asarray([0.1, 0.2])})(),
             np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-            FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+            FieldState(
+                phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64),
+                apar=None,
+                bpar=None,
+            ),
         ),
     )
 
@@ -910,7 +1154,9 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
     assert out.phi2 is not None
 
 
-def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     base = _base_runtime_cfg()
@@ -924,11 +1170,23 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch:
     calls = {"n": 0}
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
-    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
-    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0)
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
+    )
+    monkeypatch.setattr(
+        runtime, "build_runtime_term_config", lambda *args, **kwargs: object()
+    )
     input_means: list[float] = []
 
     def _fake_integrator(*args, **kwargs):
@@ -948,10 +1206,14 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch:
             particle_flux_t=np.asarray([0.0]),
             energy_t=np.asarray([0.0]),
         )
-        fields = FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None)
+        fields = FieldState(
+            phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None
+        )
         return t, diag, np.asarray(args[0]) + 1.0, fields
 
-    monkeypatch.setattr(runtime, "integrate_cetg_gx_diagnostics_state", _fake_integrator)
+    monkeypatch.setattr(
+        runtime, "integrate_cetg_explicit_diagnostics_state", _fake_integrator
+    )
 
     out = run_runtime_nonlinear(
         cfg,
@@ -1078,7 +1340,16 @@ def test_runtime_nonlinear_compact_diagnostics_match_scalar_channels() -> None:
     assert compact.diagnostics is not None
     assert full.diagnostics.resolved is not None
     assert compact.diagnostics.resolved is None
-    for name in ("t", "dt_t", "gamma_t", "omega_t", "Wg_t", "Wphi_t", "heat_flux_t", "particle_flux_t"):
+    for name in (
+        "t",
+        "dt_t",
+        "gamma_t",
+        "omega_t",
+        "Wg_t",
+        "Wphi_t",
+        "heat_flux_t",
+        "particle_flux_t",
+    ):
         np.testing.assert_allclose(
             np.asarray(getattr(compact.diagnostics, name)),
             np.asarray(getattr(full.diagnostics, name)),
@@ -1109,7 +1380,9 @@ def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(ion, electron),
-        normalization=RuntimeNormalizationConfig(contract="kbm", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kbm", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(
             adiabatic_electrons=False,
             electrostatic=False,
@@ -1121,31 +1394,89 @@ def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
             collisions=False,
             hypercollisions=False,
         ),
-        init=InitializationConfig(init_field="all", init_amp=1.0e-8, gaussian_init=False),
-        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0, apar=1.0, bpar=1.0),
+        init=InitializationConfig(
+            init_field="all", init_amp=1.0e-8, gaussian_init=False
+        ),
+        terms=RuntimeTermsConfig(
+            nonlinear=1.0, hypercollisions=0.0, end_damping=0.0, apar=1.0, bpar=1.0
+        ),
     )
 
-    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=2, sample_stride=1, return_state=True)
+    res = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        dt=0.01,
+        steps=2,
+        sample_stride=1,
+        return_state=True,
+    )
 
     assert res.diagnostics is not None
     assert isinstance(res.diagnostics.resolved, ResolvedDiagnostics)
     resolved = res.diagnostics.resolved
     assert resolved is not None
     for total, es, apar, bpar in (
-        (resolved.HeatFlux_kxst, resolved.HeatFluxES_kxst, resolved.HeatFluxApar_kxst, resolved.HeatFluxBpar_kxst),
-        (resolved.HeatFlux_kyst, resolved.HeatFluxES_kyst, resolved.HeatFluxApar_kyst, resolved.HeatFluxBpar_kyst),
-        (resolved.HeatFlux_kxkyst, resolved.HeatFluxES_kxkyst, resolved.HeatFluxApar_kxkyst, resolved.HeatFluxBpar_kxkyst),
-        (resolved.HeatFlux_zst, resolved.HeatFluxES_zst, resolved.HeatFluxApar_zst, resolved.HeatFluxBpar_zst),
-        (resolved.ParticleFlux_kxst, resolved.ParticleFluxES_kxst, resolved.ParticleFluxApar_kxst, resolved.ParticleFluxBpar_kxst),
-        (resolved.ParticleFlux_kyst, resolved.ParticleFluxES_kyst, resolved.ParticleFluxApar_kyst, resolved.ParticleFluxBpar_kyst),
-        (resolved.ParticleFlux_kxkyst, resolved.ParticleFluxES_kxkyst, resolved.ParticleFluxApar_kxkyst, resolved.ParticleFluxBpar_kxkyst),
-        (resolved.ParticleFlux_zst, resolved.ParticleFluxES_zst, resolved.ParticleFluxApar_zst, resolved.ParticleFluxBpar_zst),
+        (
+            resolved.HeatFlux_kxst,
+            resolved.HeatFluxES_kxst,
+            resolved.HeatFluxApar_kxst,
+            resolved.HeatFluxBpar_kxst,
+        ),
+        (
+            resolved.HeatFlux_kyst,
+            resolved.HeatFluxES_kyst,
+            resolved.HeatFluxApar_kyst,
+            resolved.HeatFluxBpar_kyst,
+        ),
+        (
+            resolved.HeatFlux_kxkyst,
+            resolved.HeatFluxES_kxkyst,
+            resolved.HeatFluxApar_kxkyst,
+            resolved.HeatFluxBpar_kxkyst,
+        ),
+        (
+            resolved.HeatFlux_zst,
+            resolved.HeatFluxES_zst,
+            resolved.HeatFluxApar_zst,
+            resolved.HeatFluxBpar_zst,
+        ),
+        (
+            resolved.ParticleFlux_kxst,
+            resolved.ParticleFluxES_kxst,
+            resolved.ParticleFluxApar_kxst,
+            resolved.ParticleFluxBpar_kxst,
+        ),
+        (
+            resolved.ParticleFlux_kyst,
+            resolved.ParticleFluxES_kyst,
+            resolved.ParticleFluxApar_kyst,
+            resolved.ParticleFluxBpar_kyst,
+        ),
+        (
+            resolved.ParticleFlux_kxkyst,
+            resolved.ParticleFluxES_kxkyst,
+            resolved.ParticleFluxApar_kxkyst,
+            resolved.ParticleFluxBpar_kxkyst,
+        ),
+        (
+            resolved.ParticleFlux_zst,
+            resolved.ParticleFluxES_zst,
+            resolved.ParticleFluxApar_zst,
+            resolved.ParticleFluxBpar_zst,
+        ),
     ):
         assert total is not None
         assert es is not None
         assert apar is not None
         assert bpar is not None
-        np.testing.assert_allclose(np.asarray(total), np.asarray(es) + np.asarray(apar) + np.asarray(bpar), rtol=1.0e-5, atol=1.0e-6)
+        np.testing.assert_allclose(
+            np.asarray(total),
+            np.asarray(es) + np.asarray(apar) + np.asarray(bpar),
+            rtol=1.0e-5,
+            atol=1.0e-6,
+        )
 
     assert res.diagnostics.turbulent_heating_species_t is not None
     turb_heat_s = np.asarray(res.diagnostics.turbulent_heating_species_t)
@@ -1153,10 +1484,30 @@ def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
     assert resolved.TurbulentHeating_kyst is not None
     assert resolved.TurbulentHeating_kxkyst is not None
     assert resolved.TurbulentHeating_zst is not None
-    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kxst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kyst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kxkyst).sum(axis=(2, 3)), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_zst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(resolved.TurbulentHeating_kxst).sum(axis=2),
+        turb_heat_s,
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(resolved.TurbulentHeating_kyst).sum(axis=2),
+        turb_heat_s,
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(resolved.TurbulentHeating_kxkyst).sum(axis=(2, 3)),
+        turb_heat_s,
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(resolved.TurbulentHeating_zst).sum(axis=2),
+        turb_heat_s,
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
 
 
 def test_runtime_nonlinear_disable_diagnostics() -> None:
@@ -1180,7 +1531,9 @@ def test_runtime_nonlinear_disable_diagnostics() -> None:
     assert res.phi2 is not None
 
 
-def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg = replace(
@@ -1195,16 +1548,36 @@ def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(monke
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda *args, **kwargs: SimpleNamespace(),
+    )
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0)
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+        ),
+    )
 
     def _fake_final_state(*args, **kwargs):
         captured["show_progress"] = kwargs.get("show_progress")
         return (
-            np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
-            FieldState(phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), apar=None, bpar=None),
+            np.zeros(
+                (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+            ),
+            FieldState(
+                phi=np.ones(
+                    (grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+                ),
+                apar=None,
+                bpar=None,
+            ),
         )
 
     monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
@@ -1246,7 +1619,9 @@ def test_runtime_nonlinear_validates_dt_steps_and_fixed_mode_contract() -> None:
         run_runtime_nonlinear(fixed_cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=2)
 
 
-def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import spectraxgk.runtime as runtime
 
     cfg = replace(
@@ -1261,10 +1636,22 @@ def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(monkeypatch: pytest
     geom = SAlphaGeometry.from_config(cfg.geometry)
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda *args, **kwargs: SimpleNamespace(),
+    )
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0)
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+        ),
+    )
 
     zero_diag = SimulationDiagnostics(
         t=np.asarray([0.0]),
@@ -1282,12 +1669,20 @@ def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(monkeypatch: pytest
 
     monkeypatch.setattr(
         runtime,
-        "integrate_nonlinear_gx_diagnostics_state",
+        "integrate_nonlinear_explicit_diagnostics_state",
         lambda *args, **kwargs: (
             np.asarray([0.0]),
             zero_diag,
-            np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
-            FieldState(phi=jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+            np.zeros(
+                (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+            ),
+            FieldState(
+                phi=jnp.ones(
+                    (grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+                ),
+                apar=None,
+                bpar=None,
+            ),
         ),
     )
 
@@ -1310,10 +1705,14 @@ def test_runtime_init_file_replace_mode_scales_loaded_state(tmp_path) -> None:
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    raw = (1.0 + 2.0j) * np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    raw = (1.0 + 2.0j) * np.ones(
+        (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+    )
     raw.tofile(cfg.init.init_file)
 
-    g0 = _build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=0, Nl=3, Nm=4, nspecies=1)
+    g0 = _build_initial_condition(
+        grid, geom, cfg, ky_index=1, kx_index=0, Nl=3, Nm=4, nspecies=1
+    )
 
     assert np.allclose(np.asarray(g0), 2.5 * raw)
 
@@ -1334,10 +1733,16 @@ def test_runtime_init_file_add_mode_adds_seed_perturbation(tmp_path) -> None:
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    base = np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    base = np.ones(
+        (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+    )
     base.tofile(cfg.init.init_file)
 
-    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=0, Nl=3, Nm=4, nspecies=1))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=1, kx_index=0, Nl=3, Nm=4, nspecies=1
+        )
+    )
 
     assert np.allclose(g0[0, 1:, :, :, :, :], 3.0)
     assert np.allclose(g0[0, 0, 1:, :, :, :], 3.0)
@@ -1361,7 +1766,11 @@ def test_runtime_single_mode_init_matches_gx_real_phase() -> None:
     geom = SAlphaGeometry.from_config(cfg.geometry)
     ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
 
-    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1
+        )
+    )
 
     seeded = g0[0, 0, 0, ky_index, 0, :]
     assert np.allclose(seeded.real, 0.25)
@@ -1383,10 +1792,14 @@ def test_runtime_single_mode_init_applies_gx_kpar_phase() -> None:
     geom = SAlphaGeometry.from_config(cfg.geometry)
     ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
 
-    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1
+        )
+    )
 
     z = np.asarray(grid.z, dtype=float)
-    z_period = _gx_periodic_zp(z)
+    z_period = _periodic_zp_from_grid(z)
     expected = 0.25 * np.cos(2.0 * z / z_period)
     seeded = g0[0, 0, 0, ky_index, 0, :]
     assert np.allclose(seeded.real, expected, atol=1.0e-6)
@@ -1396,7 +1809,9 @@ def test_runtime_single_mode_init_applies_gx_kpar_phase() -> None:
 def test_runtime_phi_init_inverts_adiabatic_zonal_quasineutrality() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=4, Ny=4, Nz=16, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
+        grid=GridConfig(
+            Nx=4, Ny=4, Nz=16, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"
+        ),
         init=InitializationConfig(
             init_field="phi",
             init_amp=0.25,
@@ -1405,20 +1820,28 @@ def test_runtime_phi_init_inverts_adiabatic_zonal_quasineutrality() -> None:
             kpar_init=1.0,
         ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True),),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True
+            ),
+        ),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     ky_index = 0
     kx_index = 1
 
-    g0 = _build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=kx_index, Nl=2, Nm=2, nspecies=1)
+    g0 = _build_initial_condition(
+        grid, geom, cfg, ky_index=ky_index, kx_index=kx_index, Nl=2, Nm=2, nspecies=1
+    )
     params = build_runtime_linear_params(cfg, Nm=2, geom=geom)
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     fields = compute_fields_cached(jnp.asarray(g0), cache, params, use_custom_vjp=False)
 
     z = np.asarray(grid.z, dtype=float)
-    expected_phi = cfg.init.init_amp * np.cos(float(cfg.init.kpar_init) * z / _gx_periodic_zp(z))
+    expected_phi = cfg.init.init_amp * np.cos(
+        float(cfg.init.kpar_init) * z / _periodic_zp_from_grid(z)
+    )
     recovered_phi = np.asarray(fields.phi[ky_index, kx_index, :])
     seeded_density = np.asarray(g0)[0, 0, 0, ky_index, kx_index, :]
 
@@ -1430,7 +1853,9 @@ def test_runtime_phi_init_inverts_adiabatic_zonal_quasineutrality() -> None:
 def test_runtime_phi_gaussian_single_mode_inverts_zonal_profile() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=4, Ny=4, Nz=16, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
+        grid=GridConfig(
+            Nx=4, Ny=4, Nz=16, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"
+        ),
         init=InitializationConfig(
             init_field="phi",
             init_amp=0.25,
@@ -1439,20 +1864,26 @@ def test_runtime_phi_gaussian_single_mode_inverts_zonal_profile() -> None:
             init_single=True,
         ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True),),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True
+            ),
+        ),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     ky_index = 0
     kx_index = 1
 
-    g0 = _build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=kx_index, Nl=2, Nm=2, nspecies=1)
+    g0 = _build_initial_condition(
+        grid, geom, cfg, ky_index=ky_index, kx_index=kx_index, Nl=2, Nm=2, nspecies=1
+    )
     params = build_runtime_linear_params(cfg, Nm=2, geom=geom)
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     fields = compute_fields_cached(jnp.asarray(g0), cache, params, use_custom_vjp=False)
 
     z = np.asarray(grid.z, dtype=float)
-    expected_phi = cfg.init.init_amp * np.exp(-(z / cfg.init.gaussian_width) ** 2)
+    expected_phi = cfg.init.init_amp * np.exp(-((z / cfg.init.gaussian_width) ** 2))
     recovered_phi = np.asarray(fields.phi[ky_index, kx_index, :])
     seeded_density = np.asarray(g0)[0, 0, 0, ky_index, kx_index, :]
 
@@ -1464,15 +1895,21 @@ def test_runtime_phi_gaussian_single_mode_inverts_zonal_profile() -> None:
 def test_runtime_phi_init_rejects_masked_gauge_mode() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
-        init=InitializationConfig(init_field="phi", init_amp=0.25, gaussian_init=False, init_single=True),
+        grid=GridConfig(
+            Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"
+        ),
+        init=InitializationConfig(
+            init_field="phi", init_amp=0.25, gaussian_init=False, init_single=True
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
 
     with pytest.raises(ValueError, match="gauge mode"):
-        _build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=0, Nl=2, Nm=2, nspecies=1)
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=0, kx_index=0, Nl=2, Nm=2, nspecies=1
+        )
 
 
 def test_runtime_startup_phi_density_seed_validation_paths() -> None:
@@ -1491,13 +1928,19 @@ def test_runtime_startup_phi_density_seed_validation_paths() -> None:
     phi = np.asarray([1.0, 0.5, 0.25], dtype=np.complex64)
 
     with pytest.raises(ValueError, match="at least one kinetic"):
-        startup._density_moments_for_target_phi(phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=())
+        startup._density_moments_for_target_phi(
+            phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=()
+        )
     with pytest.raises(ValueError, match="out of range"):
-        startup._density_moments_for_target_phi(phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=(1,))
+        startup._density_moments_for_target_phi(
+            phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=(1,)
+        )
 
     bad_params = replace(params, density=np.asarray([np.nan]))
     with pytest.raises(ValueError, match="non-finite"):
-        startup._density_moments_for_target_phi(phi, cache=cache, params=bad_params, ky_i=0, kx_i=0, species_targets=(0,))
+        startup._density_moments_for_target_phi(
+            phi, cache=cache, params=bad_params, ky_i=0, kx_i=0, species_targets=(0,)
+        )
 
     zero_coupling_cache = SimpleNamespace(
         Jl=np.zeros((1, 1, 1, 1, 3), dtype=float),
@@ -1533,10 +1976,15 @@ def test_runtime_startup_phi_density_seed_validation_paths() -> None:
     )
     np.testing.assert_allclose(seed[0], zero_phi)
 
-    assert startup._gx_periodic_zp(np.asarray([0.0])) == pytest.approx(1.0)
-    assert startup._gx_periodic_zp(np.asarray([1.0, 1.0])) == pytest.approx(1.0)
-    np.testing.assert_allclose(startup._as_runtime_species_array(2.0, 3, "density"), [2.0, 2.0, 2.0])
-    np.testing.assert_allclose(startup._as_runtime_species_array(np.asarray([1.0, 2.0]), 2, "density"), [1.0, 2.0])
+    assert startup._periodic_zp_from_grid(np.asarray([0.0])) == pytest.approx(1.0)
+    assert startup._periodic_zp_from_grid(np.asarray([1.0, 1.0])) == pytest.approx(1.0)
+    np.testing.assert_allclose(
+        startup._as_runtime_species_array(2.0, 3, "density"), [2.0, 2.0, 2.0]
+    )
+    np.testing.assert_allclose(
+        startup._as_runtime_species_array(np.asarray([1.0, 2.0]), 2, "density"),
+        [1.0, 2.0],
+    )
     with pytest.raises(ValueError, match="length 2"):
         startup._as_runtime_species_array(np.asarray([1.0, 2.0, 3.0]), 2, "density")
 
@@ -1560,29 +2008,49 @@ def test_runtime_startup_phi_density_seed_validation_paths() -> None:
         envelope_sine=0.0,
     )
     np.testing.assert_allclose(direct_phi, delegated)
-    assert startup._expand_ky(np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64), nyc=1).shape[-3] == 2
-    assert startup._enforce_full_ky_hermitian(np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64)).shape[-3] == 2
+    assert (
+        startup._expand_ky(
+            np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64), nyc=1
+        ).shape[-3]
+        == 2
+    )
+    assert (
+        startup._enforce_full_ky_hermitian(
+            np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64)
+        ).shape[-3]
+        == 2
+    )
 
 
 def test_runtime_startup_initial_condition_resolution_errors() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
-        init=InitializationConfig(init_field="qpar", init_amp=0.25, gaussian_init=False, init_single=True),
+        grid=GridConfig(
+            Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"
+        ),
+        init=InitializationConfig(
+            init_field="qpar", init_amp=0.25, gaussian_init=False, init_single=True
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     with pytest.raises(ValueError, match="moment exceeds"):
-        _build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=0, Nl=1, Nm=2, nspecies=1)
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=1, kx_index=0, Nl=1, Nm=2, nspecies=1
+        )
 
     phi_cfg = replace(cfg, init=replace(cfg.init, init_field="phi"))
     with pytest.raises(ValueError, match="requires at least one"):
-        _build_initial_condition(grid, geom, phi_cfg, ky_index=1, kx_index=0, Nl=0, Nm=1, nspecies=1)
+        _build_initial_condition(
+            grid, geom, phi_cfg, ky_index=1, kx_index=0, Nl=0, Nm=1, nspecies=1
+        )
 
 
 def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.28, Ly=6.28, boundary="periodic"))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.28, Ly=6.28, boundary="periodic")
+    )
     ky_fixed = float(np.asarray(grid.ky)[1])
     cfg = replace(
         _base_runtime_cfg(),
@@ -1613,7 +2081,9 @@ def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:
         Nm=4,
         nspecies=1,
     )
-    assert np.allclose(np.asarray(res.state)[..., 1, 0, :], np.asarray(initial)[..., 1, 0, :])
+    assert np.allclose(
+        np.asarray(res.state)[..., 1, 0, :], np.asarray(initial)[..., 1, 0, :]
+    )
 
 
 def test_runtime_nonlinear_adaptive_dt() -> None:
@@ -1705,7 +2175,7 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         diagnostics_stride,
         use_dealias_mask,
         z_index=None,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
@@ -1755,7 +2225,10 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         )
         return t, diag, np.asarray(G0) + 1.0, fields
 
-    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
+    )
 
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=None)
 
@@ -1763,8 +2236,12 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
     assert calls == [(3, 1, 1), (3, 1, 1), (3, 1, 1)]
     assert input_means[1] > input_means[0] + 0.5
     assert input_means[2] > input_means[1] + 0.5
-    assert np.allclose(np.asarray(res.diagnostics.t), np.asarray([0.04, 0.12, 0.20, 0.28]))
-    assert np.allclose(np.asarray(res.diagnostics.gamma_t), np.asarray([1.0, 3.0, 5.0, 7.0]))
+    assert np.allclose(
+        np.asarray(res.diagnostics.t), np.asarray([0.04, 0.12, 0.20, 0.28])
+    )
+    assert np.allclose(
+        np.asarray(res.diagnostics.gamma_t), np.asarray([1.0, 3.0, 5.0, 7.0])
+    )
     assert float(np.asarray(res.diagnostics.t)[-1]) >= float(cfg.time.t_max)
 
 
@@ -1813,7 +2290,17 @@ def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> Non
 def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=4, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=1),
+        grid=GridConfig(
+            Nx=4,
+            Ny=8,
+            Nz=16,
+            Lx=6.28,
+            Ly=6.28,
+            boundary="linked",
+            y0=10.0,
+            ntheta=16,
+            nperiod=1,
+        ),
         init=InitializationConfig(
             init_field="density",
             init_amp=1.0,
@@ -1826,11 +2313,15 @@ def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
     grid = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
 
-    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1
+        )
+    )
 
     seeded = g0[0, 0, 0, ky_index, 0, :]
     z = np.asarray(grid.z, dtype=float)
-    z_period = _gx_periodic_zp(z)
+    z_period = _periodic_zp_from_grid(z)
     expected = np.cos(cfg.init.kpar_init * z / z_period)
     assert np.allclose(seeded.real, expected)
     assert np.allclose(seeded.imag, 0.0)
@@ -1839,7 +2330,17 @@ def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
 def test_runtime_full_ky_initial_condition_mirrors_negative_ky_block() -> None:
     cfg = replace(
         _base_runtime_cfg(),
-        grid=GridConfig(Nx=10, Ny=22, Nz=16, Lx=1.25, Ly=6.28, boundary="linked", y0=0.2, ntheta=16, nperiod=1),
+        grid=GridConfig(
+            Nx=10,
+            Ny=22,
+            Nz=16,
+            Lx=1.25,
+            Ly=6.28,
+            boundary="linked",
+            y0=0.2,
+            ntheta=16,
+            nperiod=1,
+        ),
         init=InitializationConfig(
             init_field="density",
             init_amp=1.0,
@@ -1857,7 +2358,11 @@ def test_runtime_full_ky_initial_condition_mirrors_negative_ky_block() -> None:
     grid = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 5.0)))
 
-    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=2))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=2
+        )
+    )
 
     neg_ky = g0.shape[3] - ky_index
     kx_neg = np.concatenate(([0], np.arange(g0.shape[4] - 1, 0, -1)))
@@ -1888,7 +2393,9 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
 
 
-def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_uses_explicit_method_default_cfl_fac(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict[str, float] = {}
 
     def _fake_integrator(
@@ -1905,7 +2412,7 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.Mo
         diagnostics_stride,
         use_dealias_mask,
         z_index=None,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
@@ -1946,7 +2453,10 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.Mo
         )
         return t, diag, np.asarray(G0), None
 
-    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
+    )
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -1970,7 +2480,9 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.Mo
     assert captured["cfl_fac"] == pytest.approx(1.73)
 
 
-def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_nonlinear_preserves_explicit_cfl_fac(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict[str, float] = {}
 
     def _fake_integrator(
@@ -1987,7 +2499,7 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.Monkey
         diagnostics_stride,
         use_dealias_mask,
         z_index=None,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
@@ -2028,7 +2540,10 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.Monkey
         )
         return t, diag, np.asarray(G0), None
 
-    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
+    )
 
     cfg = replace(
         _base_runtime_cfg(),
@@ -2142,7 +2657,9 @@ def test_runtime_linear_accepts_gx_netcdf_geometry(tmp_path) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     grid = build_spectral_grid(cfg.grid)
@@ -2178,7 +2695,12 @@ def test_runtime_linear_accepts_gx_netcdf_geometry(tmp_path) -> None:
         }.items():
             geom.createVariable(name, "f8", ())[:] = value
 
-    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    cfg_nc = replace(
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
+    )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
 
     assert np.isfinite(out.gamma)
@@ -2192,7 +2714,9 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, cfg.grid.Nz + 1)
@@ -2204,15 +2728,27 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
         root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
         root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.gb0_profile
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
+            sampled.jacobian_profile
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
         root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
@@ -2221,21 +2757,30 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
         root.createVariable("nfp", "f8", ())[:] = sampled.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    cfg_nc = replace(
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
+    )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
 
     assert np.isfinite(out.gamma)
     assert np.isfinite(out.omega)
 
 
-def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
+def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(
+    tmp_path,
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
         time=replace(_base_runtime_cfg().time, dt=0.02, t_max=0.08, sample_stride=1),
     )
@@ -2248,15 +2793,27 @@ def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(tmp_pat
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
         root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
         root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.gb0_profile
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
+            sampled.jacobian_profile
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
         root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
@@ -2265,7 +2822,12 @@ def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(tmp_pat
         root.createVariable("nfp", "f8", ())[:] = sampled.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    cfg_nc = replace(
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
+    )
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time")
 
     assert np.isfinite(out.gamma)
@@ -2281,7 +2843,9 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
     theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, cfg.grid.Nz + 1)
@@ -2293,15 +2857,27 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
         root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
         root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.gb0_profile
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
+            sampled.jacobian_profile
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
         root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
@@ -2310,7 +2886,9 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
         root.createVariable("nfp", "f8", ())[:] = sampled.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    monkeypatch.setattr("spectraxgk.runtime.generate_runtime_vmec_eik", lambda cfg: path)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.generate_runtime_vmec_eik", lambda cfg: path
+    )
 
     cfg_vmec = replace(
         cfg,
@@ -2330,7 +2908,11 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
 
 
 def test_runtime_linear_secondary_slab_example_runs() -> None:
-    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_secondary_slab.toml"
+    cfg_path = (
+        Path(__file__).resolve().parents[1]
+        / "benchmarks"
+        / "runtime_secondary_slab.toml"
+    )
     cfg, _ = load_runtime_from_toml(cfg_path)
 
     out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="explicit_time")
@@ -2339,19 +2921,44 @@ def test_runtime_linear_secondary_slab_example_runs() -> None:
     assert np.isfinite(out.omega)
 
 
-def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_accepts_miller_model_via_generated_eik(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
     cfg = RuntimeConfig(
-        grid=GridConfig(Nx=1, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=1),
-        time=TimeConfig(t_max=0.2, dt=0.01, method="rk2", use_diffrax=False, sample_stride=1, fixed_dt=True),
+        grid=GridConfig(
+            Nx=1,
+            Ny=8,
+            Nz=16,
+            Lx=6.28,
+            Ly=6.28,
+            boundary="linked",
+            y0=10.0,
+            ntheta=16,
+            nperiod=1,
+        ),
+        time=TimeConfig(
+            t_max=0.2,
+            dt=0.01,
+            method="rk2",
+            use_diffrax=False,
+            sample_stride=1,
+            fixed_dt=True,
+        ),
         geometry=GeometryConfig(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778),
-        init=InitializationConfig(init_field="density", init_amp=1.0e-8, gaussian_init=False),
+        init=InitializationConfig(
+            init_field="density", init_amp=1.0e-8, gaussian_init=False
+        ),
         terms=RuntimeTermsConfig(hypercollisions=0.0, end_damping=0.0),
-        physics=RuntimePhysicsConfig(linear=True, nonlinear=False, adiabatic_electrons=True, collisions=False),
+        physics=RuntimePhysicsConfig(
+            linear=True, nonlinear=False, adiabatic_electrons=True, collisions=False
+        ),
     )
-    sampled = sample_flux_tube_geometry(SAlphaGeometry.from_config(cfg.geometry), build_spectral_grid(cfg.grid).z)
+    sampled = sample_flux_tube_geometry(
+        SAlphaGeometry.from_config(cfg.geometry), build_spectral_grid(cfg.grid).z
+    )
     path = tmp_path / "miller.eiknc.nc"
     theta = np.asarray(sampled.theta)
     with Dataset(path, "w") as root:
@@ -2359,15 +2966,27 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, m
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.gb0_profile
+        )
         root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.cv0_profile
+        )
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
+            sampled.jacobian_profile
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
         root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
@@ -2376,7 +2995,9 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, m
         root.createVariable("nfp", "f8", ())[:] = sampled.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    monkeypatch.setattr("spectraxgk.runtime.generate_runtime_miller_eik", lambda cfg: path)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.generate_runtime_miller_eik", lambda cfg: path
+    )
 
     cfg_miller = replace(
         cfg,
@@ -2395,10 +3016,18 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, m
 
 
 def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
-    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_cetg_reference.toml"
+    cfg_path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "axisymmetric"
+        / "runtime_cetg_reference.toml"
+    )
     cfg, _ = load_runtime_from_toml(cfg_path)
 
-    out = run_runtime_nonlinear(cfg, ky_target=1.0 / 6.366, kx_target=0.0, steps=2, sample_stride=1)
+    out = run_runtime_nonlinear(
+        cfg, ky_target=1.0 / 6.366, kx_target=0.0, steps=2, sample_stride=1
+    )
 
     assert out.diagnostics is not None
     assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
@@ -2406,7 +3035,13 @@ def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
 
 
 def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
-    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_etg_nonlinear.toml"
+    cfg_path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "axisymmetric"
+        / "runtime_etg_nonlinear.toml"
+    )
     cfg, _ = load_runtime_from_toml(cfg_path)
 
     # Keep the shipped ETG pilot contract intact, but reduce the test problem to
@@ -2425,10 +3060,19 @@ def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
             ntheta=8,
             nperiod=1,
         ),
-        time=replace(cfg.time, t_max=0.002, dt=0.001, sample_stride=1, diagnostics_stride=1, fixed_dt=True),
+        time=replace(
+            cfg.time,
+            t_max=0.002,
+            dt=0.001,
+            sample_stride=1,
+            diagnostics_stride=1,
+            fixed_dt=True,
+        ),
     )
 
-    out = run_runtime_nonlinear(cfg, ky_target=5.0, kx_target=0.0, steps=2, sample_stride=1, Nl=2, Nm=2)
+    out = run_runtime_nonlinear(
+        cfg, ky_target=5.0, kx_target=0.0, steps=2, sample_stride=1, Nl=2, Nm=2
+    )
 
     assert out.diagnostics is not None
     assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
@@ -2436,7 +3080,9 @@ def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
 
 
-def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(tmp_path) -> None:
+def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_reference(
+    tmp_path,
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -2462,7 +3108,9 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(t
             fixed_dt=True,
         ),
         species=(RuntimeSpeciesConfig(name="ion", tprim=3.0, fprim=1.0),),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
         terms=RuntimeTermsConfig(end_damping=0.0, hypercollisions=0.0),
     )
@@ -2475,15 +3123,29 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(t
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb0_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv_profile
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb_profile
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb0_profile
+        )
         root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("drhodpsi", "f8", ())[:] = 1.0
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
@@ -2493,16 +3155,31 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(t
         root.createVariable("nfp", "f8", ())[:] = sampled.nfp
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    cfg_nc = replace(
+        cfg,
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(path)
+        ),
+    )
 
-    analytic_out = run_runtime_linear(cfg, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
-    imported_out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+    analytic_out = run_runtime_linear(
+        cfg, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
+    )
+    imported_out = run_runtime_linear(
+        cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
+    )
 
-    assert imported_out.gamma == pytest.approx(analytic_out.gamma, rel=2.0e-3, abs=1.0e-6)
-    assert imported_out.omega == pytest.approx(analytic_out.omega, rel=2.0e-3, abs=1.0e-6)
+    assert imported_out.gamma == pytest.approx(
+        analytic_out.gamma, rel=2.0e-3, abs=1.0e-6
+    )
+    assert imported_out.omega == pytest.approx(
+        analytic_out.omega, rel=2.0e-3, abs=1.0e-6
+    )
 
 
-def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference_from_toml(tmp_path) -> None:
+def test_runtime_linear_explicit_time_root_level_geometry_matches_analytic_reference_from_toml(
+    tmp_path,
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -2515,15 +3192,29 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference_f
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb0_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv_profile
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb_profile
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb0_profile
+        )
         root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("drhodpsi", "f8", ())[:] = 1.0
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
@@ -2564,7 +3255,7 @@ sample_stride = 1
 fixed_dt = true
 
 [geometry]
-model = "gx-netcdf"
+model = "imported-netcdf"
 geometry_file = "{path}"
 
 [physics]
@@ -2606,20 +3297,28 @@ diagnostic_norm = "none"
             fixed_dt=True,
         ),
         species=(RuntimeSpeciesConfig(name="ion", tprim=3.0, fprim=1.0),),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="none"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
         terms=RuntimeTermsConfig(end_damping=0.0, hypercollisions=0.0),
     )
 
-    loaded_out = run_runtime_linear(cfg_loaded, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
-    analytic_out = run_runtime_linear(cfg_ref, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+    loaded_out = run_runtime_linear(
+        cfg_loaded, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
+    )
+    analytic_out = run_runtime_linear(
+        cfg_ref, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time"
+    )
 
     assert loaded_out.gamma == pytest.approx(analytic_out.gamma, rel=2.0e-3, abs=1.0e-6)
     assert loaded_out.omega == pytest.approx(analytic_out.omega, rel=2.0e-3, abs=1.0e-6)
 
 
 @pytest.mark.parametrize("model", ["vmec-eik", "desc-eik"])
-def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(tmp_path, model: str) -> None:
+def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(
+    tmp_path, model: str
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -2646,7 +3345,9 @@ def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(tmp_path, model
             fixed_dt=True,
         ),
         species=(RuntimeSpeciesConfig(name="ion", tprim=3.0, fprim=1.0, nu=0.01),),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="rho_star"
+        ),
         physics=RuntimePhysicsConfig(
             linear=False,
             nonlinear=True,
@@ -2681,15 +3382,29 @@ def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(tmp_path, model
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv_profile)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb0_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv_profile
+        )
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb_profile
+        )
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(
+            sampled.gb0_profile
+        )
         root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("drhodpsi", "f8", ())[:] = 1.0
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
@@ -2699,8 +3414,12 @@ def test_runtime_nonlinear_accepts_imported_eik_geometry_aliases(tmp_path, model
         root.createVariable("nfp", "f8", ())[:] = 5.0
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
-    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model=model, geometry_file=str(path)))
-    out = run_runtime_nonlinear(cfg_nc, ky_target=0.2, Nl=3, Nm=4, dt=0.02, steps=2, sample_stride=1)
+    cfg_nc = replace(
+        cfg, geometry=replace(cfg.geometry, model=model, geometry_file=str(path))
+    )
+    out = run_runtime_nonlinear(
+        cfg_nc, ky_target=0.2, Nl=3, Nm=4, dt=0.02, steps=2, sample_stride=1
+    )
 
     assert np.all(np.isfinite(out.t))
     assert out.diagnostics is not None
@@ -2853,13 +3572,14 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
     )[0, 0, 0]
 
     z = np.asarray(grid.z, dtype=float)
-    z_period = _gx_periodic_zp(z)
+    z_period = _periodic_zp_from_grid(z)
     z_phase = np.cos(float(cfg.init.kpar_init) * z / z_period)
-    active_modes = _gx_init_mode_pairs(grid)
+    active_modes = _dealiased_initial_mode_pairs(grid)
     expected = np.zeros_like(g0)
     for (kx_i, ky_i), (ra, rb) in zip(
         active_modes,
-        cfg.init.init_amp * _gx_c_rand_pairs(int(cfg.init.random_seed), len(active_modes)),
+        cfg.init.init_amp
+        * _gx_c_rand_pairs(int(cfg.init.random_seed), len(active_modes)),
         strict=True,
     ):
         vals = ((rb + 1j * ra) if kx_i == 0 else (ra + 1j * rb)) * z_phase
@@ -2876,9 +3596,11 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
     assert np.allclose(g0, expected, atol=1.0e-6)
 
 
-def test_runtime_gx_init_mode_pairs_match_gx_loop_bounds() -> None:
-    grid = build_spectral_grid(GridConfig(Nx=96, Ny=96, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"))
-    active_modes = _gx_init_mode_pairs(grid)
+def test_runtime_dealiased_initial_mode_pairs_match_dealiased_loop_bounds() -> None:
+    grid = build_spectral_grid(
+        GridConfig(Nx=96, Ny=96, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic")
+    )
+    active_modes = _dealiased_initial_mode_pairs(grid)
 
     assert active_modes[0] == (0, 1)
     assert active_modes[-1] == (31, 31)
@@ -2887,20 +3609,22 @@ def test_runtime_gx_init_mode_pairs_match_gx_loop_bounds() -> None:
     assert all(1 <= ky_i <= 31 for _, ky_i in active_modes)
 
 
-def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
-    vals = _gx_centered_random_pairs(22, 5)
+def test_runtime_centered_glibc_random_pairs_match_glibc_reference() -> None:
+    vals = _centered_glibc_random_pairs(22, 5)
     ref = _gx_c_rand_pairs(22, 5)
 
     assert np.allclose(vals, ref)
 
 
-def test_runtime_gx_periodic_zp_uses_discrete_period_not_endpoint_span() -> None:
-    cfg, _data = load_runtime_from_toml("examples/nonlinear/axisymmetric/runtime_cetg_reference.toml")
+def test_runtime_periodic_zp_from_grid_uses_discrete_period_not_endpoint_span() -> None:
+    cfg, _data = load_runtime_from_toml(
+        "examples/nonlinear/axisymmetric/runtime_cetg_reference.toml"
+    )
     geom = build_runtime_geometry(cfg)
     grid = build_spectral_grid(apply_geometry_grid_defaults(geom, cfg.grid))
     z = np.asarray(grid.z, dtype=float)
 
-    zp = _gx_periodic_zp(z)
+    zp = _periodic_zp_from_grid(z)
 
     assert np.isclose(zp, 1.0, atol=2.0e-4)
 
@@ -2950,8 +3674,16 @@ def test_runtime_random_multimode_init_does_not_depend_on_diagnostic_ky() -> Non
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)
-    g0_ky0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
-    g0_ky1 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1))
+    g0_ky0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1
+        )
+    )
+    g0_ky1 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1
+        )
+    )
 
     assert np.allclose(g0_ky0, g0_ky1)
 
@@ -2970,8 +3702,16 @@ def test_runtime_gaussian_multimode_init_does_not_depend_on_diagnostic_ky() -> N
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)
-    g0_ky0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
-    g0_ky1 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1))
+    g0_ky0 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1
+        )
+    )
+    g0_ky1 = np.asarray(
+        _build_initial_condition(
+            grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1
+        )
+    )
 
     assert np.allclose(g0_ky0, g0_ky1)
 
@@ -3019,7 +3759,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         diagnostics_stride,
         use_dealias_mask,
         z_index=None,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
@@ -3062,7 +3802,10 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         )
         return t, diag, np.asarray(G0), None
 
-    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
+    )
     _res = run_runtime_nonlinear(cfg, ky_target=0.3, Nl=3, Nm=4, steps=1)
 
     # Ny=7, y0=10 -> ky = [0, 0.1, 0.2, 0.3, -0.3, -0.2, -0.1]
@@ -3115,7 +3858,7 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         diagnostics_stride,
         use_dealias_mask,
         z_index=None,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
@@ -3158,8 +3901,13 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         )
         return t, diag, np.asarray(G0), None
 
-    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
-    _res = run_runtime_nonlinear(cfg, ky_target=0.1, kx_target=-1.1, Nl=3, Nm=4, steps=1)
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_nonlinear_explicit_diagnostics_state",
+        _fake_integrator,
+    )
+    _res = run_runtime_nonlinear(
+        cfg, ky_target=0.1, kx_target=-1.1, Nl=3, Nm=4, steps=1
+    )
 
     assert captured["omega_ky_index"] == 1
     assert captured["omega_kx_index"] == 3
@@ -3183,10 +3931,12 @@ def test_run_linear_case_uses_toml_output_path(
             ky=0.2,
             gamma=0.1,
             omega=0.2,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
-    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+    )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
     rc = run_linear_case(tmp_path / "dummy.toml", show_progress=False)
@@ -3202,7 +3952,7 @@ def test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    import spectraxgk.linear as linear
+    import spectraxgk.solvers.linear.integrators as linear_integrators
 
     cfg_path = tmp_path / "velocity_auto.toml"
     cfg_path.write_text(
@@ -3275,7 +4025,9 @@ fit_signal = "phi"
         calls.append(f"{parallel.strategy}:{parallel.axis}:{parallel.backend}")
         return jnp.zeros_like(G), jnp.ones(G.shape[-3:], dtype=G.dtype)
 
-    monkeypatch.setattr(linear, "linear_rhs_parallel_cached", _fake_parallel_rhs)
+    monkeypatch.setattr(
+        linear_integrators, "linear_rhs_parallel_cached", _fake_parallel_rhs
+    )
 
     rc = run_linear_case(cfg_path, show_progress=False)
 
@@ -3294,7 +4046,9 @@ def test_run_nonlinear_case_uses_toml_output_path(
     import spectraxgk.runtime as runtime
 
     base = _base_runtime_cfg()
-    cfg = replace(base, output=replace(base.output, path=str(tmp_path / "nonlinear_case")))
+    cfg = replace(
+        base, output=replace(base.output, path=str(tmp_path / "nonlinear_case"))
+    )
     t = np.asarray([0.0, 0.1], dtype=float)
     diag = SimulationDiagnostics(
         t=t,
@@ -3320,7 +4074,10 @@ def test_run_nonlinear_case_uses_toml_output_path(
         summary = tmp_path / "nonlinear_case.summary.json"
         diag_path = tmp_path / "nonlinear_case.diagnostics.csv"
         summary.write_text("{}\n", encoding="utf-8")
-        diag_path.write_text("t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux\n", encoding="utf-8")
+        diag_path.write_text(
+            "t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux\n",
+            encoding="utf-8",
+        )
         return (
             runtime.RuntimeNonlinearResult(
                 t=t,
@@ -3331,8 +4088,13 @@ def test_run_nonlinear_case_uses_toml_output_path(
             {"summary": str(summary), "diagnostics": str(diag_path)},
         )
 
-    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
-    monkeypatch.setattr("spectraxgk.runtime_artifacts.run_runtime_nonlinear_with_artifacts", fake_run_runtime_nonlinear_with_artifacts)
+    monkeypatch.setattr(
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+    )
+    monkeypatch.setattr(
+        "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
+        fake_run_runtime_nonlinear_with_artifacts,
+    )
 
     rc = run_nonlinear_case(tmp_path / "dummy.toml", show_progress=False)
 
@@ -3361,10 +4123,12 @@ def test_run_linear_case_without_output_path_prints_summary_only(
             ky=0.25,
             gamma=0.11,
             omega=0.22,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
-    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+    )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
     rc = run_linear_case(tmp_path / "dummy.toml", show_progress=False)
@@ -3397,7 +4161,9 @@ def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
             kx_selected=0.0,
         )
 
-    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+    )
     monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
 
     rc = run_nonlinear_case(tmp_path / "dummy.toml", show_progress=False)
@@ -3417,7 +4183,9 @@ def test_run_runtime_scan_batch_ky_rejects_krylov() -> None:
         run_runtime_scan(cfg, ky_values=[0.1, 0.2], solver="krylov", batch_ky=True)
 
 
-def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_runtime_scan_serial_forwards_per_ky(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
@@ -3432,7 +4200,7 @@ def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     import spectraxgk.runtime as runtime
@@ -3473,7 +4241,7 @@ def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
             quasilinear={
                 "ky": ky,
                 "gamma": ky + 1.0,
@@ -3495,8 +4263,12 @@ def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
 
     np.testing.assert_allclose(out.gamma, [1.15, 1.35, 1.25])
     assert out.quasilinear is not None
-    np.testing.assert_allclose([row["ky"] for row in out.quasilinear], [0.15, 0.35, 0.25])
-    np.testing.assert_allclose([row["heat_flux_weight_total"] for row in out.quasilinear], [1.5, 3.5, 2.5])
+    np.testing.assert_allclose(
+        [row["ky"] for row in out.quasilinear], [0.15, 0.35, 0.25]
+    )
+    np.testing.assert_allclose(
+        [row["heat_flux_weight_total"] for row in out.quasilinear], [1.5, 3.5, 2.5]
+    )
     assert out.parallel is not None
     assert out.parallel["requested_workers"] == 2
     assert out.parallel["source"] == "arguments"
@@ -3522,7 +4294,7 @@ def test_run_runtime_scan_parallel_config_batch_selects_independent_workers(
             ky=ky,
             gamma=ky + 1.0,
             omega=-(ky + 2.0),
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
@@ -3571,7 +4343,7 @@ def test_run_runtime_scan_explicit_workers_override_parallel_config(
             ky=ky,
             gamma=ky,
             omega=-ky,
-            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
         )
 
     def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
@@ -3611,7 +4383,9 @@ def test_run_runtime_scan_parallel_config_batch_rejects_non_ky_axis() -> None:
         run_runtime_scan(cfg, ky_values=[0.15, 0.35], solver="time")
 
 
-def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_runtime_scan_parallel_config_selects_combined_ky(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
@@ -3630,7 +4404,9 @@ def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytes
 
     import spectraxgk.runtime as runtime
 
-    monkeypatch.setattr(runtime, "_run_runtime_scan_batch", _fake_run_runtime_scan_batch)
+    monkeypatch.setattr(
+        runtime, "_run_runtime_scan_batch", _fake_run_runtime_scan_batch
+    )
 
     out = run_runtime_scan(cfg, ky_values=[0.15, 0.35], solver="time", sample_stride=2)
 
@@ -3650,34 +4426,70 @@ def test_run_runtime_scan_batch_empty_raises(monkeypatch: pytest.MonkeyPatch) ->
     import spectraxgk.runtime as runtime
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid)
-    monkeypatch.setattr(runtime, "build_spectral_grid", lambda _grid: SimpleNamespace(ky=np.array([0.0, 0.2]), z=np.array([0.0]), kx=np.array([0.0])))
-    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0))
+    monkeypatch.setattr(
+        runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid
+    )
+    monkeypatch.setattr(
+        runtime,
+        "build_spectral_grid",
+        lambda _grid: SimpleNamespace(
+            ky=np.array([0.0, 0.2]), z=np.array([0.0]), kx=np.array([0.0])
+        ),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0),
+    )
     monkeypatch.setattr(runtime, "build_runtime_linear_terms", lambda _cfg: object())
 
     with pytest.raises(ValueError):
         run_runtime_scan(cfg, ky_values=[], solver="time", batch_ky=True)
 
 
-def test_runtime_linear_gx_time_rejects_return_state_before_setup(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
     import spectraxgk.runtime as runtime
 
-    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: SimpleNamespace())
-    monkeypatch.setattr(runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(
+        runtime, "build_runtime_geometry", lambda _cfg: SimpleNamespace()
+    )
+    monkeypatch.setattr(
+        runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid
+    )
     monkeypatch.setattr(
         runtime,
         "build_spectral_grid",
-        lambda _grid: SimpleNamespace(ky=np.array([0.0, 0.2]), kx=np.array([0.0]), z=np.array([-1.0, 0.0, 1.0])),
+        lambda _grid: SimpleNamespace(
+            ky=np.array([0.0, 0.2]), kx=np.array([0.0]), z=np.array([-1.0, 0.0, 1.0])
+        ),
     )
-    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0))
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0),
+    )
     monkeypatch.setattr(runtime, "build_runtime_linear_terms", lambda _cfg: object())
-    monkeypatch.setattr(runtime, "select_ky_grid", lambda grid, _idx: SimpleNamespace(ky=np.array([0.2]), kx=grid.kx, z=grid.z))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime,
+        "select_ky_grid",
+        lambda grid, _idx: SimpleNamespace(ky=np.array([0.2]), kx=grid.kx, z=grid.z),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
+    )
 
     with pytest.raises(ValueError):
-        run_runtime_linear(cfg, ky_target=0.2, Nl=2, Nm=2, solver="gx_time", return_state=True)
+        run_runtime_linear(
+            cfg, ky_target=0.2, Nl=2, Nm=2, solver="explicit_time", return_state=True
+        )

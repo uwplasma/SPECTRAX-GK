@@ -16,7 +16,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.parallel import independent_map  # noqa: E402
 
 from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402

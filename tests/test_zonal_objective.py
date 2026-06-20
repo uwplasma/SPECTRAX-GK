@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 
 import jax
@@ -7,7 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.zonal_objective import (
+from spectraxgk.objectives.zonal import (
     ZONAL_FLOW_OBJECTIVE_NAMES,
     ZonalFlowObjectiveConfig,
     zonal_flow_objective_artifact_from_records,
@@ -15,6 +16,12 @@ from spectraxgk.zonal_objective import (
     zonal_flow_objective_sensitivity_report,
     zonal_flow_reduced_objective,
 )
+from spectraxgk.objectives import zonal_records
+from spectraxgk.objectives.zonal_records import _finite_metric_tensor_from_records
+
+
+def test_zonal_record_helpers_have_single_canonical_owner() -> None:
+    assert inspect.getmodule(_finite_metric_tensor_from_records) is zonal_records
 
 
 def test_zonal_flow_objective_prefers_large_residual_and_low_damping() -> None:

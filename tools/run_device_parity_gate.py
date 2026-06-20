@@ -14,7 +14,7 @@ from typing import Any
 import jax
 import numpy as np
 
-from spectraxgk.io import load_runtime_from_toml, load_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml, load_toml
 from spectraxgk.runtime import RuntimeNonlinearResult, run_runtime_nonlinear
 
 

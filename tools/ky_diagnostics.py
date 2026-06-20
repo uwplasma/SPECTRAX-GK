@@ -15,13 +15,13 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate_auto,
     fit_growth_rate_with_stats,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 from spectraxgk.benchmarks import (
@@ -31,16 +31,16 @@ from spectraxgk.benchmarks import (
     ETG_OMEGA_D_SCALE,
     ETG_OMEGA_STAR_SCALE,
     ETG_RHO_STAR,
-    Kinetic_OMEGA_D_SCALE,
-    Kinetic_OMEGA_STAR_SCALE,
-    Kinetic_RHO_STAR,
+    KINETIC_OMEGA_D_SCALE,
+    KINETIC_OMEGA_STAR_SCALE,
+    KINETIC_RHO_STAR,
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _electron_only_params,
     _two_species_params,
@@ -60,16 +60,16 @@ from spectraxgk.config import (
     KBMBaseCase,
     TEMBaseCase,
 )
-from spectraxgk.diffrax_integrators import integrate_linear_diffrax
+from spectraxgk.solvers.time.diffrax import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
     build_linear_cache,
     integrate_linear_diagnostics,
 )
-from spectraxgk.linear_krylov import KrylovConfig, dominant_eigenpair
+from spectraxgk.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import TermConfig
 
@@ -215,7 +215,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
             damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()
     elif case == "kinetic":
         cfg = KineticElectronBaseCase()
@@ -224,9 +224,9 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=Kinetic_OMEGA_D_SCALE,
-            omega_star_scale=Kinetic_OMEGA_STAR_SCALE,
-            rho_star=Kinetic_RHO_STAR,
+            omega_d_scale=KINETIC_OMEGA_D_SCALE,
+            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
+            rho_star=KINETIC_RHO_STAR,
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
             nhermite=Nm,
@@ -473,7 +473,7 @@ def _run_time_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = gx_growth_rate_from_phi(
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
         phi_t_np,
         t,
         sel,
@@ -588,7 +588,7 @@ def _run_diffrax_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = gx_growth_rate_from_phi(
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
         phi_t_np,
         t,
         sel,

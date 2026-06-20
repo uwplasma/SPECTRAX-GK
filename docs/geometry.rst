@@ -85,11 +85,12 @@ is validated against Cyclone benchmarks.
 Slab Model
 ----------
 
-SPECTRAX-GK now also exposes GX's slab geometry contract directly with
-``geometry.model = "slab"``. This is the correct backend for GX's
-``secondary`` and ``cETG`` benchmarks; it is not an ``s-alpha`` approximation.
+SPECTRAX-GK exposes a slab flux-tube geometry contract directly with
+``geometry.model = "slab"``. This is the correct backend for slab secondary
+and collisional-ETG benchmark families; it is not an ``s-alpha``
+approximation.
 
-The slab overrides follow the audited GX implementation:
+The slab overrides are:
 
 - ``bmag = 1`` and ``bgrad = 0``
 - ``cvdrift = gbdrift = cvdrift0 = gbdrift0 = 0``
@@ -99,12 +100,12 @@ The slab overrides follow the audited GX implementation:
   ``gds21 = 0``, ``gds22 = 1`` and the effective solver shear is zero
 
 That contract is now locked by unit tests so future secondary/cETG work is
-built on the same geometry semantics GX uses.
+built on stable geometry semantics.
 It does not mean both benchmarks are solved already: ``secondary`` is a
-geometry-plus-runtime parity problem, while GX's ``cETG`` benchmark is a
-dedicated collisional reduced model with its own solver/RHS path. The slab
-backend is the correct prerequisite for both, but only ``secondary`` sits on
-the generic-runtime parity path today.
+geometry-plus-runtime parity problem, while collisional ETG is a dedicated
+reduced model with its own solver/RHS path. The slab backend is the correct
+prerequisite for both, but only ``secondary`` sits on the generic-runtime
+parity path today.
 
 Geometry Data Contract
 ----------------------
@@ -124,7 +125,7 @@ The linear cache now accepts either:
 - geometry metadata such as ``q``, ``s_hat``, ``R0``, and the
   ``kperp2_bmag`` / ``bessel_bmag_power`` switches.
 
-This is the insertion point for future VMEC/DESC or GX-imported field-line
+This is the insertion point for future VMEC/DESC or imported field-line
 geometry. The helper ``sample_flux_tube_geometry`` converts the analytic
 s-alpha model into the same contract, and ``ensure_flux_tube_geometry_data``
 normalizes analytic and sampled inputs onto one solver-facing representation.
@@ -137,32 +138,33 @@ more of the codebase without rebuilding solver-specific side paths.
 
 The contract also preserves explicit ``jacobian`` and ``grho`` profiles when
 they are available from imported geometry. The helper
-``load_gx_geometry_netcdf`` reads both GX full-output NetCDF files with
-``Geometry``/``Grids`` groups and root-level GX ``eik.nc`` geometry files from
-the VMEC workflow. That is the intended short path to the GX W7-X examples:
-import the sampled field-line geometry first, prove solver/diagnostic parity on
-that contract, and only then add a native VMEC path that generates the same
-contract inside SPECTRAX-GK.
+``load_imported_geometry_netcdf`` reads grouped NetCDF files with
+``Geometry``/``Grids`` groups and root-level ``*.eik.nc`` field-line geometry
+files from VMEC/DESC-style workflows. That is the intended short path for
+imported stellarator examples: import the sampled field-line geometry first,
+prove solver/diagnostic parity on that contract, and only then add a native
+VMEC path that generates the same contract inside SPECTRAX-GK.
 
 Runtime and executable paths can now construct that bridge directly from config with
-``geometry.model = "gx-netcdf"`` and
+``geometry.model = "imported-netcdf"`` and
 ``geometry.geometry_file = "external_geometry.nc"``. Analytic s-alpha remains
 the default with ``geometry.model = "s-alpha"``. For slab cases use
 ``geometry.model = "slab"`` with optional ``geometry.z0`` and
 ``geometry.zero_shat`` controls. In practice an imported geometry file
-can be either a GX ``*.out.nc`` file or a GX/VMEC-generated ``*.eik.nc`` file
-such as the W7-X examples in the GX benchmark tree. Root-level ``*.eik.nc``
+can be either a grouped diagnostic ``*.out.nc`` file or a VMEC/DESC-generated
+``*.eik.nc`` file such as the W7-X examples used in benchmark comparisons.
+Root-level ``*.eik.nc``
 files are no longer assumed to be closed-interval grids: the importer now
 infers whether the terminal theta point is present from the periodic endpoint
-content of the geometry profiles, so both VMEC-style closed grids and GX
-Miller's already-open ``*.eiknc.nc`` grids are mapped onto the correct solver
+content of the geometry profiles, so both VMEC-style closed grids and
+already-open Miller ``*.eiknc.nc`` grids are mapped onto the correct solver
 contract. For imported geometry, the
 runtime now also adopts the file's ``theta`` extent, twist-shift
 ``jtwist/x0`` defaults for both ``linked`` and ``fix aspect`` boundaries, and
 ``kxfac`` metadata so the flux-tube grid is built from the same field-line
-domain GX used to generate the file.
+domain encoded in the file.
 The same importer is also exposed under the aliases
-``geometry.model = "gx-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
+``geometry.model = "imported-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
 can reflect the provenance of a root-level ``*.eik.nc`` file without changing
 the solver-facing geometry contract.
 The linear KBM benchmark entry point now uses the same geometry builder, so
@@ -193,7 +195,7 @@ GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
 SPECTRAX-GK now also supports a direct VMEC runtime bridge with
-``geometry.model = "vmec"``. This path uses the existing compatibility helper
+``geometry.model = "vmec"``. This path uses the VMEC field-line helper
 to produce an imported ``*.eik.nc`` file and then re-enters the same
 imported-geometry contract described above. The bridge is cached by input
 content and VMEC file timestamp when SPECTRAX chooses the output path itself.
@@ -203,14 +205,14 @@ may already be present there.
 That keeps the native JAX geometry contract centered on ``FluxTubeGeometryData``
 while preserving reproducible imported-geometry workflows.
 For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
-GX so the helper chooses the same cut that GX would choose from ``y0`` and the
-geometry itself. SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the
-helper input, which was generating the wrong HSX/W7-X ``*.eik.nc`` files.
+the geometry helper so it chooses the cut from ``y0`` and the geometry itself.
+SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the helper input, which
+was generating the wrong HSX/W7-X ``*.eik.nc`` files.
 When ``booz_xform_jax`` is not installed into the active environment, point
 SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
-``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
-``booz_xform`` install is only needed as fallback compatibility for older
-helper environments.
+``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A
+``booz_xform`` install is only needed as an automatic fallback reader for
+older helper environments.
 Differentiable VMEC/Boozer transport-gradient audits require a
 ``booz_xform_jax`` checkout at or after upstream commit ``1d5e8c``. That
 revision replaces inactive zero-mode Fourier divisions by safe denominators in
@@ -434,9 +436,12 @@ the Boozer half-mesh radial-index convention. The evaluated QI robustness
 variants at ``ntheta=8`` and ``ntheta=16`` also pass. The broader QI seed
 campaign is still artifact-limited because three input-only QI seeds have no
 bundled ``wout`` references, and none of this is broad random-seed nonlinear
-QI transport validation or QI optimization. Finite-beta drift parity,
-solver-objective geometry gradients beyond the tracked reduced gates, and
-nonlinear transport optimization remain explicitly scoped as follow-up work.
+QI transport validation or QI optimization. The release guard now requires the
+finite-beta/pressure ``shaped_tokamak_pressure`` equal-arc row, so the current
+claim cannot silently regress to zero-beta-only parity evidence. Finite-beta
+solver-objective geometry gradients, broader production-runtime
+pressure-correction drift audits, and nonlinear transport optimization remain
+explicitly scoped as follow-up work.
 
 .. figure:: _static/vmec_boozer_parity_matrix.png
    :width: 95%
@@ -495,16 +500,45 @@ still tagged as ``not_full_transport_gradient_claim``. The gradient-holdout
 tests require the ``mode21_vmec_boozer_state`` source scope, ``mboz,nboz >= 21``,
 and explicitly track the nonlinear-window estimator objectives as a reduced
 differentiability gate rather than a production nonlinear-optimization gate.
+The release guard
+``docs/_static/vmec_boozer_differentiability_claim_guard.json`` now checks
+those contents directly: it requires the equal-arc parity matrix, the QH/Li383
+mode-21 frequency/quasilinear/nonlinear-window gradient holdouts, explicit
+``diagnostic_open`` status for the direct VMEC tensor-vs-imported-EIK
+convention gap, a passing finite-beta/pressure equal-arc parity row, and a
+startup-only label for the nonlinear finite-difference audit. It now also
+requires the shaped-pressure finite-beta eigenfrequency-gradient gate in
+``docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json``
+and the shaped-pressure finite-beta quasilinear-gradient gate in
+``docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json``.
+It also requires the shaped-pressure finite-beta reduced nonlinear-window
+estimator-gradient gate in
+``docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json``.
+A tagged release must fail if these artifacts try to promote a direct
+tensor-parity failure or a startup nonlinear-window response into a converged
+nonlinear transport-gradient claim.
+The same guard also checks the solver-objective content of each QH/Li383
+gradient row: frequency rows must carry ``gamma`` and ``omega``; quasilinear
+rows must additionally carry ``kperp_eff2``, ``linear_heat_flux_weight``, and
+``mixing_length_heat_flux_proxy``; nonlinear-window estimator rows must also
+carry the window mean, coefficient of variation, and trend metrics. The
+release thresholds are ``5e-2`` for frequency rows, ``2e-2`` for quasilinear
+rows, and ``7.5e-2`` for reduced nonlinear-window estimator rows. These are
+AD/finite-difference consistency gates, not nonlinear turbulence-gradient
+accuracy claims.
 
 For release claims, the differentiable-geometry lane is closed only for
-artifact-passing zero-beta equal-arc parity rows and reduced
-AD/finite-difference objectives. The fixed-resolution QI row and evaluated QI
-``ntheta`` variants now pass, but production nonlinear heat-flux optimization
-is still open. The active publication wording must keep these levels separate:
-the current bridge starts at real ``vmec_jax`` state coefficients and reaches
-SPECTRAX-GK solver observables, but it has not yet validated converged
-nonlinear turbulence gradients, broad QI transport behavior, or nonlinear
-audits of optimized equilibria.
+artifact-passing equal-arc parity rows, reduced QH/Li383
+AD/finite-difference objectives, and the shaped-pressure finite-beta
+eigenfrequency/quasilinear/reduced nonlinear-window estimator-gradient gates.
+The fixed-resolution QI row and evaluated QI ``ntheta`` variants now pass, but
+production nonlinear heat-flux optimization and finite-beta converged
+transport-gradient gates are still open.
+The active publication wording must keep these levels separate: the current
+bridge starts at real ``vmec_jax`` state coefficients and reaches SPECTRAX-GK
+solver observables, but it has not yet validated converged nonlinear
+turbulence gradients, broad QI transport behavior, or nonlinear audits of
+optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 The shipped portable runtime TOMLs now point to relative ``wout_*.nc`` paths
 under ``examples/vmec``. Generate those WOUT files locally from the bundled
@@ -578,7 +612,7 @@ Two user-facing entry points now exercise that bridge:
 
 - ``tools/generate_gx_vmec_eik.py --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
-- ``tools/generate_gx_miller_eik.py --config ...`` generates a compatible
+- ``tools/generate_miller_eik.py --config ...`` generates a compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear

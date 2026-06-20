@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.sharded_integrators import integrate_linear_sharded, integrate_nonlinear_sharded
+from spectraxgk.parallel.integrators import integrate_linear_sharded, integrate_nonlinear_sharded
 from spectraxgk.terms.config import FieldState
 
 
@@ -21,14 +21,14 @@ def test_integrate_linear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
         calls["rhs"] += 1
         return jnp.ones_like(G), None
 
-    monkeypatch.setattr("spectraxgk.sharded_integrators.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
     monkeypatch.setattr(
-        "spectraxgk.sharded_integrators.jax.lax.with_sharding_constraint",
+        "spectraxgk.parallel.integrators.jax.lax.with_sharding_constraint",
         lambda state, sharding: calls.__setitem__("shard", calls["shard"] + 1) or state,
     )
     monkeypatch.setattr(
-        "spectraxgk.sharded_integrators.jax.device_put",
+        "spectraxgk.parallel.integrators.jax.device_put",
         lambda state, sharding: calls.__setitem__("put", calls["put"] + 1) or state,
     )
 
@@ -47,8 +47,8 @@ def test_integrate_linear_sharded_no_sharding_path(monkeypatch) -> None:
         calls["rhs"] += 1
         return jnp.ones_like(G), None
 
-    monkeypatch.setattr("spectraxgk.sharded_integrators.linear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     out = integrate_linear_sharded(G0, SimpleNamespace(), SimpleNamespace(), dt=0.25, steps=2)
@@ -73,18 +73,18 @@ def test_integrate_nonlinear_sharded_rejects_bad_options() -> None:
 def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     calls = {"rhs": 0, "shard": 0, "put": 0}
 
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         calls["rhs"] += 1
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
-    monkeypatch.setattr("spectraxgk.sharded_integrators.nonlinear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
     monkeypatch.setattr(
-        "spectraxgk.sharded_integrators.jax.lax.with_sharding_constraint",
+        "spectraxgk.parallel.integrators.jax.lax.with_sharding_constraint",
         lambda state, sharding: calls.__setitem__("shard", calls["shard"] + 1) or state,
     )
     monkeypatch.setattr(
-        "spectraxgk.sharded_integrators.jax.device_put",
+        "spectraxgk.parallel.integrators.jax.device_put",
         lambda state, sharding: calls.__setitem__("put", calls["put"] + 1) or state,
     )
 
@@ -107,18 +107,18 @@ def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     assert calls["shard"] >= 3
 
 
-@pytest.mark.parametrize("method", ["euler", "rk2", "rk3", "rk3_gx", "rk3_classic", "rk4", "sspx3"])
+@pytest.mark.parametrize("method", ["euler", "rk2", "rk3", "rk3_heun", "rk3_classic", "rk4", "sspx3"])
 def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, method: str) -> None:
     """All explicit nonlinear sharded methods should preserve a constant RHS update."""
 
     calls = {"rhs": 0}
 
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         calls["rhs"] += 1
         return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
-    monkeypatch.setattr("spectraxgk.sharded_integrators.nonlinear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     G_final, fields_t = integrate_nonlinear_sharded(
@@ -128,7 +128,7 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, 
         dt=0.1,
         steps=1,
         method=method,
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
 
     assert G_final.shape == G0.shape
@@ -138,11 +138,11 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, 
 
 
 def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
-    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+    def fake_rhs(G, cache, params, terms=None, *, compressed_real_fft=True, laguerre_mode="grid", external_phi=None):
         return 2.0 * jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
 
-    monkeypatch.setattr("spectraxgk.sharded_integrators.nonlinear_rhs_cached", fake_rhs)
-    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.nonlinear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.parallel.integrators.pjit", lambda fn, **kwargs: fn)
 
     G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
     out = integrate_nonlinear_sharded(

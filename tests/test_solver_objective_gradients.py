@@ -11,8 +11,10 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.solver_objective_gradients as sog
-from spectraxgk.solver_objective_gradients import (
+import spectraxgk.objectives.gradient_gates as gradient_gates
+import spectraxgk.objectives.solver_gradients as sog
+import spectraxgk.objectives.solver_vmec as solver_vmec
+from spectraxgk.objectives.solver_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
     SolverScalarObjective,
@@ -78,6 +80,26 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
     assert np.all(np.asarray(mapping["bmag"]) > 0.0)
     with pytest.raises(ValueError, match="length-2"):
         solver_ready_geometry_mapping(jnp.ones(3), theta)
+
+
+def test_solver_ready_linear_context_builds_operator_contract() -> None:
+    context = gradient_gates._solver_ready_linear_context(
+        n_laguerre=2,
+        n_hermite=1,
+        source_model="unit_test_solver_ready_context",
+    )
+
+    assert context.state_shape[:2] == (2, 1)
+    assert context.grid.ky.size == 1
+    assert context.grid.kx.size == 1
+    assert context.source_model == "unit_test_solver_ready_context"
+
+    matrix = context.matrix_fn(default_solver_geometry_design_params())
+    assert matrix.shape == (int(np.prod(context.state_shape)),) * 2
+    feature_context = context.quasilinear_feature_context()
+    assert feature_context["state_shape"] == context.state_shape
+    assert callable(feature_context["geometry_for"])
+    assert callable(feature_context["rhs_phi"])
 
 
 def test_tiny_differentiable_objective_gradient_report_is_finite_and_conditioned() -> None:
@@ -474,8 +496,8 @@ def test_vmec_boozer_solver_objective_vector_from_state_splits_options(
         calls["objective"] = (geom, kwargs)
         return jnp.arange(len(SOLVER_OBJECTIVE_NAMES), dtype=jnp.float32)
 
-    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
-    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+    monkeypatch.setattr(solver_vmec, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(solver_vmec, "solver_objective_vector_from_geometry", fake_objective)
 
     vector = vmec_boozer_solver_objective_vector_from_state(
         "state",
@@ -515,7 +537,7 @@ def test_vmec_boozer_scalar_objective_from_state_uses_vector_selector(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_solver_objective_vector_from_state",
         lambda *_args, **_kwargs: jnp.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
     )
@@ -549,8 +571,8 @@ def test_vmec_boozer_solver_objective_table_samples_surfaces_alphas_and_ky(
         geom_index = float(str(geom).split("-")[-1])
         return jnp.asarray([geom_index + ky, 0.0, 1.0, 2.0, 0.0, 3.0])
 
-    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
-    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+    monkeypatch.setattr(solver_vmec, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(solver_vmec, "solver_objective_vector_from_geometry", fake_objective)
 
     table = vmec_boozer_solver_objective_table_from_state(
         "state",
@@ -599,8 +621,8 @@ def test_vmec_boozer_solver_objective_table_with_metadata_accepts_torflux_and_ph
         ky = float(kwargs["selected_ky_index"])
         return jnp.asarray([ky, 0.0, 1.0, 2.0, 0.0, 3.0])
 
-    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
-    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+    monkeypatch.setattr(solver_vmec, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(solver_vmec, "solver_objective_vector_from_geometry", fake_objective)
 
     table, metadata = vmec_boozer_solver_objective_table_with_metadata_from_state(
         "state",
@@ -659,7 +681,7 @@ def test_vmec_boozer_aggregate_scalar_objective_from_state_reductions(
         ]
     )
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_solver_objective_table_from_state",
         lambda *_args, **_kwargs: table,
     )
@@ -723,7 +745,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
 
     fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "_load_vmec_jax_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
@@ -740,7 +762,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
         coeff = float(np.asarray(state.Rcos[2, 1]))
         return jnp.asarray([1.0 + 3.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0 + coeff])
 
-    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
+    monkeypatch.setattr(solver_vmec, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
 
     report = vmec_boozer_scalar_objective_finite_difference_report(
         case_name="case",
@@ -785,7 +807,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
         Zsin=jnp.zeros((5, 3), dtype=jnp.float32),
     )
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "_load_vmec_jax_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
@@ -802,7 +824,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_fam
         coeff = float(np.asarray(state.Zsin[2, 1]))
         return jnp.asarray([2.0 + 4.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0])
 
-    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
+    monkeypatch.setattr(solver_vmec, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
 
     report = vmec_boozer_scalar_objective_finite_difference_report(
         case_name="case",
@@ -831,7 +853,7 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
 
     fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "_load_vmec_jax_example_state_bundle",
         lambda case_name: {
             "case_name": case_name,
@@ -854,7 +876,7 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
             metadata.append({"surface_index": None, "alpha": 0.0, "selected_ky_index": int(ky)})
         return jnp.asarray(rows), metadata
 
-    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_table_with_metadata_from_state", fake_table)
+    monkeypatch.setattr(solver_vmec, "vmec_boozer_solver_objective_table_with_metadata_from_state", fake_table)
 
     report = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
         case_name="case",
@@ -915,7 +937,7 @@ def test_vmec_boozer_aggregate_scalar_objective_line_search_report_accepts_safe_
         }
 
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
         fake_fd_report,
     )
@@ -945,7 +967,7 @@ def test_vmec_boozer_aggregate_scalar_objective_line_search_report_fails_closed(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
         lambda **_kwargs: {
             "passed": False,
@@ -1000,9 +1022,9 @@ def test_vmec_boozer_aggregate_line_search_holdout_report_passes_split(
             "samples": [{"selected_ky_index": ky[0] if ky else 0}],
         }
 
-    monkeypatch.setattr(sog, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_line_search)
+    monkeypatch.setattr(solver_vmec, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_line_search)
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
         fake_fd_report,
     )
@@ -1030,7 +1052,7 @@ def test_vmec_boozer_aggregate_line_search_holdout_report_fails_closed(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
         lambda **_kwargs: {
             "passed": True,
@@ -1042,7 +1064,7 @@ def test_vmec_boozer_aggregate_line_search_holdout_report_fails_closed(
         },
     )
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
         lambda **kwargs: {
             "passed": True,
@@ -1082,7 +1104,7 @@ def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(
         }
 
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_scalar_objective_finite_difference_report",
         fake_fd_report,
     )
@@ -1109,7 +1131,7 @@ def test_vmec_boozer_scalar_objective_line_search_report_fails_closed(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        sog,
+        solver_vmec,
         "vmec_boozer_scalar_objective_finite_difference_report",
         lambda **_kwargs: {
             "passed": False,

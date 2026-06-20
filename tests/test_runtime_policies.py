@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from spectraxgk.runtime_policies import (
+from spectraxgk.workflows.runtime.policies import (
     RuntimeIndependentParallelPlan,
     _active_kx_indices,
     _active_ky_indices,
@@ -197,7 +197,7 @@ def test_runtime_independent_parallel_plan_honors_batch_config_and_guards() -> N
 
 
 def test_runtime_solver_and_combined_ky_policy_helpers_normalize_inputs() -> None:
-    assert _normalize_linear_solver_name(" explicit_time ") == "gx_time"
+    assert _normalize_linear_solver_name(" explicit_time ") == "explicit_time"
     assert _normalize_linear_solver_name(" Krylov ") == "krylov"
 
     assert _parallel_requests_combined_ky_scan(SimpleNamespace(parallel=None)) is False

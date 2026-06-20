@@ -8,9 +8,13 @@ import numpy as np
 import pytest
 import jax.numpy as jnp
 
-import spectraxgk.benchmark_helpers as benchmark_helpers
+import spectraxgk.validation.benchmarks.fit_signals as benchmark_fit_signals
+import spectraxgk.validation.benchmarks.kbm_beta as benchmark_kbm_beta
+import spectraxgk.validation.benchmarks.kbm_linear as benchmark_kbm_linear
+import spectraxgk.validation.benchmarks.kinetic_linear as benchmark_kinetic
+import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
-from spectraxgk.analysis import fit_growth_rate
+from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
     compare_cyclone_to_reference,
     load_cyclone_reference,
@@ -43,10 +47,10 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, LinearTerms
-from spectraxgk.linear_krylov import KrylovConfig
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.solvers.linear.krylov import KrylovConfig
+from spectraxgk.core.species import Species, build_linear_params
 
 pytestmark = pytest.mark.integration
 
@@ -97,7 +101,9 @@ def test_load_tem_reference():
 def test_load_reference_with_header_helper_contract():
     """Header-driven reference loader should preserve ky/gamma/omega column semantics."""
     ref = benchmarks._load_reference_with_header("tem_reference.csv")
-    raw = np.genfromtxt("src/spectraxgk/data/tem_reference.csv", delimiter=",", names=True, dtype=float)
+    raw = np.genfromtxt(
+        "src/spectraxgk/data/tem_reference.csv", delimiter=",", names=True, dtype=float
+    )
     np.testing.assert_allclose(ref.ky[:3], raw["ky"][:3])
     np.testing.assert_allclose(ref.gamma[:3], raw["gamma"][:3])
     np.testing.assert_allclose(ref.omega[:3], raw["omega"][:3])
@@ -151,30 +157,47 @@ def test_fit_growth_rate_invalid():
 def test_benchmark_small_policy_helpers_cover_branch_contracts() -> None:
     """Fast policy helpers should stay deterministic without launching solvers."""
 
-    params = benchmarks._apply_gx_hypercollisions(LinearParams(), nhermite=None)
+    params = benchmarks._apply_reference_hypercollisions(LinearParams(), nhermite=None)
     assert params.p_hyper_m == pytest.approx(benchmarks.REFERENCE_P_HYPER_M)
-    assert benchmarks._gx_p_hyper_m(1) == pytest.approx(1.0)
-    assert benchmarks._gx_linked_end_damping(True) == (
+    assert benchmarks._reference_hypercollision_power(1) == pytest.approx(1.0)
+    assert benchmarks._linked_boundary_end_damping(True) == (
         benchmarks.REFERENCE_DAMP_ENDS_AMP,
         benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC,
     )
-    assert benchmarks._gx_linked_end_damping(False) == (0.0, 0.0)
+    assert benchmarks._linked_boundary_end_damping(False) == (0.0, 0.0)
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(1))) == 0
     assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(4))) == 3
-    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=True) == "gx_time"
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.22, reference_aligned=True)
+        == "explicit_time"
+    )
 
-    batches = list(benchmarks._iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True))
+    batches = list(
+        benchmarks._iter_ky_batches(
+            np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True
+        )
+    )
     assert batches[0][0] == 0
     np.testing.assert_allclose(batches[0][1], [0.1, 0.2])
     assert batches[0][2] == 2
     assert batches[1][0] == 2
     np.testing.assert_allclose(batches[1][1], [0.3, 0.3])
     assert batches[1][2] == 1
-    singles = list(benchmarks._iter_ky_batches(np.array([0.4, 0.5]), ky_batch=1, fixed_batch_shape=False))
+    singles = list(
+        benchmarks._iter_ky_batches(
+            np.array([0.4, 0.5]), ky_batch=1, fixed_batch_shape=False
+        )
+    )
     assert [(start, valid) for start, _batch, valid in singles] == [(0, 1), (1, 1)]
 
-    assert benchmarks._resolve_streaming_window(10.0, 2.0, 4.0, 0.1, 0.2, 0.8) == (2.0, 4.0)
-    assert benchmarks._resolve_streaming_window(10.0, None, None, 0.9, 0.2, 0.8) == (9.0, 10.0)
+    assert benchmarks._resolve_streaming_window(10.0, 2.0, 4.0, 0.1, 0.2, 0.8) == (
+        2.0,
+        4.0,
+    )
+    assert benchmarks._resolve_streaming_window(10.0, None, None, 0.9, 0.2, 0.8) == (
+        9.0,
+        10.0,
+    )
 
 
 def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
@@ -191,39 +214,51 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
         assert method == "z_index"
         return valid if arr is density else invalid
 
-    monkeypatch.setattr(benchmark_helpers, "extract_mode_time_series", fake_extract)
+    monkeypatch.setattr(benchmark_fit_signals, "extract_mode_time_series", fake_extract)
     np.testing.assert_allclose(
-        benchmarks._select_fit_signal(phi, density, sel, fit_signal="phi", mode_method="z_index"),
+        benchmarks._select_fit_signal(
+            phi, density, sel, fit_signal="phi", mode_method="z_index"
+        ),
         valid,
     )
 
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
-        zero_signal = benchmarks._select_fit_signal(phi, None, sel, fit_signal="phi", mode_method="z_index")
+        zero_signal = benchmarks._select_fit_signal(
+            phi, None, sel, fit_signal="phi", mode_method="z_index"
+        )
     np.testing.assert_allclose(zero_signal, np.zeros(3, dtype=np.complex128))
 
     with pytest.raises(ValueError, match="density_t"):
-        benchmarks._select_fit_signal(phi, None, sel, fit_signal="density", mode_method="z_index")
+        benchmarks._select_fit_signal(
+            phi, None, sel, fit_signal="density", mode_method="z_index"
+        )
 
     def fake_density_invalid(arr, selection, method="z_index"):
         return invalid if arr is density else valid
 
     monkeypatch.setattr(
-        benchmark_helpers, "extract_mode_time_series", fake_density_invalid
+        benchmark_fit_signals, "extract_mode_time_series", fake_density_invalid
     )
     np.testing.assert_allclose(
-        benchmarks._select_fit_signal(phi, density, sel, fit_signal="density", mode_method="z_index"),
+        benchmarks._select_fit_signal(
+            phi, density, sel, fit_signal="density", mode_method="z_index"
+        ),
         valid,
     )
 
     monkeypatch.setattr(
-        benchmark_helpers, "extract_mode_time_series", lambda *_args, **_kwargs: invalid
+        benchmark_fit_signals, "extract_mode_time_series", lambda *_args, **_kwargs: invalid
     )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
-        zero_density = benchmarks._select_fit_signal(phi, density, sel, fit_signal="density", mode_method="z_index")
+        zero_density = benchmarks._select_fit_signal(
+            phi, density, sel, fit_signal="density", mode_method="z_index"
+        )
     np.testing.assert_allclose(zero_density, np.zeros(3, dtype=np.complex128))
 
     with pytest.raises(ValueError, match="fit_signal"):
-        benchmarks._select_fit_signal(phi, density, sel, fit_signal="bad", mode_method="z_index")
+        benchmarks._select_fit_signal(
+            phi, density, sel, fit_signal="bad", mode_method="z_index"
+        )
 
 
 def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> None:
@@ -255,14 +290,14 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     signal = np.exp(0.1 * t)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad window")),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.0, 0.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (np.nan, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
@@ -271,21 +306,25 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     assert score == -np.inf
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (-0.1, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
-    assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (-0.1, 1.0, -np.inf)
+    assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (
+        -0.1,
+        1.0,
+        -np.inf,
+    )
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.1, 1.0, 0.0, 1.0, 0.7, 1.0),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.1, 1.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_helpers,
+        benchmark_fit_signals,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.2, 1.0, 0.0, 1.0, 0.9, 0.5),
     )
@@ -299,23 +338,33 @@ def test_benchmark_reduced_trace_and_initialization_helpers() -> None:
     """Reduced diagnostics and analytic initializers should handle edge cases deterministically."""
 
     scalar = np.asarray(2.0 + 1.0j)
-    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(scalar, local_idx=0), [2.0 + 1.0j])
+    np.testing.assert_allclose(
+        benchmarks._extract_mode_only_signal(scalar, local_idx=0), [2.0 + 1.0j]
+    )
     vector = np.array([1.0, 2.0])
     assert benchmarks._extract_mode_only_signal(vector, local_idx=0) is vector
     two_dim = np.arange(6).reshape(3, 2)
-    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(two_dim, local_idx=5), [1, 3, 5])
+    np.testing.assert_allclose(
+        benchmarks._extract_mode_only_signal(two_dim, local_idx=5), [1, 3, 5]
+    )
     three_dim = np.arange(24).reshape(3, 2, 4)
     np.testing.assert_allclose(
         benchmarks._extract_mode_only_signal(three_dim, local_idx=3, species_index=1),
         [7, 15, 23],
     )
     four_dim = np.arange(48).reshape(3, 2, 2, 4)
-    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(four_dim, local_idx=99), [15, 31, 47])
+    np.testing.assert_allclose(
+        benchmarks._extract_mode_only_signal(four_dim, local_idx=99), [15, 31, 47]
+    )
 
-    grid = build_spectral_grid(GridConfig(Nx=3, Ny=3, Nz=5, Lx=6.0, Ly=6.0, y0=5.0, ntheta=5, nperiod=1))
+    grid = build_spectral_grid(
+        GridConfig(Nx=3, Ny=3, Nz=5, Lx=6.0, Ly=6.0, y0=5.0, ntheta=5, nperiod=1)
+    )
     geom = SAlphaGeometry.from_config(CycloneBaseCase(grid=GridConfig()).geometry)
     init = InitializationConfig(init_field="all", init_amp=0.25, gaussian_init=False)
-    state = benchmarks._build_initial_condition(grid, geom, ky_index=[1], kx_index=0, Nl=2, Nm=4, init_cfg=init)
+    state = benchmarks._build_initial_condition(
+        grid, geom, ky_index=[1], kx_index=0, Nl=2, Nm=4, init_cfg=init
+    )
     assert state.shape == (2, 4, grid.ky.size, grid.kx.size, grid.z.size)
     assert np.count_nonzero(np.asarray(state)) > 0
 
@@ -374,7 +423,9 @@ def test_benchmark_kinetic_parameter_helpers_validate_and_override() -> None:
         nu_e=0.02,
         beta=1.0e-4,
     )
-    kwargs = dict(kpar_scale=0.7, omega_d_scale=1.1, omega_star_scale=0.9, rho_star=0.01)
+    kwargs = dict(
+        kpar_scale=0.7, omega_d_scale=1.1, omega_star_scale=0.9, rho_star=0.01
+    )
 
     def with_model(**updates):
         return SimpleNamespace(**{**vars(base), **updates})
@@ -422,25 +473,41 @@ def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
     kcfg = benchmarks.KBM_KRYLOV_DEFAULT
     assert benchmarks._kbm_use_multi_target_krylov(kcfg, [0.8, 1.0], shift=None)
     assert not benchmarks._kbm_use_multi_target_krylov(kcfg, None, shift=None)
-    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, mode_family="cyclone"), [1.0], shift=None)
-    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, method="power"), [1.0], shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(
+        replace(kcfg, mode_family="cyclone"), [1.0], shift=None
+    )
+    assert not benchmarks._kbm_use_multi_target_krylov(
+        replace(kcfg, method="power"), [1.0], shift=None
+    )
     assert not benchmarks._kbm_use_multi_target_krylov(kcfg, [1.0], shift=1.0 + 0.0j)
-    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, shift_selection="shift"), [1.0], shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(
+        replace(kcfg, shift_selection="shift"), [1.0], shift=None
+    )
 
     default_init = KineticElectronBaseCase().init
-    assert benchmarks._kinetic_reference_init_cfg(default_init, gx_reference=False) is default_init
+    assert (
+        benchmarks._kinetic_reference_init_cfg(default_init, reference_aligned=False)
+        is default_init
+    )
     explicit = replace(default_init, init_amp=2.0e-3)
-    assert benchmarks._kinetic_reference_init_cfg(explicit, gx_reference=True) is explicit
-    gx_init = benchmarks._kinetic_reference_init_cfg(default_init, gx_reference=True)
-    assert gx_init.init_field == "density"
-    assert gx_init.init_amp == pytest.approx(1.0e-3)
-    assert not gx_init.gaussian_init
+    assert (
+        benchmarks._kinetic_reference_init_cfg(explicit, reference_aligned=True)
+        is explicit
+    )
+    reference_init = benchmarks._kinetic_reference_init_cfg(
+        default_init, reference_aligned=True
+    )
+    assert reference_init.init_field == "density"
+    assert reference_init.init_amp == pytest.approx(1.0e-3)
+    assert not reference_init.gaussian_init
 
 
 def test_benchmark_linear_entrypoints_reject_invalid_scan_options() -> None:
     """Entry points should reject invalid fit and batching options before launching solves."""
 
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1))
+    cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
+    )
     with pytest.raises(ValueError, match="fit_signal"):
         run_cyclone_linear(cfg=cfg, ky_target=0.2, Nl=2, Nm=2, fit_signal="bad")
     with pytest.raises(ValueError, match="fit_signal"):
@@ -454,7 +521,9 @@ def test_run_cyclone_linear_shapes():
     """Smoke test for the Cyclone linear runner on a tiny grid."""
     grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=5, dt=0.1, method="rk4", solver="time")
+    result = run_cyclone_linear(
+        cfg=cfg, ky_target=0.1, steps=5, dt=0.1, method="rk4", solver="time"
+    )
     assert result.phi_t.shape[0] == 5
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
@@ -465,7 +534,9 @@ def test_run_cyclone_linear_defaults():
     """Default cfg/params path should run without error."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time")
+    result = run_cyclone_linear(
+        cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time"
+    )
     assert result.phi_t.shape[0] == 3
 
 
@@ -479,7 +550,7 @@ def test_run_cyclone_linear_manual_window():
         dt=0.1,
         method="rk2",
         solver="time",
-        gx_reference=False,
+        reference_aligned=False,
         auto_window=False,
         tmin=0.1,
         tmax=0.3,
@@ -492,7 +563,9 @@ def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time")
+    result = run_cyclone_linear(
+        cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time"
+    )
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
@@ -503,10 +576,14 @@ def test_cyclone_scan_and_compare():
     grid = GridConfig(Nx=6, Ny=12, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.2, 0.3])
-    scan = run_cyclone_scan(ky_values, cfg=cfg, steps=3, dt=0.1, method="euler", solver="time")
+    scan = run_cyclone_scan(
+        ky_values, cfg=cfg, steps=3, dt=0.1, method="euler", solver="time"
+    )
     assert scan.ky.shape == ky_values.shape
     ref = load_cyclone_reference()
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler", solver="time")
+    result = run_cyclone_linear(
+        cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler", solver="time"
+    )
     comparison = compare_cyclone_to_reference(result, ref)
     assert comparison.ky > 0.0
     assert np.isfinite(comparison.rel_gamma)
@@ -568,7 +645,7 @@ def test_cyclone_physics_regression():
         Nm=8,
         solver="krylov",
         krylov_cfg=krylov_cfg,
-        gx_reference=False,
+        reference_aligned=False,
     )
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
@@ -616,7 +693,7 @@ def test_cyclone_krylov_smoke():
 
 
 def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.validation.benchmarks.cyclone_linear as benchmark_cyclone_linear
 
     def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
         phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
@@ -624,25 +701,33 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
         return np.array([0.0, 0.1], dtype=float), phi_t, density_t
 
     monkeypatch.setattr(
-        benchmarks,
+        benchmark_cyclone_linear,
         "_select_fit_signal_auto",
         lambda *args, **kwargs: (np.ones_like(args[0]), "phi", np.nan, np.nan),
     )
-    monkeypatch.setattr(benchmarks, "integrate_linear_diagnostics", _fake_integrate_linear_diagnostics)
     monkeypatch.setattr(
-        benchmarks,
-        "integrate_linear_gx",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("seed unavailable in branch test")),
+        benchmark_cyclone_linear,
+        "integrate_linear_diagnostics",
+        _fake_integrate_linear_diagnostics,
     )
     monkeypatch.setattr(
-        benchmarks,
+        benchmark_cyclone_linear,
+        "integrate_linear_explicit",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            ValueError("seed unavailable in branch test")
+        ),
+    )
+    monkeypatch.setattr(
+        benchmark_cyclone_linear,
         "dominant_eigenpair",
         lambda G0, *_args, **_kwargs: (0.2 - 0.3j, np.zeros_like(np.asarray(G0))),
     )
     monkeypatch.setattr(
-        benchmarks,
+        benchmark_cyclone_linear,
         "compute_fields_cached",
-        lambda *_args, **_kwargs: SimpleNamespace(phi=np.zeros((1, 1, 8), dtype=np.complex64)),
+        lambda *_args, **_kwargs: SimpleNamespace(
+            phi=np.zeros((1, 1, 8), dtype=np.complex64)
+        ),
     )
 
     grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
@@ -661,13 +746,17 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
     assert np.isfinite(result.omega)
 
 
-def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_reference_growth_unavailable(
+    monkeypatch,
+):
+    import spectraxgk.validation.benchmarks.cyclone_scan as benchmark_cyclone_scan
 
-    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(
-        benchmarks,
-        "integrate_linear_gx",
+        benchmark_cyclone_scan, "build_linear_cache", lambda *_args, **_kwargs: object()
+    )
+    monkeypatch.setattr(
+        benchmark_cyclone_scan,
+        "integrate_linear_explicit",
         lambda *_args, **_kwargs: (
             np.array([0.0, 0.1], dtype=float),
             np.ones((2, 1, 1, 8), dtype=np.complex64),
@@ -676,22 +765,29 @@ def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable
         ),
     )
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("No finite GX growth-rate samples available")),
+        benchmark_cyclone_scan,
+        "instantaneous_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            ValueError("No finite instantaneous growth-rate samples available")
+        ),
     )
     monkeypatch.setattr(
-        benchmarks,
+        benchmark_cyclone_scan,
         "dominant_eigenpair",
-        lambda *_args, **_kwargs: (0.3 - 0.8j, np.ones((1, 2, 2, 1, 1, 8), dtype=np.complex64)),
+        lambda *_args, **_kwargs: (
+            0.3 - 0.8j,
+            np.ones((1, 2, 2, 1, 1, 8), dtype=np.complex64),
+        ),
     )
     monkeypatch.setattr(
-        benchmarks,
+        benchmark_cyclone_scan,
         "_normalize_growth_rate",
         lambda gamma, omega, *_args, **_kwargs: (float(gamma), float(omega)),
     )
 
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1))
+    cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=8, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
+    )
     scan = run_cyclone_scan(
         np.array([0.3]),
         cfg=cfg,
@@ -742,7 +838,9 @@ def test_etg_frequency_sign():
     """ETG frequency should align with the electron diamagnetic direction."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    result = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=3, Nm=6, steps=80, dt=0.003, method="rk4")
+    result = run_etg_linear(
+        cfg=cfg, ky_target=3.0, Nl=3, Nm=6, steps=80, dt=0.003, method="rk4"
+    )
     assert np.isfinite(result.omega)
     assert result.omega < 0.0
 
@@ -752,7 +850,9 @@ def test_etg_scan_shapes():
     grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=6.28, Ly=6.28)
     cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
     ky_values = np.array([3.0, 4.0])
-    scan = run_etg_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.003, method="rk4")
+    scan = run_etg_scan(
+        ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.003, method="rk4"
+    )
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
@@ -761,7 +861,9 @@ def test_kinetic_linear_smoke():
     """Kinetic-electron ITG/TEM benchmark should run and return finite outputs."""
     grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KineticElectronBaseCase(grid=grid)
-    result = run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
+    result = run_kinetic_linear(
+        cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
+    )
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
@@ -771,7 +873,9 @@ def test_kinetic_scan_shapes():
     grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KineticElectronBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
-    scan = run_kinetic_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
+    scan = run_kinetic_scan(
+        ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
+    )
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
@@ -780,7 +884,9 @@ def test_tem_linear_smoke():
     """TEM benchmark should run and return finite outputs."""
     grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = TEMBaseCase(grid=grid)
-    result = run_tem_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
+    result = run_tem_linear(
+        cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
+    )
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
@@ -801,7 +907,9 @@ def test_kbm_beta_scan_shapes():
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KBMBaseCase(grid=grid)
     betas = np.array([1.0e-4, 2.0e-4])
-    scan = run_kbm_beta_scan(betas, cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=40, dt=0.02)
+    scan = run_kbm_beta_scan(
+        betas, cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=40, dt=0.02
+    )
     assert scan.ky.shape == betas.shape
     assert scan.gamma.shape == betas.shape
 
@@ -809,7 +917,9 @@ def test_kbm_beta_scan_shapes():
 @pytest.mark.slow
 def test_kbm_ky_scan_shapes():
     """KBM ky-scan wrapper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     ky_values = np.array([0.2, 0.3])
     scan = run_kbm_scan(
@@ -822,7 +932,7 @@ def test_kbm_ky_scan_shapes():
         dt=0.02,
         steps=40,
         method="rk2",
-        solver="gx_time",
+        solver="explicit_time",
     )
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
@@ -831,9 +941,11 @@ def test_kbm_ky_scan_shapes():
 
 
 @pytest.mark.slow
-def test_run_kbm_linear_gx_time_history():
+def test_run_kbm_linear_explicit_time_history():
     """Single-point KBM runs should return a usable field history."""
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     result = run_kbm_linear(
         ky_target=0.3,
@@ -842,7 +954,7 @@ def test_run_kbm_linear_gx_time_history():
         Nm=6,
         dt=0.02,
         steps=40,
-        solver="gx_time",
+        solver="explicit_time",
         sample_stride=2,
     )
     assert result.t.ndim == 1
@@ -859,12 +971,14 @@ def test_run_kbm_linear_gx_time_history():
 
 @pytest.mark.slow
 def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
-    """KBM linear benchmark entry point should accept imported GX geometry."""
+    """KBM linear benchmark entry point should accept imported NetCDF geometry."""
 
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, grid.Nz + 1)
     geom_path = tmp_path / "kbm_geom.out.nc"
     with Dataset(geom_path, "w") as root:
@@ -892,7 +1006,9 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     cfg = KBMBaseCase(grid=grid)
     cfg_nc = replace(
         cfg,
-        geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(geom_path)),
+        geometry=replace(
+            cfg.geometry, model="imported-netcdf", geometry_file=str(geom_path)
+        ),
     )
     result = run_kbm_linear(
         ky_target=0.3,
@@ -901,7 +1017,7 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
         Nm=8,
         dt=0.01,
         steps=40,
-        solver="gx_time",
+        solver="explicit_time",
         sample_stride=2,
     )
     assert result.t.ndim == 1
@@ -911,8 +1027,8 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     assert np.isfinite(result.omega)
 
 
-def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
-    """GX-time KBM runs should honor the requested post-processing extractor."""
+def test_run_kbm_linear_explicit_time_uses_requested_mode_extractor(monkeypatch):
+    """explicit-time KBM runs should honor the requested post-processing extractor."""
 
     calls: dict[str, str] = {}
 
@@ -949,16 +1065,22 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
         calls["fit_signal_len"] = str(np.asarray(signal).shape[0])
         return 0.25, 1.5, 0.0, 0.0
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(benchmark_kbm_linear, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm_linear, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "instantaneous_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("unexpected reference-ratio fit")
+        ),
     )
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     result = run_kbm_linear(
         ky_target=0.3,
@@ -967,7 +1089,7 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
         mode_method="project",
     )
 
@@ -978,12 +1100,14 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     assert np.isclose(result.omega, 1.5)
 
 
-def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
-    """GX-aligned KBM runs should inherit GX linked-end damping defaults."""
+def test_run_kbm_linear_uses_linked_boundary_end_damping_by_default(monkeypatch):
+    """Reference-aligned KBM runs should inherit linked-end damping defaults."""
 
     captured: dict[str, float] = {}
 
-    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+    def _fake_two_species_params(
+        *args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs
+    ):
         del args, kwargs
         captured["amp"] = float(damp_ends_amp)
         captured["width"] = float(damp_ends_widthfrac)
@@ -1019,24 +1143,32 @@ def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", _fake_build_linear_cache)
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm_linear, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmark_kbm_linear, "build_linear_cache", _fake_build_linear_cache)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
-    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
+    run_kbm_linear(
+        ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="explicit_time"
+    )
 
     assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
     assert captured["width"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
 
 
-def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
+def test_run_kbm_linear_explicit_time_uses_reference_aligned_rk4_cfl_factor_by_default(
+    monkeypatch,
+):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1064,20 +1196,28 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
-    cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2))
-    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
+    cfg = KBMBaseCase(
+        grid=GridConfig(
+            Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+        )
+    )
+    run_kbm_linear(
+        ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="explicit_time"
+    )
 
     assert captured["cfl_fac"] == pytest.approx(benchmarks.ExplicitTimeConfig.cfl_fac)
 
 
-def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
+def test_run_kbm_linear_explicit_time_preserves_explicit_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1105,14 +1245,20 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
-    cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2))
+    cfg = KBMBaseCase(
+        grid=GridConfig(
+            Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+        )
+    )
     time_cfg = TimeConfig(t_max=0.04, dt=0.01, cfl_fac=1.25)
     run_kbm_linear(
         ky_target=0.3,
@@ -1122,13 +1268,13 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["cfl_fac"] == pytest.approx(1.25)
 
 
-def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
+def test_run_kbm_linear_explicit_time_uses_method_default_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
@@ -1156,14 +1302,20 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
+        benchmark_kbm_linear, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
-    cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2))
+    cfg = KBMBaseCase(
+        grid=GridConfig(
+            Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+        )
+    )
     time_cfg = TimeConfig(t_max=0.04, dt=0.01, method="rk3", cfl_fac=None)
     run_kbm_linear(
         ky_target=0.3,
@@ -1173,18 +1325,22 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["cfl_fac"] == pytest.approx(1.73)
 
 
-def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatch):
-    """Non-GX KBM runs should keep linked-end damping disabled by default."""
+def test_run_kbm_linear_disables_linked_boundary_end_damping_when_requested(
+    monkeypatch,
+):
+    """Non-reference KBM runs should keep linked-end damping disabled by default."""
 
     captured: dict[str, float] = {}
 
-    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+    def _fake_two_species_params(
+        *args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs
+    ):
         del args, kwargs
         captured["amp"] = float(damp_ends_amp)
         captured["width"] = float(damp_ends_widthfrac)
@@ -1197,12 +1353,20 @@ def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatc
     def _fake_integrate(*_args, **_kwargs):
         return np.array([0.0]), np.zeros((1, 1, 1, 4), dtype=np.complex64)
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(benchmarks, "integrate_linear", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0))
+    monkeypatch.setattr(benchmark_kbm_linear, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(
+        benchmark_kbm_linear, "build_linear_cache", lambda *_args, **_kwargs: object()
+    )
+    monkeypatch.setattr(benchmark_kbm_linear, "integrate_linear", _fake_integrate)
+    monkeypatch.setattr(
+        benchmark_kbm_linear,
+        "fit_growth_rate_auto",
+        lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0),
+    )
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     run_kbm_linear(
         ky_target=0.3,
@@ -1212,7 +1376,7 @@ def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatc
         dt=0.01,
         steps=4,
         solver="time",
-        gx_reference=False,
+        reference_aligned=False,
         fit_signal="phi",
     )
 
@@ -1220,8 +1384,8 @@ def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatc
     assert captured["width"] == pytest.approx(0.0)
 
 
-def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
-    """KBM scan helpers should not downgrade project mode on the GX-time path."""
+def test_run_kbm_beta_scan_explicit_time_keeps_project_mode(monkeypatch):
+    """KBM scan helpers should not downgrade project mode on the explicit-time path."""
 
     calls: list[str] = []
 
@@ -1258,16 +1422,22 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         calls.append("fit:auto")
         return 0.15, 0.9, 0.0, 0.0
 
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
-    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+        benchmark_kbm_beta, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(benchmark_kbm_beta, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmark_kbm_beta, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(
+        benchmark_kbm_beta,
+        "instantaneous_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("unexpected reference-ratio fit")
+        ),
     )
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     scan = run_kbm_beta_scan(
         np.array([cfg.model.beta]),
@@ -1277,7 +1447,7 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
         mode_method="project",
     )
 
@@ -1286,12 +1456,14 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     assert np.isclose(scan.omega[0], 0.9)
 
 
-def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
-    """GX-aligned KBM beta scans should inherit GX linked-end damping defaults."""
+def test_run_kbm_beta_scan_uses_linked_boundary_end_damping_by_default(monkeypatch):
+    """Reference-aligned KBM beta scans should inherit linked-end damping defaults."""
 
     captured: dict[str, float] = {}
 
-    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+    def _fake_two_species_params(
+        *args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs
+    ):
         del args, kwargs
         captured["amp"] = float(damp_ends_amp)
         captured["width"] = float(damp_ends_widthfrac)
@@ -1324,16 +1496,22 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
-    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmark_kbm_beta, "_two_species_params", _fake_two_species_params)
     monkeypatch.setattr(
-        benchmarks,
-        "gx_growth_rate_from_phi",
+        benchmark_kbm_beta, "build_linear_cache", lambda *_args, **_kwargs: object()
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_beta, "integrate_linear_explicit_diagnostics", _fake_integrate
+    )
+    monkeypatch.setattr(
+        benchmark_kbm_beta,
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
     )
 
-    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    grid = GridConfig(
+        Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2
+    )
     cfg = KBMBaseCase(grid=grid)
     run_kbm_beta_scan(
         np.array([cfg.model.beta]),
@@ -1343,7 +1521,7 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
         Nm=2,
         dt=0.01,
         steps=4,
-        solver="gx_time",
+        solver="explicit_time",
     )
 
     assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
@@ -1361,10 +1539,14 @@ def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch)
 
     def _fake_compute_fields_cached(vec, cache, params, terms):
         del cache, params, terms
-        return SimpleNamespace(phi=np.zeros(np.asarray(vec).shape[-3:], dtype=np.complex64))
+        return SimpleNamespace(
+            phi=np.zeros(np.asarray(vec).shape[-3:], dtype=np.complex64)
+        )
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_kbm_linear, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(
+        benchmark_kbm_linear, "compute_fields_cached", _fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KBMBaseCase(grid=grid)
@@ -1384,7 +1566,7 @@ def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch)
         Nm=4,
         solver="krylov",
         krylov_cfg=krylov_cfg,
-        gx_reference=False,
+        reference_aligned=False,
         diagnostic_norm="none",
     )
 
@@ -1405,7 +1587,7 @@ def test_run_kbm_beta_scan_krylov_explicit_shift_bypasses_multi_target(monkeypat
         calls.append(kwargs)
         return 0.2 - 1.1j, np.zeros_like(np.asarray(v0))
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmark_kbm_beta, "dominant_eigenpair", _fake_dominant_eigenpair)
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KBMBaseCase(grid=grid)
@@ -1426,7 +1608,7 @@ def test_run_kbm_beta_scan_krylov_explicit_shift_bypasses_multi_target(monkeypat
         Nm=4,
         solver="krylov",
         krylov_cfg=krylov_cfg,
-        gx_reference=False,
+        reference_aligned=False,
         diagnostic_norm="none",
     )
 
@@ -1470,14 +1652,20 @@ def test_kbm_beta_scan_time_mode_only_phi():
     assert np.isfinite(scan_mode_only.omega[0])
     assert np.isfinite(scan_full.gamma[0])
     assert np.isfinite(scan_full.omega[0])
-    assert np.isclose(scan_mode_only.gamma[0], scan_full.gamma[0], rtol=1.0e-6, atol=1.0e-10)
-    assert np.isclose(scan_mode_only.omega[0], scan_full.omega[0], rtol=1.0e-6, atol=1.0e-10)
+    assert np.isclose(
+        scan_mode_only.gamma[0], scan_full.gamma[0], rtol=1.0e-6, atol=1.0e-10
+    )
+    assert np.isclose(
+        scan_mode_only.omega[0], scan_full.omega[0], rtol=1.0e-6, atol=1.0e-10
+    )
 
 
 def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
     """KBM auto fit path should work with non-diffrax TimeConfig."""
     grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1)
-    time_cfg = TimeConfig(t_max=0.4, dt=0.1, method="rk2", use_diffrax=False, sample_stride=1)
+    time_cfg = TimeConfig(
+        t_max=0.4, dt=0.1, method="rk2", use_diffrax=False, sample_stride=1
+    )
     cfg = KBMBaseCase(grid=grid, time=time_cfg)
     scan = run_kbm_beta_scan(
         np.array([1.0e-4]),
@@ -1495,12 +1683,27 @@ def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
 
 
 def test_select_kbm_solver_auto_lock():
-    """KBM auto solver lock should be deterministic at GX-reference anchor ky."""
-    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_reference=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_reference=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=False) == "time"
-    assert select_kbm_solver_auto("krylov", ky_target=0.3, gx_reference=True) == "krylov"
+    """KBM auto solver lock should be deterministic at reference-aligned anchor ky."""
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.1, reference_aligned=True)
+        == "explicit_time"
+    )
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.3, reference_aligned=True)
+        == "explicit_time"
+    )
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.4, reference_aligned=True)
+        == "explicit_time"
+    )
+    assert (
+        select_kbm_solver_auto("auto", ky_target=0.22, reference_aligned=False)
+        == "time"
+    )
+    assert (
+        select_kbm_solver_auto("krylov", ky_target=0.3, reference_aligned=True)
+        == "krylov"
+    )
 
 
 def test_etg_scan_manual_window():
@@ -1579,8 +1782,8 @@ def test_tem_run_density_fit():
     assert np.isfinite(result.omega)
 
 
-def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
-    """Kinetic benchmark defaults should keep the GX electrostatic contract."""
+def test_kinetic_linear_defaults_to_reference_aligned_contract(monkeypatch):
+    """Kinetic benchmark defaults should keep the reference-aligned electrostatic contract."""
     captured: dict[str, object] = {}
 
     def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
@@ -1594,8 +1797,12 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(
+        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
+    )
+    monkeypatch.setattr(
+        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KineticElectronBaseCase(grid=grid)
@@ -1604,8 +1811,12 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
     params = captured["params"]
     assert terms is not None
     assert terms.bpar == 0.0
-    assert float(params.damp_ends_amp) == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
-    assert float(params.damp_ends_widthfrac) == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
+    assert float(params.damp_ends_amp) == pytest.approx(
+        benchmarks.REFERENCE_DAMP_ENDS_AMP
+    )
+    assert float(params.damp_ends_widthfrac) == pytest.approx(
+        benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC
+    )
     assert float(params.nu_hyper_l) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_L)
     assert float(params.nu_hyper_m) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_M)
     assert captured["mode_family"] == "cyclone"
@@ -1614,7 +1825,7 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
 
 
 def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
-    """Default kinetic GX-reference helpers should restore the historical density seed."""
+    """Default kinetic reference-aligned helpers should restore the historical density seed."""
 
     captured: dict[str, object] = {}
 
@@ -1628,9 +1839,15 @@ def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(
+        benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition
+    )
+    monkeypatch.setattr(
+        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
+    )
+    monkeypatch.setattr(
+        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = KineticElectronBaseCase(grid=grid)
@@ -1657,12 +1874,20 @@ def test_kinetic_linear_respects_explicit_user_seed(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(
+        benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition
+    )
+    monkeypatch.setattr(
+        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
+    )
+    monkeypatch.setattr(
+        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
-    custom_init = InitializationConfig(init_field="density", init_amp=1.0e-7, gaussian_init=True)
+    custom_init = InitializationConfig(
+        init_field="density", init_amp=1.0e-7, gaussian_init=True
+    )
     cfg = KineticElectronBaseCase(grid=grid, init=custom_init)
     run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
 
@@ -1680,8 +1905,10 @@ def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
         return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+    monkeypatch.setattr(benchmark_tem, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(
+        benchmark_tem, "compute_fields_cached", _fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
     cfg = TEMBaseCase(grid=grid)
@@ -1705,7 +1932,9 @@ def test_benchmark_krylov_smoke_finite():
         omega_cap_factor=5.0,
     )
 
-    small_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=2.0)
+    small_grid = GridConfig(
+        Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=2.0
+    )
     cyclone_cfg = CycloneBaseCase(grid=small_grid)
     cyclone = run_cyclone_linear(
         cfg=cyclone_cfg,
@@ -1718,7 +1947,9 @@ def test_benchmark_krylov_smoke_finite():
     assert np.isfinite(cyclone.gamma)
     assert np.isfinite(cyclone.omega)
 
-    etg_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=0.2)
+    etg_grid = GridConfig(
+        Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=0.2
+    )
     etg_cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=6.0))
     etg = run_etg_linear(
         cfg=etg_cfg,
@@ -1731,7 +1962,9 @@ def test_benchmark_krylov_smoke_finite():
     assert np.isfinite(etg.gamma)
     assert np.isfinite(etg.omega)
 
-    kin_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    kin_grid = GridConfig(
+        Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
+    )
     kin_cfg = KineticElectronBaseCase(grid=kin_grid)
     kin = run_kinetic_linear(
         cfg=kin_cfg,
@@ -1744,7 +1977,9 @@ def test_benchmark_krylov_smoke_finite():
     assert np.isfinite(kin.gamma)
     assert np.isfinite(kin.omega)
 
-    kbm_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    kbm_grid = GridConfig(
+        Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
+    )
     kbm_cfg = KBMBaseCase(grid=kbm_grid)
     kbm_scan = run_kbm_beta_scan(
         np.array([1.0e-4]),
@@ -1758,7 +1993,9 @@ def test_benchmark_krylov_smoke_finite():
     assert np.isfinite(kbm_scan.gamma[0])
     assert np.isfinite(kbm_scan.omega[0])
 
-    tem_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    tem_grid = GridConfig(
+        Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
+    )
     tem_cfg = TEMBaseCase(grid=tem_grid)
     tem = run_tem_linear(
         cfg=tem_cfg,
@@ -1780,7 +2017,14 @@ def test_etg_linear_with_params():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=model.R_over_LTi, fprim=model.R_over_Ln),
+            Species(
+                charge=1.0,
+                mass=1.0,
+                density=1.0,
+                temperature=1.0,
+                tprim=model.R_over_LTi,
+                fprim=model.R_over_Ln,
+            ),
             Species(
                 charge=-1.0,
                 mass=1.0 / model.mass_ratio,
@@ -1793,7 +2037,9 @@ def test_etg_linear_with_params():
         kpar_scale=float(geom.gradpar()),
         rho_star=1.0,
     )
-    result = run_etg_linear(cfg=cfg, params=params, ky_target=3.0, Nl=3, Nm=6, steps=60, dt=0.02)
+    result = run_etg_linear(
+        cfg=cfg, params=params, ky_target=3.0, Nl=3, Nm=6, steps=60, dt=0.02
+    )
     assert np.isfinite(result.gamma)
 
 
@@ -1805,7 +2051,14 @@ def test_etg_scan_with_params():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=model.R_over_LTi, fprim=model.R_over_Ln),
+            Species(
+                charge=1.0,
+                mass=1.0,
+                density=1.0,
+                temperature=1.0,
+                tprim=model.R_over_LTi,
+                fprim=model.R_over_Ln,
+            ),
             Species(
                 charge=-1.0,
                 mass=1.0 / model.mass_ratio,
@@ -1833,7 +2086,7 @@ def test_etg_scan_with_params():
 
 def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     from types import SimpleNamespace
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.validation.benchmarks.etg_linear as benchmark_etg_linear
 
     captured = {}
 
@@ -1844,8 +2097,12 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     def fake_compute_fields_cached(vec, cache, params, terms=None):
         return SimpleNamespace(phi=jnp.zeros(vec.shape[-3:], dtype=jnp.complex64))
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
-    monkeypatch.setattr(benchmarks, "compute_fields_cached", fake_compute_fields_cached)
+    monkeypatch.setattr(
+        benchmark_etg_linear, "dominant_eigenpair", fake_dominant_eigenpair
+    )
+    monkeypatch.setattr(
+        benchmark_etg_linear, "compute_fields_cached", fake_compute_fields_cached
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(
@@ -1867,7 +2124,7 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.validation.benchmarks.etg_scan as benchmark_etg_scan
 
     captured = {}
 
@@ -1878,7 +2135,9 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
         eig = jnp.asarray((0.1 + idx) - 0.2j, dtype=jnp.complex64)
         return eig, jnp.zeros_like(G0)
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(
+        benchmark_etg_scan, "dominant_eigenpair", fake_dominant_eigenpair
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(
@@ -1904,7 +2163,7 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
-    import spectraxgk.benchmarks as benchmarks
+    import spectraxgk.validation.benchmarks.etg_scan as benchmark_etg_scan
 
     calls: list[dict[str, object]] = []
 
@@ -1914,7 +2173,9 @@ def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkey
         vec = jnp.ones_like(G0) * (1.0 + 0.0j)
         return eig, vec
 
-    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(
+        benchmark_etg_scan, "dominant_eigenpair", fake_dominant_eigenpair
+    )
 
     grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
     cfg = ETGBaseCase(

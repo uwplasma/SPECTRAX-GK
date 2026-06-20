@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_gradient_evidence import (  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.evidence import (  # noqa: E402
     NonlinearTurbulenceGradientFiniteDifferenceConfig,
     load_json_artifact,
     nonlinear_turbulence_gradient_finite_difference_report,
@@ -57,7 +57,7 @@ def write_artifacts(report: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

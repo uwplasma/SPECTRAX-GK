@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from spectraxgk.nonlinear_replicate_diagnostics import nonlinear_replicate_spread_report
+from spectraxgk.validation.nonlinear_transport.replicate_diagnostics import nonlinear_replicate_spread_report
 
 
 def test_replicate_spread_report_identifies_mixed_seed_timestep_spread() -> None:

@@ -16,8 +16,9 @@ import pandas as pd
 from spectraxgk.benchmarks import CYCLONE_OMEGA_D_SCALE, CYCLONE_OMEGA_STAR_SCALE, CYCLONE_RHO_STAR, _build_initial_condition
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.linear import LinearParams, LinearTerms, _build_implicit_operator, build_linear_cache
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
+from spectraxgk.solvers.linear.implicit import _build_implicit_operator
 
 
 def build_parser() -> argparse.ArgumentParser:

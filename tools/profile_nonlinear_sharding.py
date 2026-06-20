@@ -22,11 +22,11 @@ import numpy as np
 from spectraxgk._version import __version__ as spectraxgk_version
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cached
-from spectraxgk.sharded_integrators import integrate_nonlinear_sharded
-from spectraxgk.sharding import resolve_state_sharding
+from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
+from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
 
 
@@ -166,7 +166,7 @@ def _nonlinear_diagnostic_identity_metrics(
     params: LinearParams,
     terms: TermConfig,
     *,
-    gx_real_fft: bool,
+    compressed_real_fft: bool,
     laguerre_mode: str,
 ) -> dict[str, float]:
     """Compare field solve and nonlinear RHS diagnostics on final states."""
@@ -176,7 +176,7 @@ def _nonlinear_diagnostic_identity_metrics(
         cache,
         params,
         terms,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     candidate_rhs, candidate_fields = nonlinear_rhs_cached(
@@ -184,7 +184,7 @@ def _nonlinear_diagnostic_identity_metrics(
         cache,
         params,
         terms,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     _block_until_ready((reference_rhs, reference_fields, candidate_rhs, candidate_fields))
@@ -352,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
             steps=int(args.steps),
             method=str(args.method),
             terms=terms,
-            gx_real_fft=True,
+            compressed_real_fft=True,
             laguerre_mode=str(args.laguerre_mode),
         )
         return G_final
@@ -370,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
                 method=str(args.method),
                 terms=terms,
                 state_sharding=state_sharding,
-                gx_real_fft=True,
+                compressed_real_fft=True,
                 laguerre_mode=str(args.laguerre_mode),
                 return_fields=False,
             )
@@ -442,7 +442,7 @@ def main(argv: list[str] | None = None) -> int:
                 cache,
                 params,
                 terms,
-                gx_real_fft=True,
+                compressed_real_fft=True,
                 laguerre_mode=str(args.laguerre_mode),
             )
             diagnostic_pass = bool(

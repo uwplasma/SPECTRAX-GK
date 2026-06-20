@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +66,13 @@ FORBIDDEN_PHRASES = (
     "broad multi-GPU nonlinear speedup claim",
 )
 
+COMPARISON_CODE_PATTERN = re.compile(
+    r"\bGX\b|\bgx\b|gx_|_gx|GX-reference|comparison-code"
+)
+COMPARISON_ALLOWED_SOURCE_PREFIXES = (
+    Path("src/spectraxgk/validation/benchmarks"),
+)
+
 
 def test_claim_scope_pages_keep_required_quasilinear_boundaries() -> None:
     missing: list[str] = []
@@ -82,5 +90,19 @@ def test_claim_scope_pages_avoid_promoted_unscoped_claims() -> None:
         violations.extend(
             f"{path}: {phrase}" for phrase in FORBIDDEN_PHRASES if phrase in text
         )
+
+    assert not violations
+
+
+def test_core_source_avoids_comparison_code_terminology_outside_benchmarks() -> None:
+    violations: list[str] = []
+    source_root = ROOT / "src" / "spectraxgk"
+    for path in source_root.rglob("*.py"):
+        rel = path.relative_to(ROOT)
+        if any(rel.is_relative_to(prefix) for prefix in COMPARISON_ALLOWED_SOURCE_PREFIXES):
+            continue
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if COMPARISON_CODE_PATTERN.search(line):
+                violations.append(f"{rel}:{line_no}: {line.strip()}")
 
     assert not violations

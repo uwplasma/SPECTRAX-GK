@@ -4,7 +4,9 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.nonlinear_parallel import (
+import spectraxgk.operators.nonlinear.parallel as nonlinear_parallel
+import spectraxgk.operators.nonlinear.domain_decomposition as nonlinear_parallel_domain
+from spectraxgk.operators.nonlinear.parallel import (
     NonlinearDomainDecompositionPlan,
     build_nonlinear_domain_decomposition_plan,
     deterministic_nonlinear_domain_state,
@@ -14,6 +16,24 @@ from spectraxgk.nonlinear_parallel import (
     prototype_nonlinear_domain_decomposed_step,
     prototype_nonlinear_domain_serial_step,
 )
+
+
+def test_nonlinear_domain_facade_reexports_domain_gate_functions() -> None:
+    public_domain_names = (
+        "build_nonlinear_domain_decomposition_plan",
+        "deterministic_nonlinear_domain_state",
+        "nonlinear_domain_identity_report",
+        "nonlinear_domain_parallel_identity_gate",
+        "nonlinear_domain_transport_window_identity_gate",
+        "prototype_nonlinear_domain_decomposed_step",
+        "prototype_nonlinear_domain_serial_step",
+    )
+
+    for name in public_domain_names:
+        assert getattr(nonlinear_parallel, name) is getattr(
+            nonlinear_parallel_domain,
+            name,
+        )
 
 
 def test_nonlinear_domain_plan_uses_static_halo_chunks() -> None:
@@ -247,3 +267,49 @@ def test_nonlinear_domain_decomposed_step_rejects_manual_invalid_plan() -> None:
 
     with pytest.raises(ValueError, match="axis_not_canonical"):
         prototype_nonlinear_domain_decomposed_step(state, invalid_plan)
+
+
+def test_nonlinear_domain_fail_closed_edge_branches() -> None:
+    with pytest.raises(ValueError, match="state_shape"):
+        build_nonlinear_domain_decomposition_plan(())
+    with pytest.raises(ValueError, match="num_domains"):
+        build_nonlinear_domain_decomposition_plan((4, 4), num_domains=0)
+    with pytest.raises(ValueError, match="shape"):
+        deterministic_nonlinear_domain_state(())
+    with pytest.raises(ValueError, match="shape entries"):
+        deterministic_nonlinear_domain_state((4, 0))
+
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+    with pytest.raises(ValueError, match="state shape"):
+        prototype_nonlinear_domain_decomposed_step(state[:5], plan)
+    with pytest.raises(ValueError, match="steps"):
+        nonlinear_domain_transport_window_identity_gate(state, plan, steps=0)
+
+    single_chunk_plan = build_nonlinear_domain_decomposition_plan(
+        state.shape,
+        num_domains=1,
+    )
+    mass, free_energy, flux_proxy = (
+        nonlinear_parallel_domain._nonlinear_domain_transport_observables(
+            state,
+            single_chunk_plan,
+        )
+    )
+    assert mass > 0.0
+    assert free_energy > 0.0
+    assert flux_proxy > 0.0
+    assert nonlinear_parallel_domain._relative_trace_error(
+        (1.0, 2.0),
+        (1.0,),
+        floor=1.0e-6,
+    ) == (float("inf"), float("inf"))
+    assert nonlinear_parallel_domain._trace_drift((1.0,)) == 0.0
+
+    shape_mismatch_report = nonlinear_domain_transport_window_identity_gate(
+        state[:5],
+        plan,
+        steps=1,
+    )
+    assert shape_mismatch_report.identity_passed is False
+    assert shape_mismatch_report.blocked_reasons == ("state_shape_does_not_match_plan",)

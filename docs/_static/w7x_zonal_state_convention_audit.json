@@ -2,7 +2,7 @@
   "audit_csv": "docs/_static/w7x_zonal_state_convention_audit.csv",
   "audit_png": "docs/_static/w7x_zonal_state_convention_audit.png",
   "case": "w7x_zonal_state_convention_audit",
-  "config": "examples/benchmarks/runtime_w7x_zonal_response_vmec.toml",
+  "config": "benchmarks/runtime_w7x_zonal_response_vmec.toml",
   "gate_index_include": false,
   "notes": "This state-level audit checks the paper-facing W7-X test-4 convention before time evolution: the runtime phi initializer recovers the prescribed Gaussian potential profile, the selected mode is ky=0 at the requested kx, the off-target spectral field is negligible, and the unweighted line-average observable differs explicitly from the volume-weighted zonal mode. It closes the initializer/observable convention layer but does not close the separate long-time recurrence and damping mismatch against the digitized stella/GENE traces.",
   "reference": "Gonzalez-Jerez et al., J. Plasma Phys. 88, 905880310 (2022), W7-X test 4",

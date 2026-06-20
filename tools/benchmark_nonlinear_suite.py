@@ -51,7 +51,7 @@ def _parse_gx_runtime(path: Path) -> tuple[float | None, float | None]:
 def main() -> None:
     args = _parse_args()
 
-    from spectraxgk.io import load_runtime_from_toml
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
     from spectraxgk.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)

@@ -30,14 +30,14 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
-from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES  # noqa: E402
-from spectraxgk.stellarator_objective_portfolio import (  # noqa: E402
+from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES  # noqa: E402
+from spectraxgk.objectives.portfolio_contracts import (  # noqa: E402
     aggregate_objective_portfolio,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
 )
-from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
-from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
+from spectraxgk.objectives.vmec_transport import VMECJAXTransportObjectiveTransform  # noqa: E402
+from spectraxgk.objectives.vmec_transport import (  # noqa: E402
     _apply_objective_transform,
     _reference_wout_from_context,
     _solver_table_to_nonlinear_window_proxy,

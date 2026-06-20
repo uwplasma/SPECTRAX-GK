@@ -34,9 +34,9 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution fallba
         _z_variation_norm,
     )
 
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
+from spectraxgk.core.grid import build_spectral_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.nonlinear import nonlinear_rhs_cached
 from spectraxgk.runtime import (
@@ -54,7 +54,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"),
+        default=Path(
+            "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
+        ),
     )
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--kx", type=float, default=None)
@@ -65,7 +67,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--z-mode", type=int, default=1)
     parser.add_argument("--z-wave-amplitude", type=float, default=1.0e-3)
     parser.add_argument("--laguerre-mode", type=str, default=None)
-    parser.add_argument("--summary-json", type=Path, default=Path("docs/_static/full_nonlinear_rhs_trace_summary.json"))
+    parser.add_argument(
+        "--summary-json",
+        type=Path,
+        default=Path("docs/_static/full_nonlinear_rhs_trace_summary.json"),
+    )
     parser.add_argument("--hlo-out", type=Path, default=None)
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--memory-profile", type=Path, default=None)
@@ -89,7 +95,7 @@ def _build_summary(
     repeats: int,
     state: str,
     laguerre_mode: str,
-    gx_real_fft: bool,
+    compressed_real_fft: bool,
     z_variation_norm: float,
     compile_execute_seconds: float,
     warm_seconds: float,
@@ -115,7 +121,7 @@ def _build_summary(
         "repeats": int(repeats),
         "state": state,
         "laguerre_mode": laguerre_mode,
-        "gx_real_fft": bool(gx_real_fft),
+        "compressed_real_fft": bool(compressed_real_fft),
         "z_variation_norm": float(z_variation_norm),
         "compile_execute_seconds": float(compile_execute_seconds),
         "warm_seconds": float(warm_seconds),
@@ -142,11 +148,15 @@ def main() -> None:
     args = _parse_args()
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg)
-    laguerre_mode = cfg.time.laguerre_nonlinear_mode if args.laguerre_mode is None else str(args.laguerre_mode)
+    laguerre_mode = (
+        cfg.time.laguerre_nonlinear_mode
+        if args.laguerre_mode is None
+        else str(args.laguerre_mode)
+    )
 
     ky_index, kx_index = _select_nonlinear_mode_indices(
         grid,
@@ -181,7 +191,7 @@ def main() -> None:
             cache,
             params,
             term_cfg,
-            gx_real_fft=bool(cfg.time.gx_real_fft),
+            compressed_real_fft=bool(cfg.time.compressed_real_fft),
             laguerre_mode=laguerre_mode,
         )
     )
@@ -224,7 +234,7 @@ def main() -> None:
         repeats=int(args.repeats),
         state=str(args.state),
         laguerre_mode=str(laguerre_mode),
-        gx_real_fft=bool(cfg.time.gx_real_fft),
+        compressed_real_fft=bool(cfg.time.compressed_real_fft),
         z_variation_norm=_z_variation_norm(g0),
         compile_execute_seconds=float(compile_execute_seconds),
         warm_seconds=float(warm_seconds),
@@ -236,7 +246,8 @@ def main() -> None:
         trace_dir=args.trace_dir,
         memory_profile=args.memory_profile,
         hlo_out=args.hlo_out,
-        electrostatic_specialized=_is_static_zero(term_cfg.apar) and _is_static_zero(term_cfg.bpar),
+        electrostatic_specialized=_is_static_zero(term_cfg.apar)
+        and _is_static_zero(term_cfg.bpar),
     )
     _write_summary_json(summary, args.summary_json)
     print(json.dumps(summary, indent=2, sort_keys=True))

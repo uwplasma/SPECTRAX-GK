@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.config import GridConfig
 
 

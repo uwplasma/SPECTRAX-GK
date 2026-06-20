@@ -8,8 +8,14 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "check_validation_coverage_manifest.py"
-    spec = importlib.util.spec_from_file_location("check_validation_coverage_manifest", path)
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "tools"
+        / "check_validation_coverage_manifest.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "check_validation_coverage_manifest", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -67,12 +73,51 @@ def test_repository_validation_manifest_is_well_formed() -> None:
     assert summary["package_coverage_target_percent"] == 95.0
     assert summary["n_modules"] >= 10
     assert summary["n_package_modules"] == (
-        summary["n_direct_modules"] + summary["n_owned_modules"] + summary["n_excluded_modules"]
+        summary["n_direct_modules"]
+        + summary["n_owned_modules"]
+        + summary["n_excluded_modules"]
     )
     rows = {row["module"]: row for row in summary["rows"]}
     assert rows["spectraxgk.linear"]["coverage_target_percent"] == 95.0
     assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
-    assert rows["spectraxgk.validation_gates"]["n_physics_contracts"] >= 2
+    assert rows["spectraxgk.validation.gates"]["n_physics_contracts"] >= 2
+    assert (
+        rows["spectraxgk.objectives.gradient_gates"]["coverage_target_percent"]
+        == 95.0
+    )
+    assert (
+        rows["spectraxgk.objectives.vmec_boozer_gradients"]["n_numerics_contracts"]
+        >= 2
+    )
+
+    assert rows["spectraxgk.operators.linear.cache"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.operators.linear.cache"]["n_owned_modules"] == 3
+    assert rows["spectraxgk.operators.linear.moments"]["n_numerics_contracts"] >= 2
+    assert rows["spectraxgk.operators.linear.params"]["n_physics_contracts"] >= 2
+    assert rows["spectraxgk.operators.linear.linked"]["n_owned_modules"] == 0
+    assert rows["spectraxgk.solvers.linear.parallel"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.operators.nonlinear.rhs"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.operators.nonlinear.rhs"]["n_numerics_contracts"] >= 2
+    assert (
+        rows["spectraxgk.operators.nonlinear.diagnostic_state"][
+            "coverage_target_percent"
+        ]
+        == 95.0
+    )
+    assert (
+        rows["spectraxgk.operators.nonlinear.diagnostic_state"][
+            "n_physics_contracts"
+        ]
+        >= 2
+    )
+    assert (
+        rows["spectraxgk.operators.nonlinear.spectral_core"]["n_owned_modules"]
+        == 8
+    )
+    assert rows["spectraxgk.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.solvers.nonlinear.explicit"]["n_numerics_contracts"] >= 2
+    assert rows["spectraxgk.solvers.nonlinear.imex"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.solvers.nonlinear.imex"]["n_physics_contracts"] >= 2
     assert "spectraxgk.nonlinear" in summary["high_priority_open"]
 
 
@@ -137,7 +182,9 @@ def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
         mod.REPO_ROOT = old_root
 
 
-def test_validation_manifest_rejects_duplicate_manifest_list_entries(tmp_path: Path) -> None:
+def test_validation_manifest_rejects_duplicate_manifest_list_entries(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     _write_minimal_package(tmp_path, "spectraxgk.runtime", "spectraxgk.config")
     test = tmp_path / "tests" / "test_runtime.py"
@@ -175,7 +222,9 @@ next_tests = ["next"]
     old_root = mod.REPO_ROOT
     try:
         mod.REPO_ROOT = tmp_path
-        with pytest.raises(ValueError, match="owned_modules contains duplicate entries"):
+        with pytest.raises(
+            ValueError, match="owned_modules contains duplicate entries"
+        ):
             mod.validate_manifest(mod.load_manifest(manifest))
     finally:
         mod.REPO_ROOT = old_root
@@ -310,7 +359,9 @@ def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) 
     assert measured["module_rows"][0]["coverage_percent"] == pytest.approx(97.0)
 
 
-def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(tmp_path: Path) -> None:
+def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     _write_minimal_package(tmp_path, "spectraxgk.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
@@ -346,13 +397,19 @@ def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(tmp_p
     old_root = mod.REPO_ROOT
     try:
         mod.REPO_ROOT = tmp_path
-        with pytest.raises(ValueError, match="duplicate coverage entry for spectraxgk.runtime"):
-            mod.validate_manifest(mod.load_manifest(manifest), coverage_xml=coverage_xml)
+        with pytest.raises(
+            ValueError, match="duplicate coverage entry for spectraxgk.runtime"
+        ):
+            mod.validate_manifest(
+                mod.load_manifest(manifest), coverage_xml=coverage_xml
+            )
     finally:
         mod.REPO_ROOT = old_root
 
 
-def test_validation_manifest_rejects_package_coverage_below_target(tmp_path: Path) -> None:
+def test_validation_manifest_rejects_package_coverage_below_target(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     _write_minimal_package(tmp_path, "spectraxgk.runtime")
     test = tmp_path / "tests" / "test_runtime.py"

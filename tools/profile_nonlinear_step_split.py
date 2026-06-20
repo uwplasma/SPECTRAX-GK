@@ -13,7 +13,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
@@ -22,15 +22,17 @@ from spectraxgk.runtime import (
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.nonlinear import nonlinear_rhs_cached
 from spectraxgk.terms.assembly import assemble_rhs_cached_jit, compute_fields_cached
 from spectraxgk.terms.nonlinear import nonlinear_em_contribution
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Profile nonlinear field solve vs bracket vs full RHS.")
+    p = argparse.ArgumentParser(
+        description="Profile nonlinear field solve vs bracket vs full RHS."
+    )
     p.add_argument(
         "--config",
         type=Path,
@@ -67,11 +69,15 @@ def main() -> None:
     args = _parse_args()
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg)
-    laguerre_mode = cfg.time.laguerre_nonlinear_mode if args.laguerre_mode is None else str(args.laguerre_mode)
+    laguerre_mode = (
+        cfg.time.laguerre_nonlinear_mode
+        if args.laguerre_mode is None
+        else str(args.laguerre_mode)
+    )
 
     ky_index, kx_index = _select_nonlinear_mode_indices(
         grid,
@@ -92,7 +98,9 @@ def main() -> None:
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     G0 = jnp.asarray(G0)
 
-    field_fn = jax.jit(lambda G: compute_fields_cached(G, cache, params, terms=term_cfg))
+    field_fn = jax.jit(
+        lambda G: compute_fields_cached(G, cache, params, terms=term_cfg)
+    )
     fields = field_fn(G0)
     _block_tree(fields)
 
@@ -112,7 +120,9 @@ def main() -> None:
             ky_grid=cache.ky_grid,
             dealias_mask=cache.dealias_mask,
             kxfac=cache.kxfac,
-            weight=jnp.asarray(term_cfg.nonlinear, dtype=jnp.real(jnp.empty((), dtype=G.dtype)).dtype),
+            weight=jnp.asarray(
+                term_cfg.nonlinear, dtype=jnp.real(jnp.empty((), dtype=G.dtype)).dtype
+            ),
             apar_weight=float(term_cfg.apar),
             bpar_weight=float(term_cfg.bpar),
             laguerre_to_grid=cache.laguerre_to_grid,
@@ -121,19 +131,21 @@ def main() -> None:
             laguerre_j0=cache.laguerre_j0,
             laguerre_j1_over_alpha=cache.laguerre_j1_over_alpha,
             b=cache.b,
-            gx_real_fft=bool(cfg.time.gx_real_fft),
+            compressed_real_fft=bool(cfg.time.compressed_real_fft),
             laguerre_mode=laguerre_mode,
         )
     )
     linear_terms = replace(term_cfg, nonlinear=0.0)
-    linear_rhs_fn = jax.jit(lambda G: assemble_rhs_cached_jit(G, cache, params, linear_terms))
+    linear_rhs_fn = jax.jit(
+        lambda G: assemble_rhs_cached_jit(G, cache, params, linear_terms)
+    )
     rhs_fn = jax.jit(
         lambda G: nonlinear_rhs_cached(
             G,
             cache,
             params,
             term_cfg,
-            gx_real_fft=bool(cfg.time.gx_real_fft),
+            compressed_real_fft=bool(cfg.time.compressed_real_fft),
             laguerre_mode=laguerre_mode,
         )
     )
@@ -147,7 +159,9 @@ def main() -> None:
         fields.bpar,
         repeats=args.repeats,
     )
-    linear_rhs_time, linear_rhs_out = _time_callable(linear_rhs_fn, G0, repeats=args.repeats)
+    linear_rhs_time, linear_rhs_out = _time_callable(
+        linear_rhs_fn, G0, repeats=args.repeats
+    )
     rhs_time, rhs_out = _time_callable(rhs_fn, G0, repeats=args.repeats)
     linear_rhs_state, _linear_rhs_fields = linear_rhs_out
     rhs_state, rhs_fields = rhs_out
@@ -192,7 +206,11 @@ def main() -> None:
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         with args.out.open("w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["kernel", "seconds", "repeats", "norm"], lineterminator="\n")
+            writer = csv.DictWriter(
+                f,
+                fieldnames=["kernel", "seconds", "repeats", "norm"],
+                lineterminator="\n",
+            )
             writer.writeheader()
             writer.writerows(rows)
         print(f"saved {args.out}")

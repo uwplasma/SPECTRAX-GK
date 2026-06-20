@@ -9,7 +9,7 @@ Canonical normalization contract
 --------------------------------
 
 SPECTRAX-GK now centralizes benchmark-family normalization values in
-``spectraxgk.normalization`` via :class:`spectraxgk.normalization.NormalizationContract`.
+``spectraxgk.diagnostics.normalization`` via :class:`spectraxgk.diagnostics.normalization.NormalizationContract`.
 This is the single source of truth for case defaults:
 
 .. list-table:: Canonical per-case normalization contracts
@@ -46,7 +46,7 @@ This is the single source of truth for case defaults:
      - ``0.8``
      - ``none``
 
-These contracts are consumed by benchmark constants for backward compatibility
+These contracts are consumed by benchmark constants for the stable script API
 (``CYCLONE_OMEGA_D_SCALE``, etc.), so existing scripts keep working while all
 new calibration updates flow through one module.
 
@@ -124,8 +124,8 @@ with ``x0 = Lx / (2π)`` and ``y0 = Ly / (2π)``. The parallel wave number is
 where :math:`Z_p` sets the field-line length
 (:math:`z \in [-\pi Z_p, \pi Z_p)`), and :math:`k_z` is defined *without* the
 ``gradpar`` factor. These definitions are implemented by
-``spectraxgk.grids.build_spectral_grid`` and are consistent with GX’s
-``kInit`` kernel.
+``spectraxgk.core.grid.build_spectral_grid`` and are consistent with the
+audited reference-grid convention.
 
 The midplane index used by the reference growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the audited benchmark kernel logic when ``Nz > 1``.
@@ -145,7 +145,7 @@ The Cyclone base case defaults follow this benchmark setting, and the
 Sign conventions
 ----------------
 
-The growth-rate fitting in :func:`spectraxgk.analysis.fit_growth_rate` assumes
+The growth-rate fitting in :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate` assumes
 
 .. math::
 
@@ -179,14 +179,14 @@ Diagnostic normalization mode
 -----------------------------
 
 Benchmark runners expose ``diagnostic_norm`` and route it through
-``spectraxgk.normalization.apply_diagnostic_normalization``:
+``spectraxgk.diagnostics.normalization.apply_diagnostic_normalization``:
 
 - ``none``: return raw solver ``(gamma, omega)``.
-- ``gx`` / ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
+- ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
 
 This affects reporting only; it does not alter the RHS/operator.
 
-The unified runtime schema defaults to ``diagnostic_norm = "gx"`` so that
+The unified runtime schema defaults to ``diagnostic_norm = "rho_star"`` so that
 out-of-the-box reports match the tracked benchmark normalization. Set
 ``diagnostic_norm = "none"`` in the TOML or runtime config to recover raw
 solver outputs.
@@ -225,8 +225,8 @@ Programmatic usage
 
 .. code-block:: python
 
-   from spectraxgk.normalization import get_normalization_contract
+   from spectraxgk.diagnostics.normalization import get_normalization_contract
 
    contract = get_normalization_contract("etg")
-   # contract.omega_d_scale == 0.4
+   # contract.omega_d_scale == 0.95
    # contract.omega_star_scale == 0.8

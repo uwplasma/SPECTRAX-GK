@@ -5,15 +5,17 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.stellarator_objective_portfolio import (
+from spectraxgk.objectives.portfolio_artifacts import (
     ReducedPortfolioArtifactGuardConfig,
+    reduced_portfolio_artifact_guard_report,
+)
+from spectraxgk.objectives.portfolio_contracts import (
     aggregate_objective_portfolio,
-    objective_portfolio_sensitivity_report,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
-    reduced_portfolio_artifact_guard_report,
     validate_objective_portfolio_contract,
 )
+from spectraxgk.objectives.portfolio_sensitivity import objective_portfolio_sensitivity_report
 
 
 def test_weighted_objective_portfolio_matches_manual_reduction() -> None:

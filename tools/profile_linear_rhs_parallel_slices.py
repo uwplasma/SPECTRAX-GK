@@ -106,7 +106,7 @@ def profile_linear_rhs_parallel_slices(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     platform_name = str(platform).lower()
     device_list = list(jax.devices(platform_name))[: int(requested_devices)]
@@ -198,7 +198,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

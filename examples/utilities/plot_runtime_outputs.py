@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectraxgk.plotting import plot_saved_output
+from spectraxgk.artifacts.plotting import plot_saved_output
 
 
 def build_parser() -> argparse.ArgumentParser:

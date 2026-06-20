@@ -16,10 +16,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
-from spectraxgk.nonlinear_gradient_followup import (  # noqa: E402
-    NonlinearGradientCandidateDesignConfig,
+from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.followup_candidate import (  # noqa: E402
     nonlinear_gradient_candidate_design_report,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
+    NonlinearGradientCandidateDesignConfig,
 )
 
 DEFAULT_OUT_PREFIX = ROOT / "docs" / "_static" / "nonlinear_gradient_next_campaign_design"
@@ -107,7 +109,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report["candidates"])
     labels = [str(row.get("parameter_name") or row.get("label") or idx) for idx, row in enumerate(rows)]

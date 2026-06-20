@@ -14,7 +14,7 @@ from compare_gx_imported_bigfield_linear import (
     build_parser,
 )
 from spectraxgk.config import GridConfig
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 
 
 def test_compare_gx_imported_bigfield_linear_parser_accepts_tail_window() -> None:

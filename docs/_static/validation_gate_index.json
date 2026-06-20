@@ -1,7 +1,7 @@
 {
-  "n_open": 0,
+  "n_open": 1,
   "n_passed": 17,
-  "n_reports": 17,
+  "n_reports": 18,
   "patterns": [
     "docs/_static/**/*.json"
   ],
@@ -38,6 +38,17 @@
       "n_gates": 8,
       "passed": true,
       "source": "external_vmec_nonlinear_pilot_reports"
+    },
+    {
+      "artifact": "docs/_static/external_vmec_shaped_tokamak_pressure_dt0p04_high_grid_admission_gate.json",
+      "case": "Shaped tokamak pressure external VMEC dt=0.04 high-grid transport holdout admission",
+      "failed_metrics": "",
+      "max_abs_error": 0.12370906120807167,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 17,
+      "passed": true,
+      "source": "external_vmec_high_grid_admission_policy"
     },
     {
       "artifact": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
@@ -145,19 +156,19 @@
       "max_abs_error": 0.0,
       "max_rel_error": 0.0,
       "n_failed": 0,
-      "n_gates": 107,
+      "n_gates": 116,
       "passed": true,
       "source": "tracked quasilinear JSON artifacts and documentation scope checks"
     },
     {
       "artifact": "docs/_static/quasilinear_model_selection_status.json",
       "case": "quasilinear_model_selection",
-      "failed_metrics": "",
-      "max_abs_error": 0.0,
-      "max_rel_error": 0.0,
-      "n_failed": 0,
-      "n_gates": 13,
-      "passed": true,
+      "failed_metrics": "dataset_sufficiency_passed,candidate_uncertainty_passed,required_candidate_accepted,required_candidate_transport_error",
+      "max_abs_error": 1.0,
+      "max_rel_error": 1.0,
+      "n_failed": 4,
+      "n_gates": 10,
+      "passed": false,
       "source": ""
     },
     {

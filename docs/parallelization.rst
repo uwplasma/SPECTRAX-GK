@@ -222,9 +222,9 @@ benchmark nonlinear conservation checks, accepted turbulent transport-window
 physics, or any speedup claim.
 
 The package also exposes
-``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate``,
-``spectraxgk.nonlinear_parallel.logical_decomposed_nonlinear_spectral_rhs``,
-and ``spectraxgk.nonlinear_parallel.nonlinear_spectral_integrator_identity_gate``
+``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_rhs_identity_gate``,
+``spectraxgk.operators.nonlinear.parallel.logical_decomposed_nonlinear_spectral_rhs``,
+and ``spectraxgk.operators.nonlinear.parallel.nonlinear_spectral_integrator_identity_gate``
 for focused tests. They are useful because they exercise field/bracket/RHS and
 fixed-step dataflow instead of only layout round trips. They remain fail-closed
 and diagnostic-only: logical tiles are reconstructed for identity validation,
@@ -265,11 +265,11 @@ The physical transport-window follow-up is tracked separately. The CPU profile
 ``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` advances
 the same serial and z-sharded routes for four fixed nonlinear steps and checks
 the final state plus free-energy, field-energy, physical-flux, and bracket-RMS
-traces. It passes the active identity gates and reaches ``1.72x`` on two
-logical CPU devices and ``3.11x`` on four. The two-GPU profile
+traces. It passes the active identity gates and reaches ``1.61x`` on two
+logical CPU devices and ``3.13x`` on four. The two-GPU profile
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
 passes transport-window identity, with maximum final-state absolute error
-``7.45e-9``, but reaches only ``1.20x`` and remains below the ``1.5x`` speedup
+``7.45e-9``, but reaches only ``1.48x`` and remains below the ``1.5x`` speedup
 gate. The profiler artifacts include HLO keyword summaries and Perfetto trace
 locations; both CPU and GPU sharded HLO summaries show local FFTs and no
 all-to-all or collective-permute operations. The remaining nonlinear

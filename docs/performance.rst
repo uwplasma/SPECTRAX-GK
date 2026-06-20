@@ -70,14 +70,14 @@ final state plus free-energy, field-energy, physical-flux, and bracket-RMS
 traces. The CPU artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` passes
 all active identity checks on two and four logical CPU devices for the same
-``(4,16,96,96,32)`` workload. It reaches ``1.72x`` on two logical CPU devices
-and ``3.11x`` on four, with maximum final-state absolute error ``7.45e-9``.
+``(4,16,96,96,32)`` workload. It reaches ``1.61x`` on two logical CPU devices
+and ``3.13x`` on four, with maximum final-state absolute error ``7.45e-9``.
 The HLO dump recorded in the JSON shows local FFT lowering for the sharded
 route and no all-to-all or collective-permute operations. The matching two-GPU
 artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
 passes the transport-window identity gate (``max_abs_error=7.45e-9``), but only
-reaches ``1.20x`` versus one GPU. Its Perfetto/TensorBoard trace was written
+reaches ``1.48x`` versus one GPU. Its Perfetto/TensorBoard trace was written
 under ``/tmp/spectrax_traces`` during generation, and its HLO summary likewise
 shows no collectives. The GPU blocker is therefore speedup/work granularity,
 not numerical identity or a hidden global reconstruction. This remains a
@@ -492,7 +492,7 @@ kernel-localization evidence rather than a full nonlinear runtime claim.
 Parallelization scaling guardrail
 ---------------------------------
 
-The legacy two-device linear scaling figure remains an engineering artifact, not
+The earlier two-device linear scaling figure remains an engineering artifact, not
 the headline production parallelization claim. Current user-facing scaling
 claims should point to the independent ``k_y`` scan and quasilinear/UQ ensemble
 figures below, because those paths preserve serial ordering and have explicit
@@ -691,7 +691,7 @@ gate for quasilinear calibration grids, finite-difference checks, sensitivity
 sweeps, and UQ ensembles that can be decomposed into independent solver calls.
 
 The future nonlinear-decomposition promotion plan follows the same conservative
-rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
+rule. ``spectraxgk.build_velocity_sharding_plan`` records a species/Hermite
 species-first, Hermite-second velocity-space layout, including which axes need
 Hermite ghost exchange and which axes need field-solve reductions and
 broadcasts. This is planning metadata, not yet a nonlinear speedup path. It is
@@ -1054,7 +1054,7 @@ each device count gets a clean JAX runtime:
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
    :align: center
 
-The May 10, 2026 large sweep is retained as historical engineering evidence:
+The May 10, 2026 large sweep is retained as archived engineering evidence:
 it passed the final-state identity gate at every tracked point, the CPU
 logical-device path saturated at about ``1.39x``, and the two-RTX-A4000 GPU path
 was slower than one GPU even for the larger
@@ -1166,6 +1166,12 @@ The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
 - ``tools_out/runtime_memory_logs/*.stdout.log``
 - ``tools_out/runtime_memory_logs/*.stderr.log``
 - ``docs/_static/runtime_memory_benchmark.png``
+
+The promoted runtime/memory result files are also indexed from the root-level
+``benchmarks/results/manifest.toml`` so users can find benchmark outputs without
+searching through scratch directories. Raw logs and NetCDF files should stay in
+``tools_out/`` or another scratch location; only the reviewed summary CSV/JSON
+and compressed panel are tracked.
 
 The manifest is designed to hold three rows per case:
 

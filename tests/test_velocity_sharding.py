@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 
 import spectraxgk
-from spectraxgk.velocity_sharding import (
+from spectraxgk.parallel.velocity import (
     build_velocity_sharding_plan,
     curvature_gradb_drift_reference,
     curvature_gradb_drift_shard_map,
@@ -242,7 +242,7 @@ def test_mocked_shard_map_exercises_multi_device_velocity_paths(monkeypatch: pyt
     kz = jnp.asarray([0.0, 1.0, -1.0, -2.0], dtype=jnp.float32)
     local_coeffs = jnp.ones((1, 3, 1, 1, 1), dtype=state.dtype)
     monkeypatch.setattr(
-        "spectraxgk.velocity_sharding._hermite_ladder_coefficients",
+        "spectraxgk.parallel.velocity._hermite_ladder_coefficients",
         lambda _arr: (local_coeffs, local_coeffs, 1),
     )
     assert hermite_streaming_ladder_shard_map(state, plan, vth=1.2, devices=devices).shape == (2, 3, 3, 1, 4)
@@ -371,7 +371,7 @@ def test_velocity_field_reduce_shard_map_matches_reference_when_logical_devices_
 def _small_periodic_field_problem():
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
@@ -871,7 +871,7 @@ def test_hermite_streaming_ladder_shard_map_matches_reference_when_logical_devic
 
 
 def test_periodic_streaming_reference_matches_production_streaming_term() -> None:
-    from spectraxgk.basis import hermite_ladder_coeffs
+    from spectraxgk.core.velocity import hermite_ladder_coeffs
     from spectraxgk.terms.operators import streaming_term
 
     ns, nl, nm, ny, nx, nz = 1, 2, 4, 2, 1, 8
@@ -932,7 +932,7 @@ def test_periodic_streaming_shard_map_matches_reference_when_logical_devices_ava
 def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -> None:
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import (
         LinearParams,
         LinearTerms,
@@ -940,7 +940,7 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
         linear_rhs_cached,
         linear_rhs_parallel_cached,
     )
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
     grid = build_spectral_grid(cfg.grid)
@@ -975,7 +975,7 @@ def test_linear_rhs_parallel_cached_streaming_only_matches_serial_call_graph() -
 
 def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> None:
     from spectraxgk.linear import LinearParams, LinearTerms, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
         kz = jnp.asarray([0.0, 1.0, -1.0])
@@ -990,7 +990,7 @@ def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> No
 def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_graph() -> None:
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import (
         LinearParams,
         LinearTerms,
@@ -998,7 +998,7 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
         linear_rhs_cached,
         linear_rhs_parallel_cached,
     )
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
     grid = build_spectral_grid(cfg.grid)
@@ -1046,7 +1046,7 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
 
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_call_graph() -> None:
     from spectraxgk.linear import LinearTerms, linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
     z = jnp.linspace(0.0, 2.0 * jnp.pi, state.shape[-1], endpoint=False)
@@ -1088,7 +1088,7 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_cal
 
 def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_slices() -> None:
     from spectraxgk.linear import LinearTerms, linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     state, cache, params = _small_periodic_field_problem()
     z = jnp.linspace(0.0, 2.0 * jnp.pi, state.shape[-1], endpoint=False)
@@ -1124,7 +1124,7 @@ def test_linear_rhs_parallel_cached_auto_backend_selects_gated_electrostatic_sli
 
 def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_terms() -> None:
     from spectraxgk.linear import LinearParams, LinearTerms, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
 
     class Cache:
         use_twist_shift = False

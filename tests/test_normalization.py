@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from spectraxgk import benchmark_defaults
+import spectraxgk.validation.benchmarks.defaults as benchmark_defaults
 from spectraxgk import benchmarks
-from spectraxgk.normalization import (
+from spectraxgk.diagnostics.normalization import (
     apply_diagnostic_normalization,
     get_normalization_contract,
 )
@@ -25,7 +25,7 @@ def test_get_normalization_contract_unknown_case() -> None:
 
 def test_apply_diagnostic_normalization_modes() -> None:
     gamma, omega = apply_diagnostic_normalization(
-        0.2, -0.3, rho_star=0.5, diagnostic_norm="gx"
+        0.2, -0.3, rho_star=0.5, diagnostic_norm="rho_star"
     )
     assert gamma == pytest.approx(0.1)
     assert omega == pytest.approx(-0.15)
@@ -40,26 +40,37 @@ def test_apply_diagnostic_normalization_modes() -> None:
 def test_benchmark_constants_follow_contract() -> None:
     cyclone = get_normalization_contract("cyclone")
     etg = get_normalization_contract("etg")
+    kinetic = get_normalization_contract("kinetic")
     kbm = get_normalization_contract("kbm")
 
     assert benchmarks.CYCLONE_OMEGA_D_SCALE == pytest.approx(cyclone.omega_d_scale)
-    assert benchmarks.CYCLONE_OMEGA_STAR_SCALE == pytest.approx(cyclone.omega_star_scale)
+    assert benchmarks.CYCLONE_OMEGA_STAR_SCALE == pytest.approx(
+        cyclone.omega_star_scale
+    )
     assert benchmarks.CYCLONE_RHO_STAR == pytest.approx(cyclone.rho_star)
 
     assert benchmarks.ETG_OMEGA_D_SCALE == pytest.approx(etg.omega_d_scale)
     assert benchmarks.ETG_OMEGA_STAR_SCALE == pytest.approx(etg.omega_star_scale)
     assert benchmarks.ETG_RHO_STAR == pytest.approx(etg.rho_star)
 
+    assert benchmarks.KINETIC_OMEGA_D_SCALE == pytest.approx(
+        kinetic.omega_d_scale
+    )
+    assert benchmarks.KINETIC_OMEGA_STAR_SCALE == pytest.approx(
+        kinetic.omega_star_scale
+    )
+    assert benchmarks.KINETIC_RHO_STAR == pytest.approx(kinetic.rho_star)
+
     assert benchmarks.KBM_OMEGA_D_SCALE == pytest.approx(kbm.omega_d_scale)
     assert benchmarks.KBM_OMEGA_STAR_SCALE == pytest.approx(kbm.omega_star_scale)
     assert benchmarks.KBM_RHO_STAR == pytest.approx(kbm.rho_star)
 
 
-def test_benchmark_defaults_preserve_benchmarks_compatibility_surface() -> None:
+def test_benchmark_defaults_preserve_benchmarks_public_surface() -> None:
     for name in benchmark_defaults.__all__:
         assert getattr(benchmarks, name) is getattr(benchmark_defaults, name)
 
-    assert benchmarks.KINETIC_KRYLOV_GX_REFERENCE.shift_source == "history"
+    assert benchmarks.KINETIC_KRYLOV_REFERENCE_ALIGNED.shift_source == "history"
     assert benchmarks.KINETIC_KRYLOV_DEFAULT.shift_source == "target"
     assert benchmarks.KBM_KRYLOV_DEFAULT.mode_family == "kbm"
     assert benchmarks.ETG_KRYLOV_DEFAULT.omega_sign == -1

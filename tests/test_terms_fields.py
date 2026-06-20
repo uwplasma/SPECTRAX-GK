@@ -9,7 +9,7 @@ import jax.numpy as jnp
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache, quasineutrality_phi
 from spectraxgk.terms.fields import _solve_fields_impl, solve_fields
 

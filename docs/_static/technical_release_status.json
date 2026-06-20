@@ -262,9 +262,73 @@
       "checks": [
         {
           "exists": true,
+          "name": "architecture refactor plan",
+          "passed": true,
+          "path": "docs/architecture_refactor_plan.rst",
+          "required": true,
+          "snippet": "authoritative refactor plan"
+        },
+        {
+          "exists": true,
+          "name": "package architecture manifest",
+          "passed": true,
+          "path": "tools/package_architecture_manifest.toml",
+          "required": true,
+          "snippet": "allowed_root_prefix_modules"
+        },
+        {
+          "exists": true,
+          "name": "package architecture checker",
+          "passed": true,
+          "path": "tools/check_package_architecture_manifest.py",
+          "required": true,
+          "snippet": "root-level prefix modules"
+        },
+        {
+          "exists": true,
+          "name": "operators package facade",
+          "passed": true,
+          "path": "src/spectraxgk/operators/__init__.py",
+          "required": true,
+          "snippet": "hermite_streaming"
+        },
+        {
+          "exists": true,
+          "name": "linear operator package",
+          "passed": true,
+          "path": "src/spectraxgk/operators/linear/__init__.py",
+          "required": true,
+          "snippet": "build_linear_cache"
+        },
+        {
+          "exists": true,
+          "name": "linear solver package",
+          "passed": true,
+          "path": "src/spectraxgk/solvers/linear/__init__.py",
+          "required": true,
+          "snippet": "KrylovConfig"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear operator package",
+          "passed": true,
+          "path": "src/spectraxgk/operators/nonlinear/__init__.py",
+          "required": true,
+          "snippet": "nonlinear_rhs_cached_impl"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear solver package",
+          "passed": true,
+          "path": "src/spectraxgk/solvers/nonlinear/__init__.py",
+          "required": true,
+          "snippet": "solve_imex_step"
+        },
+        {
+          "exists": true,
           "name": "runtime orchestration module",
           "passed": true,
-          "path": "src/spectraxgk/runtime_orchestration.py",
+          "path": "src/spectraxgk/workflows/runtime/orchestration.py",
           "required": true,
           "snippet": null
         },
@@ -272,7 +336,7 @@
           "exists": true,
           "name": "runtime policy module",
           "passed": true,
-          "path": "src/spectraxgk/runtime_policies.py",
+          "path": "src/spectraxgk/workflows/runtime/policies.py",
           "required": true,
           "snippet": "RuntimeIndependentParallelPlan"
         },
@@ -280,7 +344,7 @@
           "exists": true,
           "name": "linear cache module",
           "passed": true,
-          "path": "src/spectraxgk/linear_cache.py",
+          "path": "src/spectraxgk/operators/linear/cache.py",
           "required": true,
           "snippet": null
         },
@@ -288,7 +352,7 @@
           "exists": true,
           "name": "linear moments module",
           "passed": true,
-          "path": "src/spectraxgk/linear_moments.py",
+          "path": "src/spectraxgk/operators/linear/moments.py",
           "required": true,
           "snippet": null
         },
@@ -296,7 +360,7 @@
           "exists": true,
           "name": "linear params module",
           "passed": true,
-          "path": "src/spectraxgk/linear_params.py",
+          "path": "src/spectraxgk/operators/linear/params.py",
           "required": true,
           "snippet": null
         },
@@ -304,7 +368,7 @@
           "exists": true,
           "name": "linear parallel module",
           "passed": true,
-          "path": "src/spectraxgk/linear_parallel.py",
+          "path": "src/spectraxgk/solvers/linear/parallel.py",
           "required": true,
           "snippet": null
         },
@@ -312,7 +376,7 @@
           "exists": true,
           "name": "nonlinear helper module",
           "passed": true,
-          "path": "src/spectraxgk/nonlinear_helpers.py",
+          "path": "src/spectraxgk/operators/nonlinear/policies.py",
           "required": true,
           "snippet": null
         },
@@ -320,7 +384,7 @@
           "exists": true,
           "name": "benchmark scan module",
           "passed": true,
-          "path": "src/spectraxgk/benchmark_scan.py",
+          "path": "src/spectraxgk/validation/benchmarks/scan.py",
           "required": true,
           "snippet": null
         },
@@ -328,7 +392,7 @@
           "exists": true,
           "name": "diagnostics channel module",
           "passed": true,
-          "path": "src/spectraxgk/diagnostics_channels.py",
+          "path": "src/spectraxgk/diagnostics/channels.py",
           "required": true,
           "snippet": null
         },
@@ -338,13 +402,13 @@
           "passed": true,
           "path": "tools/validation_coverage_manifest.toml",
           "required": true,
-          "snippet": "spectraxgk.runtime_orchestration"
+          "snippet": "spectraxgk.workflows.runtime.orchestration"
         }
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 10,
-      "required": 10
+      "passed_required": 18,
+      "required": 18
     },
     "scientific_gate_guardrails": {
       "checks": [
@@ -363,6 +427,38 @@
           "path": "docs/_static/quasilinear_promotion_guardrails.json",
           "required": true,
           "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "VMEC/Boozer differentiability claim guard",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_differentiability_claim_guard.json",
+          "required": true,
+          "snippet": "not_full_nonlinear_transport_optimization"
+        },
+        {
+          "exists": true,
+          "name": "finite-beta VMEC/Boozer frequency gradient gate",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+          "required": true,
+          "snippet": "shaped_tokamak_pressure"
+        },
+        {
+          "exists": true,
+          "name": "finite-beta VMEC/Boozer quasilinear gradient gate",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+          "required": true,
+          "snippet": "shaped_tokamak_pressure"
+        },
+        {
+          "exists": true,
+          "name": "finite-beta VMEC/Boozer reduced nonlinear-window gradient gate",
+          "passed": true,
+          "path": "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
+          "required": true,
+          "snippet": "shaped_tokamak_pressure"
         },
         {
           "exists": true,
@@ -399,8 +495,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 6,
-      "required": 6
+      "passed_required": 10,
+      "required": 10
     }
   },
   "passed": true,

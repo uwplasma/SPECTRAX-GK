@@ -81,7 +81,7 @@ def build_problem(
 
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=6.0, Ly=6.0, boundary="periodic"))
@@ -119,8 +119,8 @@ def build_linear_rhs_electrostatic_slices_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan
+    from spectraxgk.workflows.runtime.config import RuntimeParallelConfig
+    from spectraxgk.parallel.velocity import build_velocity_sharding_plan
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
@@ -212,7 +212,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

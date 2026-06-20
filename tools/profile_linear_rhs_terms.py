@@ -15,9 +15,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
+from spectraxgk.core.grid import build_spectral_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import _as_species_array, build_H, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
@@ -26,8 +26,13 @@ from spectraxgk.runtime import (
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import _rhs_field_views, assemble_rhs_cached_jit, compute_fields_cached
+from spectraxgk.terms.assembly import (
+    _rhs_field_views,
+    assemble_rhs_cached_jit,
+    compute_fields_cached,
+)
 from spectraxgk.terms.linear_terms import (
+    _hypercollision_kz_source,
     collisions_contribution,
     curvature_gradb_contribution,
     diamagnetic_contribution,
@@ -35,7 +40,7 @@ from spectraxgk.terms.linear_terms import (
     hypercollisions_contribution,
     hyperdiffusion_contribution,
     mirror_contribution,
-    streaming_contribution_gx,
+    linked_streaming_contribution,
 )
 from spectraxgk.terms.operators import abs_z_linked_fft, grad_z_linked_fft, shift_axis
 
@@ -74,6 +79,12 @@ def _parse_args() -> argparse.Namespace:
 def _block_tree(tree) -> None:
     for leaf in jax.tree_util.tree_leaves(tree):
         jax.block_until_ready(leaf)
+
+
+def _required_array(name: str, value: jnp.ndarray | None) -> jnp.ndarray:
+    if value is None:
+        raise RuntimeError(f"{name} must be built before linked profiling")
+    return value
 
 
 def _time_callable(fn, *args, repeats: int):
@@ -120,26 +131,6 @@ def _inject_z_wave(
     return state + perturbation
 
 
-def _hypercollision_kz_source(
-    G: jnp.ndarray,
-    *,
-    weight: jnp.ndarray,
-    hypercollisions_kz: jnp.ndarray,
-    nu_hyper_m: jnp.ndarray,
-    m_norm_kz_factor: jnp.ndarray,
-    vth: jnp.ndarray,
-    kpar_scale: jnp.ndarray,
-    mask_kz: jnp.ndarray,
-    m_pow: jnp.ndarray,
-) -> jnp.ndarray:
-    """Return the pre-``|k_z|`` source used by production hypercollisions."""
-
-    vth_s = vth[:, None, None, None, None, None]
-    kz_weight = jnp.asarray(weight) * jnp.asarray(hypercollisions_kz)
-    nu_hyp_m = nu_hyper_m * m_norm_kz_factor * 2.3 * vth_s * jnp.abs(kpar_scale)
-    return kz_weight * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
-
-
 def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
     if numerator is None or denominator is None or denominator <= 0.0:
         return None
@@ -180,7 +171,9 @@ def _build_summary(
         for term, values in measured_terms
         if abs(values["norm"]) > zero_norm_threshold
     ]
-    dominant = max(measured_terms, default=(None, None), key=lambda item: float(item[1]["seconds"]))
+    dominant = max(
+        measured_terms, default=(None, None), key=lambda item: float(item[1]["seconds"])
+    )
     dominant_nonzero = max(
         measured_nonzero_terms,
         default=(None, None),
@@ -210,7 +203,9 @@ def _build_summary(
         "Nm": int(nm),
         "repeats": int(repeats),
         "state": state,
-        "z_variation_norm": None if z_variation_norm is None else float(z_variation_norm),
+        "z_variation_norm": None
+        if z_variation_norm is None
+        else float(z_variation_norm),
         "zero_norm_threshold": float(zero_norm_threshold),
         "rows": term_rows,
         "dominant_measured_term": dominant[0],
@@ -218,7 +213,9 @@ def _build_summary(
         "zero_norm_terms_by_time": zero_norm_terms,
         "full_linear_rhs_seconds": full_seconds,
         "sum_independently_measured_components_seconds": measured_sum,
-        "full_over_sum_independently_measured_components": _safe_ratio(full_seconds, measured_sum),
+        "full_over_sum_independently_measured_components": _safe_ratio(
+            full_seconds, measured_sum
+        ),
         "claim_scope": (
             "Linear RHS split profile for hot-path localization. Zero-norm rows describe the "
             "profiled initial state only and must not be skipped in production unless a "
@@ -229,14 +226,16 @@ def _build_summary(
 
 def _write_summary_json(payload: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def main() -> None:
     args = _parse_args()
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg)
@@ -267,7 +266,9 @@ def main() -> None:
             z_mode=int(args.z_mode),
         )
         if args.state == "z_wave_linear_kick":
-            kick_rhs, _kick_fields = assemble_rhs_cached_jit(G0, cache, params, term_cfg)
+            kick_rhs, _kick_fields = assemble_rhs_cached_jit(
+                G0, cache, params, term_cfg
+            )
             _block_tree(kick_rhs)
             G0 = G0 + float(args.kick_dt) * kick_rhs
     state_z_variation_norm = _z_variation_norm(G0)
@@ -282,10 +283,14 @@ def main() -> None:
     fprim = _as_species_array(params.R_over_Ln, ns, "R_over_Ln").astype(real_dtype)
     nu = _as_species_array(params.nu, ns, "nu").astype(real_dtype)
 
-    field_fn = jax.jit(lambda G: compute_fields_cached(G, cache, params, terms=term_cfg))
+    field_fn = jax.jit(
+        lambda G: compute_fields_cached(G, cache, params, terms=term_cfg)
+    )
     fields_time, fields = _time_callable(field_fn, G0, repeats=args.repeats)
     apar, bpar, h_apar, h_bpar = _rhs_field_views(fields, term_cfg)
-    H = build_H(G0, cache.Jl, fields.phi, tz, apar=h_apar, vth=vth, bpar=h_bpar, JlB=cache.JlB)
+    H = build_H(
+        G0, cache.Jl, fields.phi, tz, apar=h_apar, vth=vth, bpar=h_bpar, JlB=cache.JlB
+    )
 
     omega_d_scale = jnp.asarray(params.omega_d_scale, dtype=real_dtype)
     omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
@@ -308,7 +313,9 @@ def main() -> None:
         G_p1 = shift_axis(G0, 1, axis=axis_m)
         G_m1 = shift_axis(G0, -1, axis=axis_m)
         vth_s = vth[:, None, None, None, None, None]
-        streaming_rhs_pre_grad = -vth_s * (cache.sqrt_p * G_p1 + cache.sqrt_m_ladder * G_m1)
+        streaming_rhs_pre_grad = -vth_s * (
+            cache.sqrt_p * G_p1 + cache.sqrt_m_ladder * G_m1
+        )
 
         tz_arr = tz[:, None, None, None, None, None]
         zt = jnp.where(tz_arr == 0.0, 0.0, 1.0 / tz_arr)
@@ -321,15 +328,24 @@ def main() -> None:
         if h_apar is not None:
             apar_s = h_apar[None, None, ...]
             drive_m0 = zt5 * (vth5 * vth5) * cache.Jl * apar_s
-            field_rhs = field_rhs + (m_idx == 0).astype(field_rhs.dtype) * drive_m0[:, :, None, ...]
+            field_rhs = (
+                field_rhs
+                + (m_idx == 0).astype(field_rhs.dtype) * drive_m0[:, :, None, ...]
+            )
         if Nm > 1:
             drive_m1 = -zt5 * vth5 * cache.Jl * phi_s
             if h_bpar is not None:
                 drive_m1 = drive_m1 - vth5 * cache.JlB * h_bpar[None, None, ...]
-            field_rhs = field_rhs + (m_idx == 1).astype(field_rhs.dtype) * drive_m1[:, :, None, ...]
+            field_rhs = (
+                field_rhs
+                + (m_idx == 1).astype(field_rhs.dtype) * drive_m1[:, :, None, ...]
+            )
         if Nm > 2 and h_apar is not None:
             drive_m2 = jnp.sqrt(2.0) * zt5 * (vth5 * vth5) * cache.Jl * apar_s
-            field_rhs = field_rhs + (m_idx == 2).astype(field_rhs.dtype) * drive_m2[:, :, None, ...]
+            field_rhs = (
+                field_rhs
+                + (m_idx == 2).astype(field_rhs.dtype) * drive_m2[:, :, None, ...]
+            )
         streaming_rhs_pre_grad = kpar_scale * (streaming_rhs_pre_grad + field_rhs)
 
         hyper_kz_source = _hypercollision_kz_source(
@@ -345,9 +361,20 @@ def main() -> None:
         )
 
     kernel_fns = {
-        "build_H": jax.jit(lambda: build_H(G0, cache.Jl, fields.phi, tz, apar=h_apar, vth=vth, bpar=h_bpar, JlB=cache.JlB)),
+        "build_H": jax.jit(
+            lambda: build_H(
+                G0,
+                cache.Jl,
+                fields.phi,
+                tz,
+                apar=h_apar,
+                vth=vth,
+                bpar=h_bpar,
+                JlB=cache.JlB,
+            )
+        ),
         "streaming": jax.jit(
-            lambda: streaming_contribution_gx(
+            lambda: linked_streaming_contribution(
                 G0,
                 phi=fields.phi,
                 apar=h_apar,
@@ -375,7 +402,7 @@ def main() -> None:
         "linked_grad_z": (
             jax.jit(
                 lambda: grad_z_linked_fft(
-                    streaming_rhs_pre_grad,
+                    _required_array("streaming_rhs_pre_grad", streaming_rhs_pre_grad),
                     dz=cache.dz,
                     linked_indices=cache.linked_indices,
                     linked_kz=cache.linked_kz,
@@ -478,7 +505,7 @@ def main() -> None:
         "linked_abs_kz": (
             jax.jit(
                 lambda: abs_z_linked_fft(
-                    hyper_kz_source,
+                    _required_array("hyper_kz_source", hyper_kz_source),
                     linked_indices=cache.linked_indices,
                     linked_kz=cache.linked_kz,
                     linked_inverse_permutation=cache.linked_inverse_permutation,
@@ -512,7 +539,9 @@ def main() -> None:
                 weight=jnp.asarray(term_cfg.end_damping, dtype=real_dtype),
             )
         ),
-        "full_linear_rhs": jax.jit(lambda: assemble_rhs_cached_jit(G0, cache, params, term_cfg)),
+        "full_linear_rhs": jax.jit(
+            lambda: assemble_rhs_cached_jit(G0, cache, params, term_cfg)
+        ),
     }
 
     rows = [
@@ -541,7 +570,9 @@ def main() -> None:
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         with args.out.open("w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["term", "seconds", "norm"], lineterminator="\n")
+            writer = csv.DictWriter(
+                f, fieldnames=["term", "seconds", "norm"], lineterminator="\n"
+            )
             writer.writeheader()
             writer.writerows(rows)
         print(f"saved {args.out}")

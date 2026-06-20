@@ -8,9 +8,11 @@ import json
 from pathlib import Path
 import sys
 
-from spectraxgk.quasilinear_calibration import (
-    calibration_point_from_spectrum_and_nonlinear_window,
+from spectraxgk.validation.quasilinear.calibration_core import (
     quasilinear_calibration_report,
+)
+from spectraxgk.validation.quasilinear.calibration_io import (
+    calibration_point_from_spectrum_and_nonlinear_window,
     write_quasilinear_calibration_report,
 )
 

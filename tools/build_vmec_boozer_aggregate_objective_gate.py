@@ -19,9 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.solver_objective_gradients import (  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from spectraxgk.objectives.sampling import (  # noqa: E402
     solver_grid_options_from_ky_values,
+)
+from spectraxgk.objectives.vmec_boozer_fd import (  # noqa: E402
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
 )
 from tools.build_solver_objective_gradient_gate import _json_clean  # noqa: E402

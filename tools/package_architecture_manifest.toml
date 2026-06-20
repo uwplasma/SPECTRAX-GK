@@ -1,0 +1,48 @@
+[metadata]
+schema_version = 1
+title = "Package architecture policy"
+layout_authority = "docs/architecture_refactor_plan.rst"
+status = "active"
+
+[root_prefix_policy]
+blocked_prefixes = [
+  "runtime_",
+  "nonlinear_",
+  "linear_",
+  "solver_",
+  "vmec_jax_",
+  "quasilinear_",
+  "benchmark_",
+  "stellarator_",
+]
+allowed_root_prefix_modules = []
+
+[package_policy]
+required_domain_packages = [
+  "spectraxgk.artifacts",
+  "spectraxgk.core",
+  "spectraxgk.diagnostics",
+  "spectraxgk.geometry",
+  "spectraxgk.objectives",
+  "spectraxgk.operators",
+  "spectraxgk.operators.linear",
+  "spectraxgk.operators.nonlinear",
+  "spectraxgk.parallel",
+  "spectraxgk.solvers",
+  "spectraxgk.solvers.linear",
+  "spectraxgk.solvers.nonlinear",
+  "spectraxgk.solvers.time",
+  "spectraxgk.validation",
+  "spectraxgk.validation.benchmarks",
+  "spectraxgk.validation.nonlinear_gradient",
+  "spectraxgk.validation.nonlinear_transport",
+  "spectraxgk.validation.quasilinear",
+  "spectraxgk.validation.stellarator",
+  "spectraxgk.workflows",
+  "spectraxgk.workflows.runtime",
+]
+required_docs = [
+  "docs/architecture_refactor_plan.rst",
+  "docs/code_structure.rst",
+  "docs/differentiable_refactor_plan.rst",
+]

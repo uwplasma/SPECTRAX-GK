@@ -15,9 +15,9 @@ import matplotlib
 import numpy as np
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.plotting import set_plot_style
+from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.runtime import RuntimeLinearScanResult, run_runtime_scan
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,
@@ -260,7 +260,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--rtol", type=float, default=1.0e-10)
     parser.add_argument("--atol", type=float, default=1.0e-10)
-    parser.add_argument("--solver", choices=("krylov", "time", "gx_time", "auto"), default="krylov")
+    parser.add_argument("--solver", choices=("krylov", "time", "explicit_time", "auto"), default="krylov")
     parser.add_argument("--nx", type=int, default=1)
     parser.add_argument("--ny", type=int, default=8)
     parser.add_argument("--nz", type=int, default=12)

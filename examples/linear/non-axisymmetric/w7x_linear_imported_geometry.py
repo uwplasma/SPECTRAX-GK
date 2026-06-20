@@ -5,9 +5,14 @@ from __future__ import annotations
 
 import argparse
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.runtime import run_runtime_linear
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -19,7 +24,9 @@ from spectraxgk.runtime_config import (
 
 def build_w7x_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConfig:
     return RuntimeConfig(
-        grid=GridConfig(Nx=1, Ny=82, Nz=256, Lx=62.8, Ly=62.8, boundary="linked", y0=10.0),
+        grid=GridConfig(
+            Nx=1, Ny=82, Nz=256, Lx=62.8, Ly=62.8, boundary="linked", y0=10.0
+        ),
         time=TimeConfig(
             t_max=t_max,
             dt=dt,
@@ -28,7 +35,7 @@ def build_w7x_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConf
             fixed_dt=True,
             sample_stride=1,
         ),
-        geometry=GeometryConfig(model="gx-netcdf", geometry_file=geometry_file),
+        geometry=GeometryConfig(model="imported-netcdf", geometry_file=geometry_file),
         init=InitializationConfig(
             init_field="density",
             init_amp=1.0e-10,
@@ -57,7 +64,9 @@ def build_w7x_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConf
             damp_ends_amp=0.1,
             damp_ends_widthfrac=1.0 / 8.0,
         ),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="none"
+        ),
         terms=RuntimeTermsConfig(
             apar=0.0,
             bpar=0.0,
@@ -69,12 +78,20 @@ def build_w7x_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConf
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the imported-geometry W7-X linear ITG example.")
-    parser.add_argument("--geometry-file", required=True, help="Path to the imported *.eik.nc geometry file")
+    parser = argparse.ArgumentParser(
+        description="Run the imported-geometry W7-X linear ITG example."
+    )
+    parser.add_argument(
+        "--geometry-file",
+        required=True,
+        help="Path to the imported *.eik.nc geometry file",
+    )
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky mode")
     parser.add_argument("--Nl", type=int, default=8)
     parser.add_argument("--Nm", type=int, default=16)
-    parser.add_argument("--solver", choices=["explicit_time", "gx_time", "krylov", "time"], default="explicit_time")
+    parser.add_argument(
+        "--solver", choices=["explicit_time", "krylov", "time"], default="explicit_time"
+    )
     parser.add_argument(
         "--dt",
         type=float,

@@ -16,7 +16,7 @@ from netCDF4 import Dataset
 from tools.compare_gx_imported_linear import (
     _build_imported_linear_terms,
     _gx_has_uniform_linear_dt,
-    _gx_term_config,
+    _linear_term_config,
     _infer_gx_linear_dt,
     _load_gx_input_contract,
     _resolve_imported_boundary,
@@ -30,14 +30,14 @@ from tools.compare_gx_runtime_diag_state import (
     _load_species_state,
     _maybe_load_field,
 )
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
-from spectraxgk.diagnostics import gx_Wapar, gx_Wg, gx_Wphi, gx_volume_factors
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, _gx_linear_omega_max, _linear_explicit_step
+from spectraxgk.diagnostics import magnetic_vector_potential_energy, distribution_free_energy, electrostatic_field_energy, fieldline_quadrature_weights
+from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
+from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, _linear_frequency_bound, _linear_explicit_step
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -123,11 +123,11 @@ def main() -> None:
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
         )
     else:
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
 
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
     lx = 2.0 * np.pi * y0 if boundary_eff == "periodic" else 62.8
-    grid_cfg = apply_gx_geometry_grid_defaults(
+    grid_cfg = apply_imported_geometry_grid_defaults(
         geom,
         GridConfig(
             Nx=int(nx),
@@ -142,7 +142,7 @@ def main() -> None:
         ),
     )
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
 
     params = build_linear_params(
         gx_contract.species,
@@ -153,7 +153,7 @@ def main() -> None:
     )
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=nm)
+        params = _apply_reference_hypercollisions(params, nhermite=nm)
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
@@ -163,7 +163,7 @@ def main() -> None:
 
     cache = build_linear_cache(grid, geom, params, nl, nm)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(gx_time[args.time_index_stop] - gx_time[args.time_index_start]),
         method=str(gx_contract.scheme),
@@ -175,7 +175,7 @@ def main() -> None:
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else float(time_cfg.dt)
 
     G = jnp.asarray(gx_G_start, dtype=jnp.complex64)
-    omega_max = _gx_linear_omega_max(grid, geom, params, nl, nm)
+    omega_max = _linear_frequency_bound(grid, geom, params, nl, nm)
     wmax = float(np.sum(omega_max))
     t = 0.0
     target = float(time_cfg.t_max)
@@ -191,7 +191,7 @@ def main() -> None:
         )
 
     stepper = jax.jit(_step, donate_argnums=(0,))
-    term_cfg = _gx_term_config(terms)
+    term_cfg = _linear_term_config(terms)
     step_count = 0
     while t < target - 1.0e-12:
         dt_step = float(time_cfg.dt)
@@ -237,13 +237,13 @@ def main() -> None:
     if gx_bpar_stop is not None or fields.bpar is not None:
         _summary("stop_bpar", gx_bpar_stop_use.astype(np.complex64), sp_bpar_stop)
 
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
-    gx_Wg_stop = float(gx_Wg(jnp.asarray(gx_G_stop), grid, params, vol_fac))
-    sp_Wg_stop = float(gx_Wg(jnp.asarray(sp_G_stop), grid, params, vol_fac))
-    gx_Wphi_stop = float(gx_Wphi(jnp.asarray(gx_phi_stop), cache, params, vol_fac))
-    sp_Wphi_stop = float(gx_Wphi(jnp.asarray(sp_phi_stop), cache, params, vol_fac))
-    gx_Wapar_stop = float(gx_Wapar(jnp.asarray(gx_apar_stop_use), cache, vol_fac))
-    sp_Wapar_stop = float(gx_Wapar(jnp.asarray(sp_apar_stop), cache, vol_fac))
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
+    distribution_free_energy_stop = float(distribution_free_energy(jnp.asarray(gx_G_stop), grid, params, vol_fac))
+    sp_Wg_stop = float(distribution_free_energy(jnp.asarray(sp_G_stop), grid, params, vol_fac))
+    electrostatic_field_energy_stop = float(electrostatic_field_energy(jnp.asarray(gx_phi_stop), cache, params, vol_fac))
+    sp_Wphi_stop = float(electrostatic_field_energy(jnp.asarray(sp_phi_stop), cache, params, vol_fac))
+    magnetic_vector_potential_energy_stop = float(magnetic_vector_potential_energy(jnp.asarray(gx_apar_stop_use), cache, vol_fac))
+    sp_Wapar_stop = float(magnetic_vector_potential_energy(jnp.asarray(sp_apar_stop), cache, vol_fac))
     gx_Phi2_stop = _gx_phi2_total(jnp.asarray(gx_phi_stop), vol_fac)
     sp_Phi2_stop = _gx_phi2_total(jnp.asarray(sp_phi_stop), vol_fac)
 
@@ -252,9 +252,9 @@ def main() -> None:
         {"metric": "phi", "rel": _rel_err(sp_phi_stop, gx_phi_stop)},
         {"metric": "apar", "rel": _rel_err(sp_apar_stop, gx_apar_stop_use)},
         {"metric": "bpar", "rel": _rel_err(sp_bpar_stop, gx_bpar_stop_use)},
-        {"metric": "Wg", "gx_stop": gx_Wg_stop, "spectrax": sp_Wg_stop, "rel": abs(sp_Wg_stop - gx_Wg_stop) / max(abs(gx_Wg_stop), 1.0e-30)},
-        {"metric": "Wphi", "gx_stop": gx_Wphi_stop, "spectrax": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - gx_Wphi_stop) / max(abs(gx_Wphi_stop), 1.0e-30)},
-        {"metric": "Wapar", "gx_stop": gx_Wapar_stop, "spectrax": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - gx_Wapar_stop) / max(abs(gx_Wapar_stop), 1.0e-30)},
+        {"metric": "Wg", "gx_stop": distribution_free_energy_stop, "spectrax": sp_Wg_stop, "rel": abs(sp_Wg_stop - distribution_free_energy_stop) / max(abs(distribution_free_energy_stop), 1.0e-30)},
+        {"metric": "Wphi", "gx_stop": electrostatic_field_energy_stop, "spectrax": sp_Wphi_stop, "rel": abs(sp_Wphi_stop - electrostatic_field_energy_stop) / max(abs(electrostatic_field_energy_stop), 1.0e-30)},
+        {"metric": "Wapar", "gx_stop": magnetic_vector_potential_energy_stop, "spectrax": sp_Wapar_stop, "rel": abs(sp_Wapar_stop - magnetic_vector_potential_energy_stop) / max(abs(magnetic_vector_potential_energy_stop), 1.0e-30)},
         {"metric": "Phi2", "gx_stop": gx_Phi2_stop, "spectrax": sp_Phi2_stop, "rel": abs(sp_Phi2_stop - gx_Phi2_stop) / max(abs(gx_Phi2_stop), 1.0e-30)},
     ]
     print("metric     rel")

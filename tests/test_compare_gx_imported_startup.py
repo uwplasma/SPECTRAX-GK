@@ -104,8 +104,8 @@ def test_compare_gx_imported_startup_builds_full_grid_before_slicing(
     )
     geom_path = tmp_path / "geom.eik.nc"
     monkeypatch.setattr(mod, "_resolve_internal_geometry_source", lambda **_: geom_path)
-    monkeypatch.setattr(mod, "load_gx_geometry_netcdf", lambda _path: SimpleNamespace(gradpar=lambda: 1.0))
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "load_imported_geometry_netcdf", lambda _path: SimpleNamespace(gradpar=lambda: 1.0))
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     captured: dict[str, object] = {}
@@ -199,7 +199,7 @@ def test_compare_gx_imported_startup_uses_slab_geometry_contract(
             beta=0.1,
         ),
     )
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.0, 0.01, -0.01]), kx=np.array([0.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
 

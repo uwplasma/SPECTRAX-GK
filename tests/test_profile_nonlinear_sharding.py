@@ -152,8 +152,8 @@ def test_profile_nonlinear_sharding_skips_unsafe_cpu_state_sharding() -> None:
 def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(monkeypatch) -> None:
     mod = _load_tool_module()
 
-    def fake_rhs(state, cache, params, terms, *, gx_real_fft=True, laguerre_mode="grid"):
-        del cache, params, terms, gx_real_fft, laguerre_mode
+    def fake_rhs(state, cache, params, terms, *, compressed_real_fft=True, laguerre_mode="grid"):
+        del cache, params, terms, compressed_real_fft, laguerre_mode
         arr = jnp.asarray(state)
         return 2.0 * arr, FieldState(phi=jnp.sum(arr, axis=(0, 1)), apar=None, bpar=None)
 
@@ -168,7 +168,7 @@ def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(monke
         cache=object(),
         params=object(),
         terms=object(),
-        gx_real_fft=True,
+        compressed_real_fft=True,
         laguerre_mode="grid",
     )
 

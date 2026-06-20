@@ -6,9 +6,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.runtime import run_nonlinear_case, run_runtime_nonlinear
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -24,8 +29,8 @@ def build_hsx_nonlinear_cfg(
     vmec_file: str,
     *,
     geometry_file: str | None,
-    gx_repo: str | None,
-    gx_python: str | None,
+    geometry_helper_repo: str | None,
+    geometry_helper_python: str | None,
     torflux: float,
     alpha: float,
     npol: float,
@@ -58,8 +63,8 @@ def build_hsx_nonlinear_cfg(
             model="vmec",
             vmec_file=vmec_file,
             geometry_file=geometry_file,
-            gx_repo=gx_repo,
-            gx_python=gx_python,
+            geometry_helper_repo=geometry_helper_repo,
+            geometry_helper_python=geometry_helper_python,
             torflux=torflux,
             alpha=alpha,
             npol=npol,
@@ -100,7 +105,9 @@ def build_hsx_nonlinear_cfg(
             damp_ends_widthfrac=1.0 / 8.0,
             D_hyper=0.05,
         ),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="rho_star"
+        ),
         terms=RuntimeTermsConfig(
             apar=0.0,
             bpar=0.0,
@@ -113,21 +120,61 @@ def build_hsx_nonlinear_cfg(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the HSX nonlinear ITG VMEC example.")
-    parser.add_argument("--config", type=Path, default=CONFIG, help="Runtime TOML used by the config-backed wrapper path")
-    parser.add_argument("--vmec-file", default=None, help="Path to the VMEC wout file for the manual builder path")
-    parser.add_argument("--geometry-file", default=None, help="Optional output/reuse path for the generated *.eik.nc file")
-    parser.add_argument("--gx-repo", default=None, help="Optional helper repository path for external VMEC geometry generation")
-    parser.add_argument("--gx-python", default=None, help="Optional Python interpreter used for external VMEC geometry generation")
-    parser.add_argument("--torflux", type=float, default=0.64, help="Normalized toroidal flux surface label")
-    parser.add_argument("--alpha", type=float, default=0.0, help="Field-line alpha label")
-    parser.add_argument("--npol", type=float, default=1.0, help="Number of poloidal turns")
-    parser.add_argument("--ky", type=float, default=1.0 / 21.0, help="Target ky mode for diagnostics")
+    parser = argparse.ArgumentParser(
+        description="Run the HSX nonlinear ITG VMEC example."
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=CONFIG,
+        help="Runtime TOML used by the config-backed wrapper path",
+    )
+    parser.add_argument(
+        "--vmec-file",
+        default=None,
+        help="Path to the VMEC wout file for the manual builder path",
+    )
+    parser.add_argument(
+        "--geometry-file",
+        default=None,
+        help="Optional output/reuse path for the generated *.eik.nc file",
+    )
+    parser.add_argument(
+        "--geometry-helper-repo",
+        "--gx-repo",
+        dest="geometry_helper_repo",
+        default=None,
+        help="Optional helper repository path for VMEC geometry generation",
+    )
+    parser.add_argument(
+        "--geometry-helper-python",
+        "--gx-python",
+        dest="geometry_helper_python",
+        default=None,
+        help="Optional Python interpreter used for VMEC geometry generation",
+    )
+    parser.add_argument(
+        "--torflux",
+        type=float,
+        default=0.64,
+        help="Normalized toroidal flux surface label",
+    )
+    parser.add_argument(
+        "--alpha", type=float, default=0.0, help="Field-line alpha label"
+    )
+    parser.add_argument(
+        "--npol", type=float, default=1.0, help="Number of poloidal turns"
+    )
+    parser.add_argument(
+        "--ky", type=float, default=1.0 / 21.0, help="Target ky mode for diagnostics"
+    )
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
     parser.add_argument("--dt", type=float, default=0.1, help="Maximum time step")
     parser.add_argument("--t-max", type=float, default=200.0, help="Final time")
-    parser.add_argument("--steps", type=int, default=None, help="Optional explicit step-count override")
+    parser.add_argument(
+        "--steps", type=int, default=None, help="Optional explicit step-count override"
+    )
     args = parser.parse_args()
 
     if args.vmec_file is None:
@@ -143,8 +190,8 @@ def main() -> int:
     cfg = build_hsx_nonlinear_cfg(
         args.vmec_file,
         geometry_file=args.geometry_file,
-        gx_repo=args.gx_repo,
-        gx_python=args.gx_python,
+        geometry_helper_repo=args.geometry_helper_repo,
+        geometry_helper_python=args.geometry_helper_python,
         torflux=float(args.torflux),
         alpha=float(args.alpha),
         npol=float(args.npol),

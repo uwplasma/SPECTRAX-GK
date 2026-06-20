@@ -67,7 +67,7 @@ def build_hermite_exchange_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         hermite_neighbor_reference,
         hermite_neighbor_shard_map,
@@ -112,7 +112,7 @@ def build_hermite_exchange_gate(
     return _json_clean(
         {
             "case": "Hermite ghost-exchange shard_map identity gate",
-            "source": "spectraxgk.velocity_sharding.hermite_neighbor_shard_map",
+            "source": "spectraxgk.parallel.velocity.hermite_neighbor_shard_map",
             "claim_scope": "communication-kernel identity gate, not a nonlinear runtime speedup claim",
             "state_shape": shape,
             "requested_devices": int(requested_devices),
@@ -133,7 +133,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

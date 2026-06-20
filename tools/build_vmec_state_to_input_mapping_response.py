@@ -270,7 +270,7 @@ def _plot(path: Path, report: Mapping[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     matrix = np.asarray(report["jacobian"]["matrix"], dtype=float)
     rows = list(report["jacobian"]["row_order"])

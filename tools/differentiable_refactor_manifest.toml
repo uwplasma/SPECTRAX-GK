@@ -1,0 +1,4061 @@
+[metadata]
+schema_version = 1
+title = "Differentiable architecture refactor plan"
+owner_lane = "research-grade differentiable SPECTRAX-GK architecture"
+status = "planned"
+created = "2026-06-14"
+layout_authority = "docs/architecture_refactor_plan.rst"
+manifest_scope = "active migration ledger and differentiability-gate inventory; package layout and naming are governed by docs/architecture_refactor_plan.rst"
+public_facade_policy = "public behavior and numerical parity must be preserved behind stable public facades while old helper shims are removed after canonical owners are covered"
+max_public_module_lines_target = 800
+max_internal_module_lines_target = 1200
+
+[global_acceptance]
+required_package_coverage_percent = 95.0
+max_fast_test_budget_seconds = 300
+require_public_api_facades = true
+require_reference_adapter_isolation = true
+require_jax_transform_contracts = true
+require_adaptive_derivative_policy = true
+require_docstring_policy = true
+
+[validation_policy]
+parity_reference_scope = "GX and other independent-code artifacts are validation inputs only; solver code must not depend on comparison adapters."
+literature_gate_scope = "Cyclone, shaped tokamak, W7-X/HSX, KBM/TEM/ETG, Rosenbluth-Hinton/Merlo, and quasilinear/nonlinear transport gates stay artifact-backed."
+autodiff_gate_scope = "Finite-difference, JVP/VJP, branch-locality, adaptive-branch derivative policy, conditioning, and UQ covariance checks are required before differentiable claims are promoted."
+performance_gate_scope = "No speedup claim without identity gates, profiler artifacts, and matched CPU/GPU measurements."
+
+[[architecture_layers]]
+name = "core"
+responsibility = "array typing, pytrees, precision policy, units, normalization, static/dynamic argument helpers"
+planned_packages = ["spectraxgk.core"]
+extension_points = ["PyTree containers", "dtype/precision policy", "normalization contracts"]
+
+[[architecture_layers]]
+name = "basis"
+responsibility = "orthogonal velocity-space bases and recurrence rules"
+planned_packages = ["spectraxgk.core.velocity"]
+extension_points = ["BasisFamily", "HermiteLaguerreBasis", "OrthaxBasisAdapter", "custom basis recurrence tests"]
+
+[[architecture_layers]]
+name = "geometry"
+responsibility = "analytic, VMEC, vmec_jax, booz_xform_jax, and sampled flux-tube geometry providers"
+planned_packages = ["spectraxgk.geometry", "spectraxgk.geometry.backends"]
+extension_points = ["GeometryProvider", "FieldLineSampler", "BoozerTransformProvider", "GeometryParityReport"]
+
+[[architecture_layers]]
+name = "physics"
+responsibility = "species, fields, closures, collision models, drives, and model configuration"
+planned_packages = ["spectraxgk.physics"]
+extension_points = ["SpeciesModel", "CollisionOperator", "ClosureModel", "FieldSolveModel"]
+
+[[architecture_layers]]
+name = "operators"
+responsibility = "pure linear and nonlinear RHS kernels with explicit caches and field solves"
+planned_packages = ["spectraxgk.operators"]
+extension_points = ["LinearTerm", "NonlinearBracket", "FieldSolver", "RHSAssembly"]
+
+[[architecture_layers]]
+name = "solvers"
+responsibility = "linear eigen/time solvers, nonlinear integrators, adjoints, checkpoint policies, and objective solvers"
+planned_packages = ["spectraxgk.solvers"]
+extension_points = ["TimeStepper", "EigenSolver", "AdjointPolicy", "ObjectiveSolver"]
+
+[[architecture_layers]]
+name = "diagnostics"
+responsibility = "growth/frequency, transport, spectra, windows, UQ, and artifact schemas"
+planned_packages = ["spectraxgk.diagnostics"]
+extension_points = ["Diagnostic", "TransportWindow", "SpectrumExtractor", "GateReport"]
+
+[[architecture_layers]]
+name = "validation"
+responsibility = "literature gates, reference-code comparison adapters, manifests, and benchmark families"
+planned_packages = ["spectraxgk.validation"]
+extension_points = ["BenchmarkFamily", "ReferenceAdapter", "PhysicsGate", "ArtifactLedger"]
+
+[[architecture_layers]]
+name = "workflows"
+responsibility = "runtime, scans, optimization scripts, plotting, CLI command plumbing, and provenance"
+planned_packages = ["spectraxgk.workflows", "spectraxgk.cli"]
+extension_points = ["RuntimeWorkflow", "OptimizationWorkflow", "PlotWorkflow", "ProgressReporter"]
+
+[[phase1_contract_modules]]
+module = "spectraxgk.core.contracts"
+source_path = "src/spectraxgk/core/contracts.py"
+status = "active"
+responsibility = "typed refactor, validation-gate, JAX-transform, shape, and extension-point contracts"
+public_exports = [
+  "ShapeContract",
+  "DifferentiabilityContract",
+  "ValidationGateContract",
+  "ExtensionPointContract",
+  "ModuleRefactorContract",
+]
+fast_tests = ["tests/test_core_contracts.py"]
+doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
+
+[[phase1_contract_modules]]
+module = "spectraxgk.core.extension_points"
+source_path = "src/spectraxgk/core/extension_points.py"
+status = "active"
+responsibility = "structural protocols for basis, geometry, collision, field-solver, RHS, diagnostic, objective, and artifact extension points"
+public_exports = [
+  "BasisFamily",
+  "GeometryProvider",
+  "CollisionOperator",
+  "FieldSolver",
+  "LinearRHS",
+  "NonlinearRHS",
+  "Diagnostic",
+  "Objective",
+  "ArtifactWriter",
+]
+fast_tests = ["tests/test_core_contracts.py"]
+doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.initialization"
+source_path = "src/spectraxgk/validation/benchmarks/initialization.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark Gaussian and moment initial-condition builders plus kinetic-reference seed policy"
+moved_exports = [
+  "_build_gaussian_profile",
+  "_build_initial_condition",
+  "_kinetic_reference_init_cfg",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.reference"
+source_path = "src/spectraxgk/validation/benchmarks/reference.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark result containers, reference-table loaders, and reference comparison records"
+moved_exports = [
+  "CycloneComparison",
+  "CycloneReference",
+  "CycloneRunResult",
+  "CycloneScanResult",
+  "LinearRunResult",
+  "LinearScanResult",
+  "_load_reference_with_header",
+  "compare_cyclone_to_reference",
+  "load_cyclone_reference",
+  "load_cyclone_reference_kinetic",
+  "load_etg_reference",
+  "load_kbm_reference",
+  "load_tem_reference",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.species"
+source_path = "src/spectraxgk/validation/benchmarks/species.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark species-to-LinearParams construction and reference hypercollision/end-damping policy"
+moved_exports = [
+  "REFERENCE_DAMP_ENDS_AMP",
+  "REFERENCE_DAMP_ENDS_WIDTHFRAC",
+  "REFERENCE_NU_HYPER_L",
+  "REFERENCE_NU_HYPER_M",
+  "REFERENCE_P_HYPER_L",
+  "REFERENCE_P_HYPER_M",
+  "_apply_reference_hypercollisions",
+  "_electron_only_params",
+  "_linked_boundary_end_damping",
+  "_reference_hypercollision_power",
+  "_two_species_params",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.fit_signals"
+source_path = "src/spectraxgk/validation/benchmarks/fit_signals.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark fit-signal, mode-extraction, auto-window scoring, and diagnostic-normalization policies"
+moved_exports = [
+  "_extract_mode_only_signal",
+  "_normalize_growth_rate",
+  "_score_fit_signal_auto",
+  "_select_fit_signal",
+  "_select_fit_signal_auto",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.batching"
+source_path = "src/spectraxgk/validation/benchmarks/batching.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark scan batching and streaming-window helper policies"
+moved_exports = [
+  "_is_array_like",
+  "_iter_ky_batches",
+  "_resolve_streaming_window",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmark_scan.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.solver_policy"
+source_path = "src/spectraxgk/validation/benchmarks/solver_policy.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "benchmark solver-selection, KBM branch policy, and mode-index helpers"
+moved_exports = [
+  "KBM_EXPLICIT_SOLVER_LOCK",
+  "KBM_EXPLICIT_SOLVER_LOCK_TOL",
+  "_kbm_use_multi_target_krylov",
+  "_midplane_index",
+  "select_kbm_solver_auto",
+]
+fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_linear"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "Cyclone single-ky linear benchmark setup, parameter construction, solver fallback orchestration, and public result packaging"
+moved_exports = [
+  "run_cyclone_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_full_operator.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_linear_paths"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_linear"
+status = "active"
+responsibility = "Cyclone single-ky Krylov seed/branch policy plus time-integration and fit-selection policy"
+moved_exports = [
+  "run_cyclone_krylov_path",
+  "run_cyclone_time_path",
+  "sync_path_hooks",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "Cyclone ky-scan runner setup and batched time integration behind the public benchmark API"
+moved_exports = [
+  "run_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan"
+status = "active"
+responsibility = "Cyclone ky-scan branch hook contract, batch setup, reference-aligned explicit-time reselection, streaming fits, saved-history integration, and fit/appending policies"
+moved_exports = [
+  "CycloneScanHooks",
+  "run_explicit_time_cyclone_scan",
+  "run_time_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_krylov"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_krylov.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+status = "active"
+responsibility = "Cyclone ky-scan Krylov branch following and explicit-trace seed-shift execution policy"
+moved_exports = [
+  "run_krylov_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_seed"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_seed.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+status = "active"
+responsibility = "Cyclone ky-scan explicit-trace seed and Krylov shift policies"
+moved_exports = [
+  "reduced_seed_from_explicit_trace",
+  "seed_from_explicit_trace",
+  "seed_shift",
+  "use_explicit_seed",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.cyclone_scan_explicit"
+source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_explicit.py"
+facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
+status = "active"
+responsibility = "Cyclone ky-scan reference-aligned explicit-time reselection policies"
+moved_exports = [
+  "choose_reselected_frequency",
+  "explicit_reselection_target",
+  "explicit_time_config_for_scan_point",
+  "krylov_reselected_frequency",
+  "run_explicit_time_cyclone_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_beta"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_beta.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "KBM fixed-ky beta-scan runner, per-beta setup, time/diffrax integration fallback, and public result packaging"
+moved_exports = [
+  "run_kbm_beta_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_compare_gx_kbm.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_beta_solver_paths"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_beta_solver_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm_beta"
+status = "active"
+responsibility = "KBM beta-scan explicit-time diagnostic fallback ladder and multi-target Krylov branch policy with patchable solver hooks"
+moved_exports = [
+  "KBMBetaExplicitHooks",
+  "KBMBetaKrylovHooks",
+  "KBMBetaKrylovResult",
+  "fit_kbm_beta_explicit_time_sample",
+  "solve_kbm_beta_krylov_sample",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_linear"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "KBM single-ky setup, state/cache construction, saved-time integration, saved-signal fitting, and public result packaging"
+moved_exports = [
+  "run_kbm_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_kbm_reference_overlay.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_linear_paths"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_linear_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.kbm_linear"
+status = "active"
+responsibility = "KBM single-ky explicit-time diagnostics, fit-window fallback, and single/multi-target Krylov branch policies"
+moved_exports = [
+  "fit_kbm_window",
+  "run_kbm_explicit_time_path",
+  "run_kbm_krylov_path",
+  "sync_path_hooks",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.case_configs"
+source_path = "src/spectraxgk/validation/benchmarks/case_configs.py"
+facade_module = "spectraxgk.config"
+status = "active"
+responsibility = "benchmark-family case presets for Cyclone, ETG, KBM, TEM, and kinetic-electron validation operating points"
+moved_exports = [
+  "CycloneBaseCase",
+  "ETGBaseCase",
+  "ETGModelConfig",
+  "KBMBaseCase",
+  "KineticElectronBaseCase",
+  "KineticElectronModelConfig",
+  "ModelConfig",
+  "TEMBaseCase",
+  "TEMModelConfig",
+]
+fast_tests = ["tests/test_config.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kbm_scan"
+source_path = "src/spectraxgk/validation/benchmarks/kbm_scan.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays into the beta-scan runner"
+moved_exports = [
+  "run_kbm_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.etg_linear"
+source_path = "src/spectraxgk/validation/benchmarks/etg_linear.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "ETG single-ky linear benchmark setup, Krylov/time-path orchestration, streaming density branch, and fit-window policy"
+moved_exports = [
+  "_build_etg_linear_setup",
+  "_default_etg_params",
+  "_default_etg_terms",
+  "_etg_linear_result",
+  "_fit_etg_time_trace",
+  "_resolve_etg_time_config",
+  "_run_etg_krylov_path",
+  "_valid_etg_growth",
+  "run_etg_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.etg_scan"
+source_path = "src/spectraxgk/validation/benchmarks/etg_scan.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "ETG ky-scan setup, batching, parameter construction, and public result packaging"
+moved_exports = [
+  "run_etg_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.etg_scan_paths"
+source_path = "src/spectraxgk/validation/benchmarks/etg_scan_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.etg_scan"
+status = "active"
+responsibility = "ETG ky-scan Krylov continuation, streaming fit, saved-signal integration, and fallback fit/appending policies"
+moved_exports = [
+  "ETGTimeBatchResult",
+  "append_etg_time_fit_results",
+  "run_etg_krylov_batch",
+  "run_etg_time_batch",
+  "sync_path_hooks",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kinetic_linear"
+source_path = "src/spectraxgk/validation/benchmarks/kinetic_linear.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "single-ky kinetic-electron linear benchmark runner with explicit-time, Diffrax-config, and Krylov branches"
+moved_exports = [
+  "run_kinetic_linear",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.kinetic_scan"
+source_path = "src/spectraxgk/validation/benchmarks/kinetic_scan.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "kinetic-electron ky-scan runner with focused setup, batch-state construction, streaming-fit, sampled-fit, time-config, and Krylov branch helpers"
+moved_exports = [
+  "run_kinetic_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.tem"
+source_path = "src/spectraxgk/validation/benchmarks/tem.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "TEM benchmark-family public owner for setup, parameter construction, species validation, and stable run_tem_linear/run_tem_scan imports"
+moved_exports = [
+  "run_tem_linear",
+  "run_tem_scan",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.tem_paths"
+source_path = "src/spectraxgk/validation/benchmarks/tem_paths.py"
+facade_module = "spectraxgk.validation.benchmarks.tem"
+status = "active"
+responsibility = "TEM single-ky Krylov/time-fit policies plus streaming and saved-time scan batch execution through patchable hooks"
+moved_exports = [
+  "TEMPathHooks",
+  "run_tem_krylov_linear_path",
+  "run_tem_scan_batches",
+  "run_tem_time_linear_path",
+]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.gates"
+source_path = "src/spectraxgk/validation/gates.py"
+facade_module = "spectraxgk.validation"
+status = "active"
+responsibility = "public validation-gate facade preserving benchmark and manuscript artifact imports"
+moved_exports = [
+  "BranchContinuationMetrics",
+  "DiagnosticTimeSeries",
+  "EigenfunctionComparisonMetrics",
+  "EigenfunctionReferenceBundle",
+  "GateReport",
+  "LateTimeLinearMetrics",
+  "NonlinearHeatFluxConvergenceMetrics",
+  "NonlinearWindowMetrics",
+  "ObservedOrderMetrics",
+  "ScalarGateResult",
+  "ZonalFlowResponseMetrics",
+  "branch_continuity_gate_report",
+  "eigenfunction_gate_report",
+  "evaluate_scalar_gate",
+  "gate_report",
+  "gate_report_to_dict",
+  "linear_metrics_gate_report",
+  "nonlinear_heat_flux_convergence_gate_report",
+  "nonlinear_window_gate_report",
+  "observed_order_gate_report",
+  "zonal_response_gate_report",
+]
+fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.gate_types"
+source_path = "src/spectraxgk/validation/gate_types.py"
+facade_module = "spectraxgk.validation.gates"
+status = "active"
+responsibility = "frozen metric/result dataclasses for linear, nonlinear, eigenfunction, zonal, convergence, and branch-continuity gates"
+moved_exports = [
+  "BranchContinuationMetrics",
+  "DiagnosticTimeSeries",
+  "EigenfunctionComparisonMetrics",
+  "EigenfunctionReferenceBundle",
+  "GateReport",
+  "LateTimeLinearMetrics",
+  "NonlinearHeatFluxConvergenceMetrics",
+  "NonlinearWindowMetrics",
+  "ObservedOrderMetrics",
+  "ScalarGateResult",
+  "ZonalFlowResponseMetrics",
+]
+fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.gate_reports"
+source_path = "src/spectraxgk/validation/gate_reports.py"
+facade_module = "spectraxgk.validation.gates"
+status = "active"
+responsibility = "scalar tolerance evaluation, JSON serialization, and physics/numerics gate-report builders"
+moved_exports = [
+  "branch_continuity_gate_report",
+  "eigenfunction_gate_report",
+  "evaluate_scalar_gate",
+  "gate_report",
+  "gate_report_to_dict",
+  "linear_metrics_gate_report",
+  "nonlinear_heat_flux_convergence_gate_report",
+  "nonlinear_window_gate_report",
+  "observed_order_gate_report",
+  "zonal_response_gate_report",
+]
+fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.backend_discovery"
+source_path = "src/spectraxgk/geometry/backend_discovery.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "optional vmec_jax and booz_xform_jax checkout discovery, import precedence, JAX dtype, and tracer-safety helpers"
+moved_exports = [
+  "_candidate_paths",
+  "_find_importable_module",
+  "_is_traced",
+  "_jax_float_dtype",
+  "discover_differentiable_geometry_backends",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.energy"
+source_path = "src/spectraxgk/diagnostics/energy.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "scalar distribution free-energy, electrostatic field-energy, magnetic field-energy, and total-energy diagnostics"
+moved_exports = [
+  "_masked_abs2",
+  "distribution_free_energy",
+  "electrostatic_field_energy",
+  "electrostatic_field_energy_krehm",
+  "magnetic_vector_potential_energy",
+  "magnetic_vector_potential_energy_krehm",
+  "runtime_energy_total",
+  "total_energy",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.transport"
+source_path = "src/spectraxgk/diagnostics/transport.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "species heat flux, particle flux, channel flux, and turbulent-heating diagnostics"
+moved_exports = [
+  "heat_flux_channel_species",
+  "heat_flux_species",
+  "heat_flux_total",
+  "particle_flux_channel_species",
+  "particle_flux_species",
+  "particle_flux_total",
+  "turbulent_heating_species",
+  "turbulent_heating_total",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_quasilinear.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.quasilinear_transport"
+source_path = "src/spectraxgk/diagnostics/quasilinear_transport.py"
+facade_module = "spectraxgk.quasilinear"
+status = "active"
+responsibility = "linear-state quasilinear heat/particle-flux weights, spectral amplitude normalization, and differentiable saturation-model objectives"
+moved_exports = [
+  "QuasilinearTransportResult",
+  "compute_quasilinear_from_linear_state",
+  "effective_kperp2",
+  "mixing_length_amplitude2_jax",
+  "normalize_quasilinear_channels",
+  "phi_norm2",
+  "quasilinear_feature_objective",
+  "saturation_amplitude2",
+  "saturated_flux_from_linear_weight",
+  "shape_aware_power_law_objective",
+  "spectral_phi_weights",
+]
+fast_tests = ["tests/test_quasilinear.py", "tests/test_autodiff_validation.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.resolved"
+source_path = "src/spectraxgk/diagnostics/resolved.py"
+facade_module = "spectraxgk.diagnostics.core"
+status = "active"
+responsibility = "resolved spectral reductions, field-energy spectra, transport spectra, heating spectra, and signed zonal diagnostics"
+moved_exports = [
+  "_reduce_scalar_kykxz",
+  "_reduce_species_kykxz",
+  "distribution_free_energy_resolved",
+  "electrostatic_field_energy_resolved",
+  "heat_flux_channel_resolved_species",
+  "heat_flux_resolved_species",
+  "magnetic_vector_potential_energy_resolved",
+  "particle_flux_channel_resolved_species",
+  "particle_flux_resolved_species",
+  "phi2_resolved",
+  "turbulent_heating_resolved_species",
+  "zonal_phi_line_kxt",
+  "zonal_phi_mode_kxt",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_steps"
+source_path = "src/spectraxgk/solvers/time/explicit_steps.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit linear RK/SSP/K10 step kernels, post-step masks, and instantaneous growth/frequency samples"
+moved_exports = [
+  "_apply_completed_step_state_mask",
+  "_completed_step_state_mask",
+  "_diagnostic_midplane_index",
+  "_growth_rate_mode_mask",
+  "_instantaneous_growth_rate_step",
+  "_linear_explicit_step",
+  "_linear_term_config",
+  "_rk3_heun_step",
+  "_rk4_step",
+]
+fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_diagnostics"
+source_path = "src/spectraxgk/solvers/time/explicit_diagnostics.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "diagnostics-rich explicit linear initial-value integration, including method/time policy, JIT stepper wiring, energy/transport sampling, progress rendering, and diagnostics assembly"
+moved_exports = [
+  "ExplicitTimeConfigLike",
+  "integrate_linear_explicit_diagnostics",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_explicit_time_integrators_lowlevel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_cfl"
+source_path = "src/spectraxgk/solvers/time/explicit_cfl.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit CFL wavenumber policy, geometry frequency maxima, and linear frequency-bound estimates"
+moved_exports = [
+  "_cfl_wavenumber_arrays",
+  "_geometry_frequency_maxima",
+  "_gradient_ratio_max",
+  "_laguerre_velocity_max",
+  "_linear_frequency_bound",
+  "_non_twist_shift_frequency_max",
+  "_parallel_periods_from_grid",
+]
+fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.explicit_progress"
+source_path = "src/spectraxgk/solvers/time/explicit_progress.py"
+facade_module = "spectraxgk.solvers.time.explicit"
+status = "active"
+responsibility = "explicit integration wall-time and progress-message formatting"
+moved_exports = [
+  "_emit_time_progress",
+  "_format_wall_time",
+]
+fast_tests = ["tests/test_runtime_diagnostics.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.modes"
+source_path = "src/spectraxgk/diagnostics/modes.py"
+facade_module = "spectraxgk.diagnostics.analysis"
+status = "active"
+responsibility = "mode selection, complex mode time-series extraction, density moments, and eigenfunction extraction"
+moved_exports = [
+  "ModeSelection",
+  "ModeSelectionBatch",
+  "density_moment",
+  "extract_eigenfunction",
+  "extract_mode",
+  "extract_mode_time_series",
+  "select_ky_index",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_rates"
+source_path = "src/spectraxgk/diagnostics/growth_rates.py"
+facade_module = "spectraxgk.diagnostics.analysis"
+status = "active"
+responsibility = "public growth-diagnostic facade and automatic fit orchestration over focused fitting, window-selection, and mode-series owners"
+moved_exports = [
+  "_log_amp_phase",
+  "fit_growth_rate",
+  "fit_growth_rate_auto",
+  "fit_growth_rate_auto_with_stats",
+  "fit_growth_rate_with_stats",
+  "instantaneous_growth_rate_from_phi",
+  "select_fit_window",
+  "select_fit_window_loglinear",
+  "windowed_growth_rate_from_omega_series",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_fit"
+source_path = "src/spectraxgk/diagnostics/growth_fit.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "least-squares growth-rate/frequency fits and robust complex log-amplitude/phase preprocessing"
+moved_exports = [
+  "_log_amp_phase",
+  "fit_growth_rate",
+  "fit_growth_rate_with_stats",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_windows"
+source_path = "src/spectraxgk/diagnostics/growth_windows.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "fixed-fraction and log-linear automatic fit-window selection for late-time linear diagnostics"
+moved_exports = [
+  "select_fit_window",
+  "select_fit_window_loglinear",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.growth_series"
+source_path = "src/spectraxgk/diagnostics/growth_series.py"
+facade_module = "spectraxgk.diagnostics.growth_rates"
+status = "active"
+responsibility = "instantaneous and windowed growth/frequency extraction from resolved mode time series"
+moved_exports = [
+  "instantaneous_growth_rate_from_phi",
+  "windowed_growth_rate_from_omega_series",
+]
+fast_tests = ["tests/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.boundaries"
+source_path = "src/spectraxgk/geometry/boundaries.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "zero-shear boundary promotion shared by analytic geometry and grid-default policy"
+moved_exports = [
+  "ZERO_SHAT_THRESHOLD",
+  "effective_boundary",
+  "zero_shear_enabled",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.analytic"
+source_path = "src/spectraxgk/geometry/analytic.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "closed-form s-alpha and slab flux-tube geometry models"
+moved_exports = [
+  "SAlphaGeometry",
+  "SlabGeometry",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.flux_tube"
+source_path = "src/spectraxgk/geometry/flux_tube.py"
+facade_module = "spectraxgk.geometry.core"
+status = "active"
+responsibility = "sampled solver-ready flux-tube contract, analytic sampling, imported NetCDF/eik loading, and mirror-term reconstruction"
+moved_exports = [
+  "FluxTubeGeometryData",
+  "_bgrad_from_bmag",
+  "_periodic_spectral_derivative",
+  "load_imported_geometry_netcdf",
+  "sample_flux_tube_geometry",
+]
+fast_tests = ["tests/test_geometry.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.autodiff_checks"
+source_path = "src/spectraxgk/geometry/autodiff_checks.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "central finite-difference Jacobians, AD/FD observable gradient reports, conditioning metadata, and strict JSON sanitization for geometry gates"
+moved_exports = [
+  "_json_ready",
+  "_sensitivity_conditioning_metadata",
+  "finite_difference_jacobian",
+  "observable_gradient_validation_report",
+]
+fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.numerics"
+source_path = "src/spectraxgk/geometry/numerics.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "pure parity metrics, radial and equal-arc interpolation, Boozer half-mesh grids, derivative stencils, Fourier field-line evaluation, and periodic sampling helpers"
+moved_exports = [
+  "_array_parity_metrics",
+  "_boozer_half_mesh_s_grid",
+  "_cumulative_trapezoid",
+  "_evaluate_boozer_cosine_series_on_field_line",
+  "_interp_equal_arc_profile",
+  "_interp_radial",
+  "_periodic_bilinear_sample_2d",
+  "_radial_derivative_array",
+  "_radial_derivative_profile",
+  "_scalar_parity_metrics",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.flux_tube_contract"
+source_path = "src/spectraxgk/geometry/flux_tube_contract.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "solver-ready in-memory flux-tube mapping validation, observable-name contracts, and differentiable geometry observable reduction"
+moved_exports = [
+  "_ARRAY_FIELDS",
+  "_GEOMETRY_OBSERVABLE_NAMES",
+  "_VMEC_FIELD_LINE_OBSERVABLE_NAMES",
+  "_VMEC_METRIC_OBSERVABLE_NAMES",
+  "_array",
+  "_scalar",
+  "flux_tube_geometry_from_mapping",
+  "flux_tube_geometry_observables",
+  "geometry_observable_names",
+  "vmec_field_line_tensor_observable_names",
+  "vmec_metric_tensor_observable_names",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.sensitivity"
+source_path = "src/spectraxgk/geometry/sensitivity.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "geometry observable sensitivity reports, Gauss-Newton inverse-design diagnostics, and local UQ covariance reporting for solver-ready mappings"
+moved_exports = [
+  "geometry_inverse_design_report",
+  "geometry_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.booz_xform_bridge"
+source_path = "src/spectraxgk/geometry/booz_xform_bridge.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "bounded VMEC boundary and Boozer-spectrum bridge checks, Boozer field-line |B| evaluation, and Boozer-to-flux-tube sensitivity diagnostics"
+moved_exports = [
+  "booz_xform_flux_tube_mapping_from_inputs",
+  "booz_xform_flux_tube_sensitivity_report",
+  "booz_xform_spectral_sensitivity_report",
+  "evaluate_boozer_bmag_on_field_line",
+  "vmec_boundary_aspect_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_state_controls"
+source_path = "src/spectraxgk/geometry/vmec_state_controls.py"
+facade_module = "spectraxgk.geometry.vmec_state_sensitivity"
+status = "active"
+responsibility = "shared VMEC-JAX example-state loading, coefficient index resolution, length-two control normalization, and pure state perturbation helpers for differentiable geometry gates"
+moved_exports = [
+  "_VMECStateContext",
+  "_length_two_params",
+  "_load_vmec_state_context",
+  "_perturb_vmec_state",
+  "_resolve_vmec_state_indices",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_field_line_sampling"
+source_path = "src/spectraxgk/geometry/vmec_field_line_sampling.py"
+facade_module = "spectraxgk.geometry.vmec_state_sensitivity"
+status = "active"
+responsibility = "JAX-only VMEC field-line coordinate construction and differentiable RMS reduction helpers for tensor sensitivity gates"
+moved_exports = [
+  "_rms_with_floor",
+  "_vmec_field_line_sampling_coordinates",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_state_sensitivity"
+source_path = "src/spectraxgk/geometry/vmec_state_sensitivity.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "VMECState-to-Boozer and VMEC metric/field-line tensor AD/FD sensitivity reports for optional vmec_jax and booz_xform_jax backends"
+moved_exports = [
+  "vmec_jax_boozer_flux_tube_sensitivity_report",
+  "vmec_jax_field_line_tensor_sensitivity_report",
+  "vmec_jax_metric_tensor_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boozer_core"
+source_path = "src/spectraxgk/geometry/vmec_boozer_core.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mapping: radial Boozer-profile interpolation, equal-arc field-line construction, metric/drift profile assembly, and solver-ready core arrays"
+moved_exports = [
+  "vmec_jax_boozer_equal_arc_core_profiles_from_state",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boozer_derivatives"
+source_path = "src/spectraxgk/geometry/vmec_boozer_derivatives.py"
+facade_module = "spectraxgk.geometry.vmec_boozer_core"
+status = "active"
+responsibility = "Boozer field-line spectral sums, cylindrical derivatives, and coordinate-gradient algebra for differentiable VMEC/Boozer geometry"
+moved_exports = [
+  "BoozerCartesianDerivatives",
+  "BoozerCoordinateGradients",
+  "BoozerFieldLineDerivatives",
+  "boozer_cartesian_derivatives",
+  "boozer_coordinate_gradients",
+  "evaluate_boozer_field_line_derivatives",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boozer_constants"
+source_path = "src/spectraxgk/geometry/vmec_boozer_constants.py"
+facade_module = "spectraxgk.geometry.vmec_boozer_core"
+status = "active"
+responsibility = "Boozer transform constant preparation and equal-arc cache prewarm helpers for optional vmec_jax/booz_xform_jax paths"
+moved_exports = [
+  "_cached_booz_xform_constants",
+  "prewarm_vmec_boozer_equal_arc_cache",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_flux_tube_reports"
+source_path = "src/spectraxgk/geometry/vmec_flux_tube_reports.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "VMEC flux-tube sensitivity and array parity reports that compare direct tensor and Boozer equal-arc paths against solver-facing geometry contracts"
+moved_exports = [
+  "vmec_jax_flux_tube_array_parity_report",
+  "vmec_jax_flux_tube_sensitivity_report",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_tensor_mapping"
+source_path = "src/spectraxgk/geometry/vmec_tensor_mapping.py"
+facade_module = "spectraxgk.geometry.differentiable"
+status = "active"
+responsibility = "direct vmec_jax tensor sampling and conversion into the solver-ready flux-tube mapping contract"
+moved_exports = [
+  "vmec_jax_flux_tube_mapping_from_state",
+]
+fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boundary_chain"
+source_path = "src/spectraxgk/geometry/vmec_boundary_chain.py"
+facade_module = "spectraxgk.api.geometry"
+status = "active"
+responsibility = "scalar VMEC-JAX boundary-chain probe classification and public collection summary assembly"
+moved_exports = [
+  "boundary_chain_summary_from_probe",
+  "build_boundary_chain_collection_summary",
+  "build_boundary_chain_summary",
+]
+fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/test_build_vmec_jax_boundary_chain_collection.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry.vmec_boundary_collection"
+source_path = "src/spectraxgk/geometry/vmec_boundary_collection.py"
+facade_module = "spectraxgk.geometry.vmec_boundary_chain"
+status = "active"
+responsibility = "collection-level VMEC-JAX boundary-chain row, count, and decision policy for multi-probe promotion gates"
+moved_exports = [
+  "_boundary_chain_collection_counts",
+  "_boundary_chain_collection_decision",
+  "_collection_row",
+  "_empty_boundary_chain_counts",
+]
+fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/test_build_vmec_jax_boundary_chain_collection.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.eigen"
+source_path = "src/spectraxgk/objectives/eigen.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "implicit dominant-eigenvalue custom VJP and finite-difference branch-locality diagnostics for solver-objective gradient gates"
+moved_exports = [
+  "dominant_eigenvalue_branch_locality_report",
+  "dominant_real_eigenvalue",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.core"
+source_path = "src/spectraxgk/objectives/core.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "core solver-objective constants plus value-level linear growth, frequency, quasilinear weight, and mixing-length proxy evaluators"
+moved_exports = [
+  "SOLVER_OBJECTIVE_NAMES",
+  "SolverScalarObjective",
+  "solver_growth_rate_from_geometry",
+  "solver_linear_operator_matrix_from_geometry",
+  "solver_objective_vector_from_geometry",
+  "solver_scalar_objective_from_vector",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.sampling"
+source_path = "src/spectraxgk/objectives/sampling.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "physical ky scan mapping, VMEC/Boozer sample-axis construction, and aggregate weights for solver-objective validation gates"
+moved_exports = [
+  "solver_grid_options_from_ky_values",
+  "_aggregate_sample_metadata",
+  "_aggregate_weights",
+  "_float_tuple",
+  "_int_tuple",
+  "_ky_sample_axis",
+  "_surface_index_tuple",
+  "_surface_sample_axis",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.geometry"
+source_path = "src/spectraxgk/objectives/geometry.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "solver-ready geometry objective mapping, tiny differentiable objective AD/FD gate, and objective-gate row formatting"
+moved_exports = [
+  "SOLVER_GEOMETRY_PARAMETER_NAMES",
+  "TINY_OBJECTIVE_NAMES",
+  "_objective_gate_rows",
+  "default_solver_geometry_design_params",
+  "solver_ready_geometry_mapping",
+  "tiny_differentiable_objective_gradient_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.nonlinear_window"
+source_path = "src/spectraxgk/objectives/nonlinear_window.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "smooth reduced nonlinear-window estimator metrics used by differentiability gates without promoting converged nonlinear transport claims"
+moved_exports = [
+  "_reduced_nonlinear_window_metrics_from_linear_observables",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.gradient_gates"
+source_path = "src/spectraxgk/objectives/gradient_gates.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "solver-ready geometry branch-continuity and actual linear-RHS gradient gates with optional objective-evaluator hooks"
+moved_exports = [
+  "linear_solver_geometry_gradient_report",
+  "solver_objective_branch_gradient_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer_gradients"
+source_path = "src/spectraxgk/objectives/vmec_boozer_gradients.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates"
+moved_exports = [
+  "VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES",
+  "VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES",
+  "VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES",
+  "mode21_vmec_boozer_linear_frequency_gradient_report",
+  "mode21_vmec_boozer_quasilinear_gradient_report",
+  "mode21_vmec_boozer_nonlinear_window_gradient_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer_context"
+source_path = "src/spectraxgk/objectives/vmec_boozer_context.py"
+facade_module = "spectraxgk.objectives.vmec_boozer_gradients"
+status = "active"
+responsibility = "shared VMEC/Boozer state-to-linear-RHS context construction and quasilinear feature extraction for mode-21 gradient gates"
+moved_exports = [
+  "_mode21_vmec_boozer_linear_context",
+  "_mode21_vmec_boozer_quasilinear_features",
+]
+fast_tests = ["tests/test_solver_gradient_gate_modules.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_state"
+source_path = "src/spectraxgk/objectives/vmec_state.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "VMEC/Boozer state coefficient array access, perturbation replacement, and parameter-name helpers for solver-objective gates"
+moved_exports = [
+  "VMEC_BOOZER_STATE_PARAMETER_FAMILIES",
+  "VMEC_BOOZER_STATE_PARAMETER_NAMES",
+  "_replace_vmec_boozer_state_coefficient",
+  "_vmec_boozer_state_array",
+  "_vmec_boozer_state_parameter_name",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer"
+source_path = "src/spectraxgk/objectives/vmec_boozer.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "VMEC/Boozer objective option splitting, solver-objective table construction, sample metadata, and scalar reductions"
+moved_exports = [
+  "_split_vmec_boozer_objective_kwargs",
+  "vmec_boozer_solver_objective_vector_from_state",
+  "vmec_boozer_solver_objective_table_from_state",
+  "vmec_boozer_solver_objective_table_with_metadata_from_state",
+  "vmec_boozer_aggregate_scalar_objective_from_state",
+  "vmec_boozer_scalar_objective_from_state",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer_fd"
+source_path = "src/spectraxgk/objectives/vmec_boozer_fd.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "VMEC/Boozer scalar and aggregate finite-difference sensitivity reports for solver-objective gates"
+moved_exports = [
+  "_load_vmec_jax_example_state_bundle",
+  "_report_float",
+  "vmec_boozer_scalar_objective_finite_difference_report",
+  "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_boozer_line_search"
+source_path = "src/spectraxgk/objectives/vmec_boozer_line_search.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "VMEC/Boozer curvature-gated scalar/aggregate line searches and held-out aggregate objective audits"
+moved_exports = [
+  "vmec_boozer_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_line_search_holdout_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_core"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "deterministic spectral states, chunk/layout utilities, work models, pencil FFT/bracket kernels, RHS micro-routes, and tolerance helpers for nonlinear parallelization gates"
+moved_exports = [
+  "deterministic_nonlinear_spectral_state",
+  "device_z_pencil_fft_batch_pressure_model",
+  "nonlinear_spectral_domain_work_model",
+  "nonlinear_spectral_pencil_work_model",
+  "_serial_nonlinear_spectral_rhs",
+  "_pencil_spectral_bracket",
+  "_pencil_spectral_bracket_z_chunked",
+  "_within_abs_or_rel_tolerance",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_reports"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_reports.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "fail-closed communication and RHS report construction for logical nonlinear spectral decomposition"
+moved_exports = [
+  "nonlinear_spectral_communication_identity_gate",
+  "nonlinear_spectral_communication_identity_report",
+  "nonlinear_spectral_rhs_identity_report",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_rhs"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_rhs.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "logical output-tile nonlinear spectral RHS routing plus serial-vs-decomposed identity gating"
+moved_exports = [
+  "logical_decomposed_nonlinear_spectral_rhs",
+  "nonlinear_spectral_rhs_identity_gate",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_identity_integrator"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_identity_integrator.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "fixed-window logical nonlinear spectral integrator identity gates and observable traces"
+moved_exports = [
+  "nonlinear_spectral_integrator_identity_gate",
+  "integrate_logical_decomposed_nonlinear_spectral",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.device_z_reports"
+source_path = "src/spectraxgk/operators/nonlinear/device_z_reports.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "fail-closed device-z RHS and transport-window report construction, scalar trace freezing, and identity tolerance policy"
+moved_exports = [
+  "_new_transport_trace_dict",
+  "_transport_trace_tuples",
+  "_transport_trace_error_pairs",
+  "_device_z_transport_identity_passed",
+  "_blocked_device_z_rhs_report",
+  "_blocked_device_z_transport_window_report",
+  "_device_z_rhs_identity_report",
+  "_device_z_transport_window_report",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.device_z"
+source_path = "src/spectraxgk/operators/nonlinear/device_z.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "device-z shard-map nonlinear spectral RHS routing, observable reductions, and serial-vs-device transport-window execution"
+moved_exports = [
+  "device_z_pencil_nonlinear_spectral_rhs",
+  "device_z_pencil_nonlinear_spectral_transport_window_identity_gate",
+  "_device_z_sharding_for_spectral_state",
+  "_device_z_pencil_shard_map_rhs_fn",
+  "_device_z_pencil_shard_map_observables_fn",
+  "_spectral_physical_transport_observable_sums",
+  "_spectral_physical_transport_observable_vector_from_sums",
+  "_spectral_physical_transport_observables",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_core"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_core.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_core"
+status = "active"
+responsibility = "nonlinear turbulence-gradient follow-up configuration, JSON-safe metric parsing, replicate metadata extraction, and variance-reduction statistics helpers"
+moved_exports = [
+  "NonlinearGradientFollowupConfig",
+  "NonlinearGradientCandidateDesignConfig",
+  "NonlinearGradientVarianceReductionConfig",
+  "NonlinearGradientControlVariateCampaignConfig",
+  "_finite_float",
+  "_metric",
+  "_control_variate_candidate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_variance.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
+status = "active"
+responsibility = "paired-seed variance-reduction, control-variate campaign planning, and independent control-mean gate reports for nonlinear turbulence-gradient follow-up"
+moved_exports = [
+  "nonlinear_gradient_variance_reduction_plan",
+  "nonlinear_gradient_control_variate_campaign_plan",
+  "nonlinear_gradient_control_mean_gate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_candidate.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
+status = "active"
+responsibility = "candidate-level nonlinear turbulence-gradient follow-up design reports for bracket scaling, bounded extra replicas, and replacement-control recommendations"
+moved_exports = [
+  "_design_row",
+  "_required_replicates_for_scaled_bracket",
+  "nonlinear_gradient_candidate_design_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_composite.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
+status = "active"
+responsibility = "composite VMEC-boundary control design from resolved nonlinear turbulence-gradient finite-difference candidates"
+moved_exports = [
+  "_composite_control_row",
+  "nonlinear_gradient_composite_control_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_plan.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
+status = "active"
+responsibility = "matched-replicate follow-up planning for local but statistically unresolved nonlinear turbulence-gradient artifacts"
+moved_exports = [
+  "_planned_matched_runs",
+  "_required_replicates",
+  "nonlinear_gradient_followup_plan",
+]
+fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_ql_seed.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
+status = "active"
+responsibility = "QL/linear sensitivity seed-screen reports for selecting VMEC-state controls before nonlinear turbulence-gradient campaigns"
+moved_exports = [
+  "_ql_seed_rows",
+  "_sign_consistency",
+  "nonlinear_gradient_ql_seed_screen_report",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/followup_state_runbook.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
+status = "active"
+responsibility = "VMEC-state to perturbable input-control runbook assembly for nonlinear turbulence-gradient launch readiness"
+moved_exports = [
+  "_mapping_control_rows",
+  "nonlinear_gradient_state_control_runbook_report",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_core"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_core.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "nonlinear turbulence-gradient evidence scope markers, acceptance config dataclasses, JSON-safe metric parsing, and finite-difference conditioning helpers"
+moved_exports = [
+  "NON_PRODUCTION_SCOPE_MARKERS",
+  "PRODUCTION_SCOPE_MARKERS",
+  "NonlinearTurbulenceGradientEvidenceConfig",
+  "NonlinearTurbulenceGradientGapConfig",
+  "NonlinearTurbulenceGradientFiniteDifferenceConfig",
+  "NonlinearTurbulenceGradientCandidateRankingConfig",
+  "NonlinearTurbulenceGradientBracketSweepConfig",
+  "_json_number",
+  "_finite_float",
+  "_gate",
+  "_artifact_passed",
+  "_gradient_conditioning_summary",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_classification"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_classification.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "fail-closed nonlinear turbulence-gradient artifact classification and production-scope gate assembly"
+moved_exports = [
+  "classify_gradient_artifact",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_windows"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_windows.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "replicated nonlinear-window evidence row classification and ensemble summary gates for nonlinear turbulence-gradient evidence"
+moved_exports = [
+  "_ensemble_row",
+  "summarize_window_evidence",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_fd"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_fd.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "central finite-difference nonlinear turbulence-gradient report assembly and paired-replicate diagnostics"
+moved_exports = [
+  "nonlinear_turbulence_gradient_finite_difference_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_scoring"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_scoring.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "shared normalized evidence-margin scoring helper for nonlinear turbulence-gradient screening reports"
+moved_exports = [
+  "_metric_margin",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_brackets"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_brackets.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "same-control nonlinear turbulence-gradient bracket-sweep rows, paired-replicate diagnostics, and locality/repetition recommendation report"
+moved_exports = [
+  "_bracket_sweep_recommendation",
+  "_bracket_sweep_row",
+  "_delta_key",
+  "_paired_same_sign_fraction",
+  "_paired_uncertainty_rel",
+  "nonlinear_turbulence_gradient_bracket_sweep_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "nonlinear turbulence-gradient candidate ranking and next-campaign recommendation report, with bracket-sweep compatibility re-exports"
+moved_exports = [
+  "_candidate_next_action",
+  "_metric_margin",
+  "nonlinear_turbulence_gradient_candidate_ranking_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_gap"
+source_path = "src/spectraxgk/validation/nonlinear_gradient/evidence_gap.py"
+facade_module = "spectraxgk.validation.nonlinear_gradient.evidence"
+status = "active"
+responsibility = "production nonlinear turbulence-gradient evidence report assembly and fail-closed missing-campaign gap reports"
+moved_exports = [
+  "_required_run_rows",
+  "nonlinear_turbulence_gradient_evidence_gap_report",
+  "nonlinear_turbulence_gradient_evidence_report",
+]
+fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.nonlinear"
+source_path = "src/spectraxgk/workflows/nonlinear.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "full-GK executable nonlinear runtime workflow, including context setup, diagnostics routing, adaptive chunks, fixed-mode/source policy, final-state integration, and result assembly behind the public runtime facade"
+moved_exports = [
+  "FullNonlinearRuntimeDeps",
+  "run_full_nonlinear_runtime",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.linear"
+source_path = "src/spectraxgk/workflows/linear.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "full-GK executable linear runtime workflow, including context preparation, time/Krylov dispatch, auto-fallback, fit wiring, and quasilinear finalization behind the public runtime facade"
+moved_exports = [
+  "FullLinearRuntimeDeps",
+  "run_full_linear_runtime",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/test_quasilinear.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.reduced_models"
+source_path = "src/spectraxgk/workflows/reduced_models.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "executable reduced-model runtime workflows, including cETG linear and nonlinear paths behind dependency-injected runtime facade seams"
+moved_exports = [
+  "CETGLinearRuntimeDeps",
+  "CETGNonlinearRuntimeDeps",
+  "run_cetg_linear_runtime",
+  "run_cetg_nonlinear_runtime",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/test_cetg.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.named_cases"
+source_path = "src/spectraxgk/workflows/named_cases.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "named linear executable workflows for built-in Cyclone and ETG TOML cases, including optional pedagogical plotting and scan-reference plotting behind the public CLI facade"
+moved_exports = [
+  "NamedLinearCommandDeps",
+  "load_scan_ky",
+  "run_named_linear_command",
+  "scan_named_linear_command",
+]
+fast_tests = ["tests/test_cli.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.cases"
+source_path = "src/spectraxgk/workflows/cases.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime TOML case workflows for public runtime facade, including linear and nonlinear TOML override dispatch"
+moved_exports = [
+  "RUNTIME_CASE_FIT_KEYS",
+  "RuntimeCaseDeps",
+  "run_linear_case",
+  "run_nonlinear_case",
+]
+fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.command_options"
+source_path = "src/spectraxgk/workflows/runtime/command_options.py"
+facade_module = "spectraxgk.workflows.runtime.commands"
+status = "active"
+responsibility = "runtime executable option dataclasses, CLI/TOML/default resolution, ky scan parsing, fit-config filtering, and progress-display policy"
+moved_exports = [
+  "RUNTIME_COMMAND_FIT_KEYS",
+  "RuntimeLinearCommandOptions",
+  "RuntimeScanCommandOptions",
+  "RuntimeNonlinearCommandOptions",
+  "_arg_or_section",
+  "_resolve_linear_fit_options",
+  "_resolve_grid_time_options",
+  "_runtime_fit_config",
+  "_resolve_linear_command_options",
+  "_parse_ky_values",
+  "_resolve_scan_command_options",
+  "_resolve_nonlinear_command_options",
+  "should_show_progress",
+]
+fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.commands"
+source_path = "src/spectraxgk/workflows/runtime/commands.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "runtime executable command workflows for linear runs, ky scans, nonlinear runs, path/quasilinear overrides, command headers, artifact writes, and summary printing"
+moved_exports = [
+  "RuntimeCommandDeps",
+  "apply_quasilinear_overrides",
+  "apply_runtime_path_overrides",
+  "print_linear_run_header",
+  "run_runtime_linear_command",
+  "run_runtime_nonlinear_command",
+  "runtime_output_path",
+  "scan_runtime_linear_command",
+]
+fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.demo"
+source_path = "src/spectraxgk/workflows/demo.py"
+facade_module = "spectraxgk.cli"
+status = "active"
+responsibility = "no-input educational executable demo, reproducible TOML emission, default plot generation, and linear artifact bundle writing"
+moved_exports = [
+  "DEFAULT_DEMO_SETTINGS",
+  "DefaultDemoDeps",
+  "default_demo_artifact_base",
+  "default_demo_plot_path",
+  "default_demo_toml_path",
+  "default_demo_toml_text",
+  "default_example_config_path",
+  "run_default_linear_demo",
+]
+fast_tests = ["tests/test_cli.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.validation"
+source_path = "src/spectraxgk/artifacts/validation.py"
+facade_module = "spectraxgk.artifacts"
+status = "active"
+responsibility = "finite-value validation for runtime artifact state, field, and diagnostics payloads"
+moved_exports = [
+  "validate_finite_array",
+  "validate_finite_runtime_result",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.io"
+source_path = "src/spectraxgk/artifacts/io.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
+moved_exports = [
+  "_artifact_base",
+  "_is_netcdf_output_target",
+  "_netcdf_bundle_base",
+  "_ensure_parent",
+  "_flatten_series",
+  "_write_json",
+  "_write_csv",
+  "_write_state",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.spectral_layout"
+source_path = "src/spectraxgk/artifacts/spectral_layout.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "NetCDF dealiased-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
+moved_exports = [
+  "_require_netcdf4",
+  "_real_space_axis",
+  "_dealiased_kx_count",
+  "_dealiased_ky_count",
+  "_dealiased_kx_indices",
+  "_dealiased_ky_indices",
+  "_spectral_to_ri",
+  "_complex_to_ri",
+  "_restart_to_netcdf_layout",
+  "_state_basis_moments",
+  "_condense_kykx_for_output",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf"
+source_path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "nonlinear NetCDF output-bundle orchestration facade"
+moved_exports = [
+  "_write_nonlinear_netcdf_outputs",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_diagnostics"
+source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py"
+facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
+status = "active"
+responsibility = "nonlinear NetCDF diagnostic-history schema writing: scalar Phi2, base species histories, split electromagnetic histories, zonal fields, resolved spectra, and turbulent-heating channels"
+moved_exports = [
+  "_phi2_outputs_for_netcdf",
+  "_write_phi2_diagnostics",
+  "_write_diagnostics_group",
+  "_write_resolved_species_spectra",
+  "_write_zonal_phi_diagnostics",
+]
+fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_geometry"
+source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_geometry.py"
+facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
+status = "active"
+responsibility = "nonlinear NetCDF output geometry resolution, geometry groups, input-parameter metadata, and particle moments"
+moved_exports = [
+  "_build_output_grid_and_geometry",
+  "_particle_moments",
+  "_write_geometry_group",
+  "_write_input_parameters_group",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_fields"
+source_path = "src/spectraxgk/artifacts/nonlinear_netcdf_fields.py"
+facade_module = "spectraxgk.artifacts.nonlinear_netcdf"
+status = "active"
+responsibility = "nonlinear NetCDF final-field big-file writing"
+moved_exports = [
+  "_write_big_netcdf",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.linear"
+source_path = "src/spectraxgk/artifacts/linear.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "linear single-run artifacts, ky-scan artifacts, and quasilinear summary/species/spectrum CSV/JSON writers"
+moved_exports = [
+  "write_quasilinear_artifacts",
+  "write_runtime_linear_scan_artifacts",
+  "write_runtime_linear_artifacts",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear"
+source_path = "src/spectraxgk/artifacts/nonlinear.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "generic nonlinear JSON summaries, diagnostic CSV tables, and state-array artifact writing for non-NetCDF outputs"
+moved_exports = [
+  "_nonlinear_summary",
+  "write_runtime_nonlinear_table_artifacts",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.artifacts.nonlinear_diagnostics"
+source_path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
+status = "active"
+responsibility = "nonlinear NetCDF diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
+moved_exports = [
+  "_resolved_species_time",
+  "_read_optional_var",
+  "_resolve_restart_path",
+  "_condense_resolved_for_output",
+  "_condense_diagnostics_for_netcdf_output",
+  "load_nonlinear_netcdf_diagnostics",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.gyroaveraging"
+source_path = "src/spectraxgk/terms/gyroaveraging.py"
+facade_module = "spectraxgk.terms.nonlinear"
+status = "active"
+responsibility = "Laguerre quadrature transforms, gyroaveraged J0 field factors, and magnetic-compressibility b_parallel corrections used by nonlinear term assembly"
+moved_exports = [
+  "_laguerre_bpar_correction",
+  "_laguerre_bpar_correction_precomputed",
+  "_laguerre_j0_field",
+  "_laguerre_j0_field_precomputed",
+  "_laguerre_to_grid",
+  "_laguerre_to_spectral",
+]
+fast_tests = ["tests/test_nonlinear_exb.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.brackets"
+source_path = "src/spectraxgk/terms/brackets.py"
+facade_module = "spectraxgk.terms.nonlinear"
+status = "active"
+responsibility = "pseudo-spectral E cross B Poisson-bracket FFT kernels, mask/grid broadcasting, real-FFT Hermitian reconstruction, and multi-field bracket batching"
+moved_exports = [
+  "_apply_mask_xy",
+  "_broadcast_grid",
+  "_broadcast_mask",
+  "_broadcast_to_G",
+  "_fft2_xy",
+  "_ifft2_xy",
+  "_spectral_bracket",
+  "_spectral_bracket_full",
+  "_spectral_bracket_multi",
+  "_spectral_bracket_multi_full",
+  "_spectral_bracket_multi_real_fft",
+  "_spectral_bracket_real_fft",
+  "_stack_fields",
+]
+fast_tests = ["tests/test_nonlinear_exb.py", "tests/test_cetg.py", "tests/test_nonlinear_rhs.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_model"
+source_path = "src/spectraxgk/terms/reduced/cetg_model.py"
+facade_module = "spectraxgk.terms.reduced"
+status = "active"
+responsibility = "cETG runtime contract validation and coefficient construction from runtime species, geometry, and collision inputs"
+moved_exports = ["CETGModelParams", "validate_cetg_runtime_config", "build_cetg_model_params"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_state"
+source_path = "src/spectraxgk/terms/reduced/cetg_state.py"
+facade_module = "spectraxgk.terms.reduced"
+status = "active"
+responsibility = "cETG external/internal state layout conversion, spectral masks, z-filtering, derivatives, and Hermitian projection"
+moved_exports = ["_to_internal_state", "_from_internal_state", "_kz_grid", "_project_state"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_rhs"
+source_path = "src/spectraxgk/terms/reduced/cetg_rhs.py"
+facade_module = "spectraxgk.terms.reduced"
+status = "active"
+responsibility = "cETG electrostatic field solve, linear collisional closure terms, nonlinear bracket, and CFL frequency estimates"
+moved_exports = ["cetg_fields", "cetg_rhs", "_cetg_linear_omega_max", "_cetg_nonlinear_omega_components"]
+fast_tests = ["tests/test_cetg.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.reduced.cetg_integrator"
+source_path = "src/spectraxgk/terms/reduced/cetg_integrator.py"
+facade_module = "spectraxgk.terms.reduced"
+status = "active"
+responsibility = "cETG explicit fixed/adaptive diagnostic timestepper and SimulationDiagnostics assembly"
+moved_exports = ["integrate_cetg_explicit_diagnostics_state", "_compute_cetg_diag"]
+fast_tests = ["tests/test_cetg.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax"
+source_path = "src/spectraxgk/solvers/time/diffrax.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "stable public facade for Diffrax linear, streaming-fit, and nonlinear time integrators"
+moved_exports = [
+  "integrate_linear_diffrax",
+  "integrate_linear_diffrax_streaming",
+  "integrate_nonlinear_diffrax",
+]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_core"
+source_path = "src/spectraxgk/solvers/time/diffrax_core.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "optional Diffrax/Eqx dependency loading, solver/controller/adjoint policy, complex-state packing, RHS and density helpers"
+moved_exports = [
+  "_require_diffrax",
+  "_solver_from_name",
+  "_stepsize_controller",
+  "_adjoint",
+  "_pack_complex_state",
+  "_unpack_complex_state",
+  "_density_from_G_cached",
+]
+fast_tests = ["tests/test_diffrax_integrators_core.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_linear"
+source_path = "src/spectraxgk/solvers/time/diffrax_linear.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax linear integration with state/field/mode/density save paths and optional state sharding"
+moved_exports = ["integrate_linear_diffrax"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_streaming"
+source_path = "src/spectraxgk/solvers/time/diffrax_streaming.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax streaming linear growth/frequency accumulation without storing full time histories"
+moved_exports = ["integrate_linear_diffrax_streaming"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.time.diffrax_nonlinear"
+source_path = "src/spectraxgk/solvers/time/diffrax_nonlinear.py"
+facade_module = "spectraxgk.solvers.time.diffrax"
+status = "active"
+responsibility = "Diffrax nonlinear explicit/IMEX integration and nonlinear bracket RHS routing"
+moved_exports = ["integrate_nonlinear_diffrax"]
+fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.rhs"
+source_path = "src/spectraxgk/operators/nonlinear/rhs.py"
+facade_module = "spectraxgk.operators.nonlinear"
+status = "active"
+responsibility = "nonlinear RHS linear-path routing, electromagnetic bracket composition, and IMEX explicit nonlinear-term assembly with dependency-injected seams"
+moved_exports = [
+  "RhsCallable",
+  "linear_rhs_jit_for_terms_impl",
+  "nonlinear_em_term_cached_impl",
+  "nonlinear_rhs_cached_impl",
+]
+fast_tests = ["tests/test_nonlinear_rhs.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.diagnostic_state"
+source_path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
+facade_module = "spectraxgk.operators.nonlinear"
+status = "active"
+responsibility = "nonlinear state-to-diagnostic tuple assembly, scalar/resolved diagnostic branch packing, and scan-closure construction shared by explicit and IMEX diagnostic scans with injected diagnostic kernels"
+moved_exports = [
+  "_compute_resolved_diagnostic_tuple",
+  "_compute_unresolved_diagnostic_tuple",
+  "_diagnostic_field_pair",
+  "_mode_growth_frequency",
+  "NonlinearDiagnosticKernels",
+  "compute_nonlinear_diagnostic_tuple",
+  "make_nonlinear_diagnostic_tuple_fn",
+]
+fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.diagnostics"
+source_path = "src/spectraxgk/operators/nonlinear/diagnostics.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "nonlinear sampled-scan interval routing, step-diagnostic selection, progress callback routing, scan-output sampling/finalization, resolved diagnostic packing, and SimulationDiagnostics construction shared by explicit and IMEX diagnostic scans"
+moved_exports = [
+  "_pack_resolved_diagnostics",
+  "_sample_axis0",
+  "_sample_indices_with_final",
+  "build_nonlinear_simulation_diagnostics",
+  "finalize_nonlinear_scan_diagnostics",
+  "maybe_emit_nonlinear_progress",
+  "run_sampled_explicit_diagnostic_scan",
+  "sampled_scan_intervals",
+  "select_nonlinear_step_diagnostics",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.policies"
+source_path = "src/spectraxgk/operators/nonlinear/policies.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "nonlinear diagnostic setup, fixed/adaptive time-step, CFL, omega-mask, reusable IMEX operator policies, and public re-exports for projection/collision helpers"
+moved_exports = [
+  "IMEXLinearOperator",
+  "NonlinearCollisionSplitPolicy",
+  "NonlinearDiagnosticSetup",
+  "NonlinearTimeStepPolicy",
+  "_apply_collision_split",
+  "_collision_damping",
+  "_diagnostic_omega_mode_mask",
+  "_make_fixed_mode_projector",
+  "_make_hermitian_projector",
+  "_make_nonlinear_state_projector",
+  "_nonlinear_cfl_frequency_components",
+  "build_nonlinear_collision_split_policy",
+  "build_nonlinear_diagnostic_setup",
+  "build_nonlinear_imex_operator",
+  "build_nonlinear_time_step_policy",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.collisions"
+source_path = "src/spectraxgk/operators/nonlinear/collisions.py"
+facade_module = "spectraxgk.operators.nonlinear.policies"
+status = "active"
+responsibility = "nonlinear collision and hypercollision damping assembly plus diagonal split-update policy"
+moved_exports = [
+  "NonlinearCollisionSplitPolicy",
+  "_apply_collision_split",
+  "_collision_damping",
+  "build_nonlinear_collision_split_policy",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/architecture.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.projection"
+source_path = "src/spectraxgk/operators/nonlinear/projection.py"
+facade_module = "spectraxgk.operators.nonlinear.policies"
+status = "active"
+responsibility = "fixed-mode and compressed real-FFT Hermitian nonlinear state projection helpers"
+moved_exports = [
+  "_make_fixed_mode_projector",
+  "_make_hermitian_projector",
+  "_make_nonlinear_state_projector",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.state_integration"
+source_path = "src/spectraxgk/solvers/nonlinear/state_integration.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "cached nonlinear RHS routing plus explicit and IMEX cached state integration with geometry/cache construction separated from diagnostics"
+moved_exports = [
+  "_linear_rhs_jit_for_terms",
+  "integrate_nonlinear",
+  "integrate_nonlinear_cached",
+  "integrate_nonlinear_imex_cached",
+  "nonlinear_rhs_cached",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py", "tests/test_nonlinear_rhs.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.diagnostic_integration"
+source_path = "src/spectraxgk/solvers/nonlinear/diagnostic_integration.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "explicit and IMEX nonlinear diagnostic entry points plus dependency-injected diagnostic kernel wiring"
+moved_exports = [
+  "_integrate_nonlinear_explicit_diagnostics_impl",
+  "integrate_nonlinear_explicit_diagnostics",
+  "integrate_nonlinear_explicit_diagnostics_state",
+  "integrate_nonlinear_imex_diagnostics",
+]
+fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.explicit"
+source_path = "src/spectraxgk/solvers/nonlinear/explicit.py"
+facade_module = "spectraxgk.solvers.nonlinear"
+status = "active"
+responsibility = "explicit nonlinear RK/SSP/K10 one-step policy, cached scan dispatch, diagnostic step construction, and diagnostic scan-selection policy with injected RHS, state projection, and sampled-scan seams"
+moved_exports = [
+  "advance_explicit_nonlinear_state",
+  "checkpoint_explicit_step",
+  "integrate_cached_explicit_scan",
+  "make_explicit_diagnostic_step",
+  "run_explicit_diagnostic_scan",
+]
+fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.diagnostics"
+source_path = "src/spectraxgk/solvers/nonlinear/diagnostics.py"
+facade_module = "spectraxgk.nonlinear"
+status = "active"
+responsibility = "explicit and IMEX nonlinear_diagnostics orchestration with facade-injected geometry, cache, RHS, diagnostic, time-step, collision-split, solve-step, progress, sampled-scan, and finalization seams"
+moved_exports = [
+  "ExplicitNonlinearDiagnosticsDeps",
+  "integrate_explicit_nonlinear_diagnostics_impl",
+  "IMEXNonlinearDiagnosticsDeps",
+  "integrate_imex_nonlinear_diagnostics_impl",
+]
+fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_explicit_step.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.imex"
+source_path = "src/spectraxgk/solvers/nonlinear/imex.py"
+facade_module = "spectraxgk.solvers.nonlinear"
+status = "active"
+responsibility = "IMEX nonlinear-term and solve-step closure factories, cached scan policy, implicit-operator shape policy, fixed-point predictor, and GMRES solve-step policy shared by cached and diagnostic nonlinear integrations"
+moved_exports = [
+  "advance_imex_nonlinear_state",
+  "imex_fixed_point_guess",
+  "integrate_cached_imex_scan",
+  "make_imex_diagnostic_step",
+  "make_imex_nonlinear_term",
+  "make_imex_solve_step",
+  "run_imex_diagnostic_scan",
+  "solve_imex_step",
+]
+fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.nonlinear.imex_diagnostics"
+source_path = "src/spectraxgk/solvers/nonlinear/imex_diagnostics.py"
+facade_module = "spectraxgk.solvers.nonlinear.imex"
+status = "active"
+responsibility = "IMEX diagnostic-step closure, fixed diagnostic scan execution, and SSPX3 stage composition shared by diagnostic nonlinear integrations"
+moved_exports = [
+  "advance_imex_nonlinear_state",
+  "make_imex_diagnostic_step",
+  "run_imex_diagnostic_scan",
+]
+fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_policies"
+source_path = "src/spectraxgk/validation/stellarator/transport_policies.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "VMEC-JAX transport admission policy dataclasses and finite-float helper"
+moved_exports = [
+  "DEFAULT_TRANSPORT_METRIC_KEYS",
+  "VMECJAXNonlinearAuditPolicy",
+  "VMECJAXNonlinearCampaignPolicy",
+  "VMECJAXReducedPrelaunchPolicy",
+  "VMECJAXTransportAdmissionPolicy",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_samples"
+source_path = "src/spectraxgk/validation/stellarator/transport_samples.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "transport metric selection and multi-surface/field-line/ky sample coverage gates"
+moved_exports = [
+  "candidate_transport_metric",
+  "transport_objective_sample_summary",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_landscape"
+source_path = "src/spectraxgk/validation/stellarator/transport_landscape.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "replicated nonlinear landscape uncertainty and candidate-admission reports"
+moved_exports = [
+  "_ensemble_blockers",
+  "_ensemble_statistics",
+  "build_nonlinear_landscape_admission_report",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_nonlinear_landscape_admission_report.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_prelaunch"
+source_path = "src/spectraxgk/validation/stellarator/transport_prelaunch.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "reduced-objective prelaunch gates before expensive nonlinear transport audits"
+moved_exports = [
+  "_sample_statistics_summary",
+  "build_reduced_nonlinear_audit_prelaunch_report",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_campaign"
+source_path = "src/spectraxgk/validation/stellarator/transport_campaign.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "next-campaign admission gates combining reduced, cross-sample, and replicated landscape evidence"
+moved_exports = [
+  "build_nonlinear_campaign_admission_report",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_nonlinear_campaign_admission_report.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_audit"
+source_path = "src/spectraxgk/validation/stellarator/transport_audit.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "matched nonlinear audit redesign gates for turbulent-flux optimization evidence"
+moved_exports = [
+  "build_nonlinear_audit_redesign_report",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_transport_audit_redesign_report.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.stellarator.transport_selection"
+source_path = "src/spectraxgk/validation/stellarator/transport_selection.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "candidate physical-gate blockers, relative-improvement scoring, and promoted transport-candidate selection"
+moved_exports = [
+  "build_transport_admission_report",
+  "select_admitted_transport_candidate",
+]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_core"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_core.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "quasilinear calibration points, train-scale fitting, scaling application, and train/holdout report assembly"
+moved_exports = [
+  "QuasilinearCalibrationPoint",
+  "apply_heat_flux_scale",
+  "fit_train_heat_flux_scale",
+  "quasilinear_calibration_report",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_spectrum"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_spectrum.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "quasilinear spectrum-column integration into scalar heat-flux estimates"
+moved_exports = [
+  "integrated_quasilinear_flux_from_spectrum",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.calibration_io"
+source_path = "src/spectraxgk/validation/quasilinear/calibration_io.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "nonlinear window CSV/NetCDF ingestion, convergence attachment, calibration-point construction, and report JSON writing"
+moved_exports = [
+  "calibration_point_from_nonlinear_window_summary",
+  "calibration_point_from_spectrum_and_nonlinear_window",
+  "write_quasilinear_calibration_report",
+]
+fast_tests = ["tests/test_quasilinear_calibration.py", "tests/test_quasilinear_promotion_guardrails.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[hotspots]]
+module = "spectraxgk.benchmarks"
+source_path = "src/spectraxgk/benchmarks.py"
+current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
+target_packages = [
+  "spectraxgk.validation.benchmarks.etg_linear",
+  "spectraxgk.validation.benchmarks.etg_scan",
+  "spectraxgk.validation.benchmarks.tem",
+  "spectraxgk.validation.reference_data",
+  "spectraxgk.validation.fit_policies",
+]
+public_facade = "spectraxgk.benchmarks"
+line_target = 800
+status = "planned"
+existing_fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmark_scan.py"]
+planned_tests = [
+  "case-family import identity tests",
+  "reference-data schema tests",
+  "late-window fit-policy tests",
+  "Cyclone/ETG/KBM/TEM smoke-free benchmark gate tests",
+]
+parity_gates = [
+  "Cyclone linear growth/frequency and eigenfunction overlap",
+  "KBM branch-continuity growth jump gate",
+  "ETG and TEM scoped branch-following gates",
+]
+literature_anchors = [
+  "Cyclone Base Case / Dimits benchmark tradition",
+  "linear multispecies shaped tokamak GENE/GKW/GS2 benchmarks",
+  "W7-X stella/GENE benchmark when stellarator cases are dispatched",
+]
+autodiff_gates = ["benchmark fit functions remain differentiable where used by optimization objectives"]
+extension_points = ["BenchmarkFamily", "ReferenceDataLoader", "FitPolicy"]
+
+[[hotspots]]
+module = "spectraxgk.geometry.differentiable"
+source_path = "src/spectraxgk/geometry/differentiable.py"
+current_reason = "single file owns optional backend discovery, sampled geometry conversion, VMEC/Boozer parity, sensitivity, inverse-design, and finite-difference reports"
+target_packages = [
+  "spectraxgk.geometry.contracts",
+  "spectraxgk.geometry.backends.discovery",
+  "spectraxgk.geometry.backends.vmec_jax",
+  "spectraxgk.geometry.backends.booz_xform_jax",
+  "spectraxgk.geometry.equal_arc",
+  "spectraxgk.geometry.sensitivity",
+  "spectraxgk.geometry.parity",
+]
+public_facade = "spectraxgk.geometry.differentiable"
+line_target = 200
+status = "active"
+existing_fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+planned_tests = [
+  "optional-backend discovery without import side effects",
+  "sampled geometry PyTree round-trip tests",
+  "VMEC/Boozer array parity tests",
+  "geometry JVP/VJP/finite-difference gradient tests",
+]
+parity_gates = [
+  "VMEC/Boozer equal-arc flux-tube geometry parity",
+  "mboz=nboz>=21 stellarator geometry matrix gate",
+  "same-WOUT provenance gate for held-out transport artifacts",
+]
+literature_anchors = [
+  "stellarator flux-tube geometry conventions from stella/GENE W7-X benchmarks",
+  "VMEC/Boozer coordinate usage in stellarator gyrokinetics",
+]
+autodiff_gates = [
+  "finite-difference versus JAX Jacobian for geometry observables",
+  "state-coefficient to field-line tensor sensitivity",
+  "conditioning and rank diagnostics for inverse/UQ examples",
+]
+extension_points = ["GeometryProvider", "BoozerTransformProvider", "GeometrySensitivityReport"]
+
+[[hotspots]]
+module = "spectraxgk.operators.nonlinear.parallel"
+source_path = "src/spectraxgk/operators/nonlinear/parallel.py"
+current_reason = "mixes decomposition metadata, communication models, sharded RHS routes, observable reductions, profiler reports, and policy text"
+target_packages = [
+  "spectraxgk.parallel.domain_plan",
+  "spectraxgk.parallel.spectral_comm",
+  "spectraxgk.parallel.device_z_pencil",
+  "spectraxgk.parallel.observable_reduce",
+  "spectraxgk.parallel.profiling",
+]
+public_facade = "spectraxgk.operators.nonlinear.parallel"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
+planned_tests = [
+  "serial-vs-decomposed RHS identity tests",
+  "physical transport-window identity tests",
+  "communication-model preflight tests",
+  "CPU/GPU profiler artifact schema tests",
+]
+parity_gates = [
+  "serial transport-window identity before speedup claims",
+  "free-energy, field-energy, physical-flux, and bracket-RMS identity gates",
+]
+literature_anchors = [
+  "gyrokinetic nonlinear transport-window comparison practice",
+  "distributed spectral-method decomposition practice for flux-tube solvers",
+]
+autodiff_gates = ["parallel routes preserve JAX transformability or fail with explicit diagnostics"]
+extension_points = ["DomainDecomposition", "SpectralCommunicator", "ObservableReducer"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.stellarator_tables"
+source_path = "src/spectraxgk/objectives/stellarator_tables.py"
+facade_module = "spectraxgk.objectives.stellarator"
+status = "active"
+responsibility = "reduced and VMEC/Boozer stellarator ITG sample-table, portfolio-reduction, and density-gradient scan gates"
+moved_exports = [
+  "stellarator_itg_density_gradient_scan",
+  "stellarator_itg_portfolio_gate_payload",
+  "stellarator_itg_portfolio_sensitivity_report",
+  "stellarator_itg_reduced_portfolio_objective",
+  "stellarator_itg_sample_objective_table",
+  "stellarator_itg_vmec_boozer_portfolio_objective_from_state",
+  "stellarator_itg_vmec_boozer_sample_objective_table_from_state",
+]
+fast_tests = ["tests/test_stellarator_optimization.py", "tests/test_stellarator_objective_portfolio.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.stellarator_residuals"
+source_path = "src/spectraxgk/objectives/stellarator_residuals.py"
+facade_module = "spectraxgk.objectives.stellarator"
+status = "active"
+responsibility = "reduced stellarator ITG scalar residuals, residual-Jacobian AD/FD gates, covariance diagnostics, and conditioning reports"
+moved_exports = [
+  "stellarator_itg_objective",
+  "stellarator_itg_objective_residual_names",
+  "stellarator_itg_objective_residual_vector",
+  "stellarator_itg_residual_sensitivity_report",
+]
+fast_tests = ["tests/test_stellarator_optimization.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.zonal_records"
+source_path = "src/spectraxgk/objectives/zonal_records.py"
+facade_module = "spectraxgk.objectives.zonal"
+status = "active"
+responsibility = "zonal-flow metric record normalization, complete surface/alpha/kx tensor assembly, and objective row-table construction"
+moved_exports = [
+  "MissingDampingPolicy",
+  "_finite_metric_tensor_from_records",
+  "_zonal_row_table",
+]
+fast_tests = ["tests/test_zonal_objective.py", "tests/test_build_zonal_flow_objective_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_contracts"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "QA low-turbulence configuration, stable design/observable names, and JSON-ready result contract"
+moved_exports = [
+  "QA_LOW_TURBULENCE_DESIGN_NAMES",
+  "QA_LOW_TURBULENCE_OBSERVABLE_NAMES",
+  "QALowTurbulenceConfig",
+  "QALowTurbulenceResult",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_model"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "reduced QA/ITG feature map, heat-flux envelope integration, late-window metrics, and observable vector"
+moved_exports = [
+  "default_qa_low_turbulence_initial_params",
+  "qa_low_turbulence_heat_flux_trace",
+  "qa_low_turbulence_observable_vector",
+  "qa_low_turbulence_observables",
+  "qa_low_turbulence_window_metrics",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_residuals"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "weighted residual vectors, scalar objective, AD/FD sensitivity reports, and covariance diagnostics"
+moved_exports = [
+  "qa_low_turbulence_objective",
+  "qa_low_turbulence_observable_sensitivity_report",
+  "qa_low_turbulence_residual_names",
+  "qa_low_turbulence_residual_vector",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_optimizer"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_optimizer.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "Adam optimizer loop and optimization-history row construction for reduced QA low-turbulence designs"
+moved_exports = ["optimize_qa_low_turbulence"]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_artifacts"
+source_path = "src/spectraxgk/objectives/qa_low_turbulence_artifacts.py"
+facade_module = "spectraxgk.objectives.qa_low_turbulence"
+status = "active"
+responsibility = "reduced boundary/LCFS visualization payloads, density-gradient scans, long-window convergence gates, and comparison payload assembly"
+moved_exports = [
+  "qa_low_turbulence_comparison_payload",
+  "reduced_boundary_surface",
+  "reduced_lcfs_bmag",
+]
+fast_tests = ["tests/test_qa_low_turbulence.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.solver_vmec"
+source_path = "src/spectraxgk/objectives/solver_vmec.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "public VMEC/Boozer solver-objective wrappers with explicit validation injection seams"
+moved_exports = [
+  "vmec_boozer_solver_objective_vector_from_state",
+  "vmec_boozer_solver_objective_table_from_state",
+  "vmec_boozer_solver_objective_table_with_metadata_from_state",
+  "vmec_boozer_scalar_objective_from_state",
+  "vmec_boozer_aggregate_scalar_objective_from_state",
+  "vmec_boozer_scalar_objective_finite_difference_report",
+  "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+  "vmec_boozer_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_scalar_objective_line_search_report",
+  "vmec_boozer_aggregate_line_search_holdout_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.solver_gradient_reports"
+source_path = "src/spectraxgk/objectives/solver_gradient_reports.py"
+facade_module = "spectraxgk.objectives.solver_gradients"
+status = "active"
+responsibility = "solver-ready geometry, branch-locality, mode-21 VMEC/Boozer, and reduced nonlinear-window gradient report wrappers"
+moved_exports = [
+  "solver_objective_branch_gradient_report",
+  "linear_solver_geometry_gradient_report",
+  "mode21_vmec_boozer_linear_frequency_gradient_report",
+  "mode21_vmec_boozer_quasilinear_gradient_report",
+  "mode21_vmec_boozer_nonlinear_window_gradient_report",
+]
+fast_tests = ["tests/test_solver_objective_gradients.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_config"
+source_path = "src/spectraxgk/objectives/vmec_transport_config.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC-JAX transport objective kind/transform contracts, Boozer-resolution validation, and optional backend path pinning"
+moved_exports = [
+  "VMECJAXTransportObjectiveConfig",
+  "VMECJAXTransportObjectiveKind",
+  "VMECJAXTransportObjectiveTransform",
+  "_module_search_root",
+  "_pin_current_optional_backend_paths",
+  "_reference_wout_from_context",
+]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_tables"
+source_path = "src/spectraxgk/objectives/vmec_transport_tables.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC/Boozer sample-table construction, geometry transport weights, reduced nonlinear-window proxy, chunked weighted reductions, and scalar objective transforms"
+moved_exports = [
+  "_apply_objective_transform",
+  "_chunked_transport_objective_raw_value_from_state",
+  "_geometry_transport_weights",
+  "_solver_table_to_nonlinear_window_proxy",
+  "_static_grid_options_from_ky_values",
+  "_surface_chunk_sample_sets",
+  "_transport_feature_table_from_state",
+  "_transport_objective_raw_value_from_state",
+  "vmec_jax_transport_objective_from_state",
+]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py", "tests/test_vmec_jax_transport_gradient.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_branch"
+source_path = "src/spectraxgk/objectives/vmec_transport_branch.py"
+facade_module = "spectraxgk.objectives.vmec_transport"
+status = "active"
+responsibility = "VMEC/Boozer final-state dominant-growth branch-locality report across surface, field-line, and ky samples"
+moved_exports = ["vmec_jax_transport_growth_branch_locality_report_from_states"]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[hotspots]]
+module = "spectraxgk.objectives.solver_gradients"
+source_path = "src/spectraxgk/objectives/solver_gradients.py"
+current_reason = "now a public facade over eigen, core objective, sampling, VMEC/Boozer wrapper, and solver-gradient report owner modules; remaining work is API consolidation and removal of temporary private re-exports"
+target_packages = [
+  "spectraxgk.objectives.eigen",
+  "spectraxgk.objectives.core",
+  "spectraxgk.objectives.sampling",
+  "spectraxgk.objectives.nonlinear_window",
+  "spectraxgk.objectives.solver_vmec",
+  "spectraxgk.objectives.solver_gradient_reports",
+  "spectraxgk.objectives.vmec_boozer",
+  "spectraxgk.objectives.gradient_gates",
+]
+public_facade = "spectraxgk.objectives.solver_gradients"
+line_target = 900
+status = "planned"
+existing_fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_stellarator_optimization.py"]
+planned_tests = [
+  "eigenvalue branch-locality and spectral-gap tests",
+  "JVP/VJP/finite-difference objective consistency tests",
+  "UQ covariance rank/conditioning tests",
+  "objective registry tests for adding new transport models",
+]
+parity_gates = [
+  "linear growth/frequency objective matches late-time/eigensolver diagnostics",
+  "quasilinear objective preserves calibrated screening claim scope",
+  "nonlinear-window objectives remain guardrailed until long-window transport gates pass",
+]
+literature_anchors = [
+  "gyrokinetic stellarator optimization by linear and transport proxies",
+  "quasilinear screening versus nonlinear transport validation literature",
+]
+autodiff_gates = [
+  "custom JVP/VJP only after finite-difference and tangent tests pass",
+  "branch-local eigenvalue gap guard",
+  "Gauss-Newton covariance and sensitivity-map conditioning",
+]
+extension_points = ["Objective", "AdjointPolicy", "GradientGate", "OptimizationReport"]
+
+[[hotspots]]
+module = "spectraxgk.nonlinear"
+source_path = "src/spectraxgk/nonlinear.py"
+current_reason = "public facade only; cached state integration and diagnostic entry points now live in solvers.nonlinear owner modules, while operator and solver owners hold kernels/policies"
+target_packages = [
+  "spectraxgk.solvers.nonlinear.state_integration",
+  "spectraxgk.solvers.nonlinear.diagnostic_integration",
+  "spectraxgk.operators.nonlinear.rhs",
+  "spectraxgk.operators.nonlinear.diagnostic_state",
+  "spectraxgk.operators.nonlinear.diagnostics",
+  "spectraxgk.operators.nonlinear.collisions",
+  "spectraxgk.operators.nonlinear.policies",
+  "spectraxgk.operators.nonlinear.projection",
+  "spectraxgk.solvers.nonlinear.explicit",
+  "spectraxgk.solvers.nonlinear.diagnostics",
+  "spectraxgk.solvers.nonlinear.imex",
+]
+public_facade = "spectraxgk.nonlinear"
+line_target = 250
+status = "closed"
+existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_rhs.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear_imex.py"]
+planned_tests = [
+  "RHS component identity tests",
+  "IMEX/fixed-step/adaptive path equivalence tests",
+  "windowed transport statistics tests",
+  "nonlinear artifact schema tests",
+]
+parity_gates = [
+  "Cyclone/KBM/HSX/W7-X nonlinear window statistics",
+  "spectral resolved HeatFlux and Wphi diagnostic comparisons",
+]
+literature_anchors = [
+  "Cyclone nonlinear transport benchmark tradition",
+  "stellarator ITG nonlinear W7-X stella/GENE benchmark observables",
+]
+autodiff_gates = ["reduced differentiable nonlinear-window estimator stays separate from production long-window transport claim"]
+extension_points = ["NonlinearRHS", "TimeStepper", "TransportDiagnostic"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.streaming"
+source_path = "src/spectraxgk/operators/linear/streaming.py"
+facade_module = "spectraxgk.operators"
+status = "active"
+responsibility = "Hermite streaming kernel exposed through the linear operator package facade"
+moved_exports = ["hermite_streaming"]
+fast_tests = ["tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.params"
+source_path = "src/spectraxgk/operators/linear/params.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "linear parameter pytrees, term toggles, validation/coercion helpers, and term-config conversions"
+moved_exports = ["LinearParams", "LinearTerms", "linear_terms_to_term_config", "term_config_to_linear_terms"]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.linked"
+source_path = "src/spectraxgk/operators/linear/linked.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "linked-boundary FFT maps, signed spectral-index mapping, and linked-end damping profiles"
+moved_exports = ["_build_linked_fft_maps", "_build_linked_end_damping_profile", "_signed_to_index"]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.moments"
+source_path = "src/spectraxgk/operators/linear/moments.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "Hermite-Laguerre moment operators, field-coupling primitives, and quasineutrality field solve helpers"
+moved_exports = ["build_H", "quasineutrality_phi", "streaming_term", "grad_z_periodic"]
+fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache"
+source_path = "src/spectraxgk/operators/linear/cache.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "linear cache public facade over the pytree model, array factories, damping factors, and geometry-dependent builder"
+moved_exports = ["LinearCache", "build_linear_cache", "collision_damping", "hypercollision_damping"]
+fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_model"
+source_path = "src/spectraxgk/operators/linear/cache_model.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "LinearCache JAX pytree data model and deterministic flatten/unflatten contract"
+moved_exports = ["LinearCache"]
+fast_tests = ["tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_arrays"
+source_path = "src/spectraxgk/operators/linear/cache_arrays.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "moment, damping, end-damping, and gyroaverage array factories used by linear and nonlinear operators"
+moved_exports = [
+  "_build_end_damping_profile_array",
+  "_build_gyroaverage_cache_arrays",
+  "_build_low_rank_moment_cache_arrays",
+  "collision_damping",
+  "hypercollision_damping",
+]
+fast_tests = ["tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.cache_builder"
+source_path = "src/spectraxgk/operators/linear/cache_builder.py"
+facade_module = "spectraxgk.operators.linear.cache"
+status = "active"
+responsibility = "geometry-dependent LinearCache construction staged into twist-shift policy, k-perp/drift arrays, Laguerre gyroaverages, linked-boundary metadata, and nonlinear-dealias cache fields"
+moved_exports = ["build_linear_cache"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.linear.rhs"
+source_path = "src/spectraxgk/operators/linear/rhs.py"
+facade_module = "spectraxgk.operators.linear"
+status = "active"
+responsibility = "linear RHS assembly entry points and cache-backed field-solve dispatch"
+moved_exports = ["linear_rhs", "linear_rhs_cached"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_velocity_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.linear_dissipation"
+source_path = "src/spectraxgk/terms/linear_dissipation.py"
+facade_module = "spectraxgk.terms.linear_terms"
+status = "active"
+responsibility = "linear collisional, hypercollisional, perpendicular hyperdiffusive, and end-damping RHS contributions"
+moved_exports = [
+  "collisions_contribution",
+  "end_damping_contribution",
+  "hypercollisions_contribution",
+  "hyperdiffusion_contribution",
+]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_gx_consistency.py", "tests/test_terms_assembly.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.assembly"
+source_path = "src/spectraxgk/terms/assembly.py"
+facade_module = "spectraxgk.terms.assembly"
+status = "active"
+responsibility = "stable public facade for term-wise cached RHS assembly, diagnostics, and field-only solves"
+moved_exports = [
+  "assemble_rhs",
+  "assemble_rhs_cached",
+  "assemble_rhs_cached_jit",
+  "assemble_rhs_cached_electrostatic_jit",
+  "assemble_rhs_terms_cached",
+  "compute_fields_cached",
+]
+fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.assembly_core"
+source_path = "src/spectraxgk/terms/assembly_core.py"
+facade_module = "spectraxgk.terms.assembly"
+status = "active"
+responsibility = "cached full linear-term RHS composition and generic/electrostatic JIT entry points"
+moved_exports = ["assemble_rhs_cached", "assemble_rhs_cached_jit", "assemble_rhs_cached_electrostatic_jit"]
+fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.assembly_diagnostics"
+source_path = "src/spectraxgk/terms/assembly_diagnostics.py"
+facade_module = "spectraxgk.terms.assembly"
+status = "active"
+responsibility = "per-term RHS contribution decomposition for diagnostics and reference-code parity audits"
+moved_exports = ["assemble_rhs_terms_cached"]
+fast_tests = ["tests/test_terms_assembly.py", "tests/test_compare_gx_rhs_terms.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.assembly_fields"
+source_path = "src/spectraxgk/terms/assembly_fields.py"
+facade_module = "spectraxgk.terms.assembly"
+status = "active"
+responsibility = "field-only cached solve path used by runtime diagnostics, quasilinear tools, and validation comparisons"
+moved_exports = ["compute_fields_cached"]
+fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.terms.assembly_helpers"
+source_path = "src/spectraxgk/terms/assembly_helpers.py"
+facade_module = "spectraxgk.terms.assembly"
+status = "active"
+responsibility = "shared field-source, electrostatic-field, static-zero, and collision-skip helper policies"
+moved_exports = ["_apply_external_phi_source", "_collision_contribution_or_zero", "_is_static_zero", "_rhs_field_views"]
+fast_tests = ["tests/test_terms_assembly.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.krylov"
+source_path = "src/spectraxgk/solvers/linear/krylov.py"
+facade_module = "spectraxgk.solvers.linear"
+status = "active"
+responsibility = "public facade and status-reporting wrapper for matrix-free Krylov eigenmode solves"
+moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_policy"
+source_path = "src/spectraxgk/solvers/linear/eigen_policy.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "immutable eigenmode-solver configuration policy used by runtime and benchmark scans"
+moved_exports = ["KrylovConfig"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_benchmarks_helpers.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_operator"
+source_path = "src/spectraxgk/solvers/linear/eigen_operator.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "matrix-free linear operator applications, damping extraction, normalization, and IMEX propagator step used by eigenmode solvers"
+moved_exports = ["_apply_operator", "_advance_imex2", "_compute_damping", "_normalize"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_selection"
+source_path = "src/spectraxgk/solvers/linear/eigen_selection.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "target-frequency, sign, overlap, and mode-family branch-selection rules for linear eigenmode solves"
+moved_exports = ["_select_by_target", "_select_by_overlap", "_omega_scale", "_mode_family_sign"]
+fast_tests = ["tests/test_linear_krylov_core.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.eigen_preconditioners"
+source_path = "src/spectraxgk/solvers/linear/eigen_preconditioners.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "shift-invert preconditioner construction and fallback policy for damped Hermite-line solves"
+moved_exports = ["_build_shift_invert_precond"]
+fast_tests = ["tests/test_linear_krylov_core.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.krylov_algorithms"
+source_path = "src/spectraxgk/solvers/linear/krylov_algorithms.py"
+facade_module = "spectraxgk.solvers.linear.krylov"
+status = "active"
+responsibility = "compiled power, Arnoldi, propagator, and shift-invert Krylov algorithms for linear eigenmode extraction"
+moved_exports = ["dominant_eigenpair_power", "_arnoldi", "dominant_eigenpair_cached", "dominant_eigenpair_propagator_cached", "dominant_eigenpair_shift_invert_cached"]
+fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel"
+source_path = "src/spectraxgk/solvers/linear/parallel.py"
+facade_module = "spectraxgk.solvers.linear"
+status = "active"
+responsibility = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
+moved_exports = ["linear_rhs_parallel_cached", "linear_rhs_streaming_velocity_sharded", "linear_rhs_electrostatic_slices_velocity_sharded"]
+fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.implicit"
+source_path = "src/spectraxgk/solvers/linear/implicit.py"
+facade_module = "spectraxgk.solvers.linear"
+status = "active"
+responsibility = "implicit linear matrix-free operator construction, linked Hermite-line/coarse preconditioner policy, and GMRES time integration"
+moved_exports = ["_build_implicit_operator", "_integrate_linear_implicit_cached"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_imex.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.integrators"
+source_path = "src/spectraxgk/solvers/linear/integrators.py"
+facade_module = "spectraxgk.solvers.linear"
+status = "active"
+responsibility = "linear fixed-step integration, implicit dispatch, parallel fallback, and diagnostic sampling"
+moved_exports = ["_integrate_linear_cached", "_integrate_linear_cached_donate", "_integrate_linear_cached_impl", "integrate_linear", "integrate_linear_diagnostics"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_fast_smoke.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.diagnostics"
+source_path = "src/spectraxgk/workflows/runtime/diagnostics.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime linear fit/eigenfunction extraction and quasilinear finalization"
+moved_exports = [
+  "RuntimeLinearFitResult",
+  "RuntimeQuasilinearFinalizationDeps",
+  "finalize_runtime_linear_quasilinear",
+  "fit_runtime_linear_diagnostics",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.diagnostic_arrays"
+source_path = "src/spectraxgk/workflows/runtime/diagnostic_arrays.py"
+facade_module = "spectraxgk.workflows.runtime.diagnostics"
+status = "active"
+responsibility = "finite-value checks plus runtime diagnostic slicing, truncation, striding, and concatenation"
+moved_exports = [
+  "concat_runtime_diagnostics",
+  "slice_runtime_diagnostics",
+  "stride_runtime_diagnostics",
+  "truncate_runtime_diagnostics",
+  "validate_finite_runtime_diagnostics",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_diagnostics.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.policies"
+source_path = "src/spectraxgk/workflows/runtime/policies.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime mode-index, nonlinear step-count, external-source, independent-worker, combined-ky, and nonlinear diagnostics integrator keyword policies"
+moved_exports = [
+  "RuntimeIndependentParallelPlan",
+  "build_runtime_nonlinear_diagnostics_kwargs",
+  "_infer_runtime_nonlinear_steps",
+  "_midplane_index",
+  "_normalize_linear_solver_name",
+  "_parallel_requests_combined_ky_scan",
+  "_runtime_external_phi",
+  "_runtime_independent_parallel_plan",
+  "_select_nonlinear_mode_indices",
+  "_zero_kx_index",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.initial_conditions"
+source_path = "src/spectraxgk/workflows/runtime/initial_conditions.py"
+facade_module = "spectraxgk.workflows.runtime.startup"
+status = "active"
+responsibility = "runtime Gaussian/random/restart initial-condition construction and Hermitian ky expansion"
+moved_exports = [
+  "_build_gaussian_profile",
+  "_build_initial_condition_impl",
+  "_build_single_phi_gaussian_profile",
+  "_centered_glibc_random_pairs",
+  "_dealiased_initial_mode_pairs",
+  "_enforce_full_ky_hermitian",
+  "_expand_ky",
+  "_load_initial_state_from_file",
+  "_periodic_zp_from_grid",
+  "_reshape_netcdf_state",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.initial_phi"
+source_path = "src/spectraxgk/workflows/runtime/initial_phi.py"
+facade_module = "spectraxgk.workflows.runtime.startup"
+status = "active"
+responsibility = "runtime electrostatic-potential initial-condition inversion into density moments"
+moved_exports = [
+  "_as_runtime_species_array",
+  "_density_moments_for_target_phi",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.execution"
+source_path = "src/spectraxgk/workflows/runtime/execution.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "configured runtime linear and nonlinear dispatch plus dependency assembly across full-GK and reduced cETG models with patchable runtime facade seams"
+moved_exports = [
+  "RuntimeLinearDispatchDeps",
+  "RuntimeNonlinearDispatchDeps",
+  "build_runtime_linear_dispatch_deps",
+  "build_runtime_nonlinear_dispatch_deps",
+  "run_runtime_linear_impl",
+  "run_runtime_nonlinear_impl",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration"
+source_path = "src/spectraxgk/workflows/runtime/orchestration.py"
+facade_module = "spectraxgk.runtime"
+status = "active"
+responsibility = "runtime orchestration facade preserving scan, progress, and artifact handoff exports for the public runtime facade"
+moved_exports = [
+  "NonlinearArtifactPolicy",
+  "RuntimeArtifactHandoffDeps",
+  "RuntimeProgressSnapshot",
+  "RuntimeScanBatchDeps",
+  "RuntimeScanDeps",
+  "build_runtime_progress_message",
+  "format_duration",
+  "resolve_nonlinear_artifact_policy",
+  "run_runtime_nonlinear_artifact_handoff",
+  "run_runtime_scan_batch",
+  "run_runtime_scan_orchestration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_scan"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_scan.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "runtime ky-scan orchestration, independent worker planning, and combined-ky batch scan policy"
+moved_exports = [
+  "RuntimeScanBatchDeps",
+  "RuntimeScanDeps",
+  "run_runtime_scan_batch",
+  "run_runtime_scan_orchestration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_progress"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_progress.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "runtime progress snapshot, duration formatting, and ETA/progress message construction"
+moved_exports = [
+  "RuntimeProgressSnapshot",
+  "build_runtime_progress_message",
+  "format_duration",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_chunks.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.command_artifacts"
+source_path = "src/spectraxgk/workflows/runtime/command_artifacts.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration_artifacts"
+status = "active"
+responsibility = "runtime executable saved-path display order, optional artifact write dispatch, and command stdout policy"
+moved_exports = [
+  "COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_NONLINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS",
+  "COMMAND_SCAN_ARTIFACT_DISPLAY_KEYS",
+  "print_nonlinear_command_outputs",
+  "print_saved_paths",
+  "write_command_outputs",
+  "write_linear_runtime_command_outputs",
+  "write_scan_runtime_command_outputs",
+]
+fast_tests = ["tests/test_runtime_helpers.py", "tests/test_cli.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.workflows.runtime.orchestration_artifacts"
+source_path = "src/spectraxgk/workflows/runtime/orchestration_artifacts.py"
+facade_module = "spectraxgk.workflows.runtime.orchestration"
+status = "active"
+responsibility = "nonlinear runtime NetCDF/restart/checkpoint artifact handoff and cumulative diagnostic policy"
+moved_exports = [
+  "NonlinearArtifactPolicy",
+  "RuntimeArtifactHandoffDeps",
+  "resolve_nonlinear_artifact_policy",
+  "run_runtime_nonlinear_artifact_handoff",
+]
+fast_tests = ["tests/test_runtime_artifacts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_eigenfunctions"
+source_path = "src/spectraxgk/validation/benchmarks/harness_eigenfunctions.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "benchmark eigenfunction normalization, global phase alignment, comparison metrics, and reference bundle IO"
+moved_exports = [
+  "compare_eigenfunctions",
+  "load_eigenfunction_reference_bundle",
+  "normalize_eigenfunction",
+  "phase_align_eigenfunction",
+  "save_eigenfunction_reference_bundle",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_generate_w7x_reference_overlay.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_timeseries"
+source_path = "src/spectraxgk/validation/benchmarks/harness_timeseries.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "NetCDF diagnostic time-series loading, late/leading/explicit window helpers, analytic-signal construction, and real-FFT ky-grid inference"
+moved_exports = [
+  "_analytic_signal",
+  "_explicit_time_window",
+  "_leading_window",
+  "_tail_stats",
+  "_tail_window",
+  "infer_triple_dealiased_ny",
+  "late_time_window",
+  "load_diagnostic_time_series",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_plot_zonal_flow_response_from_output.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_metrics"
+source_path = "src/spectraxgk/validation/benchmarks/harness_metrics.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "late-time linear, nonlinear transport-window, heat-flux convergence, observed-order, and branch-continuity metric extraction"
+moved_exports = [
+  "branch_continuity_metrics",
+  "estimate_observed_order",
+  "late_time_linear_metrics",
+  "nonlinear_heat_flux_convergence_metrics",
+  "windowed_nonlinear_metrics",
+]
+fast_tests = [
+  "tests/test_benchmarking.py",
+  "tests/test_runtime_runner.py",
+  "tests/test_runtime_helpers.py",
+  "tests/test_terms_integrators.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_zonal_metrics"
+source_path = "src/spectraxgk/validation/benchmarks/harness_zonal_metrics.py"
+facade_module = "spectraxgk.validation.benchmarks.harness_metrics"
+status = "active"
+responsibility = "zonal-flow residual, GAM frequency, and damping metric extraction"
+moved_exports = [
+  "zonal_flow_response_metrics",
+]
+fast_tests = [
+  "tests/test_validation_gates.py",
+  "tests/test_generate_miller_zonal_response_pilot.py",
+  "tests/test_plot_zonal_flow_response_from_output.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/testing.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.benchmarks.harness_scan"
+source_path = "src/spectraxgk/validation/benchmarks/harness_scan.py"
+facade_module = "spectraxgk.validation.benchmarks.harness"
+status = "active"
+responsibility = "linear ky-scan orchestration and representative eigenfunction extraction with fit-window metadata"
+moved_exports = [
+  "ScanAndModeResult",
+  "run_linear_scan",
+  "run_scan_and_mode",
+]
+fast_tests = ["tests/test_benchmarking.py", "tests/test_benchmarks_runner_branches.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_plan"
+source_path = "src/spectraxgk/parallel/velocity_plan.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "velocity-space decomposition metadata, axis normalization, chunking, and JSON-friendly sharding-plan construction"
+moved_exports = [
+  "VelocityShardingPlan",
+  "build_velocity_sharding_plan",
+]
+fast_tests = ["tests/test_velocity_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_hermite"
+source_path = "src/spectraxgk/parallel/velocity_hermite.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "Hermite-neighbor exchange, Hermite shifts, and velocity-field reduction reference/shard-map gates"
+moved_exports = [
+  "hermite_neighbor_reference",
+  "hermite_neighbor_shard_map",
+  "hermite_shift_reference",
+  "hermite_shift_shard_map",
+  "velocity_field_reduce_reference",
+  "velocity_field_reduce_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_hermite_exchange_gate.py",
+  "tests/test_generate_velocity_field_reduce_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_streaming"
+source_path = "src/spectraxgk/parallel/velocity_streaming.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "Hermite streaming, periodic streaming, mirror-drift, and curvature/grad-B drift reference/shard-map gates"
+moved_exports = [
+  "curvature_gradb_drift_reference",
+  "curvature_gradb_drift_shard_map",
+  "hermite_streaming_ladder_reference",
+  "hermite_streaming_ladder_shard_map",
+  "mirror_drift_reference",
+  "mirror_drift_shard_map",
+  "periodic_streaming_reference",
+  "periodic_streaming_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_periodic_streaming_microkernel_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.velocity_drive"
+source_path = "src/spectraxgk/parallel/velocity_drive.py"
+facade_module = "spectraxgk.parallel.velocity"
+status = "active"
+responsibility = "electrostatic field-reduction and diamagnetic-drive reference/shard-map gates"
+moved_exports = [
+  "diamagnetic_drive_reference",
+  "diamagnetic_drive_shard_map",
+  "electrostatic_phi_reference",
+  "electrostatic_phi_shard_map",
+]
+fast_tests = [
+  "tests/test_velocity_sharding.py",
+  "tests/test_generate_electrostatic_field_reduce_gate.py",
+  "tests/test_generate_electrostatic_diamagnetic_gate.py",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_config"
+source_path = "src/spectraxgk/validation/quasilinear/window_config.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "nonlinear transport-window convergence, ensemble, and manifest gate configuration contracts"
+moved_exports = [
+  "NonlinearWindowConvergenceConfig",
+  "NonlinearWindowEnsembleConfig",
+  "NonlinearWindowEnsembleManifestConfig",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_statistics"
+source_path = "src/spectraxgk/validation/quasilinear/window_statistics.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "late-window nonlinear transport convergence reports: validated window selection, finite-sample counts, drift statistics, terminal-window agreement, block/bootstrap uncertainty, and gate-report assembly"
+moved_exports = [
+  "_bootstrap_sem",
+  "_contiguous_block_means",
+  "_default_block_size",
+  "_finite_number",
+  "_gate",
+  "_json_number",
+  "_late_window_bounds",
+  "nonlinear_window_convergence_report",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_calibration.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_io"
+source_path = "src/spectraxgk/validation/quasilinear/window_io.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "CSV and summary-JSON readers for nonlinear transport-window convergence reports"
+moved_exports = [
+  "_resolve_summary_artifact",
+  "nonlinear_window_convergence_from_csv",
+  "nonlinear_window_convergence_from_summary",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_promotion"
+source_path = "src/spectraxgk/validation/quasilinear/window_promotion.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "promotion-readiness checks for individual and ensemble nonlinear transport-window metadata"
+moved_exports = [
+  "_report_late_mean",
+  "_report_sem",
+  "nonlinear_window_stats_promotion_ready",
+]
+fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_promotion_guardrails.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.window_ensemble"
+source_path = "src/spectraxgk/validation/quasilinear/window_ensemble.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "replicated nonlinear-window ensemble uncertainty gates and seed/timestep artifact-readiness manifests"
+moved_exports = [
+  "nonlinear_window_ensemble_artifact_manifest",
+  "nonlinear_window_ensemble_report",
+]
+fast_tests = ["tests/test_check_nonlinear_window_ensemble.py", "tests/test_quasilinear_window.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.model_selection"
+source_path = "src/spectraxgk/validation/quasilinear/model_selection.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "quasilinear model-selection claim ledger, candidate gate assembly, claim-boundary guardrails, scoped optimized-equilibrium audit routing, and path-based artifact wrapper"
+moved_exports = [
+  "ABSOLUTE_FLUX_PROMOTED_CLAIM",
+  "DEFAULT_REQUIRED_CANDIDATE",
+  "build_quasilinear_model_selection_status",
+  "build_quasilinear_model_selection_status_from_paths",
+]
+fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py", "tests/test_plot_quasilinear_model_selection_status.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.quasilinear.model_selection_inputs"
+source_path = "src/spectraxgk/validation/quasilinear/model_selection_inputs.py"
+facade_module = "spectraxgk.validation.quasilinear.model_selection"
+status = "active"
+responsibility = "artifact loading, required-candidate metric normalization, and optimized-equilibrium audit summaries for quasilinear model-selection gates"
+moved_exports = [
+  "ABSOLUTE_FLUX_PROMOTED_CLAIM",
+  "_required_candidate_metrics",
+  "_calibration_summary",
+  "_optimized_equilibrium_audit_summary",
+]
+fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[hotspots]]
+module = "spectraxgk.api"
+source_path = "src/spectraxgk/api/__init__.py"
+current_reason = "top-level public imports were previously maintained in one large package __init__; they are now grouped by domain while preserving the stable facade"
+target_packages = [
+  "spectraxgk.api.configuration",
+  "spectraxgk.api.geometry",
+  "spectraxgk.api.diagnostics",
+  "spectraxgk.api.runtime",
+  "spectraxgk.api.solvers",
+  "spectraxgk.api.benchmarks",
+  "spectraxgk.api.validation",
+  "spectraxgk.api.parallel",
+  "spectraxgk.api.objectives",
+  "spectraxgk.api.artifacts",
+]
+public_facade = "spectraxgk.api"
+line_target = 250
+status = "closed"
+existing_fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_quasilinear_model_selection_extra.py",
+  "tests/test_parallel.py",
+  "tests/test_nonlinear_parallel.py",
+]
+planned_tests = [
+  "dedicated exact-order public __all__ regression test if future API churn grows",
+  "domain-import examples for advanced users",
+]
+parity_gates = [
+  "top-level export membership and order preserved exactly",
+  "selected runtime, objective, quasilinear, and parallel objects remain identity-compatible",
+]
+literature_anchors = [
+  "scientific Python package facade patterns keep public imports stable while implementation modules own physics contracts",
+]
+autodiff_gates = [
+  "API split is import-only and does not introduce side effects inside differentiable objective paths",
+]
+extension_points = [
+  "domain API modules mirror configuration, geometry, solvers, validation, parallelization, objectives, and artifacts",
+]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[hotspots]]
+module = "spectraxgk.runtime"
+source_path = "src/spectraxgk/runtime.py"
+current_reason = "public runtime still contains scan dispatch, mode selection, output handoff, and solver orchestration facade code"
+target_packages = [
+  "spectraxgk.workflows.runtime.linear",
+  "spectraxgk.workflows.runtime.nonlinear",
+  "spectraxgk.workflows.runtime.scans",
+  "spectraxgk.workflows.runtime.output",
+  "spectraxgk.workflows.progress",
+]
+public_facade = "spectraxgk.runtime"
+line_target = 700
+status = "planned"
+existing_fast_tests = ["tests/test_runtime_config.py", "tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+planned_tests = [
+  "default executable run contract tests",
+  "progress/ETA reporter tests",
+  "input/output provenance tests",
+  "scan dispatch import identity tests",
+]
+parity_gates = ["runtime TOML parity gate for benchmark-sensitive examples"]
+literature_anchors = ["runtime examples remain tied to documented validation matrices"]
+autodiff_gates = ["runtime wrappers do not hide nondifferentiable side effects inside objective functions"]
+extension_points = ["RuntimeWorkflow", "ProgressReporter", "ArtifactWriter"]
+
+[[hotspots]]
+module = "spectraxgk.workflows.runtime.artifacts"
+source_path = "src/spectraxgk/workflows/runtime/artifacts.py"
+current_reason = "large artifact serialization, restart, diagnostics, and schema-normalization surface"
+target_packages = [
+  "spectraxgk.artifacts.schema",
+  "spectraxgk.artifacts.netcdf",
+  "spectraxgk.artifacts.restart",
+  "spectraxgk.artifacts.provenance",
+]
+public_facade = "spectraxgk.workflows.runtime.artifacts"
+line_target = 700
+status = "planned"
+existing_fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart.py"]
+planned_tests = [
+  "NetCDF round-trip schema tests",
+  "restart append normalization tests",
+  "artifact provenance tests",
+  "plot reload contract tests",
+]
+parity_gates = ["saved artifact diagnostics reproduce runtime comparison metrics"]
+literature_anchors = ["validation artifacts remain replayable and traceable to benchmark protocols"]
+autodiff_gates = ["objective functions use in-memory arrays, not artifact side effects, unless explicitly detached"]
+extension_points = ["ArtifactSchema", "ArtifactWriter", "RestartPolicy"]
+
+[[hotspots]]
+module = "spectraxgk.linear"
+source_path = "src/spectraxgk/linear.py"
+current_reason = "public linear API still combines field solves, RHS assembly, integrators, diagnostics, and public re-exports"
+target_packages = [
+  "spectraxgk.solvers.linear.rhs",
+  "spectraxgk.solvers.linear.fields",
+  "spectraxgk.solvers.linear.integrators",
+  "spectraxgk.solvers.linear.diagnostics",
+]
+public_facade = "spectraxgk.linear"
+line_target = 800
+status = "planned"
+existing_fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_terms_assembly.py"]
+planned_tests = [
+  "field-solve contract tests",
+  "RHS assembly identity tests",
+  "growth/frequency late-window tests",
+  "eigenfunction phase-insensitive overlap tests",
+]
+parity_gates = [
+  "Cyclone, Cyclone Miller, KBM, HSX, and W7-X linear benchmark gates",
+  "branch-continuity and near-marginal tolerance policy gates",
+]
+literature_anchors = [
+  "Cyclone Base Case linear ITG",
+  "linear multispecies shaped tokamak benchmarks",
+  "W7-X stella/GENE linear ITG/TEM benchmark",
+]
+autodiff_gates = ["linear RHS and objective kernels pass JVP/VJP/finite-difference consistency where used by optimization"]
+extension_points = ["LinearRHS", "FieldSolver", "EigenDiagnostic"]
+
+[[hotspots]]
+module = "spectraxgk.cli"
+source_path = "src/spectraxgk/cli.py"
+current_reason = "executable argument parsing, default demo, plotting, validation helpers, and runtime dispatch live in one public module"
+target_packages = [
+  "spectraxgk.cli.commands.run",
+  "spectraxgk.cli.commands.plot",
+  "spectraxgk.cli.commands.validate",
+  "spectraxgk.cli.default_demo",
+]
+public_facade = "spectraxgk.cli"
+line_target = 500
+status = "planned"
+existing_fast_tests = ["tests/test_cli.py", "tests/test_runtime_runner.py"]
+planned_tests = [
+  "spectraxgk default-run progress output test",
+  "spectraxgk --plot artifact test",
+  "TOML provenance output test",
+  "command module import identity test",
+]
+parity_gates = ["CLI examples reproduce documented runtime artifacts"]
+literature_anchors = ["pedagogical examples map to documented validation cases"]
+autodiff_gates = ["CLI remains outside differentiable objective paths"]
+extension_points = ["Command", "PlotCommand", "DemoWorkflow"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller"
+source_path = "src/spectraxgk/geometry_backends/miller.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "stable public facade for internal Miller imported-geometry generation"
+moved_exports = [
+  "MillerCoreParams",
+  "generate_miller_eik_internal",
+  "internal_miller_backend_available",
+]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_miller_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller_numerics"
+source_path = "src/spectraxgk/geometry_backends/miller_numerics.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "Miller finite-difference, period-extension, trapezoid, and ballooning-grid helper numerics"
+moved_exports = [
+  "cumulative_trapezoid",
+  "derm",
+  "dermv",
+  "nperiod_data_extend",
+  "reflect_n_append",
+  "to_ballooning",
+]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller_core"
+source_path = "src/spectraxgk/geometry_backends/miller_core.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "Miller core parameters, collocation surfaces, derivative blocks, and straight/equal-arc theta-grid construction"
+moved_exports = [
+  "MillerCoreParams",
+  "build_collocation_surfaces",
+  "compute_primary_gradients",
+  "compute_straight_field_theta",
+  "compute_equal_arc_theta",
+  "rebuild_straight_theta_state",
+]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller_profiles"
+source_path = "src/spectraxgk/geometry_backends/miller_profiles.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "Miller imported-geometry profile assembly on the selected ballooning theta grid"
+moved_exports = ["assemble_miller_profiles"]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller_io"
+source_path = "src/spectraxgk/geometry_backends/miller_io.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "NetCDF writeout for internal Miller imported-geometry profiles"
+moved_exports = ["write_miller_eik_netcdf"]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.miller_pipeline"
+source_path = "src/spectraxgk/geometry_backends/miller_pipeline.py"
+facade_module = "spectraxgk.geometry_backends.miller"
+status = "active"
+responsibility = "high-level Miller request normalization and Miller-to-EIK pipeline orchestration"
+moved_exports = [
+  "generate_miller_eik_internal",
+  "internal_miller_backend_available",
+]
+fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_miller_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec"
+source_path = "src/spectraxgk/geometry_backends/vmec.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "stable public facade for internal VMEC imported-geometry generation"
+moved_exports = [
+  "generate_vmec_eik_internal",
+  "internal_vmec_backend_available",
+  "write_vmec_eik_netcdf",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_backend_discovery"
+source_path = "src/spectraxgk/geometry_backends/vmec_backend_discovery.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "optional Boozer backend discovery, search-path policy, and backend availability probing"
+moved_exports = [
+  "_booz_xform_jax_search_paths",
+  "_import_booz_backend",
+  "_import_module_with_search_paths",
+  "internal_vmec_backend_available",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_numerics"
+source_path = "src/spectraxgk/geometry_backends/vmec_numerics.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC imported-geometry period contraction and nonuniform finite-difference helper numerics"
+moved_exports = ["dermv", "nperiod_set"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_fieldline_numerics"
+source_path = "src/spectraxgk/geometry_backends/vmec_fieldline_numerics.py"
+facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
+status = "active"
+responsibility = "Boozer field-line angle/basis contractions, field-line tensor algebra, alpha/coordinate gradients, metric/drift coefficients, field-line integrals, reference-scale validation, and Hegna-Nakajima local-equilibrium correction numerics"
+moved_exports = [
+  "_MU_0",
+  "_sample_boozer_mode_table",
+  "_boozer_mode_angle",
+  "_boozer_mode_sum",
+  "_boozer_trig_basis",
+  "_fieldline_boozer_tensors",
+  "_fieldline_cartesian_derivatives",
+  "_fieldline_coordinate_gradients",
+  "_fieldline_alpha_gradients",
+  "_fieldline_local_shear",
+  "_fieldline_metric_drifts",
+  "_fieldline_boozer_coordinates",
+  "_axisym_flip_required",
+  "_safe_mode_denominator",
+  "_surface_average_2d",
+  "_centered_fieldline_integral",
+  "_validated_reference_scales",
+  "_input_iota_shear",
+  "_hngc_shear_correction",
+  "_hngc_pressure_correction",
+  "_flux_surface_hngc_averages",
+]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_fieldlines"
+source_path = "src/spectraxgk/geometry_backends/vmec_fieldlines.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC/Boozer imported-geometry orchestration: backend fallback, scalar profile sampling, Boozer field-line state assembly, Hegna-Nakajima corrections, metric/drift coefficients, and normalized flux-tube coefficient packaging"
+moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_splines"
+source_path = "src/spectraxgk/geometry_backends/vmec_splines.py"
+facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
+status = "active"
+responsibility = "VMEC/Boozer radial spline construction and imported-equilibrium metadata extraction"
+moved_exports = ["_vmec_splines"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_remap"
+source_path = "src/spectraxgk/geometry_backends/vmec_remap.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC flux-tube boundary cuts, twist/aspect crossing selection, and equal-arc remapping"
+moved_exports = ["_apply_flux_tube_cut", "_equal_arc_remap"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_io"
+source_path = "src/spectraxgk/geometry_backends/vmec_io.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "VMEC imported-geometry NetCDF writeout and atomic cache replacement"
+moved_exports = ["_write_vmec_eik_netcdf_atomically", "write_vmec_eik_netcdf"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_pipeline"
+source_path = "src/spectraxgk/geometry_backends/vmec_pipeline.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "high-level VMEC request normalization, betaprim policy, remap orchestration, and EIK output generation"
+moved_exports = ["generate_vmec_eik_internal"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.geometry_backends.vmec_types"
+source_path = "src/spectraxgk/geometry_backends/vmec_types.py"
+facade_module = "spectraxgk.geometry_backends.vmec"
+status = "active"
+responsibility = "lightweight mutable container shared by VMEC imported-geometry assembly modules"
+moved_exports = ["_Struct"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_domain"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_domain.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "state-domain decomposition plans, identity reports, transport-window reports, and fail-closed plan blockers"
+moved_exports = [
+  "NonlinearDomainDecompositionPlan",
+  "NonlinearDomainIdentityReport",
+  "NonlinearDomainTransportWindowReport",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_domain_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_spectral"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_spectral.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "spectral communication/RHS/integrator reports and nonlinear spectral work-model DTOs"
+moved_exports = [
+  "NonlinearSpectralCommunicationReport",
+  "NonlinearSpectralDomainWorkModel",
+  "NonlinearSpectralPencilWorkModel",
+  "NonlinearSpectralDevicePencilFFTBatchModel",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.parallel_contracts_strategy"
+source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_strategy.py"
+facade_module = "spectraxgk.operators.nonlinear.parallel"
+status = "active"
+responsibility = "nonlinear parallel strategy readiness contracts and strategy table metadata"
+moved_exports = [
+  "NonlinearParallelStrategy",
+  "NonlinearParallelStrategyName",
+  "ParallelReadiness",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_state"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_state.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "deterministic nonlinear spectral states and canonical spectral-state shape validation"
+moved_exports = [
+  "deterministic_nonlinear_spectral_state",
+  "_validate_spectral_state_shape",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_layout"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_layout.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "chunk validation, layout round trips, tile bounds, logical tile extraction, and tile reconstruction"
+moved_exports = [
+  "_chunk_offsets",
+  "_logical_spectral_tiles",
+  "_reconstruct_logical_spectral_tiles",
+  "_spectral_layout_round_trip",
+  "_spectral_tile_bounds",
+  "_validate_chunks",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_work_models"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_work_models.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "communication/work preflight models for logical, pencil, and device-z nonlinear spectral routes"
+moved_exports = [
+  "device_z_pencil_fft_batch_pressure_model",
+  "nonlinear_spectral_domain_work_model",
+  "nonlinear_spectral_pencil_work_model",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_profile_nonlinear_sharding.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_brackets"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_brackets.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "pseudo-spectral field solve, serial bracket, pencil-FFT bracket, z-chunked bracket, and RHS micro-routes"
+moved_exports = [
+  "_field_from_state",
+  "_pencil_spectral_bracket",
+  "_pencil_spectral_bracket_z_chunked",
+  "_serial_nonlinear_spectral_rhs",
+  "_spectral_bracket",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.operators.nonlinear.spectral_tolerances"
+source_path = "src/spectraxgk/operators/nonlinear/spectral_tolerances.py"
+facade_module = "spectraxgk.operators.nonlinear.spectral_core"
+status = "active"
+responsibility = "JAX/host max-error helpers, allclose-style gates, and host-staging helper for explicit device sharding"
+moved_exports = [
+  "_host_max_abs_rel_error",
+  "_host_staged_array_for_sharding",
+  "_max_abs_rel_error",
+  "_within_abs_or_rel_tolerance",
+]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.identity"
+source_path = "src/spectraxgk/parallel/identity.py"
+facade_module = "spectraxgk.parallel"
+status = "active"
+responsibility = "numerical-identity reports and pytree error statistics for serial-vs-parallel gates"
+moved_exports = [
+  "ParallelIdentityReport",
+  "parallel_identity_report",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.batch"
+source_path = "src/spectraxgk/parallel/batch.py"
+facade_module = "spectraxgk.parallel"
+status = "active"
+responsibility = "JAX-array independent batch mapping, padding, balanced ky chunks, and vmap/pmap identity gates"
+moved_exports = [
+  "batch_map",
+  "batch_map_identity_report",
+  "ky_scan_batches",
+  "pad_to_multiple",
+  "split_evenly",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.parallel.independent"
+source_path = "src/spectraxgk/parallel/independent.py"
+facade_module = "spectraxgk.parallel"
+status = "active"
+responsibility = "ordered Python independent-task execution, worker metadata, exception provenance, and ensemble provenance gates"
+moved_exports = [
+  "IndependentEnsembleProvenanceReport",
+  "IndependentMapExecutionError",
+  "IndependentWorkerMetadata",
+  "independent_ensemble_provenance_gate",
+  "independent_map",
+  "independent_map_identity_report",
+  "independent_worker_metadata",
+]
+fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_common"
+source_path = "src/spectraxgk/solvers/linear/parallel_common.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "shared term-eligibility predicates and device-list resolution for velocity-parallel linear RHS routes"
+moved_exports = ["_is_electrostatic_field_terms", "_is_electrostatic_slice_terms", "_is_streaming_only_terms", "_resolve_parallel_devices"]
+fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_streaming"
+source_path = "src/spectraxgk/solvers/linear/parallel_streaming.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "Hermite-sharded streaming-only and electrostatic-streaming linear RHS routes"
+moved_exports = ["linear_rhs_streaming_velocity_sharded", "linear_rhs_streaming_electrostatic_velocity_sharded", "_streaming_electrostatic_from_phi_velocity_sharded", "_electrostatic_streaming_field_rhs"]
+fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_helpers_extra.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.parallel_electrostatic"
+source_path = "src/spectraxgk/solvers/linear/parallel_electrostatic.py"
+facade_module = "spectraxgk.solvers.linear.parallel"
+status = "active"
+responsibility = "electrostatic slice linear RHS route and fused multi-device Hermite shard-map kernel cache"
+moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
+fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/test_profile_linear_rhs_parallel_slices.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.solvers.linear.integrator_diagnostics"
+source_path = "src/spectraxgk/solvers/linear/integrator_diagnostics.py"
+facade_module = "spectraxgk.solvers.linear.integrators"
+status = "active"
+responsibility = "linear fixed-step diagnostic sampling policy for phi, density, Hermite-Laguerre energy, progress, and every-step/strided histories"
+moved_exports = ["integrate_linear_diagnostics"]
+fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_transport.optimization_policy"
+source_path = "src/spectraxgk/validation/nonlinear_transport/optimization_policy.py"
+facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
+status = "active"
+responsibility = "production nonlinear optimization guard configuration, artifact claim-scope helpers, and reduced-artifact safety reports"
+moved_exports = ["ProductionNonlinearOptimizationGuardConfig", "optimization_artifact_reduction_scope", "reduced_artifact_scope_report"]
+fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.validation.nonlinear_transport.optimization_reports"
+source_path = "src/spectraxgk/validation/nonlinear_transport/optimization_reports.py"
+facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
+status = "active"
+responsibility = "replicated long-window, optimized-equilibrium, and matched baseline-to-optimized nonlinear transport audit extractors"
+moved_exports = ["matched_optimized_transport_report", "optimized_equilibrium_transport_report", "replicated_transport_ensemble_report"]
+fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

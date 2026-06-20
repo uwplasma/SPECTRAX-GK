@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a nonlinear Cyclone case with GX-style diagnostics."""
+"""Run a nonlinear Cyclone case with runtime diagnostics."""
 
 from __future__ import annotations
 
@@ -9,16 +9,16 @@ from pathlib import Path
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_gx_hypercollisions
+from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.core.grid import build_spectral_grid
+from spectraxgk.nonlinear import integrate_nonlinear_explicit_diagnostics
+from spectraxgk.core.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 
 
-def _gx_zp_from_grid(z: np.ndarray) -> float:
+def _parallel_periods_from_grid(z: np.ndarray) -> float:
     if z.size < 2:
         return 1.0
     dz = float(z[1] - z[0])
@@ -97,7 +97,7 @@ def main() -> int:
         D_hyper=float(args.D_hyper) if hyperdiffusion_on else 0.0,
         p_hyper_kperp=float(args.p_hyper_kperp),
     )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+    params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
 
     rng = np.random.default_rng(args.seed)
     G0 = np.zeros((1, args.Nl, args.Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
@@ -106,7 +106,7 @@ def main() -> int:
     ra = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
     rb = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
     amp_complex = (ra + 1j * rb) * mask
-    zp = _gx_zp_from_grid(np.asarray(grid.z))
+    zp = _parallel_periods_from_grid(np.asarray(grid.z))
     if int(args.ikpar_init) == 0:
         phase = np.ones_like(grid.z)
     else:
@@ -121,7 +121,7 @@ def main() -> int:
         hyperdiffusion=1.0 if hyperdiffusion_on else 0.0,
     )
 
-    t, diag = integrate_nonlinear_gx_diagnostics(
+    t, diag = integrate_nonlinear_explicit_diagnostics(
         G0,
         grid,
         geom,

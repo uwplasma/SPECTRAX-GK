@@ -89,7 +89,7 @@ hyperdiffusion = 1.0
 
 [normalization]
 contract = "cyclone"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 flux_scale = 1.0
 
 [output]

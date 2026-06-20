@@ -38,7 +38,7 @@ Minimal runtime TOML example
 
    [normalization]
    contract = "cyclone"
-   diagnostic_norm = "gx"
+   diagnostic_norm = "rho_star"
 
    [terms]
    streaming = 1.0
@@ -110,7 +110,7 @@ Minimal TOML example
 .. code-block:: toml
 
    case = "cyclone"
-   gx_reference = true
+   reference_alignment = true
 
    [grid]
    Nx = 1
@@ -132,7 +132,7 @@ Minimal TOML example
    diffrax_rtol = 1.0e-6
    diffrax_atol = 1.0e-8
    state_sharding = "auto"
-   gx_real_fft = true
+   compressed_real_fft = true
 
    [run]
    ky = 0.3
@@ -146,8 +146,8 @@ Minimal TOML example
    window_method = "loglinear"
    fit_signal = "auto"
 
-The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
-select the compressed real-FFT nonlinear bracket. Set ``gx_real_fft = false`` to
+The ``[time]`` section also accepts ``compressed_real_fft`` (default ``true``) to
+select the compressed real-FFT nonlinear bracket. Set ``compressed_real_fft = false`` to
 use a full complex FFT for the nonlinear term. Diagnostics output can be
 decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics_stride`` (compute streaming diagnostics every ``N`` steps). Set
@@ -198,7 +198,7 @@ For slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
 ``z0`` (sets ``gradpar = 1/z0`` when positive, matching the reference slab domain
 normalization) and ``zero_shat = true`` (forces the zero-shear slab metric
 ``gds2 = 1, gds21 = 0, gds22 = 1``).
-It also accepts ``model = "gx-netcdf"`` with
+It also accepts ``model = "imported-netcdf"`` with
 ``geometry_file = "external_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
 file can be a tracked benchmark ``*.out.nc`` or a root-level ``*.eik.nc`` geometry
@@ -212,8 +212,8 @@ matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the VMEC examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output path for the generated ``*.eik.nc`` file, and
-``gx_repo`` can point to a non-default helper checkout if needed. The preferred
-VMEC path is the internal ``booz_xform_jax`` backend, discovered from
+``geometry_helper_repo`` can point to a non-default helper checkout if needed.
+The preferred VMEC path is the internal ``booz_xform_jax`` backend, discovered from
 ``BOOZ_XFORM_JAX_PATH`` or ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` when it is not
 installed into the active Python environment. This is now the recommended
 imported-geometry route for new stellarator cases. The shipped VMEC TOMLs
@@ -222,6 +222,8 @@ with ``vmec_jax input.<case>`` before running the examples.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
 against the TOML directory first. Command-line overrides are resolved from the
 shell working directory.
+Use ``geometry_helper_repo`` and ``geometry_helper_python`` when an imported
+geometry helper checkout or interpreter must be selected explicitly.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and
@@ -236,8 +238,8 @@ Set the Miller inputs directly in ``[geometry]``:
 ``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
 ``akappa``, ``akappri``, ``tri``, ``tripri``, and ``betaprim``.
 ``geometry_file`` can be used as an explicit output path for the generated
-Miller ``*.eiknc.nc`` file, and ``gx_python`` applies here as well when the GX
-helper must run in a different Python environment.
+Miller ``*.eiknc.nc`` file, and ``geometry_helper_python`` applies here as well
+when the geometry helper must run in a different Python environment.
 
 Executable path overrides
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -267,7 +269,7 @@ The ``[run]`` and ``[scan]`` sections accept ``solver`` and ``fit_signal`` keys:
 * ``solver = "auto"`` (default): choose time vs Krylov and fall back if needed
 * ``solver = "time"``: always use time integration
 * ``solver = "explicit_time"``: force the explicit single-mode time integrator
-  used by the legacy compatibility path
+  used by controlled explicit-time comparisons
 * ``solver = "krylov"``: always use the matrix-free eigen solver
 
 * ``fit_signal = "auto"`` (default): pick ``phi`` vs density based on fit quality
@@ -357,7 +359,7 @@ Supported sections include:
 * ``[run]`` (single-ky run settings)
 * ``[scan]`` (ky scan settings)
 * ``[fit]`` (growth-rate windowing options)
-* ``gx_reference`` (top-level flag or ``[gx_reference] enabled = true`` to
+* ``reference_alignment`` (top-level flag or ``[reference_alignment] enabled = true`` to
   enforce the tracked comparison defaults)
 * ``[terms]`` (toggle linear terms)
 * ``[krylov]`` (Krylov solver settings)
@@ -388,15 +390,15 @@ Notable runtime-only keys:
   ``"cetg"`` and ``"krehm"`` are accepted as explicit boundary markers, but
   the runtime currently raises ``NotImplementedError`` for them instead of
   silently routing those inputs through the wrong full-GK equations.
-* ``[collisions] damp_ends_scale_by_dt``: compatibility escape hatch for older
-  per-step inputs. The reference-compatible default is ``false`` because
+* ``[collisions] damp_ends_scale_by_dt``: opt-in per-step damping-rate scaling
+  for controlled reproduction studies. The reference-compatible default is ``false`` because
   ``damp_ends_amp`` is already a per-unit-time damping rate.
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
   the reference-compatible ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
   default, constant hypercollisions off).
-* ``[collisions] p_hyper_m``: when omitted, the runtime path follows the GX
-  default ``min(20, Nm/2)`` instead of using a fixed exponent across Hermite
-  resolutions.
+* ``[collisions] p_hyper_m``: when omitted, the runtime path uses the
+  resolution-aware default ``min(20, Nm/2)`` instead of a fixed exponent across
+  Hermite resolutions.
 * ``[collisions] nu_hermite`` / ``nu_laguerre``: coefficients entering the
   Lenard-Bernstein collision eigenvalue used by the modular collision kernel.
 * ``[collisions] nu_hyper`` / ``p_hyper``: isotropic hypercollision amplitude
@@ -415,19 +417,18 @@ Notable runtime-only keys:
 * ``[normalization] omega_d_scale`` / ``omega_star_scale``: multiplicative
   normalization factors for magnetic-drift and diamagnetic-drive terms.
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
-  initialize a random perturbation across the exact GX startup loop
-  bounds in ``(ky,kx)``.
+  initialize a random perturbation across the configured startup-loop bounds in
+  ``(ky,kx)``.
 * ``[init] init_single`` with ``gaussian_init = true`` and ``init_single = false``:
-  initialize a Gaussian envelope across the same GX startup loop
-  bounds.
+  initialize a Gaussian envelope across the same startup-loop bounds.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode. When combined with
   ``init_field = "phi"`` and ``gaussian_init = true``, the selected
   electrostatic-potential mode is initialized with a Gaussian profile along the
   flux tube; this is the contract used by the W7-X zonal-flow response
   benchmark.
-* ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
-  scaling for this initializer, using reduced amplitudes for ``tpar``
+* ``[init] init_field = "all"``: the runtime/TOML path uses Hermite/Laguerre
+  moment-normalized scaling for this initializer, with reduced amplitudes for ``tpar``
   (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
 * ``[init] init_field = "phi"``: initialize a requested electrostatic
   potential profile by inverting the same quasineutrality solve used during
@@ -435,25 +436,22 @@ Notable runtime-only keys:
   literature tests that prescribe ``phi(t=0)`` rather than a density-moment
   perturbation; the masked ``ky=0, kx=0`` gauge mode remains unavailable.
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
-  only electron species (GX ``init_electrons_only`` behavior). If ``false``
-  (default), initialize all kinetic species.
-* ``[init] random_seed``: RNG seed used for reference-compatible random initial conditions
-  with the same glibc ``rand()`` sequence and startup mode ordering that GX
-  uses on Linux
-  (default ``22``, matching GX). The runtime now follows the Linux ``glibc``
-  ``rand()`` sequence used by GX together with GX's positive-``kx``-major loop
-  order and exact startup loop bounds, so random multi-mode perturbations are
-  host-platform independent and reproduce the same seeded pattern on macOS and
-  Linux.
+  only electron species. If ``false`` (default), initialize all kinetic
+  species.
+* ``[init] random_seed``: RNG seed used for reference-compatible random initial
+  conditions. The runtime follows a Linux ``glibc`` ``rand()`` sequence with
+  positive-``kx``-major loop order and exact startup loop bounds, so random
+  multi-mode perturbations are host-platform independent and reproduce the
+  same seeded pattern on macOS and Linux.
 * ``[init] init_file``: load a saved complex state from either the full-``ky``
-  SPECTRAX layout or GX's packed positive-``ky`` layout.
+  SPECTRAX layout or a packed positive-``ky`` interchange layout.
 * ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state
   and either ``replace`` the analytic seed (default) or ``add`` it to the
-  fresh perturbation. This is the general runtime equivalent of GX's
-  restart-scaling and ``restart_with_perturb`` workflows.
+  fresh perturbation. This is the general runtime equivalent of
+  restart-scaling and restart-with-perturb workflows.
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
-  mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
-  behavior used by the ``secondary`` benchmark.
+  mode exactly frozen during nonlinear evolution; this is the ``eqfix``-style
+  contract used by the ``secondary`` benchmark.
 * ``[expert] source`` / ``phi_ext``: runtime-only benchmark hooks for
   external electrostatic forcing. ``source = "phiext_full"`` with a small
   ``phi_ext`` injects the source into the solved ``phi`` field before the RHS is
@@ -464,11 +462,11 @@ Notable runtime-only keys:
 * ``[time] nstep_restart``: when writing a nonlinear NetCDF bundle,
   checkpoint every ``nstep_restart`` steps instead of waiting for the end of
   the run. This is useful for long adaptive runs and batch jobs.
-* ``[time] method = "sspx3"``: use the GX SSPx3 scheme directly. This is the
-  relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
-  families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
+* ``[time] method = "sspx3"``: use the SSPx3 explicit scheme directly. This is
+  the relevant explicit method for ``secondary`` and collisional-ETG benchmark
+  families. Plain ``rk3`` now follows the three-stage Heun-style timestepper;
   ``rk3_classic`` keeps the older classical RK3 update if you need it for
-  controlled comparisons, and ``rk3_gx`` remains as a compatibility alias.
+  controlled comparisons, and ``rk3_heun`` remains as an explicit alias.
 * ``[terms]``: each key is a pure multiplicative operator weight:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,

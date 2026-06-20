@@ -7,12 +7,12 @@ import argparse
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.analysis import select_ky_index
+from spectraxgk.diagnostics.analysis import select_ky_index
 from spectraxgk.benchmarks import ETGBaseCase, _electron_only_params, ETG_OMEGA_D_SCALE, ETG_OMEGA_STAR_SCALE, ETG_RHO_STAR
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearTerms, build_linear_cache
-from spectraxgk.linear_krylov import _arnoldi, _apply_operator
+from spectraxgk.solvers.linear.krylov import _arnoldi, _apply_operator
 from spectraxgk.terms.config import TermConfig
 
 
@@ -68,7 +68,7 @@ def main() -> int:
     if args.mode == "operator":
         apply_op = _apply_operator
     else:
-        from spectraxgk.linear_krylov import _advance_imex2
+        from spectraxgk.solvers.linear.krylov import _advance_imex2
 
         dt_val = jnp.asarray(args.dt, dtype=jnp.real(v0).dtype)
 

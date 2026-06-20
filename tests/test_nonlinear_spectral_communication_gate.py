@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import jax
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.nonlinear_parallel import (
+from spectraxgk.operators.nonlinear.parallel import (
     NonlinearSpectralCommunicationReport,
     NonlinearSpectralIntegratorIdentityReport,
     NonlinearSpectralRHSIdentityReport,
     deterministic_nonlinear_spectral_state,
+    device_z_pencil_nonlinear_spectral_transport_window_identity_gate,
     logical_decomposed_nonlinear_spectral_rhs,
     nonlinear_spectral_communication_identity_gate,
     nonlinear_spectral_communication_identity_report,
@@ -188,6 +190,28 @@ def test_nonlinear_spectral_integrator_identity_gate_closes_multistep_route() ->
     assert len(report.serial_free_energy_trace) == report.steps + 1
     assert "no production distributed FFT routing or speedup claim" in report.claim_scope
     assert report.to_dict()["identity_passed"] is True
+
+
+def test_device_z_transport_window_long_compute_route_passes_when_devices_available() -> None:
+    devices = tuple(jax.devices())
+    if len(devices) < 2:
+        pytest.skip("requires at least two local JAX devices")
+
+    state = deterministic_nonlinear_spectral_state((2, 4, 12, 10, 4))
+    report = device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+        state,
+        devices=devices[:2],
+        steps=8,
+        dt=0.0025,
+        z_chunk_size=2,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.physical_flux_trace_max_abs_error <= report.atol
 
 
 def test_nonlinear_spectral_rhs_report_fails_closed_on_rhs_mismatch() -> None:

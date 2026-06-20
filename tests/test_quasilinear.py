@@ -9,8 +9,10 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.quasilinear as public_quasilinear
+from spectraxgk.diagnostics import quasilinear_transport
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
 from spectraxgk.quasilinear import (
     compute_quasilinear_from_linear_state,
@@ -30,7 +32,7 @@ from spectraxgk.runtime import (
     run_runtime_linear,
     run_runtime_scan,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeQuasilinearConfig,
@@ -74,6 +76,13 @@ def _tiny_linear_objects():
     state = rng.normal(size=shape) + 1j * rng.normal(size=shape)
     state = state.astype(np.complex64)
     return cfg, geom, grid, params, terms, cache, state
+
+
+def test_quasilinear_facade_exports_diagnostic_owner_objects() -> None:
+    """The public facade should stay stable while implementation ownership moves."""
+
+    for name in quasilinear_transport.__all__:
+        assert getattr(public_quasilinear, name) is getattr(quasilinear_transport, name)
 
 
 def test_saturation_amplitude_rules_are_explicit() -> None:

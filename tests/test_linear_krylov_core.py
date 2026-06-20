@@ -7,14 +7,14 @@ import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
     build_linear_cache,
     linear_terms_to_term_config,
 )
-from spectraxgk import linear_krylov as lk
+import spectraxgk.solvers.linear.krylov as lk
 
 
 def _tiny_krylov_setup(*, linked: bool = False):

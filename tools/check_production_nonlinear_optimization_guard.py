@@ -20,11 +20,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_transport_optimization import (  # noqa: E402
+from spectraxgk.validation.nonlinear_transport.optimization_guard import (  # noqa: E402
     ProductionNonlinearOptimizationGuardConfig,
     production_nonlinear_optimization_guard_report,
 )
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
 DEFAULT_OPTIMIZATION_ARTIFACT = ROOT / "docs/_static/stellarator_itg_optimization_comparison.json"

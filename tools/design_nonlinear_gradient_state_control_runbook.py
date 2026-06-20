@@ -16,9 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
-from spectraxgk.nonlinear_gradient_followup import (  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
     NonlinearGradientStateControlRunbookConfig,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_state_runbook import (  # noqa: E402
     nonlinear_gradient_state_control_runbook_report,
 )
 
@@ -66,7 +68,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     controls = list(report["controls"])
     labels = [str(row.get("state_parameter") or index) for index, row in enumerate(controls)]

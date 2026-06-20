@@ -1,4 +1,4 @@
-"""Tests for the dedicated GX cETG reduced-model path."""
+"""Tests for the dedicated collisional-slab ETG reduced-model path."""
 
 from __future__ import annotations
 
@@ -8,25 +8,40 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.cetg import (
-    _from_internal_state,
+from spectraxgk.terms.reduced.cetg_integrator import (
+    integrate_cetg_explicit_diagnostics_state,
+)
+from spectraxgk.terms.reduced.cetg_model import (
+    build_cetg_model_params,
+    validate_cetg_runtime_config,
+)
+from spectraxgk.terms.reduced.cetg_rhs import (
     _cetg_linear_omega_max,
+    cetg_fields,
+    cetg_rhs,
+)
+from spectraxgk.terms.reduced.cetg_state import (
+    _from_internal_state,
     _kz_grid,
     _project_state,
     _to_internal_state,
-    build_cetg_model_params,
-    cetg_fields,
-    cetg_rhs,
-    integrate_cetg_gx_diagnostics_state,
-    validate_cetg_runtime_config,
 )
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.geometry import SlabGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.integrators import _SSPX3_ADT, _SSPX3_W1, _SSPX3_W2, _SSPX3_W3
-from spectraxgk.runtime import _build_initial_condition, run_runtime_linear, run_runtime_nonlinear
-from spectraxgk.runtime_config import (
+from spectraxgk.runtime import (
+    _build_initial_condition,
+    run_runtime_linear,
+    run_runtime_nonlinear,
+)
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeExpertConfig,
@@ -58,7 +73,7 @@ def _base_cetg_cfg() -> RuntimeConfig:
             fixed_dt=True,
             sample_stride=1,
             diagnostics_stride=1,
-            gx_real_fft=True,
+            compressed_real_fft=True,
             nonlinear_dealias=True,
         ),
         geometry=GeometryConfig(model="slab", z0=np.pi, zero_shat=True),
@@ -96,7 +111,9 @@ def _base_cetg_cfg() -> RuntimeConfig:
             hypercollisions=False,
         ),
         collisions=RuntimeCollisionConfig(D_hyper=5.0e-4, nu_hyper=0.0),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="rho_star"
+        ),
         terms=RuntimeTermsConfig(
             streaming=1.0,
             mirror=0.0,
@@ -135,7 +152,12 @@ def test_validate_cetg_runtime_config_rejects_non_cetg_contracts() -> None:
     geom = SlabGeometry.from_config(cfg.geometry)
 
     with pytest.raises(ValueError, match="reduced_model"):
-        validate_cetg_runtime_config(replace(cfg, physics=replace(cfg.physics, reduced_model="")), geom, Nl=2, Nm=1)
+        validate_cetg_runtime_config(
+            replace(cfg, physics=replace(cfg.physics, reduced_model="")),
+            geom,
+            Nl=2,
+            Nm=1,
+        )
     with pytest.raises(ValueError, match="Nl=2 and Nm=1"):
         validate_cetg_runtime_config(cfg, geom, Nl=3, Nm=1)
     with pytest.raises(ValueError, match="slab"):
@@ -158,7 +180,9 @@ def test_validate_cetg_runtime_config_rejects_non_cetg_contracts() -> None:
         validate_cetg_runtime_config(replace(cfg, species=()), geom, Nl=2, Nm=1)
     bad_species = (replace(cfg.species[0], charge=1.0),)
     with pytest.raises(ValueError, match="electron"):
-        validate_cetg_runtime_config(replace(cfg, species=bad_species), geom, Nl=2, Nm=1)
+        validate_cetg_runtime_config(
+            replace(cfg, species=bad_species), geom, Nl=2, Nm=1
+        )
 
 
 def test_cetg_state_conversion_and_single_z_derivative_contracts() -> None:
@@ -179,7 +203,7 @@ def test_cetg_state_conversion_and_single_z_derivative_contracts() -> None:
     assert np.allclose(np.asarray(_kz_grid(grid)), 0.0)
 
 
-def test_cetg_linear_omega_max_matches_legacy_gx_formula() -> None:
+def test_cetg_linear_omega_max_matches_reference_formula() -> None:
     cfg = _base_cetg_cfg()
     geom = SlabGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)
@@ -190,7 +214,9 @@ def test_cetg_linear_omega_max_matches_legacy_gx_formula() -> None:
     kz_max = float(grid.z.size) / 3.0 / float(cfg.geometry.z0) * float(geom.gradpar())
     cfac = 0.5 * float(params.c1) * np.sqrt(1.0 + (float(params.C12) - 1.0))
 
-    assert np.isclose(_cetg_linear_omega_max(grid, params), cfac * np.sqrt(ky_max) * kz_max)
+    assert np.isclose(
+        _cetg_linear_omega_max(grid, params), cfac * np.sqrt(ky_max) * kz_max
+    )
 
 
 def test_cetg_field_solve_matches_gx_tau_bar_and_kz_dealias_scale() -> None:
@@ -212,9 +238,19 @@ def test_cetg_field_solve_matches_gx_tau_bar_and_kz_dealias_scale() -> None:
 
 
 def test_runtime_linear_cetg_smoke_uses_model_native_dims() -> None:
-    cfg = replace(_base_cetg_cfg(), physics=replace(_base_cetg_cfg().physics, linear=True, nonlinear=False))
+    cfg = replace(
+        _base_cetg_cfg(),
+        physics=replace(_base_cetg_cfg().physics, linear=True, nonlinear=False),
+    )
 
-    out = run_runtime_linear(cfg, ky_target=1.0 / 2.0, solver="time", steps=4, sample_stride=1, return_state=True)
+    out = run_runtime_linear(
+        cfg,
+        ky_target=1.0 / 2.0,
+        solver="time",
+        steps=4,
+        sample_stride=1,
+        return_state=True,
+    )
 
     assert np.isfinite(out.gamma)
     assert np.isfinite(out.omega)
@@ -230,7 +266,14 @@ def test_runtime_nonlinear_cetg_smoke_uses_model_native_dims() -> None:
         init=replace(base.init, init_amp=1.0e-6),
     )
 
-    out = run_runtime_nonlinear(cfg, ky_target=1.0 / 2.0, kx_target=0.0, steps=4, sample_stride=1, return_state=True)
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=1.0 / 2.0,
+        kx_target=0.0,
+        steps=4,
+        sample_stride=1,
+        return_state=True,
+    )
 
     assert out.diagnostics is not None
     assert out.state is not None
@@ -244,11 +287,25 @@ def test_runtime_nonlinear_cetg_adaptive_steps_to_tmax() -> None:
     base = _base_cetg_cfg()
     cfg = replace(
         base,
-        time=replace(base.time, dt=0.01, t_max=0.015, fixed_dt=False, sample_stride=1, diagnostics_stride=1),
+        time=replace(
+            base.time,
+            dt=0.01,
+            t_max=0.015,
+            fixed_dt=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+        ),
         init=replace(base.init, init_amp=1.0e-6),
     )
 
-    out = run_runtime_nonlinear(cfg, ky_target=0.5, kx_target=0.0, steps=None, sample_stride=1, return_state=True)
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.5,
+        kx_target=0.0,
+        steps=None,
+        sample_stride=1,
+        return_state=True,
+    )
 
     assert out.diagnostics is not None
     t = np.asarray(out.diagnostics.t)
@@ -291,19 +348,32 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         dtype=np.complex64,
     )
 
-    G0 = _project_state(_to_internal_state(jnp.asarray(g0_state)), grid, gx_real_fft=True)
+    G0 = _project_state(
+        _to_internal_state(jnp.asarray(g0_state)), grid, compressed_real_fft=True
+    )
     fields0 = cetg_fields(G0, grid, params, apply_kz_dealias=False)
 
     def euler_step(G_state: jnp.ndarray, fields_state) -> jnp.ndarray:
-        rhs, _ = cetg_rhs(G_state, grid, params, terms, gx_real_fft=True, fields_override=fields_state)
-        return _project_state(G_state + (_SSPX3_ADT * float(cfg.time.dt)) * rhs, grid, gx_real_fft=True)
+        rhs, _ = cetg_rhs(
+            G_state,
+            grid,
+            params,
+            terms,
+            compressed_real_fft=True,
+            fields_override=fields_state,
+        )
+        return _project_state(
+            G_state + (_SSPX3_ADT * float(cfg.time.dt)) * rhs,
+            grid,
+            compressed_real_fft=True,
+        )
 
     G1 = euler_step(G0, fields0)
     G2_euler = euler_step(G1, cetg_fields(G1, grid, params))
     G2 = _project_state(
         (1.0 - _SSPX3_W1) * G0 + (_SSPX3_W1 - 1.0) * G1 + G2_euler,
         grid,
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
     G3 = euler_step(G2, cetg_fields(G2, grid, params))
     G_manual = _project_state(
@@ -312,10 +382,10 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         + (_SSPX3_W2 - 1.0) * G2
         + G3,
         grid,
-        gx_real_fft=True,
+        compressed_real_fft=True,
     )
 
-    _t, diag, G_scan, _fields = integrate_cetg_gx_diagnostics_state(
+    _t, diag, G_scan, _fields = integrate_cetg_explicit_diagnostics_state(
         jnp.asarray(g0_state),
         grid,
         params,
@@ -325,7 +395,7 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
         method="sspx3",
         sample_stride=1,
         diagnostics_stride=1,
-        gx_real_fft=True,
+        compressed_real_fft=True,
         omega_ky_index=1,
         omega_kx_index=0,
         fixed_dt=False,
@@ -336,7 +406,9 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
     )
 
     assert np.allclose(np.asarray(diag.dt_t), np.asarray([float(cfg.time.dt)]))
-    assert np.allclose(np.asarray(G_scan)[0, :, 0], np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(G_scan)[0, :, 0], np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 @pytest.mark.parametrize("method", ["euler", "rk2", "rk3_classic", "rk3", "rk4", "k10"])
@@ -365,9 +437,14 @@ def test_cetg_explicit_method_branches_return_finite_diagnostics(method: str) ->
         bpar=float(cfg.terms.bpar),
         nonlinear=float(cfg.terms.nonlinear),
     )
-    g0 = jnp.ones((1, 2, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64) * 1.0e-5
+    g0 = (
+        jnp.ones(
+            (1, 2, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+        )
+        * 1.0e-5
+    )
 
-    t, diag, state, fields = integrate_cetg_gx_diagnostics_state(
+    t, diag, state, fields = integrate_cetg_explicit_diagnostics_state(
         g0,
         grid,
         params,
@@ -377,7 +454,7 @@ def test_cetg_explicit_method_branches_return_finite_diagnostics(method: str) ->
         method=method,
         sample_stride=1,
         diagnostics_stride=1,
-        gx_real_fft=False,
+        compressed_real_fft=False,
         fixed_dt=True,
     )
 

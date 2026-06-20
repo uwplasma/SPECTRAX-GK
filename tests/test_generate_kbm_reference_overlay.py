@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from spectraxgk.benchmarking import EigenfunctionComparisonMetrics
+from spectraxgk.validation.benchmarks.harness import EigenfunctionComparisonMetrics
 
 
 def _load_tool_module():

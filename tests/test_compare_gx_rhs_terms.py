@@ -21,7 +21,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
@@ -165,7 +165,7 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypat
         return "geom"
 
     monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_obj = type("GridObj", (), {"ky": np.array([0.0, 0.2, -0.2]), "kx": np.array([0.0])})()
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")
@@ -245,7 +245,7 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Pa
             Nm=6,
             dt=0.01,
             steps=40,
-            solver="gx_time",
+            solver="explicit_time",
             sample_stride=2,
         )
         assert np.isfinite(result.gamma)

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from spectraxgk.parallel_decomposition import (
+from spectraxgk.parallel.decomposition import (
     DecompositionContract,
     build_diagnostic_nonlinear_domain_decomposition,
     build_independent_portfolio_decomposition,

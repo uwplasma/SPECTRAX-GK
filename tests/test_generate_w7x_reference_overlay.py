@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pytest
 
-from spectraxgk.benchmarking import EigenfunctionComparisonMetrics, save_eigenfunction_reference_bundle
+from spectraxgk.validation.benchmarks.harness import EigenfunctionComparisonMetrics, save_eigenfunction_reference_bundle
 
 
 def _load_tool_module():

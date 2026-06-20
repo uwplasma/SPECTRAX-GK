@@ -4,29 +4,42 @@ Architecture
 Core modules
 ------------
 
-- ``spectraxgk.basis``: Hermite and Laguerre basis functions.
-- ``spectraxgk.gyroaverage``: gyroaverage coefficients and polarization helpers.
+- ``spectraxgk.core.velocity``: Hermite/Laguerre basis functions, gyroaverage
+  coefficients, and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
-- ``spectraxgk.linear``: public linear API, field solves, RHS kernels, and integrators that call modular RHS assembly.
-- ``spectraxgk.linear_cache``: geometry-dependent linear cache construction, gyroaverage tables, and collision/hypercollision damping factors.
-- ``spectraxgk.linear_linked``: linked-boundary FFT maps and end-damping profiles for field-aligned linear operators.
-- ``spectraxgk.linear_moments``: Hermite/Laguerre ladder operators, quasineutrality, and gyrokinetic-field variable construction.
-- ``spectraxgk.linear_params``: linear parameter pytrees, term toggles, and validation/coercion helpers.
-- ``spectraxgk.linear_parallel``: gated velocity-parallel linear RHS helpers and disabled-by-default parallel dispatcher.
-- ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
-- ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
-- ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,
-  comparison-reference omega masks used by GX-comparison parity audits,
-  collision-split policies, and reusable nonlinear IMEX operator construction.
-- ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
-- ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
-- ``spectraxgk.runtime_orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
-- ``spectraxgk.benchmark_defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
-- ``spectraxgk.benchmark_helpers``: reference data loaders, result containers, and pure benchmark policies.
-- ``spectraxgk.benchmark_scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
-- ``spectraxgk.benchmarks``: public benchmark runners and compatibility import surface.
-- ``spectraxgk.plotting``: reusable, publication-ready plotting utilities.
+- ``spectraxgk.linear``: public linear API facade for documented linear imports
+  and fixed-step integration entry points.
+- ``spectraxgk.operators.linear``: cache construction, linked-boundary maps,
+  Hermite/Laguerre moment operators, linear parameter pytrees, and cached RHS
+  assembly entry points.
+- ``spectraxgk.solvers.linear``: matrix-free eigensolver policy, linear
+  fixed-step/diagnostic integration policy, implicit GMRES/preconditioner
+  policy, and gated velocity-parallel linear RHS dispatch.
+- ``spectraxgk.nonlinear``: public nonlinear runtime facade for explicit,
+  adaptive, diagnostic, and cached IMEX workflows.
+- ``spectraxgk.solvers.nonlinear``: explicit RK/SSP/K10 and IMEX fixed-point,
+  GMRES, and stage-composition policy.
+- ``spectraxgk.operators.nonlinear.diagnostics``: sampling, resolved-diagnostic
+  packing, and ``SimulationDiagnostics`` construction shared by nonlinear
+  diagnostic scans.
+- ``spectraxgk.operators.nonlinear.projection``: Hermitian and fixed-mode state
+  projections used by compressed-real-FFT nonlinear scans and fixed-mode
+  diagnostics.
+- ``spectraxgk.operators.nonlinear.collisions``: diagonal collision and
+  hypercollision split policies shared by explicit and IMEX nonlinear scans.
+- ``spectraxgk.operators.nonlinear.policies``: diagnostic cache/weight/projection
+  setup, adaptive time-step policy, fixed-mode omega masks used by comparison
+  parity audits, reusable nonlinear IMEX operator construction, and public
+  facades for the focused projection/collision owners.
+- ``spectraxgk.runtime`` / ``spectraxgk.workflows.runtime.config``: user-facing runtime entrypoints and configuration schema.
+- ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
+- ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable public-facade seams.
+- ``spectraxgk.validation.benchmarks.defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
+- ``spectraxgk.validation.benchmarks.reference`` / ``spectraxgk.validation.benchmarks.fit_signals`` / ``spectraxgk.validation.benchmarks.species``: reference data loaders, result containers, fitting policies, and benchmark species policies.
+- ``spectraxgk.validation.benchmarks.scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
+- ``spectraxgk.benchmarks``: public benchmark runners and stable import surface.
+- ``spectraxgk.artifacts.plotting``: reusable, publication-ready plotting utilities.
 
 Term-level source mapping
 -------------------------

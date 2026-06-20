@@ -63,7 +63,7 @@ def main() -> None:
     from jax import profiler
 
     from spectraxgk.runtime import run_runtime_nonlinear
-    from spectraxgk.io import load_runtime_from_toml
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
     cfg, _data = load_runtime_from_toml(args.config)
 

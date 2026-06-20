@@ -230,7 +230,7 @@
       "spectrax-gk",
       "spectraxgk"
     ],
-    "version": "1.6.6"
+    "version": "1.6.7"
   },
   "release_target": {
     "status_source": "docs/_static/manuscript_readiness_status.json:lanes",
@@ -244,11 +244,19 @@
     "--enforce-package-coverage",
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
+    "tools/check_package_architecture_manifest.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py"
+  ],
+  "required_codecov_snippets": [
+    "after_n_builds: 2",
+    "wait_for_ci: true",
+    "flags:",
+    "- wide-package"
   ],
   "required_readme_snippets": [
     "pip install spectraxgk",
@@ -261,9 +269,11 @@
     "tools/check_release_version.py",
     "tools/check_repository_size_manifest.py",
     "tools/check_release_artifact_manifest.py",
+    "tools/check_package_architecture_manifest.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py"
@@ -275,6 +285,10 @@
     "docs/_static/validation_gate_index.json",
     "docs/_static/validation_coverage_manifest_summary.json",
     "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/vmec_boozer_differentiability_claim_guard.json",
+    "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+    "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+    "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
     "docs/_static/technical_release_status.json",
     "docs/_static/manuscript_readiness_status.json",
     "docs/_static/open_research_lane_status.json",
@@ -303,9 +317,9 @@
     "checked_pypi": false,
     "duplicate_on_pypi": false,
     "package": "spectraxgk",
-    "project_version": "1.6.6",
+    "project_version": "1.6.7",
     "require_tag": false,
-    "source_version": "1.6.6",
+    "source_version": "1.6.7",
     "tag": null
   }
 }

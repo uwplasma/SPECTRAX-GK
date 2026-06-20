@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.benchmarking import estimate_observed_order
+from spectraxgk.validation.benchmarks.harness import estimate_observed_order
 from spectraxgk.terms.config import FieldState
 from spectraxgk.terms.integrators import integrate_nonlinear
 from spectraxgk.terms.nonlinear import exb_nonlinear_contribution, placeholder_nonlinear_contribution
@@ -33,7 +33,7 @@ def _linear_rhs(rate: complex):
         ("euler", lambda a: 1.0 + a),
         ("rk2", lambda a: 1.0 + a + 0.5 * a * a),
         ("rk3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
-        ("rk3_gx", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
+        ("rk3_heun", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk3_classic", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk4", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0 + (a * a * a * a) / 24.0),
         ("sspx3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
@@ -91,7 +91,7 @@ def test_integrate_nonlinear_projects_each_stage() -> None:
 def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
     G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
     out_rk3, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3")
-    out_gx, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3_gx")
+    out_gx, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3_heun")
     assert jnp.allclose(out_rk3, out_gx)
 
 
@@ -101,7 +101,7 @@ def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
         ("euler", 1.0, 0.9),
         ("rk2", 2.0, 1.75),
         ("rk3", 3.0, 2.6),
-        ("rk3_gx", 3.0, 2.6),
+        ("rk3_heun", 3.0, 2.6),
         ("rk3_classic", 3.0, 2.6),
         ("rk4", 4.0, 3.3),
         ("sspx3", 3.0, 2.6),
@@ -182,6 +182,6 @@ def test_nonlinear_placeholders() -> None:
         kx_grid=jnp.ones((3, 4), dtype=jnp.float32),
         ky_grid=jnp.ones((3, 4), dtype=jnp.float32),
         weight=jnp.asarray(1.0),
-        gx_real_fft=False,
+        compressed_real_fft=False,
     )
     assert exb.shape == G.shape

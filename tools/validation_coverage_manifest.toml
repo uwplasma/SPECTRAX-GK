@@ -10,10 +10,109 @@ require_all_package_modules_owned = true
 excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
-  "spectraxgk.from_gx.__init__",
+  "spectraxgk.api.__init__",
+  "spectraxgk.core.__init__",
+  "spectraxgk.diagnostics.__init__",
+  "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
+  "spectraxgk.objectives.__init__",
+  "spectraxgk.operators.__init__",
+  "spectraxgk.operators.linear.__init__",
+  "spectraxgk.operators.nonlinear.__init__",
+  "spectraxgk.solvers.__init__",
+  "spectraxgk.solvers.linear.__init__",
+  "spectraxgk.solvers.nonlinear.__init__",
+  "spectraxgk.solvers.time.__init__",
   "spectraxgk.terms.__init__",
+  "spectraxgk.terms.reduced.__init__",
   "spectraxgk.utils.__init__",
+  "spectraxgk.validation.__init__",
+  "spectraxgk.validation.benchmarks.__init__",
+  "spectraxgk.validation.nonlinear_gradient.__init__",
+  "spectraxgk.validation.nonlinear_transport.__init__",
+  "spectraxgk.validation.quasilinear.__init__",
+  "spectraxgk.validation.stellarator.__init__",
+  "spectraxgk.workflows.__init__",
+  "spectraxgk.workflows.runtime.__init__",
+]
+
+[[modules]]
+module = "spectraxgk.api.configuration"
+path = "src/spectraxgk/api/configuration.py"
+owned_modules = [
+  "spectraxgk.api.artifacts",
+  "spectraxgk.api.benchmarks",
+  "spectraxgk.api.diagnostics",
+  "spectraxgk.api.geometry",
+  "spectraxgk.api.objectives",
+  "spectraxgk.api.parallel",
+  "spectraxgk.api.runtime",
+  "spectraxgk.api.solvers",
+  "spectraxgk.api.validation",
+]
+owner_lane = "domain-organized public API registry"
+status = "closed"
+coverage_priority = "low"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "stable public package API documented in docs/api.rst",
+  "Python package facade conventions for scientific libraries",
+]
+physics_contracts = [
+  "top-level imports remain a stable convenience layer while implementation modules own physics behavior",
+  "domain API modules group configuration, geometry, solvers, validation, parallelization, objectives, and plotting without changing numerical kernels",
+]
+numerics_contracts = [
+  "public export order and membership are preserved exactly across the split",
+  "object identity for benchmark, objective, parallel, and runtime exports is checked by focused import tests",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_quasilinear_model_selection_extra.py",
+  "tests/test_parallel.py",
+  "tests/test_nonlinear_parallel.py",
+]
+artifact_paths = [
+  "docs/code_structure.rst",
+  "docs/api.rst",
+]
+next_tests = [
+  "add a dedicated public API exact-order regression test if future export churn increases",
+  "move advanced users toward domain imports while keeping top-level imports stable through the next release",
+]
+
+[[modules]]
+module = "spectraxgk.core.contracts"
+path = "src/spectraxgk/core/contracts.py"
+owned_modules = [
+  "spectraxgk.core.extension_points",
+]
+owner_lane = "differentiable refactor contracts and community extension-point protocols"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "JAX PyTree/static-dynamic transform contracts",
+  "PEP 257 and scientific-code public API documentation conventions",
+]
+physics_contracts = [
+  "extension points make physics model boundaries explicit before adding new collisions, bases, field solvers, geometry providers, or diagnostics",
+  "refactor contracts preserve validation gates and public facades before numerical kernels are moved",
+]
+numerics_contracts = [
+  "differentiability contracts separate static model choices from traced array arguments",
+  "validation-gate contracts require evidence paths before refactor claims are promoted",
+]
+fast_tests = [
+  "tests/test_core_contracts.py",
+]
+artifact_paths = [
+  "tools/differentiable_refactor_manifest.toml",
+]
+next_tests = [
+  "instantiate contracts from the differentiable refactor manifest rows",
+  "add import-identity tests when the first compatibility facade starts forwarding to split modules",
 ]
 
 [[modules]]
@@ -22,21 +121,35 @@ path = "src/spectraxgk/runtime.py"
 owned_modules = [
   "spectraxgk.cli",
   "spectraxgk.config",
-  "spectraxgk.diffrax_integrators",
-  "spectraxgk.gx_integrators",
-  "spectraxgk.io",
-  "spectraxgk.restart",
-  "spectraxgk.runners",
-  "spectraxgk.runtime_config",
-  "spectraxgk.runtime_diagnostics",
-  "spectraxgk.runtime_startup",
+  "spectraxgk.solvers.time.diffrax",
+  "spectraxgk.solvers.time.diffrax_core",
+  "spectraxgk.solvers.time.diffrax_linear",
+  "spectraxgk.solvers.time.diffrax_nonlinear",
+  "spectraxgk.solvers.time.diffrax_streaming",
+  "spectraxgk.solvers.time.explicit",
+  "spectraxgk.solvers.time.explicit_diagnostics",
+  "spectraxgk.solvers.time.explicit_cfl",
+  "spectraxgk.solvers.time.explicit_progress",
+  "spectraxgk.solvers.time.explicit_steps",
+  "spectraxgk.workflows.runtime.toml",
+  "spectraxgk.artifacts.restart",
+  "spectraxgk.solvers.time.runners",
+  "spectraxgk.workflows.runtime.config",
+  "spectraxgk.workflows.runtime.diagnostic_arrays",
+  "spectraxgk.workflows.runtime.diagnostics",
+  "spectraxgk.workflows.runtime.execution",
+  "spectraxgk.workflows.runtime.initial_conditions",
+  "spectraxgk.workflows.runtime.initial_phi",
+  "spectraxgk.workflows.runtime.command_artifacts",
+  "spectraxgk.workflows.runtime.command_options",
+  "spectraxgk.workflows.runtime.startup",
 ]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style runtime diagnostics and exact-state parity audits",
+  "runtime diagnostics and exact-state parity audits",
   "Cyclone Base Case and W7-X/HSX runtime artifact regressions",
 ]
 physics_contracts = [
@@ -64,14 +177,14 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_policies"
-path = "src/spectraxgk/runtime_policies.py"
+module = "spectraxgk.workflows.runtime.policies"
+path = "src/spectraxgk/workflows/runtime/policies.py"
 owner_lane = "pure runtime selection policies split from runtime orchestration"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style runtime monitored-mode and external-field conventions",
+  "runtime monitored-mode and external-field conventions",
   "Cyclone/W7-X runtime scan and nonlinear artifact replay contracts",
 ]
 physics_contracts = [
@@ -90,23 +203,25 @@ artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
 ]
 next_tests = [
-  "add direct coverage for combined-ky scan policy once runtime scan dispatch is split",
-  "keep legacy spectraxgk.runtime exports object-identical until the next major API cleanup",
+  "keep spectraxgk.runtime compatibility exports object-identical until the next major API cleanup",
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_orchestration"
-path = "src/spectraxgk/runtime_orchestration.py"
+module = "spectraxgk.workflows.runtime.orchestration"
+path = "src/spectraxgk/workflows/runtime/orchestration.py"
 owned_modules = [
-  "spectraxgk.runtime_chunks",
-  "spectraxgk.runtime_results",
+  "spectraxgk.workflows.runtime.chunks",
+  "spectraxgk.workflows.runtime.orchestration_artifacts",
+  "spectraxgk.workflows.runtime.orchestration_progress",
+  "spectraxgk.workflows.runtime.orchestration_scan",
+  "spectraxgk.workflows.runtime.results",
 ]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX-style adaptive runtime progress and restart output contracts",
+  "adaptive runtime progress and restart output contracts",
   "combined-ky runtime scan and nonlinear checkpoint artifact regressions",
 ]
 physics_contracts = [
@@ -126,27 +241,84 @@ artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
 ]
 next_tests = [
-  "add direct combined-ky scan orchestration fixtures that bypass the legacy runtime wrapper",
+  "keep scan/progress/artifact owner modules covered by runtime helper and artifact tests",
   "split CLI plotting/output dispatch once CLI ownership is available in a later tranche",
+]
+
+[[modules]]
+module = "spectraxgk.workflows.cases"
+path = "src/spectraxgk/workflows/cases.py"
+owned_modules = [
+  "spectraxgk.workflows.demo",
+  "spectraxgk.workflows.linear",
+  "spectraxgk.workflows.named_cases",
+  "spectraxgk.workflows.nonlinear",
+  "spectraxgk.workflows.reduced_models",
+  "spectraxgk.workflows.runtime.commands",
+]
+owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime TOML examples for linear and nonlinear executable workflows",
+  "default executable progress and output provenance contracts",
+]
+physics_contracts = [
+  "case workflows pass fitted linear growth/frequency and nonlinear transport settings through without altering solver physics",
+  "output workflows preserve documented linear and nonlinear artifact paths",
+]
+numerics_contracts = [
+  "TOML overrides preserve solver, time-step, sample-stride, and fit-window semantics",
+  "dependency injection preserves runtime monkeypatch seams used by regression tests",
+]
+fast_tests = [
+  "tests/test_runtime_runner.py",
+  "tests/test_runtime_config.py",
+]
+artifact_paths = [
+  "examples/linear/axisymmetric/runtime_cyclone.toml",
+  "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml",
+]
+next_tests = [
+  "add executable-level provenance tests for copied input TOML files",
+  "add progress-output contract tests for long nonlinear chunked runs",
 ]
 
 [[modules]]
 module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owned_modules = [
-  "spectraxgk.analysis",
-  "spectraxgk.basis",
-  "spectraxgk.cetg",
-  "spectraxgk.grids",
-  "spectraxgk.gyroaverage",
-  "spectraxgk.linear_krylov",
-  "spectraxgk.operators",
-  "spectraxgk.secondary",
-  "spectraxgk.species",
+  "spectraxgk.diagnostics.analysis",
+  "spectraxgk.diagnostics.growth_fit",
+  "spectraxgk.diagnostics.growth_rates",
+  "spectraxgk.diagnostics.growth_series",
+  "spectraxgk.diagnostics.growth_windows",
+  "spectraxgk.diagnostics.modes",
+  "spectraxgk.core.velocity",
+  "spectraxgk.terms.reduced.cetg_integrator",
+  "spectraxgk.terms.reduced.cetg_model",
+  "spectraxgk.terms.reduced.cetg_rhs",
+  "spectraxgk.terms.reduced.cetg_state",
+  "spectraxgk.core.grid",
+  "spectraxgk.operators.linear.streaming",
+  "spectraxgk.solvers.linear.eigen_operator",
+  "spectraxgk.solvers.linear.eigen_policy",
+  "spectraxgk.solvers.linear.eigen_preconditioners",
+  "spectraxgk.solvers.linear.eigen_selection",
+  "spectraxgk.solvers.linear.krylov",
+  "spectraxgk.solvers.linear.krylov_algorithms",
+  "spectraxgk.validation.benchmarks.secondary",
+  "spectraxgk.core.species",
   "spectraxgk.terms.assembly",
+  "spectraxgk.terms.assembly_core",
+  "spectraxgk.terms.assembly_diagnostics",
+  "spectraxgk.terms.assembly_fields",
+  "spectraxgk.terms.assembly_helpers",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",
   "spectraxgk.terms.integrators",
+  "spectraxgk.terms.linear_dissipation",
   "spectraxgk.terms.linear_terms",
   "spectraxgk.terms.operators",
   "spectraxgk.terms.validation",
@@ -185,8 +357,13 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_cache"
-path = "src/spectraxgk/linear_cache.py"
+module = "spectraxgk.operators.linear.cache"
+path = "src/spectraxgk/operators/linear/cache.py"
+owned_modules = [
+  "spectraxgk.operators.linear.cache_model",
+  "spectraxgk.operators.linear.cache_arrays",
+  "spectraxgk.operators.linear.cache_builder",
+]
 owner_lane = "linear geometry cache construction and damping factors"
 status = "active"
 coverage_priority = "medium"
@@ -214,12 +391,117 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct cache-construction fixtures for sampled geometry, linked geometry, and multispecies damping paths",
-  "keep spectraxgk.linear cache exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public cache exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
-module = "spectraxgk.linear_moments"
-path = "src/spectraxgk/linear_moments.py"
+module = "spectraxgk.operators.linear.rhs"
+path = "src/spectraxgk/operators/linear/rhs.py"
+owner_lane = "linear RHS assembly entry points and cache-backed field solve dispatch"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre linear gyrokinetic RHS contracts",
+  "electrostatic and electromagnetic term assembly used by linear, nonlinear, and solver-gradient lanes",
+]
+physics_contracts = [
+  "grid/geometry RHS construction builds the same cache-backed operator as direct cached calls",
+  "term toggles route through the modular term assembly without changing field-solve physics",
+]
+numerics_contracts = [
+  "5D and 6D state validation preserves single-species and multi-species semantics",
+  "jit and non-jit RHS dispatch return identical state and phi shapes with deterministic dtype policy",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_velocity_sharding.py",
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct RHS-owner tests after linear time integration moves out of the public facade",
+  "keep spectraxgk.linear public RHS exports documented while implementation lives in operators.linear.rhs",
+]
+
+[[modules]]
+module = "spectraxgk.solvers.linear.implicit"
+path = "src/spectraxgk/solvers/linear/implicit.py"
+owner_lane = "implicit linear operator and GMRES integration policy"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "matrix-free implicit linear gyrokinetic solves",
+  "Hermite-line and diagonal preconditioner contracts used by linked-boundary stability runs",
+]
+physics_contracts = [
+  "implicit linear solves apply the same cache-backed gyrokinetic operator and term weights as explicit RHS assembly",
+  "nonlinear IMEX paths reuse the same implicit linear operator builder rather than a duplicated operator convention",
+]
+numerics_contracts = [
+  "preconditioner aliases map deterministically to diagonal, damping, PAS, Hermite-line, and identity policies",
+  "sampled implicit integration preserves shape, dtype, species squeezing, and finite sampled field diagnostics",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear_imex.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct owner-module tests for GMRES failure metadata if exposed in a future public solver report",
+  "keep spectraxgk.linear public implicit helper exports until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.solvers.linear.integrators"
+path = "src/spectraxgk/solvers/linear/integrators.py"
+owned_modules = [
+  "spectraxgk.solvers.linear.integrator_diagnostics",
+]
+owner_lane = "linear fixed-step integration, implicit dispatch, and diagnostic sampling"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "observed-order checks for explicit and IMEX linear time paths",
+  "late-time linear diagnostic sampling used by benchmark and validation workflows",
+]
+physics_contracts = [
+  "linear time integration advances the same cache-backed RHS and term weights exposed by the public linear API",
+  "diagnostic sampling reports phi, density, and Hermite-Laguerre energy without changing the evolved state convention",
+]
+numerics_contracts = [
+  "explicit RK, SSPX3, IMEX, sampled, donated-buffer, and parallel-dispatch paths preserve shape, dtype, and sample count",
+  "observed-order gates exercise RK2, RK4, SSPX3, IMEX, and IMEX2 against manufactured exact solutions",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_fast_smoke.py",
+  "tests/test_benchmarks_runner_branches.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct owner-module coverage for progress callback emission once callback policy is split",
+  "keep spectraxgk.linear public integrate_linear exports documented while implementation lives in solvers.linear.integrators",
+]
+
+[[modules]]
+module = "spectraxgk.operators.linear.moments"
+path = "src/spectraxgk/operators/linear/moments.py"
 owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
 status = "active"
 coverage_priority = "medium"
@@ -248,12 +530,12 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct finite-difference checks for grad_z_periodic and streaming_term on analytic waves",
-  "keep spectraxgk.linear moment exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public moment exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
-module = "spectraxgk.linear_params"
-path = "src/spectraxgk/linear_params.py"
+module = "spectraxgk.operators.linear.params"
+path = "src/spectraxgk/operators/linear/params.py"
 owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
 status = "active"
 coverage_priority = "medium"
@@ -280,19 +562,19 @@ artifact_paths = [
 ]
 next_tests = [
   "add direct pytree round-trip tests for LinearParams and LinearTerms after any dataclass field changes",
-  "keep spectraxgk.linear re-exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public parameter exports documented while developer helpers live in operators.linear",
 ]
 
 [[modules]]
-module = "spectraxgk.linear_linked"
-path = "src/spectraxgk/linear_linked.py"
+module = "spectraxgk.operators.linear.linked"
+path = "src/spectraxgk/operators/linear/linked.py"
 owner_lane = "linked-boundary FFT maps and end-damping profiles"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
   "field-aligned linked-boundary linear operator contracts",
-  "GX-style linked-end damping used by Cyclone and stellarator parity lanes",
+  "linked-end damping used by Cyclone and stellarator parity lanes",
 ]
 physics_contracts = [
   "linked chains preserve the intended ky/kx mirror symmetry for field-aligned domains",
@@ -316,8 +598,13 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.linear_parallel"
-path = "src/spectraxgk/linear_parallel.py"
+module = "spectraxgk.solvers.linear.parallel"
+path = "src/spectraxgk/solvers/linear/parallel.py"
+owned_modules = [
+  "spectraxgk.solvers.linear.parallel_common",
+  "spectraxgk.solvers.linear.parallel_electrostatic",
+  "spectraxgk.solvers.linear.parallel_streaming",
+]
 owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 status = "active"
 coverage_priority = "medium"
@@ -344,7 +631,7 @@ artifact_paths = [
   "docs/_static/linear_rhs_electrostatic_slices_gate.json",
 ]
 next_tests = [
-  "keep spectraxgk.linear parallel exports object-identical until the next major API cleanup",
+  "keep spectraxgk.linear public parallel exports documented while developer helpers live in solvers.linear",
   "extend dispatch-policy tests when new velocity or domain-parallel backends are promoted",
 ]
 
@@ -352,6 +639,10 @@ next_tests = [
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owned_modules = [
+  "spectraxgk.solvers.nonlinear.state_integration",
+  "spectraxgk.solvers.nonlinear.diagnostic_integration",
+  "spectraxgk.terms.brackets",
+  "spectraxgk.terms.gyroaveraging",
   "spectraxgk.terms.nonlinear",
 ]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
@@ -359,8 +650,8 @@ status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "Cyclone and Cyclone-Miller nonlinear GX transport windows",
-  "KBM, HSX, and W7-X nonlinear GX parity envelopes",
+  "Cyclone and Cyclone-Miller nonlinear transport-window comparison artifacts",
+  "KBM, HSX, and W7-X nonlinear parity envelopes from independent-code comparisons",
 ]
 physics_contracts = [
   "nonlinear acceptance uses window statistics rather than one-time samples",
@@ -372,6 +663,10 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear.py",
+  "tests/test_nonlinear_rhs.py",
+  "tests/test_nonlinear_diagnostic_state.py",
+  "tests/test_nonlinear_explicit_step.py",
+  "tests/test_nonlinear_imex.py",
   "tests/test_nonlinear_exb.py",
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
@@ -394,6 +689,7 @@ artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.png",
 ]
 next_tests = [
+  "keep nonlinear state-integration and diagnostic-integration owner-module tests on the fast path",
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",
@@ -401,8 +697,189 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_parallel"
-path = "src/spectraxgk/nonlinear_parallel.py"
+module = "spectraxgk.operators.nonlinear.rhs"
+path = "src/spectraxgk/operators/nonlinear/rhs.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone, KBM, HSX, and W7-X nonlinear transport-window validation artifacts",
+  "electrostatic and electromagnetic nonlinear RHS decomposition tests",
+]
+physics_contracts = [
+  "zero nonlinear coefficient must leave the physical bracket inactive",
+  "disabled electromagnetic channels must be pruned before bracket assembly",
+  "IMEX explicit nonlinear terms reuse the same electromagnetic bracket payload convention as the cached nonlinear RHS",
+]
+numerics_contracts = [
+  "electrostatic RHS path is selected when apar and bpar are statically zero",
+  "bracket payload preserves dtype, Hermite-Laguerre transforms, dealiased masks, and laguerre-mode routing",
+  "zero-nonlinearity IMEX terms bypass field solves and return an exact zero state-shaped array",
+]
+fast_tests = [
+  "tests/test_nonlinear_rhs.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+]
+next_tests = [
+  "add direct free-energy reduced-limit checks for nonlinear bracket conservation",
+  "add physical transport-window identity tests when production nonlinear decomposition is promoted",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.diagnostic_state"
+path = "src/spectraxgk/operators/nonlinear/diagnostic_state.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "resolved nonlinear diagnostic schemas used by transport-window audits",
+  "explicit and IMEX nonlinear diagnostic scan parity contracts",
+]
+physics_contracts = [
+  "late-time gamma, omega, energy, particle-flux, and heat-flux observables are assembled from the same state convention in explicit and IMEX paths",
+  "resolved spectral diagnostics preserve the documented packing order for heat-flux and free-energy audits",
+  "explicit and IMEX scan policies use the same state-to-diagnostic closure factory",
+]
+numerics_contracts = [
+  "disabled resolved diagnostics use scalar kernels without allocating resolved spectra",
+  "injected kernels preserve debug seams while keeping implementation pure-array and JAX-transformable",
+  "closure construction binds static diagnostic metadata once while leaving state arrays JAX-transformable",
+]
+fast_tests = [
+  "tests/test_nonlinear_diagnostic_state.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct reduced free-energy balance checks after the diagnostic energy convention is split from integration scans",
+  "add explicit-versus-IMEX diagnostic tuple equality checks on a shared manufactured state",
+]
+
+[[modules]]
+module = "spectraxgk.solvers.nonlinear.explicit"
+path = "src/spectraxgk/solvers/nonlinear/explicit.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "explicit nonlinear RK/SSP/K10 time stepping used by transport-window audits",
+  "adaptive nonlinear diagnostic runs that compare gamma/omega between diagnostic strides",
+]
+physics_contracts = [
+  "explicit one-step policy preserves the projected spectral state convention after each stage",
+  "diagnostic gamma/omega updates remain tied to the previous time step rather than sparse diagnostic output",
+]
+numerics_contracts = [
+  "constant-RHS RK methods reduce to the expected first-order update over one step",
+  "state dtype and projection are applied after the final stage for scan-carry stability",
+]
+fast_tests = [
+  "tests/test_nonlinear_explicit_step.py",
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+]
+next_tests = [
+  "add observed-order manufactured-time-path checks for promoted explicit methods",
+  "add physical transport-window identity tests after explicit scan orchestration is split",
+]
+
+[[modules]]
+module = "spectraxgk.solvers.nonlinear.diagnostics"
+path = "src/spectraxgk/solvers/nonlinear/diagnostics.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "explicit nonlinear diagnostic scans used by transport-window audits",
+  "IMEX nonlinear diagnostic scans used by semi-implicit transport-window audits",
+  "facade-injected nonlinear diagnostic kernels used by debug and parity tests",
+]
+physics_contracts = [
+  "explicit and IMEX diagnostic integration assemble gamma, omega, energy, heat-flux, particle-flux, and resolved spectra from one state convention",
+  "facade-injected diagnostic kernels preserve the same observable definitions as cached nonlinear RHS runs",
+]
+numerics_contracts = [
+  "fixed and adaptive explicit diagnostic paths share one time-step policy and projection convention",
+  "IMEX diagnostic paths keep the nonlinear term explicit and the linear solve implicit while sharing diagnostic assembly",
+  "sampled diagnostic scans preserve final-time samples and resolved-diagnostic axis lengths",
+  "dependency injection keeps branch choices explicit while leaving traced state arrays JAX-transformable",
+]
+fast_tests = [
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear_explicit_step.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+]
+next_tests = [
+  "add manufactured explicit diagnostic observed-order checks after the remaining facade wrappers are split",
+  "add explicit diagnostic transport-window identity checks for production nonlinear decomposition",
+]
+
+[[modules]]
+module = "spectraxgk.solvers.nonlinear.imex"
+path = "src/spectraxgk/solvers/nonlinear/imex.py"
+owned_modules = [
+  "spectraxgk.solvers.nonlinear.imex_diagnostics",
+]
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "semi-implicit nonlinear diagnostics and cached IMEX transport paths",
+  "operator dtype preservation under x64 and prebuilt-operator reuse tests",
+]
+physics_contracts = [
+  "IMEX solve policy keeps the nonlinear term explicit and the linear operator implicit",
+  "cached and diagnostic IMEX paths share the same fixed-point predictor, GMRES route, and SSPX3 stage composition",
+  "cached and diagnostic IMEX paths construct nonlinear-term closures through the same injected kernel convention",
+]
+numerics_contracts = [
+  "identity linear systems return the RHS with the expected state shape",
+  "solve-step factories forward tolerances, restart policy, preconditioner, and matrix-free operator metadata unchanged",
+  "fixed-point predictor applies the configured iteration count and relaxation exactly",
+  "constant-RHS SSPX3 stage composition gives the same one-step update as the exact constant derivative",
+]
+fast_tests = [
+  "tests/test_nonlinear_imex.py",
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/full_nonlinear_rhs_trace_summary.json",
+]
+next_tests = [
+  "add preconditioned IMEX solve residual checks with a manufactured linear operator",
+  "add explicit-versus-IMEX diagnostic parity checks in a linearized nonlinear-off limit",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.parallel"
+path = "src/spectraxgk/operators/nonlinear/parallel.py"
+owned_modules = [
+  "spectraxgk.operators.nonlinear.parallel_contracts_domain",
+  "spectraxgk.operators.nonlinear.parallel_contracts_spectral",
+  "spectraxgk.operators.nonlinear.parallel_contracts_strategy",
+  "spectraxgk.operators.nonlinear.domain_decomposition",
+]
 owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
 status = "active"
 coverage_priority = "high"
@@ -443,23 +920,107 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_diagnostics"
-path = "src/spectraxgk/nonlinear_diagnostics.py"
-owner_lane = "resolved nonlinear diagnostic packing and time-sample retention"
+module = "spectraxgk.operators.nonlinear.spectral_core"
+path = "src/spectraxgk/operators/nonlinear/spectral_core.py"
+owned_modules = [
+  "spectraxgk.operators.nonlinear.spectral_brackets",
+  "spectraxgk.operators.nonlinear.spectral_identity_reports",
+  "spectraxgk.operators.nonlinear.spectral_identity_rhs",
+  "spectraxgk.operators.nonlinear.spectral_identity_integrator",
+  "spectraxgk.operators.nonlinear.spectral_layout",
+  "spectraxgk.operators.nonlinear.spectral_state",
+  "spectraxgk.operators.nonlinear.spectral_tolerances",
+  "spectraxgk.operators.nonlinear.spectral_work_models",
+]
+owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "communication-aware pseudo-spectral nonlinear bracket decomposition",
+  "serial-vs-decomposed RHS identity gates for nonlinear transport windows",
+]
+physics_contracts = [
+  "local spectral-core routes are diagnostic primitives that must reproduce serial nonlinear RHS before any decomposed route is enabled",
+  "work models and batch-pressure estimates are preflight blockers, not standalone nonlinear speedup claims",
+]
+numerics_contracts = [
+  "deterministic spectral states, pencil FFT staging, and z-chunked bracket kernels preserve serial pseudo-spectral outputs within explicit tolerances",
+  "host-staged sharding and allclose-style tolerance helpers keep device-routing artifacts fail-closed and reproducible",
+]
+fast_tests = [
+  "tests/test_nonlinear_parallel.py",
+  "tests/test_nonlinear_spectral_communication_gate.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+]
+next_tests = [
+  "add direct spectral identity submodule import-identity tests as report/RHS/integrator helpers leave the facade",
+  "promote only profiler-backed speedup claims after a physical transport-window identity artifact passes",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.device_z"
+path = "src/spectraxgk/operators/nonlinear/device_z.py"
+owned_modules = [
+  "spectraxgk.operators.nonlinear.device_z_reports",
+]
+owner_lane = "communication-aware nonlinear domain decomposition and fail-closed parallel routing"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "device-z shard-map pseudo-spectral nonlinear RHS identity gates",
+  "serial-vs-device nonlinear transport-window observable gates",
+]
+physics_contracts = [
+  "device-z routes are enabled only when serial and sharded nonlinear RHS or transport-window observables match within explicit tolerances",
+  "device-z transport gates remain diagnostic and do not imply turbulent heat-flux or speedup promotion without separate profiler artifacts",
+]
+numerics_contracts = [
+  "z sharding preserves FFT-local ky/kx axes and fails closed when the z extent is not divisible by the active device count",
+  "observable reductions compare final state, free energy, field energy, physical-flux proxy, and bracket RMS before enabling decomposed routing",
+]
+fast_tests = [
+  "tests/test_nonlinear_parallel.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_rhs_gpu2_profile.json",
+  "docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json",
+]
+next_tests = [
+  "add a direct multi-device fixture test when CI has more than one local device available",
+  "add a profiler-backed physical transport-window speedup gate before changing release wording",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.diagnostics"
+path = "src/spectraxgk/operators/nonlinear/diagnostics.py"
+owner_lane = "resolved nonlinear diagnostic packing, sampled-scan routing, scan sampling, progress routing, and diagnostics construction"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX exact-state resolved nonlinear diagnostic schemas",
+  "external-reference exact-state resolved nonlinear diagnostic schemas",
   "case-specific nonlinear window statistics used for release gates",
 ]
 physics_contracts = [
   "resolved diagnostic names and ordering remain stable for spectral heat-flux audits",
   "sample-stride compression retains the final nonlinear state needed by transport windows",
+  "sampled explicit diagnostic scans preserve the same retained-step sequence as full scans followed by sample-stride compression",
+  "explicit and IMEX scan outputs construct the same SimulationDiagnostics fields from the same tuple convention",
+  "explicit and IMEX scans share the same diagnostics-stride refresh policy before progress reporting",
 ]
 numerics_contracts = [
   "axis-0 sampling preserves array rank and final sample retention",
+  "sampled scan intervals are positive and include the final integration step",
   "diagnostic packing maps each resolved array to the documented dataclass field",
+  "total energy is reconstructed from free-energy, electrostatic-field, and magnetic-field channels after sampling",
+  "progress emission is a no-op on the state when progress output is disabled",
 ]
 fast_tests = [
   "tests/test_nonlinear_helpers_extra.py",
@@ -474,25 +1035,27 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_helpers"
-path = "src/spectraxgk/nonlinear_helpers.py"
-owned_modules = [
-  "spectraxgk.gx_reduced_models",
-]
-owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
+module = "spectraxgk.operators.nonlinear.policies"
+path = "src/spectraxgk/operators/nonlinear/policies.py"
+owner_lane = "nonlinear diagnostic setup, time-step policy, fixed-mode omega masks, IMEX operator construction, and compatibility projection/collision re-exports"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "fixed-mode nonlinear diagnostics and GX real-FFT Hermitian projection",
-  "split collision/hypercollision nonlinear updates and reusable IMEX solves",
+  "adaptive nonlinear CFL bounds used by long fixed/adaptive transport windows",
+  "shared nonlinear diagnostic setup used by explicit and IMEX scan paths",
+  "fixed-mode nonlinear diagnostics and omega masks",
+  "reusable IMEX solves",
 ]
 physics_contracts = [
-  "collision and hypercollision weights remain explicit before split updates are applied",
-  "fixed-mode projection preserves the selected Fourier block exactly",
+  "adaptive time-step policy combines linear frequency bounds and nonlinear E cross B CFL bounds before clipping",
+  "diagnostic setup preserves caller-selected geometry, field-line weights, monitored z index, and fixed-mode policy",
+  "explicit and IMEX diagnostic scans share the same composed fixed-mode/Hermitian projection convention",
 ]
 numerics_contracts = [
-  "GX omega masks keep only unique real-FFT modes before gamma/omega reductions",
+  "fixed-step policy returns the previous step unchanged while adaptive policy respects dt_min and dt_max",
+  "cache construction infers Hermite and Laguerre moment counts from species and non-species nonlinear states",
+  "diagnostic omega masks keep only unique real-FFT modes before gamma/omega reductions",
   "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
 ]
 fast_tests = [
@@ -509,8 +1072,71 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_replicate_diagnostics"
-path = "src/spectraxgk/nonlinear_replicate_diagnostics.py"
+module = "spectraxgk.operators.nonlinear.collisions"
+path = "src/spectraxgk/operators/nonlinear/collisions.py"
+owner_lane = "nonlinear collision and hypercollision split policy"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "long nonlinear transport windows use split collision and hypercollision updates to avoid mixing diagonal damping with explicit bracket stability limits",
+  "explicit and IMEX nonlinear scans share identical collision-split damping weights and update formulas",
+]
+physics_contracts = [
+  "collision and hypercollision weights remain explicit before split updates are applied",
+  "inactive collision splitting leaves the RHS term configuration unchanged",
+  "active collision splitting removes collision terms from the explicit RHS and returns a diagonal damping tensor",
+]
+numerics_contracts = [
+  "implicit and IMEX split updates use the same diagonal backward-Euler formula",
+  "explicit, STS, and RKC split updates use the same diagonal exponential formula",
+  "species-squeezed damping preserves the state layout used by single-species nonlinear scans",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep collision split helper behavior object-identical through the nonlinear compatibility facade until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.operators.nonlinear.projection"
+path = "src/spectraxgk/operators/nonlinear/projection.py"
+owner_lane = "nonlinear fixed-mode and compressed-real-FFT state projections"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "compressed real-FFT nonlinear diagnostics use unique positive-ky modes while reconstructing the Hermitian state",
+  "fixed-mode nonlinear frequency diagnostics preserve the monitored Fourier block exactly",
+]
+physics_contracts = [
+  "fixed-mode projection preserves the selected Fourier block exactly before diagnostic reductions",
+  "Hermitian projection reconstructs negative ky modes by complex conjugation and reversed kx indexing",
+]
+numerics_contracts = [
+  "projection helpers are shape-preserving and no-op when the input layout does not require a projection",
+  "composed nonlinear-state projection applies fixed-mode preservation before Hermitian completion",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep projection helper behavior object-identical through the nonlinear compatibility facade until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_transport.replicate_diagnostics"
+path = "src/spectraxgk/validation/nonlinear_transport/replicate_diagnostics.py"
 owner_lane = "replicated nonlinear-window spread diagnosis before follow-up GPU campaigns"
 status = "active"
 coverage_priority = "medium"
@@ -541,8 +1167,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_replicate_followup"
-path = "src/spectraxgk/nonlinear_replicate_followup.py"
+module = "spectraxgk.validation.nonlinear_transport.replicate_followup"
+path = "src/spectraxgk/validation/nonlinear_transport/replicate_followup.py"
 owner_lane = "targeted seed/timestep follow-up planning for blocked nonlinear-gradient campaigns"
 status = "active"
 coverage_priority = "medium"
@@ -577,8 +1203,10 @@ next_tests = [
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
-  "spectraxgk.quasilinear_model_selection",
-  "spectraxgk.external_holdout_plan",
+  "spectraxgk.diagnostics.quasilinear_transport",
+  "spectraxgk.validation.quasilinear.model_selection",
+  "spectraxgk.validation.quasilinear.model_selection_inputs",
+  "spectraxgk.validation.external_holdout",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"
@@ -632,10 +1260,12 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.quasilinear_calibration"
-path = "src/spectraxgk/quasilinear_calibration.py"
+module = "spectraxgk.validation.quasilinear.calibration_core"
+path = "src/spectraxgk/validation/quasilinear/calibration_core.py"
 owned_modules = [
-  "spectraxgk.quasilinear_holdout_admission",
+  "spectraxgk.validation.quasilinear.calibration_io",
+  "spectraxgk.validation.quasilinear.calibration_spectrum",
+  "spectraxgk.validation.quasilinear.holdout_admission",
 ]
 owner_lane = "nonlinear-window calibration and train/holdout quasilinear reports"
 status = "active"
@@ -706,8 +1336,14 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.quasilinear_window"
-path = "src/spectraxgk/quasilinear_window.py"
+module = "spectraxgk.validation.quasilinear.window_config"
+path = "src/spectraxgk/validation/quasilinear/window_config.py"
+owned_modules = [
+  "spectraxgk.validation.quasilinear.window_ensemble",
+  "spectraxgk.validation.quasilinear.window_io",
+  "spectraxgk.validation.quasilinear.window_promotion",
+  "spectraxgk.validation.quasilinear.window_statistics",
+]
 owner_lane = "nonlinear late-window convergence metadata for quasilinear holdouts"
 status = "active"
 coverage_priority = "high"
@@ -728,6 +1364,7 @@ fast_tests = [
   "tests/test_quasilinear_window.py",
   "tests/test_quasilinear_calibration.py",
   "tests/test_quasilinear_promotion_guardrails.py",
+  "tests/test_check_nonlinear_window_ensemble.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_promotion_guardrails.json",
@@ -741,7 +1378,38 @@ next_tests = [
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
-  "spectraxgk.benchmarking",
+  "spectraxgk.validation.benchmarks.harness",
+  "spectraxgk.validation.benchmarks.harness_eigenfunctions",
+  "spectraxgk.validation.benchmarks.harness_metrics",
+  "spectraxgk.validation.benchmarks.harness_scan",
+  "spectraxgk.validation.benchmarks.harness_timeseries",
+  "spectraxgk.validation.benchmarks.harness_zonal_metrics",
+  "spectraxgk.validation.benchmarks.batching",
+  "spectraxgk.validation.benchmarks.case_configs",
+  "spectraxgk.validation.benchmarks.cyclone_linear",
+  "spectraxgk.validation.benchmarks.cyclone_linear_paths",
+  "spectraxgk.validation.benchmarks.cyclone_scan",
+  "spectraxgk.validation.benchmarks.cyclone_scan_branches",
+  "spectraxgk.validation.benchmarks.cyclone_scan_explicit",
+  "spectraxgk.validation.benchmarks.cyclone_scan_krylov",
+  "spectraxgk.validation.benchmarks.cyclone_scan_seed",
+  "spectraxgk.validation.benchmarks.etg_linear",
+  "spectraxgk.validation.benchmarks.etg_scan",
+  "spectraxgk.validation.benchmarks.etg_scan_paths",
+  "spectraxgk.validation.benchmarks.fit_signals",
+  "spectraxgk.validation.benchmarks.initialization",
+  "spectraxgk.validation.benchmarks.kbm_beta",
+  "spectraxgk.validation.benchmarks.kbm_beta_solver_paths",
+  "spectraxgk.validation.benchmarks.kbm_linear",
+  "spectraxgk.validation.benchmarks.kbm_linear_paths",
+  "spectraxgk.validation.benchmarks.kbm_scan",
+  "spectraxgk.validation.benchmarks.kinetic_linear",
+  "spectraxgk.validation.benchmarks.kinetic_scan",
+  "spectraxgk.validation.benchmarks.reference",
+  "spectraxgk.validation.benchmarks.solver_policy",
+  "spectraxgk.validation.benchmarks.species",
+  "spectraxgk.validation.benchmarks.tem",
+  "spectraxgk.validation.benchmarks.tem_paths",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
@@ -776,39 +1444,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.benchmark_helpers"
-path = "src/spectraxgk/benchmark_helpers.py"
-owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "Cyclone, ETG, TEM, KBM, and kinetic-electron reference tables",
-  "benchmark fit-window policies used by release atlas generation",
-]
-physics_contracts = [
-  "reference loaders preserve ky ordering and sign conventions",
-  "fit-signal fallback policies remain explicit for density/phi ambiguity",
-]
-numerics_contracts = [
-  "auto-window scoring handles nonfinite and near-zero signals deterministically",
-  "batch slicing preserves ky order and requested batch size",
-]
-fast_tests = [
-  "tests/test_benchmarks_helpers.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_core_linear_atlas.png",
-  "docs/_static/validation_gate_index.json",
-]
-next_tests = [
-  "add reference-table checksum tests for every shipped CSV",
-  "split benchmark figure manifest policy after runner orchestration is smaller",
-]
-
-[[modules]]
-module = "spectraxgk.benchmark_scan"
-path = "src/spectraxgk/benchmark_scan.py"
+module = "spectraxgk.validation.benchmarks.scan"
+path = "src/spectraxgk/validation/benchmarks/scan.py"
 owner_lane = "pure benchmark scan-window, batching, and fit-signal policies"
 status = "active"
 coverage_priority = "medium"
@@ -839,10 +1476,10 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.benchmark_defaults"
-path = "src/spectraxgk/benchmark_defaults.py"
+module = "spectraxgk.validation.benchmarks.defaults"
+path = "src/spectraxgk/validation/benchmarks/defaults.py"
 owned_modules = [
-  "spectraxgk.normalization",
+  "spectraxgk.diagnostics.normalization",
 ]
 owner_lane = "normalization constants and Krylov policies for shipped benchmark lanes"
 status = "active"
@@ -858,7 +1495,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "shift-invert and propagator defaults remain immutable dataclass policies",
-  "GX-reference kinetic-electron default differs only by documented shift source",
+  "reference-aligned kinetic-electron default differs only by documented shift source",
 ]
 fast_tests = [
   "tests/test_normalization.py",
@@ -873,19 +1510,22 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.diagnostics"
-path = "src/spectraxgk/diagnostics.py"
+module = "spectraxgk.diagnostics.core"
+path = "src/spectraxgk/diagnostics/core.py"
 owned_modules = [
-  "spectraxgk.diagnostics_channels",
-  "spectraxgk.diagnostics_metadata",
-  "spectraxgk.diagnostics_weights",
+  "spectraxgk.diagnostics.channels",
+  "spectraxgk.diagnostics.energy",
+  "spectraxgk.diagnostics.metadata",
+  "spectraxgk.diagnostics.resolved",
+  "spectraxgk.diagnostics.transport",
+  "spectraxgk.diagnostics.weights",
 ]
 owner_lane = "scalar, resolved, flux, and zonal diagnostics"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
-  "GX exact-state diagnostics for scalar and resolved W7-X nonlinear quantities",
+  "reference-code exact-state diagnostics for scalar and resolved W7-X nonlinear quantities",
   "W7-X stella/GENE zonal-flow benchmark observable definitions",
 ]
 physics_contracts = [
@@ -897,7 +1537,7 @@ numerics_contracts = [
   "resolved diagnostic reductions preserve shape and mode indexing",
 ]
 fast_tests = [
-  "tests/test_gx_diagnostics.py",
+  "tests/test_runtime_diagnostics.py",
   "tests/test_compare_gx_nonlinear_diagnostics.py",
   "tests/test_compare_gx_runtime_diag_state.py",
   "tests/test_plot_zonal_flow_response_from_output.py",
@@ -912,12 +1552,16 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation_gates"
-path = "src/spectraxgk/validation_gates.py"
+module = "spectraxgk.validation.gates"
+path = "src/spectraxgk/validation/gates.py"
 owner_lane = "JSON-ready acceptance metrics for linear, nonlinear, eigenfunction, and response gates"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 98.0
+owned_modules = [
+  "spectraxgk.validation.gate_types",
+  "spectraxgk.validation.gate_reports",
+]
 reference_anchors = [
   "Merlo shaped-tokamak zonal response and Rosenbluth-Hinton/GAM conventions",
   "W7-X stella/GENE zonal-flow and linear benchmark gate structure",
@@ -946,8 +1590,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.zonal_validation"
-path = "src/spectraxgk/zonal_validation.py"
+module = "spectraxgk.validation.zonal"
+path = "src/spectraxgk/validation/zonal.py"
 owner_lane = "W7-X/Miller zonal-response trace normalization, reference loading, and tails"
 status = "active"
 coverage_priority = "high"
@@ -987,8 +1631,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.zonal_objective"
-path = "src/spectraxgk/zonal_objective.py"
+module = "spectraxgk.objectives.zonal"
+path = "src/spectraxgk/objectives/zonal.py"
+owned_modules = [
+  "spectraxgk.objectives.zonal_records",
+]
 owner_lane = "reduced zonal-flow objective, AD/FD gates, and stellarator optimization bridge"
 status = "active"
 coverage_priority = "high"
@@ -1022,8 +1669,11 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.autodiff_validation"
-path = "src/spectraxgk/autodiff_validation.py"
+module = "spectraxgk.validation.autodiff"
+path = "src/spectraxgk/validation/autodiff.py"
+owned_modules = [
+  "spectraxgk.validation.autodiff_finite_difference",
+]
 owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
 status = "active"
 coverage_priority = "high"
@@ -1039,6 +1689,7 @@ physics_contracts = [
 numerics_contracts = [
   "Gauss-Newton covariance is symmetric positive semidefinite under regularized normal equations",
   "finite-difference and autodiff Jacobians agree within explicit tolerances",
+  "finite-difference helper ownership remains re-exported through validation.autodiff for public API compatibility",
 ]
 fast_tests = [
   "tests/test_autodiff_validation.py",
@@ -1056,13 +1707,62 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.from_gx.vmec"
-path = "src/spectraxgk/from_gx/vmec.py"
+module = "spectraxgk.geometry.core"
+path = "src/spectraxgk/geometry/core.py"
 owned_modules = [
-  "spectraxgk.from_gx.kernels",
-  "spectraxgk.from_gx.miller",
-  "spectraxgk.miller_eik",
-  "spectraxgk.vmec_eik",
+  "spectraxgk.geometry.analytic",
+  "spectraxgk.geometry.boundaries",
+  "spectraxgk.geometry.flux_tube",
+]
+owner_lane = "analytic, slab, sampled, and imported flux-tube geometry contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone s-alpha geometry metric and drift conventions",
+  "imported eik/NetCDF flux-tube geometry arrays",
+]
+physics_contracts = [
+  "analytic and imported geometry paths expose the same solver-facing FluxTubeGeometryData contract",
+  "zero-shear promotion and twist-shift defaults preserve the intended boundary condition semantics",
+]
+numerics_contracts = [
+  "periodic spectral bgrad reconstruction is shape-checked and finite",
+  "sampled theta grids reject mismatched solver coordinates and trim closed imported intervals only when appropriate",
+]
+fast_tests = [
+  "tests/test_geometry.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_parity_matrix.png",
+]
+next_tests = [
+  "add analytic Miller-like sampled geometry parity checks in the core facade shard",
+  "add imported-geometry cache stress tests after VMEC/eik backend split completion",
+]
+
+[[modules]]
+module = "spectraxgk.geometry_backends.vmec"
+path = "src/spectraxgk/geometry_backends/vmec.py"
+owned_modules = [
+  "spectraxgk.geometry_backends.kernels",
+  "spectraxgk.geometry_backends.miller",
+  "spectraxgk.geometry_backends.miller_core",
+  "spectraxgk.geometry_backends.miller_io",
+  "spectraxgk.geometry_backends.miller_numerics",
+  "spectraxgk.geometry_backends.miller_pipeline",
+  "spectraxgk.geometry_backends.miller_profiles",
+  "spectraxgk.geometry_backends.vmec_backend_discovery",
+  "spectraxgk.geometry_backends.vmec_fieldline_numerics",
+  "spectraxgk.geometry_backends.vmec_fieldlines",
+  "spectraxgk.geometry_backends.vmec_io",
+  "spectraxgk.geometry_backends.vmec_numerics",
+  "spectraxgk.geometry_backends.vmec_pipeline",
+  "spectraxgk.geometry_backends.vmec_remap",
+  "spectraxgk.geometry_backends.vmec_splines",
+  "spectraxgk.geometry_backends.vmec_types",
+  "spectraxgk.geometry.miller_eik",
+  "spectraxgk.geometry.vmec_eik",
 ]
 owner_lane = "VMEC import/remap geometry and future differentiable geometry bridge"
 status = "active"
@@ -1082,7 +1782,9 @@ numerics_contracts = [
   "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
 ]
 fast_tests = [
-  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_geometry_backend_miller_internal.py",
+  "tests/test_geometry_backend_vmec_helpers.py",
+  "tests/test_miller_eik.py",
   "tests/test_vmec_eik.py",
   "tests/test_vmec_roundtrip_gate.py",
   "tests/test_run_vmec_roundtrip_gate.py",
@@ -1093,7 +1795,6 @@ artifact_paths = [
   "docs/_static/hsx_linear_t2_scan.csv",
 ]
 next_tests = [
-  "split file loading from coordinate remap helpers",
   "add vmec_jax in-memory parity fixtures after the core refactor lands",
   "add a multi-process VMEC cache stress test when the slow backend is available in CI",
 ]
@@ -1102,8 +1803,21 @@ next_tests = [
 module = "spectraxgk.geometry.differentiable"
 path = "src/spectraxgk/geometry/differentiable.py"
 owned_modules = [
+  "spectraxgk.geometry.autodiff_checks",
+  "spectraxgk.geometry.backend_discovery",
+  "spectraxgk.geometry.booz_xform_bridge",
+  "spectraxgk.geometry.flux_tube_contract",
   "spectraxgk.geometry.miller",
-  "spectraxgk.geometry.vmec",
+  "spectraxgk.geometry.numerics",
+  "spectraxgk.geometry.sensitivity",
+  "spectraxgk.geometry.vmec_boozer_constants",
+  "spectraxgk.geometry.vmec_boozer_core",
+  "spectraxgk.geometry.vmec_boozer_derivatives",
+  "spectraxgk.geometry.vmec_field_line_sampling",
+  "spectraxgk.geometry.vmec_flux_tube_reports",
+  "spectraxgk.geometry.vmec_state_controls",
+  "spectraxgk.geometry.vmec_state_sensitivity",
+  "spectraxgk.geometry.vmec_tensor_mapping",
 ]
 owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
 status = "active"
@@ -1125,7 +1839,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
   "tests/test_build_vmec_boozer_parity_matrix.py",
-  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_geometry_backend_vmec_helpers.py",
   "tests/test_vmec_eik.py",
 ]
 artifact_paths = [
@@ -1142,12 +1856,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.runtime_artifacts"
-path = "src/spectraxgk/runtime_artifacts.py"
-owned_modules = [
-  "spectraxgk.gx_legacy_output",
-  "spectraxgk.runtime_artifact_diagnostics",
-]
+module = "spectraxgk.workflows.runtime.artifacts"
+path = "src/spectraxgk/workflows/runtime/artifacts.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -1180,12 +1890,343 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.sharding"
-path = "src/spectraxgk/sharding.py"
+module = "spectraxgk.artifacts.__init__"
+path = "src/spectraxgk/artifacts/__init__.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "public artifact writer imports documented in docs/api.rst",
+]
+physics_contracts = [
+  "artifact package exports only serialization/reload helpers and does not run solver side effects",
+]
+numerics_contracts = [
+  "package imports preserve identity with implementation modules and legacy facades",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add import contract tests for any future artifact package submodule",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.validation"
+path = "src/spectraxgk/artifacts/validation.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication panel scripts and docs artifact refresh workflow",
+  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
+]
+physics_contracts = [
+  "artifact validation rejects nonfinite nonlinear state and field payloads before persisted output is trusted",
+]
+numerics_contracts = [
+  "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add direct finite-value rejection tests for future field containers",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.io"
+path = "src/spectraxgk/artifacts/io.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication panel scripts and docs artifact refresh workflow",
+  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
+]
+physics_contracts = [
+  "artifact path normalization preserves documented output bundles for linear, nonlinear, and quasilinear runs",
+  "state arrays are persisted next to summary/time-series artifacts without changing solver results",
+]
+numerics_contracts = [
+  "CSV writers preserve column order and finite numeric arrays used by plotting reload tests",
+  "series flattening preserves scalar time traces and averages higher-rank diagnostic channels only along non-time axes",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add backward-compatible reload tests for older linear summary and quasilinear spectrum bundles",
+  "add a direct malformed-shape flattening test for multi-channel diagnostic CSV output",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.linear"
+path = "src/spectraxgk/artifacts/linear.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime examples for linear scans, quasilinear spectra, and plotting from saved output",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "linear artifact summaries preserve fitted growth rates, frequencies, eigenfunction metadata, and selected mode indices",
+  "quasilinear spectra preserve mode ky, kperp, species weights, and saturated flux channels used by screening figures",
+]
+numerics_contracts = [
+  "complex linear signals are serialized as real, imaginary, and absolute-value columns in deterministic order",
+  "ky-scan and quasilinear-spectrum rows preserve solver ordering for serial and parallel scan comparisons",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/quasilinear_runtime_parallel_gate.png",
+]
+next_tests = [
+  "add a plot reload regression for a saved linear eigenfunction bundle",
+  "add a quasilinear-spectrum roundtrip test with missing optional saturation fields",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear"
+path = "src/spectraxgk/artifacts/nonlinear.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "runtime examples for nonlinear CSV/JSON output and plotting from saved output",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "nonlinear summaries preserve selected kx/ky, sample counts, energies, and late-time transport channels",
+  "species-resolved heat, particle, and turbulent-heating channels are serialized without changing solver reductions",
+]
+numerics_contracts = [
+  "higher-rank diagnostic channels flatten deterministically for CSV table output",
+  "scalar phi2-only nonlinear results still emit finite JSON summaries when diagnostics are disabled",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add plot reload regression for saved nonlinear CSV diagnostics",
+  "add malformed species-channel shape rejection tests before publication artifact regeneration",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.spectral_layout"
+path = "src/spectraxgk/artifacts/spectral_layout.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "dealiased spectral-axis output conventions used by NetCDF comparison artifacts",
+  "restart append and nonlinear resolved-diagnostic schema tests",
+]
+physics_contracts = [
+  "active kx/ky axis selection preserves the resolved nonlinear fields used in benchmark comparison plots",
+  "restart and field real/imag packing preserves species, Laguerre, Hermite, theta, kx, and ky axis semantics",
+]
+numerics_contracts = [
+  "condensed kx, ky, and ky-kx output helpers reject ambiguous full-vs-active axis lengths",
+  "spectral complex arrays are converted to deterministic float32 real/imag layout before NetCDF writes",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add a restart-layout roundtrip test for multispecies non-square kx/ky grids",
+  "add a direct active-axis regression using a known dealiased spectrum fixture",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_geometry"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_geometry.py"
+owner_lane = "nonlinear NetCDF geometry groups, input-parameter metadata, and particle moments"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF geometry groups preserve field-line geometry profiles used by diagnostics and comparison tooling",
+  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+]
+numerics_contracts = [
+  "geometry-implied grids are rebuilt with the same defaults as runtime execution",
+  "particle moments use deterministic float32 arrays on the dealiased output grid",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add direct tests for every public geometry profile written to NetCDF",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_fields"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_fields.py"
+owner_lane = "nonlinear NetCDF final-field big-file writer"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "final-field NetCDF diagnostics used by post-processing and publication artifact workflows",
+]
+physics_contracts = [
+  "big-file output preserves final electrostatic/electromagnetic fields and species moments",
+]
+numerics_contracts = [
+  "spectral fields use deterministic real/imag layout and real-space XY transforms",
+  "active kx/ky dealiased field variables preserve the same condensed axes as diagnostic histories",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add multi-species finite-beta big-file schema tests before publication artifact freeze",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf_diagnostics"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf_diagnostics.py"
+owner_lane = "nonlinear NetCDF scalar, species, spectral, and split-diagnostic history schema writer"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF diagnostic-history variables preserve scalar, species, resolved spectral, zonal, and split electromagnetic transport channels",
+  "electrostatic split diagnostics fall back to total resolved transport only under the electrostatic model contract",
+]
+numerics_contracts = [
+  "active kx/ky condensed NetCDF variables preserve total energy and transport reductions used by comparison metrics",
+  "complex zonal diagnostics are written in deterministic real/imag layout",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+  "tests/test_restart_gate.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add direct tests for every optional resolved diagnostic written to NetCDF",
+  "add multi-species finite-beta NetCDF schema tests before publication artifact freeze",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_netcdf"
+path = "src/spectraxgk/artifacts/nonlinear_netcdf.py"
+owner_lane = "nonlinear NetCDF output-bundle orchestrator"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF output used by restart, comparison, and publication artifact workflows",
+  "runtime examples for nonlinear Miller, VMEC, and benchmark comparison outputs",
+]
+physics_contracts = [
+  "NetCDF outputs preserve geometry profiles, diagnostic-history schema, restart state, and final-field big-file diagnostics",
+  "particle moment exports use the same geometry-implied grid and linear cache contract as the nonlinear solver",
+]
+numerics_contracts = [
+  "restart and big-file outputs retain deterministic real/imag layout and finite final-time metadata",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add an end-to-end NetCDF reload-to-plot regression for a shipped nonlinear fixture",
+  "add multi-species finite-beta NetCDF schema tests before publication artifact freeze",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.nonlinear_diagnostics"
+path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "nonlinear NetCDF diagnostic reload used by restart append and comparison artifacts",
+  "publication panel scripts and docs artifact refresh workflow",
+]
+physics_contracts = [
+  "loaded nonlinear diagnostics preserve species-resolved heat, particle, turbulent-heating, and resolved spectral traces",
+  "restart-append diagnostics drop transient monitored-mode traces that are not persisted on disk",
+]
+numerics_contracts = [
+  "real/imag NetCDF variables reload as complex arrays before comparison metrics are computed",
+  "missing optional turbulent-heating channels are filled with finite zero traces rather than NaNs",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "add a restart-append roundtrip test with multiple resolved diagnostic fields",
+  "add a malformed optional-variable schema rejection test for invalid real/imag dimensions",
+]
+
+[[modules]]
+module = "spectraxgk.parallel.state"
+path = "src/spectraxgk/parallel/state.py"
 owned_modules = [
-  "spectraxgk.sharded_integrators",
+  "spectraxgk.parallel.integrators",
   "spectraxgk.utils.callbacks",
-  "spectraxgk.velocity_sharding",
+  "spectraxgk.parallel.velocity",
+  "spectraxgk.parallel.velocity_drive",
+  "spectraxgk.parallel.velocity_hermite",
+  "spectraxgk.parallel.velocity_plan",
+  "spectraxgk.parallel.velocity_streaming",
 ]
 owner_lane = "JAX parallelization policy for CPU/GPU scans and ensemble workloads"
 status = "active"
@@ -1209,6 +2250,7 @@ fast_tests = [
   "tests/test_sharded_integrators.py",
   "tests/test_parallel.py",
   "tests/test_generate_parallel_ky_scan_gate.py",
+  "tests/test_velocity_sharding.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",
@@ -1238,11 +2280,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.nonlinear_gradient_evidence"
-path = "src/spectraxgk/nonlinear_gradient_evidence.py"
-owned_modules = [
-  "spectraxgk.nonlinear_gradient_followup",
-]
+module = "spectraxgk.validation.nonlinear_gradient.evidence"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence.py"
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -1331,17 +2370,829 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.solver_objective_gradients"
-path = "src/spectraxgk/solver_objective_gradients.py"
+module = "spectraxgk.validation.nonlinear_gradient.evidence_core"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_core.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "finite-difference conditioning checks for nonlinear turbulence-gradient claims",
+]
+physics_contracts = [
+  "non-production markers classify startup, pilot, reduced-window, and estimator artifacts as non-promotable evidence",
+  "production nonlinear turbulence-gradient evidence requires explicit long-window scope before downstream reports can promote it",
+]
+numerics_contracts = [
+  "JSON-safe metric extraction rejects booleans, missing values, and nonfinite values before gate arithmetic",
+  "finite-difference conditioning summaries require finite response, asymmetry, condition number, and uncertainty metrics before passing",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add direct core-only tests for malformed gradient payloads with nonfinite JSON-compatible values",
+  "add a regression that production markers plus non-production blockers fail closed when both appear in one artifact",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_classification"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_classification.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "finite-difference conditioning checks for nonlinear turbulence-gradient claims",
+]
+physics_contracts = [
+  "startup, reduced-window, pilot, or estimator artifacts remain classified as non-production even when their local metrics pass",
+  "only explicitly scoped production long-window artifacts without blockers can qualify for nonlinear turbulence-gradient promotion",
+]
+numerics_contracts = [
+  "classification records every response, asymmetry, condition-number, and uncertainty gate before promotion",
+  "missing or malformed conditioning values fail closed through the shared core metric parser",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add a classification-only regression with mixed production and startup scope markers",
+  "add a malformed conditioning payload regression that proves missing uncertainty blocks promotion",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_windows"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_windows.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "replicated nonlinear heat-flux window convergence before turbulence-gradient promotion",
+]
+physics_contracts = [
+  "single nonlinear-window artifacts can document convergence but cannot alone promote production turbulence-gradient evidence",
+  "replicated long-window ensembles must pass uncertainty and spread limits before they qualify as transport-gradient support",
+]
+numerics_contracts = [
+  "derived ensembles require at least the configured minimum number of window reports",
+  "unsupported or malformed window artifacts fail closed and remain visible in the evidence rows",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+]
+next_tests = [
+  "add a direct malformed-window regression covering missing statistics and mismatched path lengths",
+  "add a derived-ensemble regression with one failed individual window to preserve fail-closed behavior",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_fd"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_fd.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "central finite-difference response conditioning for nonlinear turbulence-gradient claims",
+  "paired-replicate uncertainty diagnostics for post-transient nonlinear heat-flux gradients",
+]
+physics_contracts = [
+  "production nonlinear turbulence-gradient evidence must be assembled from matched minus, baseline, and plus long-window ensembles",
+  "finite-difference gradients remain blocked when the heat-flux response is unresolved relative to replicated-window uncertainty",
+]
+numerics_contracts = [
+  "central finite differences report forward/backward asymmetry, condition number, response fraction, and relative gradient uncertainty",
+  "nonfinite or nonpositive perturbation sizes raise before any report can be promoted",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
+]
+next_tests = [
+  "add a direct finite-difference report regression for nonfinite ensemble means and sem values",
+  "add a paired-replicate diagnostic regression that proves common-random-number seeds reduce gradient uncertainty when available",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_screening"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_screening.py"
 owned_modules = [
-  "spectraxgk.stellarator_optimization",
-  "spectraxgk.nonlinear_transport_optimization",
-  "spectraxgk.vmec_jax_candidate_gate",
-  "spectraxgk.vmec_jax_transport_admission",
-  "spectraxgk.vmec_jax_boundary_chain",
-  "spectraxgk.vmec_jax_transport_gradient",
-  "spectraxgk.vmec_jax_transport_line_search",
-  "spectraxgk.vmec_jax_transport_objective",
+  "spectraxgk.validation.nonlinear_gradient.evidence_brackets",
+  "spectraxgk.validation.nonlinear_gradient.evidence_scoring",
+]
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "same-control nonlinear turbulence-gradient bracket sweeps for locality and amplitude selection",
+  "campaign planning reports that separate screening evidence from production turbulent-transport-gradient promotion",
+]
+physics_contracts = [
+  "candidate rankings and bracket sweeps are planning tools and cannot promote artifacts that fail the production long-window classification gate",
+  "same-control bracket sweeps must flag sign changes, nonlocal responses, unresolved responses, and paired-replicate instability before recommending more expensive nonlinear campaigns",
+]
+numerics_contracts = [
+  "screening scores use normalized margins across response, locality, conditioning, and uncertainty rather than a single scalar residual",
+  "metadata length mismatches, mixed-control sweeps, and missing perturbation amplitudes fail closed with explicit recommendations",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json",
+  "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
+  "docs/_static/qa_ess_rbc11_bracket_sweep.json",
+]
+next_tests = [
+  "add a direct screening regression for repeated-bracket sign instability with paired replicate diagnostics",
+  "add a mixed-control bracket sweep regression that preserves fail-closed recommendations and zero promotion count",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.evidence_gap"
+path = "src/spectraxgk/validation/nonlinear_gradient/evidence_gap.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "production nonlinear turbulence-gradient evidence requires matched baseline/plus/minus post-transient heat-flux windows",
+  "missing-evidence reports must distinguish planning gaps from promoted turbulent-transport-gradient claims",
+]
+physics_contracts = [
+  "standalone passed nonlinear transport windows are necessary but not sufficient for a production turbulence-gradient claim",
+  "production evidence reports require both a passing production gradient artifact and replicated long-window uncertainty evidence",
+]
+numerics_contracts = [
+  "required campaign rows preserve identical numerics except for the perturbed parameter and record analysis-window bounds",
+  "gap reports enumerate failed gradient gates and required central finite-difference metrics before any promotion can be considered",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+]
+next_tests = [
+  "add a gap-report regression for production-candidate artifacts that fail only uncertainty gates",
+  "add a custom gap-config regression that verifies required-run paths and analysis windows are stable",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_core"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_core.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "paired-seed and control-variate variance-reduction planning for finite-difference turbulence gradients",
+]
+physics_contracts = [
+  "follow-up core helpers classify nonlinear gradient artifacts for campaign planning only, not as production gradient evidence",
+  "replicate parsing and coefficient labeling preserve explicit state/control metadata for long-window turbulent-transport audits",
+]
+numerics_contracts = [
+  "JSON-safe metric extraction rejects nonfinite values before gate arithmetic",
+  "variance-reduction statistics require enough common samples and fail closed when control or response variance is degenerate",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+  "docs/_static/nonlinear_gradient_composite_control_design.json",
+  "docs/_static/nonlinear_gradient_state_control_runbook.json",
+]
+next_tests = [
+  "add direct invalid-artifact tests for helper functions as more planners move out of the facade",
+  "record control-variate conditioning metadata in every promoted nonlinear-gradient campaign plan",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_candidate"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_candidate.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "bounded follow-up planning after failed long-window nonlinear turbulence-gradient finite-difference gates",
+  "post-transient turbulent-transport uncertainty reduction should target only local and response-resolved candidates",
+]
+physics_contracts = [
+  "candidate-design reports are campaign planning artifacts and never promote nonlinear-gradient evidence",
+  "extra replicas are recommended only for local response-resolved candidates; nonlocal or unresolved responses require bracket/control redesign",
+]
+numerics_contracts = [
+  "replicate estimates use explicit 1/sqrt(N) SEM scaling with safety factors and locality-capped bracket scales",
+  "malformed metadata, failed spread states, and impossible bracket scales produce explicit blockers rather than launch commands",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_next_campaign_design.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.png",
+]
+next_tests = [
+  "add a direct candidate-design regression for locality-safe bracket scaling with zero asymmetry",
+  "add a malformed source-ensemble regression where variance spread blocks replica-only follow-up",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_composite"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_composite.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-control VMEC-boundary follow-up directions for nonlinear turbulence-gradient campaigns",
+  "finite-difference candidate screening before composite profile-direction launches",
+]
+physics_contracts = [
+  "composite controls require resolved, local, uncertainty-bounded, sign-robust finite-difference candidates",
+  "single-control or zero-gradient candidates cannot be silently promoted into a multi-coefficient nonlinear-gradient launch",
+]
+numerics_contracts = [
+  "control weights are normalized by the largest admissible descent-gradient magnitude",
+  "coefficient parsing, paired-sign robustness, and finite metric gates all fail closed with row-level blockers",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_composite_control_design.json",
+  "docs/_static/nonlinear_gradient_composite_control_design.png",
+]
+next_tests = [
+  "add a composite-control regression for mixed admissible and nonadmissible coefficients",
+  "add a zero-descent-gradient regression that blocks launch command generation",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_plan"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_plan.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "matched seed/timestep replicate planning for nonlinear finite-difference turbulence gradients",
+  "bounded GPU campaign generation only after response and locality gates pass",
+]
+physics_contracts = [
+  "matched-replicate follow-up is allowed only for local but statistically unresolved long-window gradient candidates",
+  "passed candidates freeze provenance and nonlocal or unresolved candidates are redirected to bracket/control redesign",
+]
+numerics_contracts = [
+  "planned runs preserve baseline/plus/minus state matching and deterministic next-seed assignment",
+  "SEM-based replicate counts respect configured maximum extra replicates per state and fail closed without source replicate metadata",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
+  "docs/_static/nonlinear_gradient_next_campaign_design.png",
+]
+next_tests = [
+  "add a matched-run planning regression that preserves existing timestep replicate labels",
+  "add a no-source-ensemble regression that blocks launching nominal seed replicas",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_ql_seed"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_ql_seed.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "QL/linear sensitivity screens for selecting VMEC-state controls before nonlinear turbulence-gradient campaigns",
+  "AD/FD consistency and sign-robustness gates before spending nonlinear GPU runs",
+]
+physics_contracts = [
+  "QL/linear seed screens admit upstream VMEC-state controls only and do not claim nonlinear transport-gradient evidence",
+  "state controls require resolved primary-objective sensitivity with enough cross-case sign consistency before nonlinear launch planning",
+]
+numerics_contracts = [
+  "AD/FD relative-error gates, minimum absolute sensitivity, case coverage, and sign-consistency thresholds must all pass",
+  "primary objective membership and metadata length checks raise or fail closed before producing admitted controls",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_ql_seed_screen.json",
+  "docs/_static/nonlinear_gradient_ql_seed_screen.png",
+]
+next_tests = [
+  "add a QL seed-screen regression with conflicting sign across equal-magnitude artifacts",
+  "add a mixed-objective regression proving non-primary objectives cannot admit controls alone",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_state_runbook"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_state_runbook.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-state to perturbable input-control mapping before nonlinear turbulence-gradient launches",
+  "conditioned state-to-input Jacobian gates for differentiable stellarator optimization campaigns",
+]
+physics_contracts = [
+  "a passed QL seed screen is upstream evidence only; nonlinear launch commands require explicit state-to-input mappings",
+  "mapped controls are launch-ready only when mapping artifacts pass condition-number, residual, and input-control availability gates",
+]
+numerics_contracts = [
+  "mapping condition number and relative residual are parsed as finite JSON-safe metrics before command fragments are emitted",
+  "failed parent artifacts, missing input controls, and missing mapping rows remain visible as row-level blockers",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/test_nonlinear_gradient_followup.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_gradient_state_control_runbook.json",
+  "docs/_static/nonlinear_gradient_state_control_runbook.png",
+]
+next_tests = [
+  "add a state-runbook regression for two mapping artifacts where a later passing row supersedes a failed row",
+  "add a condition-number boundary regression for exact-threshold mapping acceptance",
+]
+
+[[modules]]
+module = "spectraxgk.validation.nonlinear_gradient.followup_variance"
+path = "src/spectraxgk/validation/nonlinear_gradient/followup_variance.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "paired-seed variance-reduction planning for nonlinear finite-difference gradients",
+  "control-variate uncertainty propagation for long-window turbulent-transport audits",
+]
+physics_contracts = [
+  "variance-reduction reports design follow-up campaigns only and do not promote nonlinear-gradient evidence",
+  "control-variate campaigns require independent control-mean evidence before uncertainty reduction can be used for production claims",
+]
+numerics_contracts = [
+  "paired plus/minus response uncertainty is computed from common seed labels and fails closed when labels or SEM estimates are missing",
+  "combined control-variate uncertainty includes residual SEM and beta-squared control-mean variance before passing gates",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+]
+next_tests = [
+  "add a direct regression for a control-variate candidate with unknown independent control mean",
+  "add a malformed campaign plan fixture where candidate blockers are propagated into launch blockers",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.eigen"
+path = "src/spectraxgk/objectives/eigen.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "implicit left/right non-Hermitian eigenpair sensitivity theory",
+  "finite-difference branch-continuity validation for eigenvalue objectives",
+]
+physics_contracts = [
+  "dominant-growth derivatives are valid only on locally isolated eigenvalue branches",
+  "branch-locality diagnostics must distinguish max-real branch switching from nearest-branch local finite differences",
+]
+numerics_contracts = [
+  "implicit eigenpair sensitivities use a biorthogonal left/right normalization",
+  "dominant real eigenvalue VJP matches central finite differences on isolated non-Hermitian branches",
+  "branch gap, slope difference, and finite eigenvalue guards fail closed before optimization promotion",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add multi-root branch-near-degeneracy stress tests before using new objective families in optimization",
+  "record branch-gap statistics in every promoted VMEC/Boozer optimizer artifact",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.core"
+path = "src/spectraxgk/objectives/core.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear gyrokinetic eigenvalue growth-rate and frequency objectives",
+  "mixing-length and quasilinear proxy construction from linear eigenmodes",
+]
+physics_contracts = [
+  "solver-objective vectors expose growth, frequency, effective kperp, heat/particle weights, and an explicitly scoped mixing-length proxy",
+  "growth-rate objectives use the same linear RHS operator materialized for branch-locality and finite-difference gates",
+]
+numerics_contracts = [
+  "linear operator materialization must match the growth-rate path exactly",
+  "selected ky rows and moment counts fail closed when outside the resolved grid",
+  "scalar objective aliases map to canonical objective-vector entries with length validation",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add objective-vector regression rows for additional ky and moment resolutions",
+  "add branch-audited quasilinear objective-vector checks before broad optimizer promotion",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.sampling"
+path = "src/spectraxgk/objectives/sampling.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "physical wavenumber scan definitions for gyrokinetic optimization studies",
+  "weighted multi-point objective aggregation for stellarator optimization gates",
+]
+physics_contracts = [
+  "optimization and validation studies specify physical ky rho_i values rather than implementation-specific FFT row numbers",
+  "multi-surface, multi-field-line, and multi-ky aggregate objectives record normalized sample weights",
+]
+numerics_contracts = [
+  "requested ky values must be positive integer multiples of the base spectral spacing",
+  "generated Ly, Ny, and FFT row indices must reproduce requested physical ky values within tolerance",
+  "aggregate weights must be finite, positive-sum, and normalized before objective reduction",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.png",
+]
+next_tests = [
+  "add physical-ky duplicate/roundoff tests for denser stellarator scan grids",
+  "extend aggregate-weight tests to multi-surface optimizer portfolio artifacts",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.geometry"
+path = "src/spectraxgk/objectives/geometry.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "finite-difference validation for geometry-parameter transport objectives",
+  "solver-ready flux-tube geometry contract used by differentiable optimization gates",
+]
+physics_contracts = [
+  "tiny solver-ready objective gates validate geometry-observable AD/FD plumbing without claiming VMEC/Boozer or nonlinear transport promotion",
+  "objective-gate rows expose per-objective and per-parameter pass/fail metadata for downstream artifact promotion policies",
+]
+numerics_contracts = [
+  "solver-ready geometry design vectors are length checked before any traced computation",
+  "finite-difference and AD Jacobian rows are compared with explicit absolute and relative tolerances",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "add direct regression rows for non-default tiny geometry parameter values",
+  "promote additional solver-ready objective gates only when each observable has an explicit physics scope",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.nonlinear_window"
+path = "src/spectraxgk/objectives/nonlinear_window.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "reduced nonlinear-window differentiability gates for stellarator optimization plumbing",
+  "late-window transport diagnostics require separate long-running nonlinear validation before promotion",
+]
+physics_contracts = [
+  "reduced nonlinear-window metrics are explicitly scoped as smooth estimator gates, not converged nonlinear heat-flux averages",
+  "window mean, coefficient of variation, and normalized trend are derived from linear observables and used only for bounded differentiability checks",
+]
+numerics_contracts = [
+  "RK2 logistic envelope propagation rejects too-short windows and invalid tail fractions",
+  "late-window trend normalization is finite and differentiable for near-zero but positive regularized flux scales",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png",
+]
+next_tests = [
+  "add parameterized invalid-window tests for steps and tail_fraction guards",
+  "keep reduced-window gates separate from production nonlinear transport-window admission artifacts",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.gradient_gates"
+path = "src/spectraxgk/objectives/gradient_gates.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "implicit non-Hermitian eigenpair sensitivities for solver-ready geometry objectives",
+  "actual linear-RHS gradient checks before VMEC/Boozer production-gradient promotion",
+]
+physics_contracts = [
+  "solver-ready gates validate actual linear-RHS growth, frequency, and quasilinear-weight observables without claiming full VMEC/Boozer optimization",
+  "branch-continuity reports must require the monitored dominant-growth branch to remain locally dominant under finite-difference perturbations",
+]
+numerics_contracts = [
+  "eigenpair sensitivities must be compared with nearest-branch finite differences using explicit gap, absolute, and relative tolerances",
+  "solver-ready value evaluators must remain finite and shape-compatible with the solver-objective vector contract",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+  "tests/test_solver_gradient_gate_modules.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+]
+next_tests = [
+  "add direct invalid-moment tests for solver_objective_branch_gradient_report",
+  "add a second solver-ready geometry parameterization before broad optimization claims",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_boozer_gradients"
+path = "src/spectraxgk/objectives/vmec_boozer_gradients.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates",
+  "full vmec_jax state coefficient to booz_xform_jax equal-arc geometry to solver-objective gradient reports",
+]
+physics_contracts = [
+  "mode-21 VMEC/Boozer gradient gates must keep frequency, quasilinear, and reduced nonlinear-window estimator claims distinct",
+  "reduced nonlinear-window estimator reports must remain separate from converged nonlinear transport heat-flux optimization claims",
+]
+numerics_contracts = [
+  "VMEC/Boozer state-gradient reports must record mode resolution, surface stencil, state size, and objective-specific gate rows",
+  "context and feature hooks must be dependency-injected so tests can validate the gradient-gate math without optional geometry backends",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+  "tests/test_solver_gradient_gate_modules.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+]
+next_tests = [
+  "add multi-equilibrium mode-21 gradient fixtures before broad stellarator optimization claims",
+  "add direct negative tests for invalid radial and mode indices through a fake VMEC state context",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_boozer_context"
+path = "src/spectraxgk/objectives/vmec_boozer_context.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "mode-21 VMEC/Boozer state-to-solver context construction used by full-chain differentiability gates",
+  "quasilinear heat-flux feature extraction from isolated eigenpairs for solver-objective gradient validation",
+]
+physics_contracts = [
+  "context construction must preserve the VMEC state coefficient perturbation, Boozer equal-arc mapping, and solver geometry source scope",
+  "quasilinear feature extraction must keep growth, frequency, kperp, heat-flux weight, and mixing-length proxy observables explicit",
+]
+numerics_contracts = [
+  "context builders must keep grid shape, moment counts, Boozer mode resolution, and selected ky metadata stable for report builders",
+  "feature extraction must build the same linear cache and quadrature weights used by the promoted solver-objective reports",
+]
+fast_tests = [
+  "tests/test_solver_gradient_gate_modules.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+]
+next_tests = [
+  "add fake-backend index-error tests for radial and mode bounds without optional VMEC dependencies",
+  "add a direct low-dimensional quasilinear-feature contract test with finite heat-flux weight",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_state"
+path = "src/spectraxgk/objectives/vmec_state.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-JAX state coefficient perturbations for Boozer and solver objective gates",
+  "mode-index naming conventions used by finite-difference gradient artifacts",
+]
+physics_contracts = [
+  "state coefficient helpers expose explicit VMEC/Boozer Fourier families instead of implicit string mutation in solver-objective gates",
+  "parameter names distinguish mid-surface defaults from radial-index-specific perturbations in optimization artifacts",
+]
+numerics_contracts = [
+  "state arrays must be two-dimensional and expose at least one non-axisymmetric mode before perturbation",
+  "coefficient replacement preserves the state pytree/dataclass structure while applying a single indexed perturbation",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+]
+next_tests = [
+  "add direct negative tests for invalid coefficient families and undersized arrays",
+  "record coefficient-family and mode-index metadata in every promoted VMEC/Boozer finite-difference artifact",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_boozer"
+path = "src/spectraxgk/objectives/vmec_boozer.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC/Boozer in-memory geometry bridge used by differentiable stellarator objectives",
+  "multi-surface, multi-field-line, and multi-ky objective aggregation for optimization gates",
+]
+physics_contracts = [
+  "VMEC/Boozer objective plumbing must separate geometry-bridge options from linear solver-objective options before expensive backend calls",
+  "sample metadata must record surface, toroidal flux, field-line alpha, and physical ky mappings used by aggregate optimization objectives",
+  "scalar reductions must keep smooth mean and weighted-mean paths distinct from nonsmooth max diagnostics",
+]
+numerics_contracts = [
+  "unknown VMEC/Boozer objective options fail closed before backend execution",
+  "physical ky table rows reuse the validated spectral-grid mapping and record resolved ky errors",
+  "weighted reductions normalize finite positive-sum weights before multiplying solver objective rows",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.png",
+]
+next_tests = [
+  "add direct module-level tests for dependency-injected backend and objective callables",
+  "extend aggregate-objective fixtures to multiple torflux samples and physical ky grids",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_boozer_fd"
+path = "src/spectraxgk/objectives/vmec_boozer_fd.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "finite-difference validation of VMEC/Boozer state perturbations before optimization promotion",
+  "multi-surface and multi-ky aggregate finite-difference reports for reduced stellarator objectives",
+]
+physics_contracts = [
+  "finite-difference reports must state that they are sensitivity gates, not full nonlinear transport or production AD claims",
+  "scalar and aggregate reports must record the perturbed VMEC family, radial index, mode index, and sampled objective vector rows",
+  "aggregate finite-difference reports must expose sample metadata for surface, field-line, and ky coverage",
+]
+numerics_contracts = [
+  "perturbation steps must be positive and curvature ratios must be bounded before a finite-difference report can pass",
+  "central-difference responses must be finite and resolved above response_atol",
+  "weighted aggregate reductions must use finite normalized positive-sum weights inherited from the sampling contract",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+]
+next_tests = [
+  "add direct tests for no-response finite-difference failures and invalid perturbation steps",
+  "add aggregate finite-difference fixtures with torflux and physical ky requests",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_boozer_line_search"
+path = "src/spectraxgk/objectives/vmec_boozer_line_search.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "curvature-gated one-parameter VMEC/Boozer line-search audits before optimizer promotion",
+  "held-out surface, field-line, and ky validation for aggregate reduced objectives",
+]
+physics_contracts = [
+  "line-search reports must remain one-coefficient audits, not multi-parameter stellarator optimization claims",
+  "aggregate line-search holdouts must keep training and held-out samples separate before promotion",
+  "held-out reports must expose both training and held-out objective reductions",
+]
+numerics_contracts = [
+  "update steps, max steps, and improvement tolerances must fail closed when invalid",
+  "candidate steps require a passing finite-difference curvature gate and an objective decrease",
+  "holdout audits must recompute initial and final held-out objectives at the accepted coefficient offset",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
+  "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+]
+next_tests = [
+  "add direct line-search tests for zero derivative, failed curvature gate, and rejected candidate paths",
+  "add held-out audit fixtures where training passes but held-out objective worsens",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.solver_gradients"
+path = "src/spectraxgk/objectives/solver_gradients.py"
+owned_modules = [
+  "spectraxgk.objectives.solver_gradient_reports",
+  "spectraxgk.objectives.solver_vmec",
+  "spectraxgk.objectives.stellarator",
+  "spectraxgk.objectives.stellarator_contracts",
+  "spectraxgk.objectives.stellarator_reduced",
+  "spectraxgk.validation.nonlinear_transport.optimization_guard",
+  "spectraxgk.validation.nonlinear_transport.optimization_policy",
+  "spectraxgk.validation.nonlinear_transport.optimization_reports",
+  "spectraxgk.validation.stellarator.candidate_gate",
+  "spectraxgk.validation.stellarator.transport_audit",
+  "spectraxgk.validation.stellarator.transport_campaign",
+  "spectraxgk.validation.stellarator.transport_landscape",
+  "spectraxgk.validation.stellarator.transport_policies",
+  "spectraxgk.validation.stellarator.transport_prelaunch",
+  "spectraxgk.validation.stellarator.transport_samples",
+  "spectraxgk.validation.stellarator.transport_selection",
+  "spectraxgk.geometry.vmec_boundary_chain",
+  "spectraxgk.geometry.vmec_boundary_collection",
+  "spectraxgk.objectives.vmec_transport_gradient",
+  "spectraxgk.objectives.vmec_transport_line_search",
+  "spectraxgk.objectives.vmec_transport",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
@@ -1519,8 +3370,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.qa_low_turbulence"
-path = "src/spectraxgk/qa_low_turbulence.py"
+module = "spectraxgk.objectives.qa_low_turbulence"
+path = "src/spectraxgk/objectives/qa_low_turbulence.py"
 owner_lane = "aspect-constrained QA low-turbulence reduced optimization plumbing"
 status = "active"
 coverage_priority = "high"
@@ -1557,41 +3408,401 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.stellarator_objective_portfolio"
-path = "src/spectraxgk/stellarator_objective_portfolio.py"
-owner_lane = "backend-free and artifact-level multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
+module = "spectraxgk.objectives.qa_low_turbulence_contracts"
+path = "src/spectraxgk/objectives/qa_low_turbulence_contracts.py"
+owner_lane = "aspect-constrained QA low-turbulence reduced optimization contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "microstability optimization reporting with explicit observable and residual names",
+  "JSON-stable reduced optimization artifacts for manuscript figure builders",
+]
+physics_contracts = [
+  "design names distinguish QA constraints-only and transport-aware reduced objectives",
+  "observable names expose constraint, linear, quasilinear, and reduced nonlinear-envelope quantities separately",
+]
+numerics_contracts = [
+  "result serialization preserves scalar, residual, observable, and covariance gates",
+  "configuration stores late-window and finite-difference tolerances explicitly",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.json",
+]
+next_tests = [
+  "add schema-level serialization tests for every QALowTurbulenceResult field",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_model"
+path = "src/spectraxgk/objectives/qa_low_turbulence_model.py"
+owner_lane = "reduced QA low-turbulence differentiable observable model"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear growth, quasilinear proxy, and smooth nonlinear-envelope screening before full nonlinear promotion",
+  "finite-difference validation of reduced differentiable transport observables",
+]
+physics_contracts = [
+  "reduced growth, quasilinear heat flux, and nonlinear envelope remain separate observables",
+  "density and temperature gradient dependence is explicit in the heat-flux trace",
+]
+numerics_contracts = [
+  "fixed-step RK2 envelope integration remains JAX-transformable",
+  "late-window metrics provide mean, CV, trend, slope, and start-index diagnostics",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_time_horizon_audit.json",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.png",
+]
+next_tests = [
+  "add direct monotonic drive-response tests across density and temperature gradients",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_residuals"
+path = "src/spectraxgk/objectives/qa_low_turbulence_residuals.py"
+owner_lane = "QA low-turbulence residual and sensitivity gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "AD-vs-finite-difference validation for scalar, residual, and observable maps",
+  "Gauss-Newton covariance diagnostics for reduced stellarator optimization",
+]
+physics_contracts = [
+  "residual vectors expose aspect, iota, quasisymmetry, helical shaping, regularization, and optional transport terms separately",
+  "transport residuals remain reduced-envelope diagnostics until full nonlinear audits pass",
+]
+numerics_contracts = [
+  "scalar objective and residual Jacobian gates use precision-aware finite-difference tolerances",
+  "covariance diagnostics use the same weighted residual map as the optimizer",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.json",
+]
+next_tests = [
+  "add rank-deficiency and covariance-conditioning failure fixtures",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_optimizer"
+path = "src/spectraxgk/objectives/qa_low_turbulence_optimizer.py"
+owner_lane = "QA low-turbulence reduced optimizer loop"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "gradient-based reduced stellarator screening before production VMEC/Boozer optimization",
+  "optimization-history artifact contracts for manuscript-ready comparisons",
+]
+physics_contracts = [
+  "constraints-only and transport-aware designs start from the same seed",
+  "optimizer results include initial/final observables and AD/FD gate outputs",
+]
+numerics_contracts = [
+  "Adam update history records objective, gradient norm, parameters, and observables",
+  "final accepted designs are evaluated by scalar, residual, and observable finite-difference gates",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.summary.csv",
+]
+next_tests = [
+  "add optimizer regression tests for zero steps and rejected non-finite parameters",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.qa_low_turbulence_artifacts"
+path = "src/spectraxgk/objectives/qa_low_turbulence_artifacts.py"
+owner_lane = "QA low-turbulence comparison and figure payload builders"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication-ready reduced QA low-turbulence comparison panels",
+  "late-window convergence reporting for reduced heat-flux traces",
+]
+physics_contracts = [
+  "surface and LCFS |B| payloads remain labeled as reduced visualizations, not solved VMEC equilibria",
+  "fixed-gradient trace payloads include convergence gates before entering figure summaries",
+]
+numerics_contracts = [
+  "density-gradient scans report axes, means, CVs, trends, growth rates, and fitted slopes",
+  "long-window gates fail closed when late-window samples are insufficient or drift exceeds tolerance",
+]
+fast_tests = [
+  "tests/test_qa_low_turbulence.py",
+]
+artifact_paths = [
+  "docs/_static/qa_low_turbulence_comparison.png",
+  "docs/_static/qa_low_turbulence_comparison.scan.csv",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.csv",
+]
+next_tests = [
+  "add direct artifact-payload tests for failed long-window convergence and insufficient samples",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.portfolio_contracts"
+path = "src/spectraxgk/objectives/portfolio_contracts.py"
+owner_lane = "backend-free multi-surface, multi-alpha, multi-ky objective-table shape and weight contracts"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
 reference_anchors = [
   "multi-field-line and multi-surface stellarator microstability optimization",
-  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
+  "weighted portfolio reductions used by differentiable geometry objectives",
 ]
 physics_contracts = [
   "fixed surface/alpha/ky sample tables are reduced explicitly before any geometry-wide optimization claim",
-  "backend-free reducer gates do not promote VMEC/Boozer geometry-gradient or nonlinear heat-flux optimization claims",
+  "sample and objective weights remain visible, normalized, and independent of backend-specific row production",
 ]
 numerics_contracts = [
+  "objective rows are real finite four-dimensional tensors with positive sample axes",
   "sample and objective weights are finite, non-negative, normalized, and shape checked",
-  "aggregate scalar objectives pass reverse-mode, JVP, and central finite-difference directional derivative parity",
 ]
 fast_tests = [
   "tests/test_stellarator_objective_portfolio.py",
-  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
   "docs/_static/stellarator_objective_portfolio_gate.png",
-  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
 ]
 next_tests = [
-  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
+  "extend aggregate-weight tests to sparse held-out surface/alpha/ky portfolio slices",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.portfolio_sensitivity"
+path = "src/spectraxgk/objectives/portfolio_sensitivity.py"
+owner_lane = "AD/FD, conditioning, and covariance gates for objective portfolios"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
+  "conditioning diagnostics for inverse-design and uncertainty quantification objectives",
+]
+physics_contracts = [
+  "portfolio sensitivity gates validate rows before promoting geometry-wide optimization claims",
+  "a scalar-gradient pass cannot hide rank-deficient sample-row sensitivities",
+]
+numerics_contracts = [
+  "aggregate scalar objectives pass reverse-mode and central finite-difference parity",
+  "row-Jacobian conditioning and covariance diagnostics are reported with explicit rank gates",
+]
+fast_tests = [
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_objective_portfolio_gate.json",
+]
+next_tests = [
   "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
 ]
 
 [[modules]]
-module = "spectraxgk.parallel"
-path = "src/spectraxgk/parallel.py"
+module = "spectraxgk.objectives.vmec_transport_config"
+path = "src/spectraxgk/objectives/vmec_transport_config.py"
+owner_lane = "VMEC-JAX transport objective configuration and optional backend path policy"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "VMEC-JAX fixed-boundary optimization coupled to local gyrokinetic transport objectives",
+  "Boozer-resolution guardrails for paper-facing stellarator optimization",
+]
+physics_contracts = [
+  "configuration must keep growth, quasilinear, and reduced nonlinear-window scopes explicit",
+  "Boozer grids below the documented mode threshold fail closed before optimization",
+]
+numerics_contracts = [
+  "objective transforms and scales are finite, positive, and explicit",
+  "optional backend paths are pinned reproducibly when imported VMEC-JAX/Boozer modules are already active",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
+]
+next_tests = [
+  "add direct ObjectiveTerm metadata fixtures for every transform and transport kind",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_transport_tables"
+path = "src/spectraxgk/objectives/vmec_transport_tables.py"
+owner_lane = "VMEC-JAX to SPECTRAX-GK transport sample tables and scalar reductions"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-surface and multi-field-line stellarator transport screening",
+  "linear-growth and quasilinear proxy reductions before nonlinear holdout promotion",
+]
+physics_contracts = [
+  "growth, quasilinear, and reduced nonlinear-window table columns must remain distinguishable",
+  "reduced nonlinear-window proxies do not imply converged turbulent heat-flux optimization claims",
+]
+numerics_contracts = [
+  "ky samples map to unique integer solver-grid indices",
+  "surface chunking preserves weighted-mean reductions exactly against unchunked evaluation",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_vmec_jax_transport_gradient.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
+  "docs/_static/vmec_boundary_transport_landscape_rbc11_full.json",
+]
+next_tests = [
+  "add real VMEC/Boozer fixture coverage for every supported transport objective kind",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.vmec_transport_branch"
+path = "src/spectraxgk/objectives/vmec_transport_branch.py"
+owner_lane = "VMEC-JAX transport eigenbranch locality gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "dominant non-Hermitian eigenbranch locality before differentiating growth objectives",
+  "finite-difference branch tracking for geometry-parameter microstability objectives",
+]
+physics_contracts = [
+  "transport-gradient promotion requires the same dominant-growth branch at base and perturbation states",
+  "truncated branch-locality reports fail closed and remain diagnostic only",
+]
+numerics_contracts = [
+  "branch slope, gap floor, and locality classifications are recorded per surface, field line, and ky",
+  "evaluation errors are converted into explicit failed gate rows",
+]
+fast_tests = [
+  "tests/test_vmec_jax_transport_objective.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.png",
+]
+next_tests = [
+  "add multi-sample branch-locality fixtures with one deliberately truncated sample set",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.stellarator_tables"
+path = "src/spectraxgk/objectives/stellarator_tables.py"
+owner_lane = "reduced and VMEC/Boozer stellarator ITG objective table and portfolio gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-surface and multi-field-line stellarator ITG objective reduction",
+  "VMEC/Boozer row-producer parity before differentiable geometry optimization claims",
+]
+physics_contracts = [
+  "surface, field-line, ky, and objective axes must stay explicit in table artifacts",
+  "reduced portfolio gates are not nonlinear turbulent-flux optimization claims",
+]
+numerics_contracts = [
+  "sample and objective weights are finite, non-negative, shape checked, and normalized",
+  "portfolio scalar reductions pass AD/FD, conditioning, and covariance gates before promotion",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_itg_portfolio_gate.json",
+  "docs/_static/stellarator_itg_portfolio_gate.png",
+  "docs/_static/vmec_boozer_multi_point_objective_gate.json",
+]
+next_tests = [
+  "add direct VMEC/Boozer table fixtures that cover objective selection and sample-axis reshaping",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.stellarator_residuals"
+path = "src/spectraxgk/objectives/stellarator_residuals.py"
+owner_lane = "reduced stellarator ITG residual, covariance, and finite-difference gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Gauss-Newton residual conditioning for differentiable stellarator optimization",
+  "finite-difference validation of every differentiated transport objective",
+]
+physics_contracts = [
+  "residual vectors must expose aspect, iota, quasisymmetry, regularization, and transport terms separately",
+  "nonlinear-window residuals remain reduced differentiability gates unless long post-transient transport artifacts pass",
+]
+numerics_contracts = [
+  "residual Jacobians pass AD/FD parity with precision-aware tolerances",
+  "covariance gates require finite singular values, sufficient rank, and bounded condition numbers",
+]
+fast_tests = [
+  "tests/test_stellarator_optimization.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_itg_optimization_uq.png",
+  "docs/_static/stellarator_itg_portfolio_gate.json",
+]
+next_tests = [
+  "add residual-specific failure fixtures for rank-deficient and ill-conditioned sensitivity maps",
+]
+
+[[modules]]
+module = "spectraxgk.objectives.portfolio_artifacts"
+path = "src/spectraxgk/objectives/portfolio_artifacts.py"
+owner_lane = "artifact-level promotion guards for real VMEC/Boozer reduced objective portfolios"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "held-out surface and field-line validation for stellarator microstability optimization",
+  "release guardrails that separate reduced growth/QL rows from nonlinear turbulent-flux claims",
+]
+physics_contracts = [
+  "real VMEC/Boozer reduced portfolios must include growth and quasilinear objectives before promotion",
+  "artifact guard must fail closed for nonlinear turbulent-transport optimization claims",
+]
+numerics_contracts = [
+  "artifact tables reconstruct rectangular surface/alpha/ky tensors with finite weights",
+  "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
+]
+fast_tests = [
+  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
+]
+artifact_paths = [
+  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
+]
+next_tests = [
+  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
+]
+
+[[modules]]
+module = "spectraxgk.parallel.__init__"
+path = "src/spectraxgk/parallel/__init__.py"
+owned_modules = [
+  "spectraxgk.parallel.batch",
+  "spectraxgk.parallel.identity",
+  "spectraxgk.parallel.independent",
+]
 owner_lane = "production ky/batch scan and UQ ensemble parallelization"
 status = "active"
 coverage_priority = "high"
@@ -1658,8 +3869,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.parallel_decomposition"
-path = "src/spectraxgk/parallel_decomposition.py"
+module = "spectraxgk.parallel.decomposition"
+path = "src/spectraxgk/parallel/decomposition.py"
 owner_lane = "deterministic decomposition contracts for production independent work and diagnostic nonlinear partitions"
 status = "active"
 coverage_priority = "high"
@@ -1689,9 +3900,145 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.plotting"
-path = "src/spectraxgk/plotting.py"
-owner_lane = "publication-quality plotting from outputs, gates, and benchmark summaries"
+module = "spectraxgk.artifacts.plot_style"
+path = "src/spectraxgk/artifacts/plot_style.py"
+owner_lane = "shared publication plotting style"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "README/docs publication panels and manuscript figure stack",
+]
+physics_contracts = [
+  "style helpers do not encode physics claims; they keep validation figures readable and consistent",
+]
+numerics_contracts = [
+  "font sizes, grid alpha, and dpi are deterministic across generated figures",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+]
+artifact_paths = [
+  "docs/_static/manuscript_readiness_status.png",
+]
+next_tests = [
+  "add image-content smoke tests for key publication panels where practical",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.runtime_plots"
+path = "src/spectraxgk/artifacts/runtime_plots.py"
+owner_lane = "publication-quality plotting from saved linear and nonlinear runtime outputs"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "executable saved-output plotting and user-facing runtime diagnostics",
+]
+physics_contracts = [
+  "linear plots show growth history and normalized eigenfunction components",
+  "nonlinear plots show transport traces when heat-flux diagnostics are available",
+]
+numerics_contracts = [
+  "log axes use positive floors and saved-output bundle inference is deterministic",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+  "tests/test_check_nonlinear_runtime_outputs.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add a direct nonlinear NetCDF plotting fixture with missing optional diagnostics",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.benchmark_plots"
+path = "src/spectraxgk/artifacts/benchmark_plots.py"
+owner_lane = "benchmark, scan, and linear-validation publication panels"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear benchmark atlas and manuscript comparison figures",
+]
+physics_contracts = [
+  "figures reveal overlapping reference and SPECTRAX-GK curves instead of hiding parity",
+]
+numerics_contracts = [
+  "scan axes and normalized eigenfunction rows remain readable across mixed ky ranges",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+  "tests/test_make_gx_publication_panel.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/benchmark_readme_panel.png",
+]
+next_tests = [
+  "add image-content smoke tests for legend visibility on crowded validation panels",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.diagnostic_plots"
+path = "src/spectraxgk/artifacts/diagnostic_plots.py"
+owner_lane = "growth-fit and eigenfunction diagnostic plots"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "late-time growth/frequency and eigenfunction reference overlays",
+]
+physics_contracts = [
+  "growth-fit plots show the fitted window used for reported growth rates",
+  "eigenfunction overlays report overlap and relative L2 error",
+]
+numerics_contracts = [
+  "fit overlays use the same fit routine as diagnostics and preserve phase-aligned references",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
+]
+next_tests = [
+  "add finite-difference/tangent checks to autodiff figure scripts",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.zonal_plots"
+path = "src/spectraxgk/artifacts/zonal_plots.py"
+owner_lane = "zonal-response trace and envelope publication plots"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "zonal-flow response and damping/recurrence validation figures",
+]
+physics_contracts = [
+  "zonal figures show residual response, fit window, envelope peaks, damping, and GAM frequency",
+]
+numerics_contracts = [
+  "time and response arrays are one-dimensional and length-matched before plotting",
+]
+fast_tests = [
+  "tests/test_plot_zonal_flow_response_from_output.py",
+  "tests/test_generate_miller_zonal_response_pilot.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_zonal_response_panel.png",
+]
+next_tests = [
+  "add image-content smoke tests for residual and envelope annotations",
+]
+
+[[modules]]
+module = "spectraxgk.artifacts.plotting"
+path = "src/spectraxgk/artifacts/plotting.py"
+owner_lane = "public facade for publication plotting families"
 status = "active"
 coverage_priority = "medium"
 coverage_target_percent = 95.0

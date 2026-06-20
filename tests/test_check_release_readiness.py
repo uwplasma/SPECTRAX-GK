@@ -42,8 +42,10 @@ spectrax-gk = "spectraxgk.cli:main"
                 "--enforce-package-coverage",
                 "codecov/codecov-action",
                 "tools/check_parallel_scaling_artifacts.py",
+                "tools/check_package_architecture_manifest.py",
                 "tools/check_performance_optimization_manifest.py",
                 "tools/check_quasilinear_promotion_guardrails.py",
+                "tools/check_vmec_boozer_differentiability_claim.py",
                 "tools/build_parallelization_completion_status.py",
                 "tools/build_technical_release_status.py",
                 "tools/check_release_readiness.py",
@@ -51,14 +53,37 @@ spectrax-gk = "spectraxgk.cli:main"
         ),
         encoding="utf-8",
     )
+    (root / "codecov.yml").write_text(
+        """
+codecov:
+  notify:
+    after_n_builds: 2
+    wait_for_ci: true
+
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+        threshold: 0.5%
+        flags:
+          - wide-package
+    patch:
+      default:
+        informational: true
+""".lstrip(),
+        encoding="utf-8",
+    )
     (root / ".github" / "workflows" / "release.yml").write_text(
         "name: Release\n"
         "tools/check_release_version.py\n"
         "tools/check_repository_size_manifest.py\n"
         "tools/check_release_artifact_manifest.py\n"
+        "tools/check_package_architecture_manifest.py\n"
         "tools/check_performance_optimization_manifest.py\n"
         "tools/check_parallel_scaling_artifacts.py\n"
         "tools/check_quasilinear_promotion_guardrails.py\n"
+        "tools/check_vmec_boozer_differentiability_claim.py\n"
         "tools/build_parallelization_completion_status.py\n"
         "tools/build_technical_release_status.py\n"
         "tools/check_release_readiness.py\n"
@@ -76,6 +101,10 @@ spectrax-gk = "spectraxgk.cli:main"
         "validation_gate_index.json",
         "validation_coverage_manifest_summary.json",
         "quasilinear_promotion_guardrails.json",
+        "vmec_boozer_differentiability_claim_guard.json",
+        "vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+        "vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+        "vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
         "technical_release_status.json",
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",
@@ -270,6 +299,28 @@ def test_release_readiness_rejects_missing_ci_guardrails(tmp_path: Path) -> None
     )
 
     with pytest.raises(ReleaseReadinessError, match="ci.yml missing release checks"):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_missing_codecov_status_policy(
+    tmp_path: Path,
+) -> None:
+    _write_release_ready_tree(tmp_path)
+    (tmp_path / "codecov.yml").write_text(
+        """
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError,
+        match="codecov.yml missing wide-coverage status policy",
+    ):
         check_release_readiness(tmp_path)
 
 

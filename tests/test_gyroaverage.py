@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.gyroaverage import J_l_all, gamma0, sum_Jl2
+from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
 
 
 def test_gamma0_basic_properties():

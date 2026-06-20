@@ -8,7 +8,7 @@ import sys
 import numpy as np
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.runtime_config import RuntimeConfig, RuntimePhysicsConfig, RuntimeSpeciesConfig
+from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimePhysicsConfig, RuntimeSpeciesConfig
 
 
 def _load_tool_module():

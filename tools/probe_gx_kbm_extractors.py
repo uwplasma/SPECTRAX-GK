@@ -10,9 +10,9 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from spectraxgk.analysis import ModeSelection
+from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.benchmarks import run_kbm_linear
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 
 from tools.compare_gx_kbm import (
     _build_cfg,
@@ -226,11 +226,11 @@ def main() -> None:
                     steps=int(step_count),
                     method=str(args.method),
                     cfg=cfg,
-                    solver="gx_time",
+                    solver="explicit_time",
                     fit_signal="phi",
                     mode_method="z_index",
-                    diagnostic_norm="gx",
-                    gx_reference=True,
+                    diagnostic_norm="rho_star",
+                    reference_aligned=True,
                     auto_window=False,
                     tmin=args.tmin,
                     tmax=args.tmax,

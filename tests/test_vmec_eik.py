@@ -8,24 +8,30 @@ import pytest
 from unittest.mock import MagicMock
 from dataclasses import replace
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.runtime_config import (
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
-from spectraxgk.vmec_eik import (
+from spectraxgk.geometry.vmec_eik import (
     build_vmec_geometry_request,
-    build_gx_vmec_geometry_request,
     default_vmec_eik_output_path,
     generate_runtime_vmec_eik,
 )
-import spectraxgk.from_gx.vmec as vmec_backend
-from spectraxgk.from_gx.vmec import internal_vmec_backend_available
+import spectraxgk.geometry_backends.vmec as vmec_backend
+from spectraxgk.geometry_backends.vmec import internal_vmec_backend_available
 
 
-def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> RuntimeConfig:
+def _vmec_runtime_cfg(
+    tmp_path: Path, *, geometry_file: str | None = None
+) -> RuntimeConfig:
     vmec_path = tmp_path / "wout_test.nc"
     vmec_path.write_text("stub", encoding="utf-8")
     return RuntimeConfig(
@@ -40,7 +46,9 @@ def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> Ru
             ntheta=32,
             nperiod=1,
         ),
-        time=TimeConfig(t_max=1.0, dt=0.1, method="rk4", use_diffrax=False, fixed_dt=True),
+        time=TimeConfig(
+            t_max=1.0, dt=0.1, method="rk4", use_diffrax=False, fixed_dt=True
+        ),
         geometry=GeometryConfig(
             model="vmec",
             vmec_file=str(vmec_path),
@@ -50,7 +58,11 @@ def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> Ru
             alpha=0.1,
         ),
         init=InitializationConfig(init_field="density", init_amp=1.0e-6),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, mass=1.0, tprim=3.0, fprim=1.0),),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, mass=1.0, tprim=3.0, fprim=1.0
+            ),
+        ),
         physics=RuntimePhysicsConfig(
             linear=True,
             nonlinear=False,
@@ -61,7 +73,9 @@ def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> Ru
             beta=0.0,
             collisions=False,
         ),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="rho_star"
+        ),
     )
 
 
@@ -77,17 +91,19 @@ def _write_minimal_eik_cache(path: Path) -> None:
 def test_build_vmec_geometry_request_creates_expected_request(tmp_path: Path) -> None:
     cfg = _vmec_runtime_cfg(tmp_path)
     request = build_vmec_geometry_request(cfg)
-    
+
     assert request.vmec_file == str(Path(cfg.geometry.vmec_file).resolve())
     assert request.torflux == 0.64
     assert request.npol == 2.0
     assert request.ntheta == 32
     assert request.alpha == 0.1
     assert request.y0 == pytest.approx(10.0)
-    assert request.z == (1.0, -1.0) # Ion + adiabatic electron
+    assert request.z == (1.0, -1.0)  # Ion + adiabatic electron
 
 
-def test_build_vmec_geometry_request_expands_env_vmec_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_vmec_geometry_request_expands_env_vmec_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     vmec_path = tmp_path / "wout_env.nc"
     vmec_path.write_text("stub", encoding="utf-8")
     monkeypatch.setenv("HSX_VMEC_FILE", str(vmec_path))
@@ -97,13 +113,6 @@ def test_build_vmec_geometry_request_expands_env_vmec_file(monkeypatch: pytest.M
     request = build_vmec_geometry_request(cfg)
 
     assert request.vmec_file == str(vmec_path.resolve())
-
-
-def test_build_gx_vmec_geometry_request_alias_still_resolves(tmp_path: Path) -> None:
-    cfg = _vmec_runtime_cfg(tmp_path)
-    request = build_gx_vmec_geometry_request(cfg)
-
-    assert request.torflux == pytest.approx(0.64)
 
 
 def test_build_vmec_geometry_request_infers_npol_from_nperiod(tmp_path: Path) -> None:
@@ -126,7 +135,10 @@ def test_default_vmec_eik_output_path_tracks_vmec_file_metadata(tmp_path: Path) 
     first = default_vmec_eik_output_path(request)
     vmec_path = Path(request.vmec_file)
     vmec_path.write_text("updated-stub", encoding="utf-8")
-    os.utime(vmec_path, ns=(vmec_path.stat().st_atime_ns, vmec_path.stat().st_mtime_ns + 1_000_000))
+    os.utime(
+        vmec_path,
+        ns=(vmec_path.stat().st_atime_ns, vmec_path.stat().st_mtime_ns + 1_000_000),
+    )
 
     second = default_vmec_eik_output_path(request)
 
@@ -135,7 +147,9 @@ def test_default_vmec_eik_output_path_tracks_vmec_file_metadata(tmp_path: Path) 
     assert first != second
 
 
-def test_atomic_vmec_eik_write_replaces_final_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_atomic_vmec_eik_write_replaces_final_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     out_path = tmp_path / "geom.eik.nc"
     out_path.write_text("old", encoding="utf-8")
     temp_paths: list[Path] = []
@@ -146,7 +160,7 @@ def test_atomic_vmec_eik_write_replaces_final_path(tmp_path: Path, monkeypatch: 
         temp_paths.append(path)
         path.write_text("new", encoding="utf-8")
 
-    monkeypatch.setattr(vmec_backend, "write_vmec_eik_netcdf", fake_write)
+    monkeypatch.setattr("spectraxgk.geometry_backends.vmec_io.write_vmec_eik_netcdf", fake_write)
 
     vmec_backend._write_vmec_eik_netcdf_atomically(out_path, {}, request="request")
 
@@ -160,10 +174,12 @@ def test_generate_runtime_vmec_eik_invokes_internal_generator(
 ) -> None:
     out_path = tmp_path / "geom.eik.nc"
     cfg = _vmec_runtime_cfg(tmp_path, geometry_file=str(out_path))
-    
+
     mock_gen = MagicMock(return_value=out_path.resolve())
-    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
-    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: True)
+    monkeypatch.setattr("spectraxgk.geometry.vmec_eik.generate_vmec_eik_internal", mock_gen)
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.internal_vmec_backend_available", lambda: True
+    )
 
     out = generate_runtime_vmec_eik(cfg)
 
@@ -182,10 +198,17 @@ def test_generate_runtime_vmec_eik_reuses_default_cache_without_backend(
     expected_out = tmp_path / "cached.eik.nc"
     _write_minimal_eik_cache(expected_out)
 
-    monkeypatch.setattr("spectraxgk.vmec_eik.default_vmec_eik_output_path", lambda _request: expected_out)
-    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: False)
-    mock_gen = MagicMock(side_effect=AssertionError("cached VMEC geometry should be reused"))
-    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.default_vmec_eik_output_path",
+        lambda _request: expected_out,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.internal_vmec_backend_available", lambda: False
+    )
+    mock_gen = MagicMock(
+        side_effect=AssertionError("cached VMEC geometry should be reused")
+    )
+    monkeypatch.setattr("spectraxgk.geometry.vmec_eik.generate_vmec_eik_internal", mock_gen)
 
     out = generate_runtime_vmec_eik(cfg)
 
@@ -200,10 +223,15 @@ def test_generate_runtime_vmec_eik_regenerates_invalid_default_cache(
     expected_out = tmp_path / "cached.eik.nc"
     expected_out.write_text("partial-not-netcdf", encoding="utf-8")
 
-    monkeypatch.setattr("spectraxgk.vmec_eik.default_vmec_eik_output_path", lambda _request: expected_out)
-    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: True)
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.default_vmec_eik_output_path",
+        lambda _request: expected_out,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.internal_vmec_backend_available", lambda: True
+    )
     mock_gen = MagicMock(return_value=expected_out.resolve())
-    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
+    monkeypatch.setattr("spectraxgk.geometry.vmec_eik.generate_vmec_eik_internal", mock_gen)
 
     out = generate_runtime_vmec_eik(cfg)
 
@@ -217,10 +245,15 @@ def test_generate_runtime_vmec_eik_uses_default_output_when_none(
     cfg = _vmec_runtime_cfg(tmp_path, geometry_file=None)
     expected_out = tmp_path / "cached.eik.nc"
 
-    monkeypatch.setattr("spectraxgk.vmec_eik.default_vmec_eik_output_path", lambda _request: expected_out)
-    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: True)
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.default_vmec_eik_output_path",
+        lambda _request: expected_out,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.internal_vmec_backend_available", lambda: True
+    )
     mock_gen = MagicMock(return_value=expected_out.resolve())
-    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
+    monkeypatch.setattr("spectraxgk.geometry.vmec_eik.generate_vmec_eik_internal", mock_gen)
 
     out = generate_runtime_vmec_eik(cfg)
 
@@ -232,7 +265,6 @@ def test_generate_runtime_vmec_eik_uses_default_output_when_none(
 @pytest.mark.parametrize(
     ("backend", "expected_message"),
     [
-        ("gx", "geometry_backend='gx' is no longer supported"),
         ("mystery", "Unknown geometry backend"),
     ],
 )
@@ -246,11 +278,17 @@ def test_generate_runtime_vmec_eik_rejects_invalid_backends(
         generate_runtime_vmec_eik(cfg)
 
 
-def test_generate_runtime_vmec_eik_requires_internal_backend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_generate_runtime_vmec_eik_requires_internal_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     cfg = _vmec_runtime_cfg(tmp_path)
-    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: False)
+    monkeypatch.setattr(
+        "spectraxgk.geometry.vmec_eik.internal_vmec_backend_available", lambda: False
+    )
 
-    with pytest.raises(RuntimeError, match="Internal VMEC geometry backend dependencies are missing"):
+    with pytest.raises(
+        RuntimeError, match="Internal VMEC geometry backend dependencies are missing"
+    ):
         generate_runtime_vmec_eik(cfg)
 
 
@@ -260,7 +298,9 @@ def test_internal_vmec_backend_available_detects_env_provided_booz_xform_jax(
     pkg_root = tmp_path / "booz_xform_jax_checkout"
     pkg_dir = pkg_root / "src" / "booz_xform_jax"
     pkg_dir.mkdir(parents=True)
-    (pkg_dir / "__init__.py").write_text("class Booz_xform:\n    pass\n", encoding="utf-8")
+    (pkg_dir / "__init__.py").write_text(
+        "class Booz_xform:\n    pass\n", encoding="utf-8"
+    )
 
     for name in ("booz_xform_jax", "booz_xform"):
         sys.modules.pop(name, None)

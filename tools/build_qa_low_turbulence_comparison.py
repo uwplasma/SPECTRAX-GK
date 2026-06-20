@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import colors  # noqa: E402
 import numpy as np  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.qa_low_turbulence import (  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
+from spectraxgk.objectives.qa_low_turbulence import (  # noqa: E402
     QA_LOW_TURBULENCE_OBSERVABLE_NAMES,
     QALowTurbulenceConfig,
     qa_low_turbulence_comparison_payload,

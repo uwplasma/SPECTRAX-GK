@@ -15,16 +15,16 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectraxgk.autodiff_validation import (
+from spectraxgk.validation.autodiff import (
     explicit_complex_operator_matrix,
     implicit_eigenpair_observable_sensitivity_report,
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diagnostics import gx_heat_flux_species, gx_volume_factors
+from spectraxgk.diagnostics import fieldline_quadrature_weights, heat_flux_species
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
-from spectraxgk.plotting import set_plot_style
+from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.quasilinear import effective_kperp2, phi_norm2, saturated_flux_from_linear_weight
 
 
@@ -51,7 +51,7 @@ def _build_tiny_fixture():
         fapar=0.0,
     )
     cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, flux_fac = fieldline_quadrature_weights(geom, grid)
     terms = LinearTerms(
         streaming=1.0,
         mirror=1.0,
@@ -115,7 +115,7 @@ def build_report(
         kperp_eff2 = effective_kperp2(phi, cache, vol_fac)
         norm = phi_norm2(phi, cache, params, vol_fac, normalization="phi_rms")
         heat_weight = jnp.sum(
-            gx_heat_flux_species(
+            heat_flux_species(
                 state,
                 phi,
                 zeros,

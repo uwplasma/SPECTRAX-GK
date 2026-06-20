@@ -11,11 +11,11 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
 from spectraxgk.benchmarks import (
@@ -23,15 +23,15 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     CYCLONE_KRYLOV_DEFAULT,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
     run_cyclone_scan,
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, integrate_linear_explicit
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 
 
@@ -194,7 +194,7 @@ def main() -> None:
                 damp_ends_amp=0.1,
                 damp_ends_widthfrac=1.0 / 8.0,
             )
-            params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+            params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
             cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
             G0 = _build_initial_condition(
                 grid,
@@ -205,13 +205,13 @@ def main() -> None:
                 Nm=args.Nm,
                 init_cfg=cfg.init,
             )
-            time_cfg = GXTimeConfig(
+            time_cfg = ExplicitTimeConfig(
                 dt=args.dt,
                 t_max=args.dt * float(args.steps),
                 sample_stride=1,
                 fixed_dt=args.gx_fixed_dt,
             )
-            t, phi_t, gamma_t, omega_t = integrate_linear_gx(
+            t, phi_t, gamma_t, omega_t = integrate_linear_explicit(
                 G0,
                 grid,
                 cache,
@@ -231,20 +231,20 @@ def main() -> None:
             else:
                 sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
                 try:
-                    gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                    gamma, omega, _g, _o, _t_mid = instantaneous_growth_rate_from_phi(
                         phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
                     )
                 except ValueError:
                     print(
-                        "gx_growth_rate_from_phi: z_index failed; falling back to mode_method='max'"
+                        "instantaneous_growth_rate_from_phi: z_index failed; falling back to mode_method='max'"
                     )
                     try:
-                        gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                        gamma, omega, _g, _o, _t_mid = instantaneous_growth_rate_from_phi(
                             phi_t, t, sel, navg_fraction=0.5, mode_method="max"
                         )
                     except ValueError:
                         print(
-                            "gx_growth_rate_from_phi: max failed; falling back to loglinear fit"
+                            "instantaneous_growth_rate_from_phi: max failed; falling back to loglinear fit"
                         )
                         signal = extract_mode_time_series(phi_t, sel, method="max")
                         gamma, omega, *_ = fit_growth_rate_auto(
@@ -280,7 +280,7 @@ def main() -> None:
             method=args.method,
             solver=args.solver,
             fit_signal="auto",
-            diagnostic_norm="gx",
+            diagnostic_norm="rho_star",
             mode_follow=bool(args.mode_follow),
             krylov_cfg=krylov_cfg,
         )

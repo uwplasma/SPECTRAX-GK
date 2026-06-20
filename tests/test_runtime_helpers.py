@@ -8,12 +8,32 @@ import numpy as np
 import pytest
 
 import spectraxgk.runtime as runtime
-import spectraxgk.runtime_policies as runtime_policies
-from spectraxgk.runtime_orchestration import (
+import spectraxgk.workflows.cases as runtime_cases
+import spectraxgk.workflows.named_cases as named_cases
+import spectraxgk.workflows.runtime.command_artifacts as command_artifacts
+import spectraxgk.workflows.runtime.orchestration_artifacts as runtime_artifacts
+import spectraxgk.workflows.runtime.commands as runtime_commands
+import spectraxgk.workflows.runtime.policies as runtime_policies
+from spectraxgk.diagnostics.analysis import ModeSelection
+from spectraxgk.workflows.runtime.diagnostics import fit_runtime_linear_diagnostics
+from spectraxgk.workflows.runtime.diagnostics import (
+    RuntimeQuasilinearFinalizationDeps,
+    finalize_runtime_linear_quasilinear,
+)
+from spectraxgk.workflows.runtime.results import (
+    RuntimeLinearResult,
+    RuntimeNonlinearResult,
+)
+from spectraxgk.workflows.runtime.orchestration import (
     build_runtime_progress_message,
     format_duration,
+    run_runtime_scan_ky_task,
 )
-from spectraxgk.benchmarking import late_time_linear_metrics
+from spectraxgk.workflows.reduced_models import (
+    CETGLinearRuntimeDeps,
+    run_cetg_linear_runtime,
+)
+from spectraxgk.validation.benchmarks.harness import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
     GridConfig,
@@ -21,32 +41,32 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.diagnostics import ResolvedDiagnostics, SimulationDiagnostics
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.runtime import (
     _build_initial_condition,
     _build_gaussian_profile,
-    _concat_gx_diagnostics,
+    _concat_runtime_diagnostics,
     _enforce_full_ky_hermitian,
     _expand_ky,
-    _gx_centered_random_pairs,
-    _gx_default_p_hyper_m,
-    _gx_init_mode_pairs,
-    _gx_periodic_zp,
+    _centered_glibc_random_pairs,
+    _default_hermite_hypercollision_exponent,
+    _dealiased_initial_mode_pairs,
+    _periodic_zp_from_grid,
     _infer_runtime_nonlinear_steps,
     _load_initial_state_from_file,
     _midplane_index,
     _normalize_linear_solver_name,
     _require_full_gk_runtime_model,
     _resolve_runtime_hl_dims,
-    _reshape_gx_state,
+    _reshape_netcdf_state,
     _runtime_external_phi,
     _runtime_default_krylov_config,
     _runtime_model_key,
     _select_nonlinear_mode_indices,
-    _slice_gx_diagnostics,
+    _slice_runtime_diagnostics,
     _species_to_linear,
-    _stride_gx_diagnostics,
-    _truncate_gx_diagnostics,
+    _stride_runtime_diagnostics,
+    _truncate_runtime_diagnostics,
     _zero_kx_index,
     _run_runtime_scan_batch,
     build_runtime_geometry,
@@ -57,12 +77,14 @@ from spectraxgk.runtime import (
     run_runtime_nonlinear,
     run_runtime_scan,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
+    RuntimeOutputConfig,
     RuntimeParallelConfig,
     RuntimePhysicsConfig,
+    RuntimeQuasilinearConfig,
     RuntimeSpeciesConfig,
 )
 from spectraxgk.terms.config import FieldState
@@ -130,23 +152,612 @@ def test_runtime_small_helper_functions() -> None:
     cfg = _base_cfg()
     grid = build_spectral_grid(cfg.grid)
 
-    assert _normalize_linear_solver_name(" explicit_time ") == "gx_time"
+    assert _normalize_linear_solver_name(" explicit_time ") == "explicit_time"
     assert _normalize_linear_solver_name("krylov") == "krylov"
     assert _midplane_index(grid) == min(grid.z.size // 2 + 1, grid.z.size - 1)
     assert _midplane_index(type("Grid", (), {"z": np.asarray([0.0])})()) == 0
     assert _zero_kx_index(grid) == int(np.argmin(np.abs(np.asarray(grid.kx))))
-    assert _gx_init_mode_pairs(grid)[0] == (0, 1)
-    assert _gx_periodic_zp(np.asarray([0.0])) == 1.0
-    assert _gx_periodic_zp(np.asarray([0.0, 0.0])) == 1.0
-    assert _gx_default_p_hyper_m(None) == 20.0
-    assert _gx_default_p_hyper_m(3) == 1.0
-    assert _gx_default_p_hyper_m(40) == 20.0
+    assert _dealiased_initial_mode_pairs(grid)[0] == (0, 1)
+    assert _periodic_zp_from_grid(np.asarray([0.0])) == 1.0
+    assert _periodic_zp_from_grid(np.asarray([0.0, 0.0])) == 1.0
+    assert _default_hermite_hypercollision_exponent(None) == 20.0
+    assert _default_hermite_hypercollision_exponent(3) == 1.0
+    assert _default_hermite_hypercollision_exponent(40) == 20.0
     assert _runtime_model_key(cfg) == "gyrokinetic"
 
 
-def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
+def test_runtime_policy_helpers_preserve_public_runtime_facade_exports() -> None:
     for name in runtime_policies.__all__:
         assert getattr(runtime, name) is getattr(runtime_policies, name)
+
+
+def test_runtime_facade_module_is_patchable_public_surface() -> None:
+    assert runtime._runtime_facade_module() is runtime
+
+
+def test_runtime_command_helpers_have_single_canonical_owner() -> None:
+    command_names = [
+        "RuntimeCommandDeps",
+        "apply_quasilinear_overrides",
+        "apply_runtime_path_overrides",
+        "run_runtime_linear_command",
+        "run_runtime_nonlinear_command",
+        "runtime_output_path",
+        "scan_runtime_linear_command",
+        "should_show_progress",
+    ]
+
+    for name in command_names:
+        assert getattr(runtime_cases, name) is getattr(runtime_commands, name)
+
+
+def test_runtime_command_artifact_helpers_have_single_canonical_owner() -> None:
+    command_artifact_names = [
+        "COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_NONLINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS",
+        "COMMAND_SCAN_ARTIFACT_DISPLAY_KEYS",
+        "print_nonlinear_command_outputs",
+        "print_saved_paths",
+        "write_command_outputs",
+        "write_linear_runtime_command_outputs",
+        "write_scan_runtime_command_outputs",
+    ]
+
+    for name in command_artifact_names:
+        assert getattr(runtime_artifacts, name) is getattr(command_artifacts, name)
+
+
+def test_prepare_runtime_command_config_applies_explicit_override_policy() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        config="case.toml",
+        vmec_file="wout_case.nc",
+        geometry_file=None,
+        init_file=None,
+        quasilinear=True,
+        ql_mode="saturated",
+        ql_saturation_rule=None,
+        ql_csat=None,
+        ql_normalization=None,
+        ql_output="ql_out",
+    )
+    deps = runtime_commands.build_runtime_command_deps(
+        SimpleNamespace(
+            load_runtime_from_toml=lambda _path: (cfg, {"run": {"ky": 0.3}}),
+            run_runtime_linear=lambda *_args, **_kwargs: None,
+            run_runtime_scan=lambda *_args, **_kwargs: None,
+            run_runtime_nonlinear_with_artifacts=lambda *_args, **_kwargs: None,
+            write_runtime_linear_artifacts=lambda *_args, **_kwargs: {},
+            write_runtime_linear_scan_artifacts=lambda *_args, **_kwargs: {},
+            write_quasilinear_artifacts=lambda *_args, **_kwargs: {},
+            resolve_runtime_path=lambda value, **_kwargs: f"resolved::{value}",
+        )
+    )
+
+    prepared, data = runtime_commands._prepare_runtime_command_config(
+        args,
+        deps=deps,
+        path_overrides=True,
+        quasilinear_overrides=True,
+    )
+
+    assert data == {"run": {"ky": 0.3}}
+    assert prepared.geometry.vmec_file == "resolved::wout_case.nc"
+    assert prepared.quasilinear.enabled is True
+    assert prepared.quasilinear.mode == "saturated"
+    assert prepared.quasilinear.output_path == "ql_out"
+
+    untouched, _ = runtime_commands._prepare_runtime_command_config(
+        args,
+        deps=deps,
+        path_overrides=False,
+        quasilinear_overrides=False,
+    )
+    assert untouched.geometry.vmec_file is None
+    assert untouched.quasilinear.enabled is False
+
+
+def test_runtime_command_option_helpers_normalize_cli_and_toml_values() -> None:
+    cfg = _base_cfg()
+    section = {
+        "Nm": "7",
+        "solver": "explicit_time",
+        "method": "rk4",
+        "steps": "16",
+        "sample_stride": "3",
+    }
+    args = SimpleNamespace(
+        Nl="9",
+        Nm=None,
+        solver=None,
+        fit_signal="phi",
+        method=None,
+        dt="0.05",
+        steps=None,
+        sample_stride=None,
+    )
+
+    assert runtime_commands._resolve_grid_time_options(args, section, cfg) == (
+        9,
+        7,
+        "rk4",
+        0.05,
+        16,
+        3,
+    )
+    assert runtime_commands._resolve_linear_fit_options(args, section) == (
+        "explicit_time",
+        "phi",
+    )
+
+    empty_args = SimpleNamespace(Nl=None, Nm=None, method=None, dt=None, steps=None)
+    assert runtime_commands._resolve_grid_time_options(empty_args, {}, cfg) == (
+        24,
+        12,
+        None,
+        None,
+        None,
+        cfg.time.sample_stride,
+    )
+
+
+def test_runtime_case_option_helpers_resolve_python_overrides() -> None:
+    raw = {
+        "run": {
+            "ky": "0.2",
+            "Nl": "4",
+            "Nm": "6",
+            "solver": "time",
+            "method": "rk2",
+            "dt": "0.05",
+            "steps": "12",
+        },
+        "time": {"sample_stride": "3", "diagnostics_stride": "5"},
+        "fit": {"fit_signal": "phi", "ignored": "value"},
+    }
+
+    assert runtime_cases._runtime_case_fit_config(raw) == {"fit_signal": "phi"}
+    assert runtime_cases._linear_case_run_kwargs(
+        raw,
+        {
+            "ky": 0.4,
+            "Nl": None,
+            "Nm": 7,
+            "solver": None,
+            "method": "rk4",
+            "dt": None,
+            "steps": 20,
+            "sample_stride": None,
+        },
+    ) == {
+        "ky_target": 0.4,
+        "Nl": 4,
+        "Nm": 7,
+        "solver": "time",
+        "method": "rk4",
+        "dt": "0.05",
+        "steps": 20,
+        "sample_stride": "3",
+    }
+    assert runtime_cases._nonlinear_case_run_kwargs(
+        raw,
+        {
+            "ky": None,
+            "Nl": 8,
+            "Nm": None,
+            "method": None,
+            "dt": 0.02,
+            "steps": None,
+            "sample_stride": 2,
+            "diagnostics_stride": None,
+        },
+    ) == {
+        "ky_target": 0.2,
+        "Nl": 8,
+        "Nm": 6,
+        "method": "rk2",
+        "dt": 0.02,
+        "steps": "12",
+        "sample_stride": 2,
+        "diagnostics_stride": "5",
+        "diagnostics": True,
+    }
+
+
+def test_plot_saved_output_command_routes_renderer_and_usage(capsys: pytest.CaptureFixture[str]) -> None:
+    captured: dict[str, object] = {}
+
+    def _renderer(path: str, *, out: str | None = None) -> Path:
+        captured["path"] = path
+        captured["out"] = out
+        return Path("rendered.png")
+
+    assert (
+        runtime_commands.plot_saved_output_command(
+            ["--plot", "case.summary.json", "--out", "figure.png"],
+            plot_saved_output=_renderer,
+        )
+        == 0
+    )
+    assert captured == {"path": "case.summary.json", "out": "figure.png"}
+    assert "saved rendered.png" in capsys.readouterr().out
+
+    assert runtime_commands.plot_saved_output_command(["--plot"], plot_saved_output=_renderer) == 1
+    assert "usage: spectraxgk --plot" in capsys.readouterr().out
+
+
+def test_runtime_nonlinear_command_print_helpers(capsys: pytest.CaptureFixture[str]) -> None:
+    runtime_commands.print_nonlinear_run_header(
+        config_path="case.toml",
+        ky=0.2,
+        Nl=4,
+        Nm=6,
+        method="rk2",
+        dt=0.05,
+        steps=None,
+        grid_shape=(8, 10, 12),
+        diagnostics=True,
+        show_progress=False,
+    )
+
+    diag = _diag()
+    assert runtime_commands.print_nonlinear_run_summary(
+        RuntimeNonlinearResult(
+            t=diag.t,
+            diagnostics=diag,
+            ky_selected=0.2,
+            kx_selected=-0.1,
+        )
+    ) is True
+    assert runtime_commands.print_nonlinear_run_summary(
+        RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=None,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        )
+    ) is False
+
+    out = capsys.readouterr().out
+    assert "starting runtime nonlinear run" in out
+    assert "steps=auto" in out
+    assert "diagnostics=on progress=off" in out
+    assert "nonlinear: t=0.2" in out
+    assert "ky_sel=0.2" in out
+    assert "Wphi=2.1" in out
+    assert "nonlinear run completed" in out
+
+
+def test_runtime_command_artifact_output_helpers(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls: list[tuple[str, str]] = []
+    deps = SimpleNamespace(
+        write_runtime_linear_artifacts=lambda path, _result: calls.append(
+            ("linear", str(path))
+        )
+        or {
+            "state": "linear.state.nc",
+            "summary": "linear.summary.json",
+            "timeseries": "linear.timeseries.csv",
+        },
+        write_runtime_linear_scan_artifacts=lambda path, _scan: calls.append(
+            ("scan", str(path))
+        )
+        or {
+            "quasilinear_spectrum": "scan.ql.csv",
+            "summary": "scan.summary.json",
+            "scan": "scan.csv",
+        },
+        write_quasilinear_artifacts=lambda path, _ql: calls.append(
+            ("quasilinear", str(path))
+        )
+        or {
+            "quasilinear_species": "ql.species.csv",
+            "quasilinear_summary": "ql.summary.json",
+        },
+    )
+    result = RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.3,
+        omega=-0.4,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        quasilinear={"model": "test"},
+    )
+
+    assert (
+        runtime_artifacts.write_command_outputs(
+            None,
+            result,
+            writer=deps.write_runtime_linear_artifacts,
+            display_keys=runtime_artifacts.COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
+        == {}
+    )
+    assert (
+        runtime_artifacts.write_command_outputs(
+            None,
+            result.quasilinear,
+            writer=deps.write_quasilinear_artifacts,
+            display_keys=runtime_artifacts.COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
+        == {}
+    )
+    no_ql = replace(result, quasilinear=None)
+    assert (
+        runtime_artifacts.write_command_outputs(
+            "ql.json",
+            no_ql.quasilinear,
+            writer=deps.write_quasilinear_artifacts,
+            display_keys=runtime_artifacts.COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS,
+        )
+        == {}
+    )
+    assert calls == []
+
+    cfg = replace(
+        _base_cfg(),
+        output=RuntimeOutputConfig(path="linear.json"),
+        quasilinear=RuntimeQuasilinearConfig(output_path="ql.json"),
+    )
+    args = SimpleNamespace(out=None, ql_output=None)
+    assert runtime_commands._write_linear_runtime_command_outputs(
+        args,
+        cfg,
+        result,
+        deps=deps,  # type: ignore[arg-type]
+    ) == {
+        "linear": {
+            "state": "linear.state.nc",
+            "summary": "linear.summary.json",
+            "timeseries": "linear.timeseries.csv",
+        },
+        "quasilinear": {
+            "quasilinear_species": "ql.species.csv",
+            "quasilinear_summary": "ql.summary.json",
+        },
+    }
+    scan_cfg = replace(
+        _base_cfg(),
+        quasilinear=RuntimeQuasilinearConfig(output_path="scan.json"),
+    )
+    assert runtime_commands._write_scan_runtime_command_outputs(
+        args,
+        scan_cfg,
+        SimpleNamespace(),
+        deps=deps,  # type: ignore[arg-type]
+    ) == {
+        "quasilinear_spectrum": "scan.ql.csv",
+        "summary": "scan.summary.json",
+        "scan": "scan.csv",
+    }
+    runtime_artifacts.print_nonlinear_command_outputs(
+        {
+            "restart": "restart.nc",
+            "summary": "nonlinear.summary.json",
+            "diagnostics": "nonlinear.diag.nc",
+        },
+        enabled=True,
+    )
+    runtime_artifacts.print_nonlinear_command_outputs(
+        {"summary": "not-printed.json"}, enabled=False
+    )
+
+    assert calls == [
+        ("linear", "linear.json"),
+        ("quasilinear", "ql.json"),
+        ("scan", "scan.json"),
+    ]
+    assert capsys.readouterr().out.splitlines() == [
+        "saved linear.summary.json",
+        "saved linear.timeseries.csv",
+        "saved linear.state.nc",
+        "saved ql.summary.json",
+        "saved ql.species.csv",
+        "saved scan.summary.json",
+        "saved scan.csv",
+        "saved scan.ql.csv",
+        "saved nonlinear.summary.json",
+        "saved nonlinear.diag.nc",
+        "saved restart.nc",
+    ]
+
+
+def test_named_linear_run_options_resolve_cli_before_toml_defaults() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        ky=0.7,
+        Nl=None,
+        Nm=11,
+        solver=None,
+        fit_signal=None,
+        method="rk4",
+        dt=None,
+        steps=15,
+        sample_stride=None,
+    )
+    data = {
+        "run": {
+            "ky": 0.2,
+            "Nl": 5,
+            "Nm": 7,
+            "solver": "time",
+            "fit_signal": "ignored-here",
+            "method": "rk2",
+            "dt": 0.04,
+            "steps": 8,
+            "sample_stride": 3,
+        },
+        "fit": {"fit_signal": "phi", "window_fraction": 0.25},
+    }
+    deps = SimpleNamespace(should_show_progress=lambda _args, _configured: True)
+
+    opts = named_cases._resolve_named_linear_run_options(
+        args,
+        cfg,
+        data,
+        deps=deps,  # type: ignore[arg-type]
+    )
+
+    assert opts.ky == 0.7
+    assert opts.Nl == 5
+    assert opts.Nm == 11
+    assert opts.solver == "time"
+    assert opts.fit_signal == "phi"
+    assert opts.method == "rk4"
+    assert opts.dt == 0.04
+    assert opts.steps == 15
+    assert opts.sample_stride == 3
+    assert opts.show_progress is True
+    assert opts.fit_kwargs == {"window_fraction": 0.25}
+
+
+def test_named_linear_scan_options_parse_overrides_and_window_policy() -> None:
+    cfg = _base_cfg()
+    args = SimpleNamespace(
+        ky_values="0.1, 0.2, ,0.4",
+        Nl=9,
+        Nm=None,
+        solver="krylov",
+        fit_signal="phi",
+        method=None,
+        dt=0.03,
+        steps=None,
+    )
+    data = {
+        "scan": {
+            "ky": [0.5],
+            "Nl": 5,
+            "Nm": 7,
+            "solver": "auto",
+            "method": "rk2",
+            "dt": 0.04,
+            "steps": 8,
+        },
+        "fit": {"auto_window": False, "window_fraction": 0.25},
+    }
+
+    opts = named_cases._resolve_named_linear_scan_options(args, cfg, data)
+
+    np.testing.assert_allclose(opts.ky_values, np.asarray([0.1, 0.2, 0.4]))
+    assert opts.Nl == 9
+    assert opts.Nm == 7
+    assert opts.solver == "krylov"
+    assert opts.fit_signal == "phi"
+    assert opts.auto_window is False
+    assert opts.method == "rk2"
+    assert opts.dt == 0.03
+    assert opts.steps == 8
+    assert opts.fit_kwargs == {"window_fraction": 0.25}
+
+
+def test_named_linear_scan_options_reject_empty_scan() -> None:
+    args = SimpleNamespace(
+        ky_values=None,
+        Nl=None,
+        Nm=None,
+        solver=None,
+        fit_signal=None,
+        method=None,
+        dt=None,
+        steps=None,
+    )
+
+    with pytest.raises(ValueError, match="No ky values"):
+        named_cases._resolve_named_linear_scan_options(args, _base_cfg(), {})
+
+
+def test_runtime_dispatch_deps_are_built_from_patchable_runtime_scope() -> None:
+    linear_deps = runtime._runtime_linear_dispatch_deps()
+    nonlinear_deps = runtime._runtime_nonlinear_dispatch_deps()
+
+    assert linear_deps.full_deps.build_runtime_geometry is runtime.build_runtime_geometry
+    assert linear_deps.full_deps.build_linear_cache is runtime.build_linear_cache
+    assert linear_deps.cetg_deps.build_runtime_term_config is runtime.build_runtime_term_config
+    assert nonlinear_deps.full_deps.build_runtime_geometry is runtime.build_runtime_geometry
+    assert nonlinear_deps.full_deps.integrate_nonlinear_from_config is runtime.integrate_nonlinear_from_config
+    assert nonlinear_deps.cetg_deps.run_adaptive_runtime_chunk_loop is runtime.run_adaptive_runtime_chunk_loop
+
+
+def test_runtime_scan_deps_are_built_from_patchable_runtime_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scan_plan = object()
+    geometry_builder = object()
+
+    monkeypatch.setattr(runtime, "_runtime_independent_parallel_plan", scan_plan)
+    monkeypatch.setattr(runtime, "build_runtime_geometry", geometry_builder)
+
+    orchestration_deps = runtime._runtime_scan_orchestration_deps()
+    batch_deps = runtime._runtime_scan_batch_deps()
+
+    assert orchestration_deps.runtime_independent_parallel_plan is scan_plan
+    assert orchestration_deps.run_runtime_scan_batch is runtime._run_runtime_scan_batch
+    assert batch_deps.build_runtime_geometry is geometry_builder
+    assert batch_deps.integrate_linear_diagnostics is runtime.integrate_linear_diagnostics
+
+
+def test_runtime_scan_ky_task_forwards_linear_options() -> None:
+    cfg = _base_cfg()
+    sentinel = object()
+    calls: list[dict[str, object]] = []
+    task = {
+        "cfg": cfg,
+        "ky": "0.4",
+        "Nl": "5",
+        "Nm": "3",
+        "solver": "time",
+        "method": "rk2",
+        "dt": 0.02,
+        "steps": 7,
+        "sample_stride": 2,
+        "auto_window": False,
+        "tmin": 1.0,
+        "tmax": 2.0,
+        "window_fraction": 0.25,
+        "min_points": 6,
+        "start_fraction": 0.1,
+        "growth_weight": 0.3,
+        "require_positive": False,
+        "min_amp_fraction": 0.05,
+        "krylov_cfg": None,
+        "mode_method": "project",
+        "fit_signal": "phi",
+        "show_progress": True,
+    }
+
+    def _runner(cfg_arg, **kwargs):
+        calls.append({"cfg": cfg_arg, **kwargs})
+        return sentinel
+
+    assert run_runtime_scan_ky_task(task, run_runtime_linear=_runner) is sentinel
+    assert calls == [
+        {
+            "cfg": cfg,
+            "ky_target": 0.4,
+            "Nl": 5,
+            "Nm": 3,
+            "solver": "time",
+            "method": "rk2",
+            "dt": 0.02,
+            "steps": 7,
+            "sample_stride": 2,
+            "auto_window": False,
+            "tmin": 1.0,
+            "tmax": 2.0,
+            "window_fraction": 0.25,
+            "min_points": 6,
+            "start_fraction": 0.1,
+            "growth_weight": 0.3,
+            "require_positive": False,
+            "min_amp_fraction": 0.05,
+            "krylov_cfg": None,
+            "mode_method": "project",
+            "fit_signal": "phi",
+            "show_progress": True,
+        }
+    ]
 
 
 def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:
@@ -224,11 +835,11 @@ def test_runtime_orchestration_progress_policy() -> None:
 
 
 def test_runtime_random_pair_edge_cases() -> None:
-    empty = _gx_centered_random_pairs(3, 0)
+    empty = _centered_glibc_random_pairs(3, 0)
     assert empty.shape == (0, 2)
 
-    seed_zero = _gx_centered_random_pairs(0, 3)
-    seed_one = _gx_centered_random_pairs(1, 3)
+    seed_zero = _centered_glibc_random_pairs(0, 3)
+    seed_one = _centered_glibc_random_pairs(1, 3)
     np.testing.assert_allclose(seed_zero, seed_one)
 
 
@@ -291,34 +902,289 @@ def test_runtime_mode_index_selection_and_step_inference() -> None:
         )
 
 
+def test_runtime_nonlinear_diagnostics_kwargs_policy() -> None:
+    base = _base_cfg()
+    cfg = replace(
+        base,
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        time=replace(
+            base.time,
+            method="rk4",
+            nonlinear_dealias=True,
+            collision_split=True,
+            collision_scheme="exp",
+            implicit_restart=7,
+            implicit_solve_method="gmres",
+            implicit_preconditioner="jacobi",
+            cfl_fac=None,
+        ),
+    )
+
+    kwargs = runtime_policies.build_runtime_nonlinear_diagnostics_kwargs(
+        cfg,
+        dt=0.05,
+        steps=9,
+        method=None,
+        term_config="terms",
+        sample_stride=2,
+        diagnostics_stride=3,
+        laguerre_mode="grid",
+        ky_index=1,
+        kx_index=2,
+        fixed_dt=False,
+        fixed_mode_ky_index=4,
+        fixed_mode_kx_index=5,
+        external_phi=0.25,
+        resolved_diagnostics=False,
+        show_progress=True,
+    )
+
+    assert kwargs["dt"] == pytest.approx(0.05)
+    assert kwargs["steps"] == 9
+    assert kwargs["method"] == "rk4"
+    assert kwargs["terms"] == "terms"
+    assert kwargs["sample_stride"] == 2
+    assert kwargs["diagnostics_stride"] == 3
+    assert kwargs["use_dealias_mask"] is True
+    assert kwargs["laguerre_mode"] == "grid"
+    assert kwargs["omega_ky_index"] == 1
+    assert kwargs["omega_kx_index"] == 2
+    assert kwargs["fixed_dt"] is False
+    assert kwargs["collision_split"] is True
+    assert kwargs["collision_scheme"] == "exp"
+    assert kwargs["implicit_restart"] == 7
+    assert kwargs["implicit_solve_method"] == "gmres"
+    assert kwargs["implicit_preconditioner"] == "jacobi"
+    assert kwargs["fixed_mode_ky_index"] == 4
+    assert kwargs["fixed_mode_kx_index"] == 5
+    assert kwargs["external_phi"] == pytest.approx(0.25)
+    assert kwargs["resolved_diagnostics"] is False
+    assert kwargs["show_progress"] is True
+
+
 def test_runtime_diagnostic_slice_stride_truncate_concat() -> None:
     diag = _diag()
-    sliced = _slice_gx_diagnostics(diag, 1)
+    sliced = _slice_runtime_diagnostics(diag, 1)
     assert sliced.t.shape == (1,)
     assert sliced.resolved is not None and sliced.resolved.Phi2_kxt.shape[0] == 1
-    zero = _slice_gx_diagnostics(diag, 0)
+    zero = _slice_runtime_diagnostics(diag, 0)
     assert float(zero.dt_mean) == 0.0
     with pytest.raises(ValueError):
-        _slice_gx_diagnostics(diag, -1)
+        _slice_runtime_diagnostics(diag, -1)
 
-    truncated = _truncate_gx_diagnostics(diag, t_max=0.15)
+    truncated = _truncate_runtime_diagnostics(diag, t_max=0.15)
     assert truncated.t.shape == (2,)
-    empty = _truncate_gx_diagnostics(replace(diag, t=np.asarray([])), t_max=1.0)
+    empty = _truncate_runtime_diagnostics(replace(diag, t=np.asarray([])), t_max=1.0)
     assert empty is not None
 
-    strided = _stride_gx_diagnostics(diag, stride=2)
+    strided = _stride_runtime_diagnostics(diag, stride=2)
     assert strided.t.shape == (1,)
-    assert _stride_gx_diagnostics(diag, stride=1) is diag
+    assert _stride_runtime_diagnostics(diag, stride=1) is diag
 
-    concat = _concat_gx_diagnostics([diag, _diag(offset=1.0)])
+    concat = _concat_runtime_diagnostics([diag, _diag(offset=1.0)])
     assert concat.t.shape == (4,)
     assert concat.resolved is not None and concat.resolved.Phi2_kxt.shape[0] == 4
-    concat_none = _concat_gx_diagnostics(
+    concat_none = _concat_runtime_diagnostics(
         [replace(diag, resolved=None), replace(_diag(offset=1.0), resolved=None)]
     )
     assert concat_none.resolved is None
     with pytest.raises(ValueError):
-        _concat_gx_diagnostics([])
+        _concat_runtime_diagnostics([])
+
+
+def test_fit_runtime_linear_diagnostics_density_fit_contract() -> None:
+    t = np.asarray([0.1, 0.2, 0.3, 0.4])
+    phi = np.ones((4, 1, 1, 2), dtype=np.complex128)
+    density = np.asarray([1.0, 1.5, 2.25, 3.375], dtype=np.complex128)[
+        :, None, None, None
+    ] * np.ones((1, 1, 1, 2), dtype=np.complex128)
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    out = fit_runtime_linear_diagnostics(
+        t=t,
+        phi_t=phi,
+        density_t=density,
+        selection=sel,
+        z=np.asarray([-1.0, 1.0]),
+        fit_signal="density",
+        mode_method="z_index",
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+    )
+
+    assert out.fit_signal_used == "density"
+    assert out.gamma > 0.0
+    assert out.fit_window_tmin is not None
+    assert out.fit_window_tmax is not None
+    np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
+
+
+def test_fit_runtime_linear_diagnostics_auto_selects_best_scored_channel() -> None:
+    t = np.asarray([0.0, 1.0, 2.0])
+    phi = np.ones((3, 1, 1, 1), dtype=np.complex128)
+    density = np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)[:, None, None, None]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    def _fake_auto_stats(t_arr, signal, **_kwargs):  # type: ignore[no-untyped-def]
+        score = 10.0 if float(np.real(signal[-1])) > 1.5 else 1.0
+        return 0.1 * score, -0.2, float(t_arr[0]), float(t_arr[-1]), score, 0.0
+
+    out = fit_runtime_linear_diagnostics(
+        t=t,
+        phi_t=phi,
+        density_t=density,
+        selection=sel,
+        z=np.asarray([0.0]),
+        fit_signal="auto",
+        mode_method="z_index",
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        fit_growth_rate_auto_with_stats_fn=_fake_auto_stats,
+        extract_eigenfunction_fn=lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j]),
+    )
+
+    assert out.fit_signal_used == "density"
+    assert out.gamma == pytest.approx(1.0)
+    np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
+
+
+def test_run_cetg_linear_runtime_dependency_contract() -> None:
+    cfg = replace(_base_cfg(), physics=replace(_base_cfg().physics, reduced_model="cetg"))
+    grid = build_spectral_grid(cfg.grid)
+    statuses: list[str] = []
+
+    def _fake_integrator(*_args, **_kwargs):
+        diag = SimpleNamespace(
+            t=np.asarray([0.1, 0.2, 0.3]),
+            phi_mode_t=np.asarray([1.0 + 0.0j, 1.1 + 0.1j, 1.4 + 0.2j]),
+            gamma_t=np.asarray([0.1, 0.2, 0.3]),
+            omega_t=np.asarray([-0.1, -0.2, -0.3]),
+        )
+        return (
+            np.asarray(diag.t),
+            diag,
+            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
+            object(),
+        )
+
+    out = run_cetg_linear_runtime(
+        cfg,
+        deps=CETGLinearRuntimeDeps(
+            build_runtime_geometry=build_runtime_geometry,
+            validate_cetg_runtime_config=lambda *_args, **_kwargs: None,
+            build_initial_condition=lambda *_args, **_kwargs: np.zeros(
+                (2, 1, 1, 1, grid.z.size), dtype=np.complex64
+            ),
+            build_runtime_term_config=lambda _cfg: object(),
+            build_cetg_model_params=lambda *_args, **_kwargs: object(),
+            integrate_cetg_explicit_diagnostics_state=_fake_integrator,
+            fit_growth_rate_auto=lambda *_args, **_kwargs: (0.2, -0.3, 0.1, 0.3),
+            fit_growth_rate=lambda *_args, **_kwargs: (0.2, -0.3),
+        ),
+        ky_target=0.1,
+        Nl=2,
+        Nm=1,
+        solver="time",
+        method=None,
+        dt=0.1,
+        steps=3,
+        sample_stride=None,
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        return_state=True,
+        status_callback=statuses.append,
+    )
+
+    assert out.gamma == pytest.approx(0.2)
+    assert out.omega == pytest.approx(-0.3)
+    assert out.state is not None
+    assert out.fit_signal_used == "phi"
+    assert any("running cETG time integration" in msg for msg in statuses)
+
+
+def test_finalize_runtime_linear_quasilinear_contract() -> None:
+    cfg = replace(
+        _base_cfg(),
+        quasilinear=RuntimeQuasilinearConfig(enabled=True, csat=0.7),
+    )
+    result = RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.1,
+        omega=-0.3,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        state=np.ones((1, 1, 1, 1, 2), dtype=np.complex128),
+    )
+    statuses: list[str] = []
+
+    class _Payload:
+        def to_dict(self) -> dict[str, object]:
+            return {"heat_flux_weight_total": 1.5, "mode": "saturated"}
+
+    calls: dict[str, object] = {}
+
+    def _compute(state, **kwargs):
+        calls["state_shape"] = np.asarray(state).shape
+        calls["metadata"] = kwargs["metadata"]
+        calls["csat"] = kwargs["csat"]
+        return _Payload()
+
+    out = finalize_runtime_linear_quasilinear(
+        result,
+        enabled=True,
+        cfg=cfg,
+        grid=object(),
+        geom=object(),
+        params=SimpleNamespace(),
+        terms=object(),
+        Nl=2,
+        Nm=3,
+        solver_name="krylov",
+        species_names=("ion",),
+        return_state_requested=False,
+        deps=RuntimeQuasilinearFinalizationDeps(
+            build_linear_cache=lambda *_args: "cache",
+            compute_quasilinear_from_linear_state=_compute,
+            linear_terms_to_term_config=lambda terms: terms,
+        ),
+        status_callback=statuses.append,
+    )
+
+    assert out.state is None
+    assert out.quasilinear == {"heat_flux_weight_total": 1.5, "mode": "saturated"}
+    assert calls["state_shape"] == (1, 1, 1, 1, 2)
+    assert calls["csat"] == pytest.approx(0.7)
+    assert calls["metadata"] == {
+        "runtime_config_enabled": True,
+        "solver": "krylov",
+        "delta_ky": cfg.quasilinear.delta_ky,
+        "species_selection": cfg.quasilinear.species,
+        "write_spectrum": cfg.quasilinear.write_spectrum,
+    }
+    assert statuses == [
+        "computing quasilinear transport weights",
+        "quasilinear transport weights complete",
+    ]
 
 
 def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:
@@ -328,10 +1194,12 @@ def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> Non
     diag1 = _diag(offset=1.0, resolved=False)
 
     with pytest.raises(ValueError, match="optional diagnostic heat_flux_species_t"):
-        _concat_gx_diagnostics([diag0, diag1])
+        _concat_runtime_diagnostics([diag0, diag1])
 
     with pytest.raises(ValueError, match="resolved diagnostics"):
-        _concat_gx_diagnostics([replace(_diag(), resolved=None), _diag(offset=1.0)])
+        _concat_runtime_diagnostics(
+            [replace(_diag(), resolved=None), _diag(offset=1.0)]
+        )
 
     partial0 = replace(
         _diag(),
@@ -348,7 +1216,7 @@ def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> Non
         ),
     )
     with pytest.raises(ValueError, match="resolved diagnostic Wg_kxst"):
-        _concat_gx_diagnostics([partial0, partial1])
+        _concat_runtime_diagnostics([partial0, partial1])
 
 
 def test_runtime_species_and_model_helpers() -> None:
@@ -428,13 +1296,13 @@ def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None
 
     monkeypatch.setattr("spectraxgk.runtime.build_runtime_geometry", _fake_build_geom)
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_linear_params", _fake_build_params
+        "spectraxgk.workflows.runtime.startup.build_runtime_linear_params", _fake_build_params
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_linear_terms", _fake_build_terms
+        "spectraxgk.workflows.runtime.startup.build_runtime_linear_terms", _fake_build_terms
     )
     monkeypatch.setattr(
-        "spectraxgk.runtime_startup.build_runtime_term_config", _fake_build_term_config
+        "spectraxgk.workflows.runtime.startup.build_runtime_term_config", _fake_build_term_config
     )
 
     assert build_runtime_linear_params(cfg, Nm=7) == "params"
@@ -496,11 +1364,26 @@ def test_runtime_build_geometry_vmec_and_miller_branches(
         "spectraxgk.runtime.generate_runtime_miller_eik", lambda _cfg: miller_path
     )
 
+    vmec_geom = runtime._runtime_geometry_config_for_builder(
+        replace(cfg, geometry=GeometryConfig(model="vmec"))
+    )
+    miller_geom = runtime._runtime_geometry_config_for_builder(
+        replace(cfg, geometry=GeometryConfig(model="miller"))
+    )
+    default_geom = runtime._runtime_geometry_config_for_builder(cfg)
+
+    assert (vmec_geom.model, vmec_geom.geometry_file) == ("vmec-eik", str(vmec_path))
+    assert (miller_geom.model, miller_geom.geometry_file) == (
+        "imported-eik",
+        str(miller_path),
+    )
+    assert default_geom is cfg.geometry
+
     build_runtime_geometry(replace(cfg, geometry=GeometryConfig(model="vmec")))
     build_runtime_geometry(replace(cfg, geometry=GeometryConfig(model="miller")))
     build_runtime_geometry(cfg)
     assert captured[0] == ("vmec-eik", str(vmec_path))
-    assert captured[1] == ("gx-eik", str(miller_path))
+    assert captured[1] == ("imported-eik", str(miller_path))
     assert captured[2][0] == cfg.geometry.model
 
 
@@ -532,7 +1415,7 @@ def test_runtime_initial_state_helpers(
     )
 
     raw = np.arange(2 * 3 * 2 * 4 * 5, dtype=np.float32).astype(np.complex64)
-    reshaped = _reshape_gx_state(raw, nspec=1, nl=2, nm=3, nyc=2, nx=4, nz=5)
+    reshaped = _reshape_netcdf_state(raw, nspec=1, nl=2, nm=3, nyc=2, nx=4, nz=5)
     assert reshaped.shape == (1, 2, 3, 2, 4, 5)
 
     expanded = _expand_ky(np.ones((1, 2, 3, 4, 5), dtype=np.complex64), nyc=3)
@@ -603,7 +1486,7 @@ def test_runtime_initial_state_loading_helpers(
 
     nc_path = tmp_path / "restart.nc"
     monkeypatch.setattr(
-        "spectraxgk.runtime.load_gx_restart_state",
+        "spectraxgk.runtime.load_netcdf_restart_state",
         lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64),
     )
     assert _load_initial_state_from_file(
@@ -1013,18 +1896,20 @@ def test_run_runtime_linear_diffrax_contract_paths(
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda arr, sel, method="project": np.exp(
-            (gamma_ref - 1j * omega_ref) * t_saved
-        ).astype(np.complex128)
-        if np.max(np.abs(arr)) < 2.0
-        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+        lambda arr, sel, method="project": (
+            np.exp((gamma_ref - 1j * omega_ref) * t_saved).astype(np.complex128)
+            if np.max(np.abs(arr)) < 2.0
+            else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)
+        ),
     )
     monkeypatch.setattr(
         runtime,
         "fit_growth_rate_auto_with_stats",
-        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
-        if np.max(np.abs(signal)) < 2.0
-        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+        lambda t, signal, **kwargs: (
+            (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+            if np.max(np.abs(signal)) < 2.0
+            else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0)
+        ),
     )
     monkeypatch.setattr(
         runtime,
@@ -1129,6 +2014,70 @@ def test_run_runtime_nonlinear_final_state_contract(
     assert out.state is None
 
 
+def test_run_runtime_nonlinear_final_state_without_progress_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "build_runtime_linear_params",
+        lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})(),
+    )
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(
+        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0)
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros(
+            (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+        ),
+    )
+
+    def _fake_final_state(*args, **kwargs):
+        captured["n_args"] = len(args)
+        captured["show_progress"] = kwargs.get("show_progress", None)
+        return (
+            np.ones(
+                (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+            ),
+            FieldState(
+                phi=np.ones(
+                    (grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+                ),
+                apar=None,
+                bpar=None,
+            ),
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        diagnostics=False,
+        show_progress=False,
+    )
+
+    assert captured["n_args"] == 5
+    assert captured["show_progress"] is None
+    assert out.diagnostics is None
+    assert out.phi2 is not None
+
+
 def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1190,7 +2139,7 @@ def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(
@@ -1291,7 +2240,7 @@ def test_run_runtime_nonlinear_adaptive_chunk_requires_progress(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     with pytest.raises(RuntimeError, match="made no time-step progress"):
@@ -1362,7 +2311,7 @@ def test_run_runtime_nonlinear_phiext_source_uses_diagnostics_path(
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=False)
@@ -1446,7 +2395,7 @@ def test_run_runtime_nonlinear_adaptive_chunk_forwards_fixed_mode_and_collision_
         )
 
     monkeypatch.setattr(
-        runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator
+        runtime, "integrate_nonlinear_explicit_diagnostics_state", _fake_diag_integrator
     )
 
     out = run_runtime_nonlinear(

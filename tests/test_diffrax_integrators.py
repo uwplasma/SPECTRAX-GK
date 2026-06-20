@@ -8,13 +8,13 @@ diffrax = pytest.importorskip("diffrax")
 pytest.importorskip("equinox")
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diffrax_integrators import (
+from spectraxgk.solvers.time.diffrax import (
     integrate_linear_diffrax,
     integrate_linear_diffrax_streaming,
     integrate_nonlinear_diffrax,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams
 from spectraxgk.terms.config import TermConfig
 

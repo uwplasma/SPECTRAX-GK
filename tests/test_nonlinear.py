@@ -7,16 +7,16 @@ import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
-from spectraxgk.gx_integrators import _gx_linear_omega_max
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.solvers.time.explicit import _linear_frequency_bound
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
     _apply_collision_split,
     _collision_damping,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
-    integrate_nonlinear_gx_diagnostics,
-    integrate_nonlinear_gx_diagnostics_state,
+    integrate_nonlinear_explicit_diagnostics,
+    integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
 )
 from spectraxgk.terms.config import TermConfig
@@ -79,8 +79,8 @@ def test_nonlinear_imex_reuses_prebuilt_operator():
     assert fields_t.phi.shape[0] == 2
 
 
-def test_integrate_nonlinear_gx_diagnostics_shapes():
-    """GX-style nonlinear diagnostics should return time-series arrays."""
+def test_integrate_nonlinear_explicit_diagnostics_shapes():
+    """Nonlinear diagnostics should return time-series arrays."""
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -89,7 +89,7 @@ def test_integrate_nonlinear_gx_diagnostics_shapes():
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     terms = TermConfig(nonlinear=0.0)
-    t, diag = integrate_nonlinear_gx_diagnostics(
+    t, diag = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -109,7 +109,7 @@ def test_integrate_nonlinear_gx_diagnostics_shapes():
     assert np.isfinite(np.asarray(diag.dt_t)).all()
 
 
-def test_integrate_nonlinear_imex_gx_diagnostics_shapes():
+def test_integrate_nonlinear_imex_diagnostics_shapes():
     """IMEX nonlinear diagnostics should return time-series arrays."""
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
@@ -119,7 +119,7 @@ def test_integrate_nonlinear_imex_gx_diagnostics_shapes():
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     terms = TermConfig(nonlinear=0.0)
-    t, diag = integrate_nonlinear_gx_diagnostics(
+    t, diag = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -147,7 +147,7 @@ def test_integrate_nonlinear_collision_split_sts():
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     terms = TermConfig(nonlinear=0.0, collisions=1.0)
-    _t, diag = integrate_nonlinear_gx_diagnostics(
+    _t, diag = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -172,7 +172,9 @@ def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
     params = LinearParams(nu=0.2)
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     G = jnp.asarray(
-        np.linspace(1.0, 1.0 + 2 * 2 * 2 * 2 * 4 - 1, 2 * 2 * 2 * 2 * 4, dtype=np.float32).reshape(2, 2, 2, 2, 4),
+        np.linspace(
+            1.0, 1.0 + 2 * 2 * 2 * 2 * 4 - 1, 2 * 2 * 2 * 2 * 4, dtype=np.float32
+        ).reshape(2, 2, 2, 2, 4),
         dtype=jnp.complex64,
     )
     terms = TermConfig(
@@ -190,7 +192,7 @@ def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
         bpar=0.0,
     )
 
-    _t, _diag, G_final, _fields = integrate_nonlinear_gx_diagnostics_state(
+    _t, _diag, G_final, _fields = integrate_nonlinear_explicit_diagnostics_state(
         G,
         grid,
         geom,
@@ -204,14 +206,20 @@ def test_nonlinear_collision_split_does_not_double_count_explicit_collisions():
         collision_scheme="exp",
     )
 
-    damping = _collision_damping(cache, params, terms, jnp.float32, squeeze_species=True)
-    expected = _apply_collision_split(G, damping, jnp.asarray(0.05, dtype=jnp.float32), "exp")
+    damping = _collision_damping(
+        cache, params, terms, jnp.float32, squeeze_species=True
+    )
+    expected = _apply_collision_split(
+        G, damping, jnp.asarray(0.05, dtype=jnp.float32), "exp"
+    )
 
-    np.testing.assert_allclose(np.asarray(G_final), np.asarray(expected), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(G_final), np.asarray(expected), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
-def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
-    """Adaptive nonlinear GX diagnostics should clamp dt to dt when dt_max is unset."""
+def test_nonlinear_adaptive_default_dt_max_matches_requested_dt():
+    """Adaptive nonlinear runtime diagnostics should clamp dt to dt when dt_max is unset."""
 
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -220,7 +228,7 @@ def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     terms = TermConfig(nonlinear=0.0)
-    _t, diag = integrate_nonlinear_gx_diagnostics(
+    _t, diag = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -238,8 +246,8 @@ def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
     assert np.nanmax(dt_t) <= 0.05 + 1.0e-6
 
 
-def test_nonlinear_gx_adaptive_dt_includes_linear_frequency_cap():
-    """Adaptive nonlinear dt should honor the GX linear CFL estimate even with zero nonlinear drive."""
+def test_nonlinear_adaptive_dt_includes_linear_frequency_cap():
+    """Adaptive nonlinear dt should honor the linear CFL estimate even with zero nonlinear drive."""
 
     grid_cfg = GridConfig(Nx=8, Ny=8, Nz=16, Lx=20.0, Ly=20.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -254,7 +262,7 @@ def test_nonlinear_gx_adaptive_dt_includes_linear_frequency_cap():
     cfl_fac = 1.73
     dt0 = 0.1
     cache = build_linear_cache(grid, geom_eff, params, Nl=2, Nm=4)
-    linear_omega = _gx_linear_omega_max(
+    linear_omega = _linear_frequency_bound(
         grid,
         geom_eff,
         params,
@@ -264,7 +272,7 @@ def test_nonlinear_gx_adaptive_dt_includes_linear_frequency_cap():
     )
     expected_dt = cfl_fac * cfl / float(np.sum(linear_omega))
 
-    _t, diag = integrate_nonlinear_gx_diagnostics(
+    _t, diag = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -286,8 +294,8 @@ def test_nonlinear_gx_adaptive_dt_includes_linear_frequency_cap():
 
 
 @pytest.mark.parametrize("method", ["rk3", "imex"])
-def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(method: str):
-    """GX-style nonlinear gamma/omega should be invariant to diagnostics_stride."""
+def test_nonlinear_gamma_omega_use_previous_step_not_previous_diagnostic(method: str):
+    """Nonlinear gamma/omega should be invariant to diagnostics_stride."""
 
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -300,7 +308,7 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
     G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
     terms = TermConfig(nonlinear=0.0)
 
-    t_dense, diag_dense = integrate_nonlinear_gx_diagnostics(
+    t_dense, diag_dense = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -312,7 +320,7 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
         sample_stride=1,
         diagnostics_stride=1,
     )
-    t_sparse, diag_sparse = integrate_nonlinear_gx_diagnostics(
+    t_sparse, diag_sparse = integrate_nonlinear_explicit_diagnostics(
         G,
         grid,
         geom,
@@ -333,7 +341,10 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
     omega_sparse = np.asarray(diag_sparse.omega_t)
 
     stride_indices = list(range(0, len(t_dense_arr), 2))
-    forced_final = bool(t_sparse_arr[-1] == pytest.approx(t_dense_arr[-1]) and stride_indices[-1] != len(t_dense_arr) - 1)
+    forced_final = bool(
+        t_sparse_arr[-1] == pytest.approx(t_dense_arr[-1])
+        and stride_indices[-1] != len(t_dense_arr) - 1
+    )
     compared_sparse = slice(None, -1 if forced_final else None)
     compared_indices = stride_indices[: len(t_sparse_arr[compared_sparse])]
 
@@ -345,8 +356,8 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
         assert omega_sparse[-1] == pytest.approx(omega_sparse[-2])
 
 
-def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
-    """IMEX GX diagnostics should keep the scan state dtype aligned with the implicit operator."""
+def test_nonlinear_imex_diagnostics_match_operator_dtype_under_x64():
+    """IMEX runtime diagnostics should keep the scan state dtype aligned with the implicit operator."""
 
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -361,7 +372,7 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
         base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
         G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
 
-        _t, diag = integrate_nonlinear_gx_diagnostics(
+        _t, diag = integrate_nonlinear_explicit_diagnostics(
             G,
             grid,
             geom,
@@ -381,7 +392,7 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
 
 
 @pytest.mark.parametrize("method", ["rk3", "sspx3"])
-def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode(method: str):
+def test_nonlinear_state_diagnostics_can_freeze_one_mode(method: str):
     """Fixed-mode projection should preserve a selected Fourier mode exactly."""
 
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
@@ -394,7 +405,7 @@ def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode(method: str):
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
 
-    _t, _diag, G_final, _fields = integrate_nonlinear_gx_diagnostics_state(
+    _t, _diag, G_final, _fields = integrate_nonlinear_explicit_diagnostics_state(
         G,
         grid,
         geom,

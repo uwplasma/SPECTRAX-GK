@@ -80,7 +80,7 @@ def build_problem(
 
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
     cfg = CycloneBaseCase(grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=6.0, Ly=6.0, boundary="periodic"))
@@ -114,7 +114,7 @@ def build_electrostatic_field_reduce_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan, electrostatic_phi_shard_map
+    from spectraxgk.parallel.velocity import build_velocity_sharding_plan, electrostatic_phi_shard_map
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
@@ -169,7 +169,7 @@ def build_electrostatic_field_reduce_gate(
     return _json_clean(
         {
             "case": "Electrostatic Hermite-sharded field-reduction identity gate",
-            "source": "spectraxgk.velocity_sharding.electrostatic_phi_shard_map",
+            "source": "spectraxgk.parallel.velocity.electrostatic_phi_shard_map",
             "reference_source": "spectraxgk.linear.linear_rhs_cached production electrostatic field solve",
             "claim_scope": "single-species electrostatic phi field-reduction identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
@@ -198,7 +198,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

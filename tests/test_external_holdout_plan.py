@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import sys
 
-from spectraxgk.external_holdout_plan import (
+from spectraxgk.validation.external_holdout import (
     ExternalHoldoutScreenRow,
     build_external_holdout_runbook,
     external_vmec_family,

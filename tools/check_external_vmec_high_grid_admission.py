@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation_gates import evaluate_scalar_gate, gate_report, gate_report_to_dict  # noqa: E402
+from spectraxgk.validation.gates import evaluate_scalar_gate, gate_report, gate_report_to_dict  # noqa: E402
 
 
 DEFAULT_OUT = ROOT / "docs" / "_static" / "external_vmec_high_grid_admission_gate.json"

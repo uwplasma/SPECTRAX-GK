@@ -107,18 +107,18 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
     )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
     monkeypatch.setattr(mod, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
-    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
     grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     grid_pos = SimpleNamespace(ky=np.array([0.1, 0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
     captured: dict[str, object] = {}
 
-    def _fake_select_gx_real_fft_ky_grid(grid, ky_vals):
+    def _fake_select_real_fft_ky_grid(grid, ky_vals):
         captured["grid"] = grid
         captured["ky_vals"] = np.asarray(ky_vals)
         return grid_pos
 
-    monkeypatch.setattr(mod, "select_gx_real_fft_ky_grid", _fake_select_gx_real_fft_ky_grid)
+    monkeypatch.setattr(mod, "select_real_fft_ky_grid", _fake_select_real_fft_ky_grid)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object())
     cache = SimpleNamespace(kperp2=np.arange(4, dtype=np.float32).reshape(2, 1, 2), bmag=np.ones(2), kperp2_bmag=False)
     monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: cache)
@@ -128,14 +128,14 @@ def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
         "compute_fields_cached",
         lambda *_args, **_kwargs: SimpleNamespace(phi=np.arange(4, dtype=np.complex64).reshape(2, 1, 2), apar=None, bpar=None),
     )
-    monkeypatch.setattr(mod, "gx_volume_factors", lambda *_args, **_kwargs: (np.array([0.4, 0.6]), np.array([0.0, 1.0])))
-    monkeypatch.setattr(mod, "gx_Wg", lambda *_args, **_kwargs: 1.5)
-    monkeypatch.setattr(mod, "gx_Wphi", lambda *_args, **_kwargs: 2.5)
-    monkeypatch.setattr(mod, "gx_Wapar", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(mod, "gx_heat_flux", lambda *_args, **_kwargs: 3.5)
-    monkeypatch.setattr(mod, "gx_particle_flux", lambda *_args, **_kwargs: 0.0)
-    monkeypatch.setattr(mod, "gx_heat_flux_species", lambda *_args, **_kwargs: np.array([3.5]))
-    monkeypatch.setattr(mod, "gx_particle_flux_species", lambda *_args, **_kwargs: np.array([0.0]))
+    monkeypatch.setattr(mod, "fieldline_quadrature_weights", lambda *_args, **_kwargs: (np.array([0.4, 0.6]), np.array([0.0, 1.0])))
+    monkeypatch.setattr(mod, "distribution_free_energy", lambda *_args, **_kwargs: 1.5)
+    monkeypatch.setattr(mod, "electrostatic_field_energy", lambda *_args, **_kwargs: 2.5)
+    monkeypatch.setattr(mod, "magnetic_vector_potential_energy", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(mod, "heat_flux_total", lambda *_args, **_kwargs: 3.5)
+    monkeypatch.setattr(mod, "particle_flux_total", lambda *_args, **_kwargs: 0.0)
+    monkeypatch.setattr(mod, "heat_flux_species", lambda *_args, **_kwargs: np.array([3.5]))
+    monkeypatch.setattr(mod, "particle_flux_species", lambda *_args, **_kwargs: np.array([0.0]))
 
     summaries: list[str] = []
     monkeypatch.setattr(mod, "_summary", lambda name, *_args, **_kwargs: summaries.append(name))

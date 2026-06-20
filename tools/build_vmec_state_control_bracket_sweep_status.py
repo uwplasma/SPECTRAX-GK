@@ -136,7 +136,7 @@ def _plot(path: Path, report: Mapping[str, Any]) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report["rows"])
     labels = [f"{row['state_parameter']}\n$\\alpha$={row['alpha_delta']:.3g}" for row in rows]

@@ -80,20 +80,28 @@ def build_problem(
 
     from spectraxgk.config import CycloneBaseCase, GridConfig
     from spectraxgk.geometry import SAlphaGeometry
-    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.core.grid import build_spectral_grid
     from spectraxgk.linear import LinearParams, build_linear_cache
 
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=6.0, Ly=6.0, boundary="periodic"))
+    cfg = CycloneBaseCase(
+        grid=GridConfig(
+            Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=6.0, Ly=6.0, boundary="periodic"
+        )
+    )
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     cache = build_linear_cache(grid, geom, params, int(nl), int(nm))
     z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
-    state = jnp.zeros((int(nl), int(nm), grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    state = jnp.zeros(
+        (int(nl), int(nm), grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
     ky_index = min(1, grid.ky.size - 1)
     state = state.at[0, min(2, int(nm) - 1), ky_index, 0, :].set(jnp.exp(1j * z))
     if int(nm) > 4 and grid.ky.size > 2:
-        state = state.at[1 % int(nl), 4, min(2, grid.ky.size - 1), 0, :].set(0.25 * jnp.exp(2j * z))
+        state = state.at[1 % int(nl), 4, min(2, grid.ky.size - 1), 0, :].set(
+            0.25 * jnp.exp(2j * z)
+        )
     return state, cache, params, grid, geom
 
 
@@ -114,17 +122,30 @@ def build_linear_rhs_streaming_gate(
     import jax.numpy as jnp
 
     from spectraxgk.linear import linear_rhs_cached
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan, periodic_streaming_shard_map
+    from spectraxgk.parallel.velocity import (
+        build_velocity_sharding_plan,
+        periodic_streaming_shard_map,
+    )
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
-        raise RuntimeError(f"requested {requested_devices} CPU devices, but only {len(device_list)} are available")
+        raise RuntimeError(
+            f"requested {requested_devices} CPU devices, but only {len(device_list)} are available"
+        )
     state, cache, params, grid, _geom = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
     terms = _streaming_only_terms()
     production, phi = linear_rhs_cached(state, cache, params, terms=terms, use_jit=True)
-    plan = build_velocity_sharding_plan(state.shape, num_devices=len(device_list), axes=("hermite",))
-    # GX-style streaming_contribution_gx applies a leading minus sign before the parallel derivative.
-    sharded = -periodic_streaming_shard_map(state, plan, kz=cache.kz, vth=jnp.asarray([params.vth], dtype=jnp.float32), devices=device_list)
+    plan = build_velocity_sharding_plan(
+        state.shape, num_devices=len(device_list), axes=("hermite",)
+    )
+    # linked_streaming_contribution applies a leading minus sign before the parallel derivative.
+    sharded = -periodic_streaming_shard_map(
+        state,
+        plan,
+        kz=cache.kz,
+        vth=jnp.asarray([params.vth], dtype=jnp.float32),
+        devices=device_list,
+    )
     _block_until_ready((production, phi, sharded))
 
     abs_err = jnp.max(jnp.abs(sharded - production))
@@ -135,7 +156,9 @@ def build_linear_rhs_streaming_gate(
     max_abs_error = float(np.asarray(abs_err))
     max_rel_error = float(np.asarray(rel_err))
     phi_norm_float = float(np.asarray(phi_norm))
-    identity_passed = bool(max_abs_error <= float(atol) and max_rel_error <= float(rtol))
+    identity_passed = bool(
+        max_abs_error <= float(atol) and max_rel_error <= float(rtol)
+    )
 
     production_trace = np.asarray(production[0, :, min(1, grid.ky.size - 1), 0, 1])
     sharded_trace = np.asarray(sharded[0, :, min(1, grid.ky.size - 1), 0, 1])
@@ -153,11 +176,16 @@ def build_linear_rhs_streaming_gate(
     return _json_clean(
         {
             "case": "Full linear-RHS streaming-only shard-map identity gate",
-            "source": "spectraxgk.velocity_sharding.periodic_streaming_shard_map",
+            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
             "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
             "claim_scope": "linear RHS identity gate with only streaming enabled, not a full-RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
-            "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Ny_actual": int(grid.ky.size), "Nz": int(grid.z.size)},
+            "grid": {
+                "Nx": int(nx),
+                "Ny_requested": int(ny),
+                "Ny_actual": int(grid.ky.size),
+                "Nz": int(grid.z.size),
+            },
             "requested_devices": int(requested_devices),
             "actual_devices": len(device_list),
             "plan": plan.to_dict(),
@@ -182,7 +210,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")
@@ -190,10 +218,14 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
 
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     rows = list(summary["rows"])
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), lineterminator="\n")
+        writer = csv.DictWriter(
+            fh, fieldnames=list(rows[0].keys()), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
 
@@ -211,8 +243,12 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     axes[0].set_title("Streaming-only linear RHS")
     axes[0].legend(frameon=False, fontsize=8)
 
-    axes[1].semilogy(m, np.maximum(error, 1.0e-16), "s-", lw=2.0, label="absolute error")
-    axes[1].axhline(float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="abs gate")
+    axes[1].semilogy(
+        m, np.maximum(error, 1.0e-16), "s-", lw=2.0, label="absolute error"
+    )
+    axes[1].axhline(
+        float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="abs gate"
+    )
     status = "passed" if bool(summary["identity_passed"]) else "failed"
     axes[1].set_xlabel("Hermite index m")
     axes[1].set_ylabel("absolute error")
@@ -260,7 +296,11 @@ def main() -> None:
         rtol=float(args.rtol),
     )
     paths = write_artifacts(summary, args.out_prefix)
-    print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {"identity_passed": summary["identity_passed"], "paths": paths}, indent=2
+        )
+    )
 
 
 if __name__ == "__main__":

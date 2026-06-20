@@ -9,7 +9,7 @@ import numpy as np
 from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
 import pytest
-from spectraxgk.plotting import (
+from spectraxgk.artifacts.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     eigenfunction_reference_overlay_figure,

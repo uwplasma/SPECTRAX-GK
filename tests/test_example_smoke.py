@@ -4,9 +4,9 @@ import jax.numpy as jnp
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams
-from spectraxgk.runners import integrate_linear_from_config, integrate_nonlinear_from_config
+from spectraxgk.solvers.time.runners import integrate_linear_from_config, integrate_nonlinear_from_config
 from spectraxgk.terms.config import TermConfig
 
 

@@ -11,9 +11,9 @@ import jax.numpy as jnp
 import numpy as np
 
 from tools.compare_gx_rhs_terms import _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
-from spectraxgk.grids import build_spectral_grid, gx_real_fft_ky, select_gx_real_fft_ky_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data
+from spectraxgk.core.grid import build_spectral_grid, real_fft_unique_ky, select_real_fft_ky_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
@@ -54,7 +54,7 @@ def _split_rhs(
     cache,
     params,
     term_cfg,
-    gx_real_fft: bool,
+    compressed_real_fft: bool,
     laguerre_mode: str,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, object]:
     linear_total, fields, _contrib = assemble_rhs_terms_cached(jnp.asarray(G), cache, params, terms=term_cfg)
@@ -85,7 +85,7 @@ def _split_rhs(
             laguerre_j0=cache.laguerre_j0,
             laguerre_j1_over_alpha=cache.laguerre_j1_over_alpha,
             b=cache.b,
-            gx_real_fft=gx_real_fft,
+            compressed_real_fft=compressed_real_fft,
             laguerre_mode=laguerre_mode,
         )
     total = jnp.asarray(linear_total) + jnp.asarray(nonlinear)
@@ -104,7 +104,7 @@ def _compute_stage_states(
     params,
     term_cfg,
     dt: float,
-    gx_real_fft: bool,
+    compressed_real_fft: bool,
     laguerre_mode: str,
 ) -> NonlinearRK4StageStates:
     k1_lin, k1_nl, k1_tot, _fields0 = _split_rhs(
@@ -112,7 +112,7 @@ def _compute_stage_states(
         cache=cache,
         params=params,
         term_cfg=term_cfg,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     G2 = np.asarray(G0) + 0.5 * float(dt) * k1_tot
@@ -121,7 +121,7 @@ def _compute_stage_states(
         cache=cache,
         params=params,
         term_cfg=term_cfg,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     G3 = np.asarray(G0) + 0.5 * float(dt) * k2_tot
@@ -130,7 +130,7 @@ def _compute_stage_states(
         cache=cache,
         params=params,
         term_cfg=term_cfg,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     G4 = np.asarray(G0) + float(dt) * k3_tot
@@ -139,7 +139,7 @@ def _compute_stage_states(
         cache=cache,
         params=params,
         term_cfg=term_cfg,
-        gx_real_fft=gx_real_fft,
+        compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
     return NonlinearRK4StageStates(
@@ -253,9 +253,9 @@ def main() -> None:
         grid=replace(cfg.grid, Nx=int(nx), Ny=int(ny_full), Nz=int(nz)),
     )
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_real_fft_ky(grid_full.ky))
+    grid = select_real_fft_ky_grid(grid_full, real_fft_unique_ky(grid_full.ky))
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     term_cfg = build_runtime_term_config(cfg_use)
@@ -268,7 +268,7 @@ def main() -> None:
         params=params,
         term_cfg=term_cfg,
         dt=dt,
-        gx_real_fft=bool(cfg_use.time.gx_real_fft),
+        compressed_real_fft=bool(cfg_use.time.compressed_real_fft),
         laguerre_mode=str(cfg_use.time.laguerre_nonlinear_mode),
     )
     sp_phi0 = np.asarray(compute_fields_cached(jnp.asarray(gx_g0), cache, params, terms=term_cfg).phi)

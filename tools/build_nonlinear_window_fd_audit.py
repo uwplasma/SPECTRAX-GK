@@ -24,10 +24,15 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig  # noqa: E402
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.runtime import run_runtime_nonlinear  # noqa: E402
-from spectraxgk.runtime_config import (  # noqa: E402
+from spectraxgk.workflows.runtime.config import (  # noqa: E402
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,
@@ -71,7 +76,9 @@ def cyclone_runtime_config(
     """Return the compact nonlinear Cyclone startup-audit configuration."""
 
     return RuntimeConfig(
-        grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"),
+        grid=GridConfig(
+            Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"
+        ),
         time=TimeConfig(
             t_max=float(dt),
             dt=float(dt),
@@ -89,8 +96,12 @@ def cyclone_runtime_config(
             random_seed=int(random_seed),
             init_single=False,
         ),
-        species=(RuntimeSpeciesConfig(name="ion", tprim=float(tprim), fprim=float(fprim)),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="gx"),
+        species=(
+            RuntimeSpeciesConfig(name="ion", tprim=float(tprim), fprim=float(fprim)),
+        ),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="rho_star"
+        ),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
         terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
     )
@@ -107,7 +118,9 @@ def late_window_metrics(
     t = np.asarray(time, dtype=float).reshape(-1)
     q = np.asarray(heat_flux, dtype=float).reshape(-1)
     if t.size != q.size or t.size < 4:
-        raise ValueError("time and heat_flux must have the same length with at least four samples")
+        raise ValueError(
+            "time and heat_flux must have the same length with at least four samples"
+        )
     if not (0.0 < float(tail_fraction) <= 1.0):
         raise ValueError("tail_fraction must be in (0, 1]")
     if not (np.all(np.isfinite(t)) and np.all(np.isfinite(q))):
@@ -169,15 +182,19 @@ def transport_average_requirements(
         if n_post >= 4:
             running = np.cumsum(post_heat) / np.arange(1, n_post + 1, dtype=float)
             midpoint = max(1, n_post // 2) - 1
-            running_change = float(abs(running[-1] - running[midpoint]) / max(abs(running[-1]), 1.0e-300))
+            running_change = float(
+                abs(running[-1] - running[midpoint]) / max(abs(running[-1]), 1.0e-300)
+            )
         gates = {
             "total_time": bool(total_time >= float(min_total_time)),
             "post_transient_samples": bool(n_post >= int(min_post_transient_samples)),
             "running_mean_converged": bool(
-                running_change is not None and running_change <= float(max_running_mean_rel_change)
+                running_change is not None
+                and running_change <= float(max_running_mean_rel_change)
             ),
             "mean_heat_flux_above_noise_floor": bool(
-                final_mean is not None and abs(final_mean) >= float(min_abs_mean_heat_flux)
+                final_mean is not None
+                and abs(final_mean) >= float(min_abs_mean_heat_flux)
             ),
         }
         per_run.append(
@@ -221,7 +238,9 @@ def run_cyclone_window(
 ) -> dict[str, Any]:
     """Run one compact nonlinear Cyclone startup point and return metrics."""
 
-    cfg = cyclone_runtime_config(tprim=tprim, random_seed=random_seed, nx=nx, ny=ny, nz=nz, dt=dt)
+    cfg = cyclone_runtime_config(
+        tprim=tprim, random_seed=random_seed, nx=nx, ny=ny, nz=nz, dt=dt
+    )
     result = run_runtime_nonlinear(
         cfg,
         ky_target=float(ky),
@@ -288,7 +307,10 @@ def build_audit_payload(
     gates = {
         "finite_outputs": all(
             np.all(np.isfinite(np.asarray(run["heat_flux"], dtype=float)))
-            and all(math.isfinite(float(run["window"][key])) for key in ("mean", "cv", "trend", "slope"))
+            and all(
+                math.isfinite(float(run["window"][key]))
+                for key in ("mean", "cv", "trend", "slope")
+            )
             for run in runs
         ),
         "repeatability": bool(repeat_rel <= float(repeatability_rtol)),
@@ -363,8 +385,19 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         t = np.asarray(run["time"], dtype=float)
         q = np.asarray(run["heat_flux"], dtype=float)
         window = run["window"]
-        ax0.plot(t, q, linewidth=2.0, color=colors.get(label, "#333333"), label=labels.get(label, label))
-        ax0.axvspan(float(window["t_min"]), float(window["t_max"]), color=colors.get(label, "#333333"), alpha=0.055)
+        ax0.plot(
+            t,
+            q,
+            linewidth=2.0,
+            color=colors.get(label, "#333333"),
+            label=labels.get(label, label),
+        )
+        ax0.axvspan(
+            float(window["t_min"]),
+            float(window["t_max"]),
+            color=colors.get(label, "#333333"),
+            alpha=0.055,
+        )
     ax0.set_title("Startup nonlinear heat-flux traces")
     ax0.set_xlabel("time")
     ax0.set_ylabel("heat flux")
@@ -373,9 +406,23 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
 
     order = ["minus", "base", "plus", "base_repeat"]
     x = np.arange(len(order), dtype=float)
-    means = [float(next(run for run in runs if str(run["label"]) == label)["window"]["mean"]) for label in order]
-    stds = [float(next(run for run in runs if str(run["label"]) == label)["window"]["std"]) for label in order]
-    ax1.bar(x, means, yerr=stds, capsize=4, color=[colors[label] for label in order], edgecolor="#222222", linewidth=0.7)
+    means = [
+        float(next(run for run in runs if str(run["label"]) == label)["window"]["mean"])
+        for label in order
+    ]
+    stds = [
+        float(next(run for run in runs if str(run["label"]) == label)["window"]["std"])
+        for label in order
+    ]
+    ax1.bar(
+        x,
+        means,
+        yerr=stds,
+        capsize=4,
+        color=[colors[label] for label in order],
+        edgecolor="#222222",
+        linewidth=0.7,
+    )
     ax1.set_xticks(x, [labels[label] for label in order], rotation=18, ha="right")
     ax1.set_ylabel("startup-window heat-flux mean")
     ax1.set_title("Finite-difference conditioning")
@@ -401,9 +448,19 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         ha="right",
         va="bottom",
         fontsize=9,
-        bbox={"facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.9, "boxstyle": "round,pad=0.35"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cccccc",
+            "alpha": 0.9,
+            "boxstyle": "round,pad=0.35",
+        },
     )
-    fig.suptitle("Nonlinear startup-window finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
+    fig.suptitle(
+        "Nonlinear startup-window finite-difference audit",
+        y=1.04,
+        fontsize=14,
+        fontweight="bold",
+    )
     return fig
 
 
@@ -414,9 +471,23 @@ def write_audit_artifacts(payload: dict[str, Any], out: Path) -> dict[str, str]:
     json_path = out.with_suffix(".json")
     csv_path = out.with_suffix(".csv")
     pdf_path = out.with_suffix(".pdf")
-    json_path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False)
+        + "\n",
+        encoding="utf-8",
+    )
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        fieldnames = ["label", "tprim", "random_seed", "window_mean", "window_std", "window_cv", "window_trend", "t_min", "t_max"]
+        fieldnames = [
+            "label",
+            "tprim",
+            "random_seed",
+            "window_mean",
+            "window_std",
+            "window_cv",
+            "window_trend",
+            "t_min",
+            "t_max",
+        ]
         writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for run in payload["runs"]:
@@ -501,7 +572,9 @@ def main(argv: list[str] | None = None) -> int:
         min_response_fraction=float(args.min_response_fraction),
     )
     paths = write_audit_artifacts(payload, Path(args.out))
-    print(f"passed={payload['passed']} response_fraction={payload['metrics']['response_fraction']:.6g}")
+    print(
+        f"passed={payload['passed']} response_fraction={payload['metrics']['response_fraction']:.6g}"
+    )
     for path in paths.values():
         print(f"Wrote {path}")
     return 0 if bool(payload["passed"]) else 1

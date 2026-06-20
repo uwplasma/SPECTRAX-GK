@@ -21,17 +21,19 @@ from typing import cast
 
 import numpy as np
 
-from spectraxgk.stellarator_optimization import StellaratorITGSampleSet
-from spectraxgk.vmec_jax_transport_admission import (
+from spectraxgk.objectives.stellarator import StellaratorITGSampleSet
+from spectraxgk.validation.stellarator.transport_policies import (
     VMECJAXNonlinearAuditPolicy,
+)
+from spectraxgk.validation.stellarator.transport_samples import (
     transport_objective_sample_summary,
 )
-from spectraxgk.vmec_jax_transport_gradient import (
+from spectraxgk.objectives.vmec_transport_gradient import (
     boundary_spec_record,
     build_boundary_transport_gradient_report,
     write_boundary_transport_gradient_report,
 )
-from spectraxgk.vmec_jax_transport_objective import (
+from spectraxgk.objectives.vmec_transport import (
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
     VMECJAXTransportObjectiveKind,

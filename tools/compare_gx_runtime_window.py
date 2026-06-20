@@ -14,9 +14,9 @@ from netCDF4 import Dataset
 
 from tools.compare_gx_rhs_terms import _infer_y0, _summary
 from tools.compare_gx_runtime_diag_state import _gx_diag_scalar, _gx_diag_species, _load_field, _load_real_vector_auto, _load_species_state, _maybe_load_field
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults, ensure_flux_tube_geometry_data
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config, run_runtime_nonlinear
 from spectraxgk.terms.assembly import compute_fields_cached
@@ -103,9 +103,9 @@ def main() -> None:
     )
 
     geom = build_runtime_geometry(cfg_use)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     cache = build_linear_cache(grid, geom_eff, params, nl, nm)

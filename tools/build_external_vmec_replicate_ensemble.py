@@ -18,11 +18,15 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.quasilinear_window import (  # noqa: E402
+from spectraxgk.validation.quasilinear.window_config import (  # noqa: E402
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
     NonlinearWindowEnsembleManifestConfig,
+)
+from spectraxgk.validation.quasilinear.window_io import (  # noqa: E402
     nonlinear_window_convergence_from_summary,
+)
+from spectraxgk.validation.quasilinear.window_ensemble import (  # noqa: E402
     nonlinear_window_ensemble_artifact_manifest,
     nonlinear_window_ensemble_report,
 )
@@ -254,7 +258,7 @@ def _write_png(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     set_plot_style()
     colors = ["#11756f", "#b8612a", "#4569b2", "#7c3aed", "#b91c1c"]

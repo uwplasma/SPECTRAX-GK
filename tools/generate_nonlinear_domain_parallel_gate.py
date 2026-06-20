@@ -45,7 +45,7 @@ def build_nonlinear_domain_parallel_gate(
 
     import jax.numpy as jnp
 
-    from spectraxgk.nonlinear_parallel import (
+    from spectraxgk.operators.nonlinear.parallel import (
         build_nonlinear_domain_decomposition_plan,
         deterministic_nonlinear_domain_state,
         nonlinear_domain_parallel_identity_gate,
@@ -105,7 +105,7 @@ def build_nonlinear_domain_parallel_gate(
     return _json_clean(
         {
             "case": "Nonlinear state-domain decomposition identity gate",
-            "source": "spectraxgk.nonlinear_parallel nonlinear-domain prototype utilities",
+            "source": "spectraxgk.operators.nonlinear.parallel nonlinear-domain prototype utilities",
             "claim_scope": report.claim_scope,
             "state_shape": tuple(int(item) for item in state.shape),
             "decomposition": plan.decomposition_metadata(),
@@ -177,7 +177,7 @@ def write_artifacts(summary: dict[str, Any], out_json: Path, out_png: Path) -> N
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_png.parent.mkdir(parents=True, exist_ok=True)

@@ -370,7 +370,7 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch)
     monkeypatch.setattr(make_tables, "build_linear_cache", lambda *args, **kwargs: object())
     monkeypatch.setattr(
         make_tables,
-        "integrate_linear_gx",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (np.array([0.0, 1.0]), np.ones((2, 1, 1, 3), dtype=np.complex128), None, None),
     )
     methods: list[str] = []

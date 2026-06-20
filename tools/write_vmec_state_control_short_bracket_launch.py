@@ -319,7 +319,7 @@ def _plot(path: Path, report: Mapping[str, Any]) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     launches = list(report["launches"])
     coeffs = sorted({control["coefficient"] for row in launches for control in row["controls"]})

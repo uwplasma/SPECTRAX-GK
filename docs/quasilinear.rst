@@ -70,7 +70,7 @@ research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
 validated absolute nonlinear flux predictor. The current 12-case
 train/holdout calibration portfolio validates the input plumbing and rejects
-the legacy one-constant family, with CTH-like and shaped-pressure external VMEC
+the one-constant saturation-rule family, with CTH-like and shaped-pressure external VMEC
 admitted only through explicit high-grid policies and QP and Solovev admitted
 through replicated seed/timestep ensembles. The QI candidate remains negative evidence:
 it is finite at ``t=250`` but its ``n48/n64`` late-window heat-flux means differ
@@ -293,9 +293,9 @@ density moment
 
 but it is zero for the one-ion adiabatic-electron cases because there is no
 kinetic electron species carrying particle transport. The implemented formulas
-live in :func:`spectraxgk.diagnostics.gx_heat_flux_species`,
-:func:`spectraxgk.diagnostics.gx_particle_flux_species`, and
-``_gx_heat_flux_channel_contrib_species`` in
+live in :func:`spectraxgk.diagnostics.heat_flux_species`,
+:func:`spectraxgk.diagnostics.particle_flux_species`, and
+``_heat_flux_channel_contrib_species`` in
 :mod:`spectraxgk.diagnostics`.
 
 Amplitude normalization and effective scale
@@ -400,14 +400,16 @@ Implementation map
      - heat, particle, field-energy, volume-factor, and resolved flux
        contractions shared by linear and nonlinear paths
    * - Runtime plumbing
-     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.runtime_artifacts`
+     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.workflows.runtime.artifacts`
      - single-run and scan execution, TOML/executable overrides, JSON/CSV
        artifact writing
    * - Input schema
-     - :mod:`spectraxgk.runtime_config`, :mod:`spectraxgk.io`
+     - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
-     - :mod:`spectraxgk.quasilinear_calibration`
+     - :mod:`spectraxgk.validation.quasilinear.calibration_core`,
+       :mod:`spectraxgk.validation.quasilinear.calibration_io`, and
+       :mod:`spectraxgk.validation.quasilinear.calibration_spectrum`
      - train/holdout/audit schemas, nonlinear-window ingestion, scale fitting,
        and report scoring
    * - Plotting tools
@@ -415,7 +417,7 @@ Implementation map
        ``tools/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
-     - :mod:`spectraxgk.autodiff_validation`
+     - :mod:`spectraxgk.validation.autodiff`
      - finite-difference checks, covariance diagnostics, dense operator
        fixtures, and implicit isolated-eigenpair sensitivities
 
@@ -463,7 +465,7 @@ Numerics and differentiability
 
 SPECTRAX-GK production linear solves remain matrix-free. Dense matrices are
 only materialized in tiny validation fixtures through
-:func:`spectraxgk.autodiff_validation.explicit_complex_operator_matrix`.
+:func:`spectraxgk.validation.autodiff.explicit_complex_operator_matrix`.
 
 Eigenvalue sensitivities use JAX derivatives of the matrix entries and the
 standard isolated-branch relation
@@ -587,13 +589,14 @@ quasilinear derivation and saturation-rule validation philosophy in
 Calibration reports
 -------------------
 
-Calibration artifacts should use ``spectraxgk.quasilinear_calibration`` so
+Calibration artifacts should use ``spectraxgk.validation.quasilinear.calibration_core``
+and ``spectraxgk.validation.quasilinear.calibration_io`` so
 training, holdout, and audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
-``spectraxgk.quasilinear_window`` or
+``spectraxgk.validation.quasilinear.window_statistics`` or
 ``tools/check_nonlinear_window_convergence.py`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
@@ -603,7 +606,7 @@ from an uncalibrated
 saturation rule.
 
 Replicated nonlinear windows should additionally be checked with
-``spectraxgk.quasilinear_window.nonlinear_window_ensemble_report`` before they
+``spectraxgk.validation.quasilinear.window_ensemble.nonlinear_window_ensemble_report`` before they
 are used as seed, initial-condition, or timestep-robust transport evidence.
 The ensemble gate consumes already-built nonlinear-window convergence reports,
 requires each input window to be promotion-ready by default, and checks the

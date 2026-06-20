@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-from spectraxgk.vmec_jax_transport_line_search import (
+from spectraxgk.objectives.vmec_transport_line_search import (
     ProjectedLineSearchPolicy,
     boundary_chain_accepted_parameter_indices,
     projected_line_search_input_manifest,

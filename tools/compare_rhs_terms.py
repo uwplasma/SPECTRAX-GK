@@ -21,9 +21,9 @@ from spectraxgk.benchmarks import (
     ETG_OMEGA_D_SCALE,
     ETG_OMEGA_STAR_SCALE,
     ETG_RHO_STAR,
-    Kinetic_OMEGA_D_SCALE,
-    Kinetic_OMEGA_STAR_SCALE,
-    Kinetic_RHO_STAR,
+    KINETIC_OMEGA_D_SCALE,
+    KINETIC_OMEGA_STAR_SCALE,
+    KINETIC_RHO_STAR,
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
@@ -36,7 +36,7 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GridConfig, ETGModelConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.assembly import assemble_rhs_cached
@@ -138,9 +138,9 @@ def _build_case(args) -> CaseInfo:
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=Kinetic_OMEGA_D_SCALE,
-            omega_star_scale=Kinetic_OMEGA_STAR_SCALE,
-            rho_star=Kinetic_RHO_STAR,
+            omega_d_scale=KINETIC_OMEGA_D_SCALE,
+            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
+            rho_star=KINETIC_RHO_STAR,
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
             nhermite=args.Nm,

@@ -19,9 +19,9 @@ from typing import Any
 import numpy as np
 
 from spectraxgk.config import GeometryConfig  # type: ignore[import-untyped]
-from spectraxgk.io import load_runtime_from_toml  # type: ignore[import-untyped]
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml  # type: ignore[import-untyped]
 from spectraxgk.runtime import run_runtime_nonlinear  # type: ignore[import-untyped]
-from spectraxgk.runtime_config import RuntimeConfig  # type: ignore[import-untyped]
+from spectraxgk.workflows.runtime.config import RuntimeConfig  # type: ignore[import-untyped]
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,9 @@ class CaseSpec:
 DEFAULT_CASES: dict[str, CaseSpec] = {
     "cyclone": CaseSpec(
         name="cyclone",
-        config=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml"),
+        config=Path(
+            "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml"
+        ),
         ky=0.3,
         nl=4,
         nm=8,
@@ -58,7 +60,9 @@ DEFAULT_CASES: dict[str, CaseSpec] = {
     ),
     "w7x": CaseSpec(
         name="w7x",
-        config=Path("examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml"),
+        config=Path(
+            "examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml"
+        ),
         ky=1.0 / 21.0,
         nl=3,
         nm=4,
@@ -69,14 +73,18 @@ DEFAULT_CASES: dict[str, CaseSpec] = {
     ),
     "hsx": CaseSpec(
         name="hsx",
-        config=Path("examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"),
+        config=Path(
+            "examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"
+        ),
         ky=1.0 / 21.0,
         nl=3,
         nm=4,
         steps=3,
         dt=0.05,
-        geometry_file=Path(".cache/spectrax/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc"),
-        geometry_model="gx-netcdf",
+        geometry_file=Path(
+            ".cache/spectrax/vmec_eik/HSX_QHS_vacuum_ns201_a6ec24c48834374f.eik.nc"
+        ),
+        geometry_model="imported-netcdf",
     ),
 }
 
@@ -100,12 +108,33 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Case to run. Repeat for multiple cases. Defaults to all built-in cases.",
     )
-    parser.add_argument("--steps", type=int, default=None, help="Override step count for every selected case.")
-    parser.add_argument("--rtol", type=float, default=0.15, help="Maximum relative scalar-diagnostic difference.")
-    parser.add_argument("--atol", type=float, default=1.0e-12, help="Absolute floor for scalar-diagnostic differences.")
-    parser.add_argument("--out-json", type=Path, default=Path("docs/_static/laguerre_mode_gate.json"))
-    parser.add_argument("--out-csv", type=Path, default=Path("docs/_static/laguerre_mode_gate.csv"))
-    parser.add_argument("--plot-out", type=Path, default=Path("docs/_static/laguerre_mode_gate.png"))
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=None,
+        help="Override step count for every selected case.",
+    )
+    parser.add_argument(
+        "--rtol",
+        type=float,
+        default=0.15,
+        help="Maximum relative scalar-diagnostic difference.",
+    )
+    parser.add_argument(
+        "--atol",
+        type=float,
+        default=1.0e-12,
+        help="Absolute floor for scalar-diagnostic differences.",
+    )
+    parser.add_argument(
+        "--out-json", type=Path, default=Path("docs/_static/laguerre_mode_gate.json")
+    )
+    parser.add_argument(
+        "--out-csv", type=Path, default=Path("docs/_static/laguerre_mode_gate.csv")
+    )
+    parser.add_argument(
+        "--plot-out", type=Path, default=Path("docs/_static/laguerre_mode_gate.png")
+    )
     parser.add_argument("--w7x-geometry-file", type=Path, default=None)
     parser.add_argument("--hsx-geometry-file", type=Path, default=None)
     parser.add_argument("--fail-on-mismatch", action="store_true")
@@ -179,11 +208,15 @@ def _run_mode(cfg: RuntimeConfig, spec: CaseSpec, mode: str) -> dict[str, float]
     elapsed = time.perf_counter() - start
     scalars = _final_scalar_diagnostics(result)
     scalars["run_s"] = float(elapsed)
-    scalars["ky_selected"] = float(result.ky_selected) if result.ky_selected is not None else float("nan")
+    scalars["ky_selected"] = (
+        float(result.ky_selected) if result.ky_selected is not None else float("nan")
+    )
     return scalars
 
 
-def _compare(grid: dict[str, float], spectral: dict[str, float], *, atol: float) -> dict[str, float]:
+def _compare(
+    grid: dict[str, float], spectral: dict[str, float], *, atol: float
+) -> dict[str, float]:
     rel: dict[str, float] = {}
     for key in DIAGNOSTIC_KEYS:
         a = float(grid[key])
@@ -191,13 +224,19 @@ def _compare(grid: dict[str, float], spectral: dict[str, float], *, atol: float)
         denom = max(abs(a), abs(b), float(atol))
         rel[f"{key}_rel_diff"] = abs(a - b) / denom
     rel["max_rel_diff"] = max(rel.values()) if rel else 0.0
-    rel["speedup_grid_over_spectral"] = float(grid["run_s"]) / max(float(spectral["run_s"]), 1.0e-30)
+    rel["speedup_grid_over_spectral"] = float(grid["run_s"]) / max(
+        float(spectral["run_s"]), 1.0e-30
+    )
     return rel
 
 
 def _run_case(spec: CaseSpec, *, rtol: float, atol: float) -> dict[str, Any]:
     if not spec.config.exists():
-        return {"case": spec.name, "status": "missing_config", "config": str(spec.config)}
+        return {
+            "case": spec.name,
+            "status": "missing_config",
+            "config": str(spec.config),
+        }
     if spec.geometry_file is not None and not spec.geometry_file.exists():
         return {
             "case": spec.name,
@@ -211,12 +250,17 @@ def _run_case(spec: CaseSpec, *, rtol: float, atol: float) -> dict[str, Any]:
         grid = _run_mode(cfg, spec, "grid")
         spectral = _run_mode(cfg, spec, "spectral")
         comparison = _compare(grid, spectral, atol=atol)
-        passed = bool(comparison["max_rel_diff"] <= rtol and np.isfinite(comparison["max_rel_diff"]))
+        passed = bool(
+            comparison["max_rel_diff"] <= rtol
+            and np.isfinite(comparison["max_rel_diff"])
+        )
         return {
             "case": spec.name,
             "status": "pass" if passed else "mismatch",
             "config": str(spec.config),
-            "geometry_file": str(spec.geometry_file) if spec.geometry_file is not None else None,
+            "geometry_file": str(spec.geometry_file)
+            if spec.geometry_file is not None
+            else None,
             "ky": spec.ky,
             "Nl": spec.nl,
             "Nm": spec.nm,
@@ -228,12 +272,16 @@ def _run_case(spec: CaseSpec, *, rtol: float, atol: float) -> dict[str, Any]:
             "spectral": spectral,
             "comparison": comparison,
         }
-    except Exception as exc:  # pragma: no cover - exercised by operational gate failures.
+    except (
+        Exception
+    ) as exc:  # pragma: no cover - exercised by operational gate failures.
         return {
             "case": spec.name,
             "status": "error",
             "config": str(spec.config),
-            "geometry_file": str(spec.geometry_file) if spec.geometry_file is not None else None,
+            "geometry_file": str(spec.geometry_file)
+            if spec.geometry_file is not None
+            else None,
             "error": f"{type(exc).__name__}: {exc}",
         }
 
@@ -266,7 +314,9 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
                 "dt": row.get("dt"),
                 "grid_run_s": grid.get("run_s"),
                 "spectral_run_s": spectral.get("run_s"),
-                "speedup_grid_over_spectral": comparison.get("speedup_grid_over_spectral"),
+                "speedup_grid_over_spectral": comparison.get(
+                    "speedup_grid_over_spectral"
+                ),
                 "max_rel_diff": comparison.get("max_rel_diff"),
             }
             for key in DIAGNOSTIC_KEYS:
@@ -284,7 +334,9 @@ def _write_plot(path: Path, rows: list[dict[str, Any]], *, rtol: float) -> None:
 
     labels = [str(row["case"]) for row in passed_rows]
     x = np.arange(len(labels))
-    speedup = [float(row["comparison"]["speedup_grid_over_spectral"]) for row in passed_rows]
+    speedup = [
+        float(row["comparison"]["speedup_grid_over_spectral"]) for row in passed_rows
+    ]
     rel = [float(row["comparison"]["max_rel_diff"]) for row in passed_rows]
     rel_floor = max(float(rtol) * 1.0e-4, 1.0e-12)
     rel_plot = [max(value, rel_floor) for value in rel]
@@ -297,7 +349,9 @@ def _write_plot(path: Path, rows: list[dict[str, Any]], *, rtol: float) -> None:
     axes[0].set_xticks(x, labels, rotation=20, ha="right")
 
     axes[1].bar(x, rel_plot, color="#c46a3a", edgecolor="#5a2d19", linewidth=0.8)
-    axes[1].axhline(rtol, color="0.25", linestyle="--", linewidth=1.0, label=f"gate rtol={rtol:g}")
+    axes[1].axhline(
+        rtol, color="0.25", linestyle="--", linewidth=1.0, label=f"gate rtol={rtol:g}"
+    )
     axes[1].set_yscale("log")
     axes[1].set_ylabel("max scalar relative difference")
     axes[1].set_title("Grid vs spectral parity")
@@ -316,7 +370,10 @@ def _write_plot(path: Path, rows: list[dict[str, Any]], *, rtol: float) -> None:
 
 def main() -> int:
     args = _parse_args()
-    rows = [_run_case(spec, rtol=float(args.rtol), atol=float(args.atol)) for spec in _selected_cases(args)]
+    rows = [
+        _run_case(spec, rtol=float(args.rtol), atol=float(args.atol))
+        for spec in _selected_cases(args)
+    ]
     payload = {
         "description": "Optional spectral Laguerre nonlinear mode gate against default grid-mode nonlinear bracket.",
         "rtol": float(args.rtol),
@@ -332,7 +389,9 @@ def main() -> int:
         comparison = row.get("comparison", {})
         speedup = comparison.get("speedup_grid_over_spectral", float("nan"))
         max_rel = comparison.get("max_rel_diff", float("nan"))
-        print(f"{row['case']}: status={status} speedup={speedup:.3g} max_rel={max_rel:.3g}")
+        print(
+            f"{row['case']}: status={status} speedup={speedup:.3g} max_rel={max_rel:.3g}"
+        )
     if args.fail_on_mismatch and any(row["status"] != "pass" for row in rows):
         return 1
     return 0

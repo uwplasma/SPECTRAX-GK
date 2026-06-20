@@ -17,7 +17,7 @@ from tools.compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _build_imported_linear_terms,
     _gx_has_uniform_linear_dt,
-    _gx_term_config,
+    _linear_term_config,
     _infer_gx_linear_dt,
     _load_gx_input_contract,
     _resolve_imported_boundary,
@@ -31,19 +31,19 @@ from tools.compare_gx_runtime_diag_state import (
     _load_species_state,
     _maybe_load_field,
 )
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
-from spectraxgk.gx_integrators import (
-    GXTimeConfig,
-    _gx_growth_rate_step,
-    _gx_linear_omega_max,
-    _gx_midplane_index,
+from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid
+from spectraxgk.solvers.time.explicit import (
+    ExplicitTimeConfig,
+    _instantaneous_growth_rate_step,
+    _linear_frequency_bound,
+    _diagnostic_midplane_index,
     _linear_explicit_step,
 )
 from spectraxgk.linear import build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -68,11 +68,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _gx_growth_pair(phi_now: np.ndarray, phi_prev: np.ndarray, dt: float) -> tuple[np.ndarray, np.ndarray]:
-    z_index = _gx_midplane_index(phi_now.shape[-1])
+    z_index = _diagnostic_midplane_index(phi_now.shape[-1])
     phi_now_j = jnp.asarray(phi_now)
     phi_prev_j = jnp.asarray(phi_prev)
     mask = jnp.ones(phi_now.shape[:2], dtype=bool)
-    gamma, omega = _gx_growth_rate_step(
+    gamma, omega = _instantaneous_growth_rate_step(
         phi_now_j,
         phi_prev_j,
         dt,
@@ -238,11 +238,11 @@ def main() -> None:
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
         )
     else:
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
 
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
     lx = 2.0 * np.pi * y0 if boundary_eff == "periodic" else 62.8
-    grid_cfg = apply_gx_geometry_grid_defaults(
+    grid_cfg = apply_imported_geometry_grid_defaults(
         geom,
         GridConfig(
             Nx=int(nx),
@@ -257,7 +257,7 @@ def main() -> None:
         ),
     )
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
 
     if stop_has_growth and args.gx_restart_start is not None:
         if restart_state_active is None:
@@ -292,7 +292,7 @@ def main() -> None:
     )
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=nm)
+        params = _apply_reference_hypercollisions(params, nhermite=nm)
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
@@ -301,7 +301,7 @@ def main() -> None:
     )
     cache = build_linear_cache(grid, geom, params, nl, nm)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(gx_time[args.time_index_stop] - gx_time[args.time_index_start]) if not stop_has_growth else float(target),
         method=str(gx_contract.scheme),
@@ -317,7 +317,7 @@ def main() -> None:
         gamma_sp_dump, omega_sp_dump = gamma_gx_dump, omega_gx_dump
     else:
         G = jnp.asarray(gx_G_start, dtype=jnp.complex64)
-        omega_max = _gx_linear_omega_max(grid, geom, params, nl, nm)
+        omega_max = _linear_frequency_bound(grid, geom, params, nl, nm)
         wmax = float(np.sum(omega_max))
         t = 0.0
         phi_prev_step = gx_phi_start
@@ -333,7 +333,7 @@ def main() -> None:
             )
 
         stepper = jax.jit(_step, donate_argnums=(0,))
-        term_cfg = _gx_term_config(terms)
+        term_cfg = _linear_term_config(terms)
         if stop_has_growth and args.gx_restart_start is not None:
             if restart_time is None:
                 raise ValueError("restart_time must be available for restart-based growth replay")

@@ -19,7 +19,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.plotting import eigenfunction_overlap_summary_figure
+from spectraxgk.artifacts.plotting import eigenfunction_overlap_summary_figure
 
 
 def _parse_args() -> argparse.Namespace:

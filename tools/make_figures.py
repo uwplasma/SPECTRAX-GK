@@ -18,7 +18,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
@@ -36,7 +36,7 @@ from spectraxgk.benchmarks import (
     CYCLONE_RHO_STAR,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
     load_cyclone_reference,
@@ -58,18 +58,23 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import SpectralGrid, build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.core.grid import SpectralGrid, build_spectral_grid, select_ky_grid
+from spectraxgk.solvers.time.explicit import (
+    ExplicitTimeConfig,
+    integrate_linear_explicit,
+)
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
-from spectraxgk.plotting import (
+from spectraxgk.artifacts.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     scan_comparison_figure,
 )
-from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 
-def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
+def _scale_steps(
+    ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int
+) -> np.ndarray:
     scale = ky_ref / np.maximum(ky, 1.0e-6)
     steps = base_steps * np.maximum(1.0, scale)
     return np.clip(steps.astype(int), base_steps, max_steps)
@@ -146,7 +151,7 @@ KBM_SCAN_SOLVER = "time"
 TEM_SCAN_SOLVER = "time"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
-DIAGNOSTIC_NORM = "gx"
+DIAGNOSTIC_NORM = "rho_star"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
 KINETIC_KRYLOV = KINETIC_KRYLOV_DEFAULT
@@ -167,7 +172,6 @@ ETG_KRYLOV_LOW = KrylovConfig(
 )
 KBM_KRYLOV = KBM_KRYLOV_DEFAULT
 TEM_KRYLOV = TEM_KRYLOV_DEFAULT
-
 
 
 def _parse_args() -> argparse.Namespace:
@@ -245,7 +249,9 @@ def _scan_linear_verbose(
     )
     _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
     if tmin is not None or tmax is not None:
-        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+        _log(
+            f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress
+        )
 
     gammas: list[float] = []
     omegas: list[float] = []
@@ -261,11 +267,13 @@ def _scan_linear_verbose(
         tmin_i = _window_value(tmin, i)
         tmax_i = _window_value(tmax, i)
         _log(
-            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i * steps_i:.4g}",
             verbose=verbose,
             use_tqdm=progress,
         )
-        krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
+        krylov_cfg_use = (
+            krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
+        )
         extra = dict(DEFAULT_RUN_KW)
         if run_kwargs:
             extra.update(run_kwargs)
@@ -334,7 +342,9 @@ def _scan_kbm_verbose(
     if run_kwargs:
         _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
     if tmin is not None or tmax is not None:
-        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+        _log(
+            f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress
+        )
 
     gammas: list[float] = []
     omegas: list[float] = []
@@ -346,7 +356,7 @@ def _scan_kbm_verbose(
         tmin_i = _window_value(tmin, i)
         tmax_i = _window_value(tmax, i)
         _log(
-            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i * steps_i:.4g}",
             verbose=verbose,
             use_tqdm=progress,
         )
@@ -381,7 +391,10 @@ def _scan_kbm_verbose(
             use_tqdm=progress,
         )
 
-    return LinearScanResult(ky=np.array(beta_out), gamma=np.array(gammas), omega=np.array(omegas))
+    return LinearScanResult(
+        ky=np.array(beta_out), gamma=np.array(gammas), omega=np.array(omegas)
+    )
+
 
 WINDOWS = {
     "cyclone": dict(
@@ -531,7 +544,9 @@ def _run_cyclone_gx_case(
     window_kw: dict,
     verbose: bool,
     progress: bool,
-) -> tuple[float, float, np.ndarray, np.ndarray, ModeSelection, float, float, SpectralGrid]:
+) -> tuple[
+    float, float, np.ndarray, np.ndarray, ModeSelection, float, float, SpectralGrid
+]:
     Nl, Nm, tmax = _gx_balanced_policy(float(ky))
     grid_full = build_spectral_grid(cfg.grid)
     ky_idx = select_ky_index(np.asarray(grid_full.ky), float(ky))
@@ -549,7 +564,7 @@ def _run_cyclone_gx_case(
         damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
         damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
     )
-    params = _apply_gx_hypercollisions(params, nhermite=Nm)
+    params = _apply_reference_hypercollisions(params, nhermite=Nm)
     terms = LinearTerms()
 
     G0 = _build_initial_condition(
@@ -562,7 +577,7 @@ def _run_cyclone_gx_case(
         init_cfg=cfg.init,
     )
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         t_max=tmax,
         dt=0.01,
         fixed_dt=False,
@@ -576,7 +591,7 @@ def _run_cyclone_gx_case(
         verbose=verbose,
         use_tqdm=progress,
     )
-    t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+    t, phi_t, _gamma_t, _omega_t = integrate_linear_explicit(
         G0,
         grid,
         cache,
@@ -629,7 +644,9 @@ def _cyclone_gx_scan(
         ky_out.append(float(ky))
         gammas.append(float(gamma))
         omegas.append(float(omega))
-    scan = LinearScanResult(ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas))
+    scan = LinearScanResult(
+        ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas)
+    )
     ky_sel = float(scan.ky[int(np.nanargmax(scan.gamma))])
     return scan, ky_sel
 
@@ -641,7 +658,9 @@ def _cyclone_reference_mismatch_scan(
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
-    steps = _scale_steps(np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000)
+    steps = _scale_steps(
+        np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000
+    )
     scan = run_cyclone_scan(
         np.asarray(ref.ky),
         cfg=cfg,
@@ -652,7 +671,11 @@ def _cyclone_reference_mismatch_scan(
         time_cfg=CYCLONE_PUBLIC_TIME,
         **WINDOWS["cyclone"],
     )
-    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
+    return LinearScanResult(
+        ky=np.asarray(scan.ky),
+        gamma=np.asarray(scan.gamma),
+        omega=np.asarray(scan.omega),
+    )
 
 
 def _eigenfunction_panel(run, grid, window_kw):
@@ -663,7 +686,13 @@ def _eigenfunction_panel(run, grid, window_kw):
     else:
         _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal, **window_kw)
     eig = extract_eigenfunction(
-        run.phi_t, run.t, run.selection, z=grid.z, method="snapshot", tmin=tmin, tmax=tmax
+        run.phi_t,
+        run.t,
+        run.selection,
+        z=grid.z,
+        method="snapshot",
+        tmin=tmin,
+        tmax=tmax,
     )
     return eig
 
@@ -812,7 +841,11 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
                 "mode_method": "z_index",
                 "time_cfg": etg_time,
             },
-            mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": etg_time},
+            mode_kwargs={
+                "fit_signal": "phi",
+                "mode_method": "z_index",
+                "time_cfg": etg_time,
+            },
             verbose=verbose,
             progress=progress,
             label="ETG panel",
@@ -840,7 +873,9 @@ def _run_kbm_figures(*, outdir: Path) -> None:
     kbm_ref = load_kbm_reference()
     mismatch_csv = outdir / "kbm_mismatch_table.csv"
     if not mismatch_csv.exists():
-        raise FileNotFoundError(f"missing {mismatch_csv}; generate the KBM mismatch table first")
+        raise FileNotFoundError(
+            f"missing {mismatch_csv}; generate the KBM mismatch table first"
+        )
     kbm_scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
     fig, _axes = scan_comparison_figure(
         kbm_scan.ky,
@@ -859,7 +894,9 @@ def _run_kbm_figures(*, outdir: Path) -> None:
     fig.savefig(outdir / "kbm_comparison.pdf")
 
 
-def _load_spectrax_scan_from_mismatch(csv_path: Path, *, x_col: str = "ky") -> LinearScanResult:
+def _load_spectrax_scan_from_mismatch(
+    csv_path: Path, *, x_col: str = "ky"
+) -> LinearScanResult:
     df = pd.read_csv(csv_path).sort_values(x_col)
     return LinearScanResult(
         ky=df[x_col].to_numpy(dtype=float),
@@ -889,7 +926,9 @@ def _load_cyclone_scan_from_rows(csv_path: Path) -> LinearScanResult:
 def _cyclone_refresh_grid(ref: LinearScanResult) -> GridConfig:
     nky = int(np.asarray(ref.ky).size)
     if nky < 2:
-        raise ValueError("Cyclone reference must contain at least two positive ky points")
+        raise ValueError(
+            "Cyclone reference must contain at least two positive ky points"
+        )
     return GridConfig(
         Nx=1,
         Ny=3 * (nky - 1) + 1,

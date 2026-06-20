@@ -6,8 +6,9 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.autodiff_validation as adv
-from spectraxgk.autodiff_validation import (
+import spectraxgk.validation.autodiff as adv
+import spectraxgk.validation.autodiff_finite_difference as afd
+from spectraxgk.validation.autodiff import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,
@@ -18,14 +19,14 @@ from spectraxgk.autodiff_validation import (
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
     build_linear_cache,
     linear_rhs_cached,
 )
-from spectraxgk.diagnostics import gx_volume_factors
+from spectraxgk.diagnostics import fieldline_quadrature_weights
 from spectraxgk.quasilinear import (
     effective_kperp2,
     quasilinear_feature_objective,
@@ -126,6 +127,8 @@ def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> Non
         spectraxgk.autodiff_finite_difference_report
         is autodiff_finite_difference_report
     )
+    assert adv.autodiff_finite_difference_report is afd.autodiff_finite_difference_report
+    assert adv.covariance_diagnostics is afd.covariance_diagnostics
     assert (
         spectraxgk.central_finite_difference_jacobian
         is central_finite_difference_jacobian
@@ -412,7 +415,7 @@ def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
         fapar=0.0,
     )
     cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     terms = LinearTerms(
         streaming=1.0,
         mirror=1.0,
@@ -569,7 +572,7 @@ def test_actual_linear_rhs_branch_objective_implicit_derivative_gate() -> None:
         fapar=0.0,
     )
     cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
-    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    vol_fac, _flux_fac = fieldline_quadrature_weights(geom, grid)
     terms = LinearTerms(
         streaming=1.0,
         mirror=1.0,

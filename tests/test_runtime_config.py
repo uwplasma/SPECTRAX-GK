@@ -9,8 +9,13 @@ import sys
 
 import pytest
 
-from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.toml import (
+    direct_config_shorthand_args,
+    is_runtime_toml,
+    load_runtime_from_toml,
+    toml_shorthand_command,
+)
+from spectraxgk.workflows.runtime.config import (
     RuntimeConfig,
     RuntimeParallelConfig,
     RuntimeQuasilinearConfig,
@@ -46,10 +51,10 @@ def test_runtime_config_to_dict_contains_sections() -> None:
     assert len(d["species"]) == 1
 
 
-def test_runtime_defaults_match_gx_reference() -> None:
+def test_runtime_defaults_match_reference_contract() -> None:
     cfg = RuntimeConfig()
     assert cfg.geometry.drift_scale == 1.0
-    assert cfg.normalization.diagnostic_norm == "gx"
+    assert cfg.normalization.diagnostic_norm == "rho_star"
     assert cfg.normalization.flux_scale == 1.0
     assert cfg.collisions.p_hyper_m is None
     assert cfg.collisions.damp_ends_amp == pytest.approx(0.1)
@@ -113,6 +118,31 @@ axis = " KY "
     assert cfg.output.restart_to_file == "$SPECTRAX_TEST_MISSING/restart.nc"
     assert cfg.parallel.strategy == "serial"
     assert cfg.parallel.axis == "ky"
+
+
+def test_toml_shorthand_policy_resolves_runtime_and_named_cases(
+    tmp_path: Path,
+) -> None:
+    cfg_path = tmp_path / "case.toml"
+    cfg_path.write_text("[physics]\n", encoding="utf-8")
+
+    assert is_runtime_toml({"physics": {}}) is True
+    assert is_runtime_toml({"case": "cyclone"}) is False
+    assert is_runtime_toml({}) is True
+    assert toml_shorthand_command({"physics": {}}) == "run"
+    assert toml_shorthand_command({"case": "cyclone"}) == "run-linear"
+    assert direct_config_shorthand_args(
+        [str(cfg_path), "--no-progress"],
+        load_toml_func=lambda _path: {"physics": {}},
+    ) == ["run", "--config", str(cfg_path), "--no-progress"]
+    assert direct_config_shorthand_args(
+        [str(cfg_path), "--plot"],
+        load_toml_func=lambda _path: {"case": "cyclone"},
+    ) == ["run-linear", "--config", str(cfg_path), "--plot"]
+    assert direct_config_shorthand_args([]) is None
+    assert direct_config_shorthand_args(["--version"]) is None
+    assert direct_config_shorthand_args(["run", "--config", str(cfg_path)]) is None
+    assert direct_config_shorthand_args([str(tmp_path / "missing.toml")]) is None
 
 
 def test_load_runtime_from_toml_rejects_single_species_table(tmp_path: Path) -> None:
@@ -345,7 +375,7 @@ Ny = 12
 Nz = 32
 
 [geometry]
-model = "gx-netcdf"
+model = "imported-netcdf"
 geometry_file = "/tmp/w7x.eik.nc"
 
 [physics]
@@ -364,7 +394,7 @@ solver = "explicit_time"
     cfg, data = load_runtime_from_toml(path)
 
     assert isinstance(data, dict)
-    assert cfg.geometry.model == "gx-netcdf"
+    assert cfg.geometry.model == "imported-netcdf"
     assert cfg.geometry.geometry_file == str(Path("/tmp/w7x.eik.nc").resolve())
     assert cfg.physics.adiabatic_electrons is True
 
@@ -389,7 +419,7 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.init.init_field == "density"
     assert cfg.physics.adiabatic_electrons is True
-    assert cfg.normalization.diagnostic_norm == "gx"
+    assert cfg.normalization.diagnostic_norm == "rho_star"
 
 
 def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
@@ -454,7 +484,7 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.geometry.vmec_file == str(
         (path.parents[2] / "vmec" / "wout_NuhrenbergZille_1988_QHS.nc").resolve()
     )
-    assert cfg.geometry.gx_python is None
+    assert cfg.geometry.geometry_helper_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
@@ -479,8 +509,8 @@ def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
     cfg = mod.build_hsx_nonlinear_cfg(
         "/tmp/hsx.nc",
         geometry_file=None,
-        gx_repo=None,
-        gx_python=None,
+        geometry_helper_repo=None,
+        geometry_helper_python=None,
         torflux=0.64,
         alpha=0.0,
         npol=1.0,
@@ -543,7 +573,7 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.geometry.vmec_file == str(
         (path.parents[2] / "vmec" / "wout_nfp3_QI_fixed_resolution_final.nc").resolve()
     )
-    assert cfg.geometry.gx_python is None
+    assert cfg.geometry.geometry_helper_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
@@ -597,7 +627,6 @@ restart_from_file = "../out/run.resume.nc"
 def test_secondary_slab_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_secondary_slab.toml"
     )
@@ -648,13 +677,15 @@ geometry_file = "/tmp/w7x-desc.eik.nc"
     assert cfg.geometry.geometry_file == str(Path("/tmp/w7x-desc.eik.nc").resolve())
 
 
-def test_load_runtime_from_toml_accepts_vmec_gx_python(tmp_path: Path) -> None:
+def test_load_runtime_from_toml_accepts_vmec_geometry_helper_python(
+    tmp_path: Path,
+) -> None:
     toml = """
 [geometry]
 model = "vmec"
 vmec_file = "/tmp/wout_test.nc"
 torflux = 0.64
-gx_python = "python3"
+geometry_helper_python = "python3"
 """
     path = tmp_path / "runtime_vmec.toml"
     path.write_text(toml, encoding="utf-8")
@@ -663,7 +694,27 @@ gx_python = "python3"
 
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file == str(Path("/tmp/wout_test.nc").resolve())
-    assert cfg.geometry.gx_python == "python3"
+    assert cfg.geometry.geometry_helper_python == "python3"
+
+
+def test_load_runtime_from_toml_accepts_geometry_helper_fields(
+    tmp_path: Path,
+) -> None:
+    toml = """
+[geometry]
+model = "vmec"
+vmec_file = "/tmp/wout_test.nc"
+torflux = 0.64
+geometry_helper_python = "python3"
+geometry_helper_repo = "/tmp/helper"
+"""
+    path = tmp_path / "runtime_vmec_helper.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, _ = load_runtime_from_toml(path)
+
+    assert cfg.geometry.geometry_helper_python == "python3"
+    assert cfg.geometry.geometry_helper_repo == str(Path("/tmp/helper"))
 
 
 def test_load_runtime_from_toml_accepts_miller_geometry_fields(tmp_path: Path) -> None:
@@ -681,7 +732,7 @@ akappri = 0.0
 tri = 0.0
 tripri = 0.0
 betaprim = 0.0
-gx_python = "python3"
+geometry_helper_python = "python3"
 """
     path = tmp_path / "runtime_miller.toml"
     path.write_text(toml, encoding="utf-8")
@@ -693,7 +744,7 @@ gx_python = "python3"
     assert cfg.geometry.R_geo == pytest.approx(2.77778)
     assert cfg.geometry.akappa == pytest.approx(1.0)
     assert cfg.geometry.tripri == pytest.approx(0.0)
-    assert cfg.geometry.gx_python == "python3"
+    assert cfg.geometry.geometry_helper_python == "python3"
 
 
 def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
@@ -719,7 +770,6 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
 def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_miller_zonal_response.toml"
     )
@@ -748,7 +798,6 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
 def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     path = (
         Path(__file__).resolve().parents[1]
-        / "examples"
         / "benchmarks"
         / "runtime_w7x_zonal_response_vmec.toml"
     )
@@ -758,7 +807,12 @@ def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file == str(
-        (path.parents[1] / "vmec" / "wout_nfp3_QI_fixed_resolution_final.nc").resolve()
+        (
+            Path(__file__).resolve().parents[1]
+            / "examples"
+            / "vmec"
+            / "wout_nfp3_QI_fixed_resolution_final.nc"
+        ).resolve()
     )
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.geometry.alpha == pytest.approx(0.0)

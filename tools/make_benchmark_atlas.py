@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+from spectraxgk.validation.benchmarks.harness import evaluate_scalar_gate, gate_report, gate_report_to_dict
 
 
 ROOT = Path(__file__).resolve().parents[1]

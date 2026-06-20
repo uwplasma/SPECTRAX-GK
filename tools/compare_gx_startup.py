@@ -20,13 +20,13 @@ from spectraxgk.benchmarks import (
     KBM_RHO_STAR,
     CycloneBaseCase,
     KBMBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
 )
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import TermConfig
@@ -78,7 +78,7 @@ def _build_case_setup(
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=Nm)
         return cfg_c, geom, params
 
     cfg_k = KBMBaseCase(

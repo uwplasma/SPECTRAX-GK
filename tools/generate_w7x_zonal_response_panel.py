@@ -14,11 +14,11 @@ import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
 
-from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_response_metrics
-from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.plotting import set_plot_style
-from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
-from spectraxgk.zonal_validation import kx_token
+from spectraxgk.validation.benchmarks.harness import load_diagnostic_time_series, zonal_flow_response_metrics
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from spectraxgk.artifacts.plotting import set_plot_style
+from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
+from spectraxgk.validation.zonal import kx_token
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,7 +48,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=ROOT / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml",
+        default=ROOT / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml",
         help="Runtime TOML for the W7-X test-4 zonal-response benchmark.",
     )
     parser.add_argument(

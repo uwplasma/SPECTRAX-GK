@@ -63,7 +63,7 @@ def _state(shape: tuple[int, ...]) -> tuple[Any, Any]:
 def _production_streaming_term(state: Any, *, kz: Any, vth: float) -> Any:
     import jax.numpy as jnp
 
-    from spectraxgk.basis import hermite_ladder_coeffs
+    from spectraxgk.core.velocity import hermite_ladder_coeffs
     from spectraxgk.terms.operators import streaming_term
 
     nm = int(state.shape[-4])
@@ -92,7 +92,7 @@ def build_periodic_streaming_microkernel_gate(
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.velocity_sharding import (
+    from spectraxgk.parallel.velocity import (
         build_velocity_sharding_plan,
         periodic_streaming_reference,
         periodic_streaming_shard_map,
@@ -139,7 +139,7 @@ def build_periodic_streaming_microkernel_gate(
     return _json_clean(
         {
             "case": "Periodic streaming microkernel shard_map identity gate",
-            "source": "spectraxgk.velocity_sharding.periodic_streaming_shard_map",
+            "source": "spectraxgk.parallel.velocity.periodic_streaming_shard_map",
             "reference_source": "spectraxgk.terms.operators.streaming_term",
             "claim_scope": "linear streaming microkernel identity gate, not a full RHS or nonlinear speedup claim",
             "state_shape": shape,
@@ -164,7 +164,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

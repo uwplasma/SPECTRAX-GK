@@ -38,7 +38,7 @@ method = "rk4"
 sample_stride = 1
 diagnostics_stride = 1
 use_diffrax = false
-gx_real_fft = true
+compressed_real_fft = true
 laguerre_nonlinear_mode = "grid"
 fixed_dt = true
 
@@ -82,7 +82,7 @@ damp_ends_widthfrac = 0.125
 
 [normalization]
 contract = "kbm"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [terms]
 streaming = 1.0

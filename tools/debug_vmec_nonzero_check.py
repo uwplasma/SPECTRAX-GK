@@ -57,8 +57,8 @@ def main() -> int:
     if str(repo_root / "src") not in sys.path:
         sys.path.insert(0, str(repo_root / "src"))
 
-    from spectraxgk.io import load_runtime_from_toml
-    from spectraxgk.vmec_eik import build_gx_vmec_geometry_request, generate_runtime_vmec_eik
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+    from spectraxgk.geometry.vmec_eik import build_vmec_geometry_request, generate_runtime_vmec_eik
 
     cfg_path = (
         repo_root
@@ -70,7 +70,7 @@ def main() -> int:
     gx_repo = (repo_root / ".." / "gx").resolve()
 
     cfg, _ = load_runtime_from_toml(str(cfg_path))
-    req = build_gx_vmec_geometry_request(cfg)
+    req = build_vmec_geometry_request(cfg)
 
     out_dir = repo_root / "tmp_vmec_debug"
     out_dir.mkdir(parents=True, exist_ok=True)

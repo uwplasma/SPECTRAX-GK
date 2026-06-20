@@ -28,11 +28,19 @@ REQUIRED_CI_SNIPPETS = (
     "--enforce-package-coverage",
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
+    "tools/check_package_architecture_manifest.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
+)
+REQUIRED_CODECOV_SNIPPETS = (
+    "after_n_builds: 2",
+    "wait_for_ci: true",
+    "flags:",
+    "- wide-package",
 )
 REQUIRED_RELEASE_SNIPPETS = (
     "name: Release",
@@ -40,9 +48,11 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/check_release_version.py",
     "tools/check_repository_size_manifest.py",
     "tools/check_release_artifact_manifest.py",
+    "tools/check_package_architecture_manifest.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
@@ -59,6 +69,10 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/validation_gate_index.json",
     "docs/_static/validation_coverage_manifest_summary.json",
     "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/vmec_boozer_differentiability_claim_guard.json",
+    "docs/_static/vmec_boozer_shaped_pressure_solver_frequency_gradient_gate.json",
+    "docs/_static/vmec_boozer_shaped_pressure_quasilinear_gradient_gate.json",
+    "docs/_static/vmec_boozer_shaped_pressure_nonlinear_window_gradient_gate.json",
     "docs/_static/technical_release_status.json",
     "docs/_static/manuscript_readiness_status.json",
     "docs/_static/open_research_lane_status.json",
@@ -502,6 +516,11 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     if missing_ci:
         failures.append(f"ci.yml missing release checks: {missing_ci}")
 
+    codecov_text = _read(root / "codecov.yml")
+    missing_codecov = _missing_snippets(codecov_text, REQUIRED_CODECOV_SNIPPETS)
+    if missing_codecov:
+        failures.append(f"codecov.yml missing wide-coverage status policy: {missing_codecov}")
+
     release_text = _read(root / ".github" / "workflows" / "release.yml")
     missing_release = _missing_snippets(release_text, REQUIRED_RELEASE_SNIPPETS)
     if missing_release:
@@ -590,6 +609,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         "lane_status": lane_status,
         "optimization_status": optimization_status,
         "required_ci_snippets": list(REQUIRED_CI_SNIPPETS),
+        "required_codecov_snippets": list(REQUIRED_CODECOV_SNIPPETS),
         "required_release_snippets": list(REQUIRED_RELEASE_SNIPPETS),
         "required_readme_snippets": list(REQUIRED_README_SNIPPETS),
         "required_static_artifacts": list(REQUIRED_STATIC_ARTIFACTS),

@@ -40,6 +40,15 @@ tracked artifacts, and next tests. This is the working guardrail for reaching
 95% package-wide coverage without adding shallow tests that do not validate the
 implemented physics or numerics.
 
+Source-layout hygiene is checked separately by
+``tools/package_architecture_manifest.toml`` and
+``tools/check_package_architecture_manifest.py``. That guard follows
+:doc:`architecture_refactor_plan` and prevents new root-level prefix modules
+such as ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
+``benchmark_*`` from being added without an explicit migration entry. This keeps
+the package moving toward domain packages while the validation manifest keeps
+scientific ownership and coverage traceable.
+
 The manifest now has two levels of coverage ownership:
 
 - direct ``[[modules]]`` rows for public, high-risk, or actively refactored
@@ -106,13 +115,13 @@ Representative unit checks include:
   :func:`spectraxgk.linear.grad_z_periodic`,
   :func:`spectraxgk.linear.streaming_term`.
 - **Growth-rate fitting windows**:
-  :func:`spectraxgk.analysis.select_fit_window`,
-  :func:`spectraxgk.analysis.fit_growth_rate_auto`.
+  :func:`spectraxgk.diagnostics.growth_rates.select_fit_window`,
+  :func:`spectraxgk.diagnostics.growth_rates.fit_growth_rate_auto`.
 - **Grid construction and normalization**:
-  :func:`spectraxgk.grids.build_spectral_grid`.
+  :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Normalization contract consistency**:
-  :func:`spectraxgk.normalization.get_normalization_contract`,
-  :func:`spectraxgk.normalization.apply_diagnostic_normalization`.
+  :func:`spectraxgk.diagnostics.normalization.get_normalization_contract`,
+  :func:`spectraxgk.diagnostics.normalization.apply_diagnostic_normalization`.
 - **Modular RHS equivalence**:
   :func:`spectraxgk.linear.linear_terms_to_term_config`,
   :func:`spectraxgk.terms.assemble_rhs_cached`,
@@ -180,18 +189,18 @@ lanes, not as ad hoc notebooks.
 
 The first reusable tooling for this lane now exists:
 
-- :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
-- :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
-- :func:`spectraxgk.validation_gates.evaluate_scalar_gate`
-- :func:`spectraxgk.validation_gates.observed_order_gate_report`
-- :func:`spectraxgk.validation_gates.branch_continuity_gate_report`
-- :func:`spectraxgk.validation_gates.eigenfunction_gate_report`
-- :func:`spectraxgk.validation_gates.linear_metrics_gate_report`
-- :func:`spectraxgk.validation_gates.nonlinear_window_gate_report`
-- :func:`spectraxgk.validation_gates.zonal_response_gate_report`
-- :func:`spectraxgk.zonal_validation.reference_residual_table`
-- :func:`spectraxgk.zonal_validation.tail_trace_metrics`
-- :func:`spectraxgk.plotting.zonal_flow_response_figure`
+- :func:`spectraxgk.validation.benchmarks.harness.zonal_flow_response_metrics`
+- :func:`spectraxgk.validation.benchmarks.harness.load_diagnostic_time_series`
+- :func:`spectraxgk.validation.gates.evaluate_scalar_gate`
+- :func:`spectraxgk.validation.gates.observed_order_gate_report`
+- :func:`spectraxgk.validation.gates.branch_continuity_gate_report`
+- :func:`spectraxgk.validation.gates.eigenfunction_gate_report`
+- :func:`spectraxgk.validation.gates.linear_metrics_gate_report`
+- :func:`spectraxgk.validation.gates.nonlinear_window_gate_report`
+- :func:`spectraxgk.validation.gates.zonal_response_gate_report`
+- :func:`spectraxgk.validation.zonal.reference_residual_table`
+- :func:`spectraxgk.validation.zonal.tail_trace_metrics`
+- :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
 - ``tools/generate_miller_zonal_response_pilot.py``
@@ -253,9 +262,11 @@ writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
 schema. The current continuity-first selected branch passes the adjacent
 growth/frequency jump and successive-overlap gates.
 ``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
-``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
+``docs/_static/validation_gate_index.json``, ``.csv``, ``.png``, and ``.pdf`` so the docs
 always have one compact pass/open view of the currently materialized release
-validation gates. The current JSON index has ``14/14`` tracked reports passing.
+validation gates. The current JSON index has ``17/18`` tracked reports passing,
+with the quasilinear model-selection status intentionally open until a
+candidate passes the strict uncertainty and transport-error gates.
 Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
 ``tools/plot_nonlinear_window_statistics.py`` provides the companion
@@ -491,7 +502,7 @@ sidecars that compare the uncertainty-required bracket scale, locality-safe
 bracket scale, and extra-replica estimate. The tracked design artifact
 ``docs/_static/nonlinear_gradient_next_campaign_design.json`` now summarizes
 all tracked nonlinear central-FD artifacts: ``16`` candidates, zero promoted
-nonlinear-gradient controls, one legacy bounded-replica candidate, and ``15`` controls
+nonlinear-gradient controls, one bounded-replica candidate, and ``15`` controls
 requiring replacement, locality repair, or variance reduction. Its
 recommendation now prioritizes paired-seed or control-variate variance
 reduction for the current plus-state limiter, while keeping the broader
@@ -793,7 +804,7 @@ zonal-energy proxy for intermediate checks, but it is no longer the target
 observable for the final paper lane.
 
 The first case-specific shaped-Miller pilot for this lane is now reproducible
-through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
+through ``benchmarks/runtime_miller_zonal_response.toml`` and
 ``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
@@ -825,7 +836,7 @@ the clean higher-moment run. The shipped artifact therefore remains on the
 without moving the benchmark-scale damping gate.
 
 The next literature lane now has a dedicated runtime contract as well:
-``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
+``benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
 ``tools/generate_w7x_zonal_response_panel.py`` define the W7-X high-mirror
 bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
 tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]``. The runtime
@@ -1111,7 +1122,7 @@ performance claims:
 - ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
   helper semantics, including deterministic padding, one-device fallback, and
   pytree outputs used by UQ and sensitivity workflows.
-- ``tests/test_velocity_sharding.py`` locks the GX-inspired species/Hermite
+- ``tests/test_velocity_sharding.py`` locks the species/Hermite
   velocity-decomposition planner. These tests verify load balance metadata,
   Hermite ghost-exchange flags, and field-reduction axes before any production
   ``shard_map`` implementation can use that layout. The same test file also
@@ -1424,7 +1435,7 @@ the nonlinear ETG operator. GX reads ``init_single`` from ``[Expert]`` rather
 than ``[Initialization]``, so the audited GX pilot was actually using the
 Gaussian startup branch. The shipped runtime ETG pilot now matches that
 contract with ``gaussian_init = true``, ``init_single = false``,
-``Lx = 1.25``, and GX-style ``kz`` hypercollisions. On the matched
+``Lx = 1.25``, and ``kz``-proportional hypercollisions. On the matched
 ``Nx=10``, ``Ny=22``, ``ntheta=16``, ``Nl=4``, ``Nm=4``, ``dt=1e-4``,
 ``t_max=0.001`` pilot, the refreshed short-window comparison lands at
 ``mean_rel_abs(Wg) ~= 1.31e-2`` and ``mean_rel_abs(Wphi) ~= 5.18e-3``, with
@@ -1462,7 +1473,7 @@ The bridge auto-discovers ``booz_xform_jax`` from
 ``BOOZ_XFORM_JAX_PATH`` / ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` or from a checkout placed
 next to the SPECTRAX-GK workspace. When a specific
 Python environment is needed for the helper subprocesses, set
-``geometry.gx_python`` in the runtime TOML. On ``office``, the normal audited
+``geometry.geometry_helper_python`` in the runtime TOML. On ``office``, the normal audited
 path is:
 
 For differentiable VMEC/Boozer gradient audits, the ``booz_xform_jax`` checkout
@@ -1549,7 +1560,7 @@ tracked W7-X and HSX VMEC lanes:
      --manifest tools/vmec_roundtrip_lanes.office.toml \
      --outdir tools_out/vmec_roundtrip_office
 
-If the helper must be forced to another interpreter, set ``geometry.gx_python``
+If the helper must be forced to another interpreter, set ``geometry.geometry_helper_python``
 in the runtime TOML used by the audit and rerun the same command. The old
 environment-variable override is no longer documented because the preferred
 path is the internal ``booz_xform_jax`` backend.
@@ -1578,7 +1589,7 @@ physics rigor:
   external repositories in the public coverage job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
-  ``linear_krylov.py`` and ``diffrax_integrators.py``.
+  ``solvers/linear/krylov.py`` and ``solvers/time/diffrax.py``.
 
 This keeps iteration latency low for development and still enforces complete
 coverage and regression checks on demand without relying on scheduled runners.
@@ -1664,8 +1675,8 @@ Core solver coverage gates
 CI also enforces dedicated per-module thresholds for the two linear solver
 engines that are most likely to regress during algorithm work:
 
-- ``spectraxgk.linear_krylov`` (matrix-free Arnoldi/shift-invert path)
-- ``spectraxgk.diffrax_integrators`` (explicit/IMEX/implicit diffrax path)
+- ``spectraxgk.solvers.linear.krylov`` (matrix-free Arnoldi/shift-invert path)
+- ``spectraxgk.solvers.time.diffrax`` (explicit/IMEX/implicit diffrax path)
 
 The gate runs focused tests and checks each module from ``coverage-core.xml``:
 

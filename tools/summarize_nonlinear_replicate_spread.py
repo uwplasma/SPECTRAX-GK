@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_replicate_diagnostics import (  # noqa: E402
+from spectraxgk.validation.nonlinear_transport.replicate_diagnostics import (  # noqa: E402
     NonlinearReplicateSpreadConfig,
     nonlinear_replicate_spread_report,
 )
@@ -135,7 +135,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     replicate_rows = list(report.get("replicate_rows", []))
     state_rows = {str(row["state"]): row for row in report.get("state_rows", [])}

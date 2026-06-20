@@ -9,7 +9,7 @@
   "compile_execute_seconds": 5.08059442974627,
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml",
   "electrostatic_specialized": true,
-  "gx_real_fft": true,
+  "compressed_real_fft": true,
   "hlo_bytes": 219871,
   "hlo_line_count": 3336,
   "hlo_out": null,

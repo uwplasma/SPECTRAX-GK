@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spectraxgk.solver_objective_gradients import mode21_vmec_boozer_quasilinear_gradient_report  # noqa: E402
+from spectraxgk.objectives.vmec_boozer_gradients import mode21_vmec_boozer_quasilinear_gradient_report  # noqa: E402
 from tools.build_solver_objective_gradient_gate import _json_clean, write_solver_objective_gradient_artifacts  # noqa: E402
 
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_boozer_quasilinear_gradient_gate.png"

@@ -436,7 +436,7 @@ Miller inputs when the external helper scripts are available:
    python tools/generate_gx_vmec_eik.py \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
-   python tools/generate_gx_miller_eik.py \
+   python tools/generate_miller_eik.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers
@@ -447,12 +447,12 @@ discussion:
 
 .. code-block:: bash
 
-   python examples/benchmarks/cyclone_linear_benchmark.py
+   python benchmarks/cyclone_linear_benchmark.py
    python examples/linear/axisymmetric/etg_linear_auto.py
-   python examples/benchmarks/etg_linear_benchmark.py
-   python examples/benchmarks/kbm_beta_scan.py
-   python examples/benchmarks/kinetic_linear_benchmark.py
-   python examples/benchmarks/tem_linear_benchmark.py
+   python benchmarks/etg_linear_benchmark.py
+   python benchmarks/kbm_beta_scan.py
+   python benchmarks/kinetic_linear_benchmark.py
+   python benchmarks/tem_linear_benchmark.py
 
 Foundational demos
 ------------------
@@ -462,7 +462,7 @@ blocks without running a full benchmark case:
 
 .. code-block:: bash
 
-   python examples/benchmarks/basis_orthonormality.py
+   python benchmarks/basis_orthonormality.py
    python examples/theory_and_demos/cyclone_geometry.py
    python examples/theory_and_demos/autodiff_inverse_growth.py
    python examples/theory_and_demos/autodiff_inverse_twomode.py
@@ -600,9 +600,9 @@ Secondary slab workflow
 .. code-block:: bash
 
    python -m spectraxgk.cli run-runtime-linear \
-     --config examples/benchmarks/runtime_secondary_slab.toml
+     --config benchmarks/runtime_secondary_slab.toml
 
-   python examples/benchmarks/secondary_slab_workflow.py
+   python benchmarks/secondary_slab_workflow.py
 
 The staged helper runs the linear seed, writes a restart state in the runtime
 binary layout, and then launches the nonlinear follow-up with the matching

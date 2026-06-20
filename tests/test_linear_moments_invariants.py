@@ -1,12 +1,12 @@
-"""Fast invariants for legacy Hermite-Laguerre moment primitives."""
+"""Fast invariants for Hermite-Laguerre moment primitives."""
 
 from __future__ import annotations
 
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.basis import hermite_ladder_coeffs
-from spectraxgk import linear_moments
+from spectraxgk.core.velocity import hermite_ladder_coeffs
+import spectraxgk.operators.linear.moments as linear_moments
 from spectraxgk.terms import operators as term_operators
 
 
@@ -25,7 +25,7 @@ def _operator_matrix(fn, shape: tuple[int, ...]) -> np.ndarray:
 
 
 def test_linear_moments_and_term_operators_share_velocity_space_algebra() -> None:
-    """Legacy and modular term paths must keep identical moment recurrences."""
+    """Linear moment and term paths must keep identical recurrences."""
 
     state = _complex_state((2, 4, 5, 2, 3, 4))
 
@@ -88,7 +88,7 @@ def test_periodic_streaming_matches_terms_path_and_conserves_quadratic_norm() ->
     state = state * (1.0 + 0.1 * jnp.sin(z)).reshape((1, 1, 1, 1, 1, nz))
     vth = jnp.asarray([0.7, 1.3], dtype=jnp.float32)
 
-    legacy = linear_moments.streaming_term(state, dz=dz, vth=vth)
+    linear_path = linear_moments.streaming_term(state, dz=dz, vth=vth)
     sqrt_p, sqrt_m = hermite_ladder_coeffs(nm - 1)
     sqrt_shape = (1, 1, nm, 1, 1, 1)
     modular = term_operators.streaming_term(
@@ -99,6 +99,8 @@ def test_periodic_streaming_matches_terms_path_and_conserves_quadratic_norm() ->
         sqrt_m=sqrt_m[:nm].reshape(sqrt_shape),
     )
 
-    np.testing.assert_allclose(np.asarray(legacy), np.asarray(modular), rtol=1.0e-6, atol=1.0e-6)
-    energy_rate = jnp.real(jnp.vdot(state, legacy))
+    np.testing.assert_allclose(
+        np.asarray(linear_path), np.asarray(modular), rtol=1.0e-6, atol=1.0e-6
+    )
+    energy_rate = jnp.real(jnp.vdot(state, linear_path))
     assert abs(float(energy_rate)) < 2.0e-4

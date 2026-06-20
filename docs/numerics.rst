@@ -17,9 +17,9 @@ Algorithm mapping (numerics → code)
 The core numerical algorithms and their implementation entry points are:
 
 - **Hermite–Laguerre pseudo-spectral expansion**:
-  :mod:`spectraxgk.basis`, :mod:`spectraxgk.gyroaverage`.
+  :mod:`spectraxgk.core.velocity`.
 - **Gyroaverage / polarization**:
-  :func:`spectraxgk.gyroaverage.J_l_all`,
+  :func:`spectraxgk.core.velocity.J_l_all`,
   :func:`spectraxgk.linear.quasineutrality_phi`.
 - **Centered periodic derivative in z**:
   :func:`spectraxgk.linear.grad_z_periodic`.
@@ -35,12 +35,12 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.linear.integrate_linear`.
 - **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
   :func:`spectraxgk.integrate_linear_explicit`
-  (compatibility alias: :func:`spectraxgk.gx_integrators.integrate_linear_gx`).
+  (implemented in :func:`spectraxgk.solvers.time.explicit.integrate_linear_explicit`).
 - **Diffrax integration (explicit/implicit/IMEX)**:
-  :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
-  :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`.
+  :func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax`,
+  :func:`spectraxgk.solvers.time.diffrax.integrate_nonlinear_diffrax`.
 - **Config-driven runner**:
-  :func:`spectraxgk.runners.integrate_linear_from_config`.
+  :func:`spectraxgk.solvers.time.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
   :func:`spectraxgk.linear.integrate_linear`.
 - **Nonlinear IMEX (implicit linear + explicit nonlinear)**:
@@ -56,7 +56,7 @@ The implementation leverages the following JAX primitives:
   kernels.
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in
-  :func:`spectraxgk.grids.build_spectral_grid`.
+  :func:`spectraxgk.core.grid.build_spectral_grid`.
 - **Sparse Krylov solver**: ``jax.scipy.sparse.linalg.gmres`` is used for the
   implicit linear solve in :func:`spectraxgk.linear.integrate_linear`.
 - **Stencil operations**: ``jax.numpy.roll`` and ``jax.numpy.pad`` implement
@@ -76,7 +76,7 @@ The linear solver supports:
 - **Forward Euler** (``method="euler"``) and **RK2/RK4** explicit schemes for
   non-stiff runs.
 - **reference-compatible RK4 with CFL step control**
-  (``integrate_linear_gx``). The timestep is recomputed from the linear
+  (``integrate_linear_explicit``). The timestep is recomputed from the linear
   max-frequency estimate using the benchmark-locked CFL rule, and growth rates
   are extracted from the midplane ``phi`` ratio using the same diagnostic
   convention as the tracked comparison data.
@@ -96,8 +96,8 @@ Diffrax integration
 -------------------
 
 Diffrax-backed solvers are available via
-:func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax` and
-:func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`. Explicit
+:func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax` and
+:func:`spectraxgk.solvers.time.diffrax.integrate_nonlinear_diffrax`. Explicit
 solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
 supported. Progress reporting is disabled by default; enable it by setting
 ``TimeConfig.progress_bar=True`` (or ``progress_bar=True`` in the integrator
@@ -105,7 +105,7 @@ call). Diffrax currently emits a warning when evolving complex-valued states;
 the solvers still run, but treat this as experimental behavior.
 
 Use :class:`spectraxgk.config.TimeConfig` and
-:func:`spectraxgk.runners.integrate_linear_from_config` to select diffrax
+:func:`spectraxgk.solvers.time.runners.integrate_linear_from_config` to select diffrax
 integration from input configuration without changing call sites. By default,
 ``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
@@ -138,13 +138,13 @@ Nonlinear FFT bracket
 
 The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
 FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
-the compressed real-FFT path (``TimeConfig.gx_real_fft = true``), which computes
+the compressed real-FFT path (``TimeConfig.compressed_real_fft = true``), which computes
 gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using the
 benchmark-compatible compressed wavenumber layout: non-negative ``k_y`` (including positive
 Nyquist when ``N_y`` is even) and a positive Nyquist multiplier on the ``k_x``
 axis when ``N_x`` is even. The result is then expanded back to full
 :math:`k_y`. This matches the tracked nonlinear reference layout and minimizes
-memory traffic. Set ``gx_real_fft = false`` to use the full complex FFT bracket
+memory traffic. Set ``compressed_real_fft = false`` to use the full complex FFT bracket
 instead.
 
 For electromagnetic nonlinear runs, SPECTRAX-GK stacks the gyro-averaged
@@ -177,7 +177,7 @@ SPECTRAX-GK includes several performance-oriented options that preserve
 end-to-end JAX differentiability:
 
 - **Streaming growth-rate fits**: use
-  :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax_streaming`
+  :func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax_streaming`
   to compute ``(gamma, omega)`` online without storing time series. This reduces
   memory pressure during long scans. The streaming fit supports ``phi`` or
   density moments via ``fit_signal`` and uses a fixed ``tmin/tmax`` window.

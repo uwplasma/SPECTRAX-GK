@@ -7,8 +7,10 @@ import sys
 
 import numpy as np
 
-from spectraxgk.quasilinear_window import (
+from spectraxgk.validation.quasilinear.window_config import (
     NonlinearWindowConvergenceConfig,
+)
+from spectraxgk.validation.quasilinear.window_statistics import (
     nonlinear_window_convergence_report,
 )
 

@@ -62,14 +62,20 @@ score.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
-       for zero-beta equal-arc field-line parity where the current
-       ``mboz=nboz=21`` parity artifact passes. The fixed-resolution QI row
-       now passes after the Boozer half-mesh convention fix, with drift
-       mismatch about ``7.13e-2`` against the ``8e-2`` tolerance, and the
-       evaluated QI ``ntheta=8,16`` variants pass. This is still not a broad
-       QI transport or optimization claim. Reduced frequency, quasilinear, and
-       nonlinear-window-estimator gradients pass AD/finite-difference gates on
-       QH and Li383. The actual nonlinear
+       for equal-arc field-line parity where the current ``mboz=nboz=21``
+       parity artifact passes QH, QI, and shaped-pressure finite-beta rows.
+       The fixed-resolution QI row now passes after the Boozer half-mesh
+       convention fix, with drift mismatch about ``7.13e-2`` against the
+       ``8e-2`` tolerance, and the evaluated QI ``ntheta=8,16`` variants pass.
+       The shaped-pressure finite-beta eigenfrequency-gradient and
+       quasilinear-gradient gates also pass with max relative
+       AD/finite-difference errors about ``6.4e-11`` and ``2.1e-4``.
+       The shaped-pressure finite-beta reduced nonlinear-window estimator gate
+       also passes with max relative error about ``2.1e-4``.
+       This is still not a broad QI transport, finite-beta nonlinear
+       transport-gradient, or optimization claim. Reduced frequency,
+       quasilinear, and nonlinear-window-estimator gradients pass
+       AD/finite-difference gates on QH and Li383. The actual nonlinear
        finite-difference audits are startup plumbing checks with false
        transport-average gates; they do not validate production turbulence
        gradients.
@@ -202,6 +208,7 @@ README claims, or manuscript claims.
      - ``autodiff_inverse_growth.*``, ``autodiff_inverse_twomode.*``,
        ``differentiable_geometry_bridge.*``, ``vmec_boozer_parity_matrix.*``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
+       ``vmec_boozer_differentiability_claim_guard.*``,
        ``nonlinear_window_fd_audit.*``, and
        ``vmec_boozer_nonlinear_window_fd_audit.*``
      - Reduced AD/finite-difference gates are in scope. Production nonlinear
@@ -287,12 +294,12 @@ Quasilinear model-selection state:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
 - ``tools/check_nonlinear_window_convergence.py`` and
-  ``spectraxgk.quasilinear_window`` provide the reusable late-window
+  ``spectraxgk.validation.quasilinear.window_statistics`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
-- ``spectraxgk.quasilinear_window.nonlinear_window_ensemble_report`` provides
+- ``spectraxgk.validation.quasilinear.window_ensemble.nonlinear_window_ensemble_report`` provides
   the next guardrail for replicated windows: seed, initial-condition, timestep,
   or restart variants must have individually passed late-window reports and
   mutually consistent late means before a nonlinear turbulent-flux optimization
@@ -510,8 +517,10 @@ Nonlinear benchmark state:
   tighter than the broad release envelope, while Cyclone and W7-X remain at the
   ``0.10`` release envelope pending paper-level retuning.
 - ``docs/_static/validation_gate_index.json`` currently records ``17`` passed
-  gate-indexed reports and ``0`` open reports. It is a gate index, not a
-  blanket promotion of every figure under ``docs/_static``.
+  gate-indexed reports and ``1`` open report. The open report is the
+  quasilinear model-selection status, which is intentionally not promoted to
+  an absolute-flux predictor. The index is an audit view, not a blanket
+  promotion of every figure under ``docs/_static``.
 - ``docs/_static/nonlinear_transport_time_horizon_audit.json`` separates
   long post-transient transport windows from startup finite-difference and
   reduced-envelope checks. Startup windows must never be described as saturated

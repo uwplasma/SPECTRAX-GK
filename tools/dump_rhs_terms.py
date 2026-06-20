@@ -19,9 +19,9 @@ from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    Kinetic_OMEGA_D_SCALE,
-    Kinetic_OMEGA_STAR_SCALE,
-    Kinetic_RHO_STAR,
+    KINETIC_OMEGA_D_SCALE,
+    KINETIC_OMEGA_STAR_SCALE,
+    KINETIC_RHO_STAR,
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
@@ -30,14 +30,14 @@ from spectraxgk.benchmarks import (
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _electron_only_params,
     _two_species_params,
 )
 from spectraxgk.config import ETGModelConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
@@ -72,7 +72,7 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
         return cfg, params, 0, CYCLONE_OMEGA_D_SCALE, CYCLONE_OMEGA_STAR_SCALE, CYCLONE_RHO_STAR
     if case == "etg":
         model = ETGModelConfig(R_over_LTe=args.R_over_LTe, adiabatic_ions=args.adiabatic_ions)
@@ -134,14 +134,14 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=Kinetic_OMEGA_D_SCALE,
-            omega_star_scale=Kinetic_OMEGA_STAR_SCALE,
-            rho_star=Kinetic_RHO_STAR,
+            omega_d_scale=KINETIC_OMEGA_D_SCALE,
+            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
+            rho_star=KINETIC_RHO_STAR,
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
             nhermite=args.Nm,
         )
-        return cfg, params, 1, Kinetic_OMEGA_D_SCALE, Kinetic_OMEGA_STAR_SCALE, Kinetic_RHO_STAR
+        return cfg, params, 1, KINETIC_OMEGA_D_SCALE, KINETIC_OMEGA_STAR_SCALE, KINETIC_RHO_STAR
     if case == "tem":
         cfg = TEMBaseCase(
             grid=GridConfig(

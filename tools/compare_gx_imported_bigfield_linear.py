@@ -18,8 +18,8 @@ from tools.compare_gx_imported_linear import (
     _build_imported_linear_terms,
     _build_sample_steps,
     _gx_has_uniform_linear_dt,
-    _gx_linear_omega_max,
-    _gx_term_config,
+    _linear_frequency_bound,
+    _linear_term_config,
     _infer_gx_linear_dt,
     _infer_y0,
     _load_gx_input_contract,
@@ -27,20 +27,20 @@ from tools.compare_gx_imported_linear import (
     _resolve_imported_real_fft_ny,
     _resolve_internal_geometry_source,
 )
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate,
-    gx_growth_rate_from_phi,
+    instantaneous_growth_rate_from_phi,
     select_ky_index,
 )
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, _linear_explicit_step, _gx_midplane_index
+from spectraxgk.geometry import SlabGeometry, apply_imported_geometry_grid_defaults, load_imported_geometry_netcdf
+from spectraxgk.core.grid import build_spectral_grid, select_real_fft_ky_grid, select_ky_grid
+from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, _linear_explicit_step, _diagnostic_midplane_index
 from spectraxgk.linear import LinearTerms, build_linear_cache
-from spectraxgk.species import build_linear_params
+from spectraxgk.core.species import build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 
 
@@ -82,7 +82,7 @@ def _integrate_phi_samples(
     geom,
     cache,
     params,
-    time_cfg: GXTimeConfig,
+    time_cfg: ExplicitTimeConfig,
     terms: LinearTerms,
     ky_index: int,
     kx_index: int,
@@ -93,7 +93,7 @@ def _integrate_phi_samples(
     target_times = np.asarray(sample_times, dtype=float)
     phi_samples: list[np.ndarray] = []
     target_idx = 0
-    omega_max = _gx_linear_omega_max(grid, geom, params, G.shape[-5], G.shape[-4])
+    omega_max = _linear_frequency_bound(grid, geom, params, G.shape[-5], G.shape[-4])
     wmax = float(np.sum(omega_max))
     dt_min = float(time_cfg.dt_min)
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else float(time_cfg.dt)
@@ -109,7 +109,7 @@ def _integrate_phi_samples(
         )
 
     stepper = jax.jit(_step, donate_argnums=(0,))
-    term_cfg = _gx_term_config(terms)
+    term_cfg = _linear_term_config(terms)
 
     _, fields0 = assemble_rhs_cached(G, cache, params, terms=term_cfg)
     if target_times.size > 0 and target_times[0] <= 1.0e-14:
@@ -204,7 +204,7 @@ def _growth_rate_with_method_fallback(
     last_exc: Exception | None = None
     for method in ordered_methods:
         try:
-            gamma, omega, gamma_t, omega_t, t_mid = gx_growth_rate_from_phi(
+            gamma, omega, gamma_t, omega_t, t_mid = instantaneous_growth_rate_from_phi(
                 phi_t,
                 t,
                 sel,
@@ -248,11 +248,11 @@ def main() -> None:
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
         )
     else:
-        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
+        geom = load_imported_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
 
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
     lx = 2.0 * np.pi * y0 if boundary_eff == "periodic" else 62.8
-    grid_cfg = apply_gx_geometry_grid_defaults(
+    grid_cfg = apply_imported_geometry_grid_defaults(
         geom,
         GridConfig(
             Nx=max(1, int(gx_kx.size)),
@@ -267,7 +267,7 @@ def main() -> None:
         ),
     )
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+    grid = select_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
     ky_idx_local = select_ky_index(np.asarray(grid.ky), float(args.ky))
     grid, ky_idx_local = _reduce_linear_grid_to_target_ky(
         grid,
@@ -297,7 +297,7 @@ def main() -> None:
     )
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract.hypercollisions:
-        params = _apply_gx_hypercollisions(params, nhermite=nm)
+        params = _apply_reference_hypercollisions(params, nhermite=nm)
     params = replace(
         params,
         D_hyper=float(gx_contract.D_hyper),
@@ -306,7 +306,7 @@ def main() -> None:
     )
     cache = build_linear_cache(grid, geom, params, nl, nm)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(sample_times[-1]),
         method=str(gx_contract.scheme),
@@ -327,7 +327,7 @@ def main() -> None:
         sample_times=sample_times,
     )
 
-    sel = ModeSelection(ky_index=0, kx_index=0, z_index=_gx_midplane_index(int(gx_theta.size)))
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=_diagnostic_midplane_index(int(gx_theta.size)))
     gx_mode_method, gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, _gx_tmid = _growth_rate_with_method_fallback(
         gx_phi_sel,
         sample_times,

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tools.build_nonlinear_landscape_admission_report import build_report, main
 
-from spectraxgk.vmec_jax_transport_admission import VMECJAXNonlinearAuditPolicy
+from spectraxgk.validation.stellarator.transport_policies import VMECJAXNonlinearAuditPolicy
 
 
 def _ensemble(mean: float, sem: float, *, passed: bool = True, n_reports: int = 3) -> dict:

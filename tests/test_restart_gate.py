@@ -6,18 +6,23 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.restart import load_gx_restart_state, write_gx_restart_state
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
+from spectraxgk.artifacts.restart import load_netcdf_restart_state, write_netcdf_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
-from spectraxgk.runtime_artifacts import (
+from spectraxgk.workflows.runtime.artifacts import (
     _condense_kx,
     _condense_kykx,
-    _restart_to_gx_layout,
-    load_runtime_nonlinear_gx_diagnostics,
+    _restart_to_netcdf_layout,
+    load_nonlinear_netcdf_diagnostics,
     run_runtime_nonlinear_with_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -50,8 +55,12 @@ def _restart_base_cfg() -> RuntimeConfig:
             sample_stride=1,
             diagnostics_stride=1,
         ),
-        geometry=GeometryConfig(model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778),
-        init=InitializationConfig(init_field="density", init_amp=1.0e-8, init_single=True, gaussian_init=False),
+        geometry=GeometryConfig(
+            model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778
+        ),
+        init=InitializationConfig(
+            init_field="density", init_amp=1.0e-8, init_single=True, gaussian_init=False
+        ),
         species=(ion,),
         physics=RuntimePhysicsConfig(
             linear=False,
@@ -64,7 +73,9 @@ def _restart_base_cfg() -> RuntimeConfig:
             hypercollisions=False,
         ),
         collisions=RuntimeCollisionConfig(damp_ends_amp=0.0),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
         terms=RuntimeTermsConfig(nonlinear=1.0, end_damping=0.0, hypercollisions=0.0),
     )
 
@@ -75,7 +86,7 @@ def test_netcdf_restart_roundtrips_zonal_radial_modes(tmp_path: Path) -> None:
     state = np.zeros((1, 3, 4, 8, 8, 6), dtype=np.complex64)
     state[0, 0, 0, 0, 1, :] = (1.0 + 0.25j) * np.arange(1, 7, dtype=np.float32)
     state[0, 1, 2, 0, 7, :] = (-0.5 + 0.75j) * np.arange(1, 7, dtype=np.float32)
-    gx_state = _restart_to_gx_layout(state)
+    gx_state = _restart_to_netcdf_layout(state)
 
     path = tmp_path / "zonal_restart.nc"
     with nc.Dataset(path, "w") as root:
@@ -86,9 +97,11 @@ def test_netcdf_restart_roundtrips_zonal_radial_modes(tmp_path: Path) -> None:
         root.createDimension("Nkx", gx_state.shape[4])
         root.createDimension("Nky", gx_state.shape[5])
         root.createDimension("ri", 2)
-        root.createVariable("G", "f4", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri"))[:] = gx_state
+        root.createVariable(
+            "G", "f4", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri")
+        )[:] = gx_state
 
-    loaded = load_gx_restart_state(path, nspecies=1, Nl=3, Nm=4, ny=8, nx=8, nz=6)
+    loaded = load_netcdf_restart_state(path, nspecies=1, Nl=3, Nm=4, ny=8, nx=8, nz=6)
 
     np.testing.assert_array_equal(loaded, state)
 
@@ -131,11 +144,18 @@ def test_restart_gate_nonlinear_matches_continuous(tmp_path: Path) -> None:
     assert full.state is not None
 
     restart_path = tmp_path / "restart.bin"
-    write_gx_restart_state(restart_path, np.asarray(part1.state, dtype=np.complex64))
+    write_netcdf_restart_state(
+        restart_path, np.asarray(part1.state, dtype=np.complex64)
+    )
 
     cfg_restart = replace(
         cfg,
-        init=replace(cfg.init, init_file=str(restart_path), init_file_scale=1.0, init_file_mode="replace"),
+        init=replace(
+            cfg.init,
+            init_file=str(restart_path),
+            init_file_scale=1.0,
+            init_file_mode="replace",
+        ),
     )
     part2 = run_runtime_nonlinear(
         cfg_restart,
@@ -154,7 +174,9 @@ def test_restart_gate_nonlinear_matches_continuous(tmp_path: Path) -> None:
     np.testing.assert_array_equal(np.asarray(part2.state), np.asarray(full.state))
 
 
-def test_restart_gate_nonlinear_matches_continuous_from_gx_netcdf(tmp_path: Path) -> None:
+def test_restart_gate_nonlinear_matches_continuous_from_gx_netcdf(
+    tmp_path: Path,
+) -> None:
     pytest.importorskip("netCDF4")
 
     cfg = _restart_base_cfg()
@@ -197,7 +219,12 @@ def test_restart_gate_nonlinear_matches_continuous_from_gx_netcdf(tmp_path: Path
 
     cfg_restart = replace(
         cfg,
-        init=replace(cfg.init, init_file=str(paths["restart"]), init_file_scale=1.0, init_file_mode="replace"),
+        init=replace(
+            cfg.init,
+            init_file=str(paths["restart"]),
+            init_file_scale=1.0,
+            init_file_mode="replace",
+        ),
     )
     part2 = run_runtime_nonlinear(
         cfg_restart,
@@ -286,16 +313,48 @@ def test_restart_gate_append_on_restart_preserves_full_history(tmp_path: Path) -
     assert full.state is not None
 
     np.testing.assert_array_equal(np.asarray(part2.state), np.asarray(full.state))
-    loaded = load_runtime_nonlinear_gx_diagnostics(out_path)
+    loaded = load_nonlinear_netcdf_diagnostics(out_path)
     assert full.diagnostics is not None
-    np.testing.assert_allclose(np.asarray(loaded.t), np.asarray(full.diagnostics.t), rtol=1.0e-6, atol=1.0e-8)
-    np.testing.assert_allclose(np.asarray(loaded.Wg_t), np.asarray(full.diagnostics.Wg_t), rtol=1.0e-6, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(loaded.Wphi_t), np.asarray(full.diagnostics.Wphi_t), rtol=1.0e-6, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(loaded.Wapar_t), np.asarray(full.diagnostics.Wapar_t), rtol=1.0e-6, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(loaded.heat_flux_t), np.asarray(full.diagnostics.heat_flux_t), rtol=1.0e-6, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(loaded.particle_flux_t), np.asarray(full.diagnostics.particle_flux_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(loaded.t), np.asarray(full.diagnostics.t), rtol=1.0e-6, atol=1.0e-8
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.Wg_t),
+        np.asarray(full.diagnostics.Wg_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.Wphi_t),
+        np.asarray(full.diagnostics.Wphi_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.Wapar_t),
+        np.asarray(full.diagnostics.Wapar_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.heat_flux_t),
+        np.asarray(full.diagnostics.heat_flux_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.particle_flux_t),
+        np.asarray(full.diagnostics.particle_flux_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
     assert full.diagnostics.turbulent_heating_t is not None
-    np.testing.assert_allclose(np.asarray(loaded.turbulent_heating_t), np.asarray(full.diagnostics.turbulent_heating_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(loaded.turbulent_heating_t),
+        np.asarray(full.diagnostics.turbulent_heating_t),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
     assert loaded.resolved is not None
     assert full.diagnostics.resolved is not None
     np.testing.assert_allclose(

@@ -141,8 +141,7 @@ explicit field terms but omits the full :math:`H_{\ell m}` correction at
    + J_\ell^B B_\parallel\,\delta_{m0},
 
 and then applying the parallel derivative to :math:`\tilde{G}` before the
-Hermite ladder. This matches the ordering in GX’s ``grad_parallel_linked``
-implementation and preserves the validated linked-boundary operator contract
+Hermite ladder. This preserves the validated linked-boundary operator contract
 used by the imported-geometry and benchmark lanes.
 
 Nonlinear E×B and flutter terms

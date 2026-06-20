@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+from spectraxgk.validation.benchmarks.harness import evaluate_scalar_gate, gate_report, gate_report_to_dict
 
 
 def _json_clean(value: Any) -> Any:
@@ -342,7 +342,7 @@ def main() -> int:
     parser.add_argument(
         "--summary-source",
         type=str,
-        default="GX diagnostics",
+        default="runtime diagnostics",
         help="Reference/source label stored in --summary-json gate metadata.",
     )
     parser.add_argument(

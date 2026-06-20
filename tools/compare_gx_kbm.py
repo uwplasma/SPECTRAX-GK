@@ -13,25 +13,25 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import (
+from spectraxgk.diagnostics.analysis import (
     ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate,
     fit_growth_rate_auto,
-    gx_growth_rate_from_phi,
-    gx_growth_rate_from_omega_series,
+    instantaneous_growth_rate_from_phi,
+    windowed_growth_rate_from_omega_series,
     select_ky_index,
 )
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
-from spectraxgk.benchmarking import (
+from spectraxgk.validation.benchmarks.harness import (
     branch_continuity_gate_report,
     branch_continuity_metrics,
     gate_report_to_dict,
 )
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.io import load_toml
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.workflows.runtime.toml import load_toml
 
 LATE_PROJECT_WINDOW_FRACTION = 0.3
 LATE_PROJECT_MIN_POINTS = 80
@@ -485,6 +485,12 @@ def _split_mode_method_policy(mode_method: str) -> tuple[str, str]:
     return mode_method, "default"
 
 
+def _benchmark_solver_for_candidate(solver_name: str) -> str:
+    """Map comparison-candidate labels to canonical SPECTRAX-GK solver keys."""
+
+    return "explicit_time" if solver_name == "gx_time" else solver_name
+
+
 def _run_candidate(
     args,
     cfg: KBMBaseCase,
@@ -497,6 +503,7 @@ def _run_candidate(
     gx_omega: float | None = None,
 ):
     fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
+    benchmark_solver = _benchmark_solver_for_candidate(solver_name)
     mode_method_use = str(mode_method_override or args.mode_method)
     mode_method_base, _fit_policy = _split_mode_method_policy(mode_method_use)
     krylov_cfg = None
@@ -525,12 +532,12 @@ def _run_candidate(
         steps=args.steps,
         method=args.method,
         cfg=cfg,
-        solver=solver_name,
+        solver=benchmark_solver,
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
         mode_method=mode_method_base,
-        diagnostic_norm="gx",
-        gx_reference=True,
+        diagnostic_norm="rho_star",
+        reference_aligned=True,
         auto_window=not args.no_auto_window,
         tmin=args.tmin,
         tmax=args.tmax,
@@ -601,7 +608,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             pass
 
     try:
-        gamma, omega, _g_t, _o_t, _t_mid = gx_growth_rate_from_phi(
+        gamma, omega, _g_t, _o_t, _t_mid = instantaneous_growth_rate_from_phi(
             np.asarray(result.phi_t),
             t,
             result.selection,
@@ -684,7 +691,7 @@ def _recompute_time_history_growth_on_grid(
             t_dst = np.asarray(t_ref, dtype=float)
             gamma_arr = _interp_real_tseries(gamma_arr, t_src, t_dst)
             omega_arr = _interp_real_tseries(omega_arr, t_src, t_dst)
-        gamma, omega, _g_t, _o_t = gx_growth_rate_from_omega_series(
+        gamma, omega, _g_t, _o_t = windowed_growth_rate_from_omega_series(
             gamma_arr,
             omega_arr,
             result.selection,

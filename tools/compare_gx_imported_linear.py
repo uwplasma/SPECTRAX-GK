@@ -16,38 +16,38 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import _apply_gx_hypercollisions
+from spectraxgk.benchmarks import _apply_reference_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
 from spectraxgk.geometry import (
     SlabGeometry,
-    apply_gx_geometry_grid_defaults,
+    apply_imported_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
-    gx_zero_shat_enabled,
-    load_gx_geometry_netcdf,
+    zero_shear_enabled,
+    load_imported_geometry_netcdf,
 )
-from spectraxgk.gyroaverage import gamma0
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
-from spectraxgk.gx_integrators import (
-    GXTimeConfig,
-    _gx_growth_rate_step,
-    _gx_linear_omega_max,
-    _gx_midplane_index,
-    _gx_term_config,
+from spectraxgk.core.velocity import gamma0
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.diagnostics.analysis import ModeSelection, instantaneous_growth_rate_from_phi, select_ky_index
+from spectraxgk.solvers.time.explicit import (
+    ExplicitTimeConfig,
+    _instantaneous_growth_rate_step,
+    _linear_frequency_bound,
+    _diagnostic_midplane_index,
+    _linear_term_config,
     _linear_explicit_step,
 )
-from spectraxgk.io import load_toml
+from spectraxgk.workflows.runtime.toml import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition as _build_runtime_initial_condition,
     _load_initial_state_from_file,
 )
-from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.miller_eik import generate_runtime_miller_eik
-from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+from spectraxgk.geometry.miller_eik import generate_runtime_miller_eik
+from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimeSpeciesConfig
+from spectraxgk.core.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
-from spectraxgk.vmec_eik import generate_runtime_vmec_eik
+from spectraxgk.geometry.vmec_eik import generate_runtime_vmec_eik
 
 
 @dataclass(frozen=True)
@@ -262,7 +262,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     kpar_init = float(init["ikpar_init"]) if "ikpar_init" in init else float(init.get("kpar_init", 0.0))
 
     s_hat = float(geometry.get("shat", 0.0))
-    zero_shat = gx_zero_shat_enabled(
+    zero_shat = zero_shear_enabled(
         s_hat,
         zero_shat=bool(geometry.get("zero_shat", False)),
         threshold=float(geometry.get("zero_shat_threshold", 1.0e-5)),
@@ -473,7 +473,7 @@ def _select_gx_kx_index(gx_kx: np.ndarray, gx_contract: GXInputContract | None) 
     return int(np.argmin(np.abs(gx_kx_arr)))
 
 
-def _gx_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
+def _cached_hermitian_mode_weight(cache, *, use_dealias: bool) -> jnp.ndarray:
     ky = jnp.asarray(cache.ky)
     has_negative = jnp.any(ky < 0.0)
     fac = jnp.where(has_negative, 1.0, jnp.where(ky == 0.0, 1.0, 2.0))
@@ -507,7 +507,7 @@ def _species_array(val: float | jnp.ndarray, ns: int) -> jnp.ndarray:
     return arr
 
 
-def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _distribution_free_energy_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     Gs = G if G.ndim == 6 else G[None, ...]
     ns = Gs.shape[0]
     nt = _species_array(params.density, ns) * _species_array(params.temp, ns)
@@ -518,7 +518,7 @@ def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dea
     return jnp.sum(contrib, axis=(0, 1, 2, 4, 5))
 
 
-def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _electrostatic_field_energy_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     rho = jnp.asarray(params.rho)
@@ -533,7 +533,7 @@ def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use
     return wphi
 
 
-def _gx_Wapar_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+def _magnetic_vector_potential_energy_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
     fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     bmag2 = cache.bmag[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
@@ -553,7 +553,7 @@ def _integrate_target_mode_series(
     geom,
     cache,
     params,
-    time_cfg: GXTimeConfig,
+    time_cfg: ExplicitTimeConfig,
     terms: LinearTerms,
     mode_method: str,
     ky_index: int,
@@ -565,9 +565,9 @@ def _integrate_target_mode_series(
     if mode_method not in {"z_index", "max", "project", "svd"}:
         raise ValueError("mode_method must be one of {'z_index', 'max', 'project', 'svd'}")
 
-    term_cfg = _gx_term_config(terms)
+    term_cfg = _linear_term_config(terms)
     mask = jnp.asarray(grid.dealias_mask, dtype=bool)
-    z_index = _gx_midplane_index(grid.z.size)
+    z_index = _diagnostic_midplane_index(grid.z.size)
     dt = float(time_cfg.dt)
     dt_min = float(time_cfg.dt_min)
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
@@ -605,7 +605,7 @@ def _integrate_target_mode_series(
     step = 0
 
     geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
-    omega_max = _gx_linear_omega_max(grid, geom_eff, params, G.shape[-5], G.shape[-4])
+    omega_max = _linear_frequency_bound(grid, geom_eff, params, G.shape[-5], G.shape[-4])
     wmax = float(np.sum(omega_max))
     if not time_cfg.fixed_dt and wmax > 0.0:
         dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
@@ -666,7 +666,7 @@ def _integrate_target_mode_series(
                 gamma = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
                 omega = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
             else:
-                gamma, omega = _gx_growth_rate_step(
+                gamma, omega = _instantaneous_growth_rate_step(
                     phi,
                     phi_prev_sample,
                     dt_sample,
@@ -674,9 +674,9 @@ def _integrate_target_mode_series(
                     mask=mask,
                     mode_method=mode_method,
                 )
-            Wg = _gx_Wg_by_ky(G, cache, params, vol_fac)
-            Wphi = _gx_Wphi_by_ky(phi, cache, params, vol_fac)
-            Wapar = _gx_Wapar_by_ky(apar, cache, vol_fac)
+            Wg = _distribution_free_energy_by_ky(G, cache, params, vol_fac)
+            Wphi = _electrostatic_field_energy_by_ky(phi, cache, params, vol_fac)
+            Wapar = _magnetic_vector_potential_energy_by_ky(apar, cache, vol_fac)
             Phi2 = _gx_Phi2_by_ky(phi, vol_fac)
             gamma_list.append(float(np.asarray(gamma)[ky_index, kx_index]))
             omega_list.append(float(np.asarray(omega)[ky_index, kx_index]))
@@ -701,7 +701,7 @@ def _integrate_target_mode_series(
     if mode_method in {"project", "svd"}:
         phi_t = np.asarray(phi_samples, dtype=np.complex64)
         t_arr = np.asarray(phi_sample_times, dtype=float)
-        _gamma_avg, _omega_avg, gamma_t, omega_t, _t_mid = gx_growth_rate_from_phi(
+        _gamma_avg, _omega_avg, gamma_t, omega_t, _t_mid = instantaneous_growth_rate_from_phi(
             phi_t,
             t_arr,
             ModeSelection(ky_index=0, kx_index=0, z_index=z_index),
@@ -735,7 +735,7 @@ def _run_single_ky(
     geom,
     grid_full,
     params,
-    time_cfg: GXTimeConfig,
+    time_cfg: ExplicitTimeConfig,
     gx_contract: GXInputContract | None,
     species: tuple[Species, ...],
     Nl: int,
@@ -1024,7 +1024,7 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar, gx_Phi2 = _load_gx_reference(args.gx)
+    gx_time, gx_ky, gx_kx, gx_omega, distribution_free_energy, electrostatic_field_energy, magnetic_vector_potential_energy, gx_Phi2 = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
     sample_steps = _build_sample_steps(
@@ -1092,7 +1092,7 @@ def main() -> None:
             runtime_config=args.runtime_config,
             gx_contract=gx_contract,
         )
-        geom = load_gx_geometry_netcdf(geometry_source)
+        geom = load_imported_geometry_netcdf(geometry_source)
         nz = int(np.asarray(geom.theta).size)
     if ntheta <= 0:
         ntheta = nz
@@ -1116,7 +1116,7 @@ def main() -> None:
         nperiod=nperiod,
         ntheta=ntheta,
     )
-    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    grid_full = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, grid_cfg))
 
     nl_use = int(args.Nl) if args.Nl is not None else int(gx_contract.nlaguerre if gx_contract is not None else 8)
     nm_use = int(args.Nm) if args.Nm is not None else int(gx_contract.nhermite if gx_contract is not None else 16)
@@ -1144,7 +1144,7 @@ def main() -> None:
     terms = _build_imported_linear_terms(gx_contract)
     if gx_contract is not None:
         if gx_contract.hypercollisions:
-            params = _apply_gx_hypercollisions(params, nhermite=nm_use)
+            params = _apply_reference_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             D_hyper=float(gx_contract.D_hyper),
@@ -1152,13 +1152,13 @@ def main() -> None:
             damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
         )
     else:
-        params = _apply_gx_hypercollisions(params, nhermite=nm_use)
+        params = _apply_reference_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             damp_ends_amp=float(args.damp_ends_amp),
             damp_ends_widthfrac=float(args.damp_ends_widthfrac),
         )
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=dt,
         t_max=float(gx_time[-1]),
         method=(gx_contract.scheme if gx_contract is not None else "rk4"),
@@ -1236,12 +1236,12 @@ def main() -> None:
             "mean_rel_gamma": _mean_rel_error(
                 gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
             ),
-            "mean_abs_Wg": float(np.mean(np.abs(Wg - gx_Wg[sample_steps, ky_idx]))),
-            "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
-            "mean_abs_Wphi": float(np.mean(np.abs(Wphi - gx_Wphi[sample_steps, ky_idx]))),
-            "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
-            "mean_abs_Wapar": float(np.mean(np.abs(Wapar - gx_Wapar[sample_steps, ky_idx]))),
-            "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wg": float(np.mean(np.abs(Wg - distribution_free_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wg": _mean_rel_error(Wg, distribution_free_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wphi": float(np.mean(np.abs(Wphi - electrostatic_field_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wphi": _mean_rel_error(Wphi, electrostatic_field_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wapar": float(np.mean(np.abs(Wapar - magnetic_vector_potential_energy[sample_steps, ky_idx]))),
+            "mean_rel_Wapar": _mean_rel_error(Wapar, magnetic_vector_potential_energy[sample_steps, ky_idx], floor_fraction=1.0e-6),
             "omega_last": float(omega[-1]),
             "omega_ref_last": float(omega_ref[-1]),
             "gamma_last": float(gamma[-1]),

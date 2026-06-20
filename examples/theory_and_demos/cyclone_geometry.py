@@ -2,7 +2,7 @@ import jax.numpy as jnp
 
 from spectraxgk.config import CycloneBaseCase
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 
 
 def main(kx0: float = 0.0, ky: float = 0.3) -> None:

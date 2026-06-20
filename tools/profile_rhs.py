@@ -18,11 +18,11 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 
 
@@ -59,7 +59,7 @@ def main() -> None:
         damp_ends_amp=0.0,
         damp_ends_widthfrac=0.0,
     )
-    params = _apply_gx_hypercollisions(params)
+    params = _apply_reference_hypercollisions(params)
     terms = LinearTerms()
 
     Nl, Nm = 4, 8

@@ -10,7 +10,7 @@ import sys
 import numpy as np
 
 import spectraxgk
-from spectraxgk.qa_low_turbulence import (
+from spectraxgk.objectives.qa_low_turbulence import (
     QA_LOW_TURBULENCE_DESIGN_NAMES,
     QA_LOW_TURBULENCE_OBSERVABLE_NAMES,
     QALowTurbulenceConfig,
@@ -62,7 +62,7 @@ def _load_time_horizon_tool_module():
 
 def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None:
     assert spectraxgk.QALowTurbulenceConfig is QALowTurbulenceConfig
-    assert spectraxgk.qa_low_turbulence_comparison_payload is qa_low_turbulence_comparison_payload
+    assert spectraxgk.objectives.qa_low_turbulence_comparison_payload is qa_low_turbulence_comparison_payload
 
     payload = qa_low_turbulence_comparison_payload(_fast_config(), finite_difference_workers=1)
     metrics = payload["comparison_metrics"]

@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from spectraxgk.plotting import set_plot_style
+from spectraxgk.artifacts.plotting import set_plot_style
 
 
 def main() -> None:

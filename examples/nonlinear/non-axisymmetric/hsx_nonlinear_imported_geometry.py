@@ -5,9 +5,14 @@ from __future__ import annotations
 
 import argparse
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
 from spectraxgk.runtime import run_runtime_nonlinear
-from spectraxgk.runtime_config import (
+from spectraxgk.workflows.runtime.config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -17,7 +22,9 @@ from spectraxgk.runtime_config import (
 )
 
 
-def build_hsx_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConfig:
+def build_hsx_nonlinear_cfg(
+    geometry_file: str, *, dt: float, t_max: float
+) -> RuntimeConfig:
     return RuntimeConfig(
         grid=GridConfig(
             Nx=96,
@@ -40,7 +47,7 @@ def build_hsx_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> R
             diagnostics_stride=50,
             cfl=1.0,
         ),
-        geometry=GeometryConfig(model="gx-netcdf", geometry_file=geometry_file),
+        geometry=GeometryConfig(model="imported-netcdf", geometry_file=geometry_file),
         init=InitializationConfig(
             init_field="density",
             init_amp=1.0e-3,
@@ -77,7 +84,9 @@ def build_hsx_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> R
             damp_ends_widthfrac=1.0 / 8.0,
             D_hyper=0.05,
         ),
-        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
+        normalization=RuntimeNormalizationConfig(
+            contract="kinetic", diagnostic_norm="rho_star"
+        ),
         terms=RuntimeTermsConfig(
             apar=0.0,
             bpar=0.0,
@@ -90,9 +99,17 @@ def build_hsx_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> R
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the imported-geometry HSX nonlinear ITG example.")
-    parser.add_argument("--geometry-file", required=True, help="Path to the imported *.eik.nc geometry file")
-    parser.add_argument("--ky", type=float, default=1.0 / 21.0, help="Target ky mode for diagnostics")
+    parser = argparse.ArgumentParser(
+        description="Run the imported-geometry HSX nonlinear ITG example."
+    )
+    parser.add_argument(
+        "--geometry-file",
+        required=True,
+        help="Path to the imported *.eik.nc geometry file",
+    )
+    parser.add_argument(
+        "--ky", type=float, default=1.0 / 21.0, help="Target ky mode for diagnostics"
+    )
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
     parser.add_argument(
@@ -102,10 +119,14 @@ def main() -> int:
         help="Maximum time step. The runtime uses adaptive CFL control by default.",
     )
     parser.add_argument("--t-max", type=float, default=200.0, help="Final time")
-    parser.add_argument("--steps", type=int, default=None, help="Optional explicit step count override")
+    parser.add_argument(
+        "--steps", type=int, default=None, help="Optional explicit step count override"
+    )
     args = parser.parse_args()
 
-    cfg = build_hsx_nonlinear_cfg(args.geometry_file, dt=float(args.dt), t_max=float(args.t_max))
+    cfg = build_hsx_nonlinear_cfg(
+        args.geometry_file, dt=float(args.dt), t_max=float(args.t_max)
+    )
     steps = int(args.steps) if args.steps is not None else None
     result = run_runtime_nonlinear(
         cfg,

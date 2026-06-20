@@ -18,9 +18,9 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
     from _profiler_options import make_profile_options  # type: ignore[import-not-found,no-redef]
 
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.geometry import apply_imported_geometry_grid_defaults
+from spectraxgk.core.grid import build_spectral_grid
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache, linear_rhs_cached
 from spectraxgk.runtime import (
     _build_initial_condition,
@@ -57,7 +57,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"),
+        default=Path(
+            "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
+        ),
     )
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--kx", type=float, default=None)
@@ -67,7 +69,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--state", choices=("initial", "z_wave"), default="initial")
     parser.add_argument("--z-mode", type=int, default=1)
     parser.add_argument("--z-wave-amplitude", type=float, default=1.0e-3)
-    parser.add_argument("--summary-json", type=Path, default=Path("docs/_static/full_linear_rhs_trace_summary.json"))
+    parser.add_argument(
+        "--summary-json",
+        type=Path,
+        default=Path("docs/_static/full_linear_rhs_trace_summary.json"),
+    )
     parser.add_argument("--hlo-out", type=Path, default=None)
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--memory-profile", type=Path, default=None)
@@ -123,7 +129,9 @@ def _inject_z_wave(
     return state + perturbation
 
 
-def _hlo_token_counts(hlo_text: str, tokens: tuple[str, ...] = HLO_TOKENS) -> dict[str, int]:
+def _hlo_token_counts(
+    hlo_text: str, tokens: tuple[str, ...] = HLO_TOKENS
+) -> dict[str, int]:
     """Count coarse HLO tokens used for trace triage."""
 
     lower = hlo_text.lower()
@@ -183,14 +191,16 @@ def _build_summary(
 
 def _write_summary_json(payload: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def main() -> None:
     args = _parse_args()
     cfg, _ = load_runtime_from_toml(args.config)
     geom = build_runtime_geometry(cfg)
-    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
+    grid_cfg = apply_imported_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
     linear_terms = build_runtime_linear_terms(cfg)
@@ -221,7 +231,9 @@ def main() -> None:
             z_mode=int(args.z_mode),
         )
 
-    force_electrostatic_fields = _is_static_zero(linear_terms.apar) and _is_static_zero(linear_terms.bpar)
+    force_electrostatic_fields = _is_static_zero(linear_terms.apar) and _is_static_zero(
+        linear_terms.bpar
+    )
     rhs_fn = jax.jit(
         lambda state: linear_rhs_cached(
             state,

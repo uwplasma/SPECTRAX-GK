@@ -14,9 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
-from spectraxgk.nonlinear_gradient_followup import (  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
+from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
     NonlinearGradientVarianceReductionConfig,
+)
+from spectraxgk.validation.nonlinear_gradient.followup_variance import (  # noqa: E402
     nonlinear_gradient_variance_reduction_plan,
 )
 
@@ -63,7 +65,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     rows = list(report.get("pair_rows", []))
     labels = [str(row.get("label")) for row in rows]

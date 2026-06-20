@@ -30,7 +30,7 @@ fixed_dt = false
 dt_max = 0.05
 cfl = 0.9
 cfl_fac = 1.0
-gx_real_fft = true
+compressed_real_fft = true
 laguerre_nonlinear_mode = "grid"
 
 [geometry]
@@ -73,7 +73,7 @@ end_damping = 1.0
 
 [normalization]
 contract = "cyclone"
-diagnostic_norm = "gx"
+diagnostic_norm = "rho_star"
 
 [run]
 ky = 0.3

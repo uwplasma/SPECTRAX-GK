@@ -6,11 +6,61 @@ import math
 import pytest
 
 import spectraxgk
-from spectraxgk.vmec_jax_boundary_chain import (
+import spectraxgk.geometry.vmec_boundary_collection as boundary_collection
+import spectraxgk.geometry.vmec_boundary_chain as boundary_chain
+from spectraxgk.geometry.vmec_boundary_chain import (
     boundary_chain_summary_from_probe,
     build_boundary_chain_collection_summary,
     build_boundary_chain_summary,
 )
+
+
+def test_boundary_chain_error_and_pass_helpers_handle_optional_linear_values() -> None:
+    errors = boundary_chain._boundary_chain_error_metrics(
+        exact=1.0,
+        final=1.02,
+        frozen_jvp=0.91,
+        frozen_vjp=0.91 + 1.0e-12,
+        frozen_linear_jvp=None,
+        frozen_linear_vjp=None,
+        tangent_diff_abs=None,
+        tangent_diff_rel=None,
+        raw=None,
+        absolute_tolerance=1.0e-10,
+    )
+
+    assert errors["final_state_vs_exact_fd_rel"] == pytest.approx(
+        0.01960784313725492
+    )
+    assert errors["frozen_axis_fd_jvp_vs_linear_jvp_abs"] is None
+    assert errors["frozen_axis_fd_vjp_vs_linear_vjp_rel"] is None
+    assert errors["raw_initial_vs_exact_fd_abs"] is None
+
+    passes = boundary_chain._boundary_chain_passes(
+        errors,
+        raw=None,
+        exact_relative_tolerance=0.1,
+        internal_relative_tolerance=1.0e-8,
+        absolute_tolerance=1.0e-10,
+    )
+
+    assert passes["final_state_matches_exact_fd"] is True
+    assert passes["frozen_axis_matches_exact_fd"] is True
+    assert passes["frozen_axis_jvp_vjp_consistent"] is True
+    assert passes["frozen_axis_convention_verified"] is False
+    assert passes["raw_initial_matches_exact_fd"] is False
+
+
+def test_boundary_chain_collection_helpers_have_canonical_owner() -> None:
+    assert boundary_chain._empty_boundary_chain_counts is (
+        boundary_collection._empty_boundary_chain_counts
+    )
+    assert boundary_chain._boundary_chain_collection_counts is (
+        boundary_collection._boundary_chain_collection_counts
+    )
+    assert boundary_chain._boundary_chain_collection_decision is (
+        boundary_collection._boundary_chain_collection_decision
+    )
 
 
 def test_boundary_chain_summary_classifies_frozen_axis_branch_sensitivity() -> None:
@@ -204,6 +254,100 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
     summary = boundary_chain_summary_from_probe(payload, exact_relative_tolerance=0.1)
     assert summary["classification"] == "exact_fd_and_frozen_axis_replay_consistent"
     assert summary["passes"]["frozen_axis_convention_verified"] is True
+
+
+def test_boundary_chain_collection_count_helper_tracks_gate_categories() -> None:
+    rows = [
+        {
+            "finite": True,
+            "frozen_axis_jvp_vjp_consistent": True,
+            "frozen_axis_convention_verified": False,
+            "frozen_axis_matches_exact_fd": True,
+            "classification": "exact_fd_and_frozen_axis_replay_consistent",
+            "growth_branch_locality_checked": True,
+            "growth_branch_locality_passed": True,
+        },
+        {
+            "finite": True,
+            "frozen_axis_jvp_vjp_consistent": True,
+            "frozen_axis_convention_verified": True,
+            "frozen_axis_matches_exact_fd": False,
+            "classification": (
+                "frozen_axis_convention_verified_but_exact_fd_branch_sensitive"
+            ),
+            "growth_branch_locality_checked": True,
+            "growth_branch_locality_passed": False,
+        },
+    ]
+
+    assert boundary_chain._boundary_chain_collection_counts(rows) == {
+        "n_total": 2,
+        "n_finite": 2,
+        "n_frozen_axis_internal_pass": 2,
+        "n_frozen_axis_convention_verified": 1,
+        "n_exact_fd_consistent": 1,
+        "n_branch_sensitive": 1,
+        "n_growth_branch_locality_checked": 2,
+        "n_growth_branch_locality_passed": 1,
+    }
+    assert boundary_chain._empty_boundary_chain_counts()["n_total"] == 0
+
+
+def test_boundary_chain_collection_decision_policy_is_explicit() -> None:
+    base = boundary_chain._empty_boundary_chain_counts() | {
+        "n_total": 2,
+        "n_finite": 2,
+        "n_frozen_axis_internal_pass": 2,
+    }
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_finite": 1}
+    )
+    assert finite is False
+    assert classification == "nonfinite_boundary_chain_collection"
+    assert "repair nonfinite" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_frozen_axis_internal_pass": 1}
+    )
+    assert finite is True
+    assert classification == "internal_replay_failure"
+    assert "exact-tape replay" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 2}
+    )
+    assert finite is True
+    assert classification == "all_components_exact_fd_and_frozen_axis_consistent"
+    assert "sparse-FD gates" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 1, "n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "mixed_exact_fd_consistency_with_branch_sensitive_modes"
+    assert "regularize branch-sensitive modes" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_frozen_axis_convention_verified": 2}
+    )
+    assert finite is True
+    assert classification == "all_components_frozen_axis_convention_verified"
+    assert "nonlinear-audit gates" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_exact_fd_consistent": 1, "n_frozen_axis_convention_verified": 1, "n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "mixed_exact_or_frozen_axis_convention_verified"
+    assert "unresolved branch-sensitive modes" in action
+
+    finite, classification, action = boundary_chain._boundary_chain_collection_decision(
+        base | {"n_branch_sensitive": 1}
+    )
+    assert finite is True
+    assert classification == "branch_sensitive_boundary_chain_collection"
+    assert "better-conditioned finite-difference protocol" in action
 
 
 def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:

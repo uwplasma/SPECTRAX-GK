@@ -11,16 +11,18 @@ from typing import cast
 
 import numpy as np
 
-from spectraxgk.stellarator_optimization import StellaratorITGSampleSet
-from spectraxgk.vmec_jax_transport_admission import (
+from spectraxgk.objectives.stellarator import StellaratorITGSampleSet
+from spectraxgk.validation.stellarator.transport_policies import (
     VMECJAXNonlinearAuditPolicy,
+)
+from spectraxgk.validation.stellarator.transport_samples import (
     transport_objective_sample_summary,
 )
-from spectraxgk.vmec_jax_transport_line_search import (
+from spectraxgk.objectives.vmec_transport_line_search import (
     projected_line_search_input_manifest,
     sparse_descent_direction_from_gradient_report,
 )
-from spectraxgk.vmec_jax_transport_objective import (
+from spectraxgk.objectives.vmec_transport import (
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
     VMECJAXTransportObjectiveKind,

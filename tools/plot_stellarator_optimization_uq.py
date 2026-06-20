@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Ellipse  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
+from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -152,7 +152,7 @@ def build_uq_summary(payload: dict[str, Any]) -> dict[str, Any]:
                 "executor": "thread",
                 "finite_difference_workers": 1,
                 "finite_difference_executor": "thread",
-                "identity_contract": "serial payload or legacy artifact",
+                "identity_contract": "serial payload or archived artifact",
             },
         ),
         "results": rows,

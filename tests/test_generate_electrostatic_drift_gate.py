@@ -63,10 +63,10 @@ def test_electrostatic_drift_gate_builds_identity_summary(monkeypatch) -> None:
     monkeypatch.setattr("jax.devices", lambda _kind=None: [object(), object()])
     monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", fake_rhs)
     monkeypatch.setattr("spectraxgk.linear.build_H", lambda state, *_args, **_kwargs: state)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
-    monkeypatch.setattr("spectraxgk.velocity_sharding.electrostatic_phi_shard_map", fake_phi)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.mirror_drift_shard_map", lambda state, *_args, **_kwargs: state)
-    monkeypatch.setattr("spectraxgk.velocity_sharding.curvature_gradb_drift_shard_map", lambda state, *_args, **_kwargs: 2.0 * state)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.build_velocity_sharding_plan", lambda *_args, **_kwargs: FakePlan())
+    monkeypatch.setattr("spectraxgk.parallel.velocity.electrostatic_phi_shard_map", fake_phi)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.mirror_drift_shard_map", lambda state, *_args, **_kwargs: state)
+    monkeypatch.setattr("spectraxgk.parallel.velocity.curvature_gradb_drift_shard_map", lambda state, *_args, **_kwargs: 2.0 * state)
 
     summary = gate.build_electrostatic_drift_gate(
         requested_devices=2,

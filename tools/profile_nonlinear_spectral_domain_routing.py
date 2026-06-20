@@ -96,8 +96,8 @@ def build_profile(
 ) -> dict[str, Any]:
     """Return serial-vs-logical routed timing plus identity metrics."""
 
-    from spectraxgk import nonlinear_parallel as npmod
-    from spectraxgk.nonlinear_parallel import (
+    import spectraxgk.operators.nonlinear.parallel as npmod
+    from spectraxgk.operators.nonlinear.parallel import (
         deterministic_nonlinear_spectral_state,
         integrate_logical_decomposed_nonlinear_spectral,
         nonlinear_spectral_domain_work_model,
@@ -303,7 +303,7 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.artifacts.plotting import set_plot_style
 
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     json_path = out_prefix.with_suffix(".json")

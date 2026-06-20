@@ -18,7 +18,7 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = ROOT / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
+DEFAULT_CONFIG = ROOT / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
 DEFAULT_OUT_DIR = ROOT / "tools_out" / "zonal_response" / "closure_sweep_manifest"
 
 

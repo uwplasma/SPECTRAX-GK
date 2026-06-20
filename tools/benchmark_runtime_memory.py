@@ -7,6 +7,7 @@ import argparse
 import csv
 from dataclasses import dataclass
 import glob
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -154,6 +155,28 @@ def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
     return {"stdout_log": str(stdout_path), "stderr_log": str(stderr_path)}
 
 
+def _log_fingerprint(text: str) -> dict[str, object]:
+    """Return compact provenance for a captured process stream."""
+
+    encoded = text.encode("utf-8")
+    return {
+        "bytes": len(encoded),
+        "sha256": hashlib.sha256(encoded).hexdigest() if encoded else "",
+    }
+
+
+def _summary_row(row: dict[str, object]) -> dict[str, object]:
+    """Drop bulky process logs from tracked summaries while preserving provenance."""
+
+    out = dict(row)
+    for field in ("stdout", "stderr"):
+        value = str(out.pop(field, "") or "")
+        fingerprint = _log_fingerprint(value)
+        out[f"{field}_bytes"] = fingerprint["bytes"]
+        out[f"{field}_sha256"] = fingerprint["sha256"]
+    return out
+
+
 def _execute_command(
     *,
     host: str | None,
@@ -268,7 +291,10 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 def _write_summary(path: Path, rows: list[dict[str, object]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps({"rows": [_summary_row(row) for row in rows]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _load_summary_rows(patterns: list[str]) -> list[dict[str, object]]:
@@ -419,8 +445,7 @@ def main() -> int:
         if not summary_rows:
             raise ValueError("no summary rows matched the provided --summary-glob patterns")
         _write_csv(_resolve(args.csv_out), summary_rows)
-        _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
-        _resolve(args.summary_out).write_text(json.dumps({"rows": summary_rows}, indent=2) + "\n", encoding="utf-8")
+        _write_summary(_resolve(args.summary_out), summary_rows)
         if not args.skip_plot:
             plot_png = _resolve(args.plot_out)
             plot_pdf = plot_png.with_suffix(".pdf")

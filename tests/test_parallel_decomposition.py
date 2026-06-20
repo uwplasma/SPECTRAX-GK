@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from spectraxgk.parallel_decomposition import (
+from spectraxgk.parallel.decomposition import (
     DecompositionContract,
     ReconstructionIdentityReport,
     ShardAssignment,

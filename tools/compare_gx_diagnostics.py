@@ -10,19 +10,19 @@ from pathlib import Path
 import numpy as np
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import gx_growth_rate_from_phi, select_ky_index, ModeSelection
+from spectraxgk.diagnostics.analysis import instantaneous_growth_rate_from_phi, select_ky_index, ModeSelection
 from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    _apply_gx_hypercollisions,
+    _apply_reference_hypercollisions,
     _build_initial_condition,
     _midplane_index,
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.solvers.time.explicit import ExplicitTimeConfig, integrate_linear_explicit_diagnostics
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 
 
@@ -64,7 +64,7 @@ def _read_diag_series(group, name: str, ky_idx: int) -> np.ndarray:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Compare GX diagnostics vs SPECTRAX-GK.")
+    parser = argparse.ArgumentParser(description="Compare runtime diagnostics vs SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
     parser.add_argument("--ky", type=float, default=0.55, help="ky to compare")
     parser.add_argument("--Nl", type=int, default=16)
@@ -82,9 +82,9 @@ def main() -> None:
     ky_val = float(ky_all[ky_idx])
 
     diag = root.groups["Diagnostics"]
-    gx_Wg = _read_diag_series(diag, "Wg_kyst", ky_idx)
-    gx_Wphi = _read_diag_series(diag, "Wphi_kyst", ky_idx)
-    gx_Wapar = _read_diag_series(diag, "Wapar_kyst", ky_idx)
+    distribution_free_energy = _read_diag_series(diag, "Wg_kyst", ky_idx)
+    electrostatic_field_energy = _read_diag_series(diag, "Wphi_kyst", ky_idx)
+    magnetic_vector_potential_energy = _read_diag_series(diag, "Wapar_kyst", ky_idx)
     gx_heat = _read_diag_series(diag, "HeatFlux_kyst", ky_idx)
     gx_pflux = _read_diag_series(diag, "ParticleFlux_kyst", ky_idx)
     root.close()
@@ -108,20 +108,20 @@ def main() -> None:
         damp_ends_amp=0.1,
         damp_ends_widthfrac=1.0 / 8.0,
     )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+    params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
     params = replace(params, damp_ends_amp=float(params.damp_ends_amp))
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=args.Nl, Nm=args.Nm, init_cfg=cfg.init
     )
-    gx_time_cfg = GXTimeConfig(
+    gx_time_cfg = ExplicitTimeConfig(
         dt=args.dt,
         t_max=args.dt * args.steps,
         sample_stride=int(max(args.sample_stride, 1)),
         fixed_dt=True,
     )
 
-    t, phi_t, _g_t, _o_t, diag_spec = integrate_linear_gx_diagnostics(
+    t, phi_t, _g_t, _o_t, diag_spec = integrate_linear_explicit_diagnostics(
         G0,
         grid,
         cache,
@@ -133,11 +133,11 @@ def main() -> None:
     )
 
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-    gamma, omega, *_ = gx_growth_rate_from_phi(
+    gamma, omega, *_ = instantaneous_growth_rate_from_phi(
         phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
     )
 
-    gx_energy = gx_Wg + gx_Wphi + gx_Wapar
+    gx_energy = distribution_free_energy + electrostatic_field_energy + magnetic_vector_potential_energy
     sp_energy = np.asarray(diag_spec.energy_t)
 
     def _drift(arr: np.ndarray) -> float:

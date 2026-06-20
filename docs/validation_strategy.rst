@@ -83,14 +83,14 @@ The remaining work should be closed in this order.
 
 1. **Freeze module contracts before moving code.**
    For each large file, write or update tests for current public behavior, then
-   extract only cohesive helpers. Keep compatibility exports until examples,
+   extract only cohesive helpers. Keep public facades stable until examples,
    docs, and benchmark scripts use the new module boundaries.
 
 2. **Finish the high-priority refactor modules.**
    The active blockers are ``runtime.py``, ``linear.py``, ``nonlinear.py``,
-   ``benchmarks.py``, ``diagnostics.py``, ``runtime_artifacts.py``,
-   ``validation_gates.py``, ``zonal_validation.py``, and
-   ``from_gx/vmec.py``. Each slice should land with targeted tests and no
+   ``benchmarks.py``, ``diagnostics.py``, ``workflows/runtime/artifacts.py``,
+   ``validation/gates.py``, ``validation/zonal.py``, and
+   ``geometry_backends/vmec.py``. Each slice should land with targeted tests and no
    physics-model change.
 
 3. **Turn open or deferred physics lanes into explicit gates.**

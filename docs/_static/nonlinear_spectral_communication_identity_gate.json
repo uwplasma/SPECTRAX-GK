@@ -605,5 +605,5 @@
       "stage": "pencil_transport"
     }
   ],
-  "source": "spectraxgk.nonlinear_parallel nonlinear-spectral communication utilities"
+  "source": "spectraxgk.operators.nonlinear.parallel nonlinear-spectral communication utilities"
 }

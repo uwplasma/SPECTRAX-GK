@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from spectraxgk.species import Species, build_linear_params
+from spectraxgk.core.species import Species, build_linear_params
 
 
 def test_build_linear_params_shapes():

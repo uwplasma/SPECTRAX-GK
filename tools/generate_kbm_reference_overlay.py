@@ -23,8 +23,8 @@ from compare_gx_kbm import (
     _normalize_mode,
     _prepare_gx_reference,
 )
-from spectraxgk.analysis import extract_eigenfunction
-from spectraxgk.benchmarking import (
+from spectraxgk.diagnostics.analysis import extract_eigenfunction
+from spectraxgk.validation.benchmarks.harness import (
     compare_eigenfunctions,
     eigenfunction_gate_report,
     gate_report_to_dict,
@@ -33,7 +33,7 @@ from spectraxgk.benchmarking import (
     save_eigenfunction_reference_bundle,
 )
 from spectraxgk.benchmarks import run_kbm_linear
-from spectraxgk.plotting import eigenfunction_reference_overlay_figure
+from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,9 +45,15 @@ KBM_EIGENFUNCTION_GATE_TOLERANCES = {
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file.")
-    parser.add_argument("--gx-big", type=Path, required=True, help="Path to GX .big.nc file.")
-    parser.add_argument("--gx-input", type=Path, required=True, help="Path to the GX input deck.")
+    parser.add_argument(
+        "--gx", type=Path, required=True, help="Path to GX .out.nc file."
+    )
+    parser.add_argument(
+        "--gx-big", type=Path, required=True, help="Path to GX .big.nc file."
+    )
+    parser.add_argument(
+        "--gx-input", type=Path, required=True, help="Path to the GX input deck."
+    )
     parser.add_argument(
         "--candidate-csv",
         type=Path,
@@ -77,25 +83,40 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-csv",
         type=Path,
-        default=ROOT / "docs" / "_static" / "reference_modes" / "kbm_linear_spectrax_ky0p3000.csv",
+        default=ROOT
+        / "docs"
+        / "_static"
+        / "reference_modes"
+        / "kbm_linear_spectrax_ky0p3000.csv",
         help="Output CSV path for the SPECTRAX eigenfunction.",
     )
     parser.add_argument(
         "--out-png",
         type=Path,
-        default=ROOT / "docs" / "_static" / "kbm_eigenfunction_reference_overlay_ky0p3000.png",
+        default=ROOT
+        / "docs"
+        / "_static"
+        / "kbm_eigenfunction_reference_overlay_ky0p3000.png",
         help="Output figure path.",
     )
     parser.add_argument(
         "--out-json",
         type=Path,
-        default=ROOT / "docs" / "_static" / "reference_modes" / "kbm_eigenfunction_reference_overlay_ky0p3000.json",
+        default=ROOT
+        / "docs"
+        / "_static"
+        / "reference_modes"
+        / "kbm_eigenfunction_reference_overlay_ky0p3000.json",
         help="Output JSON path for overlay metrics.",
     )
     parser.add_argument(
         "--bundle-out",
         type=Path,
-        default=ROOT / "docs" / "_static" / "reference_modes" / "kbm_linear_gx_ky0p3000.npz",
+        default=ROOT
+        / "docs"
+        / "_static"
+        / "reference_modes"
+        / "kbm_linear_gx_ky0p3000.npz",
         help="Output path for the frozen GX reference bundle.",
     )
     return parser.parse_args()
@@ -103,13 +124,17 @@ def _parse_args() -> argparse.Namespace:
 
 def _selected_candidate_row(candidate_csv: Path, ky: float) -> pd.Series:
     table = pd.read_csv(candidate_csv)
-    mask = table["selected"].astype(bool) & (table["ky"].round(4) == round(float(ky), 4))
+    mask = table["selected"].astype(bool) & (
+        table["ky"].round(4) == round(float(ky), 4)
+    )
     if not mask.any():
         raise ValueError(f"no selected KBM candidate found for ky={ky:.4f}")
     return table.loc[mask].iloc[0]
 
 
-def _steps_for_fit_window(*, fit_tmax: float, dt: float, fit_padding: float, sample_stride: int) -> int:
+def _steps_for_fit_window(
+    *, fit_tmax: float, dt: float, fit_padding: float, sample_stride: int
+) -> int:
     steps = max(int(math.ceil((float(fit_tmax) + float(fit_padding)) / float(dt))), 1)
     stride = max(int(sample_stride), 1)
     rem = steps % stride
@@ -143,10 +168,12 @@ def main() -> None:
         sample_stride=args.sample_stride,
     )
 
-    _gx_time, _gx_ky, _gx_omega, beta, _q, _shat, _eps, _rmaj, nky_full, _y0 = _prepare_gx_reference(
-        args.gx,
-        ky_arg=str(args.ky),
-        y0_fallback=10.0,
+    _gx_time, _gx_ky, _gx_omega, beta, _q, _shat, _eps, _rmaj, nky_full, _y0 = (
+        _prepare_gx_reference(
+            args.gx,
+            ky_arg=str(args.ky),
+            y0_fallback=10.0,
+        )
     )
     contract = _load_kbm_gx_input_contract(args.gx_input)
     ny = infer_triple_dealiased_ny(int(nky_full))
@@ -190,11 +217,11 @@ def main() -> None:
         dt=float(args.dt),
         steps=int(steps),
         method="rk4",
-        solver="gx_time",
+        solver="explicit_time",
         fit_signal="phi",
         mode_method="project",
-        diagnostic_norm="gx",
-        gx_reference=True,
+        diagnostic_norm="rho_star",
+        reference_aligned=True,
         auto_window=False,
         tmin=fit_tmin,
         tmax=fit_tmax,
@@ -202,7 +229,9 @@ def main() -> None:
     )
 
     t_arr = np.asarray(result.t, dtype=float)
-    eig_tmin, eig_tmax = late_time_window(t_arr, tail_fraction=float(args.tail_fraction))
+    eig_tmin, eig_tmax = late_time_window(
+        t_arr, tail_fraction=float(args.tail_fraction)
+    )
     mode_sp = extract_eigenfunction(
         np.asarray(result.phi_t),
         t_arr,
@@ -259,7 +288,9 @@ def main() -> None:
                 "gate_tolerances": dict(KBM_EIGENFUNCTION_GATE_TOLERANCES),
                 "gate_report": gate_report_to_dict(validation_gate_report),
                 "eigenfunction_gate_passed": bool(validation_gate_report.passed),
-                "validation_status": "closed" if validation_gate_report.passed else "open",
+                "validation_status": "closed"
+                if validation_gate_report.passed
+                else "open",
                 "t_final": float(t_arr[-1]),
                 "nsamples": int(t_arr.size),
             },
