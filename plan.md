@@ -463,6 +463,11 @@ Recent behavior-preserving refactor commits on this branch include:
   The linear RHS profiler now reuses the production hypercollision source helper
   and guards linked-only profiling inputs explicitly, reducing profiler/solver
   drift while preserving the tested formulas.
+- this checkpoint: linked streaming now separates Hermite ladder construction,
+  electrostatic/electromagnetic field-drive injection, safe inverse-temperature
+  handling, and periodic-vs-linked parallel derivative application. The public
+  streaming contribution keeps the same schema and numerical route, while the
+  full comparison shard and disabled-field assembly regressions passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
