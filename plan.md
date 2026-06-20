@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: quasilinear transport diagnostics now separate option
+  validation, amplitude-normalized linear flux weights, species labels,
+  saturation-rule application, and claim-scope metadata; focused quasilinear
+  tests, the AD derivative gate, mypy, architecture, repository-size, and diff
+  hygiene passed locally.
 - this checkpoint: VMEC flux-tube cut/remap code now separates field-line
   sample extraction, interpolation, crossing selection, aspect-cut root solving,
   and public cut orchestration; full VMEC backend helper tests, mypy,
