@@ -772,7 +772,10 @@ streaming-density fitting, configured/unconfigured saved-history integration,
 and saved-trace fitting into focused helpers. The saved-time path carries one
 private fit-policy object through those stages so ``phi``, density, automatic,
 and reference-window fits cannot silently diverge in their normalization or
-window-selection rules.
+window-selection rules. ETG scan path internals carry separate batch and fit
+context objects through staged streaming, configured-history,
+unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers, keeping
+the scan owner patchable while making each numerical branch locally auditable.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through
