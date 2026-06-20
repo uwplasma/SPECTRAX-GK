@@ -468,6 +468,12 @@ Recent behavior-preserving refactor commits on this branch include:
   handling, and periodic-vs-linked parallel derivative application. The public
   streaming contribution keeps the same schema and numerical route, while the
   full comparison shard and disabled-field assembly regressions passed locally.
+- this checkpoint: diamagnetic linear drive assembly now separates Laguerre
+  gradient profiles, scalar drift-frequency factors, electrostatic/magnetic
+  compression drives, and Apar temperature-profile drives. The comparison
+  regression shard and the production-vs-sharded diamagnetic drive identity
+  check passed locally, with the multi-device logical-device case skipped on
+  this single-device backend as expected.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
