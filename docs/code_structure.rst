@@ -440,7 +440,11 @@ Completed extractions:
   policy (``solvers/linear/parallel_common.py``), Hermite streaming routes
   (``solvers/linear/parallel_streaming.py``), and electrostatic slice/fused
   shard-map routes (``solvers/linear/parallel_electrostatic.py``). The public
-  ``solvers/linear/parallel.py`` module remains the stable dispatcher.
+  ``solvers/linear/parallel.py`` module remains the stable dispatcher. The
+  electrostatic fused route is staged as route validation, sharding specs,
+  closure constants, Hermite exchange, phi solve, streaming/mirror/drift/drive
+  term builders, and JIT cache lookup; the serial single-device path has a
+  separate helper so identity tests can exercise both routes.
 - explicit RK/SSP/K10 one-step policy, cached explicit scan policy, explicit
   diagnostic step and scan-selection policy, explicit diagnostic integration
   orchestration, IMEX diagnostic integration orchestration, cached IMEX scan

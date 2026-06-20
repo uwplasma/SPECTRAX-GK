@@ -504,6 +504,19 @@
   differentiable-refactor manifest, repository-size manifest, warning-free
   Sphinx build, and `git diff --check`.
 
+- 2026-06-20: Continued velocity-parallel electrostatic RHS simplification
+  inside `solvers.linear.parallel_electrostatic` without changing the fused or
+  serial numerical routes. The fused electrostatic slice path now separates
+  route validation, sharding specs, closure constants, Hermite exchange, phi
+  solve, streaming/mirror/curvature/grad-B/diamagnetic term builders, cache-key
+  construction, and JIT cache lookup. The public fused owner dropped from 219
+  to 88 lines, and the public electrostatic dispatcher dropped from 112 to 51
+  lines by moving the single-device route into a private helper that preserves
+  monkeypatch seams. Local gates passed: focused linear parallel
+  dispatch identity/validation shard, Ruff, mypy, `py_compile`,
+  differentiable-refactor manifest, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
+
 - 2026-06-19: Continued differentiable VMEC-state sensitivity refactoring
   inside `geometry.vmec_state_sensitivity` without adding modules or changing
   public report schemas. Metric-tensor and field-line tensor reports now share
