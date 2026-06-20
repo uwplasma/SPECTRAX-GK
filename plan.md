@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: nonlinear runtime artifact handoff now separates run-option
+  packing, one-chunk execution/finite validation, optional artifact writing,
+  checkpoint-advance policy, and the checkpoint loop from the public handoff
+  entry point; the full runtime artifact/helper tests, focused mypy, Ruff,
+  architecture, repository-size, and differentiable-refactor manifests passed
+  locally.
 - this checkpoint: Cyclone reference-aligned explicit-time scan now separates
   per-ky point preparation, explicit trace fitting, branch-reselection
   predicates, Krylov reselection fallback, and previous-frequency continuation
