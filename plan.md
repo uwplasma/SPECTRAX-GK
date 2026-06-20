@@ -619,6 +619,11 @@ Recent behavior-preserving refactor commits on this branch include:
   RHS closure, RK3/RK4/SSPX3/K10 formulas, method dispatch, post-step spectral
   masking, and final field solve. Public explicit-step behavior is unchanged;
   scalar amplification, mask, static, and repository gates passed locally.
+- this checkpoint: nonlinear explicit stepping now separates RK/SSP/K10 state
+  updates, adaptive diagnostic time-step advancement, optional collision split,
+  diagnostic selection, and progress emission. Public explicit nonlinear
+  behavior is unchanged; explicit-step tests, package export tests, static
+  checks, and local repository gates passed.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
