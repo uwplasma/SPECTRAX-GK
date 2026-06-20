@@ -1,3 +1,14 @@
+- 2026-06-20: Continued runtime scan orchestration simplification inside
+  `workflows.runtime.orchestration_scan` without changing public runtime
+  facades, monkeypatch dependency seams, combined-`ky` eligibility rules,
+  independent-worker ordering, quasilinear payload ordering, diagnostic
+  normalization, or fit-signal selection semantics. Scan routing now stages
+  shared time/fit options, combined-`ky` validation, worker-task construction,
+  ordered result packing, batch initial-condition assembly, diagnostic array
+  extraction, and per-mode fit selection through named helpers. Local gates
+  passed: full runtime-helper shard, runtime scan runner shard, Ruff, mypy,
+  and `py_compile`.
+
 - 2026-06-20: Continued cached linear fixed-step integrator simplification
   inside `solvers.linear.integrators` without changing public APIs, JIT static
   arguments, donated-buffer wrapper behavior, serial/parallel RHS routing,

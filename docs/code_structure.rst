@@ -273,7 +273,10 @@ Completed extractions:
   ``workflows/runtime/orchestration_progress.py``, and
   ``workflows/runtime/orchestration_artifacts.py``. Scan dependency-bundle
   builders live with the scan owner and read the public ``runtime.py`` facade
-  only as a patchable symbol source. Nonlinear artifact handoff keeps restart
+  only as a patchable symbol source. Scan routing keeps combined-``ky``
+  eligibility, independent-worker task generation, ordered result packing,
+  batch initial-state assembly, diagnostic extraction, and fit selection as
+  named stages behind one private scan-options contract. Nonlinear artifact handoff keeps restart
   input resolution, append-history loading, checkpoint chunk sizing, and
   diagnostic-history merging as explicit policies in the artifact owner.
 - saved runtime-output plotting command routing:
