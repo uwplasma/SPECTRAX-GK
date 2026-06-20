@@ -1,3 +1,17 @@
+- 2026-06-20: Continued nonlinear-gradient evidence-screening simplification
+  inside `validation.nonlinear_gradient.evidence_screening` without changing the
+  candidate-ranking report schema, score thresholds, evidence classification,
+  recommendation text, or compatibility re-exports. Candidate ranking now
+  delegates evidence-config construction, conditioning extraction, normalized
+  margin scoring, failed-gate extraction, score calculation, row construction,
+  ranking, follow-up grouping, recommendation selection, and final report
+  packing to private helpers. The public
+  `nonlinear_turbulence_gradient_candidate_ranking_report` owner dropped from
+  207 to 50 lines. Local gates passed: full nonlinear-gradient evidence shard,
+  focused ranking shard, Ruff, mypy, `py_compile`, differentiable-refactor
+  manifest, repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Continued Cyclone single-mode owner simplification inside
   `validation.benchmarks.cyclone_linear` without changing the public
   `run_cyclone_linear` API, status messages, reference-aligned policy,
