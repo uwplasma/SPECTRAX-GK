@@ -782,7 +782,10 @@ sample-coverage, nonlinear-audit, and candidate-selection modules:
 ``spectraxgk.validation.stellarator.transport_samples``,
 ``transport_landscape``, ``transport_prelaunch``, ``transport_campaign``,
 ``transport_audit`` nonlinear report owners, and
-``spectraxgk.validation.stellarator.transport_selection``. Solved-equilibrium
+``spectraxgk.validation.stellarator.transport_selection``. Nonlinear campaign
+admission stages reduced-prelaunch gates, objective-sample coverage,
+cross-sample dispersion, landscape admission, selected-candidate thresholds,
+and final campaign-only report packing separately. Solved-equilibrium
 candidate admission in ``validation.stellarator.candidate_gate`` shares
 private aspect, iota, profile, and pass/fail helpers so optimizer-state and
 authoritative-WOUT gates keep identical JSON schema and threshold semantics.

@@ -1,3 +1,17 @@
+- 2026-06-20: Continued VMEC-JAX nonlinear transport campaign-admission
+  simplification inside `validation.stellarator.transport_campaign` without
+  changing the public API, report schema, campaign-only claim scope,
+  gate/blocker names, landscape thresholds, selected-candidate payload, or
+  next-action text. The public owner now stages reduced-prelaunch gates,
+  objective-sample coverage, cross-sample dispersion, landscape admission,
+  selected-candidate extraction, candidate threshold gates, and final report
+  packing through named helpers. `build_nonlinear_campaign_admission_report`
+  dropped from 172 to 40 lines. Local gates passed: exact campaign admission
+  tests, campaign CLI-builder tests, full VMEC transport admission shard,
+  release/status shard, Ruff, mypy, `py_compile`, differentiable-refactor
+  manifest, repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Removed the deprecated `jax.experimental.pjit.pjit` import from
   `parallel.integrators` while preserving the module-level `pjit` monkeypatch
   seam as a compatibility alias to `jax.jit`, which supports the same
