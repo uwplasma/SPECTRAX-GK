@@ -1,3 +1,20 @@
+- 2026-06-20: Continued solver-objective gradient-gate simplification inside
+  `objectives.gradient_gates` without changing public APIs, solver-ready
+  geometry contracts, objective names, branch-continuity rules, implicit
+  eigenpair AD/FD comparison, value-evaluator finite checks, or report schemas.
+  The branch-gradient report now stages parameter validation, solver context,
+  objective construction, base eigensystem selection, branch-row construction,
+  AD/FD gate rows, value-vector checks, and report packing. The linear-RHS
+  geometry-gradient report now stages parameter validation, objective
+  construction, gate-row extraction, objective-family booleans, and report
+  packing. Public owners dropped to 79 lines
+  (`solver_objective_branch_gradient_report`) and 42 lines
+  (`linear_solver_geometry_gradient_report`). Local gates passed: solver
+  objective gradient shard, solver gradient module shard, public API shard,
+  Ruff, mypy, `py_compile`, differentiable-refactor manifest,
+  repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Continued nonlinear-gradient variance/control-variate follow-up
   simplification inside `validation.nonlinear_gradient.followup_variance`
   without changing public APIs, report schemas, action names, blocker names,

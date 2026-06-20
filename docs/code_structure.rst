@@ -371,7 +371,11 @@ Completed extractions:
   held-out aggregate gates on the same accept/reject policy. Solver-ready
   gradient gates share one normalized heat/particle transport-weight helper
   for eigenmode observables so linear-growth, quasilinear, and particle-flux
-  AD checks use the same quadrature and normalization path. The top-level
+  AD checks use the same quadrature and normalization path. Solver-ready
+  branch-continuity and linear-RHS gradient reports now stage parameter
+  validation, objective construction, eigensystem branch checks, implicit
+  AD/FD gate rows, value-evaluator checks, and report packing separately.
+  The top-level
   ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
   these owner modules.
 - production nonlinear turbulent-flux optimization guardrails are split into
