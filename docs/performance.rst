@@ -70,8 +70,8 @@ final state plus free-energy, field-energy, physical-flux, and bracket-RMS
 traces. The CPU artifact
 ``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` passes
 all active identity checks on two and four logical CPU devices for the same
-``(4,16,96,96,32)`` workload. It reaches ``1.72x`` on two logical CPU devices
-and ``3.11x`` on four, with maximum final-state absolute error ``7.45e-9``.
+``(4,16,96,96,32)`` workload. It reaches ``1.77x`` on two logical CPU devices
+and ``3.38x`` on four, with maximum final-state absolute error ``7.45e-9``.
 The HLO dump recorded in the JSON shows local FFT lowering for the sharded
 route and no all-to-all or collective-permute operations. The matching two-GPU
 artifact
