@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: quasilinear calibration reports now separate report-control
+  validation, calibration-point normalization, physical value checks,
+  optional train-scale application, split metrics, claim-level selection, and
+  public payload assembly; the full quasilinear calibration test file, mypy,
+  Ruff, quasilinear-promotion guardrails, architecture, repository-size, and
+  differentiable-refactor manifests passed locally.
 - this checkpoint: VMEC field-line metric assembly now separates coordinate
   gradient construction, HNGC field-line integrals, shear/pressure correction
   factors, local-shear assembly, and metric/drift packing; the full VMEC
