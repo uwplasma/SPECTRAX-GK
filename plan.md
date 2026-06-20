@@ -1,3 +1,13 @@
+- 2026-06-20: Continued nonlinear replicate follow-up simplification inside
+  `validation.nonlinear_transport.replicate_followup` without changing public
+  APIs, JSON report schema, classification names, planned-run labels, GPU
+  follow-up recommendations, or config semantics. The public planner now
+  stages config validation, spread-report normalization, classification-specific
+  cross-run selection, dedupe/limits, state-plan packing, and config
+  serialization through named helpers, dropping from 160 to 62 lines. Local
+  gates passed: nonlinear replicate follow-up shard, campaign-writer shard,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-20: Continued runtime scan orchestration simplification inside
   `workflows.runtime.orchestration_scan` without changing public runtime
   facades, monkeypatch dependency seams, combined-`ky` eligibility rules,

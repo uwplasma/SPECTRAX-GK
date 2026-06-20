@@ -402,7 +402,11 @@ Completed extractions:
   The facade now stages optimization-scope normalization, artifact-row
   classification, safety gates, promotion gates, evidence-gap accounting, and
   summary assembly as separate helpers so release-safety and production-claim
-  promotion remain auditable.
+  promotion remain auditable. Replicate-spread follow-up planning in
+  ``validation/nonlinear_transport/replicate_followup.py`` separates report
+  normalization, classification-specific cross-run selection, dedupe/limits,
+  state-plan packing, and config serialization so GPU follow-up campaigns stay
+  deterministic and reviewable.
 - quasilinear nonlinear-window convergence metadata is split into focused
   config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
   modules under ``validation/quasilinear/window_*.py``. The public
