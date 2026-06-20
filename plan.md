@@ -629,6 +629,10 @@ Recent behavior-preserving refactor commits on this branch include:
   reconstruction, and per-species heating assembly. Diagnostic formulas are
   unchanged; zero-field, steady-state, resolved-sum, zero-dt, static, and local
   repository gates passed.
+- this checkpoint: linear cache k_perp/drift construction now separates NTFT
+  metric assembly, standard geometry assembly, and dealias masking. Cache output
+  policy is unchanged; current cache helper tests, static checks, collection
+  audit for non-collected legacy linear tests, and local repository gates passed.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
