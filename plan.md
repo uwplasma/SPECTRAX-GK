@@ -1,3 +1,18 @@
+- 2026-06-20: Continued autodiff validation simplification inside
+  `validation.autodiff` without changing public exports, eigenbranch selector
+  strings, finite-difference comparison semantics, implicit left/right
+  eigenpair sensitivity labels, or report schemas. Eigenvalue, eigenpair, and
+  implicit eigenpair gates now share parameter validation, branch selection/gap
+  classification, complex-observable realification, unsupported-AD fallback
+  packing, implicit tangent solves, split observable chain-rule assembly, and
+  report packing. Public report owners are now 52 lines
+  (`isolated_eigenvalue_sensitivity_report`), 62 lines
+  (`isolated_eigenpair_observable_sensitivity_report`), and 49 lines
+  (`implicit_eigenpair_observable_sensitivity_report`). Local gates passed:
+  full autodiff validation shard, focused implicit/isolated eigen AD shard,
+  Ruff, mypy, `py_compile`, differentiable-refactor manifest, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued nonlinear-gradient matched-replicate follow-up
   simplification inside `validation.nonlinear_gradient.followup_plan` without
   changing the public `nonlinear_gradient_followup_plan` API, report schema,

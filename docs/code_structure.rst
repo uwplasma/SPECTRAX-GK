@@ -311,7 +311,11 @@ Completed extractions:
   branch-jump thresholds so tolerance semantics remain auditable.
 - autodiff validation helpers:
   ``validation/autodiff.py`` facade with finite-difference Jacobian and
-  Gauss-Newton covariance helpers in ``validation/autodiff_finite_difference.py``
+  Gauss-Newton covariance helpers in ``validation/autodiff_finite_difference.py``.
+  Eigenbranch AD gates share selector/gap classification, complex-observable
+  realification, unsupported-AD fallback packing, implicit left/right
+  eigenpair tangent solves, split observable chain-rule assembly, and
+  finite-difference comparison stages.
 - benchmark-harness eigenfunction utilities, diagnostic time-series loading,
   physics metric extraction, and scan/mode orchestration:
   ``validation/benchmarks/harness_eigenfunctions.py``,
