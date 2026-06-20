@@ -704,7 +704,9 @@ keyword packing, and saved-trace fitting into named stages. The scan runner dele
 Krylov branch-following, reference-aligned explicit-time reselection, and
 standard saved-time/streaming scan execution to
 ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
-hook bundle. Trace-seed branch initialization lives in
+hook bundle while keeping scan setup, default species/term policy,
+reference-aligned normalization, fit-window policy packing, ky-batch selection,
+and branch dispatch in focused local helpers. Trace-seed branch initialization lives in
 ``spectraxgk.validation.benchmarks.cyclone_scan_seed`` and reference-aligned
 explicit-time reselection lives in
 ``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The branch module

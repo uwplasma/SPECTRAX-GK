@@ -1,3 +1,18 @@
+- 2026-06-19: Continued Cyclone ky-scan owner refactoring inside
+  `validation.benchmarks.cyclone_scan` without changing the public
+  `run_cyclone_scan` signature, default species/term construction,
+  reference-aligned drift/normalization policy, auto-solver routing,
+  fit-signal policy, ky-batch selection, Krylov/explicit-time/time branch
+  dispatch, or `CycloneScanResult` schema. The scan owner now delegates
+  default parameter construction, default term construction, fit-window policy
+  packing, scan setup normalization, Krylov branch dispatch, explicit-time
+  branch dispatch, and saved-time/streaming branch dispatch to focused private
+  helpers while keeping the existing patchable hook bundle local. The public
+  scan runner drops from 224 to 138 lines; the remaining length is mostly the
+  preserved public signature plus branch dispatch. Focused Cyclone scan branch
+  tests and integration-marked Cyclone scan benchmark tests passed locally,
+  along with Ruff, mypy, and `py_compile`.
+
 - 2026-06-19: Continued Cyclone single-mode solver-path refactoring inside
   `validation.benchmarks.cyclone_linear_paths` without changing the public
   `run_cyclone_krylov_path` and `run_cyclone_time_path` signatures,
