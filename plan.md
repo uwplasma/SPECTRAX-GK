@@ -104,7 +104,6 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
    - `validation/benchmarks/etg_scan_paths.py`
    - `validation/benchmarks/kbm_linear.py`
 2. Nonlinear transport/optimization reports:
-   - `validation/nonlinear_transport/replicate_diagnostics.py`
    - `validation/nonlinear_transport/optimization_guard.py`
    - `validation/stellarator/transport_prelaunch.py`
 3. Differentiability/objective reports:
@@ -127,6 +126,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- pending: Refactor nonlinear replicate spread diagnostics.
 - `2885a231` Refactor nonlinear gradient state runbook.
 - `f293792d` Refactor nonlinear gradient QL seed screening.
 - `fd7e6344` Refactor nonlinear gradient evidence gap report.

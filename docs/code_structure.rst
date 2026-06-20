@@ -406,7 +406,11 @@ Completed extractions:
   ``validation/nonlinear_transport/replicate_followup.py`` separates report
   normalization, classification-specific cross-run selection, dedupe/limits,
   state-plan packing, and config serialization so GPU follow-up campaigns stay
-  deterministic and reviewable.
+  deterministic and reviewable. Replicate-spread diagnostics in
+  ``validation/nonlinear_transport/replicate_diagnostics.py`` stage ensemble
+  row normalization, high/low variant selection, state classification,
+  replicate-row packing, and summary assembly so seed/timestep spread decisions
+  are testable without rerunning nonlinear simulations.
 - quasilinear nonlinear-window convergence metadata is split into focused
   config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
   modules under ``validation/quasilinear/window_*.py``. The public
