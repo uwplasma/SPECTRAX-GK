@@ -624,6 +624,11 @@ Recent behavior-preserving refactor commits on this branch include:
   diagnostic selection, and progress emission. Public explicit nonlinear
   behavior is unchanged; explicit-step tests, package export tests, static
   checks, and local repository gates passed.
+- this checkpoint: turbulent-heating diagnostics now separate species-axis
+  normalization, safe time increments, masked field derivatives, moment
+  reconstruction, and per-species heating assembly. Diagnostic formulas are
+  unchanged; zero-field, steady-state, resolved-sum, zero-dt, static, and local
+  repository gates passed.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
