@@ -120,6 +120,10 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: KBM explicit-time single-point path now separates
+  explicit-integrator policy construction, projected-rate fallbacks, direct
+  trace fitting, and final result packaging; focused KBM branch tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone scan public orchestration now builds one execution
   options object and delegates Krylov, reference-explicit, and saved-time
   solver-path selection to a focused dispatcher; focused Cyclone scan branch
