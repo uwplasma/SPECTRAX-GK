@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC/Boozer mode-21 linear context construction now
+  separates backend/example loading, VMEC state-parameter resolution,
+  compact linear grid/state-shape setup, geometry closure creation, and
+  solver/cache/matrix closure construction; focused solver-gradient module
+  tests, mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: reduced zonal-flow record normalization now separates
   per-record metric parsing, optional damping/recurrence accounting, axis
   construction, duplicate-aware tensor fill, and finite tensor completeness
