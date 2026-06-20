@@ -320,7 +320,11 @@ Completed extractions:
   ``validation/benchmarks/harness_zonal_metrics.py``, and
   ``validation/benchmarks/harness_scan.py``. The public
   ``validation/benchmarks/harness.py`` facade keeps existing imports and test
-  monkeypatch seams stable.
+  monkeypatch seams stable. Zonal-response metrics are staged as trace
+  coercion, initial-level normalization, tail residual extraction,
+  extrema/envelope detection, damping/frequency fits, and final
+  ``ZonalFlowResponseMetrics`` packing, keeping Rosenbluth-Hinton/GAM
+  conventions explicit.
 - zonal-response reference/trace normalization helpers:
   ``validation/zonal.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:

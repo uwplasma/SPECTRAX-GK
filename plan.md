@@ -493,6 +493,17 @@
   `py_compile`, differentiable-refactor manifest, repository-size manifest,
   warning-free Sphinx build, and `git diff --check`.
 
+- 2026-06-20: Continued zonal benchmark-harness simplification inside
+  `validation.benchmarks.harness_zonal_metrics` without changing the
+  Rosenbluth-Hinton/GAM metric schema. Zonal response extraction is now staged
+  as trace coercion, option normalization, initial-level normalization, tail
+  residual extraction, peak/envelope detection, damping/frequency fit dispatch,
+  and final `ZonalFlowResponseMetrics` packing. The public
+  `zonal_flow_response_metrics` owner dropped from 219 to 107 lines. Local
+  gates passed: focused zonal benchmark metric tests, Ruff, mypy, `py_compile`,
+  differentiable-refactor manifest, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
+
 - 2026-06-19: Continued differentiable VMEC-state sensitivity refactoring
   inside `geometry.vmec_state_sensitivity` without adding modules or changing
   public report schemas. Metric-tensor and field-line tensor reports now share
