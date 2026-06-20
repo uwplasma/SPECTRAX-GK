@@ -488,6 +488,13 @@ Recent behavior-preserving refactor commits on this branch include:
   return schema are unchanged; static checks, selected-ky CFL preservation,
   nonlinear CFL component gates, integration-marked adaptive-dt caps,
   architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: opt-in parallel linear RHS dispatch now separates route
+  normalization, serial aliasing, auto-backend resolution, Hermite-axis
+  admission checks, and each gated velocity backend (streaming-only,
+  electrostatic streaming, and electrostatic slices). The public dispatch
+  semantics and error messages are preserved; focused dispatch tests, helper
+  branch tests, serial-vs-parallel identity gates, architecture, repository-size,
+  and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
