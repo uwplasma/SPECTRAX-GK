@@ -1,3 +1,18 @@
+- 2026-06-20: Continued nonlinear-gradient matched-replicate follow-up
+  simplification inside `validation.nonlinear_gradient.followup_plan` without
+  changing the public `nonlinear_gradient_followup_plan` API, report schema,
+  action names, recommendations, seed planning policy, replicate-count formula,
+  or compatibility exports for `_required_replicates` and
+  `_planned_matched_runs`. The public planner now delegates config validation,
+  path/label normalization, source-ensemble extraction, metric extraction,
+  scalar gate classification, action/recommendation selection,
+  replicate-count estimation, planned-run annotation, candidate grouping,
+  next-action selection, and report packing to private helpers. The public
+  follow-up planner dropped from 191 to 41 lines. Local gates passed: full
+  nonlinear-gradient follow-up shard, focused follow-up planner shard, Ruff,
+  mypy, `py_compile`, differentiable-refactor manifest, repository-size
+  manifest, warning-free Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued differentiable VMEC transport branch-locality
   simplification inside `objectives.vmec_transport_branch` without changing the
   public `vmec_jax_transport_growth_branch_locality_report_from_states` API,
