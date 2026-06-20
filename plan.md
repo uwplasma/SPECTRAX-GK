@@ -175,6 +175,11 @@ Recent behavior-preserving refactor commits on this branch include:
   reporting, note construction, and calibration-point packing; focused
   quasilinear calibration tests, mypy, architecture, repository-size, and diff
   hygiene passed locally.
+- this checkpoint: quasilinear model-selection status construction now
+  separates artifact loading, candidate/claim-boundary context creation,
+  gate-row assembly, metric projection, and scoped-claim payload packing; the
+  full quasilinear model-selection/guardrail test files, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
