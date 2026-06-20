@@ -501,6 +501,14 @@ Recent behavior-preserving refactor commits on this branch include:
   unchanged; selected-ky linked FFT, periodic zero-shear, linked non-twist cache,
   geometry-grid twist-shift, static, architecture, repository-size, and
   diff-hygiene gates passed locally.
+- this checkpoint: linked FFT map construction now separates active-mode
+  selection, left/right neighbor-map construction, directional chain counting,
+  chain-length grouping, full-grid kx index restoration, linked chain index
+  packing, and linked kz construction. The public linked-map schema is
+  unchanged; linked-map unit tests, linked FFT operator identity/gather tests,
+  integration-marked selected-ky and one-link derivative tests, linked-cache
+  contracts, static checks, architecture, repository-size, and diff-hygiene
+  gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
