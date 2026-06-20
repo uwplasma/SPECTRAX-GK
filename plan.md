@@ -162,6 +162,12 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: zonal-flow response metrics now separate normalized-window
+  construction from peak/envelope frequency fitting, leaving residual,
+  Rosenbluth-Hinton/GAM normalization, branchwise damping, and invalid-input
+  behavior unchanged; focused benchmarking/zonal validation tests, mypy, Ruff,
+  architecture, repository-size, and differentiable-refactor manifests passed
+  locally.
 - this checkpoint: quasilinear calibration reports now separate report-control
   validation, calibration-point normalization, physical value checks,
   optional train-scale application, split metrics, claim-level selection, and
