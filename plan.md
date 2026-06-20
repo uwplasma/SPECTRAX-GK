@@ -530,6 +530,12 @@ Recent behavior-preserving refactor commits on this branch include:
   policies. The public jitted solver signatures are unchanged; the full Krylov
   core shard, integration-marked shift-invert smoke run, static checks,
   architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: fixed-step IMEX nonlinear diagnostic integration now uses
+  explicit preparation, runtime, diagnostic, and scan option bundles around the
+  compatibility entry point. The public
+  ``integrate_imex_nonlinear_diagnostics_impl`` signature and scan behavior are
+  unchanged; nonlinear IMEX unit tests, nonlinear package-export tests, static
+  checks, architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
