@@ -591,6 +591,13 @@ Recent behavior-preserving refactor commits on this branch include:
   Public contribution/component APIs and spectral/Laguerre semantics are
   unchanged; the full nonlinear bracket shard, static checks, architecture,
   repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: linked-field-line FFT operators now separate input
+  validation, flattened linked-chain state preparation, per-chain FFT updates,
+  covered-row discovery, gather/full-cover/scatter reconstruction paths, and
+  real-FFT conjugate restoration. Numerical routing for linked derivatives and
+  ``|k_z|`` hypercollision remains unchanged; linked-operator tests, linked
+  hypercollision regressions, static checks, architecture, repository-size, and
+  diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
