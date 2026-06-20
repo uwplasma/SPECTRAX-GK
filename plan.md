@@ -917,8 +917,16 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the KBM linear tranche: Ruff, mypy, KBM linear branch
   tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 3, concentrated in kinetic
-  scan control assembly, KBM beta scan, and ETG linear drivers.
+- 2026-06-20: split kinetic-electron scan control assembly into a typed
+  `_KineticScanControlRequest`, request construction from the public wrapper,
+  and a shorter setup/run/fit-control resolver.  This preserved
+  `run_kinetic_scan` inputs and scan output schema while removing the kinetic
+  control hotspot.
+- Focused gates passed for the kinetic scan tranche: Ruff, mypy, kinetic scan
+  branch tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 2, concentrated in KBM beta
+  scan and ETG linear drivers.
 
 ## Latest Release Log
 
