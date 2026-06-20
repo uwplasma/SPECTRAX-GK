@@ -85,14 +85,14 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, independent-work provenance helpers, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
-| Package coverage/release infrastructure | 98.5% | Latest local technical-release gates and targeted wide-coverage shards pass; tracked runtime-summary logs are pruned to compact provenance; confirm the queued CI run and rerun/verify the full package-wide coverage combine before release. |
-| Runtime/performance infrastructure | 97.5% | Regenerate panels only from fresh artifacts; profiler logs remain available in ignored local log roots while tracked summaries keep compact digests; profile before speedup claims. |
+| Refactor/testability | 99.9% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched in this branch are closed for the current release checkpoint. Remaining large functions are mostly validation/report orchestration; handle them only if a release gate, docs claim, or developer-usability issue requires it. |
+| Package coverage/release infrastructure | 99% | Local release-readiness, technical-release, architecture, size, performance, parallel, and quasilinear guardrail checks pass at `076fd458`. The latest completed CI run passed at `63cf42cd`; a current-head CI dispatch was requested and must be confirmed before tagging. |
+| Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
 | Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 97% | Release guardrails and docs status artifacts are current; tracked docs evidence is slimmer; final pass after CI and any remaining refactor/performance artifacts settle. |
+| Docs/readme/release polish | 98% | Release guardrails and docs status artifacts are current; tracked docs evidence is slimmer. Do one final README/docs consistency pass only after current-head CI is confirmed. |
 
 ## Current Refactor Queue
 
@@ -670,10 +670,37 @@ These remain explicit until stronger evidence exists:
 - W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
   extensions are post-release science lanes unless explicitly reprioritized.
 
+## Actual Open Lanes
+
+Release-blocking technical lanes are now narrow:
+
+1. Confirm CI on the current branch head `076fd458` after the current-head
+   workflow dispatch. The latest completed CI run is green but was for
+   `63cf42cd`.
+2. Run a final README/docs/release-scope consistency pass after current-head CI
+   is green, focused on stale claims and scoped wording rather than new figures.
+3. Run final local release gates immediately before tagging:
+   architecture, repository size, technical release status, release readiness,
+   package build, distribution metadata, and selected fast tests.
+4. Bump/tag/release only after the above are green and the branch is merged or
+   otherwise intentionally shipped.
+
+Deferred or non-blocking science/performance lanes:
+
+- Universal absolute quasilinear heat-flux prediction remains explicitly not
+  promoted; current release scope is model-development and screening guardrails.
+- Full production nonlinear turbulent-flux stellarator optimization still needs
+  broader long post-transient matched windows across surfaces/field lines.
+- Production nonlinear domain-decomposition speedup still needs an end-to-end
+  GPU speedup gate; current artifacts support diagnostic/identity claims only.
+- W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
+  extensions remain post-release science lanes.
+
 ## Immediate Next Steps
 
-1. Confirm CI result from the latest push and fix only concrete failures.
-2. Continue the refactor queue with the remaining core numerics/geometry and
-   identity-gated parallel/performance hotspots.
-3. Preserve repository-size margin before adding more docs or figures.
-4. Use `office` GPUs for the next simulation/performance lane that needs them.
+1. Confirm current-head CI and fix only concrete failures.
+2. If CI is green, do one focused docs/readme/release-scope sweep.
+3. Run final local release gates and package build.
+4. Prepare version bump, tag, and release notes for the next version.
+5. Use `office` GPUs only for a specific post-release science/performance lane
+   or if release validation exposes a GPU-specific failure.
