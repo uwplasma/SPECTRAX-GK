@@ -604,6 +604,12 @@ Recent behavior-preserving refactor commits on this branch include:
   shard-map behavior, and error policy are unchanged; the full velocity-sharding
   shard, static checks, architecture, repository-size, and diff-hygiene gates
   passed locally.
+- this checkpoint: whole-state nonlinear sharded integration now separates
+  state/dt/method setup, Hermitian projection and sharding constraints, nonlinear
+  RHS closure construction, explicit scan-step construction, device placement,
+  and final-only vs field-history dispatch. Public diagnostic sharded-integrator
+  behavior is unchanged; sharded integrator tests, static checks, architecture,
+  repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
