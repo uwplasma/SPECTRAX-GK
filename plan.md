@@ -185,10 +185,10 @@ Recent behavior-preserving refactor commits on this branch include:
   devices and ``3.13x`` on four while full-solver production speedup remains
   blocked until GPU/end-to-end gates pass.
 - this checkpoint: the matching two-GPU device-z transport-window profile was
-  rerun on ``office`` from a fresh shallow clone at commit ``06113c5``; identity
-  passed with maximum final-state absolute error ``7.45e-9`` and speedup
-  improved to ``1.48x``, but the route remains below the configured ``1.5x``
-  production speedup gate.
+  rerun on ``office`` after the compute-route identity fix; identity passed
+  with maximum final-state absolute error ``7.45e-9`` and speedup improved to
+  ``1.48x``, but the route remains below the configured ``1.5x`` production
+  speedup gate.
 - this checkpoint: follow-up two-GPU exploratory profiles on ``office`` showed
   that simply enlarging the diagnostic workload is not sufficient for a
   production nonlinear speedup claim: ``(4,16,96,96,64)`` reached only

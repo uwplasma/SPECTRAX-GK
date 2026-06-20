@@ -479,7 +479,8 @@ Completed extractions:
   profiler-backed nonlinear decomposition work can change routing without
   weakening the numerical-identity policy. The device-z route keeps sharding
   setup, fail-closed topology checks, shard-map RHS execution, transport-window
-  sampling, and final report packing as separate stages inside
+  sampling, compute-only final-state identity, and final report packing as
+  separate stages inside
   ``operators/nonlinear/device_z.py`` while report-schema construction remains
   in ``operators/nonlinear/device_z_reports.py``.
 - velocity-space parallelization is split into decomposition metadata
