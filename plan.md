@@ -204,6 +204,11 @@ Recent behavior-preserving refactor commits on this branch include:
   explicit Euler/RK2/RK3/RK4/SSPX3 update table from sharding/projector setup
   and scan wiring; the full sharded-integrator test file, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: fixed-ky KBM beta-scan orchestration now separates scan
+  option packing, per-beta sample dispatch, Krylov continuation updates,
+  mutable beta/growth/frequency accumulation, and public result assembly;
+  focused KBM branch tests, selected marker-overridden KBM benchmark tests,
+  mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
