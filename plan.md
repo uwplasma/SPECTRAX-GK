@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: Cyclone Krylov ky-scan branch-following now separates
+  per-ky point preparation, explicit/reduced seed resolution, dominant
+  eigenpair solve dispatch, raw continuation-state updates, and normalized
+  output writing; focused Cyclone scan branch tests, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: VMEC/Boozer mode-21 linear context construction now
   separates backend/example loading, VMEC state-parameter resolution,
   compact linear grid/state-shape setup, geometry closure creation, and
