@@ -130,6 +130,10 @@ Recent behavior-preserving refactor commits on this branch include:
   packing, batch execution, and public result assembly from the scan wrapper;
   focused kinetic scan branch tests, mypy, architecture, repository-size, and
   diff hygiene passed locally.
+- this checkpoint: Cyclone time-scan branches now separate shared run-control
+  packing, history-fit policy packing, batch execution, and public result
+  assembly from the signature-heavy scan entry point; focused Cyclone branch
+  tests, mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
