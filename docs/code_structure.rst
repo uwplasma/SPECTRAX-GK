@@ -645,6 +645,12 @@ fallback.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
+The KBM beta-scan owner keeps patchable numerical hooks local while staging
+shared setup, fit-window policy construction, kinetic-species index validation,
+per-beta state/cache construction, solver-path dispatch, Krylov continuation
+updates, and result packing through focused private helpers. The existing
+``kbm_beta_solver_paths`` module remains the owner of explicit-time, Krylov,
+streaming, and saved-time fitting details.
 The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
 policy between primary auto-window fitting and invalid-window fallback fitting,
 and configured-time versus fixed-time integration is split before signal

@@ -1,3 +1,19 @@
+- 2026-06-19: Continued KBM beta-scan owner refactoring inside
+  `validation.benchmarks.kbm_beta` without changing the public
+  `run_kbm_beta_scan` signature, default `LinearTerms(bpar=0.0)` policy,
+  reference-aligned diagnostic normalization, linked-boundary damping, species
+  index validation messages, Krylov continuation/fallback semantics,
+  explicit-time/saved-time/streaming branch order, or `LinearScanResult`
+  schema. The owner now delegates shared setup, fit-window policy creation,
+  patchable hook bundle creation, per-beta parameter/cache/state construction,
+  explicit/Krylov/saved-time sample fitting, continuation updates, and result
+  packing to focused private helpers in the same module. The public beta-scan
+  runner drops from 253 to 119 lines, with all new private helpers under 60
+  lines; the remaining length is mostly the intentionally preserved public
+  signature and compact beta loop. Focused KBM beta branch tests and
+  integration-marked KBM beta benchmark tests passed locally, along with Ruff,
+  mypy, and `py_compile`.
+
 - 2026-06-19: Continued ETG single-ky benchmark refactoring inside
   `validation.benchmarks.etg_linear` without changing the public
   `run_etg_linear` signature, ETG electrostatic default terms, normalization,
