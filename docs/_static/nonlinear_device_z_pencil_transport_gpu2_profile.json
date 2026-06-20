@@ -28,7 +28,28 @@
     "suggested_z_chunk_size": 8,
     "unchunked_fft_batch_count": 98304
   },
-  "hlo": {},
+  "hlo": {
+    "device_2": {
+      "all_reduce": 0,
+      "all_to_all": 0,
+      "collective_permute": 0,
+      "copy": 0,
+      "fft": 30,
+      "fusion": 0,
+      "line_count": 296,
+      "path": "/tmp/spectrax_device_z_gpu2_new_gate_hlo_device2.hlo.txt"
+    },
+    "serial": {
+      "all_reduce": 0,
+      "all_to_all": 0,
+      "collective_permute": 0,
+      "copy": 0,
+      "fft": 38,
+      "fusion": 0,
+      "line_count": 507,
+      "path": "/tmp/spectrax_device_z_gpu2_new_gate_hlo_serial.hlo.txt"
+    }
+  },
   "kind": "nonlinear_device_z_pencil_transport_window_profile",
   "max_fft_batch_count": 65536,
   "min_speedup": 1.5,
@@ -44,7 +65,7 @@
       "final_state_max_rel_error": 0.0,
       "identity_gate_elapsed_s": null,
       "identity_passed": true,
-      "median_s": 0.04431663919240236,
+      "median_s": 0.04435751028358936,
       "observable_gate_median_s": null,
       "observable_gate_overhead_vs_compute": null,
       "observable_gate_stats_s": {},
@@ -53,11 +74,11 @@
       "speedup_gate_passed": false,
       "speedup_vs_serial": 1.0,
       "stats": {
-        "max": 0.04432731121778488,
-        "mean": 0.04426374472677708,
-        "median": 0.04431663919240236,
-        "min": 0.044147283770143986,
-        "std": 8.246550327808715e-05
+        "max": 0.04437397699803114,
+        "mean": 0.04433763368676106,
+        "median": 0.04435751028358936,
+        "min": 0.04428141377866268,
+        "std": 4.0317876275662566e-05
       },
       "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true
@@ -70,22 +91,22 @@
       "device_count": 2,
       "final_state_max_abs_error": 7.450580596923828e-09,
       "final_state_max_rel_error": 8.765812825071403e-09,
-      "identity_gate_elapsed_s": 7.719743736088276,
+      "identity_gate_elapsed_s": 9.314959151670337,
       "identity_passed": true,
-      "median_s": 0.030026826076209545,
+      "median_s": 0.02994743175804615,
       "observable_gate_median_s": null,
       "observable_gate_overhead_vs_compute": null,
       "observable_gate_stats_s": {},
       "physical_flux_trace_max_abs_error": 8.881784197001252e-15,
       "physical_flux_trace_max_rel_error": 1.7763568394002505e-09,
       "speedup_gate_passed": false,
-      "speedup_vs_serial": 1.4759015514968041,
+      "speedup_vs_serial": 1.4811791088453377,
       "stats": {
-        "max": 0.03003453090786934,
-        "mean": 0.03002703965951999,
-        "median": 0.030026826076209545,
-        "min": 0.030019761994481087,
-        "std": 6.0312748260103754e-06
+        "max": 0.03000638075172901,
+        "mean": 0.029965564608573914,
+        "median": 0.02994743175804615,
+        "min": 0.02994288131594658,
+        "std": 2.8921097113450765e-05
       },
       "timing_scope": "compute_only_final_state_update",
       "transport_window_identity_passed": true,
@@ -131,8 +152,8 @@
         "dt": 0.0025,
         "field_energy_trace_max_abs_error": 7.152557373046875e-07,
         "field_energy_trace_max_rel_error": 1.996990022234968e-07,
-        "final_state_max_abs_error": 4.8488645916222595e-06,
-        "final_state_max_rel_error": 0.020623745396733284,
+        "final_state_max_abs_error": 7.450580596923828e-09,
+        "final_state_max_rel_error": 2.311162745627371e-07,
         "free_energy_trace_max_abs_error": 0.001953125,
         "free_energy_trace_max_rel_error": 4.047973334309063e-07,
         "identity_passed": true,
@@ -183,11 +204,11 @@
   ],
   "rtol": 0.0001,
   "serial_stats_s": {
-    "max": 0.04432731121778488,
-    "mean": 0.04426374472677708,
-    "median": 0.04431663919240236,
-    "min": 0.044147283770143986,
-    "std": 8.246550327808715e-05
+    "max": 0.04437397699803114,
+    "mean": 0.04433763368676106,
+    "median": 0.04435751028358936,
+    "min": 0.04428141377866268,
+    "std": 4.0317876275662566e-05
   },
   "shape": [
     4,
@@ -200,13 +221,19 @@
   "summary": {
     "all_active_identity_passed": true,
     "full_solver_speedup_claim_allowed": false,
-    "max_speedup_vs_serial": 1.4759015514968041,
+    "max_speedup_vs_serial": 1.4811791088453377,
     "status": "identity_timed_no_transport_speedup",
     "transport_window_speedup_claim_allowed": false
   },
   "timing_scope": "speedup rows time compute-only fixed-step final-state updates; observable_gate_* fields optionally time the scalar identity/transport diagnostics separately and are not included in the speedup gate",
   "trace": {
-    "requested": false
+    "file_count": 2,
+    "requested": true,
+    "sample_files": [
+      "pop-os.trace.json.gz",
+      "pop-os.xplane.pb"
+    ],
+    "trace_dir": "/tmp/spectrax_traces/device_z_gpu2_new_gate/device2"
   },
   "warmups": 1,
   "z_chunk_size": 8

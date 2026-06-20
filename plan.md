@@ -91,7 +91,7 @@ Percentages are engineering estimates, not completion claims.
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
-| Production nonlinear domain decomposition | 86% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
+| Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
 | Docs/readme/release polish | 95% | Final pass after refactor and performance artifacts settle. |
 
 ## Current Refactor Queue
@@ -181,8 +181,8 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: post-refactor device-z transport-window profiling refreshed
   the logical-CPU artifact on the ``(4,16,96,96,32)`` workload; serial-vs-sharded
   identity passed for final state, free energy, field energy, physical flux, and
-  bracket RMS, and the fixed-window micro-route reached ``1.77x`` on two CPU
-  devices and ``3.38x`` on four while full-solver production speedup remains
+  bracket RMS, and the fixed-window micro-route reached ``1.61x`` on two CPU
+  devices and ``3.13x`` on four while full-solver production speedup remains
   blocked until GPU/end-to-end gates pass.
 - this checkpoint: the matching two-GPU device-z transport-window profile was
   rerun on ``office`` from a fresh shallow clone at commit ``06113c5``; identity
@@ -192,10 +192,11 @@ Recent behavior-preserving refactor commits on this branch include:
 - this checkpoint: follow-up two-GPU exploratory profiles on ``office`` showed
   that simply enlarging the diagnostic workload is not sufficient for a
   production nonlinear speedup claim: ``(4,16,96,96,64)`` reached only
-  ``1.41x``, ``(4,16,128,128,32)`` reached only ``1.29x``, and a 16-step
-  ``(4,16,96,96,32)`` window failed the strict final-state identity tolerance
-  with maximum absolute error ``1.94e-5``. The next performance step is a deeper
-  end-to-end routing/identity fix, not another artifact refresh.
+  ``1.41x`` and ``(4,16,128,128,32)`` reached only ``1.29x``. A separate
+  16-step ``(4,16,96,96,32)`` run exposed an instrumentation-path final-state
+  mismatch, which is now fixed by comparing final states on the compute-only
+  jitted route used by the profiler while keeping scalar traces on the
+  instrumented path.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

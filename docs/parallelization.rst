@@ -265,8 +265,8 @@ The physical transport-window follow-up is tracked separately. The CPU profile
 ``docs/_static/nonlinear_device_z_pencil_transport_cpu4_profile.json`` advances
 the same serial and z-sharded routes for four fixed nonlinear steps and checks
 the final state plus free-energy, field-energy, physical-flux, and bracket-RMS
-traces. It passes the active identity gates and reaches ``1.77x`` on two
-logical CPU devices and ``3.38x`` on four. The two-GPU profile
+traces. It passes the active identity gates and reaches ``1.61x`` on two
+logical CPU devices and ``3.13x`` on four. The two-GPU profile
 ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_profile.json`` also
 passes transport-window identity, with maximum final-state absolute error
 ``7.45e-9``, but reaches only ``1.48x`` and remains below the ``1.5x`` speedup
