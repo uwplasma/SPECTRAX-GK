@@ -887,9 +887,16 @@ The next version should be cut only after these finite gates are satisfied:
   tests, explicit integration invalid-option entrypoint test, differentiable
   refactor manifest, architecture manifest, repository-size manifest, and
   `git diff --check`.
-- Remaining source functions at or above 100 lines: 8, concentrated in
-  Cyclone time-path routing, ETG scan wrappers, kinetic scan control assembly,
-  KBM/TEM linear wrappers, and KBM beta/ETG linear scan drivers.
+- 2026-06-20: split `run_cyclone_time_path` into a stable public facade plus a
+  typed `_CycloneTimePathRequest`, request-to-control assembly, and private
+  reference-aligned/saved-time dispatch.  This preserved the time-path branch
+  behavior while removing the largest remaining validation-driver hotspot.
+- Focused gates passed for the time-path tranche: Ruff, mypy, Cyclone linear
+  branch tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 7, concentrated in ETG scan
+  wrappers, kinetic scan control assembly, KBM/TEM linear wrappers, and KBM
+  beta/ETG linear scan drivers.
 
 ## Latest Release Log
 
