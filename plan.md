@@ -894,9 +894,17 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the time-path tranche: Ruff, mypy, Cyclone linear
   branch tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 7, concentrated in ETG scan
-  wrappers, kinetic scan control assembly, KBM/TEM linear wrappers, and KBM
-  beta/ETG linear scan drivers.
+- 2026-06-20: split the ETG ky-scan driver into a stable public facade, typed
+  `_ETGScanRequest`, request-to-setup/runtime assembly, and batch execution that
+  consumes `_ETGScanRuntimeOptions` plus the scan accumulator.  This removed the
+  two ETG scan hotspots while preserving scan result schemas and solver branch
+  behavior.
+- Focused gates passed for the ETG scan tranche: Ruff, mypy, ETG scan branch
+  tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 5, concentrated in kinetic
+  scan control assembly, KBM/TEM linear wrappers, and KBM beta/ETG linear scan
+  drivers.
 
 ## Latest Release Log
 
