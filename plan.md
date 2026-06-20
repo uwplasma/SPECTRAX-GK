@@ -170,6 +170,11 @@ Recent behavior-preserving refactor commits on this branch include:
   case resolution, scan option packing, per-ky beta-scan dispatch, mutable row
   accumulation, and public result assembly; focused KBM scan branch tests, mypy,
   architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: quasilinear calibration-window ingestion now separates
+  replicated-ensemble admission, CSV/NetCDF heat-flux extraction, convergence
+  reporting, note construction, and calibration-point packing; focused
+  quasilinear calibration tests, mypy, architecture, repository-size, and diff
+  hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
