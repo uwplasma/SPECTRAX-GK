@@ -162,6 +162,13 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: nonlinear-gradient replicated-window evidence now separates
+  input artifact row classification, unsupported-artifact handling,
+  convergence-window row construction, derived ensemble construction,
+  qualifying-row selection, and gate assembly from the public summary function;
+  the full nonlinear-gradient evidence test file, focused mypy, Ruff,
+  architecture, repository-size, and differentiable-refactor manifests passed
+  locally.
 - this checkpoint: nonlinear runtime artifact handoff now separates run-option
   packing, one-chunk execution/finite validation, optional artifact writing,
   checkpoint-advance policy, and the checkpoint loop from the public handoff
