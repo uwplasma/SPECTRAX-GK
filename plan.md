@@ -104,7 +104,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
    - `validation/benchmarks/etg_scan_paths.py`
    - `validation/benchmarks/kbm_linear.py`
 2. Nonlinear transport/optimization reports:
-   - `validation/stellarator/transport_prelaunch.py`
+   - Continue only if new hotspots appear after the next scan.
 3. Differentiability/objective reports:
    - `objectives/vmec_boozer_gradients.py`
    - `objectives/vmec_boozer_line_search.py`
@@ -125,7 +125,8 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
-- pending: Refactor nonlinear optimization guard orchestration.
+- pending: Refactor stellarator transport prelaunch report.
+- `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
 - `2885a231` Refactor nonlinear gradient state runbook.
 - `f293792d` Refactor nonlinear gradient QL seed screening.
