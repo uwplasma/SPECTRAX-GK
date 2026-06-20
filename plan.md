@@ -120,6 +120,10 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: geometry inverse-design reporting now separates input
+  validation, selected-observable construction, and Gauss-Newton iteration from
+  the AD/FD/UQ payload assembly; focused differentiable-geometry tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: quasilinear transport diagnostics now separate option
   validation, amplitude-normalized linear flux weights, species labels,
   saturation-rule application, and claim-scope metadata; focused quasilinear
