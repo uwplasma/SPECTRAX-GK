@@ -134,6 +134,11 @@ Recent behavior-preserving refactor commits on this branch include:
   packing, history-fit policy packing, batch execution, and public result
   assembly from the signature-heavy scan entry point; focused Cyclone branch
   tests, mypy, architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: TEM single-run time integration now separates fit-signal
+  validation, sampling/time-config resolution, integration routing,
+  signal extraction, window fitting, and public result packing; focused TEM
+  branch tests, mypy, architecture, repository-size, and diff hygiene passed
+  locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
