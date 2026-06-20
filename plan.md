@@ -598,6 +598,12 @@ Recent behavior-preserving refactor commits on this branch include:
   ``|k_z|`` hypercollision remains unchanged; linked-operator tests, linked
   hypercollision regressions, static checks, architecture, repository-size, and
   diff-hygiene gates passed locally.
+- this checkpoint: velocity-space parallel field and diamagnetic-drive helpers
+  now share single-species state/plan validation, Laguerre-weight normalization,
+  and Hermite-shard mesh/spec construction. Reference fallbacks, logical-device
+  shard-map behavior, and error policy are unchanged; the full velocity-sharding
+  shard, static checks, architecture, repository-size, and diff-hygiene gates
+  passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
