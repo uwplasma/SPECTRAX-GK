@@ -610,6 +610,11 @@ Recent behavior-preserving refactor commits on this branch include:
   and final-only vs field-history dispatch. Public diagnostic sharded-integrator
   behavior is unchanged; sharded integrator tests, static checks, architecture,
   repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: cached nonlinear IMEX scans now separate implicit-operator
+  resolution, state rank/dtype normalization, nonlinear-term and GMRES step
+  construction, checkpointed scan dispatch, and single-species output squeezing.
+  Public cached-IMEX behavior is unchanged; focused IMEX tests, cached nonlinear
+  forwarding tests, static checks, and local repository gates passed.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
