@@ -162,6 +162,11 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC field-line metric assembly now separates coordinate
+  gradient construction, HNGC field-line integrals, shear/pressure correction
+  factors, local-shear assembly, and metric/drift packing; the full VMEC
+  geometry helper test file, mypy, Ruff, architecture, repository-size, and
+  differentiable-refactor manifests passed locally.
 - this checkpoint: VMEC/Boozer aggregate line-search holdout reports now
   separate injected report dependencies, held-out improvement validation,
   train/holdout report execution, and public payload assembly from the public
