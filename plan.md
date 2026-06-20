@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: ETG scan orchestration now separates runtime scan options
+  and mutable batch accumulation from the public scan wrapper while preserving
+  Krylov continuation state; focused ETG runner branch tests, benchmark runner
+  branch tests, mypy, architecture, repository-size, and diff hygiene passed
+  locally.
 - this checkpoint: VMEC/Boozer boundary-chain summary classification now
   separates scalar metric collection, required-finite detection, nonfinite
   fail-closed payloads, and finite classification payloads; the full boundary
