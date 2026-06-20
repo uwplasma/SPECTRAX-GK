@@ -162,6 +162,11 @@ Efficient next refactor after `v1.6.7`:
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: Cyclone time-scan branch orchestration now routes public
+  scan arguments through a typed private input bundle, removing duplicated
+  keyword forwarding between the public wrapper and shared run/fit controls;
+  the full benchmark runner branch test file, mypy, Ruff, architecture,
+  repository-size, and differentiable-refactor manifests passed locally.
 - this checkpoint: zonal-flow response metrics now separate normalized-window
   construction from peak/envelope frequency fitting, leaving residual,
   Rosenbluth-Hinton/GAM normalization, branchwise damping, and invalid-input
