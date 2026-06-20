@@ -495,6 +495,12 @@ Recent behavior-preserving refactor commits on this branch include:
   semantics and error messages are preserved; focused dispatch tests, helper
   branch tests, serial-vs-parallel identity gates, architecture, repository-size,
   and diff-hygiene gates passed locally.
+- this checkpoint: linked-boundary linear-cache construction now separates kx
+  link maps, linked FFT/gather metadata, linked end-damping profile construction,
+  and final dictionary packing. Twist-shift and periodic/no-twist behavior are
+  unchanged; selected-ky linked FFT, periodic zero-shear, linked non-twist cache,
+  geometry-grid twist-shift, static, architecture, repository-size, and
+  diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
