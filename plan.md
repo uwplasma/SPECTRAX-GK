@@ -1,3 +1,12 @@
+- 2026-06-20: Removed the deprecated `jax.experimental.pjit.pjit` import from
+  `parallel.integrators` while preserving the module-level `pjit` monkeypatch
+  seam as a compatibility alias to `jax.jit`, which supports the same
+  `in_shardings`/`out_shardings` path used by the sharded integrator tests.
+  Local gates passed: sharded integrator shard, warning-as-error runtime
+  Diffrax smoke test, Ruff, mypy, `py_compile`, differentiable-refactor
+  manifest, repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Continued solver-objective gradient-gate simplification inside
   `objectives.gradient_gates` without changing public APIs, solver-ready
   geometry contracts, objective names, branch-continuity rules, implicit
