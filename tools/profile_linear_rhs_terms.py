@@ -32,6 +32,7 @@ from spectraxgk.terms.assembly import (
     compute_fields_cached,
 )
 from spectraxgk.terms.linear_terms import (
+    _hypercollision_kz_source,
     collisions_contribution,
     curvature_gradb_contribution,
     diamagnetic_contribution,
@@ -80,6 +81,12 @@ def _block_tree(tree) -> None:
         jax.block_until_ready(leaf)
 
 
+def _required_array(name: str, value: jnp.ndarray | None) -> jnp.ndarray:
+    if value is None:
+        raise RuntimeError(f"{name} must be built before linked profiling")
+    return value
+
+
 def _time_callable(fn, *args, repeats: int):
     out = fn(*args)
     _block_tree(out)
@@ -122,26 +129,6 @@ def _inject_z_wave(
     else:  # pragma: no cover - runtime state builder controls dimensionality.
         raise ValueError("state must have 5 or 6 dimensions")
     return state + perturbation
-
-
-def _hypercollision_kz_source(
-    G: jnp.ndarray,
-    *,
-    weight: jnp.ndarray,
-    hypercollisions_kz: jnp.ndarray,
-    nu_hyper_m: jnp.ndarray,
-    m_norm_kz_factor: jnp.ndarray,
-    vth: jnp.ndarray,
-    kpar_scale: jnp.ndarray,
-    mask_kz: jnp.ndarray,
-    m_pow: jnp.ndarray,
-) -> jnp.ndarray:
-    """Return the pre-``|k_z|`` source used by production hypercollisions."""
-
-    vth_s = vth[:, None, None, None, None, None]
-    kz_weight = jnp.asarray(weight) * jnp.asarray(hypercollisions_kz)
-    nu_hyp_m = nu_hyper_m * m_norm_kz_factor * 2.3 * vth_s * jnp.abs(kpar_scale)
-    return kz_weight * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
 
 
 def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
@@ -415,7 +402,7 @@ def main() -> None:
         "linked_grad_z": (
             jax.jit(
                 lambda: grad_z_linked_fft(
-                    streaming_rhs_pre_grad,
+                    _required_array("streaming_rhs_pre_grad", streaming_rhs_pre_grad),
                     dz=cache.dz,
                     linked_indices=cache.linked_indices,
                     linked_kz=cache.linked_kz,
@@ -518,7 +505,7 @@ def main() -> None:
         "linked_abs_kz": (
             jax.jit(
                 lambda: abs_z_linked_fft(
-                    hyper_kz_source,
+                    _required_array("hyper_kz_source", hyper_kz_source),
                     linked_indices=cache.linked_indices,
                     linked_kz=cache.linked_kz,
                     linked_inverse_permutation=cache.linked_inverse_permutation,

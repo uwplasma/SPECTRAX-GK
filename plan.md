@@ -456,6 +456,13 @@ Recent behavior-preserving refactor commits on this branch include:
 - `74e5115f` Refactor cached linear integrator stages.
 - `ad126cac` Refactor electromagnetic field solve stages.
 - `9bc5d905` Refactor VMEC Boozer finite difference gates.
+- this checkpoint: linear dissipation assembly now separates species collision
+  frequency validation, Laguerre collision-base construction, moment-restoring
+  collision corrections, constant hypercollision damping, parallel
+  hypercollision source construction, and linked/nonlinked ``|k_z|`` application.
+  The linear RHS profiler now reuses the production hypercollision source helper
+  and guards linked-only profiling inputs explicitly, reducing profiler/solver
+  drift while preserving the tested formulas.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
