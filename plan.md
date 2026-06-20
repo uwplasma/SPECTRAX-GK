@@ -509,6 +509,13 @@ Recent behavior-preserving refactor commits on this branch include:
   integration-marked selected-ky and one-link derivative tests, linked-cache
   contracts, static checks, architecture, repository-size, and diff-hygiene
   gates passed locally.
+- this checkpoint: log-linear growth-window selection now separates immutable
+  option validation, search-state preparation, candidate scoring, fallback
+  window selection, and positive-growth retry policy. The public
+  ``select_fit_window_loglinear`` API and fit-window semantics are unchanged;
+  focused log-linear validation/fallback tests, the full analysis diagnostic
+  shard, static checks, architecture, repository-size, and diff-hygiene gates
+  passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
