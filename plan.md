@@ -214,6 +214,12 @@ Recent behavior-preserving refactor commits on this branch include:
   construction, descent-control scaling, and launch-plan text construction; the
   full nonlinear-gradient follow-up test file, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: differentiated objective-portfolio sensitivity reporting
+  now separates portfolio weight packing, row/scalar objective function
+  construction, contract validation, scalar/row AD-FD gates, and final
+  conditioning/covariance payload assembly; focused stellarator/portfolio
+  sensitivity tests, mypy, architecture, repository-size, and diff hygiene
+  passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
