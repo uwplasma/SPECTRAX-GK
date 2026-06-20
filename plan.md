@@ -932,8 +932,14 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the KBM beta tranche: Ruff, mypy, KBM beta branch
   tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 1, concentrated in the ETG
-  linear driver.
+- 2026-06-20: split `run_etg_linear` into a stable public facade plus
+  `_ETGLinearRequest` and a private request runner.  The Krylov-first auto
+  solver policy, time-path fallback, fit-signal validation, and output schema
+  are unchanged.
+- Focused gates passed for the ETG linear tranche: Ruff, mypy, ETG linear branch
+  tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, release-readiness check, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 0.
 
 ## Latest Release Log
 
