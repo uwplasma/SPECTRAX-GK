@@ -536,6 +536,13 @@ Recent behavior-preserving refactor commits on this branch include:
   ``integrate_imex_nonlinear_diagnostics_impl`` signature and scan behavior are
   unchanged; nonlinear IMEX unit tests, nonlinear package-export tests, static
   checks, architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: standalone Miller weighted finite differences now separate
+  centered nonuniform-grid stencils, one-sided odd-parity endpoints, 1D
+  theta/radial contracts, and 2D theta/radial contracts. The legacy public
+  ``dermv`` shape and endpoint behavior are unchanged; Miller low-level tests,
+  standalone Miller generator tests, internal Miller backend tests, runtime
+  Miller config/helper tests, static checks, architecture, repository-size, and
+  diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
