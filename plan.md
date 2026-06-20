@@ -85,13 +85,13 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
+| Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate report builders, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
-| Production nonlinear domain decomposition | 80% | Identity-gated decomposed RHS/integrator plus CPU/GPU profiling before claims. |
+| Production nonlinear domain decomposition | 82% | Identity-gated decomposed RHS/integrator helpers are clearer; device-z route and CPU/GPU profiling still required before claims. |
 | Docs/readme/release polish | 95% | Final pass after refactor and performance artifacts settle. |
 
 ## Current Refactor Queue
@@ -111,8 +111,8 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
    - `geometry/vmec_boozer_core.py` closed for this checkpoint; reopen only if Boozer metric/drift staging grows again.
    - `geometry_backends/vmec_fieldline_numerics.py` closed for this checkpoint; reopen only if VMEC field-line metric/drift or flux-surface-average staging grows again.
 5. Parallel/performance hotspots, only with identity gates:
-   - `operators/nonlinear/domain_decomposition.py`
-   - `operators/nonlinear/spectral_identity_integrator.py`
+   - `operators/nonlinear/domain_decomposition.py` closed for this checkpoint; reopen only if local domain trace/report policy grows again.
+   - `operators/nonlinear/spectral_identity_integrator.py` closed for this checkpoint; reopen only if spectral transport-window trace/report policy grows again.
    - `operators/nonlinear/device_z.py`
    - `parallel/independent.py`
 
@@ -166,6 +166,10 @@ Recent behavior-preserving refactor commits on this branch include:
   gradient-vector packing, and flux-surface HNGC averaging into focused stages;
   Ruff, mypy, focused VMEC field-line helper tests, and repository/refactor
   manifests passed locally.
+- this checkpoint: nonlinear domain and spectral transport-window identity gates
+  now separate trace collection, trace-error scoring, fail-closed blockers, and
+  report packing while preserving diagnostic-only claim scope; focused nonlinear
+  parallel tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

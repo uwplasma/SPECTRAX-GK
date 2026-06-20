@@ -471,6 +471,13 @@ Completed extractions:
   ``operators/nonlinear/spectral_identity_rhs.py``,
   ``operators/nonlinear/spectral_identity_integrator.py``,
   ``operators/nonlinear/device_z.py``
+  The local-domain transport gate stages trace collection, trace-error scoring,
+  fail-closed blockers, and report packing in
+  ``operators/nonlinear/domain_decomposition.py``. The spectral fixed-window
+  and pencil-transport gates use the same structure in
+  ``operators/nonlinear/spectral_identity_integrator.py`` so future
+  profiler-backed nonlinear decomposition work can change routing without
+  weakening the numerical-identity policy.
 - velocity-space parallelization is split into decomposition metadata
   (``parallel/velocity_plan.py``), Hermite exchange and velocity-field
   reductions (``parallel/velocity_hermite.py``), streaming/magnetic-drift
