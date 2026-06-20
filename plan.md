@@ -1,17 +1,22 @@
 - 2026-06-19: Continued Cyclone single-mode solver-path refactoring inside
   `validation.benchmarks.cyclone_linear_paths` without changing the public
-  `run_cyclone_time_path` signature, reference-aligned explicit-time contract,
-  runtime-config versus fixed-step branch order, density/automatic-fit policy,
-  manual-window fallback behavior, status messages, normalization, or returned
-  `(gamma, omega, phi_t, t)` schema. The time path now delegates time-config
+  `run_cyclone_krylov_path` and `run_cyclone_time_path` signatures,
+  reference-aligned explicit-time contract, primary/reduced Krylov seed ladder,
+  shifted-eigenvalue targeting, seed branch guard, runtime-config versus
+  fixed-step branch order, density/automatic-fit policy, manual-window fallback
+  behavior, status messages, normalization, or returned
+  `(gamma, omega, phi_t, t)` schema. The Krylov path now delegates explicit
+  seed fitting, primary/reduced seed fallback, shift-target construction,
+  dominant-eigenpair option forwarding, branch-guard selection, field packing,
+  and normalization to named local stages. The time path delegates time-config
   resolution, reference-aligned explicit integration, configured runtime
   integration, unconfigured fixed-step integration, automatic-fit keyword
-  packing, and saved-trace fitting to named local stages. The time-path helper
-  drops from 231 to 145 lines; the remaining length is mostly the preserved
-  public signature and explicit status/branch orchestration. Focused Cyclone
-  linear branch tests and integration-marked Cyclone single-mode benchmark
-  tests passed locally, along with Ruff, mypy, and `py_compile`. The Krylov
-  seed/branch path remains an open follow-up in the same owner module.
+  packing, and saved-trace fitting to named local stages. The Krylov helper
+  drops from 172 to 58 lines and the time-path helper from 231 to 145 lines;
+  remaining length is mostly preserved public signatures and explicit
+  status/branch orchestration. Focused Cyclone linear branch tests and
+  integration-marked Cyclone single-mode benchmark tests passed locally, along
+  with Ruff, mypy, and `py_compile`.
 
 - 2026-06-19: Continued KBM beta-scan owner refactoring inside
   `validation.benchmarks.kbm_beta` without changing the public
