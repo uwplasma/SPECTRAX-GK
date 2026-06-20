@@ -571,6 +571,14 @@ Recent behavior-preserving refactor commits on this branch include:
   unchanged; direct hypercollision formula/skip/link tests, profiling helper
   tests, static checks, architecture, repository-size, and diff-hygiene gates
   passed locally.
+- this checkpoint: fixed-step linear integration dispatch now separates
+  sampling validation, cache construction, public method alias normalization,
+  implicit solver routing, non-serial explicit routing, and serial/donated
+  explicit routing. Public ``integrate_linear`` behavior is unchanged;
+  non-integration wrapper/cached-implementation routing tests, static checks,
+  architecture, repository-size, and diff-hygiene gates passed locally. The
+  small-grid ``tests/test_linear.py`` nodes remain integration-marked and are
+  not part of the bounded default local shard.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
