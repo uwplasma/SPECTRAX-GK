@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: Cyclone reference-aligned explicit-time scan now separates
+  per-ky point preparation, explicit trace fitting, branch-reselection
+  predicates, Krylov reselection fallback, and previous-frequency continuation
+  updates; focused Cyclone scan branch tests, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
