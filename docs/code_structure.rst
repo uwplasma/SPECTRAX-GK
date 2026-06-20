@@ -801,7 +801,9 @@ direct signal fitting, avoiding drift in late-window fit semantics. The Cyclone
 scan time path now keeps batch construction, per-batch time-configuration
 resolution, Diffrax streaming fits, saved/configured trajectory integration,
 and per-ky fit/appending policy as explicit helper seams inside the same branch
-owner.
+owner. The saved-time scan path carries separate run-options, fit-options, and
+output containers through a single batch router, so future fit-policy changes
+can be tested without modifying scan setup or result packing.
 Family-specific branch tests now patch the
 family owner modules directly, and examples/downstream scripts keep importing
 through ``spectraxgk.benchmarks``.
