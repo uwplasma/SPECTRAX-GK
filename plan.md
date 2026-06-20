@@ -120,6 +120,11 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: Cyclone scan public orchestration now builds one execution
+  options object and delegates Krylov, reference-explicit, and saved-time
+  solver-path selection to a focused dispatcher; focused Cyclone scan branch
+  tests, broader Cyclone benchmark-runner tests, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: TEM scan batching now separates runtime scan options,
   scalar/fixed-width ky iteration, branch routing, and mutable output
   accumulation from the public scan wrapper; focused TEM scan tests, broader
