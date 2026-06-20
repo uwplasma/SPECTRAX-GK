@@ -168,7 +168,11 @@ Completed extractions:
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
   sampled/imported flux-tube geometry data/loading:
   ``geometry/boundaries.py``, ``geometry/analytic.py``, and
-  ``geometry/flux_tube.py``
+  ``geometry/flux_tube.py``. Imported NetCDF/eik loading keeps schema
+  selection, scalar/profile reads, root-level terminal-theta inference,
+  mirror-term reconstruction, drift/Jacobian normalization, and
+  ``FluxTubeGeometryData`` packing as separate private stages so geometry-file
+  variants can be tested without one large loader body.
 - focused imported-geometry backends. ``geometry_backends.miller`` and
   ``geometry_backends.vmec`` are now stable facades, while numerics,
   field-line/core assembly, remap, IO, optional-backend discovery, and pipeline
