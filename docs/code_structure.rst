@@ -723,6 +723,10 @@ setup, state/cache construction, saved/configured trajectory integration,
 saved-signal fitting, and result packaging through focused helper seams in the
 public owner. The public beta runner still owns per-beta setup and time/diffrax
 fallback.
+Single-point KBM dispatch now passes one explicit run-options object through
+the explicit-time, Krylov, and saved-time helper paths, keeping solver selection
+separate from the numerical fitting and trajectory code that remains local to
+``kbm_linear``.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.

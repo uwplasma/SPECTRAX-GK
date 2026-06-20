@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 97% | Continue high-value hotspots; avoid adding file sprawl; keep focused tests green. |
+| Refactor/testability | 98% | Validation scan-runner hotspot tranche is closed for this checkpoint; continue only on higher-value architecture seams. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -99,7 +99,7 @@ Percentages are engineering estimates, not completion claims.
 Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 1. Validation/benchmark scan runners:
-   - `validation/benchmarks/kbm_linear.py`
+   - Closed for this checkpoint; reopen only if a new complexity or testability hotspot appears.
 2. Nonlinear transport/optimization reports:
    - Continue only if new hotspots appear after the next scan.
 3. Differentiability/objective reports:
@@ -132,6 +132,10 @@ Recent behavior-preserving refactor commits on this branch include:
   use explicit batch/fit contexts with staged streaming, configured-history,
   unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers;
   focused ETG scan branch tests and benchmark ETG scan tests passed locally.
+- this checkpoint: KBM single-point linear dispatch now carries one explicit
+  run-options object through explicit-time, Krylov, and saved-time solver-path
+  helpers; focused KBM branch tests and the broader KBM benchmark subset passed
+  locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
