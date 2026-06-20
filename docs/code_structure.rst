@@ -532,7 +532,11 @@ Completed extractions:
   control-variate candidate parsing/ranking policy and stage paired-label
   extraction, control-candidate construction, uncertainty propagation,
   campaign sizing, independent-control pairing, and report packing so noisy
-  follow-up campaign decisions stay deterministic. Matched-replicate follow-up planning is staged
+  follow-up campaign decisions stay deterministic. QL-seed screening now
+  separates artifact context, objective-gate metrics, blocker ordering, primary
+  control grouping, sign-consistency admission, and report summaries so
+  nonlinear-gradient control selection remains deterministic before spending
+  nonlinear GPU runs. Matched-replicate follow-up planning is staged
   as config validation, artifact metric extraction, scalar gate classification,
   replicate-count estimation, planned-run annotation, candidate grouping, and
   report packing so campaign actions remain fail-closed and auditable. Candidate

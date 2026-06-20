@@ -1,3 +1,13 @@
+- 2026-06-20: Continued nonlinear-gradient QL-seed screen simplification inside
+  `validation.nonlinear_gradient.followup_ql_seed` without changing public APIs,
+  exported private test seams, JSON report schema, blocker ordering, state
+  control arguments, next-action text, or tool artifact behavior. QL-seed
+  screening now stages artifact context extraction, objective-gate metrics,
+  blocker generation, primary-control grouping, sign-consistency admission,
+  control source-row packing, report summaries, and final payload assembly
+  through named helpers. Local gates passed: QL-seed screen shard, Ruff, mypy,
+  and `py_compile`.
+
 - 2026-06-20: Continued nonlinear turbulence-gradient evidence-gap
   simplification inside `validation.nonlinear_gradient.evidence_gap` without
   changing public APIs, facade re-exports, JSON report schema, claim-level
