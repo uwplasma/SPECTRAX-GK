@@ -899,7 +899,14 @@ shear, metric/drift coefficient assembly, flux-surface averaging, and centered
 field-line integral policies as focused helpers inside
 ``spectraxgk.geometry_backends.vmec_fieldline_numerics`` so the
 imported-geometry equations remain in one owner while the numerical kernels are
-unit-testable. ``spectraxgk.geometry_backends.vmec_fieldlines`` now keeps only
+unit-testable. The field-line metric/drift path is staged as curvature
+components, normalized metric profiles, magnetic-drift profiles,
+gradient-vector packing, and final coefficient assembly. The flux-surface
+Hegna-Nakajima average path is staged as grid construction, Boozer-geometry
+sampling, ``|grad psi|`` normalization, and Jacobian-weighted averages, which
+keeps each physics convention independently testable without splitting the
+VMEC-specific formulas across unrelated packages.
+``spectraxgk.geometry_backends.vmec_fieldlines`` now keeps only
 the imported-geometry orchestration stages in that file: backend fallback,
 scalar VMEC profile sampling, Boozer field-line state assembly,
 Hegna-Nakajima mode corrections, metric/drift coefficient assembly, and
