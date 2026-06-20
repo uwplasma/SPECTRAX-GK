@@ -86,7 +86,7 @@ Percentages are engineering estimates, not completion claims.
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
 | Refactor/testability | 99.9% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched in this branch are closed for the current release checkpoint. Remaining large functions are mostly validation/report orchestration; handle them only if a release gate, docs claim, or developer-usability issue requires it. |
-| Package coverage/release infrastructure | 99% | Local release-readiness, technical-release, architecture, size, performance, parallel, and quasilinear guardrail checks pass at `076fd458`; architecture and size gates pass after the plan-only release-closure updates. The latest completed CI run passed at `63cf42cd`; a current-head CI dispatch was requested and must be confirmed before tagging. |
+| Package coverage/release infrastructure | 99% | Local release-readiness, technical-release, architecture, size, performance, parallel, and quasilinear guardrail checks pass on this branch. Before tagging, confirm the final pushed commit has a green CI run rather than relying on an older checkpoint. |
 | Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
@@ -674,8 +674,8 @@ These remain explicit until stronger evidence exists:
 
 Release-blocking technical lanes are now narrow:
 
-1. Confirm CI on the current branch head. The latest completed CI run is green
-   but was for `63cf42cd`.
+1. Confirm CI on the final branch head. A green CI result is required for the
+   exact commit that will be merged or tagged.
 2. Run a final README/docs/release-scope consistency pass after current-head CI
    is green, focused on stale claims and scoped wording rather than new figures.
 3. Run final local release gates immediately before tagging:
