@@ -211,6 +211,10 @@ Completed extractions:
   construction, IMEX zero-term routing, and saved-result finalization so
   differentiable streaming fits can be audited without changing the public
   ``integrate_linear_diffrax_streaming`` contract.
+  The saved-field linear owner stages state/cache preparation, packed-state
+  sharding, RHS construction, save-field/mode extraction, save-time policy,
+  Diffrax solve execution, and final unpacking while keeping the public
+  ``integrate_linear_diffrax`` contract stable.
 - term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in

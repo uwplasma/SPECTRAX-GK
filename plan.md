@@ -1,3 +1,17 @@
+- 2026-06-20: Continued Diffrax linear-integration simplification inside
+  `solvers.time.diffrax_linear` without changing the public
+  `integrate_linear_diffrax` API, save-field strings, mode-selection behavior,
+  state-sharding constraints, explicit/IMEX/implicit solver routing,
+  adaptive-step policy, adjoint/checkpoint selection, or final return schema.
+  The public owner now stages state/cache preparation, packed-state sharding,
+  RHS construction, save-field extraction, mode extraction, save-time policy,
+  Diffrax solve execution, and final unpacking through named helpers.
+  `integrate_linear_diffrax` dropped from 175 to 80 lines. Local gates passed:
+  Diffrax integrator/core shard, targeted runtime Diffrax field/density
+  shard, Ruff, mypy, `py_compile`, differentiable-refactor manifest,
+  repository-size manifest, warning-free Sphinx build, and
+  `git diff --check`.
+
 - 2026-06-20: Continued quasilinear nonlinear-window ensemble simplification
   inside `validation.quasilinear.window_ensemble` without changing public
   report schemas, readiness-manifest schemas, seed/timestep replicate
