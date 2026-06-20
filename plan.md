@@ -152,6 +152,10 @@ Recent behavior-preserving refactor commits on this branch include:
   objective evaluation, derivative computation, and success payload assembly;
   focused differentiable-geometry bridge tests, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: nonlinear turbulence-gradient conditioning now separates
+  schema-variant metric extraction, production gate-row construction, and
+  public payload packing; the full nonlinear-gradient evidence test file, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
