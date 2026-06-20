@@ -228,6 +228,13 @@ Recent behavior-preserving refactor commits on this branch include:
   fixing a zero-reference tangent regression; differentiable-geometry and
   full differentiable-geometry-bridge shards, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: differentiable solver-objective evaluation now shares one
+  solver-geometry context builder and explicit operator-matrix route across
+  matrix, growth-rate, and full objective-vector evaluators. Dominant-branch
+  extraction and linear/quasilinear transport-weight computation are separate
+  helpers, reducing duplication in the stellarator optimization objective path;
+  the full solver-objective-gradient test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
