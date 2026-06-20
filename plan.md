@@ -585,6 +585,12 @@ Recent behavior-preserving refactor commits on this branch include:
   tolerances, sampled output semantics, and public behavior are unchanged;
   implicit preconditioner tests, sampled implicit-step tests, static checks,
   architecture, repository-size, and diff-hygiene gates passed locally.
+- this checkpoint: nonlinear electromagnetic bracket entry points now share a
+  prepared-path helper for state normalization, dealiased field preparation,
+  Laguerre-grid availability, and electrostatic-vs-electromagnetic routing.
+  Public contribution/component APIs and spectral/Laguerre semantics are
+  unchanged; the full nonlinear bracket shard, static checks, architecture,
+  repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
