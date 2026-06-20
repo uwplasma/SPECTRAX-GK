@@ -200,6 +200,10 @@ Recent behavior-preserving refactor commits on this branch include:
   baseline/candidate/selection qualification flags, and blocker construction;
   the full nonlinear transport optimization test file, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: diagnostic sharded nonlinear integration now separates the
+  explicit Euler/RK2/RK3/RK4/SSPX3 update table from sharding/projector setup
+  and scan wiring; the full sharded-integrator test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
