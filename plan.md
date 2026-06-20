@@ -161,6 +161,11 @@ Recent behavior-preserving refactor commits on this branch include:
   sensitivity classification, base report packing, and optional Jacobian
   diagnostics; focused VMEC transport-gradient tests, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: implicit eigenvalue branch-locality diagnostics now separate
+  tolerance validation, spectrum loading, per-side branch selection,
+  dominant-vs-nearest slope comparison, classification, and payload packing;
+  focused solver-objective gradient tests, mypy, architecture, repository-size,
+  and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
