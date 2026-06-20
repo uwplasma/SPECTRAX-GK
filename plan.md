@@ -86,13 +86,13 @@ Percentages are engineering estimates, not completion claims.
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
 | Refactor/testability | 99.9% | Explicit linear/nonlinear diagnostic integration, imported geometry loading, VMEC/Boozer core metric/drift assembly, VMEC field-line numerics, nonlinear identity-gate/device-z report builders, independent-work provenance helpers, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
-| Package coverage/release infrastructure | 98% | Latest local technical-release gates and targeted wide-coverage shards pass; confirm the queued CI run and rerun/verify the full package-wide coverage combine before release. |
-| Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
+| Package coverage/release infrastructure | 98.5% | Latest local technical-release gates and targeted wide-coverage shards pass; tracked runtime-summary logs are pruned to compact provenance; confirm the queued CI run and rerun/verify the full package-wide coverage combine before release. |
+| Runtime/performance infrastructure | 97.5% | Regenerate panels only from fresh artifacts; profiler logs remain available in ignored local log roots while tracked summaries keep compact digests; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
 | Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 96% | Release guardrails and docs status artifacts are current; final pass after CI and any remaining refactor/performance artifacts settle. |
+| Docs/readme/release polish | 97% | Release guardrails and docs status artifacts are current; tracked docs evidence is slimmer; final pass after CI and any remaining refactor/performance artifacts settle. |
 
 ## Current Refactor Queue
 
@@ -209,6 +209,12 @@ Recent behavior-preserving refactor commits on this branch include:
   geometry, objective, runtime, and artifact APIs. The guard is also routed
   through the fast release-artifacts CI shard so regressions are caught before
   the full wide-coverage combine.
+- this checkpoint: runtime/memory benchmark summaries now store compact
+  stdout/stderr byte counts and SHA-256 digests instead of embedding full
+  process logs in tracked JSON artifacts. The tracked release summary shrank
+  from about ``987 kB`` to about ``58 kB`` while preserving the numeric rows
+  needed to regenerate the runtime/memory panel; full logs remain in ignored
+  ``tools_out/runtime_memory_logs`` during local benchmark execution.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

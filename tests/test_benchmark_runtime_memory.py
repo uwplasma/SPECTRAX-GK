@@ -10,6 +10,7 @@ from tools.benchmark_runtime_memory import (
     _render,
     _run_command,
     _select_runs,
+    _summary_row,
     _write_row_logs,
     _write_summary,
 )
@@ -204,10 +205,40 @@ def test_runtime_memory_row_logs_are_written(tmp_path: Path) -> None:
 
 
 def test_runtime_memory_summary_is_written(tmp_path: Path) -> None:
-    rows = [{"case": "a", "backend": "spectrax_cpu", "status": "success"}]
+    rows = [
+        {
+            "case": "a",
+            "backend": "spectrax_cpu",
+            "status": "success",
+            "stdout": "long runtime log",
+            "stderr": "warning log",
+        }
+    ]
     out = tmp_path / "summary.json"
     _write_summary(out, rows)
-    assert '"case": "a"' in out.read_text(encoding="utf-8")
+    text = out.read_text(encoding="utf-8")
+    assert '"case": "a"' in text
+    assert "long runtime log" not in text
+    assert "warning log" not in text
+    assert '"stdout_bytes": 16' in text
+    assert '"stderr_bytes": 11' in text
+    assert '"stdout_sha256"' in text
+
+
+def test_runtime_memory_summary_row_prunes_existing_logs() -> None:
+    row = {
+        "case": "a",
+        "backend": "spectrax_cpu",
+        "stdout": "ok",
+        "stderr": "",
+    }
+    summary = _summary_row(row)
+    assert "stdout" not in summary
+    assert "stderr" not in summary
+    assert summary["stdout_bytes"] == 2
+    assert summary["stderr_bytes"] == 0
+    assert summary["stdout_sha256"]
+    assert summary["stderr_sha256"] == ""
 
 
 def test_runtime_memory_plot_supports_warm_runtime_markers(tmp_path: Path) -> None:
