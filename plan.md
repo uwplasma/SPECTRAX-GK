@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.5% | Validation scan runners and differentiability/objective report hotspots are closed for this checkpoint. |
+| Refactor/testability | 99.6% | Explicit linear time integration, validation scan runners, and differentiability/objective report hotspots are closed for this checkpoint. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -105,7 +105,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 3. Differentiability/objective reports:
    - Closed for this checkpoint; reopen only for new duplicated payload or gate logic.
 4. Core numerics/geometry hotspots, only with stronger local gates:
-   - `solvers/time/explicit.py`
+   - `solvers/time/explicit.py` closed for this checkpoint; reopen only if new loop-policy duplication appears.
    - `solvers/nonlinear/diagnostics.py`
    - `geometry/flux_tube.py`
    - `geometry/vmec_boozer_core.py`
@@ -144,6 +144,11 @@ Recent behavior-preserving refactor commits on this branch include:
   optimized-design generation, per-design diagnostics, gate booleans,
   comparison metrics, and differentiability-plumbing metadata into focused
   helpers; focused QA payload/artifact tests passed locally.
+- this checkpoint: explicit linear initial-value integration now stages method
+  validation, adaptive CFL timing, JIT stepper construction, sample-history
+  collection, progress emission, and array packaging behind the stable
+  `integrate_linear_explicit` facade; focused explicit/runtime tests passed
+  locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
@@ -196,7 +201,7 @@ These remain explicit until stronger evidence exists:
 ## Immediate Next Steps
 
 1. Confirm CI result from the latest push and fix only concrete failures.
-2. Continue the refactor queue with validation/benchmark scan runners or the
-   stellarator transport prelaunch report.
+2. Continue the refactor queue with the remaining core numerics/geometry and
+   identity-gated parallel/performance hotspots.
 3. Preserve repository-size margin before adding more docs or figures.
 4. Use `office` GPUs for the next simulation/performance lane that needs them.

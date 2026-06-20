@@ -197,10 +197,13 @@ Completed extractions:
   ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_diagnostics.py``,
   ``solvers/time/explicit_cfl.py``, and ``solvers/time/explicit_progress.py``. The public
   ``solvers.time.explicit`` module remains the import facade for existing
-  debug tools and tests. The diagnostics owner stages method/time-policy
-  validation, JIT stepper construction, energy/transport sampling, progress
-  rendering, and ``SimulationDiagnostics`` construction so saved explicit-time
-  benchmark paths exercise named numerical pieces instead of one monolithic loop.
+  debug tools and tests. Its linear IVP facade now keeps method validation,
+  adaptive CFL timing, JIT stepper construction, sample-history collection,
+  progress emission, and array packaging as named private stages. The
+  diagnostics owner separately stages method/time-policy validation, JIT stepper
+  construction, energy/transport sampling, progress rendering, and
+  ``SimulationDiagnostics`` construction so saved explicit-time benchmark paths
+  exercise named numerical pieces instead of one monolithic loop.
 - Diffrax time-integration internals. ``solvers/time/diffrax.py`` remains the
   public facade while optional dependency/policy helpers, linear save-path
   integration, streaming growth/frequency fits, and nonlinear integration live
