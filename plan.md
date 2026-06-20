@@ -98,6 +98,47 @@ Percentages are engineering estimates, not completion claims.
 
 Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
+### 2026-06-20 Refactor and Release Audit
+
+The current package has a domain-oriented structure and no root-prefix modules
+left under the architecture manifest, but it is still a large scientific code:
+roughly 359 package Python files and 103k source lines.  That size is now mostly
+from validation/reporting breadth rather than unresolved core-runtime
+spaghetti.  The most important remaining large-file clusters are:
+
+- validation benchmark orchestration (`validation/benchmarks/*`), especially
+  Cyclone, ETG, KBM, kinetic-electron, and TEM scan drivers;
+- VMEC/Boozer geometry reports and backend numerics
+  (`geometry/vmec_boozer_core.py`, `geometry_backends/vmec_fieldline_numerics.py`,
+  `geometry/vmec_flux_tube_reports.py`);
+- linear-cache construction and nonlinear term assembly
+  (`operators/linear/cache_builder.py`, `terms/nonlinear.py`);
+- workflow/report orchestration (`workflows/reduced_models.py`,
+  `workflows/runtime/*`, nonlinear IMEX diagnostics, and validation reports).
+
+Efficient release decision: do **not** try to collapse all of these before
+`v1.6.7`.  The current architecture, repository-size, technical-release,
+release-readiness, package-build, and focused release-scope gates already pass
+locally.  A broad pre-release collapse would mainly touch validation/report
+drivers and would risk destabilizing CI and documented artifacts without
+changing the release-scoped claims.
+
+Efficient next refactor after `v1.6.7`:
+
+1. Keep the domain packages but stop creating new one-off modules unless they
+   become shared extension points.
+2. Consolidate single-use validation/report helpers back into their nearest
+   domain package when that reduces navigation cost.
+3. Split only functions above roughly 100 lines when the split exposes a tested
+   policy boundary, removes duplicated logic, or makes a differentiable path
+   side-effect-free.
+4. Prefer short public facades plus private helpers over compatibility aliases
+   or legacy paths.
+5. Rename remaining comparison-code terminology only where it is not explicitly
+   a benchmark/comparison artifact.
+6. Preserve profiler and numerical-identity gates before changing nonlinear
+   RHS, field solve, or geometry kernels.
+
 1. Validation/benchmark scan runners:
    - Closed for this checkpoint; reopen only if a new complexity or testability hotspot appears.
 2. Nonlinear transport/optimization reports:
