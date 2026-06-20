@@ -195,6 +195,11 @@ Recent behavior-preserving refactor commits on this branch include:
   beta-prime evaluation, field-line solve dispatch, profile packing, and
   atomic NetCDF emission; the full VMEC backend/eik test pair, mypy,
   architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: matched nonlinear optimized-transport reporting now
+  separates schema variant extraction, reduction/uncertainty metric resolution,
+  baseline/candidate/selection qualification flags, and blocker construction;
+  the full nonlinear transport optimization test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
