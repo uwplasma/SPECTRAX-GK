@@ -937,7 +937,11 @@ bridge as radial Boozer-profile interpolation, equal-arc field-line
 construction, zero-beta metric/drift profile assembly, and final solver-ready
 mapping assembly; optional backend execution and Boozer radial-grid validation
 remain private helper seams so the public state-to-profile bridge stays
-focused on physics profile assembly. The core bridge delegates Boozer
+focused on physics profile assembly. Metric/drift profile assembly is further
+split into differential-geometry evaluation, raw metric coefficients, raw
+curvature-drift coefficients, open equal-arc remapping, and final
+``_MetricDriftProfiles`` packing so the tensor algebra and solver-normalized
+coefficients can be reviewed independently. The core bridge delegates Boozer
 field-line spectral sums, cylindrical derivatives, and coordinate-gradient
 algebra to
 ``spectraxgk.geometry.vmec_boozer_derivatives`` so the differentiable geometry
