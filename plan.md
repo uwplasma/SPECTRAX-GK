@@ -215,6 +215,12 @@ Recent behavior-preserving refactor commits on this branch include:
   from about ``987 kB`` to about ``58 kB`` while preserving the numeric rows
   needed to regenerate the runtime/memory panel; full logs remain in ignored
   ``tools_out/runtime_memory_logs`` during local benchmark execution.
+- this checkpoint: cETG reduced nonlinear runtime orchestration now separates
+  setup, adaptive chunked execution, and fixed-step execution behind the stable
+  public workflow function. The public nonlinear cETG entry point shrank from
+  the largest active workflow hotspot to a small dispatcher while preserving
+  the same integrator, dependency injection, progress messages, and runtime
+  result schema.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
