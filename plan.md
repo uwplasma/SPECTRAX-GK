@@ -226,6 +226,11 @@ Recent behavior-preserving refactor commits on this branch include:
   fitting, and result-packing helpers. The public linear cETG workflow remains
   API-compatible but is no longer responsible for grid construction, coefficient
   construction, integration, fitting, and output assembly in one block.
+- this checkpoint: runtime linear diagnostic fitting now separates input
+  normalization, automatic phi/density candidate scoring, explicit-signal
+  fitting, eigenfunction extraction, and result packing. A focused regression
+  test covers automatic selection of the higher-scored density channel so the
+  executable fit-signal policy remains stable after the split.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.

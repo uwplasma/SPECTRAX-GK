@@ -1026,6 +1026,42 @@ def test_fit_runtime_linear_diagnostics_density_fit_contract() -> None:
     np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
 
 
+def test_fit_runtime_linear_diagnostics_auto_selects_best_scored_channel() -> None:
+    t = np.asarray([0.0, 1.0, 2.0])
+    phi = np.ones((3, 1, 1, 1), dtype=np.complex128)
+    density = np.asarray([1.0, 2.0, 4.0], dtype=np.complex128)[:, None, None, None]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    def _fake_auto_stats(t_arr, signal, **_kwargs):  # type: ignore[no-untyped-def]
+        score = 10.0 if float(np.real(signal[-1])) > 1.5 else 1.0
+        return 0.1 * score, -0.2, float(t_arr[0]), float(t_arr[-1]), score, 0.0
+
+    out = fit_runtime_linear_diagnostics(
+        t=t,
+        phi_t=phi,
+        density_t=density,
+        selection=sel,
+        z=np.asarray([0.0]),
+        fit_signal="auto",
+        mode_method="z_index",
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=1.0,
+        min_points=3,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        fit_growth_rate_auto_with_stats_fn=_fake_auto_stats,
+        extract_eigenfunction_fn=lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j]),
+    )
+
+    assert out.fit_signal_used == "density"
+    assert out.gamma == pytest.approx(1.0)
+    np.testing.assert_allclose(out.signal, density[:, 0, 0, 0])
+
+
 def test_run_cetg_linear_runtime_dependency_contract() -> None:
     cfg = replace(_base_cfg(), physics=replace(_base_cfg().physics, reduced_model="cetg"))
     grid = build_spectral_grid(cfg.grid)
