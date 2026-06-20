@@ -185,6 +185,11 @@ Recent behavior-preserving refactor commits on this branch include:
   solver dispatch, signal/eigenfunction extraction, plot writing, artifact
   writing, and result reporting; the full CLI test file, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: linear runtime artifact writing now separates scan/runtime
+  path targets, summary construction, quasilinear spectrum column projection,
+  timeseries/eigenfunction/state writers, and quasilinear bundle merging while
+  preserving saved-output schemas; the combined runtime artifact and CLI test
+  files, mypy, architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
