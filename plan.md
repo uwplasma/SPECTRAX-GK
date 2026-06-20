@@ -221,6 +221,11 @@ Recent behavior-preserving refactor commits on this branch include:
   the largest active workflow hotspot to a small dispatcher while preserving
   the same integrator, dependency injection, progress messages, and runtime
   result schema.
+- this checkpoint: cETG reduced linear runtime orchestration now mirrors that
+  staged structure with explicit setup, time-series integration, growth/frequency
+  fitting, and result-packing helpers. The public linear cETG workflow remains
+  API-compatible but is no longer responsible for grid construction, coefficient
+  construction, integration, fitting, and output assembly in one block.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
