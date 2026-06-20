@@ -615,6 +615,10 @@ Recent behavior-preserving refactor commits on this branch include:
   construction, checkpointed scan dispatch, and single-species output squeezing.
   Public cached-IMEX behavior is unchanged; focused IMEX tests, cached nonlinear
   forwarding tests, static checks, and local repository gates passed.
+- this checkpoint: linear explicit stepping now separates the reusable staged
+  RHS closure, RK3/RK4/SSPX3/K10 formulas, method dispatch, post-step spectral
+  masking, and final field solve. Public explicit-step behavior is unchanged;
+  scalar amplification, mask, static, and repository gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
