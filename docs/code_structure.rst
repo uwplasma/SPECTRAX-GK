@@ -366,6 +366,10 @@ Completed extractions:
   VMEC-state coefficient context, one perturbation helper, and one three-point
   response/curvature diagnostic so scalar and aggregate sensitivity gates use
   the same finite-value, response-resolution, and curvature policy. Scalar and
+  aggregate reports now keep aggregate surface/field-line/``ky`` planning,
+  three-point VMEC-state evaluation, weighted-sample metadata, and payload
+  assembly in separate helpers so optimizer-facing sensitivity reports remain
+  auditable without changing their public JSON schema. Scalar and
   aggregate VMEC/Boozer line-search reports share one private curvature-gated
   one-parameter search loop, keeping finite-difference, training, and
   held-out aggregate gates on the same accept/reject policy. Solver-ready

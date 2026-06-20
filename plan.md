@@ -1,3 +1,14 @@
+- 2026-06-20: Continued VMEC/Boozer finite-difference objective-gate
+  simplification inside `objectives.vmec_boozer_fd` without changing public
+  APIs, report schemas, injected test seams, aggregate sampling semantics,
+  finite-value/response/curvature gates, or promotion guardrails. The
+  aggregate report now stages dependency injection, surface/alpha/ky sample
+  planning, three-point VMEC-state perturbation evaluation, finite-difference
+  diagnostics, weighted sample metadata, and payload packing through named
+  helpers. `vmec_boozer_aggregate_scalar_objective_finite_difference_report`
+  dropped from 168 to 76 lines. Local gates passed: VMEC/Boozer gradient module
+  shard, solver-objective gradient shard, Ruff, mypy, and `py_compile`.
+
 - 2026-06-20: Continued VMEC-JAX nonlinear transport campaign-admission
   simplification inside `validation.stellarator.transport_campaign` without
   changing the public API, report schema, campaign-only claim scope,
