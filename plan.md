@@ -910,8 +910,15 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the TEM tranche: Ruff, mypy, TEM branch tests,
   differentiable refactor manifest, architecture manifest, repository-size
   manifest, and `git diff --check`.
-- Remaining source functions at or above 100 lines: 4, concentrated in kinetic
-  scan control assembly, KBM linear, KBM beta scan, and ETG linear drivers.
+- 2026-06-20: split `run_kbm_linear` into a stable public facade plus
+  `_KBMLinearRequest`, request-to-setup/options assembly, and private solver
+  dispatch.  Existing KBM setup/state/solver helpers were reused, preserving
+  solver selection and output schemas.
+- Focused gates passed for the KBM linear tranche: Ruff, mypy, KBM linear branch
+  tests, differentiable refactor manifest, architecture manifest,
+  repository-size manifest, and `git diff --check`.
+- Remaining source functions at or above 100 lines: 3, concentrated in kinetic
+  scan control assembly, KBM beta scan, and ETG linear drivers.
 
 ## Latest Release Log
 
