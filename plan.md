@@ -156,6 +156,11 @@ Recent behavior-preserving refactor commits on this branch include:
   schema-variant metric extraction, production gate-row construction, and
   public payload packing; the full nonlinear-gradient evidence test file, mypy,
   architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: VMEC-JAX transport-gradient diagnostics now separate active
+  parameter resolution, optimizer residual/objective/gradient evaluation,
+  sensitivity classification, base report packing, and optional Jacobian
+  diagnostics; focused VMEC transport-gradient tests, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
