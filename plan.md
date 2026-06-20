@@ -143,6 +143,10 @@ Recent behavior-preserving refactor commits on this branch include:
   time/fit controls and the saved-trace branch from the public entry point while
   preserving the reference-aligned explicit branch; focused Cyclone branch tests,
   mypy, architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: full linear runtime dispatch now separates Krylov
+  eigenvector finalization and auto-solver fallback acceptance from the public
+  workflow entry point; focused linear runtime integration tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
