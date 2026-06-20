@@ -543,6 +543,13 @@ Recent behavior-preserving refactor commits on this branch include:
   standalone Miller generator tests, internal Miller backend tests, runtime
   Miller config/helper tests, static checks, architecture, repository-size, and
   diff-hygiene gates passed locally.
+- this checkpoint: streaming Diffrax linear integration now separates fit-window
+  and monitored-mode options, solve/JIT/sharding options, packed-state
+  preparation, Diffrax term construction, solve execution, and output
+  finalization. The public ``integrate_linear_diffrax_streaming`` signature and
+  streamed growth/frequency semantics are unchanged; focused Diffrax streaming
+  tests, benchmark streaming-hook tests, static checks, architecture,
+  repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
