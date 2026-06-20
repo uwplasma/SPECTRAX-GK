@@ -579,6 +579,12 @@ Recent behavior-preserving refactor commits on this branch include:
   architecture, repository-size, and diff-hygiene gates passed locally. The
   small-grid ``tests/test_linear.py`` nodes remain integration-marked and are
   not part of the bounded default local shard.
+- this checkpoint: implicit linear integration now separates fixed-point GMRES
+  warm-start construction, one-step GMRES solve routing, and field diagnostic
+  evaluation from the scan driver. Preconditioner construction, solve
+  tolerances, sampled output semantics, and public behavior are unchanged;
+  implicit preconditioner tests, sampled implicit-step tests, static checks,
+  architecture, repository-size, and diff-hygiene gates passed locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
