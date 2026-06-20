@@ -246,6 +246,12 @@ Recent behavior-preserving refactor commits on this branch include:
   envelope-fit rendering, annotation text, and axis styling while preserving the
   public ``zonal_flow_response_figure`` contract; the full plotting test file,
   mypy, architecture, repository-size, and diff hygiene passed locally.
+- this checkpoint: VMEC/Boozer transport-candidate admission now separates
+  candidate annotation, baseline selection/state construction, metric
+  improvement gates, admitted-candidate collection, promotion selection, and
+  report payload assembly while preserving the existing long-window audit
+  policy; the full VMEC-JAX transport-admission test file, mypy, architecture,
+  repository-size, and diff hygiene passed locally.
 - this checkpoint: KBM single-point linear paths now separate explicit
   integrator policy construction, projected-rate fallbacks, direct trace
   fitting, Krylov target eigenpair evaluation, multi-target branch selection,
