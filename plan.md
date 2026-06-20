@@ -1,3 +1,23 @@
+- 2026-06-20: Continued nonlinear-gradient variance/control-variate follow-up
+  simplification inside `validation.nonlinear_gradient.followup_variance`
+  without changing public APIs, report schemas, action names, blocker names,
+  paired finite-difference formulas, control-variate formulas, independent
+  control-mean uncertainty propagation, or campaign run-pair planning. The
+  variance plan now stages config validation, source-ensemble extraction,
+  paired-label rows, control-candidate construction, required-pair estimates,
+  action selection, and report packing. The control-variate campaign now
+  stages candidate scalar extraction, blocker classification, independent
+  control-mean sizing, planned pairs, and report packing. The control-mean
+  gate now stages candidate values, ensemble pairing, uncertainty combination,
+  pair rows, and final packing. Public owners dropped to 83 lines
+  (`nonlinear_gradient_variance_reduction_plan`), 36 lines
+  (`nonlinear_gradient_control_variate_campaign_plan`), and 57 lines
+  (`nonlinear_gradient_control_mean_gate`). Local gates passed: nonlinear
+  gradient follow-up shard, control-mean postprocess shard, adjacent
+  nonlinear-gradient evidence/audit shard, Ruff, mypy, `py_compile`,
+  differentiable-refactor manifest, repository-size manifest, warning-free
+  Sphinx build, and `git diff --check`.
+
 - 2026-06-20: Continued Diffrax nonlinear-integration simplification inside
   `solvers.time.diffrax_nonlinear` without changing the public
   `integrate_nonlinear_diffrax` API, explicit/IMEX term split, adaptive-step

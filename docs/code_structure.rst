@@ -505,8 +505,10 @@ Completed extractions:
   ``validation/nonlinear_gradient/followup_state_runbook.py``,
   ``validation/nonlinear_gradient/followup_variance.py``. Variance-reduction,
   control-mean campaign, and control-mean gate reports share one
-  control-variate candidate parsing/ranking policy so noisy follow-up campaign
-  decisions stay deterministic. Matched-replicate follow-up planning is staged
+  control-variate candidate parsing/ranking policy and stage paired-label
+  extraction, control-candidate construction, uncertainty propagation,
+  campaign sizing, independent-control pairing, and report packing so noisy
+  follow-up campaign decisions stay deterministic. Matched-replicate follow-up planning is staged
   as config validation, artifact metric extraction, scalar gate classification,
   replicate-count estimation, planned-run annotation, candidate grouping, and
   report packing so campaign actions remain fail-closed and auditable.
