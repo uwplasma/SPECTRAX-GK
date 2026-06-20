@@ -474,6 +474,13 @@ Recent behavior-preserving refactor commits on this branch include:
   regression shard and the production-vs-sharded diamagnetic drive identity
   check passed locally, with the multi-device logical-device case skipped on
   this single-device backend as expected.
+- this checkpoint: the nonlinear scan integrator now separates method
+  validation, projection, RHS casting, optional progress callbacks, and each
+  explicit update family (Euler, RK2, RK3/SSP-like variants, RK4, and K10)
+  into traceable helpers. The public jitted scan API and field-history schema
+  are unchanged; method-amplification, observed-order, projection, progress,
+  nonlinear smoke, architecture, repository-size, and diff-hygiene gates passed
+  locally.
 
 Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
 `py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
