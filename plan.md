@@ -1,3 +1,14 @@
+- 2026-06-20: Continued nonlinear turbulence-gradient evidence-gap
+  simplification inside `validation.nonlinear_gradient.evidence_gap` without
+  changing public APIs, facade re-exports, JSON report schema, claim-level
+  strings, blocker names, required-campaign layout, finite-difference audit
+  fields, or fail-closed promotion semantics. Gap reporting now stages config
+  resolution, report normalization, production-candidate detection, failed-gate
+  extraction, missing-evidence rows, finite-difference audit contract assembly,
+  campaign requirements, and final payload packing through named helpers. Local
+  gates passed: full nonlinear-gradient evidence shard, Ruff, mypy, and
+  `py_compile`.
+
 - 2026-06-20: Continued nonlinear turbulence-gradient candidate-design
   simplification inside `validation.nonlinear_gradient.followup_candidate`
   without changing public APIs, exported private test seams, JSON report schema,

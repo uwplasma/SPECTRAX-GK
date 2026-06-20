@@ -557,7 +557,11 @@ Completed extractions:
   Candidate ranking is staged as artifact classification, conditioning metric
   extraction, normalized margin scoring, pass/fail group construction,
   recommendation selection, and JSON-ready report packing, keeping
-  nonlinear-gradient promotion guardrails explicit.
+  nonlinear-gradient promotion guardrails explicit. Evidence-gap reporting now
+  separates input normalization, production-candidate detection, failed-gate
+  extraction, missing-evidence rows, finite-difference audit contracts, campaign
+  run requirements, and final payload assembly so production nonlinear-gradient
+  promotion remains fail-closed and reviewable.
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema
