@@ -381,7 +381,11 @@ Completed extractions:
   aggregate reports now keep aggregate surface/field-line/``ky`` planning,
   three-point VMEC-state evaluation, weighted-sample metadata, and payload
   assembly in separate helpers so optimizer-facing sensitivity reports remain
-  auditable without changing their public JSON schema. Scalar and
+  auditable without changing their public JSON schema. Mode-21 VMEC/Boozer
+  gradient reports now share context construction, observable-vector assembly,
+  implicit sensitivity-gate execution, and common payload metadata, while the
+  public report functions remain the physics-facing entry points for linear,
+  quasilinear, and reduced nonlinear-window differentiability claims. Scalar and
   aggregate VMEC/Boozer line-search reports share one private curvature-gated
   one-parameter search loop, keeping finite-difference, training, and
   held-out aggregate gates on the same accept/reject policy. Solver-ready

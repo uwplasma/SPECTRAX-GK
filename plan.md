@@ -85,7 +85,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 98% | Validation scan-runner hotspot tranche is closed for this checkpoint; continue only on higher-value architecture seams. |
+| Refactor/testability | 98.5% | Validation scan-runner hotspot tranche is closed; differentiability gradient reports now share observable/gate/payload seams. |
 | Package coverage/release infrastructure | 97% | Confirm latest CI; rerun package-wide coverage shard before release. |
 | Runtime/performance infrastructure | 97% | Regenerate panels only from fresh artifacts; profile before speedup claims. |
 | Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
@@ -103,7 +103,6 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 2. Nonlinear transport/optimization reports:
    - Continue only if new hotspots appear after the next scan.
 3. Differentiability/objective reports:
-   - `objectives/vmec_boozer_gradients.py`
    - `objectives/vmec_boozer_line_search.py`
    - `objectives/qa_low_turbulence_artifacts.py`
 4. Core numerics/geometry hotspots, only with stronger local gates:
@@ -136,6 +135,9 @@ Recent behavior-preserving refactor commits on this branch include:
   run-options object through explicit-time, Krylov, and saved-time solver-path
   helpers; focused KBM branch tests and the broader KBM benchmark subset passed
   locally.
+- this checkpoint: mode-21 VMEC/Boozer gradient reports now share context,
+  observable-vector, sensitivity-gate, and payload-assembly helpers while
+  preserving injected test hooks; focused gradient-gate tests passed locally.
 - `53c99703` Refactor stellarator transport prelaunch report.
 - `f39eda6f` Refactor nonlinear optimization guard orchestration.
 - `726ccdab` Refactor nonlinear replicate spread diagnostics.
