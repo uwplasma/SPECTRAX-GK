@@ -235,6 +235,13 @@ Recent behavior-preserving refactor commits on this branch include:
   helpers, reducing duplication in the stellarator optimization objective path;
   the full solver-objective-gradient test file, mypy, architecture,
   repository-size, and diff hygiene passed locally.
+- this checkpoint: VMEC-JAX flux-tube array parity reporting now separates
+  validated parity options, backend availability checks, direct/imported
+  geometry loading, production metric evaluation, equal-arc parity evaluation,
+  exception payloads, and final report packing while preserving the public
+  parity schema and thresholds; focused flux-tube parity tests, the full
+  differentiable-geometry-bridge shard, mypy, architecture, repository-size,
+  and diff hygiene passed locally.
 - this checkpoint: Cyclone Krylov ky-scan branch-following now separates
   per-ky point preparation, explicit/reduced seed resolution, dominant
   eigenpair solve dispatch, raw continuation-state updates, and normalized
