@@ -215,6 +215,10 @@ Completed extractions:
   sharding, RHS construction, save-field/mode extraction, save-time policy,
   Diffrax solve execution, and final unpacking while keeping the public
   ``integrate_linear_diffrax`` contract stable.
+  The fixed-step cached linear integrator stages method validation,
+  state/damping preparation, serial/parallel RHS routing, RK/IMEX/SSPX3
+  stepping, progress callbacks, and sample-stride scans separately while
+  keeping the public ``integrate_linear`` and donated-buffer wrappers stable.
   The nonlinear owner stages state/cache preparation, packed-state sharding,
   linear and nonlinear RHS construction, IMEX term routing, saved-``phi``
   extraction, solve execution, and final ``FieldState`` packing while keeping

@@ -1,3 +1,14 @@
+- 2026-06-20: Continued cached linear fixed-step integrator simplification
+  inside `solvers.linear.integrators` without changing public APIs, JIT static
+  arguments, donated-buffer wrapper behavior, serial/parallel RHS routing,
+  RK/IMEX/SSPX3 formulas, progress callback policy, or sample-stride scan
+  semantics. `_integrate_linear_cached_impl` now stages method validation,
+  state/damping preparation, RHS selection, advance formulas, progress
+  emission, and sampled scans through named helpers, dropping from 163 to
+  77 lines. Local gates passed: cached-integrator focused shard,
+  fast-smoke/linear-helper shard, `tests/test_linear.py -k integrate_linear`,
+  Ruff, mypy, and `py_compile`.
+
 - 2026-06-20: Continued core field-solve simplification inside
   `terms.fields` without changing the public `solve_fields` API, custom-VJP
   boundary, electrostatic/adiabatic-electron quasineutrality convention,
