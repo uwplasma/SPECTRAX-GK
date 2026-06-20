@@ -120,6 +120,10 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 Recent behavior-preserving refactor commits on this branch include:
 
+- this checkpoint: VMEC flux-tube cut/remap code now separates field-line
+  sample extraction, interpolation, crossing selection, aspect-cut root solving,
+  and public cut orchestration; full VMEC backend helper tests, mypy,
+  architecture, repository-size, and diff hygiene passed locally.
 - this checkpoint: external-VMEC holdout runbook generation now separates
   gap-report context extraction, candidate ranking, launch-command construction,
   and fail-closed acceptance-gate policy; focused external-holdout/runbook tests,
