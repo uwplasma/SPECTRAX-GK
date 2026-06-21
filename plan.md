@@ -30,13 +30,14 @@ manifests, then this execution file.
 Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current source-simplification head: `3495ad40 Simplify reduced QA core features`.
+- Current source-simplification head:
+  `313c70ac Simplify quasilinear transport payload assembly`.
 - Worktree at audit start: clean before the reduced-QA source tranche.
 - Latest CI state at audit: newest `main` run queued; preceding runs were
   cancelled by newer pushes rather than completed failures.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 37 functions
+- Function-length audit: 0 source functions at or above 90 lines, 36 functions
   in the 80-89 line band, and 115 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Repository-size audit: architecture and size manifests pass. Tracked content
@@ -71,8 +72,8 @@ Last audited: 2026-06-21 on `main`.
   runtime dispatch, nonlinear IMEX diagnostics, linear implicit preconditioner
   routing, velocity-sharded electrostatic RHS routing, nonlinear electromagnetic
   dispatch, nonlinear timestep policy, reduced cETG integration policy,
-  benchmark diagnostic loading, linear hypercollision routing, and reduced QA
-  core-feature assembly.
+  benchmark diagnostic loading, linear hypercollision routing, reduced QA
+  core-feature assembly, and quasilinear transport payload assembly.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -259,3 +260,10 @@ Goal: ship the next version from a clean, green, measured state.
   touched module, compileall, architecture, repository-size, and
   release-readiness checks; the 80-89 line function count dropped from 38 to 37
   and the >=70 count dropped from 116 to 115.
+- 2026-06-21: Simplified quasilinear transport payload assembly in
+  `diagnostics/quasilinear_transport.py` by extracting saturation-output
+  assembly and result packing. Public `QuasilinearTransportResult` schema,
+  saturation rules, and metadata defaults are unchanged. Focused quasilinear
+  and derivative tests passed (`17 passed`), along with ruff, mypy for the
+  touched module, compileall, architecture, repository-size, and
+  release-readiness checks; the 80-89 line function count dropped from 37 to 36.
