@@ -967,9 +967,17 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, nonlinear spectral communication/parallel tests, architecture
   manifest, repository-size manifest, differentiable-refactor manifest,
   release-readiness check, and `git diff --check`.
+- 2026-06-20: split the public Krylov eigenpair facade into option
+  normalization and branch-dispatch helpers.  This preserves the documented
+  `dominant_eigenpair` API, status messages, branch behavior, and invalid-method
+  error while making the core linear solver routing easier to test and maintain.
+- Focused gates passed for the Krylov facade tranche: Ruff, focused mypy,
+  linear Krylov core tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 20.
-- Remaining source functions at or above 80 lines: 71.
+- Remaining source functions at or above 90 lines: 19.
+- Remaining source functions at or above 80 lines: 70.
 
 ## Latest Release Log
 
