@@ -47,8 +47,8 @@ Last audited: 2026-06-21 on `main`.
 - Package shape: 357 Python files under `src/spectraxgk`, about 106.6k source
   lines, 9 root facade modules, and no blocked root-prefix modules under the
   architecture manifest.
-- Function length: 0 source functions at or above 90 lines; 54 functions in the
-  80-89 line range and 129 functions at or above 70 lines.
+- Function length: 0 source functions at or above 90 lines; 52 functions in the
+  80-89 line range and 128 functions at or above 70 lines.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -69,6 +69,9 @@ Last audited: 2026-06-21 on `main`.
 - Runtime command-artifact display helpers were folded into the runtime artifact
   orchestration owner, reducing package source files from 358 to 357 without
   changing executable behavior.
+- Gradient-validation report assembly now has explicit Jacobian, tangent, and
+  conditioning-gate helpers, keeping AD/FD report schema stable while reducing
+  long differentiability plumbing functions.
 - The README runtime/memory panel was restored near the top and tied to measured
   artifact provenance.
 - The root `benchmarks/` directory now contains lightweight drivers, TOMLs, and
@@ -84,10 +87,10 @@ Percentages are engineering status estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | Plan/docs/readme consistency | 100% | This file, architecture docs, README, and release-scope docs agree on current status and claim scope. |
 | P0 | Release hygiene | 100% | Clean `main`, green CI, bounded local release gates, version bump, tag, release workflow, PyPI publish. |
-| P1 | Source simplification and naming | 96% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
-| P1 | Refactor/testability | 97% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
+| P1 | Source simplification and naming | 97% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
+| P1 | Refactor/testability | 98% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
 | P1 | Package coverage and physics tests | 100% gate, 96% margin | Wide package coverage stays >=95%; new tests remain physics/numerics/autodiff/regression tests rather than smoke-only coverage. |
-| P2 | Differentiable Python workflows | 98% scoped | AD/FD, tangent, conditioning, or covariance gates exist for every promoted differentiated observable. |
+| P2 | Differentiable Python workflows | 98.5% scoped | AD/FD, tangent, conditioning, or covariance gates exist for every promoted differentiated observable. |
 | P2 | VMEC/Boozer differentiable geometry | 98% scoped | Geometry parity and gradient gates pass for promoted rows; broad optimization claims stay scoped. |
 | P2 | Performance and memory | 97% scoped | Runtime/memory panel remains measured; no new speedup claim without profiler artifacts and numerical identity gates. |
 | P2 | Production parallelization | 94% scoped | Independent-work parallelization is production; nonlinear domain decomposition remains diagnostic until identity and speedup gates pass. |
@@ -149,7 +152,6 @@ introducing another wave of thin modules.
   - `solvers/nonlinear/imex_diagnostics.py::integrate_imex_nonlinear_diagnostics_impl`
   - `objectives/vmec_boozer.py::vmec_boozer_solver_objective_table_with_metadata_from_state`
   - `geometry/vmec_flux_tube_reports.py::vmec_jax_flux_tube_array_parity_report`
-  - `geometry/autodiff_checks.py::_gradient_gate_data`
 - Rename non-benchmark comparison-code terminology in source/tests only where it
   is not explicitly a benchmark/comparison contract.
 - Remove legacy or compatibility-only examples that are not part of the current
@@ -255,3 +257,7 @@ Goal: ship the next version only from clean, green `main`.
 - 2026-06-21: Released `v1.6.9` from `494b9ea2`. CI run `27906389241` and
   release workflow `27906940479` passed; PyPI published the wheel/sdist and the
   GitHub Release entry is latest.
+- 2026-06-21: Split differentiable gradient-validation report assembly into
+  focused Jacobian, tangent, and conditioning-gate helpers inside
+  `geometry/autodiff_checks.py`. Targeted differentiability tests passed; source
+  functions in the 80-89 line band dropped from 54 to 52 with no new files.
