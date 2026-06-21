@@ -39,7 +39,7 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Latest pushed source-simplification commit audited here:
-  `e54635f5 Simplify linear implicit preconditioner policy`.
+  `b03a6a77 Simplify velocity sharded electrostatic RHS`.
 - Latest completed green CI before the newest simplification queue:
   `ea506e11 Simplify VMEC flux tube parity report packing`. Later
   simplification runs may be superseded/cancelled by newer pushes; the latest
