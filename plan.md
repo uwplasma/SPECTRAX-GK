@@ -37,10 +37,11 @@ file for execution priority.
 Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.8`.
-- Latest pushed commit audited here: `bbd515f0 Move runtime memory panel in README`.
-- Latest CI run for that commit: success. Quick shards, mypy, docs/package build,
-  fast coverage, all 48 wide-coverage shards, and wide coverage combine passed.
-- Package shape: 358 Python files under `src/spectraxgk`, about 106k source
+- Latest pushed commit audited here: `a6e9fb35 Clarify final closure plan`.
+- Latest completed green CI before the local simplification tranche:
+  `bbd515f0 Move runtime memory panel in README`. The `a6e9fb35` CI run was
+  still in progress at this audit point and must be rechecked before release.
+- Package shape: 357 Python files under `src/spectraxgk`, about 106.6k source
   lines, 9 root facade modules, and no blocked root-prefix modules under the
   architecture manifest.
 - Function length: 0 source functions at or above 90 lines; 54 functions in the
@@ -62,6 +63,9 @@ Last audited: 2026-06-21 on `main`.
   inputs in the current directory, and supports `spectraxgk --plot` for saved
   linear/nonlinear outputs.
 - Runtime command options were consolidated without changing public behavior.
+- Runtime command-artifact display helpers were folded into the runtime artifact
+  orchestration owner, reducing package source files from 358 to 357 without
+  changing executable behavior.
 - The README runtime/memory panel was restored near the top and tied to measured
   artifact provenance.
 - The root `benchmarks/` directory now contains lightweight drivers, TOMLs, and
@@ -87,6 +91,26 @@ Percentages are engineering status estimates, not scientific claims.
 | P3 | Quasilinear model development | 99% scoped | Diagnostics and screening claims documented; universal absolute-flux prediction remains unpromoted. |
 | P3 | Nonlinear turbulent-flux optimization | 91% scoped | Long post-transient matched audits exist for scoped cases; broad optimized stellarator turbulence claim remains unpromoted. |
 | P4 | Deferred W7-X/TEM science | deferred | W7-X zonal long-window recurrence, W7-X TEM/multi-flux-tube, and W7-X fluctuation extensions remain post-release unless explicitly reopened. |
+
+## Priority Order From Here
+
+The remaining path is intentionally short and release-oriented:
+
+1. **Commit the current simplification tranche.** Finish local gates for the
+   runtime command-artifact consolidation, commit it, push it, and confirm CI.
+2. **Ship a small release if CI stays green.** Bump the version, run the bounded
+   release gates, push the tag, and verify the GitHub release/PyPI workflow.
+3. **Keep the README performance figure in place.** The runtime/memory figure is
+   already restored near the top of the README; refresh it only from new
+   measured CPU/GPU artifacts with hardware, wall-time, memory, and W7-X/HSX
+   rows.
+4. **Resume refactoring only after the release checkpoint.** Further source
+   simplification should reduce navigation cost inside the largest domain
+   packages without adding new root files or compatibility shims.
+5. **Resume science/performance lanes only with gates.** New parity, nonlinear
+   optimization, quasilinear, differentiability, or speedup claims need
+   reproducible artifacts, physics gates, and docs updates before README
+   promotion.
 
 ## Final Prioritized Steps
 
@@ -222,3 +246,8 @@ Goal: ship the next version only from clean, green `main`.
 - 2026-06-21: Replaced the oversized root plan log with this finite closure
   plan. Detailed history remains available through git commits and release/docs
   artifacts.
+
+- 2026-06-21: Consolidated `workflows/runtime/command_artifacts.py` into
+  `workflows/runtime/orchestration_artifacts.py`, updated docs/manifests/tests,
+  and reduced package source count to 357 files while preserving runtime command
+  saved-output and stdout behavior.

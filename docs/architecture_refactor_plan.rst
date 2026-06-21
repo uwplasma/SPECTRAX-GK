@@ -45,8 +45,8 @@ Planning Snapshot
 
 The planning audit on 2026-06-21 found:
 
-- 358 Python source files under ``src/spectraxgk`` after the v1.6.8 refactor closure.
-- about 106,000 source lines under ``src/spectraxgk``.
+- 357 Python source files under ``src/spectraxgk`` after the runtime command-artifact consolidation.
+- about 106,600 source lines under ``src/spectraxgk``.
 - no blocked root-prefix modules under the architecture manifest.
 - 315 top-level test files under ``tests``.
 - about 89,000 test lines.

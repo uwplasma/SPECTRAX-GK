@@ -1127,10 +1127,6 @@ Runtime Orchestration
 Runtime Commands
 ----------------
 
-.. automodule:: spectraxgk.workflows.runtime.command_artifacts
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.workflows.runtime.commands
    :members:
    :private-members:

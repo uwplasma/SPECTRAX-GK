@@ -89,7 +89,6 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/results.py``
    - ``workflows/runtime/orchestration.py`` facade plus ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, and ``workflows/runtime/orchestration_artifacts.py``
    - ``workflows/runtime/artifacts.py``
-   - ``workflows/runtime/command_artifacts.py``
    - ``artifacts/``
    - ``artifacts/plotting.py``
 4. **executable workflows**
@@ -136,7 +135,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts_domain.py``, ``operators/nonlinear/parallel_contracts_spectral.py``, ``operators/nonlinear/parallel_contracts_strategy.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_state.py``, ``operators/nonlinear/spectral_layout.py``, ``operators/nonlinear/spectral_work_models.py``, ``operators/nonlinear/spectral_brackets.py``, ``operators/nonlinear/spectral_tolerances.py``, ``operators/nonlinear/spectral_identity_reports.py``, ``operators/nonlinear/spectral_identity_rhs.py``, ``operators/nonlinear/spectral_identity_integrator.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, domain/spectral/strategy contracts, spectral state/layout/work-model/bracket/tolerance helpers, logical spectral reports/RHS/integrator gates, device-z routing gates with explicit RHS and transport-trace/report policies, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/command_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
@@ -293,12 +292,13 @@ Completed extractions:
   input resolution, append-history loading, checkpoint chunk sizing, and
   diagnostic-history merging as explicit policies in the artifact owner.
 - saved runtime-output plotting command routing:
-  ``workflows/runtime/commands.py`` plus ``workflows/runtime/command_artifacts.py``.
+  ``workflows/runtime/commands.py`` plus ``workflows/runtime/orchestration_artifacts.py``.
   The public ``cli.py`` facade still owns executable parser dispatch and
   renderer/runtime-command patch seams, while the command workflow owns
   ``spectraxgk --plot`` argument validation and runtime command dependency
   construction. Command artifact display, executable headers, and nonlinear
-  summaries live with the command-output artifact policy.
+  summaries live with the runtime artifact orchestration policy so saved-output
+  behavior and restart/checkpoint handoff share one owner.
 - runtime restart-state dispatch: the public ``runtime.py`` facade keeps the
   patchable NetCDF/raw state loaders but shares one shape-keyword payload
   between both paths, so restart dimensions cannot drift between loader calls.
