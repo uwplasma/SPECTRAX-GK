@@ -39,7 +39,7 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Latest source-simplification commit audited here:
-  `a64d2dfe Simplify reduced cETG integration policies`.
+  `43c3df63 Simplify benchmark diagnostic time-series loading`.
 - Latest pushed plan-audit commit: `24419653 Record velocity sharded RHS
   refactor audit`; worktree was clean and synchronized with `origin/main` at
   the start of this final plan review.
@@ -58,12 +58,12 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 40 functions in the
-  80-89 line range and 118 functions at or above 70 lines after the linear
+- Function length: 0 source functions at or above 90 lines; 39 functions in the
+  80-89 line range and 117 functions at or above 70 lines after the linear
   workflow, nonlinear IMEX diagnostic dispatch, linear implicit
   preconditioner, velocity-sharded electrostatic RHS route, and nonlinear
   electromagnetic dispatch, nonlinear timestep-policy, and reduced-cETG
-  integration-policy simplifications.
+  integration-policy, and benchmark time-series loader simplifications.
 - Current high-value simplification targets are concentrated in validation
   benchmark path/report orchestration, VMEC/Boozer and QA objective assembly,
   runtime TOML loading, and linear dissipation policy. These should be handled
@@ -134,6 +134,10 @@ Last audited: 2026-06-21 on `main`.
 - The reduced cETG diagnostic integrator now routes explicit method stages and
   diagnostic observable assembly through named same-file helpers. The public
   cETG integration entry point and diagnostic tuple/schema are unchanged.
+- The benchmark diagnostic time-series loader now separates grouped NetCDF
+  lookup, real/complex decoding, one-dimensional extraction, phase alignment,
+  and component selection behind named same-file helpers. The public loader
+  signature and `DiagnosticTimeSeries` schema are unchanged.
 
 ## Open Lanes And Priority
 
@@ -422,3 +426,10 @@ Goal: ship the next version only from clean, green `main`.
   The full cETG test file passed, along with ruff, mypy, compileall,
   architecture, repository-size, and release-readiness checks; the 80-89 line
   count dropped from 42 to 40 and the >=70 count dropped from 120 to 118.
+- 2026-06-21: Simplified benchmark diagnostic time-series loading in
+  `validation/benchmarks/harness_timeseries.py` by extracting grouped NetCDF
+  variable/time-axis loading, `ri` complex decoding, dimensional extraction,
+  phase alignment, and component selection helpers. Focused NetCDF loader tests
+  passed, along with ruff, mypy, compileall, architecture, repository-size, and
+  release-readiness checks; the 80-89 line count dropped from 40 to 39 and the
+  >=70 count dropped from 118 to 117.
