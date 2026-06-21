@@ -984,9 +984,17 @@ The next version should be cut only after these finite gates are satisfied:
   ETG runner-branch tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split `run_scan_and_mode` into representative-ky selection,
+  resolution/control extraction, mode-trace execution, fit-window selection,
+  and eigenfunction extraction helpers.  This preserves benchmark scan outputs
+  while removing the scan-plus-mode harness hotspot.
+- Focused gates passed for the scan-harness tranche: Ruff, focused mypy,
+  scan-and-mode tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 17.
-- Remaining source functions at or above 80 lines: 68.
+- Remaining source functions at or above 90 lines: 16.
+- Remaining source functions at or above 80 lines: 67.
 
 ## Latest Release Log
 
