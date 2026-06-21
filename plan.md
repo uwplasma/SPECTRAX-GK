@@ -39,7 +39,7 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Latest source-simplification commit audited here:
-  `43c3df63 Simplify benchmark diagnostic time-series loading`.
+  `ff227109 Simplify linear hypercollision policy routing`.
 - Latest pushed plan-audit commit: `24419653 Record velocity sharded RHS
   refactor audit`; worktree was clean and synchronized with `origin/main` at
   the start of this final plan review.
@@ -58,16 +58,18 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 39 functions in the
-  80-89 line range and 117 functions at or above 70 lines after the linear
+- Function length: 0 source functions at or above 90 lines; 38 functions in the
+  80-89 line range and 116 functions at or above 70 lines after the linear
   workflow, nonlinear IMEX diagnostic dispatch, linear implicit
   preconditioner, velocity-sharded electrostatic RHS route, and nonlinear
   electromagnetic dispatch, nonlinear timestep-policy, and reduced-cETG
-  integration-policy, and benchmark time-series loader simplifications.
+  integration-policy, benchmark time-series loader, and hypercollision routing
+  simplifications.
 - Current high-value simplification targets are concentrated in validation
   benchmark path/report orchestration, VMEC/Boozer and QA objective assembly,
-  runtime TOML loading, and linear dissipation policy. These should be handled
-  inside existing domain packages, not by adding new root modules.
+  runtime TOML loading, and remaining linear/implicit solver policy. These
+  should be handled inside existing domain packages, not by adding new root
+  modules.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -138,6 +140,10 @@ Last audited: 2026-06-21 on `main`.
   lookup, real/complex decoding, one-dimensional extraction, phase alignment,
   and component selection behind named same-file helpers. The public loader
   signature and `DiagnosticTimeSeries` schema are unchanged.
+- The linear hypercollision contribution now groups coefficients, masks, and
+  linked-tube routing into private same-file policy bundles. The inactive,
+  constant, and parallel-`|k_z|` branch formulas and public signature are
+  unchanged.
 
 ## Open Lanes And Priority
 
@@ -433,3 +439,10 @@ Goal: ship the next version only from clean, green `main`.
   passed, along with ruff, mypy, compileall, architecture, repository-size, and
   release-readiness checks; the 80-89 line count dropped from 40 to 39 and the
   >=70 count dropped from 118 to 117.
+- 2026-06-21: Simplified linear hypercollision policy routing in
+  `terms/linear_dissipation.py` by grouping coefficient, mask, and linked-route
+  state into private bundles that reuse the existing inactive, constant, and
+  parallel-`|k_z|` helpers. Focused hypercollision formula, zero-branch, and
+  linked-`k_z` tests passed, along with ruff, mypy, compileall, architecture,
+  repository-size, and release-readiness checks; the 80-89 line count dropped
+  from 39 to 38 and the >=70 count dropped from 117 to 116.
