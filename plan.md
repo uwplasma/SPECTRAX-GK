@@ -39,7 +39,7 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Latest source-simplification commit audited here:
-  `6f990e31 Simplify nonlinear electromagnetic dispatch`.
+  `390971f1 Simplify nonlinear timestep policy assembly`.
 - Latest pushed plan-audit commit: `24419653 Record velocity sharded RHS
   refactor audit`; worktree was clean and synchronized with `origin/main` at
   the start of this final plan review.
@@ -58,16 +58,16 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 43 functions in the
-  80-89 line range and 121 functions at or above 70 lines after the linear
+- Function length: 0 source functions at or above 90 lines; 42 functions in the
+  80-89 line range and 120 functions at or above 70 lines after the linear
   workflow, nonlinear IMEX diagnostic dispatch, linear implicit
   preconditioner, velocity-sharded electrostatic RHS route, and nonlinear
-  electromagnetic dispatch simplifications.
-- Current high-value simplification targets are concentrated in nonlinear
-  electromagnetic contribution assembly, validation benchmark path/report
-  orchestration, VMEC/Boozer and QA objective assembly, runtime TOML loading,
-  and reduced-model stepping. These should be handled inside existing domain
-  packages, not by adding new root modules.
+  electromagnetic dispatch and nonlinear timestep-policy simplifications.
+- Current high-value simplification targets are concentrated in validation
+  benchmark path/report orchestration, VMEC/Boozer and QA objective assembly,
+  runtime TOML loading, linear dissipation policy, and reduced-model stepping.
+  These should be handled inside existing domain packages, not by adding new
+  root modules.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -128,6 +128,9 @@ Last audited: 2026-06-21 on `main`.
   same-file bracket context and Laguerre-vs-spectral dispatch helpers. Public
   signatures and diagnostic payload schemas are unchanged, while both public
   route bodies are now out of the 80-89 line band.
+- The nonlinear timestep-policy builder now assembles explicit limits, CFL
+  bounds, and the adaptive update closure through named same-file helpers.
+  Fixed/adaptive timestep semantics and public policy fields are unchanged.
 
 ## Open Lanes And Priority
 
@@ -403,3 +406,10 @@ Goal: ship the next version only from clean, green `main`.
   mypy, compileall, architecture, repository-size, and release-readiness checks
   passed; the 80-89 line count dropped from 45 to 43 and the >=70 count
   dropped from 123 to 121.
+- 2026-06-21: Simplified nonlinear timestep-policy assembly in
+  `operators/nonlinear/policies.py` by extracting explicit timestep-limit,
+  CFL-bound, and update-closure helpers inside the existing nonlinear-operator
+  package. Focused fixed/adaptive timestep and nonlinear CFL-frequency tests
+  passed; ruff, mypy, compileall, architecture, repository-size, and
+  release-readiness checks passed; the 80-89 line count dropped from 43 to 42
+  and the >=70 count dropped from 121 to 120.
