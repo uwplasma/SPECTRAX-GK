@@ -784,98 +784,164 @@ These remain explicit until stronger evidence exists:
 
 ## Actual Open Lanes
 
-Release-blocking technical lanes for `v1.6.8` are closed.  Remaining lanes are
-post-release research/performance/completeness lanes:
+Release-blocking technical lanes for `v1.6.8` are closed: latest `main` CI is
+passing, package-wide coverage is gated above 95%, no source function remains at
+or above 90 lines, and the architecture/repository-size/release manifests pass.
+The remaining work is therefore a finite post-release closure campaign, not an
+emergency stabilization pass.
 
-- Universal absolute quasilinear heat-flux prediction remains explicitly not
-  promoted; current release scope is model-development and screening guardrails.
-- Full production nonlinear turbulent-flux stellarator optimization still needs
-  broader long post-transient matched windows across surfaces/field lines.
-- Production nonlinear domain-decomposition speedup still needs an end-to-end
-  GPU speedup gate; current artifacts support diagnostic/identity claims only.
-- W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
-  extensions remain post-release science lanes.
+1. **Release/docs/readme closure**
+   - Keep the README concise and keep detailed derivations in docs.
+   - Keep the runtime/memory comparison figure visible in the README using
+     `docs/_static/runtime_memory_benchmark.png` and regenerate it only from
+     fresh measured artifacts.
+   - Run docs build, package build, fast local shards, release-readiness,
+     architecture, repository-size, and coverage/CI gates before the next tag.
+
+2. **Code/file simplification**
+   - The package currently has roughly 359 Python source files and 106k source
+     lines.  The problem is no longer giant functions; it is navigation cost and
+     too many narrow helper modules in validation, runtime, objective, and
+     artifact/report surfaces.
+   - Consolidate single-use helper modules back into nearby domain packages
+     when this reduces navigation cost without making public functions long
+     again.
+   - Remove legacy aliases/examples/output names that are not part of current
+     validated workflows.
+   - Keep comparison-code names only in benchmark/comparison context; source
+     names should describe the physics or numerical method.
+
+3. **Benchmark parity and physics validation**
+   - Maintain reproducible comparisons against independent reference
+     calculations, including GX on `ssh office`, only as benchmark/parity
+     evidence.
+   - Re-run GX/SPECTRAX-GK comparisons only when a touched numerical path,
+     runtime policy, geometry convention, or figure claim requires it.
+   - Keep W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
+     extensions explicitly post-release unless reprioritized.
+
+4. **Differentiability and optimization evidence**
+   - Preserve AD/FD or tangent checks for every exposed differentiated
+     observable.
+   - VMEC/Boozer bridge claims require geometry parity plus gradient gates before
+     broader optimization claims.
+   - Nonlinear turbulent-flux optimization requires long post-transient matched
+     baseline-vs-optimized windows across broader surfaces/field lines before
+     manuscript-level promotion.
+
+5. **Performance and memory**
+   - Production claims require profiler-backed CPU/GPU artifacts and
+     serial-vs-decomposed numerical identity gates.
+   - Current production parallelization remains independent-work batching; whole
+     state nonlinear domain decomposition remains diagnostic until a full solver
+     route clears speedup gates.
+   - Refresh README/docs runtime/memory panels only when the measured artifact
+     set changes.
+
+6. **Quasilinear model scope**
+   - Universal absolute quasilinear heat-flux prediction remains explicitly not
+     promoted.
+   - Current claims stay at diagnostics/model-development/screening scope unless
+     held-out nonlinear transport-error gates pass.
 
 ## Post-Release Refactor Audit
 
-The current refactor target is not "more files".  The package already has the
-domain layout needed for maintainability; the next release should reduce
-navigation cost and stabilize extension boundaries.
+The current refactor target is not "more files" and not another wave of thin
+modules.  The package has the domain layout needed for maintainability and no
+large-function emergency remains.  The next version should reduce navigation
+cost, stabilize extension boundaries, and keep the public API simple.
 
-Current audited structure:
+Current audited structure from the working tree:
 
-- package Python files: roughly 359;
-- package source lines: roughly 103k;
+- package Python files: 359;
+- package source lines: roughly 106k;
 - no blocked root-prefix modules remain under the architecture manifest;
-- remaining long functions are mostly 100-123 lines and are concentrated in
-  validation scans, calibration/report writers, artifact handoff, geometry
-  metric construction, and objective/gradient reports.
+- source functions at or above 100 lines: 0;
+- source functions at or above 90 lines: 0;
+- source functions at or above 80 lines: 54;
+- the largest remaining functions are mostly validation, runtime/report,
+  geometry-gradient, linear-solver, and nonlinear-policy orchestration.
 
 Efficient refactor policy for the next version:
 
-1. Split a function only when the split creates a reusable tested policy
-   boundary, removes duplicated logic, or makes an AD path side-effect-free.
-2. Avoid new one-off modules unless the new module is an extension boundary
-   such as geometry backends, objectives, solvers, or validation gates.
-3. Consolidate single-use helper modules back into nearby domain files when that
-   improves developer navigation without increasing public-function length.
-4. Keep short public facades and private implementation helpers; remove legacy
-   aliases and examples when they describe workflows we no longer support.
-5. Continue replacing non-benchmark comparison-code terminology with physical
-   or numerical terminology.
-6. Keep performance changes separate from cleanup unless an identity gate and
-   profiler artifact are produced in the same tranche.
+1. Do not split more code just to reduce line count. Split only when it creates
+   a tested policy boundary, removes duplication, isolates a differentiable pure
+   path, or makes a profiler target clearer.
+2. Prefer consolidation over new files when a helper is single-use and the
+   caller remains below roughly 90 lines after consolidation.
+3. Keep stable public facades for `spectraxgk`, executable/runtime workflows,
+   and documented examples; simplify internals behind those facades.
+4. Remove legacy compatibility paths when they support behavior we no longer
+   document or validate.
+5. Keep executable/runtime code user-friendly and allowed to be side-effectful;
+   keep Python differentiable objective paths pure, JAX-friendly, and
+   independently gate-tested.
+6. Keep performance work separate from cleanup unless the same commit includes
+   numerical-identity and profiler evidence.
 
 Highest-value remaining refactor tranches:
 
-| Tranche | Scope | Done When |
-| --- | --- | --- |
-| Artifact/report orchestration | NetCDF writers, runtime artifact handoff, report payload builders | Schemas unchanged, focused artifact tests pass, each long writer is staged into grid/data/metadata helpers. |
-| Validation scan drivers | Cyclone/ETG/KBM/TEM scan wrappers still above 100 lines | Scan controls, per-point execution, fitting, and result packing are separated with focused branch tests. |
-| Objective/gradient reports | VMEC/Boozer FD, line-search, portfolio, nonlinear-window reports | Pure objective evaluation, finite-difference/tangent checks, and plotting/report assembly are separated. |
-| Geometry metric construction | VMEC field-line metric coefficients and Boozer bridge reports | Metric, drift, interpolation, and parity/gradient gates are independently testable. |
-| Naming cleanup | non-benchmark `gx`, `runtime_`, and legacy reduced-model naming | Names describe physics or numerics; benchmark-only references remain scoped. |
+| Priority | Tranche | Scope | Done When |
+| ---: | --- | --- | --- |
+| 1 | Runtime/artifact navigation | `workflows/runtime/*`, artifact writers, plotting/report handoff | Fewer single-use files or clearer grouping; schemas unchanged; runtime/plot tests pass. |
+| 2 | Objective/differentiability surfaces | VMEC/Boozer, QA low-turbulence, solver-gradient report helpers | Pure objective evaluation, AD/FD gates, and report assembly are easier to find; gradient tests pass. |
+| 3 | Validation benchmark drivers | Cyclone/ETG/KBM/TEM scan wrappers and branch policies | Scan controls, execution, fitting, and result packing stay covered by focused branch tests. |
+| 4 | Geometry bridge/reporting | VMEC/Boozer metric, interpolation, parity, and sensitivity reports | Geometry parity and gradient gates remain pass/fail artifacts with clear provenance. |
+| 5 | Naming cleanup | non-benchmark `gx`, ambiguous `runtime_*`, stale reduced-model names | Names describe physics/numerics; benchmark-only comparisons remain scoped. |
 
 ## Next-Version Closure Plan
 
-The next version should be cut only after these finite gates are satisfied:
+The next version should be cut only after these finite gates are satisfied, in
+this order:
 
-1. **Technical gates**
-   - local fast tests for touched modules pass;
-   - `ruff`, focused `mypy`, architecture, repository-size, and release-status
-     checks pass;
-   - package-wide coverage remains above 95% in CI;
-   - docs build if README/docs/source API changed.
-2. **Refactor gates**
-   - no new source bloat from transient helpers;
-   - no schema-breaking artifact change unless docs/tests are updated in the
-     same commit;
-   - no new compatibility layer for old examples or legacy output names.
-3. **Science gates**
-   - quasilinear claims remain screening/model-development unless held-out
-     nonlinear transport-error gates pass;
-   - nonlinear turbulent optimization claims require long post-transient
-     replicated transport windows;
-   - VMEC/Boozer optimization claims require geometry parity and gradient gates.
-4. **Performance gates**
-   - nonlinear domain-decomposition claims require serial-vs-decomposed
-     numerical identity and CPU/GPU profiler-backed speedup;
-   - runtime/memory panel refreshes must be from fresh measured artifacts.
-5. **Release gates**
+1. **Release-state audit**
+   - confirm `main` CI is green;
+   - run `ruff`, fast pytest shards, package build, docs build,
+     architecture/repository-size/release-readiness manifests;
+   - confirm package-wide coverage remains above 95% in CI.
+
+2. **README/docs final pass**
+   - keep the runtime/memory figure and table near the top of the README after
+     highlights;
+   - ensure the README says only the scoped current claims;
+   - ensure docs contain the full equations, numerics, examples, validation
+     matrix, performance evidence, and benchmark provenance;
+   - do not add new runtime/speedup/science claims without matching artifacts.
+
+3. **Minimal code simplification pass**
+   - reduce navigation cost in one or two high-value clusters, prioritizing
+     runtime/artifacts and objective/differentiability helpers;
+   - avoid expanding file count;
+   - delete legacy paths only with tests/docs updated in the same commit.
+
+4. **Performance evidence pass**
+   - if the runtime/memory panel is refreshed, regenerate it from fresh CPU/GPU
+     measured artifacts and keep W7-X/HSX visible;
+   - make no nonlinear-domain speedup claim unless identity and profiler gates
+     pass on the exact workload.
+
+5. **Benchmark/parity pass**
+   - use GX on `ssh office` only for benchmark lanes touched since the last
+     release or for figures/claims being refreshed;
+   - store only compact, reproducible summary artifacts in git.
+
+6. **Release pass**
    - update version only after the above gates pass on the pushed commit;
    - tag and release from `main`;
    - verify GitHub release workflow and PyPI publish.
 
 ## Immediate Next Steps
 
-1. Continue low-risk refactor tranches in remaining artifact/validation/report
-   hotspots, with focused tests and no schema changes.
-2. Resume performance work only with identity gates and profiler evidence before
-   updating runtime or speedup claims.
-3. Resume science lanes with long-window nonlinear evidence before promoting
-   stronger quasilinear or turbulent-optimization claims.
-4. Use `office` GPUs only for a specific post-release science/performance lane
-   or if a GPU-specific gate is needed.
+1. Keep the already-restored README runtime/memory figure, but refresh the
+   artifact only if new measured runtime/memory data are generated.
+2. Do one bounded docs/readme consistency pass to align `README.md`,
+   `docs/performance.rst`, `docs/release_scope.rst`, and `docs/code_structure.rst`
+   with the current `v1.6.8` state and the `>=90: 0` refactor audit.
+3. Do one targeted simplification pass in runtime/artifact or
+   objective/differentiability internals, with no net increase in source-file
+   count unless a new extension boundary is justified.
+4. Run the release-readiness gate set; if green, the next version can be cut or
+   the science/performance lanes can continue as post-release work.
 
 ## Latest Refactor Log
 
