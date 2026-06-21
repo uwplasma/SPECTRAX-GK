@@ -1059,9 +1059,17 @@ The next version should be cut only after these finite gates are satisfied:
   internal Miller backend tests, Miller runtime request tests, architecture
   manifest, repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split nonlinear diagnostic-state assembly into scalar energy,
+  scalar transport, resolved heat, resolved particle, and resolved turbulent
+  heating helpers.  This preserves the nonlinear diagnostic tuple schema while
+  making transport diagnostics easier to test and profile independently.
+- Focused gates passed for the nonlinear diagnostic-state tranche: Ruff,
+  focused mypy, nonlinear diagnostic-state tuple tests, nonlinear operator
+  package tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, and release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 8.
-- Remaining source functions at or above 80 lines: 59.
+- Remaining source functions at or above 90 lines: 6.
+- Remaining source functions at or above 80 lines: 57.
 
 ## Latest Release Log
 
