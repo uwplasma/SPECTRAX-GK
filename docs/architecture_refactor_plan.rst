@@ -31,8 +31,9 @@ migration order, and acceptance gates.
 - ``tools/differentiable_refactor_manifest.toml`` remains the executable
   migration ledger for active tranches. When a manifest row conflicts with this
   page, update the manifest row rather than adding a new root-level module.
-- ``plan.md`` is the chronological work log. It records what happened, not a
-  competing architecture.
+- ``plan.md`` is the active execution plan and short work log. It records
+  priority, current status, and recent checkpoints, but it does not override
+  this page's target architecture.
 - README and user docs should describe stable user workflows, not internal
   migration scaffolding.
 

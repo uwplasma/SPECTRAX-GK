@@ -1,1307 +1,224 @@
-# SPECTRAX-GK Completion Plan
-
-This file is the active engineering plan after the `v1.6.8` differentiable
-architecture/refactor release.  Older chronological logs are intentionally not
-kept in this working-tree file to keep the repository light; detailed history is
-available from git commits and release notes.
-
-## Mission
-
-Make SPECTRAX-GK a research-grade gyrokinetic code that is:
-
-- accurate and benchmarked against independent reference calculations where
-  relevant;
-- end-to-end differentiable from Python for optimization, sensitivity analysis,
-  inverse design, and uncertainty quantification;
-- performant on CPU/GPU with low memory footprint and clear runtime progress;
-- simple to use from the executable and Python APIs;
-- simple to maintain, with domain-oriented modules, short auditable functions,
-  docstrings/comments where useful, and no legacy compatibility paths that make
-  current validated workflows harder to understand;
-- documented with equations, algorithms, examples, validation gates, benchmark
-  provenance, and publication-ready figures where claims are made.
-
-## Current Branch Policy
-
-- Branch: `main` after the merged `v1.6.8` refactor release.
-- Use focused commits for post-release tranches; create a branch/PR only when
-  the tranche is large enough that review isolation is useful.
-- Commit and push frequently after focused, gated changes.
-- Do not add large outputs or transient artifacts to git.
-- Keep the tracked repository below the repository-size manifest cap.
-- Use `ssh office` for GPU-backed parity, profiling, and long simulation runs
-  only when local evidence is insufficient.
-- References to other codes should appear only in benchmark/comparison context;
-  source names should describe the physics or numerical method.
-
-## Final Closure Plan
-
-One-sentence plan: ship SPECTRAX-GK as a compact public-facade,
-domain-packaged JAX gyrokinetic code with physics/numerics names in the source,
-scoped GX parity only in benchmark/comparison artifacts, a small and navigable
-file structure, physics-anchored tests and documentation, differentiable Python
-workflows for optimization/UQ, and measured low-runtime/low-memory CPU/GPU
-execution shown by the README runtime/memory panel.
-
-This section is the authoritative priority order for the remaining work.  Older
-sections below are supporting logs and lane details; if they conflict with this
-section, update the older text rather than adding another competing plan.
-
-### Current Audit Facts
-
-- Branch: `main`; this checkpoint includes a behavior-preserving runtime
-  command option consolidation.
-- Latest release tag: `v1.6.8`.
-- At audit start, latest pushed plan commit `95ab7512` had CI queued; the
-  latest pushed code commit `7fefd33c` had passed CI.
-- Package shape: 358 Python source files, about 106k source lines, 9 root
-  facade modules, and no blocked root-prefix modules under the architecture
-  manifest.
-- Function complexity: 54 functions are at 80-89 lines; 0 functions are at or
-  above 90 lines; 0 functions are at or above 100 lines.
-- Data-container size: 7 dataclass/config classes are at or above 90 physical
-  lines because they list schema fields.  These are not the next refactor
-  target unless their schemas become hard to test.
-- Largest package clusters: validation, objectives, operators, solvers,
-  workflows, geometry, terms, artifacts, geometry backends, diagnostics, and
-  parallelization.
-- README status: the runtime/memory comparison figure is present and should
-  remain visible near the top of the README.  It must be refreshed only from
-  fresh measured CPU/GPU artifacts, not from hand-edited summary data.
-
-### Priority Order
-
-1. **Close the current checkpoint**
-   - Finish validating the runtime command option consolidation.
-   - Commit and push only after focused runtime/CLI tests, Ruff, mypy,
-     architecture, repository-size, differentiable-refactor, release-readiness,
-     docs-build, package-build, and `git diff --check` gates pass or are
-     explicitly scoped.
-
-2. **README and docs consistency**
-   - Keep README concise: install, executable quickstart, highlights, the
-     runtime/memory comparison panel, current claim scope, and pointers to full
-     docs.
-   - Keep detailed equations, algorithms, validation gates, differentiability
-     contracts, performance methodology, and benchmark provenance in docs.
-   - Ensure docs agree that the current structure has 9 root facades, no
-     blocked root-prefix modules, and no source functions at or above 90 lines.
-   - Keep GX references only in benchmark/comparison prose, tables, and
-     artifacts.
-
-3. **Code simplification without file sprawl**
-   - Do not create new thin modules unless they are durable extension points.
-   - Prefer consolidating single-use helpers back into the nearest domain owner
-     when the owner remains readable and tested.
-   - Prioritize runtime/artifact handoff, objective/differentiability report
-     assembly, validation-driver duplication, and ambiguous naming.
-   - Delete legacy examples, aliases, and output paths that are not part of the
-     documented validated workflow.
-
-4. **Differentiability closure**
-   - Keep differentiable Python paths pure, PyTree-friendly, and separate from
-     executable-side progress/output/plotting.
-   - Preserve AD/FD, tangent, or conditioning checks for every exposed
-     differentiated observable.
-   - Keep VMEC/Boozer optimization claims scoped to artifacts that pass geometry
-     parity and gradient gates.
-
-5. **Physics validation and parity**
-   - Preserve validated linear/nonlinear/quasilinear/geometry gates.
-   - Re-run GX on `ssh office` only for touched benchmark lanes, refreshed
-     public comparison figures, or suspected numerical regressions.
-   - Keep unpromoted lanes visible but scoped: W7-X zonal long-window closure,
-     W7-X TEM/multi-flux-tube extension, universal absolute quasilinear flux,
-     broad nonlinear turbulent-flux optimization, and production nonlinear
-     domain decomposition.
-
-6. **Performance and memory**
-   - Refresh runtime/memory figures only from measured artifacts that include
-     CPU/GPU wall time, peak memory, hardware/backend metadata, and W7-X/HSX
-     rows.
-   - Make no new nonlinear speedup claim without serial-vs-decomposed identity
-     gates and profiler-backed CPU/GPU artifacts.
-   - Keep current production parallelization scoped to validated independent
-     work until whole-state nonlinear decomposition clears both identity and
-     speedup gates.
-
-7. **Coverage, CI/CD, and release**
-   - Keep package-wide coverage at or above 95% in the computed CI badge path.
-   - Run fast local gates before every release candidate and avoid unbounded
-     local pytest runs.
-   - Build docs and package artifacts locally before tagging.
-   - Tag and release only from clean `main` after CI is green; verify the GitHub
-     release workflow and PyPI publish.
-
-## Completion Gates
-
-The plan is not complete until the following evidence exists and passes:
-
-1. **Refactor/testability**
-   - Long public functions are split into clear private stages or focused domain
-     modules.
-   - New structure reduces cognitive load rather than creating many thin files.
-   - Public APIs and documented workflows remain stable unless intentionally
-     simplified.
-   - Focused tests cover each refactored policy boundary.
-
-2. **Differentiability**
-   - Python workflows have AD/FD or tangent checks for the differentiated
-     observables they expose.
-   - VMEC/Boozer bridge paths have geometry parity and gradient gates before any
-     optimization claim.
-   - Differentiable APIs avoid side effects and non-JAX branches where gradients
-     are expected.
-
-3. **Physics validation and benchmarks**
-   - Linear, nonlinear, quasilinear, stellarator, tokamak, geometry, and
-     transport gates are documented with their scope.
-   - Claims distinguish release-level examples, model-development diagnostics,
-     and manuscript-grade production evidence.
-   - Any comparison with external reference codes is reproducible and scoped.
-
-4. **Performance and memory**
-   - Runtime/memory figures are regenerated only from fresh measured artifacts.
-   - No new speedup claim is made without profiler-backed evidence and numerical
-     identity gates.
-   - Parallelization claims remain limited to validated decompositions.
-
-5. **Coverage and CI/CD**
-   - Package-wide coverage gate remains at or above 95%.
-   - Fast local shards, docs build, package build, lint, type checks, and release
-     workflow checks pass before release.
-   - Coverage badge/workflow reflects computed package-wide coverage.
-
-6. **Docs/readme/examples**
-   - README is concise and points to docs for full derivations and validation.
-   - Docs include equations, numerical algorithms, diagnostics, examples,
-     validation matrix, and release scope.
-   - Examples are runnable, educational, and do not require hidden local files.
-   - Publication figures are polished, readable, scoped, and reproducible.
-
-## Active Lane Status
-
-Percentages are engineering estimates, not completion claims.
-
-| Lane | Status | Next Required Evidence |
-| --- | ---: | --- |
-| Refactor/testability | 99.97% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched through the `v1.6.8` release are closed for that checkpoint. No source function remains at or above 90 lines; continue only splits that expose tested policy boundaries or remove real navigation cost. |
-| Package coverage/release infrastructure | 100% for `v1.6.8` | PR CI, post-merge CI, release workflow, GitHub release, and PyPI publish passed for `v1.6.8`. Keep the gate active for subsequent commits. |
-| Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
-| Differentiable VMEC/Boozer plumbing | 98.5% | VMEC/Boozer sensitivity, line-search, finite-difference, and reduced nonlinear-window gradient gates are split and focused-tested. Broaden only with passed geometry parity/gradient holdouts. |
-| Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
-| Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
-| Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 100% for `v1.6.8` | Release guardrails and docs status artifacts are current for the shipped release. Future docs changes must preserve scoped claims and reproducible figure provenance. |
-
-## Current Refactor Queue
-
-Prioritize behavior-preserving cleanup that makes tests and validation easier.
-
-### 2026-06-20 Refactor and Release Audit
-
-The current package has a domain-oriented structure and no root-prefix modules
-left under the architecture manifest, but it is still a large scientific code:
-roughly 358 package Python files and 106k source lines.  That size is now mostly
-from validation/reporting breadth rather than unresolved core-runtime
-spaghetti.  The most important remaining large-file clusters are:
-
-- validation benchmark orchestration (`validation/benchmarks/*`), especially
-  Cyclone, ETG, KBM, kinetic-electron, and TEM scan drivers;
-- VMEC/Boozer geometry reports and backend numerics
-  (`geometry/vmec_boozer_core.py`, `geometry_backends/vmec_fieldline_numerics.py`,
-  `geometry/vmec_flux_tube_reports.py`);
-- linear-cache construction and nonlinear term assembly
-  (`operators/linear/cache_builder.py`, `terms/nonlinear.py`);
-- workflow/report orchestration (`workflows/reduced_models.py`,
-  `workflows/runtime/*`, nonlinear IMEX diagnostics, and validation reports).
-
-Release decision now closed: `v1.6.8` shipped with architecture,
-repository-size, technical-release, release-readiness, package-build, focused
-release-scope, full PR CI, post-merge CI, and PyPI/GitHub release gates passing.
-A broad pre-release collapse was intentionally deferred because the remaining
-hotspots are mostly validation/report drivers rather than release-blocking core
-runtime issues.
-
-Efficient next refactor after `v1.6.8`:
-
-1. Keep the domain packages but stop creating new one-off modules unless they
-   become shared extension points.
-2. Consolidate single-use validation/report helpers back into their nearest
-   domain package when that reduces navigation cost.
-3. Split only functions above roughly 100 lines when the split exposes a tested
-   policy boundary, removes duplicated logic, or makes a differentiable path
-   side-effect-free.
-4. Prefer short public facades plus private helpers over compatibility aliases
-   or legacy paths.
-5. Rename remaining comparison-code terminology only where it is not explicitly
-   a benchmark/comparison artifact.
-6. Preserve profiler and numerical-identity gates before changing nonlinear
-   RHS, field solve, or geometry kernels.
-
-1. Validation/benchmark scan runners:
-   - Closed for this checkpoint; reopen only if a new complexity or testability hotspot appears.
-2. Nonlinear transport/optimization reports:
-   - Continue only if new hotspots appear after the next scan.
-3. Differentiability/objective reports:
-   - Closed for this checkpoint; reopen only for new duplicated payload or gate logic.
-4. Core numerics/geometry hotspots, only with stronger local gates:
-   - `solvers/time/explicit.py` closed for this checkpoint; reopen only if new loop-policy duplication appears.
-   - `solvers/nonlinear/diagnostics.py` closed for this checkpoint; reopen only if explicit diagnostic option plumbing grows again.
-   - `geometry/flux_tube.py` closed for this checkpoint; reopen only if imported NetCDF schema handling grows again.
-   - `geometry/vmec_boozer_core.py` closed for this checkpoint; reopen only if Boozer metric/drift staging grows again.
-   - `geometry_backends/vmec_fieldline_numerics.py` closed for this checkpoint; reopen only if VMEC field-line metric/drift or flux-surface-average staging grows again.
-5. Parallel/performance hotspots, only with identity gates:
-   - `operators/nonlinear/domain_decomposition.py` closed for this checkpoint; reopen only if local domain trace/report policy grows again.
-   - `operators/nonlinear/spectral_identity_integrator.py` closed for this checkpoint; reopen only if spectral transport-window trace/report policy grows again.
-   - `operators/nonlinear/device_z.py` closed for this checkpoint; reopen only if device-sharding setup, RHS, or transport-window routing policy grows again.
-   - `parallel/independent.py` closed for this checkpoint; reopen only if independent-work provenance or ordered-map execution policy grows again.
-
-## Recent Checkpoint
-
-Recent behavior-preserving refactor commits on this branch include:
-
-- this checkpoint: the public Cyclone scan wrapper now routes through a typed
-  request object and small fit-policy/setup/execution-option stages, preserving
-  the public API while removing duplicated scan-control construction from the
-  wrapper; targeted Cyclone scan branch/entrypoint tests, mypy, Ruff,
-  architecture, repository-size, and differentiable-refactor manifests passed
-  locally.
-- this checkpoint: Cyclone time-scan branch orchestration now routes public
-  scan arguments through a typed private input bundle, removing duplicated
-  keyword forwarding between the public wrapper and shared run/fit controls;
-  the full benchmark runner branch test file, mypy, Ruff, architecture,
-  repository-size, and differentiable-refactor manifests passed locally.
-- this checkpoint: zonal-flow response metrics now separate normalized-window
-  construction from peak/envelope frequency fitting, leaving residual,
-  Rosenbluth-Hinton/GAM normalization, branchwise damping, and invalid-input
-  behavior unchanged; focused benchmarking/zonal validation tests, mypy, Ruff,
-  architecture, repository-size, and differentiable-refactor manifests passed
-  locally.
-- this checkpoint: quasilinear calibration reports now separate report-control
-  validation, calibration-point normalization, physical value checks,
-  optional train-scale application, split metrics, claim-level selection, and
-  public payload assembly; the full quasilinear calibration test file, mypy,
-  Ruff, quasilinear-promotion guardrails, architecture, repository-size, and
-  differentiable-refactor manifests passed locally.
-- this checkpoint: VMEC field-line metric assembly now separates coordinate
-  gradient construction, HNGC field-line integrals, shear/pressure correction
-  factors, local-shear assembly, and metric/drift packing; the full VMEC
-  geometry helper test file, mypy, Ruff, architecture, repository-size, and
-  differentiable-refactor manifests passed locally.
-- this checkpoint: VMEC/Boozer aggregate line-search holdout reports now
-  separate injected report dependencies, held-out improvement validation,
-  train/holdout report execution, and public payload assembly from the public
-  report function; focused aggregate holdout tests, mypy, Ruff, architecture,
-  repository-size, and differentiable-refactor manifests passed locally.
-- this checkpoint: VMEC/Boozer scalar objective finite-difference reports now
-  separate injected dependency resolution, scalar point evaluation, three-point
-  FD triplet construction, diagnostic calculation, and public payload assembly
-  from the report function; focused solver-gradient module tests, focused
-  scalar FD tests, mypy, Ruff, architecture, repository-size, and
-  differentiable-refactor manifests passed locally.
-- this checkpoint: VMEC/Boozer mode-21 quasilinear and reduced nonlinear-window
-  gradient gates now share an explicit enriched linear context helper, and the
-  nonlinear-window gate separates observable construction, objective-pass
-  classification, and public config payload assembly from the report function;
-  focused solver-gradient gate tests, focused mypy, Ruff, architecture,
-  repository-size, and differentiable-refactor manifests passed locally.
-- this checkpoint: nonlinear-gradient composite-control candidate rows now
-  separate canonical metric extraction, per-condition gate evaluation, blocker
-  construction, and JSON metric payload assembly from the row constructor; the
-  full nonlinear-gradient follow-up test file, focused mypy, Ruff,
-  architecture, repository-size, and differentiable-refactor manifests passed
-  locally.
-- this checkpoint: VMEC/Boozer reduced objective-portfolio artifact guards now
-  separate canonical artifact input extraction, portfolio coverage checks,
-  full objective-table checks, scalar reducer validation, and final promotion
-  gate assembly from the public report function; the dedicated portfolio guard
-  and stellarator objective portfolio tests, focused mypy, Ruff, architecture,
-  repository-size, and differentiable-refactor manifests passed locally.
-- this checkpoint: nonlinear-gradient replicated-window evidence now separates
-  input artifact row classification, unsupported-artifact handling,
-  convergence-window row construction, derived ensemble construction,
-  qualifying-row selection, and gate assembly from the public summary function;
-  the full nonlinear-gradient evidence test file, focused mypy, Ruff,
-  architecture, repository-size, and differentiable-refactor manifests passed
-  locally.
-- this checkpoint: nonlinear runtime artifact handoff now separates run-option
-  packing, one-chunk execution/finite validation, optional artifact writing,
-  checkpoint-advance policy, and the checkpoint loop from the public handoff
-  entry point; the full runtime artifact/helper tests, focused mypy, Ruff,
-  architecture, repository-size, and differentiable-refactor manifests passed
-  locally.
-- this checkpoint: Cyclone reference-aligned explicit-time scan now separates
-  per-ky point preparation, explicit trace fitting, branch-reselection
-  predicates, Krylov reselection fallback, and previous-frequency continuation
-  updates; focused Cyclone scan branch tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: kinetic-electron ky-scan orchestration now separates
-  setup/control resolution, growth-window policy construction, runtime option
-  packing, batch execution, and public result assembly from the scan wrapper;
-  focused kinetic scan branch tests, mypy, architecture, repository-size, and
-  diff hygiene passed locally.
-- this checkpoint: Cyclone time-scan branches now separate shared run-control
-  packing, history-fit policy packing, batch execution, and public result
-  assembly from the signature-heavy scan entry point; focused Cyclone branch
-  tests, mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: TEM single-run time integration now separates fit-signal
-  validation, sampling/time-config resolution, integration routing,
-  signal extraction, window fitting, and public result packing; focused TEM
-  branch tests, mypy, architecture, repository-size, and diff hygiene passed
-  locally.
-- this checkpoint: Cyclone single-mode time integration now separates resolved
-  time/fit controls and the saved-trace branch from the public entry point while
-  preserving the reference-aligned explicit branch; focused Cyclone branch tests,
-  mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: full linear runtime dispatch now separates Krylov
-  eigenvector finalization and auto-solver fallback acceptance from the public
-  workflow entry point; focused linear runtime integration tests, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: bounded Boozer spectral sensitivity reporting now separates
-  fail-closed availability payloads, demo Boozer input construction, spectral
-  objective evaluation, derivative computation, and success payload assembly;
-  focused differentiable-geometry bridge tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: nonlinear turbulence-gradient conditioning now separates
-  schema-variant metric extraction, production gate-row construction, and
-  public payload packing; the full nonlinear-gradient evidence test file, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: VMEC-JAX transport-gradient diagnostics now separate active
-  parameter resolution, optimizer residual/objective/gradient evaluation,
-  sensitivity classification, base report packing, and optional Jacobian
-  diagnostics; focused VMEC transport-gradient tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: implicit eigenvalue branch-locality diagnostics now separate
-  tolerance validation, spectrum loading, per-side branch selection,
-  dominant-vs-nearest slope comparison, classification, and payload packing;
-  focused solver-objective gradient tests, mypy, architecture, repository-size,
-  and diff hygiene passed locally.
-- this checkpoint: fixed-beta KBM ky-scan orchestration now separates fixed-beta
-  case resolution, scan option packing, per-ky beta-scan dispatch, mutable row
-  accumulation, and public result assembly; focused KBM scan branch tests, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: quasilinear calibration-window ingestion now separates
-  replicated-ensemble admission, CSV/NetCDF heat-flux extraction, convergence
-  reporting, note construction, and calibration-point packing; focused
-  quasilinear calibration tests, mypy, architecture, repository-size, and diff
-  hygiene passed locally.
-- this checkpoint: quasilinear model-selection status construction now
-  separates artifact loading, candidate/claim-boundary context creation,
-  gate-row assembly, metric projection, and scoped-claim payload packing; the
-  full quasilinear model-selection/guardrail test files, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: the no-input executable demo now separates bundled-source
-  resolution, run-setting normalization, terminal progress/introduction,
-  solver dispatch, signal/eigenfunction extraction, plot writing, artifact
-  writing, and result reporting; the full CLI test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: linear runtime artifact writing now separates scan/runtime
-  path targets, summary construction, quasilinear spectrum column projection,
-  timeseries/eigenfunction/state writers, and quasilinear bundle merging while
-  preserving saved-output schemas; the combined runtime artifact and CLI test
-  files, mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: the internal VMEC-to-imported-geometry pipeline now
-  separates request validation, theta-grid construction, flux-tube cut policy,
-  beta-prime evaluation, field-line solve dispatch, profile packing, and
-  atomic NetCDF emission; the full VMEC backend/eik test pair, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: matched nonlinear optimized-transport reporting now
-  separates schema variant extraction, reduction/uncertainty metric resolution,
-  baseline/candidate/selection qualification flags, and blocker construction;
-  the full nonlinear transport optimization test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: diagnostic sharded nonlinear integration now separates the
-  explicit Euler/RK2/RK3/RK4/SSPX3 update table from sharding/projector setup
-  and scan wiring; the full sharded-integrator test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: fixed-ky KBM beta-scan orchestration now separates scan
-  option packing, per-beta sample dispatch, Krylov continuation updates,
-  mutable beta/growth/frequency accumulation, and public result assembly;
-  focused KBM branch tests, selected marker-overridden KBM benchmark tests,
-  mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: nonlinear turbulence-gradient composite-control reporting
-  now separates config validation, candidate metadata normalization, row
-  construction, descent-control scaling, and launch-plan text construction; the
-  full nonlinear-gradient follow-up test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: differentiated objective-portfolio sensitivity reporting
-  now separates portfolio weight packing, row/scalar objective function
-  construction, contract validation, scalar/row AD-FD gates, and final
-  conditioning/covariance payload assembly; focused stellarator/portfolio
-  sensitivity tests, mypy, architecture, repository-size, and diff hygiene
-  passed locally.
-- this checkpoint: observable-gradient AD/FD validation now separates
-  conditioning-array validation, SVD/norm statistics, worst-entry extraction,
-  finite-difference step metadata, derivative construction, gate evaluation,
-  and report assembly. The tangent AD/FD acceptance gate now uses the same
-  entrywise absolute-or-relative tolerance semantics as the Jacobian gate,
-  fixing a zero-reference tangent regression; differentiable-geometry and
-  full differentiable-geometry-bridge shards, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: differentiable solver-objective evaluation now shares one
-  solver-geometry context builder and explicit operator-matrix route across
-  matrix, growth-rate, and full objective-vector evaluators. Dominant-branch
-  extraction and linear/quasilinear transport-weight computation are separate
-  helpers, reducing duplication in the stellarator optimization objective path;
-  the full solver-objective-gradient test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: VMEC-JAX flux-tube array parity reporting now separates
-  validated parity options, backend availability checks, direct/imported
-  geometry loading, production metric evaluation, equal-arc parity evaluation,
-  exception payloads, and final report packing while preserving the public
-  parity schema and thresholds; focused flux-tube parity tests, the full
-  differentiable-geometry-bridge shard, mypy, architecture, repository-size,
-  and diff hygiene passed locally.
-- this checkpoint: nonlinear NetCDF artifact writing now separates bundle path
-  resolution, required diagnostics validation, output-grid/geometry layout,
-  dimension creation, grid-variable writing, primary ``.out.nc`` writing, and
-  optional restart/``.big.nc`` writing while preserving the saved-output schema;
-  direct nonlinear NetCDF artifact tests, saved-output plotting tests, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: Cyclone Krylov ky-scan branch-following now separates
-  per-ky point preparation, explicit/reduced seed resolution, dominant
-  eigenpair solve dispatch, raw continuation-state updates, and normalized
-  output writing; focused Cyclone scan branch tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: VMEC/Boozer mode-21 linear context construction now
-  separates backend/example loading, VMEC state-parameter resolution,
-  compact linear grid/state-shape setup, geometry closure creation, and
-  solver/cache/matrix closure construction; focused solver-gradient module
-  tests, mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: reduced zonal-flow record normalization now separates
-  per-record metric parsing, optional damping/recurrence accounting, axis
-  construction, duplicate-aware tensor fill, and finite tensor completeness
-  checks; focused zonal objective tests, mypy, architecture, repository-size,
-  and diff hygiene passed locally.
-- this checkpoint: reduced zonal-flow objective artifact assembly now separates
-  normalized record tensor packing, objective row/reduced-value evaluation,
-  promotion-claim metadata, axes/metric serialization, and final JSON payload
-  construction while preserving the public artifact schema; focused zonal
-  objective tests, mypy, architecture, repository-size, and diff hygiene passed
-  locally.
-- this checkpoint: zonal-response plotting now separates trace validation,
-  metric extraction, branchwise extrema overlays, normalized-response rendering,
-  envelope-fit rendering, annotation text, and axis styling while preserving the
-  public ``zonal_flow_response_figure`` contract; the full plotting test file,
-  mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: VMEC/Boozer transport-candidate admission now separates
-  candidate annotation, baseline selection/state construction, metric
-  improvement gates, admitted-candidate collection, promotion selection, and
-  report payload assembly while preserving the existing long-window audit
-  policy; the full VMEC-JAX transport-admission test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: KBM single-point linear paths now separate explicit
-  integrator policy construction, projected-rate fallbacks, direct trace
-  fitting, Krylov target eigenpair evaluation, multi-target branch selection,
-  and final result packaging; focused KBM branch tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: Cyclone scan public orchestration now builds one execution
-  options object and delegates Krylov, reference-explicit, and saved-time
-  solver-path selection to a focused dispatcher; focused Cyclone scan branch
-  tests, broader Cyclone benchmark-runner tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: TEM scan batching now separates runtime scan options,
-  scalar/fixed-width ky iteration, branch routing, and mutable output
-  accumulation from the public scan wrapper; focused TEM scan tests, broader
-  TEM benchmark-runner tests, mypy, architecture, repository-size, and diff
-  hygiene passed locally.
-- this checkpoint: ETG scan orchestration now separates runtime scan options
-  and mutable batch accumulation from the public scan wrapper while preserving
-  Krylov continuation state; focused ETG runner branch tests, benchmark runner
-  branch tests, mypy, architecture, repository-size, and diff hygiene passed
-  locally.
-- this checkpoint: VMEC/Boozer boundary-chain summary classification now
-  separates scalar metric collection, required-finite detection, nonfinite
-  fail-closed payloads, and finite classification payloads; the full boundary
-  chain test file, mypy, architecture, repository-size, and diff hygiene passed
-  locally.
-- this checkpoint: reduced stellarator ITG optimization now separates initial
-  parameter validation, Adam state/update, optimization history, objective
-  AD/FD gate, residual covariance metadata, and nonlinear-window trace payloads;
-  the full stellarator optimization test file, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: geometry inverse-design reporting now separates input
-  validation, selected-observable construction, and Gauss-Newton iteration from
-  the AD/FD/UQ payload assembly; focused differentiable-geometry tests, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: quasilinear transport diagnostics now separate option
-  validation, amplitude-normalized linear flux weights, species labels,
-  saturation-rule application, and claim-scope metadata; focused quasilinear
-  tests, the AD derivative gate, mypy, architecture, repository-size, and diff
-  hygiene passed locally.
-- this checkpoint: VMEC flux-tube cut/remap code now separates field-line
-  sample extraction, interpolation, crossing selection, aspect-cut root solving,
-  and public cut orchestration; full VMEC backend helper tests, mypy,
-  architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: external-VMEC holdout runbook generation now separates
-  gap-report context extraction, candidate ranking, launch-command construction,
-  and fail-closed acceptance-gate policy; focused external-holdout/runbook tests,
-  mypy, architecture, repository-size, and diff hygiene passed locally.
-- this checkpoint: Cyclone single-mode time-path routing now uses an explicit
-  saved-trace object plus separate fit-policy construction and integrator
-  routing helpers; focused Cyclone linear time-path tests, mypy, architecture,
-  repository-size, and diff hygiene passed locally.
-- this checkpoint: Cyclone scan time-branch fitting now uses explicit run,
-  fit, output, and per-batch routing objects; focused Cyclone benchmark branch
-  tests and benchmark-scan tests passed locally.
-- this checkpoint: ETG scan time-path integration and saved-fit appending now
-  use explicit batch/fit contexts with staged streaming, configured-history,
-  unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers;
-  focused ETG scan branch tests and benchmark ETG scan tests passed locally.
-- this checkpoint: KBM single-point linear dispatch now carries one explicit
-  run-options object through explicit-time, Krylov, and saved-time solver-path
-  helpers; focused KBM branch tests and the broader KBM benchmark subset passed
-  locally.
-- this checkpoint: mode-21 VMEC/Boozer gradient reports now share context,
-  observable-vector, sensitivity-gate, and payload-assembly helpers while
-  preserving injected test hooks; focused gradient-gate tests passed locally.
-- this checkpoint: VMEC/Boozer line-search reports now share scalar/aggregate
-  probe builders, common payload assembly, and explicit held-out training/probe
-  helpers; focused line-search tests passed locally.
-- this checkpoint: reduced QA low-turbulence comparison artifacts now split
-  optimized-design generation, per-design diagnostics, gate booleans,
-  comparison metrics, and differentiability-plumbing metadata into focused
-  helpers; focused QA payload/artifact tests passed locally.
-- this checkpoint: explicit linear initial-value integration now stages method
-  validation, adaptive CFL timing, JIT stepper construction, sample-history
-  collection, progress emission, and array packaging behind the stable
-  `integrate_linear_explicit` facade; focused explicit/runtime tests passed
-  locally.
-- this checkpoint: explicit nonlinear runtime diagnostics now pack the broad
-  public signature into one private options object, build state/policy/closure
-  components in named stages, and keep scan finalization isolated; focused
-  nonlinear runtime-diagnostics tests passed locally.
-- this checkpoint: imported flux-tube NetCDF loading now separates schema
-  selection, scalar/profile reads, terminal-theta inference, bgrad/drift/Jacobian
-  conversion, and `FluxTubeGeometryData` packing; focused imported-geometry
-  runtime tests passed locally.
-- this checkpoint: VMEC/Boozer equal-arc core assembly now separates
-  differential geometry evaluation, raw metric coefficients, raw curvature-drift
-  coefficients, equal-arc packing, and final state-to-profile orchestration;
-  focused differentiable-geometry Boozer tests passed locally.
-- this checkpoint: VMEC field-line numerics now split Hegna-Nakajima
-  curvature, normalized metric profiles, magnetic-drift profiles,
-  gradient-vector packing, and flux-surface HNGC averaging into focused stages;
-  Ruff, mypy, focused VMEC field-line helper tests, and repository/refactor
-  manifests passed locally.
-- this checkpoint: nonlinear domain and spectral transport-window identity gates
-  now separate trace collection, trace-error scoring, fail-closed blockers, and
-  report packing while preserving diagnostic-only claim scope; focused nonlinear
-  parallel tests passed locally.
-- this checkpoint: device-z nonlinear spectral routes now separate sharding
-  setup, fail-closed blockers, sharded RHS execution, transport-window sampling,
-  and final report packing while preserving single-device fallback behavior;
-  focused nonlinear parallel tests passed locally.
-- this checkpoint: independent-work parallel execution now separates indexed
-  payload collection, reconstruction contracts, identity reports, exception
-  provenance, ordered executor routing, and metadata packing while preserving
-  ordered-thread/process behavior; focused parallel tests passed locally.
-- this checkpoint: post-refactor device-z transport-window profiling refreshed
-  the logical-CPU artifact on the ``(4,16,96,96,32)`` workload; serial-vs-sharded
-  identity passed for final state, free energy, field energy, physical flux, and
-  bracket RMS, and the fixed-window micro-route reached ``1.61x`` on two CPU
-  devices and ``3.13x`` on four while full-solver production speedup remains
-  blocked until GPU/end-to-end gates pass.
-- this checkpoint: the matching two-GPU device-z transport-window profile was
-  rerun on ``office`` after the compute-route identity fix; identity passed
-  with maximum final-state absolute error ``7.45e-9`` and speedup improved to
-  ``1.48x``, but the route remains below the configured ``1.5x`` production
-  speedup gate.
-- this checkpoint: follow-up two-GPU exploratory profiles on ``office`` showed
-  that simply enlarging the diagnostic workload is not sufficient for a
-  production nonlinear speedup claim: ``(4,16,96,96,64)`` reached only
-  ``1.41x`` and ``(4,16,128,128,32)`` reached only ``1.29x``. A separate
-  16-step ``(4,16,96,96,32)`` run exposed an instrumentation-path final-state
-  mismatch, which is now fixed by comparing final states on the compute-only
-  jitted route used by the profiler while keeping scalar traces on the
-  instrumented path.
-- this checkpoint: local release-hygiene gates passed for release artifacts,
-  package architecture, release readiness, validation/coverage manifest,
-  technical release status, parallelization completion status, quasilinear
-  guardrails, and VMEC/Boozer differentiability claims. Bounded wide-coverage
-  shards 9 and 10 also passed under the documented 48-shard workflow; full
-  package-wide coverage remains a CI/combine gate before release.
-- this checkpoint: release-scope tests now guard core source modules against
-  comparison-code terminology outside the validation benchmark package, keeping
-  benchmark/reference-code names from leaking back into the main solver,
-  geometry, objective, runtime, and artifact APIs. The guard is also routed
-  through the fast release-artifacts CI shard so regressions are caught before
-  the full wide-coverage combine.
-- this checkpoint: runtime/memory benchmark summaries now store compact
-  stdout/stderr byte counts and SHA-256 digests instead of embedding full
-  process logs in tracked JSON artifacts. The tracked release summary shrank
-  from about ``987 kB`` to about ``58 kB`` while preserving the numeric rows
-  needed to regenerate the runtime/memory panel; full logs remain in ignored
-  ``tools_out/runtime_memory_logs`` during local benchmark execution.
-- this checkpoint: cETG reduced nonlinear runtime orchestration now separates
-  setup, adaptive chunked execution, and fixed-step execution behind the stable
-  public workflow function. The public nonlinear cETG entry point shrank from
-  the largest active workflow hotspot to a small dispatcher while preserving
-  the same integrator, dependency injection, progress messages, and runtime
-  result schema.
-- this checkpoint: cETG reduced linear runtime orchestration now mirrors that
-  staged structure with explicit setup, time-series integration, growth/frequency
-  fitting, and result-packing helpers. The public linear cETG workflow remains
-  API-compatible but is no longer responsible for grid construction, coefficient
-  construction, integration, fitting, and output assembly in one block.
-- this checkpoint: runtime linear diagnostic fitting now separates input
-  normalization, automatic phi/density candidate scoring, explicit-signal
-  fitting, eigenfunction extraction, and result packing. A focused regression
-  test covers automatic selection of the higher-scored density channel so the
-  executable fit-signal policy remains stable after the split.
-- this checkpoint: nonlinear adaptive-CFL frequency evaluation now separates
-  rFFT-compressed gradients, full-complex gradients, electromagnetic Apar/Bpar
-  speed accumulation, and final x/y frequency reduction. The public helper keeps
-  the same CPU/GPU batching policy and is covered by zero/finite and spectral
-  gradient CFL tests.
-- `53c99703` Refactor stellarator transport prelaunch report.
-- `f39eda6f` Refactor nonlinear optimization guard orchestration.
-- `726ccdab` Refactor nonlinear replicate spread diagnostics.
-- `2885a231` Refactor nonlinear gradient state runbook.
-- `f293792d` Refactor nonlinear gradient QL seed screening.
-- `fd7e6344` Refactor nonlinear gradient evidence gap report.
-- `110544cf` Refactor nonlinear gradient candidate design.
-- `658cd0cd` Refactor nonlinear replicate followup planning.
-- `6115f94f` Refactor runtime scan orchestration stages.
-- `74e5115f` Refactor cached linear integrator stages.
-- `ad126cac` Refactor electromagnetic field solve stages.
-- `9bc5d905` Refactor VMEC Boozer finite difference gates.
-- this checkpoint: linear dissipation assembly now separates species collision
-  frequency validation, Laguerre collision-base construction, moment-restoring
-  collision corrections, constant hypercollision damping, parallel
-  hypercollision source construction, and linked/nonlinked ``|k_z|`` application.
-  The linear RHS profiler now reuses the production hypercollision source helper
-  and guards linked-only profiling inputs explicitly, reducing profiler/solver
-  drift while preserving the tested formulas.
-- this checkpoint: linked streaming now separates Hermite ladder construction,
-  electrostatic/electromagnetic field-drive injection, safe inverse-temperature
-  handling, and periodic-vs-linked parallel derivative application. The public
-  streaming contribution keeps the same schema and numerical route, while the
-  full comparison shard and disabled-field assembly regressions passed locally.
-- this checkpoint: diamagnetic linear drive assembly now separates Laguerre
-  gradient profiles, scalar drift-frequency factors, electrostatic/magnetic
-  compression drives, and Apar temperature-profile drives. The comparison
-  regression shard and the production-vs-sharded diamagnetic drive identity
-  check passed locally, with the multi-device logical-device case skipped on
-  this single-device backend as expected.
-- this checkpoint: the nonlinear scan integrator now separates method
-  validation, projection, RHS casting, optional progress callbacks, and each
-  explicit update family (Euler, RK2, RK3/SSP-like variants, RK4, and K10)
-  into traceable helpers. The public jitted scan API and field-history schema
-  are unchanged; method-amplification, observed-order, projection, progress,
-  nonlinear smoke, architecture, repository-size, and diff-hygiene gates passed
-  locally.
-- this checkpoint: explicit adaptive-CFL frequency bounds now separate spectral
-  grid bounds, species/gradient scales, effective geometry/non-twist scales,
-  radial drift, binormal/diamagnetic drift, electron pressure, and parallel
-  streaming/Alfven guards. The public ``_linear_frequency_bound`` policy and
-  return schema are unchanged; static checks, selected-ky CFL preservation,
-  nonlinear CFL component gates, integration-marked adaptive-dt caps,
-  architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: opt-in parallel linear RHS dispatch now separates route
-  normalization, serial aliasing, auto-backend resolution, Hermite-axis
-  admission checks, and each gated velocity backend (streaming-only,
-  electrostatic streaming, and electrostatic slices). The public dispatch
-  semantics and error messages are preserved; focused dispatch tests, helper
-  branch tests, serial-vs-parallel identity gates, architecture, repository-size,
-  and diff-hygiene gates passed locally.
-- this checkpoint: linked-boundary linear-cache construction now separates kx
-  link maps, linked FFT/gather metadata, linked end-damping profile construction,
-  and final dictionary packing. Twist-shift and periodic/no-twist behavior are
-  unchanged; selected-ky linked FFT, periodic zero-shear, linked non-twist cache,
-  geometry-grid twist-shift, static, architecture, repository-size, and
-  diff-hygiene gates passed locally.
-- this checkpoint: linked FFT map construction now separates active-mode
-  selection, left/right neighbor-map construction, directional chain counting,
-  chain-length grouping, full-grid kx index restoration, linked chain index
-  packing, and linked kz construction. The public linked-map schema is
-  unchanged; linked-map unit tests, linked FFT operator identity/gather tests,
-  integration-marked selected-ky and one-link derivative tests, linked-cache
-  contracts, static checks, architecture, repository-size, and diff-hygiene
-  gates passed locally.
-- this checkpoint: log-linear growth-window selection now separates immutable
-  option validation, search-state preparation, candidate scoring, fallback
-  window selection, and positive-growth retry policy. The public
-  ``select_fit_window_loglinear`` API and fit-window semantics are unchanged;
-  focused log-linear validation/fallback tests, the full analysis diagnostic
-  shard, static checks, architecture, repository-size, and diff-hygiene gates
-  passed locally.
-- this checkpoint: shift-invert Krylov mode extraction now separates GMRES
-  operator/preconditioner construction, transformed Ritz-spectrum recovery,
-  frequency/sign masks, nearest-shift fallback selection, growth/target/overlap
-  selection, and per-restart vector reconstruction. The jitted
-  ``dominant_eigenpair_shift_invert_cached`` signature and numerical policy are
-  unchanged; Krylov core tests, the integration-marked Hermite-line
-  shift-invert run, benchmark shift-policy helper tests, static checks,
-  architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: plain Arnoldi and IMEX-propagator Krylov extraction now share
-  frequency/sign mask construction, target/overlap mode selection, and Ritz
-  vector reconstruction helpers while preserving their distinct fallback
-  policies. The public jitted solver signatures are unchanged; the full Krylov
-  core shard, integration-marked shift-invert smoke run, static checks,
-  architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: fixed-step IMEX nonlinear diagnostic integration now uses
-  explicit preparation, runtime, diagnostic, and scan option bundles around the
-  compatibility entry point. The public
-  ``integrate_imex_nonlinear_diagnostics_impl`` signature and scan behavior are
-  unchanged; nonlinear IMEX unit tests, nonlinear package-export tests, static
-  checks, architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: standalone Miller weighted finite differences now separate
-  centered nonuniform-grid stencils, one-sided odd-parity endpoints, 1D
-  theta/radial contracts, and 2D theta/radial contracts. The legacy public
-  ``dermv`` shape and endpoint behavior are unchanged; Miller low-level tests,
-  standalone Miller generator tests, internal Miller backend tests, runtime
-  Miller config/helper tests, static checks, architecture, repository-size, and
-  diff-hygiene gates passed locally.
-- this checkpoint: streaming Diffrax linear integration now separates fit-window
-  and monitored-mode options, solve/JIT/sharding options, packed-state
-  preparation, Diffrax term construction, solve execution, and output
-  finalization. The public ``integrate_linear_diffrax_streaming`` signature and
-  streamed growth/frequency semantics are unchanged; focused Diffrax streaming
-  tests, benchmark streaming-hook tests, static checks, architecture,
-  repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: VMEC-state differentiability reports now separate Boozer
-  context loading, VMEC-to-Boozer mapping closure construction, Boozer
-  flux-tube report packing, and VMEC field-line tensor payload construction.
-  Public optional-backend report APIs and fail-closed behavior are unchanged;
-  VMEC/Boozer optional-backend report tests, facade and refactor-manifest tests,
-  AD/FD helper tests, static checks, architecture, repository-size, and
-  diff-hygiene gates passed locally.
-- this checkpoint: Boozer-transform differentiable bridge helpers now separate
-  Boozer output preparation, field-line sampling, smooth metric/drift closure
-  construction, flux-tube mapping packing, two-parameter demo input
-  construction, fail-closed sensitivity reports, and successful report packing.
-  The public Boozer mapping and AD/FD sensitivity report contracts are
-  unchanged; focused Boozer bridge tests, facade tests, static checks,
-  architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: linear hypercollision contribution assembly now separates
-  inactive-operator early exits, static ``k_z`` branch skips, and the
-  linked-field-line parallel hypercollision contribution from the public
-  physics API. The formula, linked FFT routing, and zero-operator behavior are
-  unchanged; direct hypercollision formula/skip/link tests, profiling helper
-  tests, static checks, architecture, repository-size, and diff-hygiene gates
-  passed locally.
-- this checkpoint: fixed-step linear integration dispatch now separates
-  sampling validation, cache construction, public method alias normalization,
-  implicit solver routing, non-serial explicit routing, and serial/donated
-  explicit routing. Public ``integrate_linear`` behavior is unchanged;
-  non-integration wrapper/cached-implementation routing tests, static checks,
-  architecture, repository-size, and diff-hygiene gates passed locally. The
-  small-grid ``tests/test_linear.py`` nodes remain integration-marked and are
-  not part of the bounded default local shard.
-- this checkpoint: implicit linear integration now separates fixed-point GMRES
-  warm-start construction, one-step GMRES solve routing, and field diagnostic
-  evaluation from the scan driver. Preconditioner construction, solve
-  tolerances, sampled output semantics, and public behavior are unchanged;
-  implicit preconditioner tests, sampled implicit-step tests, static checks,
-  architecture, repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: nonlinear electromagnetic bracket entry points now share a
-  prepared-path helper for state normalization, dealiased field preparation,
-  Laguerre-grid availability, and electrostatic-vs-electromagnetic routing.
-  Public contribution/component APIs and spectral/Laguerre semantics are
-  unchanged; the full nonlinear bracket shard, static checks, architecture,
-  repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: linked-field-line FFT operators now separate input
-  validation, flattened linked-chain state preparation, per-chain FFT updates,
-  covered-row discovery, gather/full-cover/scatter reconstruction paths, and
-  real-FFT conjugate restoration. Numerical routing for linked derivatives and
-  ``|k_z|`` hypercollision remains unchanged; linked-operator tests, linked
-  hypercollision regressions, static checks, architecture, repository-size, and
-  diff-hygiene gates passed locally.
-- this checkpoint: velocity-space parallel field and diamagnetic-drive helpers
-  now share single-species state/plan validation, Laguerre-weight normalization,
-  and Hermite-shard mesh/spec construction. Reference fallbacks, logical-device
-  shard-map behavior, and error policy are unchanged; the full velocity-sharding
-  shard, static checks, architecture, repository-size, and diff-hygiene gates
-  passed locally.
-- this checkpoint: whole-state nonlinear sharded integration now separates
-  state/dt/method setup, Hermitian projection and sharding constraints, nonlinear
-  RHS closure construction, explicit scan-step construction, device placement,
-  and final-only vs field-history dispatch. Public diagnostic sharded-integrator
-  behavior is unchanged; sharded integrator tests, static checks, architecture,
-  repository-size, and diff-hygiene gates passed locally.
-- this checkpoint: cached nonlinear IMEX scans now separate implicit-operator
-  resolution, state rank/dtype normalization, nonlinear-term and GMRES step
-  construction, checkpointed scan dispatch, and single-species output squeezing.
-  Public cached-IMEX behavior is unchanged; focused IMEX tests, cached nonlinear
-  forwarding tests, static checks, and local repository gates passed.
-- this checkpoint: linear explicit stepping now separates the reusable staged
-  RHS closure, RK3/RK4/SSPX3/K10 formulas, method dispatch, post-step spectral
-  masking, and final field solve. Public explicit-step behavior is unchanged;
-  scalar amplification, mask, static, and repository gates passed locally.
-- this checkpoint: nonlinear explicit stepping now separates RK/SSP/K10 state
-  updates, adaptive diagnostic time-step advancement, optional collision split,
-  diagnostic selection, and progress emission. Public explicit nonlinear
-  behavior is unchanged; explicit-step tests, package export tests, static
-  checks, and local repository gates passed.
-- this checkpoint: turbulent-heating diagnostics now separate species-axis
-  normalization, safe time increments, masked field derivatives, moment
-  reconstruction, and per-species heating assembly. Diagnostic formulas are
-  unchanged; zero-field, steady-state, resolved-sum, zero-dt, static, and local
-  repository gates passed.
-- this checkpoint: linear cache k_perp/drift construction now separates NTFT
-  metric assembly, standard geometry assembly, and dealias masking. Cache output
-  policy is unchanged; current cache helper tests, static checks, collection
-  audit for non-collected legacy linear tests, and local repository gates passed.
-
-Latest local gates for these tranches included focused pytest shards, Ruff, mypy,
-`py_compile`, Sphinx build, differentiable-refactor manifest, repository-size
-manifest, and `git diff --check`.
-
-## Verification Cadence
-
-For each focused tranche:
-
-1. Inspect current worktree and branch state.
-2. Identify the smallest behavior-preserving boundary that improves readability,
-   testability, performance clarity, or claim safety.
-3. Refactor with no schema or public-behavior changes unless intentionally
-   planned.
-4. Run focused tests that cover the touched behavior.
-5. Run Ruff, mypy, `py_compile`, `git diff --check`.
-6. Run repository-size manifest before commits that touch docs, examples,
-   figures, or logs.
-7. Run Sphinx when docs or API-doc-visible modules change.
-8. Commit and push.
-9. Check CI for real failures after it has had time to run; do not waste time
-   polling queued jobs.
-
-## Deferred or Scoped Claims
-
-These remain explicit until stronger evidence exists:
-
-- Universal absolute quasilinear flux prediction is scoped as model development
-  unless holdout gates prove otherwise.
-- Full production nonlinear turbulent-flux stellarator optimization requires
-  long post-transient matched baseline-vs-optimized windows across broader
-  surfaces/field lines/geometries.
-- Nonlinear domain-decomposition speedup requires serial-vs-decomposed identity
-  gates and profiler-backed CPU/GPU scaling artifacts.
-- W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
-  extensions are post-release science lanes unless explicitly reprioritized.
-
-## Actual Open Lanes
-
-Release-blocking technical lanes for `v1.6.8` are closed: latest `main` CI is
-passing, package-wide coverage is gated above 95%, no source function remains at
-or above 90 lines, and the architecture/repository-size/release manifests pass.
-The remaining work is therefore a finite post-release closure campaign, not an
-emergency stabilization pass.
-
-1. **Release/docs/readme closure**
-   - Keep the README concise and keep detailed derivations in docs.
-   - Keep the runtime/memory comparison figure visible in the README using
-     `docs/_static/runtime_memory_benchmark.png` and regenerate it only from
-     fresh measured artifacts.
-   - Run docs build, package build, fast local shards, release-readiness,
-     architecture, repository-size, and coverage/CI gates before the next tag.
-
-2. **Code/file simplification**
-   - The package currently has roughly 358 Python source files and 106k source
-     lines.  The problem is no longer giant functions; it is navigation cost and
-     too many narrow helper modules in validation, runtime, objective, and
-     artifact/report surfaces.
-   - Consolidate single-use helper modules back into nearby domain packages
-     when this reduces navigation cost without making public functions long
-     again.
-   - Remove legacy aliases/examples/output names that are not part of current
-     validated workflows.
-   - Keep comparison-code names only in benchmark/comparison context; source
-     names should describe the physics or numerical method.
-
-3. **Benchmark parity and physics validation**
-   - Maintain reproducible comparisons against independent reference
-     calculations, including GX on `ssh office`, only as benchmark/parity
-     evidence.
-   - Re-run GX/SPECTRAX-GK comparisons only when a touched numerical path,
-     runtime policy, geometry convention, or figure claim requires it.
-   - Keep W7-X zonal long-window recurrence/damping and W7-X TEM/multi-flux-tube
-     extensions explicitly post-release unless reprioritized.
-
-4. **Differentiability and optimization evidence**
-   - Preserve AD/FD or tangent checks for every exposed differentiated
-     observable.
-   - VMEC/Boozer bridge claims require geometry parity plus gradient gates before
-     broader optimization claims.
-   - Nonlinear turbulent-flux optimization requires long post-transient matched
-     baseline-vs-optimized windows across broader surfaces/field lines before
-     manuscript-level promotion.
-
-5. **Performance and memory**
-   - Production claims require profiler-backed CPU/GPU artifacts and
-     serial-vs-decomposed numerical identity gates.
-   - Current production parallelization remains independent-work batching; whole
-     state nonlinear domain decomposition remains diagnostic until a full solver
-     route clears speedup gates.
-   - Refresh README/docs runtime/memory panels only when the measured artifact
-     set changes.
-
-6. **Quasilinear model scope**
-   - Universal absolute quasilinear heat-flux prediction remains explicitly not
-     promoted.
-   - Current claims stay at diagnostics/model-development/screening scope unless
-     held-out nonlinear transport-error gates pass.
-
-## Post-Release Refactor Audit
-
-The current refactor target is not "more files" and not another wave of thin
-modules.  The package has the domain layout needed for maintainability and no
-large-function emergency remains.  The next version should reduce navigation
-cost, stabilize extension boundaries, and keep the public API simple.
-
-Current audited structure from the working tree:
-
-- package Python files: 358;
-- package source lines: roughly 106k;
-- no blocked root-prefix modules remain under the architecture manifest;
-- source functions at or above 100 lines: 0;
-- source functions at or above 90 lines: 0;
-- source functions at or above 80 lines: 54;
-- the largest remaining functions are mostly validation, runtime/report,
-  geometry-gradient, linear-solver, and nonlinear-policy orchestration.
-
-Efficient refactor policy for the next version:
-
-1. Do not split more code just to reduce line count. Split only when it creates
-   a tested policy boundary, removes duplication, isolates a differentiable pure
-   path, or makes a profiler target clearer.
-2. Prefer consolidation over new files when a helper is single-use and the
-   caller remains below roughly 90 lines after consolidation.
-3. Keep stable public facades for `spectraxgk`, executable/runtime workflows,
-   and documented examples; simplify internals behind those facades.
-4. Remove legacy compatibility paths when they support behavior we no longer
-   document or validate.
-5. Keep executable/runtime code user-friendly and allowed to be side-effectful;
-   keep Python differentiable objective paths pure, JAX-friendly, and
-   independently gate-tested.
-6. Keep performance work separate from cleanup unless the same commit includes
-   numerical-identity and profiler evidence.
-
-Highest-value remaining refactor tranches:
-
-| Priority | Tranche | Scope | Done When |
-| ---: | --- | --- | --- |
-| 1 | Runtime/artifact navigation | `workflows/runtime/*`, artifact writers, plotting/report handoff | Fewer single-use files or clearer grouping; schemas unchanged; runtime/plot tests pass. |
-| 2 | Objective/differentiability surfaces | VMEC/Boozer, QA low-turbulence, solver-gradient report helpers | Pure objective evaluation, AD/FD gates, and report assembly are easier to find; gradient tests pass. |
-| 3 | Validation benchmark drivers | Cyclone/ETG/KBM/TEM scan wrappers and branch policies | Scan controls, execution, fitting, and result packing stay covered by focused branch tests. |
-| 4 | Geometry bridge/reporting | VMEC/Boozer metric, interpolation, parity, and sensitivity reports | Geometry parity and gradient gates remain pass/fail artifacts with clear provenance. |
-| 5 | Naming cleanup | non-benchmark `gx`, ambiguous `runtime_*`, stale reduced-model names | Names describe physics/numerics; benchmark-only comparisons remain scoped. |
-
-## Next-Version Closure Plan
-
-The next version should be cut only after these finite gates are satisfied, in
-this order:
-
-1. **Release-state audit**
-   - confirm `main` CI is green;
-   - run `ruff`, fast pytest shards, package build, docs build,
-     architecture/repository-size/release-readiness manifests;
-   - confirm package-wide coverage remains above 95% in CI.
-
-2. **README/docs final pass**
-   - keep the runtime/memory figure and table near the top of the README after
-     highlights;
-   - ensure the README says only the scoped current claims;
-   - ensure docs contain the full equations, numerics, examples, validation
-     matrix, performance evidence, and benchmark provenance;
-   - do not add new runtime/speedup/science claims without matching artifacts.
-
-3. **Minimal code simplification pass**
-   - reduce navigation cost in one or two high-value clusters, prioritizing
-     runtime/artifacts and objective/differentiability helpers;
-   - avoid expanding file count;
-   - delete legacy paths only with tests/docs updated in the same commit.
-
-4. **Performance evidence pass**
-   - if the runtime/memory panel is refreshed, regenerate it from fresh CPU/GPU
-     measured artifacts and keep W7-X/HSX visible;
-   - make no nonlinear-domain speedup claim unless identity and profiler gates
-     pass on the exact workload.
-
-5. **Benchmark/parity pass**
-   - use GX on `ssh office` only for benchmark lanes touched since the last
-     release or for figures/claims being refreshed;
-   - store only compact, reproducible summary artifacts in git.
-
-6. **Release pass**
-   - update version only after the above gates pass on the pushed commit;
-   - tag and release from `main`;
-   - verify GitHub release workflow and PyPI publish.
-
-## Immediate Next Steps
-
-1. Keep the already-restored README runtime/memory figure, but refresh the
-   artifact only if new measured runtime/memory data are generated.
-2. Do one bounded docs/readme consistency pass to align `README.md`,
-   `docs/performance.rst`, `docs/release_scope.rst`, and `docs/code_structure.rst`
-   with the current `v1.6.8` state and the `>=90: 0` refactor audit.
-3. Do one targeted simplification pass in runtime/artifact or
-   objective/differentiability internals, with no net increase in source-file
-   count unless a new extension boundary is justified.
-4. Run the release-readiness gate set; if green, the next version can be cut or
-   the science/performance lanes can continue as post-release work.
-
-## Latest Refactor Log
-
-- 2026-06-20: split `run_cyclone_linear` into a stable public facade plus a
-  typed `_CycloneLinearRequest`, request-to-fit-policy assembly, status routing,
-  and private request runner.  This preserved the public API and Cyclone result
-  schema while dropping the public wrapper from 108 lines to 41 lines.
-- Focused gates passed for this tranche: Ruff, mypy, Cyclone linear branch
-  tests, explicit integration invalid-option entrypoint test, differentiable
-  refactor manifest, architecture manifest, repository-size manifest, and
-  `git diff --check`.
-- 2026-06-20: split `run_cyclone_time_path` into a stable public facade plus a
-  typed `_CycloneTimePathRequest`, request-to-control assembly, and private
-  reference-aligned/saved-time dispatch.  This preserved the time-path branch
-  behavior while removing the largest remaining validation-driver hotspot.
-- Focused gates passed for the time-path tranche: Ruff, mypy, Cyclone linear
-  branch tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, and `git diff --check`.
-- 2026-06-20: split the ETG ky-scan driver into a stable public facade, typed
-  `_ETGScanRequest`, request-to-setup/runtime assembly, and batch execution that
-  consumes `_ETGScanRuntimeOptions` plus the scan accumulator.  This removed the
-  two ETG scan hotspots while preserving scan result schemas and solver branch
-  behavior.
-- Focused gates passed for the ETG scan tranche: Ruff, mypy, ETG scan branch
-  tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, and `git diff --check`.
-- 2026-06-20: split `run_tem_linear` into a stable public facade plus
-  `_TEMLinearRequest`, setup/state helpers, and private Krylov/time dispatch.
-  TEM scan species-index validation now reuses the same helper.  This preserved
-  TEM result schemas and solver branch behavior while removing the TEM linear
-  wrapper hotspot.
-- Focused gates passed for the TEM tranche: Ruff, mypy, TEM branch tests,
-  differentiable refactor manifest, architecture manifest, repository-size
-  manifest, and `git diff --check`.
-- 2026-06-20: split `run_kbm_linear` into a stable public facade plus
-  `_KBMLinearRequest`, request-to-setup/options assembly, and private solver
-  dispatch.  Existing KBM setup/state/solver helpers were reused, preserving
-  solver selection and output schemas.
-- Focused gates passed for the KBM linear tranche: Ruff, mypy, KBM linear branch
-  tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, and `git diff --check`.
-- 2026-06-20: split kinetic-electron scan control assembly into a typed
-  `_KineticScanControlRequest`, request construction from the public wrapper,
-  and a shorter setup/run/fit-control resolver.  This preserved
-  `run_kinetic_scan` inputs and scan output schema while removing the kinetic
-  control hotspot.
-- Focused gates passed for the kinetic scan tranche: Ruff, mypy, kinetic scan
-  branch tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, and `git diff --check`.
-- 2026-06-20: split `run_kbm_beta_scan` into a stable public facade plus a
-  `_KBMBetaScanRequest` and private request runner.  Existing beta-scan setup,
-  fit-policy, option, and per-beta loop helpers were reused, preserving fixed-ky
-  beta-scan behavior and output schema.
-- Focused gates passed for the KBM beta tranche: Ruff, mypy, KBM beta branch
-  tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, and `git diff --check`.
-- 2026-06-20: split `run_etg_linear` into a stable public facade plus
-  `_ETGLinearRequest` and a private request runner.  The Krylov-first auto
-  solver policy, time-path fallback, fit-signal validation, and output schema
-  are unchanged.
-- Focused gates passed for the ETG linear tranche: Ruff, mypy, ETG linear branch
-  tests, differentiable refactor manifest, architecture manifest,
-  repository-size manifest, release-readiness check, and `git diff --check`.
-- 2026-06-20: split nonlinear transport audit and landscape admission report
-  builders into explicit metric extraction, blocker evaluation, candidate-row
-  assembly, selection, and next-action helpers.  This preserves the
-  VMEC/Boozer nonlinear turbulent-flux optimization evidence schemas while
-  making the fail-closed policy boundaries smaller and easier to test.
-- Focused gates passed for the transport-admission tranche: Ruff, focused mypy,
-  transport admission tests, landscape/audit builder-script tests,
-  architecture manifest, repository-size manifest, differentiable-refactor
-  manifest, release-readiness check, and `git diff --check`.
-- 2026-06-20: split nonlinear-gradient same-control bracket-sweep evidence
-  helpers into evidence-config construction, conditioning metric extraction,
-  margin scoring, repeated-bracket stability, gate-name extraction, and staged
-  recommendation predicates.  This preserves the bracket-sweep artifact schema
-  and facade re-exports while making the differentiable turbulent-flux
-  optimization evidence policy easier to audit.
-- Focused gates passed for the nonlinear-gradient bracket tranche: Ruff,
-  focused mypy, full nonlinear-gradient evidence tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest,
-  release-readiness check, and `git diff --check`.
-- 2026-06-20: split nonlinear spectral identity reporting into shared abs/rel
-  error summaries, identity-pass policy helpers, chunk/tile normalization, and
-  RHS report construction.  This preserves the serial-vs-logical-shard identity
-  report schemas while making the nonlinear domain-decomposition performance
-  gate easier to inspect before any future speedup claim.
-- Focused gates passed for the nonlinear spectral identity tranche: Ruff,
-  focused mypy, nonlinear spectral communication/parallel tests, architecture
-  manifest, repository-size manifest, differentiable-refactor manifest,
-  release-readiness check, and `git diff --check`.
-- 2026-06-20: split the public Krylov eigenpair facade into option
-  normalization and branch-dispatch helpers.  This preserves the documented
-  `dominant_eigenpair` API, status messages, branch behavior, and invalid-method
-  error while making the core linear solver routing easier to test and maintain.
-- Focused gates passed for the Krylov facade tranche: Ruff, focused mypy,
-  linear Krylov core tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split ETG scan setup and batch execution so the private setup
-  consumes the typed `_ETGScanRequest` directly and Krylov/time-integration
-  batch branches are separate helpers.  This preserves the public `run_etg_scan`
-  signature, scan result schema, and ETG benchmark branch behavior while
-  removing both ETG scan hotspots.
-- Focused gates passed for the ETG scan tranche: Ruff, focused mypy,
-  ETG runner-branch tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split `run_scan_and_mode` into representative-ky selection,
-  resolution/control extraction, mode-trace execution, fit-window selection,
-  and eigenfunction extraction helpers.  This preserves benchmark scan outputs
-  while removing the scan-plus-mode harness hotspot.
-- Focused gates passed for the scan-harness tranche: Ruff, focused mypy,
-  scan-and-mode tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split auto fit-signal selection into typed auto-window options,
-  fit-signal candidate scoring, and candidate comparison helpers.  This
-  preserves the phi/density auto-selection policy while making the benchmark
-  growth-rate fitting gate easier to inspect and unit test.
-- Focused gates passed for the fit-signal tranche: Ruff, focused mypy,
-  auto-fit and benchmark-helper tests, architecture manifest, repository-size
-  manifest, differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split the configured linear runtime dispatcher into a typed
-  `_RuntimeLinearRequest`, reduced-model guard, full-model dispatch helper, and
-  status-routing helper.  This preserves CLI/runtime behavior while making the
-  user-facing runtime branch policy smaller and easier to test.
-- Focused gates passed for the runtime-linear dispatcher tranche: Ruff,
-  focused mypy, runtime-linear helper tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, release-readiness
-  check, and `git diff --check`.
-- 2026-06-20: split nonlinear heat-flux convergence metrics into finite-sample
-  validation, post-transient window selection, terminal-window selection, trend
-  extraction, and summary construction.  This preserves the long-window
-  transport-convergence gate while making its acceptance policy more auditable.
-- Focused gates passed for the heat-flux convergence tranche: Ruff, focused
-  mypy, nonlinear-window convergence tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, release-readiness
-  check, and `git diff --check`.
-- 2026-06-20: split `run_tem_scan` into a stable public facade, typed
-  `_TEMScanRequest`, scan setup resolver, and private request runner.  This
-  preserves the TEM scan API, species-index validation, batching policy, and
-  scan-result schema while aligning TEM with the other benchmark drivers.
-- Focused gates passed for the TEM scan tranche: Ruff, focused mypy,
-  TEM scan branch tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split `run_kbm_scan` into a stable public facade, typed
-  `_KBMScanRequest`, request-to-options helper, and private request runner.
-  This preserves the fixed-beta KBM scan API, per-mode array forwarding,
-  reference-alignment behavior, and scan-result schema.
-- Focused gates passed for the KBM scan tranche: Ruff, focused mypy,
-  KBM scan branch tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.
-- 2026-06-20: split electrostatic-potential startup inversion into target
-  species validation, masked-gauge handling, quasineutrality denominator
-  construction, zonal density-average correction, and target-species density
-  projection helpers.  This preserves the `init_field='phi'` startup physics
-  while making the density-moment inversion easier to review.
-- Focused gates passed for the runtime initial-phi tranche: Ruff, focused mypy,
-  runtime-helper initialization tests, architecture manifest, repository-size
-  manifest, differentiable-refactor manifest, release-readiness check, and
-  `git diff --check`.  `tests/test_runtime_runner.py` node selection returned
-  pytest exit code 5 in this environment, so the focused runtime-helper tests
-  were used for the bounded local check.
-- 2026-06-20: split the weighted imported-geometry centered-difference kernel
-  into a shared nonuniform center stencil plus explicit 1D/2D radial/theta
-  endpoint-policy helpers.  This preserves the finite-difference contract while
-  making the endpoint parity and axis policies auditable in isolation.
-- Focused gates passed for the geometry-kernel tranche: Ruff, focused mypy,
-  weighted/centered finite-difference geometry tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split the internal Miller-to-EIK pipeline into request
-  normalization, geometry normalization, equal-arc grid construction, profile
-  assembly, and writeout stages.  This preserves the Miller runtime backend
-  contract while making the imported-geometry path easier to audit and test.
-- Focused gates passed for the Miller pipeline tranche: Ruff, focused mypy,
-  internal Miller backend tests, Miller runtime request tests, architecture
-  manifest, repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split nonlinear diagnostic-state assembly into scalar energy,
-  scalar transport, resolved heat, resolved particle, and resolved turbulent
-  heating helpers.  This preserves the nonlinear diagnostic tuple schema while
-  making transport diagnostics easier to test and profile independently.
-- Focused gates passed for the nonlinear diagnostic-state tranche: Ruff,
-  focused mypy, nonlinear diagnostic-state tuple tests, nonlinear operator
-  package tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, and release-readiness check.
-- 2026-06-20: split VMEC/Boozer one-parameter line-search control into
-  finite-difference probe capture, sample-metadata capture, history-row
-  construction, candidate acceptance policy, and one-step update helpers.  This
-  preserves scalar and aggregate line-search behavior while making optimizer
-  gate semantics easier to audit.
-- Focused gates passed for the VMEC/Boozer line-search tranche: Ruff, focused
-  mypy, injected solver-gradient line-search tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split IMEX nonlinear diagnostic integrator option construction
-  into preparation, runtime, diagnostic, and scan option helpers.  This keeps
-  the public IMEX diagnostic API unchanged while making runtime policy packing
-  explicit and easier to test independently of the scan body.
-- Focused gates passed for the IMEX diagnostic-option tranche: Ruff, focused
-  mypy, nonlinear IMEX tests, nonlinear operator package tests, architecture
-  manifest, repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split the VMEC-state to Boozer flux-tube sensitivity report into
-  a private differentiable run helper and the public fail-closed report facade.
-  This preserves the optional-backend report schema while making the
-  VMEC-state -> Boozer -> SPECTRAX-GK AD/FD gate easier to audit.
-- Focused gates passed for the VMEC/Boozer flux-tube sensitivity tranche: Ruff,
-  focused mypy, differentiable geometry bridge tests for the VMEC/Boozer
-  report and shared AD/FD helpers, architecture manifest, repository-size
-  manifest, differentiable-refactor manifest, and release-readiness check.
-- 2026-06-20: split the VMEC/Boozer mode-21 nonlinear-window gradient gate into
-  a reduced-window gate executor and payload assembly helper.  This preserves
-  the reduced nonlinear-window estimator claim scope and JSON report schema
-  while making the differentiability gate easier to audit.
-- Focused gates passed for the VMEC/Boozer nonlinear-window gradient tranche:
-  Ruff, focused mypy, focused solver-gradient tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split the VMEC-JAX WOUT reproducibility gate into WOUT summary
-  value extraction, drift computation, and gate-check assembly helpers.  This
-  preserves the saved-input/WOUT reproducibility report schema while making the
-  stellarator admission policy easier to unit-test and review.
-- Focused gates passed for the WOUT reproducibility gate tranche: Ruff,
-  focused mypy, VMEC-JAX candidate-gate tests, architecture manifest,
-  repository-size manifest, differentiable-refactor manifest, and
-  release-readiness check.
-- 2026-06-20: split the KBM beta saved-time sample path into a private
-  `KBMBetaTimeSampleRequest` plus request router.  This preserves the public
-  KBM beta time-sample API while making streaming-vs-saved-time dispatch easier
-  to test and preventing argument-forwarding sprawl.
-- Focused gates passed for the KBM beta time-sample tranche: Ruff, focused
-  mypy, KBM beta tests, architecture manifest, repository-size manifest,
-  differentiable-refactor manifest, and release-readiness check.
-- 2026-06-21: consolidated executable runtime command option resolution back
-  into `workflows.runtime.commands`, deleting the single-use
-  `workflows.runtime.command_options` module.  This reduces source-file count
-  by one while preserving the runtime command public facade and keeping all
-  source functions below 90 lines.
-- Focused gates passed for the runtime command consolidation: Ruff, focused
-  mypy, runtime-helper and CLI tests, architecture manifest, repository-size
-  manifest, and differentiable-refactor manifest.
-- 2026-06-21: moved the README runtime/memory comparison section directly
-  after Highlights and tightened provenance wording so the public panel points
-  to reviewed measured CPU/GPU summary artifacts rather than implying a fresh
-  regenerated benchmark.  No runtime/memory figure was regenerated in this
-  docs pass.
-- Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 0.
-- Remaining source functions at or above 80 lines: 54.
-
-## Latest Release Log
-
-- `v1.6.8` was merged to `main`, tagged, published to PyPI, and released on
-  GitHub on 2026-06-20.
-- Release readiness, repository-size, architecture, release-artifact,
-  technical-release, package-build, Twine metadata, docs build, GitHub release,
-  and PyPI publish gates passed.
-- PyPI lists `spectraxgk==1.6.8` with wheel and source distribution artifacts.
+# SPECTRAX-GK Final Closure Plan
+
+This is the active execution plan after the `v1.6.8` differentiable
+architecture/refactor release. Detailed chronological history is intentionally
+kept in git commits, release notes, docs artifacts, and CI logs rather than in
+this root file, so the repository stays easy to read and maintain.
+
+## One-Sentence Plan
+
+Ship SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code
+with a small public API, parity with GX only in explicit benchmark/comparison
+lanes, a small and easy-to-manage file structure, physics-anchored tests and
+documentation, differentiable Python workflows for optimization/UQ, and measured
+low-runtime/low-memory CPU/GPU execution shown near the top of the README.
+
+## Authority Map
+
+- `plan.md`: active execution plan, current status, finite closure checklist,
+  and short work log.
+- `docs/architecture_refactor_plan.rst`: authoritative architecture and naming
+  plan.
+- `docs/differentiable_refactor_plan.rst`: differentiability-method appendix and
+  migration traceability.
+- `docs/code_structure.rst`: current source-tree map, not the target design.
+- `docs/release_scope.rst`: claim ledger for README, docs, release notes, and
+  manuscript language.
+- `tools/*manifest*.toml`: executable gates for architecture, repository size,
+  validation coverage, performance, quasilinear claims, parallelization,
+  differentiability, and release readiness.
+
+If these conflict, resolve in this order: release-scope claim ledger for claims,
+architecture plan for layout/naming, executable manifests for gates, and this
+file for execution priority.
+
+## Current Audit Snapshot
+
+Last audited: 2026-06-21 on `main`.
+
+- Latest released tag: `v1.6.8`.
+- Latest pushed commit audited here: `bbd515f0 Move runtime memory panel in README`.
+- Latest CI run for that commit: success. Quick shards, mypy, docs/package build,
+  fast coverage, all 48 wide-coverage shards, and wide coverage combine passed.
+- Package shape: 358 Python files under `src/spectraxgk`, about 106k source
+  lines, 9 root facade modules, and no blocked root-prefix modules under the
+  architecture manifest.
+- Function length: 0 source functions at or above 90 lines; 54 functions in the
+  80-89 line range and 129 functions at or above 70 lines.
+- Tests: package-wide CI coverage gate remains at or above 95% through the wide
+  coverage path.
+- README: runtime/memory comparison panel is visible immediately after
+  Highlights, before current claim scope, and lists W7-X/HSX rows.
+- Benchmarks: benchmark scripts and result manifest live at root `benchmarks/`;
+  raw transient outputs stay out of git.
+- Repository size: large local files are ignored scratch/build/env artifacts.
+  The tracked runtime/memory figure and metadata are small; the release-size
+  gate remains the source of truth.
+
+## Results Already Closed
+
+- Root-level prefix sprawl has been removed from the public package surface.
+- The executable quickstart works with `spectraxgk`, writes reproducible default
+  inputs in the current directory, and supports `spectraxgk --plot` for saved
+  linear/nonlinear outputs.
+- Runtime command options were consolidated without changing public behavior.
+- The README runtime/memory panel was restored near the top and tied to measured
+  artifact provenance.
+- The root `benchmarks/` directory now contains lightweight drivers, TOMLs, and
+  a small result manifest.
+- Release engineering for `v1.6.8` is closed: PyPI/GitHub release passed, CI
+  coverage is wide-sharded, and package/docs builds pass.
+
+## Open Lanes And Priority
+
+Percentages are engineering status estimates, not scientific claims.
+
+| Priority | Lane | Status | Closure Evidence |
+| --- | --- | ---: | --- |
+| P0 | Plan/docs/readme consistency | 99% | This file, architecture docs, README, and release-scope docs agree on current status and claim scope. |
+| P0 | Release hygiene | 98% | Clean `main`, green CI, bounded local release gates, version bump, tag, release workflow, PyPI publish. |
+| P1 | Source simplification and naming | 96% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
+| P1 | Refactor/testability | 97% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
+| P1 | Package coverage and physics tests | 100% gate, 96% margin | Wide package coverage stays >=95%; new tests remain physics/numerics/autodiff/regression tests rather than smoke-only coverage. |
+| P2 | Differentiable Python workflows | 98% scoped | AD/FD, tangent, conditioning, or covariance gates exist for every promoted differentiated observable. |
+| P2 | VMEC/Boozer differentiable geometry | 98% scoped | Geometry parity and gradient gates pass for promoted rows; broad optimization claims stay scoped. |
+| P2 | Performance and memory | 97% scoped | Runtime/memory panel remains measured; no new speedup claim without profiler artifacts and numerical identity gates. |
+| P2 | Production parallelization | 94% scoped | Independent-work parallelization is production; nonlinear domain decomposition remains diagnostic until identity and speedup gates pass. |
+| P3 | Quasilinear model development | 99% scoped | Diagnostics and screening claims documented; universal absolute-flux prediction remains unpromoted. |
+| P3 | Nonlinear turbulent-flux optimization | 91% scoped | Long post-transient matched audits exist for scoped cases; broad optimized stellarator turbulence claim remains unpromoted. |
+| P4 | Deferred W7-X/TEM science | deferred | W7-X zonal long-window recurrence, W7-X TEM/multi-flux-tube, and W7-X fluctuation extensions remain post-release unless explicitly reopened. |
+
+## Final Prioritized Steps
+
+### 1. Freeze the current checkpoint
+
+Goal: preserve the green `main` state before any new release or science push.
+
+- Keep the README runtime/memory panel where it is: after Highlights and before
+  current claim scope.
+- Do not regenerate runtime/memory figures unless fresh CPU/GPU measured
+  artifacts are produced.
+- Keep benchmark/comparison references to GX only in validation, benchmark,
+  performance, and comparison artifacts.
+- Run bounded local gates for any plan/docs/readme-only edits:
+  - `python tools/check_package_architecture_manifest.py`
+  - `python tools/check_repository_size_manifest.py`
+  - `python tools/check_release_readiness.py --out-json /tmp/spectrax_release_readiness.json`
+  - `python -m pytest -q tests/test_check_release_readiness.py tests/test_check_repository_size_manifest.py tests/test_check_release_version.py --maxfail=1`
+  - `python -m ruff check src tests tools benchmarks`
+  - `python -m sphinx -b html docs /tmp/spectrax_docs_plan_build`
+  - `git diff --check`
+
+### 2. Finish source simplification without file sprawl
+
+Goal: make the code easier to navigate without increasing the number of files or
+introducing another wave of thin modules.
+
+- Do not add new root-level modules.
+- Do not split code just to reduce line counts. Split only when the result is a
+  named physics/numerics policy, a differentiability boundary, or a testable
+  artifact contract.
+- Consolidate single-use helpers back into their nearest domain owner when that
+  reduces navigation cost and keeps functions under the architecture gate.
+- Prioritize the current high-value 80-89 line functions only if touched by a
+  feature or bugfix:
+  - `workflows/linear.py::run_full_linear_runtime`
+  - `solvers/nonlinear/imex_diagnostics.py::integrate_imex_nonlinear_diagnostics_impl`
+  - `objectives/vmec_boozer.py::vmec_boozer_solver_objective_table_with_metadata_from_state`
+  - `geometry/vmec_flux_tube_reports.py::vmec_jax_flux_tube_array_parity_report`
+  - `geometry/autodiff_checks.py::_gradient_gate_data`
+- Rename non-benchmark comparison-code terminology in source/tests only where it
+  is not explicitly a benchmark/comparison contract.
+- Remove legacy or compatibility-only examples that are not part of the current
+  documented workflow.
+
+### 3. Keep tests physics-anchored and coverage stable
+
+Goal: keep the 95% package-wide gate green while improving scientific value.
+
+- Add tests only when they protect an equation, numerical method, diagnostic
+  convention, artifact schema, autodiff contract, restart behavior, or known
+  regression.
+- Keep local tests bounded; use CI wide shards for package-wide coverage.
+- Keep optional office/GPU and external-code runs out of the default local test
+  suite, behind manifests and explicit commands.
+- Maintain validation-coverage manifest ownership for any moved module.
+
+### 4. Close differentiable-code guarantees for promoted workflows
+
+Goal: Python research APIs are differentiable and testable, while executable
+paths remain user-friendly and fast.
+
+- Keep pure solver/objective functions free of file I/O, plotting, terminal
+  progress, subprocess calls, global mutable state, and host callbacks.
+- Use native JAX AD for smooth fixed-step/reduced workflows, implicit eigenpair
+  differentiation for isolated linear branches, and implicit/adjoint methods
+  only where finite-difference/tangent gates pass.
+- Keep executable adaptive/progress paths separate from differentiable Python
+  objectives.
+- VMEC/Boozer optimization claims require geometry parity, gradient gates, and
+  claim-scope entries before README promotion.
+
+### 5. Preserve physics validation and scoped parity
+
+Goal: claims stay reviewer-proof and reproducible.
+
+- Keep validated linear/nonlinear atlas cases and release gates intact.
+- Re-run GX on `ssh office` only for touched parity lanes, refreshed public
+  comparison figures, or suspected numerical regressions.
+- Keep unpromoted lanes visible but scoped:
+  - universal absolute quasilinear flux prediction;
+  - broad nonlinear turbulent-flux stellarator optimization;
+  - production nonlinear domain-decomposition speedup;
+  - W7-X zonal long-window recurrence/damping;
+  - W7-X TEM/multi-flux-tube and fluctuation-spectrum extensions.
+
+### 6. Keep performance claims measured
+
+Goal: low runtime and memory footprint are documented only where measured.
+
+- Runtime/memory panel stays in README and docs, backed by:
+  - `docs/_static/runtime_memory_benchmark.png`
+  - `docs/_static/runtime_memory_results_ship_refresh.csv`
+  - `docs/_static/runtime_memory_summary_ship_refresh.json`
+- Refresh the panel only after fresh measured CPU/GPU artifacts include wall
+  time, peak memory, hardware/backend metadata, and W7-X/HSX rows.
+- Make no nonlinear speedup claim without serial-vs-decomposed identity gates,
+  profiler artifacts, and end-to-end CPU/GPU timing.
+
+### 7. Release sequence
+
+Goal: ship the next version only from clean, green `main`.
+
+1. Confirm latest CI is green.
+2. Run bounded local release gates.
+3. Bump version in `pyproject.toml` and `src/spectraxgk/_version.py`.
+4. Run release-version tests and package/docs build.
+5. Commit and push the version bump.
+6. Confirm CI for the bump commit.
+7. Tag `vX.Y.Z` and push the tag.
+8. Verify the GitHub release workflow and PyPI publish path.
+
+## Release Blocking Checklist
+
+- [ ] `main` clean and up to date with `origin/main`.
+- [ ] Latest CI success confirmed.
+- [ ] `plan.md`, `README.md`, `docs/architecture_refactor_plan.rst`,
+      `docs/code_structure.rst`, and `docs/release_scope.rst` agree on scope.
+- [ ] README runtime/memory panel remains near the top and tied to measured
+      artifacts.
+- [ ] No new large tracked artifacts or raw simulation outputs.
+- [ ] Architecture, repository-size, release-readiness, docs, package, and
+      bounded tests pass locally.
+- [ ] Version bump and tag are pushed only after green gates.
+
+## Short Work Log
+
+- 2026-06-21: Audited `main` after `bbd515f0`; latest CI completed
+  successfully. README runtime/memory panel is already restored near the top,
+  benchmark root directory exists with a small result manifest, and the package
+  has 358 Python files, about 106k source lines, 9 root facades, and no source
+  function at or above 90 lines.
+- 2026-06-21: Replaced the oversized root plan log with this finite closure
+  plan. Detailed history remains available through git commits and release/docs
+  artifacts.
