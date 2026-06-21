@@ -1076,8 +1076,16 @@ The next version should be cut only after these finite gates are satisfied:
   mypy, injected solver-gradient line-search tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split IMEX nonlinear diagnostic integrator option construction
+  into preparation, runtime, diagnostic, and scan option helpers.  This keeps
+  the public IMEX diagnostic API unchanged while making runtime policy packing
+  explicit and easier to test independently of the scan body.
+- Focused gates passed for the IMEX diagnostic-option tranche: Ruff, focused
+  mypy, nonlinear IMEX tests, nonlinear operator package tests, architecture
+  manifest, repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 5.
+- Remaining source functions at or above 90 lines: 4.
 - Remaining source functions at or above 80 lines: 57.
 
 ## Latest Release Log
