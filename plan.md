@@ -55,10 +55,10 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 47 functions in the
-  80-89 line range and 125 functions at or above 70 lines after the linear
-  workflow, nonlinear IMEX diagnostic dispatch, and linear implicit
-  preconditioner policy simplifications.
+- Function length: 0 source functions at or above 90 lines; 45 functions in the
+  80-89 line range and 123 functions at or above 70 lines after the linear
+  workflow, nonlinear IMEX diagnostic dispatch, linear implicit
+  preconditioner, and velocity-sharded electrostatic RHS route simplifications.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -111,6 +111,10 @@ Last audited: 2026-06-21 on `main`.
   Hermite-line preconditioners. This preserves the public implicit operator
   contract while reducing the selector itself from the 80-89 line band to a
   small dispatcher.
+- The velocity-sharded electrostatic linear RHS now has named fused-kernel and
+  serial term-contribution helpers. This preserves the existing public
+  dispatch and monkeypatch contract while shortening the fused and serial
+  route bodies out of the 80-89 line band.
 
 ## Open Lanes And Priority
 
@@ -364,3 +368,10 @@ Goal: ship the next version only from clean, green `main`.
   forwarding tests, ruff, mypy, compileall, architecture, repository-size, and
   release-readiness checks passed; the 80-89 line function count dropped from
   48 to 47 and the >=70 count dropped from 126 to 125.
+- 2026-06-21: Simplified the velocity-sharded electrostatic linear RHS in
+  `solvers/linear/parallel_electrostatic.py` by extracting the fused
+  electrostatic RHS kernel and serial streaming/mirror/curvature/diamagnetic
+  contribution helpers. Focused parallel-dispatch and velocity-sharding tests,
+  ruff, mypy, compileall, architecture, repository-size, and
+  release-readiness checks passed; the 80-89 line count dropped from 47 to 45
+  and the >=70 count dropped from 125 to 123.
