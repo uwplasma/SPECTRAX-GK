@@ -1067,8 +1067,17 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, nonlinear diagnostic-state tuple tests, nonlinear operator
   package tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, and release-readiness check.
+- 2026-06-20: split VMEC/Boozer one-parameter line-search control into
+  finite-difference probe capture, sample-metadata capture, history-row
+  construction, candidate acceptance policy, and one-step update helpers.  This
+  preserves scalar and aggregate line-search behavior while making optimizer
+  gate semantics easier to audit.
+- Focused gates passed for the VMEC/Boozer line-search tranche: Ruff, focused
+  mypy, injected solver-gradient line-search tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 6.
+- Remaining source functions at or above 90 lines: 5.
 - Remaining source functions at or above 80 lines: 57.
 
 ## Latest Release Log
