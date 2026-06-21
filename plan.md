@@ -1032,9 +1032,20 @@ The next version should be cut only after these finite gates are satisfied:
   KBM scan branch tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split electrostatic-potential startup inversion into target
+  species validation, masked-gauge handling, quasineutrality denominator
+  construction, zonal density-average correction, and target-species density
+  projection helpers.  This preserves the `init_field='phi'` startup physics
+  while making the density-moment inversion easier to review.
+- Focused gates passed for the runtime initial-phi tranche: Ruff, focused mypy,
+  runtime-helper initialization tests, architecture manifest, repository-size
+  manifest, differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.  `tests/test_runtime_runner.py` node selection returned
+  pytest exit code 5 in this environment, so the focused runtime-helper tests
+  were used for the bounded local check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 11.
-- Remaining source functions at or above 80 lines: 62.
+- Remaining source functions at or above 90 lines: 10.
+- Remaining source functions at or above 80 lines: 61.
 
 ## Latest Release Log
 
