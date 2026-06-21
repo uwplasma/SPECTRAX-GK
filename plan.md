@@ -1084,8 +1084,16 @@ The next version should be cut only after these finite gates are satisfied:
   mypy, nonlinear IMEX tests, nonlinear operator package tests, architecture
   manifest, repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split the VMEC-state to Boozer flux-tube sensitivity report into
+  a private differentiable run helper and the public fail-closed report facade.
+  This preserves the optional-backend report schema while making the
+  VMEC-state -> Boozer -> SPECTRAX-GK AD/FD gate easier to audit.
+- Focused gates passed for the VMEC/Boozer flux-tube sensitivity tranche: Ruff,
+  focused mypy, differentiable geometry bridge tests for the VMEC/Boozer
+  report and shared AD/FD helpers, architecture manifest, repository-size
+  manifest, differentiable-refactor manifest, and release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 4.
+- Remaining source functions at or above 90 lines: 3.
 - Remaining source functions at or above 80 lines: 57.
 
 ## Latest Release Log
