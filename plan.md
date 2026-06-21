@@ -1288,6 +1288,11 @@ this order:
 - Focused gates passed for the runtime command consolidation: Ruff, focused
   mypy, runtime-helper and CLI tests, architecture manifest, repository-size
   manifest, and differentiable-refactor manifest.
+- 2026-06-21: moved the README runtime/memory comparison section directly
+  after Highlights and tightened provenance wording so the public panel points
+  to reviewed measured CPU/GPU summary artifacts rather than implying a fresh
+  regenerated benchmark.  No runtime/memory figure was regenerated in this
+  docs pass.
 - Remaining source functions at or above 100 lines: 0.
 - Remaining source functions at or above 90 lines: 0.
 - Remaining source functions at or above 80 lines: 54.
