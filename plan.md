@@ -1092,9 +1092,17 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, differentiable geometry bridge tests for the VMEC/Boozer
   report and shared AD/FD helpers, architecture manifest, repository-size
   manifest, differentiable-refactor manifest, and release-readiness check.
+- 2026-06-20: split the VMEC/Boozer mode-21 nonlinear-window gradient gate into
+  a reduced-window gate executor and payload assembly helper.  This preserves
+  the reduced nonlinear-window estimator claim scope and JSON report schema
+  while making the differentiability gate easier to audit.
+- Focused gates passed for the VMEC/Boozer nonlinear-window gradient tranche:
+  Ruff, focused mypy, focused solver-gradient tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 3.
-- Remaining source functions at or above 80 lines: 57.
+- Remaining source functions at or above 90 lines: 2.
+- Remaining source functions at or above 80 lines: 56.
 
 ## Latest Release Log
 
