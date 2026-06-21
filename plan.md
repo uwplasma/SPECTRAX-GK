@@ -1,7 +1,7 @@
 # SPECTRAX-GK Final Closure Plan
 
-This is the active execution plan after the `v1.6.8` differentiable
-architecture/refactor release. Detailed chronological history is intentionally
+This is the active execution plan for the `v1.6.9` compact release checkpoint
+after the differentiable architecture/refactor work. Detailed chronological history is intentionally
 kept in git commits, release notes, docs artifacts, and CI logs rather than in
 this root file, so the repository stays easy to read and maintain.
 
@@ -36,11 +36,12 @@ file for execution priority.
 
 Last audited: 2026-06-21 on `main`.
 
-- Latest released tag: `v1.6.8`.
-- Latest pushed commit audited here: `a6e9fb35 Clarify final closure plan`.
-- Latest completed green CI before the local simplification tranche:
-  `bbd515f0 Move runtime memory panel in README`. The `a6e9fb35` CI run was
-  still in progress at this audit point and must be rechecked before release.
+- Latest released tag before this checkpoint: `v1.6.8`.
+- Release target for this checkpoint: `v1.6.9`.
+- Latest pushed commit audited here: `3e8dd615 Consolidate runtime command artifact policy`.
+- Latest completed green CI before the version bump: `3e8dd615`. Quick shards,
+  mypy, docs/package build, fast coverage, all 48 wide-coverage shards, and
+  wide coverage combine passed.
 - Package shape: 357 Python files under `src/spectraxgk`, about 106.6k source
   lines, 9 root facade modules, and no blocked root-prefix modules under the
   architecture manifest.
@@ -251,3 +252,5 @@ Goal: ship the next version only from clean, green `main`.
   `workflows/runtime/orchestration_artifacts.py`, updated docs/manifests/tests,
   and reduced package source count to 357 files while preserving runtime command
   saved-output and stdout behavior.
+- 2026-06-21: Green CI confirmed for `3e8dd615`; prepared the `v1.6.9`
+  release checkpoint without regenerating runtime/memory artifacts.
