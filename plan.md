@@ -31,15 +31,15 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `7224a143 Simplify QA low turbulence optimizer`.
-- Worktree at audit start: clean after the QA optimizer source tranche; this
+  `b5cc04b9 Simplify Cyclone scan setup policy`.
+- Worktree at audit start: clean after the Cyclone scan source tranche; this
   plan update is the only pending repo-level change.
 - Latest CI state at audit: verify the newest non-superseded `main` run before
   release tagging; do not spend time watching runs that were cancelled by newer
   pushes.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 30 functions
+- Function-length audit: 0 source functions at or above 90 lines, 29 functions
   in the 80-89 line band, and 110 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
@@ -82,7 +82,7 @@ Last audited: 2026-06-21 on `main`.
   low-turbulence envelope tracing, geometry inverse-design report assembly, and
   runtime TOML loading, runtime linear diagnostic fitting, and linear
   time-series integration dispatch, and QA low-turbulence optimizer state
-  assembly.
+  assembly, and Cyclone scan setup policy resolution.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -96,7 +96,7 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 98% | Latest non-superseded CI green, clean worktree, bounded local gates, version bump/tag only after green checks. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 98% | No new root modules, zero functions >=90 lines, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
+| P1 | Source simplification and naming | 98.5% | No new root modules, zero functions >=90 lines, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
 | P1 | Refactor/testability | 98% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 97% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
@@ -242,8 +242,8 @@ Goal: ship the next version from a clean, green, measured state.
 1. Check the queued CI result and fix only real failures.
 2. Run the bounded plan/docs/release gates after this plan update.
 3. Commit and push the plan refactor if gates pass.
-4. Continue the benchmark-family boilerplate tranche, prioritizing shared
-   scan/report helpers without renaming explicit comparison artifacts.
+4. Continue the benchmark-family boilerplate tranche, prioritizing ETG/TEM
+   shared scan/report helpers without renaming explicit comparison artifacts.
 5. Revisit objective/geometry file consolidation only where the candidate is a
    thin wrapper rather than a real physics/numerics policy boundary.
 6. Keep the README runtime/memory figure in place; schedule a refresh only if a
@@ -297,6 +297,15 @@ Goal: ship the next version from a clean, green, measured state.
   architecture, repository-size, release-readiness, release-version tests, and
   diff-hygiene checks. The 80-89 line function count dropped from 31 to 30 and
   the >=70 count dropped from 111 to 110.
+- 2026-06-21: Simplified Cyclone scan setup policy in
+  `validation/benchmarks/cyclone_scan.py` by extracting reference-aligned
+  geometry/diagnostic defaults and solver/fit/batch dispatch into explicit
+  private policy helpers. Benchmark behavior, reference-aligned branch naming,
+  and comparison terminology are unchanged. Cyclone branch-policy tests passed
+  (`8 passed`) and selected Cyclone benchmark integration nodes passed with the
+  integration marker override (`5 passed`), along with ruff, mypy for the
+  touched module, compileall, architecture, repository-size, release-readiness,
+  and diff-hygiene checks. The 80-89 line function count dropped from 30 to 29.
 - 2026-06-21: Simplified reduced QA core-feature assembly in
   `objectives/stellarator_reduced.py` by extracting named gradient-drive,
   geometry-feature, linear-ITG-feature, and quasilinear-heat-flux helpers. The
