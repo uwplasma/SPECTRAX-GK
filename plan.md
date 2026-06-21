@@ -31,14 +31,14 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `313c70ac Simplify quasilinear transport payload assembly`.
+  `1d3105f4 Simplify QA low turbulence envelope trace`.
 - Worktree at audit start: clean before the reduced-QA source tranche.
 - Latest CI state at audit: newest `main` run queued; preceding runs were
   cancelled by newer pushes rather than completed failures.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 36 functions
-  in the 80-89 line band, and 115 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 35 functions
+  in the 80-89 line band, and 114 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Repository-size audit: architecture and size manifests pass. Tracked content
   is about 49 MB, with no unlisted large tracked files. The large local checkout
@@ -73,7 +73,8 @@ Last audited: 2026-06-21 on `main`.
   routing, velocity-sharded electrostatic RHS routing, nonlinear electromagnetic
   dispatch, nonlinear timestep policy, reduced cETG integration policy,
   benchmark diagnostic loading, linear hypercollision routing, reduced QA
-  core-feature assembly, and quasilinear transport payload assembly.
+  core-feature assembly, quasilinear transport payload assembly, and QA
+  low-turbulence envelope tracing.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -267,3 +268,11 @@ Goal: ship the next version from a clean, green, measured state.
   and derivative tests passed (`17 passed`), along with ruff, mypy for the
   touched module, compileall, architecture, repository-size, and
   release-readiness checks; the 80-89 line function count dropped from 37 to 36.
+- 2026-06-21: Simplified the QA low-turbulence reduced heat-flux trace in
+  `objectives/qa_low_turbulence_model.py` by extracting gradient-drive,
+  transport-shaping, envelope-coefficient, initial-energy, and RK2 integration
+  helpers. The reduced nonlinear-window formula and public trace signature are
+  unchanged. Focused QA low-turbulence tests passed (`4 passed`), along with
+  ruff, mypy for the touched module, compileall, architecture, repository-size,
+  and release-readiness checks; the 80-89 line function count dropped from 36
+  to 35 and the >=70 count dropped from 115 to 114.
