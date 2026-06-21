@@ -992,9 +992,17 @@ The next version should be cut only after these finite gates are satisfied:
   scan-and-mode tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split auto fit-signal selection into typed auto-window options,
+  fit-signal candidate scoring, and candidate comparison helpers.  This
+  preserves the phi/density auto-selection policy while making the benchmark
+  growth-rate fitting gate easier to inspect and unit test.
+- Focused gates passed for the fit-signal tranche: Ruff, focused mypy,
+  auto-fit and benchmark-helper tests, architecture manifest, repository-size
+  manifest, differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 16.
-- Remaining source functions at or above 80 lines: 67.
+- Remaining source functions at or above 90 lines: 15.
+- Remaining source functions at or above 80 lines: 66.
 
 ## Latest Release Log
 
