@@ -948,9 +948,19 @@ The next version should be cut only after these finite gates are satisfied:
   transport admission tests, landscape/audit builder-script tests,
   architecture manifest, repository-size manifest, differentiable-refactor
   manifest, release-readiness check, and `git diff --check`.
+- 2026-06-20: split nonlinear-gradient same-control bracket-sweep evidence
+  helpers into evidence-config construction, conditioning metric extraction,
+  margin scoring, repeated-bracket stability, gate-name extraction, and staged
+  recommendation predicates.  This preserves the bracket-sweep artifact schema
+  and facade re-exports while making the differentiable turbulent-flux
+  optimization evidence policy easier to audit.
+- Focused gates passed for the nonlinear-gradient bracket tranche: Ruff,
+  focused mypy, full nonlinear-gradient evidence tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest,
+  release-readiness check, and `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 22.
-- Remaining source functions at or above 80 lines: 74.
+- Remaining source functions at or above 90 lines: 21.
+- Remaining source functions at or above 80 lines: 72.
 
 ## Latest Release Log
 
