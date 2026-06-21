@@ -86,7 +86,7 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.95% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched through the `v1.6.8` release are closed for that checkpoint. Only one source function remains at or above 90 lines; handle it when the split exposes a tested validation/report policy boundary. |
+| Refactor/testability | 99.97% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched through the `v1.6.8` release are closed for that checkpoint. No source function remains at or above 90 lines; continue only splits that expose tested policy boundaries or remove real navigation cost. |
 | Package coverage/release infrastructure | 100% for `v1.6.8` | PR CI, post-merge CI, release workflow, GitHub release, and PyPI publish passed for `v1.6.8`. Keep the gate active for subsequent commits. |
 | Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
 | Differentiable VMEC/Boozer plumbing | 98.5% | VMEC/Boozer sensitivity, line-search, finite-difference, and reduced nonlinear-window gradient gates are split and focused-tested. Broaden only with passed geometry parity/gradient holdouts. |
@@ -1108,9 +1108,16 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, VMEC-JAX candidate-gate tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split the KBM beta saved-time sample path into a private
+  `KBMBetaTimeSampleRequest` plus request router.  This preserves the public
+  KBM beta time-sample API while making streaming-vs-saved-time dispatch easier
+  to test and preventing argument-forwarding sprawl.
+- Focused gates passed for the KBM beta time-sample tranche: Ruff, focused
+  mypy, KBM beta tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, and release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 1.
-- Remaining source functions at or above 80 lines: 55.
+- Remaining source functions at or above 90 lines: 0.
+- Remaining source functions at or above 80 lines: 54.
 
 ## Latest Release Log
 
