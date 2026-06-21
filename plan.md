@@ -975,9 +975,18 @@ The next version should be cut only after these finite gates are satisfied:
   linear Krylov core tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split ETG scan setup and batch execution so the private setup
+  consumes the typed `_ETGScanRequest` directly and Krylov/time-integration
+  batch branches are separate helpers.  This preserves the public `run_etg_scan`
+  signature, scan result schema, and ETG benchmark branch behavior while
+  removing both ETG scan hotspots.
+- Focused gates passed for the ETG scan tranche: Ruff, focused mypy,
+  ETG runner-branch tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 19.
-- Remaining source functions at or above 80 lines: 70.
+- Remaining source functions at or above 90 lines: 17.
+- Remaining source functions at or above 80 lines: 68.
 
 ## Latest Release Log
 
