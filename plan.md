@@ -31,15 +31,20 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `7ddbabe9 Simplify geometry inverse design report assembly`.
-- Worktree at audit start: clean before the reduced-QA source tranche.
-- Latest CI state at audit: newest `main` run queued; preceding runs were
-  cancelled by newer pushes rather than completed failures.
+  `ada15e8b Simplify runtime TOML loading`.
+- Worktree at audit start: clean after the runtime TOML source tranche; this
+  plan update is the only pending repo-level change.
+- Latest CI state at audit: verify the newest non-superseded `main` run before
+  release tagging; do not spend time watching runs that were cancelled by newer
+  pushes.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 34 functions
-  in the 80-89 line band, and 113 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 33 functions
+  in the 80-89 line band, and 112 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
+- Source-tree audit: function size is controlled, but 357 source files is still
+  broad. The remaining refactor work must prefer consolidation of single-use
+  slices and clearer domain ownership over adding more files.
 - Repository-size audit: architecture and size manifests pass. Tracked content
   is about 49 MB, with no unlisted large tracked files. The large local checkout
   footprint is dominated by ignored `.venv`, caches, `docs/_build`, and
@@ -73,8 +78,9 @@ Last audited: 2026-06-21 on `main`.
   routing, velocity-sharded electrostatic RHS routing, nonlinear electromagnetic
   dispatch, nonlinear timestep policy, reduced cETG integration policy,
   benchmark diagnostic loading, linear hypercollision routing, reduced QA
-  core-feature assembly, quasilinear transport payload assembly, and QA
-  low-turbulence envelope tracing, and geometry inverse-design report assembly.
+  core-feature assembly, quasilinear transport payload assembly, QA
+  low-turbulence envelope tracing, geometry inverse-design report assembly, and
+  runtime TOML loading.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -88,8 +94,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 98% | Latest non-superseded CI green, clean worktree, bounded local gates, version bump/tag only after green checks. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99% | No new root modules, zero functions >=90 lines, fewer navigation-only seams, comparison-code wording only in benchmark/comparison contexts. |
-| P1 | Refactor/testability | 99% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries or remove duplication. |
+| P1 | Source simplification and naming | 96% | No new root modules, zero functions >=90 lines, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
+| P1 | Refactor/testability | 97% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 97% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -136,10 +142,17 @@ speedup claims.
 
 ### 3. Finish source simplification without file sprawl
 
-Goal: make the code simpler to navigate and extend without adding another wave
-of thin modules.
+Goal: make the code simpler to navigate and extend while keeping the source tree
+small enough that new developers can find the physics, numerics, diagnostics,
+and workflows without following wrapper chains.
 
 - Do not add new root modules or migration-era compatibility facades.
+- Do not increase the 357-file source count unless the same tranche deletes or
+  consolidates at least as many files and the net navigation cost decreases.
+- Target the next release candidate with zero functions >=90 lines, fewer than
+  25 functions in the 80-89 line band, and a non-increasing source-file count;
+  the stretch goal is to remove 10-20 single-use internal files without moving
+  stable public facades.
 - Split only when the result names a real physics model, numerical policy,
   differentiability boundary, or artifact contract.
 - Consolidate single-use wrappers into their domain owner when that lowers
@@ -151,15 +164,17 @@ of thin modules.
 
 Execution order:
 
-1. `validation/benchmarks`: reduce repeated scan/path/report boilerplate in TEM,
-   ETG, KBM, Cyclone, and kinetic-electron benchmark families.
-2. `objectives` and `geometry`: simplify QA transport, VMEC/Boozer line-search,
-   sensitivity, inverse-design, and gradient-report assembly.
-3. `diagnostics`: simplify quasilinear-state extraction and transport-rule
-   aggregation without changing schemas.
-4. `workflows`: simplify TOML loading, runtime plotting dispatch,
-   restart/artifact writing, and default-demo paths while preserving progress
+1. `workflows`: finish runtime plotting dispatch, restart/artifact writing, and
+   default-demo paths now that TOML loading is simplified; preserve progress
    output and `--plot`.
+2. `validation/benchmarks`: reduce repeated scan/path/report boilerplate in TEM,
+   ETG, KBM, Cyclone, and kinetic-electron benchmark families, but keep GX
+   terminology only where the code is explicitly a benchmark/comparison lane.
+3. `objectives` and `geometry`: simplify QA transport, VMEC/Boozer line-search,
+   sensitivity, inverse-design, and gradient-report assembly; consolidate
+   single-use report helpers where tests show no public API loss.
+4. `diagnostics`: simplify quasilinear-state extraction and transport-rule
+   aggregation without changing schemas.
 5. `solvers` and `operators`: touch hot kernels only when the boundary improves
    performance, clarity, or differentiability without hurting JIT caching.
 
@@ -225,10 +240,13 @@ Goal: ship the next version from a clean, green, measured state.
 1. Check the queued CI result and fix only real failures.
 2. Run the bounded plan/docs/release gates after this plan update.
 3. Commit and push the plan refactor if gates pass.
-4. Start the next source tranche in `objectives/stellarator_reduced.py` or
-   `diagnostics/quasilinear_transport.py`, because both are contained and have
-   high-value 80-89 line functions.
-5. Keep the README runtime/memory figure in place; schedule a refresh only if a
+4. Start the next source tranche in `workflows/runtime/diagnostics.py` or
+   `workflows/linear.py`, because both are user-facing workflow files where
+   shorter policy helpers can improve readability without adding files.
+5. Then run one consolidation tranche in `objectives` or `geometry` that removes
+   at least one single-use internal helper file or wrapper path if tests show no
+   behavior loss.
+6. Keep the README runtime/memory figure in place; schedule a refresh only if a
    new measured CPU/GPU sweep is intentionally launched.
 
 ## Release Blocking Checklist
@@ -253,6 +271,14 @@ Goal: ship the next version from a clean, green, measured state.
   >=70 lines. README already contains the runtime/memory comparison panel near
   the top; this plan now makes keeping or refreshing that panel an explicit
   release deliverable.
+- 2026-06-21: Simplified runtime TOML loading in
+  `workflows/runtime/toml.py` by extracting base dataclass merging, runtime
+  section replacement, species table parsing, and path resolution. TOML section
+  names, species validation errors, and path resolution behavior are unchanged.
+  Runtime config tests passed (`30 passed`), along with ruff, mypy for the
+  touched module, compileall, architecture, repository-size, release-readiness,
+  and diff-hygiene checks. The 80-89 line function count dropped from 34 to 33
+  and the >=70 count dropped from 113 to 112.
 - 2026-06-21: Simplified reduced QA core-feature assembly in
   `objectives/stellarator_reduced.py` by extracting named gradient-drive,
   geometry-feature, linear-ITG-feature, and quasilinear-heat-flux helpers. The
