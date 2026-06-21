@@ -1016,9 +1016,17 @@ The next version should be cut only after these finite gates are satisfied:
   mypy, nonlinear-window convergence tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, release-readiness
   check, and `git diff --check`.
+- 2026-06-20: split `run_tem_scan` into a stable public facade, typed
+  `_TEMScanRequest`, scan setup resolver, and private request runner.  This
+  preserves the TEM scan API, species-index validation, batching policy, and
+  scan-result schema while aligning TEM with the other benchmark drivers.
+- Focused gates passed for the TEM scan tranche: Ruff, focused mypy,
+  TEM scan branch tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 13.
-- Remaining source functions at or above 80 lines: 64.
+- Remaining source functions at or above 90 lines: 12.
+- Remaining source functions at or above 80 lines: 63.
 
 ## Latest Release Log
 
