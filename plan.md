@@ -34,6 +34,105 @@ Make SPECTRAX-GK a research-grade gyrokinetic code that is:
 - References to other codes should appear only in benchmark/comparison context;
   source names should describe the physics or numerical method.
 
+## Final Closure Plan
+
+One-sentence plan: ship SPECTRAX-GK as a compact public-facade,
+domain-packaged JAX gyrokinetic code with physics/numerics names in the source,
+scoped GX parity only in benchmark/comparison artifacts, a small and navigable
+file structure, physics-anchored tests and documentation, differentiable Python
+workflows for optimization/UQ, and measured low-runtime/low-memory CPU/GPU
+execution shown by the README runtime/memory panel.
+
+This section is the authoritative priority order for the remaining work.  Older
+sections below are supporting logs and lane details; if they conflict with this
+section, update the older text rather than adding another competing plan.
+
+### Current Audit Facts
+
+- Branch: `main`; this checkpoint includes a behavior-preserving runtime
+  command option consolidation.
+- Latest release tag: `v1.6.8`.
+- At audit start, latest pushed plan commit `95ab7512` had CI queued; the
+  latest pushed code commit `7fefd33c` had passed CI.
+- Package shape: 358 Python source files, about 106k source lines, 9 root
+  facade modules, and no blocked root-prefix modules under the architecture
+  manifest.
+- Function complexity: 54 functions are at 80-89 lines; 0 functions are at or
+  above 90 lines; 0 functions are at or above 100 lines.
+- Data-container size: 7 dataclass/config classes are at or above 90 physical
+  lines because they list schema fields.  These are not the next refactor
+  target unless their schemas become hard to test.
+- Largest package clusters: validation, objectives, operators, solvers,
+  workflows, geometry, terms, artifacts, geometry backends, diagnostics, and
+  parallelization.
+- README status: the runtime/memory comparison figure is present and should
+  remain visible near the top of the README.  It must be refreshed only from
+  fresh measured CPU/GPU artifacts, not from hand-edited summary data.
+
+### Priority Order
+
+1. **Close the current checkpoint**
+   - Finish validating the runtime command option consolidation.
+   - Commit and push only after focused runtime/CLI tests, Ruff, mypy,
+     architecture, repository-size, differentiable-refactor, release-readiness,
+     docs-build, package-build, and `git diff --check` gates pass or are
+     explicitly scoped.
+
+2. **README and docs consistency**
+   - Keep README concise: install, executable quickstart, highlights, the
+     runtime/memory comparison panel, current claim scope, and pointers to full
+     docs.
+   - Keep detailed equations, algorithms, validation gates, differentiability
+     contracts, performance methodology, and benchmark provenance in docs.
+   - Ensure docs agree that the current structure has 9 root facades, no
+     blocked root-prefix modules, and no source functions at or above 90 lines.
+   - Keep GX references only in benchmark/comparison prose, tables, and
+     artifacts.
+
+3. **Code simplification without file sprawl**
+   - Do not create new thin modules unless they are durable extension points.
+   - Prefer consolidating single-use helpers back into the nearest domain owner
+     when the owner remains readable and tested.
+   - Prioritize runtime/artifact handoff, objective/differentiability report
+     assembly, validation-driver duplication, and ambiguous naming.
+   - Delete legacy examples, aliases, and output paths that are not part of the
+     documented validated workflow.
+
+4. **Differentiability closure**
+   - Keep differentiable Python paths pure, PyTree-friendly, and separate from
+     executable-side progress/output/plotting.
+   - Preserve AD/FD, tangent, or conditioning checks for every exposed
+     differentiated observable.
+   - Keep VMEC/Boozer optimization claims scoped to artifacts that pass geometry
+     parity and gradient gates.
+
+5. **Physics validation and parity**
+   - Preserve validated linear/nonlinear/quasilinear/geometry gates.
+   - Re-run GX on `ssh office` only for touched benchmark lanes, refreshed
+     public comparison figures, or suspected numerical regressions.
+   - Keep unpromoted lanes visible but scoped: W7-X zonal long-window closure,
+     W7-X TEM/multi-flux-tube extension, universal absolute quasilinear flux,
+     broad nonlinear turbulent-flux optimization, and production nonlinear
+     domain decomposition.
+
+6. **Performance and memory**
+   - Refresh runtime/memory figures only from measured artifacts that include
+     CPU/GPU wall time, peak memory, hardware/backend metadata, and W7-X/HSX
+     rows.
+   - Make no new nonlinear speedup claim without serial-vs-decomposed identity
+     gates and profiler-backed CPU/GPU artifacts.
+   - Keep current production parallelization scoped to validated independent
+     work until whole-state nonlinear decomposition clears both identity and
+     speedup gates.
+
+7. **Coverage, CI/CD, and release**
+   - Keep package-wide coverage at or above 95% in the computed CI badge path.
+   - Run fast local gates before every release candidate and avoid unbounded
+     local pytest runs.
+   - Build docs and package artifacts locally before tagging.
+   - Tag and release only from clean `main` after CI is green; verify the GitHub
+     release workflow and PyPI publish.
+
 ## Completion Gates
 
 The plan is not complete until the following evidence exists and passes:
@@ -103,7 +202,7 @@ Prioritize behavior-preserving cleanup that makes tests and validation easier.
 
 The current package has a domain-oriented structure and no root-prefix modules
 left under the architecture manifest, but it is still a large scientific code:
-roughly 359 package Python files and 103k source lines.  That size is now mostly
+roughly 358 package Python files and 106k source lines.  That size is now mostly
 from validation/reporting breadth rather than unresolved core-runtime
 spaghetti.  The most important remaining large-file clusters are:
 
@@ -799,7 +898,7 @@ emergency stabilization pass.
      architecture, repository-size, and coverage/CI gates before the next tag.
 
 2. **Code/file simplification**
-   - The package currently has roughly 359 Python source files and 106k source
+   - The package currently has roughly 358 Python source files and 106k source
      lines.  The problem is no longer giant functions; it is navigation cost and
      too many narrow helper modules in validation, runtime, objective, and
      artifact/report surfaces.
@@ -853,7 +952,7 @@ cost, stabilize extension boundaries, and keep the public API simple.
 
 Current audited structure from the working tree:
 
-- package Python files: 359;
+- package Python files: 358;
 - package source lines: roughly 106k;
 - no blocked root-prefix modules remain under the architecture manifest;
 - source functions at or above 100 lines: 0;
@@ -1181,6 +1280,14 @@ this order:
 - Focused gates passed for the KBM beta time-sample tranche: Ruff, focused
   mypy, KBM beta tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, and release-readiness check.
+- 2026-06-21: consolidated executable runtime command option resolution back
+  into `workflows.runtime.commands`, deleting the single-use
+  `workflows.runtime.command_options` module.  This reduces source-file count
+  by one while preserving the runtime command public facade and keeping all
+  source functions below 90 lines.
+- Focused gates passed for the runtime command consolidation: Ruff, focused
+  mypy, runtime-helper and CLI tests, architecture manifest, repository-size
+  manifest, and differentiable-refactor manifest.
 - Remaining source functions at or above 100 lines: 0.
 - Remaining source functions at or above 90 lines: 0.
 - Remaining source functions at or above 80 lines: 54.

@@ -42,20 +42,24 @@ changing, and state which public facade preserves documented user behavior.
 Planning Snapshot
 -----------------
 
-The planning audit on 2026-06-16 found:
+The planning audit on 2026-06-21 found:
 
-- 167 Python source files under ``src/spectraxgk``.
-- about 70,000 source lines under ``src/spectraxgk``.
-- 134 root-level modules in ``src/spectraxgk``.
+- 358 Python source files under ``src/spectraxgk`` after the v1.6.8 refactor closure.
+- about 106,000 source lines under ``src/spectraxgk``.
+- no blocked root-prefix modules under the architecture manifest.
 - 315 top-level test files under ``tests``.
 - about 89,000 test lines.
-- many prefix families at package root:
-  ``runtime_*``, ``nonlinear_*``, ``solver_*``, ``vmec_jax_*``,
-  ``quasilinear_*``, ``benchmark_*``, and ``stellarator_*``.
+- 9 root facade modules: ``benchmarks.py``, ``cli.py``, ``config.py``,
+  ``linear.py``, ``nonlinear.py``, ``quasilinear.py``, ``runtime.py``,
+  ``_version.py``, and ``__init__.py``.
+- the former root-level prefix families such as ``runtime_*``,
+  ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, and ``benchmark_*`` have
+  been moved behind domain packages or public facades.
 
-That structure is a transition state, not the desired architecture. Future
-splits should not add more root-level prefix modules unless they are temporary
-public facades tracked in the migration manifest.
+That structure is close to the desired public shape. Future work should reduce
+navigation cost inside domain packages and should not add more root-level prefix
+modules unless they are deliberate public facades tracked in the migration
+manifest.
 
 External Design Guidance
 ------------------------
