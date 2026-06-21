@@ -1024,9 +1024,17 @@ The next version should be cut only after these finite gates are satisfied:
   TEM scan branch tests, architecture manifest, repository-size manifest,
   differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split `run_kbm_scan` into a stable public facade, typed
+  `_KBMScanRequest`, request-to-options helper, and private request runner.
+  This preserves the fixed-beta KBM scan API, per-mode array forwarding,
+  reference-alignment behavior, and scan-result schema.
+- Focused gates passed for the KBM scan tranche: Ruff, focused mypy,
+  KBM scan branch tests, architecture manifest, repository-size manifest,
+  differentiable-refactor manifest, release-readiness check, and
+  `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 12.
-- Remaining source functions at or above 80 lines: 63.
+- Remaining source functions at or above 90 lines: 11.
+- Remaining source functions at or above 80 lines: 62.
 
 ## Latest Release Log
 
