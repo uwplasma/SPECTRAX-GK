@@ -31,16 +31,16 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `ada15e8b Simplify runtime TOML loading`.
-- Worktree at audit start: clean after the runtime TOML source tranche; this
+  `be804d07 Simplify linear workflow diagnostics`.
+- Worktree at audit start: clean after the linear workflow source tranche; this
   plan update is the only pending repo-level change.
 - Latest CI state at audit: verify the newest non-superseded `main` run before
   release tagging; do not spend time watching runs that were cancelled by newer
   pushes.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 33 functions
-  in the 80-89 line band, and 112 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 31 functions
+  in the 80-89 line band, and 111 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
   broad. The remaining refactor work must prefer consolidation of single-use
@@ -80,7 +80,8 @@ Last audited: 2026-06-21 on `main`.
   benchmark diagnostic loading, linear hypercollision routing, reduced QA
   core-feature assembly, quasilinear transport payload assembly, QA
   low-turbulence envelope tracing, geometry inverse-design report assembly, and
-  runtime TOML loading.
+  runtime TOML loading, runtime linear diagnostic fitting, and linear
+  time-series integration dispatch.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -94,8 +95,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 98% | Latest non-superseded CI green, clean worktree, bounded local gates, version bump/tag only after green checks. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 96% | No new root modules, zero functions >=90 lines, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
-| P1 | Refactor/testability | 97% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 97% | No new root modules, zero functions >=90 lines, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
+| P1 | Refactor/testability | 98% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 97% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -240,12 +241,11 @@ Goal: ship the next version from a clean, green, measured state.
 1. Check the queued CI result and fix only real failures.
 2. Run the bounded plan/docs/release gates after this plan update.
 3. Commit and push the plan refactor if gates pass.
-4. Start the next source tranche in `workflows/runtime/diagnostics.py` or
-   `workflows/linear.py`, because both are user-facing workflow files where
-   shorter policy helpers can improve readability without adding files.
-5. Then run one consolidation tranche in `objectives` or `geometry` that removes
+4. Start one consolidation tranche in `objectives` or `geometry` that removes
    at least one single-use internal helper file or wrapper path if tests show no
    behavior loss.
+5. Then continue the benchmark-family boilerplate tranche, prioritizing shared
+   scan/report helpers without renaming explicit comparison artifacts.
 6. Keep the README runtime/memory figure in place; schedule a refresh only if a
    new measured CPU/GPU sweep is intentionally launched.
 
@@ -279,6 +279,15 @@ Goal: ship the next version from a clean, green, measured state.
   touched module, compileall, architecture, repository-size, release-readiness,
   and diff-hygiene checks. The 80-89 line function count dropped from 34 to 33
   and the >=70 count dropped from 113 to 112.
+- 2026-06-21: Simplified runtime linear diagnostics and time-series dispatch in
+  `workflows/runtime/diagnostics.py` and `workflows/linear.py`. Runtime fit
+  option/dependency bundles now preserve the public diagnostic API while
+  shrinking the fitting selector, and linear time integration now routes through
+  named diffrax, density-diagnostic, and cached-phi helpers. Focused runtime
+  helper tests passed (`7 passed` plus `30` runtime config tests), along with
+  ruff, mypy for touched modules, compileall, architecture, repository-size,
+  release-readiness, and diff-hygiene checks. The 80-89 line function count
+  dropped from 33 to 31 and the >=70 count dropped from 112 to 111.
 - 2026-06-21: Simplified reduced QA core-feature assembly in
   `objectives/stellarator_reduced.py` by extracting named gradient-drive,
   geometry-feature, linear-ITG-feature, and quasilinear-heat-flux helpers. The
