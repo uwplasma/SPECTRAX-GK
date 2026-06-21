@@ -1054,29 +1054,30 @@ each device count gets a clean JAX runtime:
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
    :align: center
 
-The May 10, 2026 large sweep is retained as archived engineering evidence:
-it passed the final-state identity gate at every tracked point, the CPU
-logical-device path saturated at about ``1.39x``, and the two-RTX-A4000 GPU path
-was slower than one GPU even for the larger
-``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured speedup
-of about ``0.63x``. Current JAX/XLA CPU refreshes are stricter: unsafe active
-multi-device CPU whole-state ``pjit`` routes are skipped before execution and
-record a fail-closed blocker instead of producing a speedup row. This makes the
-technical conclusion explicit: whole-state nonlinear sharding is useful as a
-correctness/profiler gate, but production parallelization should prioritize
-independent ``k_y`` scans and UQ/ensemble batching. Communication-aware
-nonlinear domain decomposition remains diagnostic until the exact workload has
-identity, communication, transport-window, and matched profiler evidence for any
-nonlinear multi-GPU speedup claim.
+The refreshed large sweep remains engineering evidence rather than a speedup
+claim: it passed the final-state identity gate at every tracked point, the CPU
+logical-device path saturated at about ``1.39x``, and the June 21, 2026
+two-RTX-A4000 ``auto`` route was slower than one GPU for the larger
+``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured strong
+scaling speedup of ``0.586x``. Current JAX/XLA CPU refreshes are stricter:
+unsafe active multi-device CPU whole-state ``pjit`` routes are skipped before
+execution and record a fail-closed blocker instead of producing a speedup row.
+This makes the technical conclusion explicit: whole-state nonlinear sharding is
+useful as a correctness/profiler gate, but production parallelization should
+prioritize independent ``k_y`` scans and UQ/ensemble batching.
+Communication-aware nonlinear domain decomposition remains diagnostic until the
+exact workload has identity, communication, transport-window, and matched
+profiler evidence for any nonlinear multi-GPU speedup claim.
 The production gate fails closed as ``diagnostic_only`` unless the refreshed
 CPU and GPU rows both pass serial identity, use active state sharding, and meet
 the configured speedup and parallel-efficiency thresholds. The tracked gate
-artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``;
-in the current artifact set the CPU two-device row passes, but the GPU row
-blocks production speedup claims. Its ``backend_blocker_report`` separates
-identity-evidence completeness from speedup/efficiency blockers; currently the
-GPU candidate row is identity-complete but remains diagnostic because the
-speedup and efficiency gates fail.
+artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``.
+In the current artifact set the CPU candidate is diagnostic and the refreshed
+GPU row is identity-complete but blocks production speedup claims because the
+speedup and efficiency gates fail. Its ``backend_blocker_report`` separates
+identity-evidence completeness from speedup/efficiency blockers, so an
+identity-correct slowdown is recorded as a useful negative result rather than
+as a promoted parallelization mode.
 The raw sweep JSON files also carry ``speedup_passed``, ``status``, and
 ``speedup_blockers`` fields so a timeout, profiler failure, or identity-correct
 slowdown is visible before the stricter production gate is evaluated.

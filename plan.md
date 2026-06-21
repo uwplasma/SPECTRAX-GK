@@ -1,7 +1,8 @@
 # SPECTRAX-GK Final Closure Plan
 
 This is the active execution plan after the `v1.6.9` compact release
-checkpoint following the differentiable architecture/refactor work. Detailed chronological history is intentionally
+checkpoint and the first post-release source-simplification passes. Detailed
+chronological history is intentionally
 kept in git commits, release notes, docs artifacts, and CI logs rather than in
 this root file, so the repository stays easy to read and maintain.
 
@@ -37,9 +38,9 @@ file for execution priority.
 Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Latest pushed release commit audited here:
-  `494b9ea2 Bump version to 1.6.9`.
-- Latest completed green CI for the release commit: `494b9ea2`. Quick shards,
+- Latest pushed source-simplification commit audited here:
+  `ea506e11 Simplify VMEC flux tube parity report packing`.
+- Latest completed green CI for the audited commit: `ea506e11`. Quick shards,
   mypy, docs/package build, fast coverage, all 48 wide-coverage shards, and
   wide coverage combine passed.
 - Release workflow `27906940479` passed for tag `v1.6.9`; PyPI lists the
@@ -47,6 +48,9 @@ Last audited: 2026-06-21 on `main`.
 - Package shape: 357 Python files under `src/spectraxgk`, about 106.6k source
   lines, 9 root facade modules, and no blocked root-prefix modules under the
   architecture manifest.
+- Largest package-internal navigation costs are now concentrated in
+  `validation`, `objectives`, `solvers`, and `operators`; the refactor target
+  is fewer compatibility seams and clearer package ownership, not more files.
 - Function length: 0 source functions at or above 90 lines; 50 functions in the
   80-89 line range and 127 functions at or above 70 lines.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
@@ -58,6 +62,11 @@ Last audited: 2026-06-21 on `main`.
 - Repository size: large local files are ignored scratch/build/env artifacts.
   The tracked runtime/memory figure and metadata are small; the release-size
   gate remains the source of truth.
+- Current uncommitted work: the refreshed nonlinear sharding GPU artifact now
+  passes serial-vs-routed identity but fails the production speedup gate
+  fail-closed (`0.586x` two-RTX-A4000 strong scaling on the tracked large
+  fixed-step case). It is valid diagnostic negative evidence, not a speedup
+  claim.
 
 ## Results Already Closed
 
@@ -84,6 +93,9 @@ Last audited: 2026-06-21 on `main`.
   a small result manifest.
 - Release engineering for `v1.6.9` is closed: PyPI/GitHub release passed, CI
   coverage is wide-sharded, and package/docs builds pass.
+- The refreshed nonlinear sharding xlarge GPU artifact is identity-consistent
+  and documents the current whole-state route as diagnostic-only; production
+  parallelization remains the independent-work path.
 
 ## Open Lanes And Priority
 
@@ -91,15 +103,15 @@ Percentages are engineering status estimates, not scientific claims.
 
 | Priority | Lane | Status | Closure Evidence |
 | --- | --- | ---: | --- |
-| P0 | Plan/docs/readme consistency | 100% | This file, architecture docs, README, and release-scope docs agree on current status and claim scope. |
-| P0 | Release hygiene | 100% | Clean `main`, green CI, bounded local release gates, version bump, tag, release workflow, PyPI publish. |
+| P0 | Plan/docs/readme consistency | 99% | This file is the active plan; update docs/readme only when evidence-backed artifacts change. |
+| P0 | Release hygiene | 98% | Last pushed commit is green; next release waits for a clean worktree, bounded local gates, and CI. |
 | P1 | Source simplification and naming | 98% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
 | P1 | Refactor/testability | 99% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
 | P1 | Package coverage and physics tests | 100% gate, 96% margin | Wide package coverage stays >=95%; new tests remain physics/numerics/autodiff/regression tests rather than smoke-only coverage. |
 | P2 | Differentiable Python workflows | 99% scoped | AD/FD, tangent, conditioning, or covariance gates exist for every promoted differentiated observable. |
 | P2 | VMEC/Boozer differentiable geometry | 99% scoped | Geometry parity and gradient gates pass for promoted rows; broad optimization claims stay scoped. |
 | P2 | Performance and memory | 97% scoped | Runtime/memory panel remains measured; no new speedup claim without profiler artifacts and numerical identity gates. |
-| P2 | Production parallelization | 94% scoped | Independent-work parallelization is production; nonlinear domain decomposition remains diagnostic until identity and speedup gates pass. |
+| P2 | Production parallelization | 95% scoped | Independent-work parallelization is production; refreshed whole-state nonlinear sharding is identity-correct but slower than serial, so nonlinear domain decomposition remains diagnostic. |
 | P3 | Quasilinear model development | 99% scoped | Diagnostics and screening claims documented; universal absolute-flux prediction remains unpromoted. |
 | P3 | Nonlinear turbulent-flux optimization | 91% scoped | Long post-transient matched audits exist for scoped cases; broad optimized stellarator turbulence claim remains unpromoted. |
 | P4 | Deferred W7-X/TEM science | deferred | W7-X zonal long-window recurrence, W7-X TEM/multi-flux-tube, and W7-X fluctuation extensions remain post-release unless explicitly reopened. |
@@ -108,21 +120,39 @@ Percentages are engineering status estimates, not scientific claims.
 
 The remaining path is intentionally short and release-oriented:
 
-1. **Keep the README performance figure in place.** The runtime/memory figure is
+1. **Gate and commit the current checkpoint.** The refreshed nonlinear sharding
+   artifact is diagnostic-only negative evidence; finish bounded checks, commit
+   the plan/docs/artifacts together, and keep README speedup wording unchanged.
+2. **Keep the README performance figure in place.** The runtime/memory figure is
    already restored near the top of the README; refresh it only from new
    measured CPU/GPU artifacts with hardware, wall-time, memory, and W7-X/HSX
    rows.
-2. **Resume refactoring only after the release checkpoint.** Further source
+3. **Finish refactoring as package-internal simplification.** Further source
    simplification should reduce navigation cost inside the largest domain
-   packages without adding new root files or compatibility shims.
-3. **Resume science/performance lanes only with gates.** New parity, nonlinear
+   packages, consolidate one-off shims where that helps, and avoid new files
+   unless a real domain boundary is being created.
+4. **Resume science/performance lanes only with gates.** New parity, nonlinear
    optimization, quasilinear, differentiability, or speedup claims need
    reproducible artifacts, physics gates, and docs updates before README
    promotion.
 
 ## Final Prioritized Steps
 
-### 1. Freeze the current checkpoint
+### 1. Gate and commit the current performance/parallelization checkpoint
+
+Goal: record the diagnostic negative speedup evidence without overstating it.
+
+- The office GPU sharding refresh is complete and identity-consistent.
+- Keep the README runtime/memory and speedup wording unchanged.
+- Run:
+  - `python tools/plot_nonlinear_sharding_strong_scaling.py`
+  - `python tools/generate_nonlinear_sharding_production_gate.py`
+  - `python tools/check_parallel_scaling_artifacts.py`
+  - `python tools/check_performance_optimization_manifest.py`
+- Commit the artifact refresh only if the checker passes with a fail-closed
+  production speedup gate.
+
+### 2. Freeze the current checkpoint
 
 Goal: preserve the green `main` state before any new release or science push.
 
@@ -141,7 +171,7 @@ Goal: preserve the green `main` state before any new release or science push.
   - `python -m sphinx -b html docs /tmp/spectrax_docs_plan_build`
   - `git diff --check`
 
-### 2. Finish source simplification without file sprawl
+### 3. Finish source simplification without file sprawl
 
 Goal: make the code easier to navigate without increasing the number of files or
 introducing another wave of thin modules.
@@ -156,12 +186,21 @@ introducing another wave of thin modules.
   feature or bugfix:
   - `workflows/linear.py::run_full_linear_runtime`
   - `solvers/nonlinear/imex_diagnostics.py::integrate_imex_nonlinear_diagnostics_impl`
+- Next consolidation targets are package-internal:
+  - `validation/benchmarks`: keep benchmark case families but reduce duplicated
+    path/branch/report boilerplate.
+  - `objectives`: group VMEC/Boozer, QA-transport, and generic solver-gradient
+    policies behind smaller public exports.
+  - `solvers` and `operators`: keep hot kernels close to JIT boundaries and
+    remove wrappers that only rename arguments.
+  - `tests`: keep package-wide coverage but move large legacy-style test names
+    toward physics/numerics behavior names.
 - Rename non-benchmark comparison-code terminology in source/tests only where it
   is not explicitly a benchmark/comparison contract.
 - Remove legacy or compatibility-only examples that are not part of the current
   documented workflow.
 
-### 3. Keep tests physics-anchored and coverage stable
+### 4. Keep tests physics-anchored and coverage stable
 
 Goal: keep the 95% package-wide gate green while improving scientific value.
 
@@ -173,7 +212,7 @@ Goal: keep the 95% package-wide gate green while improving scientific value.
   suite, behind manifests and explicit commands.
 - Maintain validation-coverage manifest ownership for any moved module.
 
-### 4. Close differentiable-code guarantees for promoted workflows
+### 5. Close differentiable-code guarantees for promoted workflows
 
 Goal: Python research APIs are differentiable and testable, while executable
 paths remain user-friendly and fast.
@@ -188,7 +227,7 @@ paths remain user-friendly and fast.
 - VMEC/Boozer optimization claims require geometry parity, gradient gates, and
   claim-scope entries before README promotion.
 
-### 5. Preserve physics validation and scoped parity
+### 6. Preserve physics validation and scoped parity
 
 Goal: claims stay reviewer-proof and reproducible.
 
@@ -202,7 +241,7 @@ Goal: claims stay reviewer-proof and reproducible.
   - W7-X zonal long-window recurrence/damping;
   - W7-X TEM/multi-flux-tube and fluctuation-spectrum extensions.
 
-### 6. Keep performance claims measured
+### 7. Keep performance claims measured
 
 Goal: low runtime and memory footprint are documented only where measured.
 
@@ -215,7 +254,7 @@ Goal: low runtime and memory footprint are documented only where measured.
 - Make no nonlinear speedup claim without serial-vs-decomposed identity gates,
   profiler artifacts, and end-to-end CPU/GPU timing.
 
-### 7. Release sequence
+### 8. Release sequence
 
 Goal: ship the next version only from clean, green `main`.
 
@@ -272,3 +311,8 @@ Goal: ship the next version only from clean, green `main`.
 - 2026-06-21: Added a result/options packer for VMEC flux-tube parity reports.
   Focused geometry bridge and claim-check tests passed; source functions in the
   80-89 line band dropped from 51 to 50 with no new files.
+- 2026-06-21: Refreshed the office two-RTX-A4000 nonlinear whole-state
+  sharding xlarge artifact with the identity-preserving `auto` route. The gate
+  passes final-state identity but fails production speedup fail-closed
+  (`0.586x`), so docs record it as diagnostic negative evidence and README
+  speedup wording remains unchanged.

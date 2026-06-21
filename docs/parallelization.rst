@@ -162,9 +162,10 @@ separate communication/layout design and a passing identity gate.
 The large CPU/GPU sweep in
 ``docs/_static/nonlinear_sharding_strong_scaling_large.json`` confirms the
 policy: the final state is identity-correct, but logical-CPU speedup saturates
-near ``1.39x`` and the current two-GPU path is slower than one GPU for the
-tracked larger fixed-step case. That artifact is therefore valuable engineering
-evidence, not a production nonlinear speedup result.
+near ``1.39x`` and the June 21, 2026 two-RTX-A4000 ``auto`` route is slower
+than one GPU for the tracked larger fixed-step case (``0.586x`` strong
+scaling). That artifact is therefore valuable engineering evidence, not a
+production nonlinear speedup result.
 The combined artifact is intentionally fail-closed: ``identity_passed`` may be
 true while ``speedup_passed`` is false, with explicit ``speedup_blockers`` naming
 the backend/device row that regressed.

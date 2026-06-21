@@ -75,7 +75,7 @@
       "best_identity_preserving_row": {
         "actual_devices": 2,
         "backend": "gpu",
-        "best_spec": "kx",
+        "best_spec": "auto",
         "blockers": [
           "speedup_below_threshold",
           "parallel_efficiency_below_threshold"
@@ -89,11 +89,11 @@
         "identity_rtol": 1e-05,
         "max_abs_state_error": 0.0,
         "max_rel_state_error": 0.0,
-        "parallel_efficiency": 0.31304521525200557,
+        "parallel_efficiency": 0.2929011139896881,
         "requested_devices": 2,
         "source": "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
         "state_sharding_active": true,
-        "strong_speedup_vs_1_device": 0.6260904305040111
+        "strong_speedup_vs_1_device": 0.5858022279793762
       },
       "classifications": [
         "identity_preserving_regression",
@@ -324,7 +324,7 @@
     {
       "actual_devices": 2,
       "backend": "gpu",
-      "best_spec": "kx",
+      "best_spec": "auto",
       "blockers": [
         "speedup_below_threshold",
         "parallel_efficiency_below_threshold"
@@ -338,11 +338,11 @@
       "identity_rtol": 1e-05,
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
-      "parallel_efficiency": 0.31304521525200557,
+      "parallel_efficiency": 0.2929011139896881,
       "requested_devices": 2,
       "source": "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
       "state_sharding_active": true,
-      "strong_speedup_vs_1_device": 0.6260904305040111
+      "strong_speedup_vs_1_device": 0.5858022279793762
     }
   ],
   "status": "diagnostic_only"
