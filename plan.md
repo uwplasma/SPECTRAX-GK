@@ -51,9 +51,9 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 49 functions in the
+- Function length: 0 source functions at or above 90 lines; 48 functions in the
   80-89 line range and 126 functions at or above 70 lines after the linear
-  workflow dispatch simplification.
+  workflow and nonlinear IMEX diagnostic dispatch simplifications.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -100,6 +100,10 @@ Last audited: 2026-06-21 on `main`.
 - The full-GK linear runtime workflow now delegates fit-policy construction and
   solver-branch dispatch to focused same-file helpers, preserving the public
   runtime API while shortening the orchestration function named in this plan.
+- The nonlinear IMEX diagnostic integrator now uses one option-bundle helper
+  instead of four single-use option constructors, preserving the scan/core
+  contract while removing navigation-only helpers and shortening the public
+  integration wrapper named in this plan.
 
 ## Open Lanes And Priority
 
@@ -186,9 +190,9 @@ introducing another wave of thin modules.
   artifact contract.
 - Consolidate single-use helpers back into their nearest domain owner when that
   reduces navigation cost and keeps functions under the architecture gate.
-- Prioritize the current high-value 80-89 line functions only if touched by a
-  feature or bugfix:
-  - `solvers/nonlinear/imex_diagnostics.py::integrate_imex_nonlinear_diagnostics_impl`
+- The explicitly named high-value functions from this checkpoint are now below
+  the 80-89 line band. Continue only with package-internal consolidation that
+  removes duplication or clarifies a real physics/numerics policy boundary.
 - Next consolidation targets are package-internal:
   - `validation/benchmarks`: keep benchmark case families but reduce duplicated
     path/branch/report boilerplate.
@@ -324,3 +328,7 @@ Goal: ship the next version only from clean, green `main`.
   The public runtime signature and behavior stay unchanged; selected
   runtime-linear integration tests, ruff, mypy, and compileall passed, and the
   80-89 line function count dropped from 50 to 49.
+- 2026-06-21: Consolidated nonlinear IMEX diagnostic option packing in
+  `solvers/nonlinear/imex_diagnostics.py` into one same-file option bundle.
+  Focused IMEX helper/public wrapper/facade tests, ruff, mypy, and compileall
+  passed; the 80-89 line function count dropped from 49 to 48.
