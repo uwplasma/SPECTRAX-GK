@@ -1043,9 +1043,17 @@ The next version should be cut only after these finite gates are satisfied:
   `git diff --check`.  `tests/test_runtime_runner.py` node selection returned
   pytest exit code 5 in this environment, so the focused runtime-helper tests
   were used for the bounded local check.
+- 2026-06-20: split the weighted imported-geometry centered-difference kernel
+  into a shared nonuniform center stencil plus explicit 1D/2D radial/theta
+  endpoint-policy helpers.  This preserves the finite-difference contract while
+  making the endpoint parity and axis policies auditable in isolation.
+- Focused gates passed for the geometry-kernel tranche: Ruff, focused mypy,
+  weighted/centered finite-difference geometry tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 10.
-- Remaining source functions at or above 80 lines: 61.
+- Remaining source functions at or above 90 lines: 9.
+- Remaining source functions at or above 80 lines: 60.
 
 ## Latest Release Log
 
