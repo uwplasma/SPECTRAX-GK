@@ -1000,9 +1000,17 @@ The next version should be cut only after these finite gates are satisfied:
   auto-fit and benchmark-helper tests, architecture manifest, repository-size
   manifest, differentiable-refactor manifest, release-readiness check, and
   `git diff --check`.
+- 2026-06-20: split the configured linear runtime dispatcher into a typed
+  `_RuntimeLinearRequest`, reduced-model guard, full-model dispatch helper, and
+  status-routing helper.  This preserves CLI/runtime behavior while making the
+  user-facing runtime branch policy smaller and easier to test.
+- Focused gates passed for the runtime-linear dispatcher tranche: Ruff,
+  focused mypy, runtime-linear helper tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, release-readiness
+  check, and `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 15.
-- Remaining source functions at or above 80 lines: 66.
+- Remaining source functions at or above 90 lines: 14.
+- Remaining source functions at or above 80 lines: 65.
 
 ## Latest Release Log
 
