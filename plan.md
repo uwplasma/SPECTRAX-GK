@@ -39,11 +39,11 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Latest pushed source-simplification commit audited here:
-  `66139263 Simplify nonlinear IMEX diagnostic options`.
+  `e54635f5 Simplify linear implicit preconditioner policy`.
 - Latest completed green CI before the newest simplification queue:
-  `ea506e11 Simplify VMEC flux tube parity report packing`. The newer
-  `e6fbbc83` and `d10f48ee` runs were superseded/cancelled by later pushes,
-  and the `66139263` CI run is the next required green check before release
+  `ea506e11 Simplify VMEC flux tube parity report packing`. Later
+  simplification runs may be superseded/cancelled by newer pushes; the latest
+  non-superseded `main` CI run is the required green check before release
   tagging.
 - Release workflow `27906940479` passed for tag `v1.6.9`; PyPI lists the
   `spectraxgk-1.6.9` wheel and sdist, and GitHub Release `v1.6.9` is latest.
