@@ -31,16 +31,16 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `56b5adcd Simplify nonlinear runtime result routing`.
+  `cab7bdde Simplify linear diffrax setup`.
 - Worktree at audit start: local `main` is one commit ahead of `origin/main`
-  with the nonlinear runtime result-routing simplification tranche; this plan
-  update is the only pending repo-level change.
+  with the linear diffrax setup simplification tranche; this plan update is the
+  only pending repo-level change.
 - Latest CI state at audit: the newest pushed `main` CI run is in progress on
-  `be03e07e`; verify the newest non-superseded run before release tagging, but
+  `f4b55cec`; verify the newest non-superseded run before release tagging, but
   do not spend time watching runs cancelled by newer pushes.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 315 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 23 functions
+- Function-length audit: 0 source functions at or above 90 lines, 22 functions
   in the 80-89 line band, and 105 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
@@ -86,7 +86,7 @@ Last audited: 2026-06-21 on `main`.
   assembly, Cyclone scan setup policy resolution, ETG scan time-batch context
   packing, TEM path/scan policy packing, cETG linear runtime fitting, and
   late-time linear metrics signal/tail-stat assembly, and nonlinear runtime
-  diagnostic/final-state result routing.
+  diagnostic/final-state result routing, and linear diffrax setup bundling.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -100,8 +100,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 98% | Latest non-superseded CI green, clean worktree, bounded local gates, version bump/tag only after green checks. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.4% | No new root modules, zero functions >=90 lines, 23 functions in the 80-89 band, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
-| P1 | Refactor/testability | 99% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 99.5% | No new root modules, zero functions >=90 lines, 22 functions in the 80-89 band, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
+| P1 | Refactor/testability | 99.1% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 97% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -250,9 +250,9 @@ Goal: ship the next version from a clean, green, measured state.
    tranches.
 4. Take one final small source-simplification tranche only if it removes a real
    navigation or policy boundary problem: best current candidates are
-   `solvers/time/diffrax_linear.py::integrate_linear_diffrax`,
    `objectives/vmec_transport_tables.py::_transport_feature_table_from_state`,
-   or a thin objective/geometry report wrapper.
+   `objectives/vmec_boozer_line_search.py::_run_one_line_search_step`, or a
+   thin objective/geometry report wrapper.
 5. Keep the README runtime/memory figure in place. Refresh it only by launching
    a new measured CPU/GPU sweep with hardware/backend metadata, W7-X/HSX rows,
    peak memory, and reference-backend rows.
