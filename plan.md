@@ -1051,9 +1051,17 @@ The next version should be cut only after these finite gates are satisfied:
   weighted/centered finite-difference geometry tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split the internal Miller-to-EIK pipeline into request
+  normalization, geometry normalization, equal-arc grid construction, profile
+  assembly, and writeout stages.  This preserves the Miller runtime backend
+  contract while making the imported-geometry path easier to audit and test.
+- Focused gates passed for the Miller pipeline tranche: Ruff, focused mypy,
+  internal Miller backend tests, Miller runtime request tests, architecture
+  manifest, repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 9.
-- Remaining source functions at or above 80 lines: 60.
+- Remaining source functions at or above 90 lines: 8.
+- Remaining source functions at or above 80 lines: 59.
 
 ## Latest Release Log
 
