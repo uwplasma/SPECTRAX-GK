@@ -1,6 +1,6 @@
 # SPECTRAX-GK Completion Plan
 
-This file is the active engineering plan after the `v1.6.7` differentiable
+This file is the active engineering plan after the `v1.6.8` differentiable
 architecture/refactor release.  Older chronological logs are intentionally not
 kept in this working-tree file to keep the repository light; detailed history is
 available from git commits and release notes.
@@ -23,7 +23,7 @@ Make SPECTRAX-GK a research-grade gyrokinetic code that is:
 
 ## Current Branch Policy
 
-- Branch: `main` after the merged `v1.6.7` refactor release.
+- Branch: `main` after the merged `v1.6.8` refactor release.
 - Use focused commits for post-release tranches; create a branch/PR only when
   the tranche is large enough that review isolation is useful.
 - Commit and push frequently after focused, gated changes.
@@ -86,14 +86,14 @@ Percentages are engineering estimates, not completion claims.
 
 | Lane | Status | Next Required Evidence |
 | --- | ---: | --- |
-| Refactor/testability | 99.9% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched in the `v1.6.7` release are closed for that checkpoint. Remaining large functions are mostly validation/report/artifact orchestration; handle them only when they improve developer usability, tested policy boundaries, or release evidence. |
-| Package coverage/release infrastructure | 100% for `v1.6.7` | PR CI, post-merge CI, release workflow, GitHub release, and PyPI publish passed for `v1.6.7`. Keep the gate active for subsequent commits. |
+| Refactor/testability | 99.95% | Core numerics, diagnostics, geometry, validation, objective, and parallel hotspots touched through the `v1.6.8` release are closed for that checkpoint. Only one source function remains at or above 90 lines; handle it when the split exposes a tested validation/report policy boundary. |
+| Package coverage/release infrastructure | 100% for `v1.6.8` | PR CI, post-merge CI, release workflow, GitHub release, and PyPI publish passed for `v1.6.8`. Keep the gate active for subsequent commits. |
 | Runtime/performance infrastructure | 97.5% | Current release claims are scoped to tracked runtime/memory and profiler artifacts. No additional speedup claim should be added without fresh identity-gated profiler evidence. |
-| Differentiable VMEC/Boozer plumbing | 98% | Keep geometry parity/gradient gates current; broaden only with passed holdouts. |
+| Differentiable VMEC/Boozer plumbing | 98.5% | VMEC/Boozer sensitivity, line-search, finite-difference, and reduced nonlinear-window gradient gates are split and focused-tested. Broaden only with passed geometry parity/gradient holdouts. |
 | Quasilinear model-development | 99% | Keep scoped screening claims; do not promote universal absolute flux without gates. |
 | Nonlinear turbulent-flux optimization evidence | 91% | Require long post-transient matched transport windows for production claims. |
 | Production nonlinear domain decomposition | 88% | Identity-gated decomposed RHS/integrator/device-z helpers are clearer; refreshed CPU and two-GPU transport-window profiling is identity-clean, including a longer two-GPU window after the compute-route fix, but the GPU route remains just below the speedup gate and end-to-end production speedup evidence is still required before claims. |
-| Docs/readme/release polish | 100% for `v1.6.7` | Release guardrails and docs status artifacts are current for the shipped release. Future docs changes must preserve scoped claims and reproducible figure provenance. |
+| Docs/readme/release polish | 100% for `v1.6.8` | Release guardrails and docs status artifacts are current for the shipped release. Future docs changes must preserve scoped claims and reproducible figure provenance. |
 
 ## Current Refactor Queue
 
@@ -117,14 +117,14 @@ spaghetti.  The most important remaining large-file clusters are:
 - workflow/report orchestration (`workflows/reduced_models.py`,
   `workflows/runtime/*`, nonlinear IMEX diagnostics, and validation reports).
 
-Release decision now closed: `v1.6.7` shipped with architecture,
+Release decision now closed: `v1.6.8` shipped with architecture,
 repository-size, technical-release, release-readiness, package-build, focused
 release-scope, full PR CI, post-merge CI, and PyPI/GitHub release gates passing.
 A broad pre-release collapse was intentionally deferred because the remaining
 hotspots are mostly validation/report drivers rather than release-blocking core
 runtime issues.
 
-Efficient next refactor after `v1.6.7`:
+Efficient next refactor after `v1.6.8`:
 
 1. Keep the domain packages but stop creating new one-off modules unless they
    become shared extension points.
@@ -784,7 +784,7 @@ These remain explicit until stronger evidence exists:
 
 ## Actual Open Lanes
 
-Release-blocking technical lanes for `v1.6.7` are closed.  Remaining lanes are
+Release-blocking technical lanes for `v1.6.8` are closed.  Remaining lanes are
 post-release research/performance/completeness lanes:
 
 - Universal absolute quasilinear heat-flux prediction remains explicitly not
@@ -1100,9 +1100,17 @@ The next version should be cut only after these finite gates are satisfied:
   Ruff, focused mypy, focused solver-gradient tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, and
   release-readiness check.
+- 2026-06-20: split the VMEC-JAX WOUT reproducibility gate into WOUT summary
+  value extraction, drift computation, and gate-check assembly helpers.  This
+  preserves the saved-input/WOUT reproducibility report schema while making the
+  stellarator admission policy easier to unit-test and review.
+- Focused gates passed for the WOUT reproducibility gate tranche: Ruff,
+  focused mypy, VMEC-JAX candidate-gate tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, and
+  release-readiness check.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 2.
-- Remaining source functions at or above 80 lines: 56.
+- Remaining source functions at or above 90 lines: 1.
+- Remaining source functions at or above 80 lines: 55.
 
 ## Latest Release Log
 
