@@ -51,8 +51,9 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 50 functions in the
-  80-89 line range and 127 functions at or above 70 lines.
+- Function length: 0 source functions at or above 90 lines; 49 functions in the
+  80-89 line range and 126 functions at or above 70 lines after the linear
+  workflow dispatch simplification.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -96,6 +97,9 @@ Last audited: 2026-06-21 on `main`.
 - The refreshed nonlinear sharding xlarge GPU artifact is identity-consistent
   and documents the current whole-state route as diagnostic-only; production
   parallelization remains the independent-work path.
+- The full-GK linear runtime workflow now delegates fit-policy construction and
+  solver-branch dispatch to focused same-file helpers, preserving the public
+  runtime API while shortening the orchestration function named in this plan.
 
 ## Open Lanes And Priority
 
@@ -105,7 +109,7 @@ Percentages are engineering status estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | Plan/docs/readme consistency | 99% | This file is the active plan; update docs/readme only when evidence-backed artifacts change. |
 | P0 | Release hygiene | 98% | Last pushed commit is green; next release waits for a clean worktree, bounded local gates, and CI. |
-| P1 | Source simplification and naming | 98% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
+| P1 | Source simplification and naming | 99% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
 | P1 | Refactor/testability | 99% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
 | P1 | Package coverage and physics tests | 100% gate, 96% margin | Wide package coverage stays >=95%; new tests remain physics/numerics/autodiff/regression tests rather than smoke-only coverage. |
 | P2 | Differentiable Python workflows | 99% scoped | AD/FD, tangent, conditioning, or covariance gates exist for every promoted differentiated observable. |
@@ -184,7 +188,6 @@ introducing another wave of thin modules.
   reduces navigation cost and keeps functions under the architecture gate.
 - Prioritize the current high-value 80-89 line functions only if touched by a
   feature or bugfix:
-  - `workflows/linear.py::run_full_linear_runtime`
   - `solvers/nonlinear/imex_diagnostics.py::integrate_imex_nonlinear_diagnostics_impl`
 - Next consolidation targets are package-internal:
   - `validation/benchmarks`: keep benchmark case families but reduce duplicated
@@ -316,3 +319,8 @@ Goal: ship the next version only from clean, green `main`.
   passes final-state identity but fails production speedup fail-closed
   (`0.586x`), so docs record it as diagnostic negative evidence and README
   speedup wording remains unchanged.
+- 2026-06-21: Split full-GK linear runtime orchestration in
+  `workflows/linear.py` into same-file fit-policy and solver-branch helpers.
+  The public runtime signature and behavior stay unchanged; selected
+  runtime-linear integration tests, ruff, mypy, and compileall passed, and the
+  80-89 line function count dropped from 50 to 49.
