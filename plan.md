@@ -55,9 +55,10 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 48 functions in the
-  80-89 line range and 126 functions at or above 70 lines after the linear
-  workflow and nonlinear IMEX diagnostic dispatch simplifications.
+- Function length: 0 source functions at or above 90 lines; 47 functions in the
+  80-89 line range and 125 functions at or above 70 lines after the linear
+  workflow, nonlinear IMEX diagnostic dispatch, and linear implicit
+  preconditioner policy simplifications.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -105,6 +106,11 @@ Last audited: 2026-06-21 on `main`.
   instead of four single-use option constructors, preserving the scan/core
   contract while removing navigation-only helpers and shortening the public
   integration wrapper named in this plan.
+- The linear implicit GMRES preconditioner selector now routes through explicit
+  named policies for diagonal, damping, parallel-streaming, coarse, and
+  Hermite-line preconditioners. This preserves the public implicit operator
+  contract while reducing the selector itself from the 80-89 line band to a
+  small dispatcher.
 
 ## Open Lanes And Priority
 
@@ -352,3 +358,9 @@ Goal: ship the next version only from clean, green `main`.
   workflows/artifacts, then package-aligned tests/docs. The README
   runtime/memory panel remains a required top-of-README artifact and must be
   refreshed only from measured CPU/GPU evidence.
+- 2026-06-21: Simplified the linear implicit preconditioner policy in
+  `solvers/linear/implicit.py` into named canonical-alias and preconditioner
+  application helpers. Focused implicit/preconditioner tests, nonlinear IMEX
+  forwarding tests, ruff, mypy, compileall, architecture, repository-size, and
+  release-readiness checks passed; the 80-89 line function count dropped from
+  48 to 47 and the >=70 count dropped from 126 to 125.
