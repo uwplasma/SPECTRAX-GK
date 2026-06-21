@@ -40,6 +40,9 @@ Last audited: 2026-06-21 on `main`.
 - Latest released tag: `v1.6.9`.
 - Latest pushed source-simplification commit audited here:
   `b03a6a77 Simplify velocity sharded electrostatic RHS`.
+- Latest pushed plan-audit commit: `24419653 Record velocity sharded RHS
+  refactor audit`; worktree was clean and synchronized with `origin/main` at
+  the start of this final plan review.
 - Latest completed green CI before the newest simplification queue:
   `ea506e11 Simplify VMEC flux tube parity report packing`. Later
   simplification runs may be superseded/cancelled by newer pushes; the latest
@@ -59,6 +62,11 @@ Last audited: 2026-06-21 on `main`.
   80-89 line range and 123 functions at or above 70 lines after the linear
   workflow, nonlinear IMEX diagnostic dispatch, linear implicit
   preconditioner, and velocity-sharded electrostatic RHS route simplifications.
+- Current high-value simplification targets are concentrated in nonlinear
+  electromagnetic contribution assembly, validation benchmark path/report
+  orchestration, VMEC/Boozer and QA objective assembly, runtime TOML loading,
+  and reduced-model stepping. These should be handled inside existing domain
+  packages, not by adding new root modules.
 - Tests: package-wide CI coverage gate remains at or above 95% through the wide
   coverage path.
 - README: runtime/memory comparison panel is visible immediately after
@@ -141,22 +149,29 @@ The remaining path is finite and release-oriented. The goal is not more
 incremental file splitting; it is to make the existing domain packages easier
 to read, test, and extend while preserving validated behavior.
 
-1. **CI and release hygiene.** Let the newest CI run finish, fix only real
-   failures, and keep superseded/cancelled runs out of the blocker list.
+1. **Confirm the current checkpoint.** Let the newest non-superseded CI run
+   finish, fix only real failures, and keep cancelled runs caused by newer
+   pushes out of the blocker list.
 2. **Keep the README performance figure in place.** The runtime/memory figure
-   is already restored near the top of the README; refresh it only from new
-   measured CPU/GPU artifacts with hardware, wall-time, memory, and W7-X/HSX
-   rows.
-3. **Batch source simplification by domain.** Finish one domain package at a
-   time: solvers/operators, validation/benchmarks, objectives/geometry, then
-   workflows/artifacts. Do not create new root files or thin wrapper modules.
-4. **Mirror tests and docs after each domain tranche.** Tests should move
-   toward package-aligned behavior names, and docs should describe the stable
-   workflow rather than migration history.
-5. **Resume science/performance lanes only with gates.** New parity,
-   nonlinear optimization, quasilinear, differentiability, or speedup claims
-   need reproducible artifacts, physics gates, and docs updates before README
-   promotion.
+   is restored near the top of the README, after Highlights and before claim
+   scope; refresh it only from new measured CPU/GPU artifacts with hardware,
+   wall-time, memory, and W7-X/HSX rows.
+3. **Finish one compact source-simplification batch.** Work in existing domain
+   packages only: solvers/operators first, then validation/benchmarks,
+   objectives/geometry, and workflows/artifacts. Acceptance criteria are no new
+   root modules, no functions at or above 90 lines, a lower 80-89 line count
+   only when the extraction exposes a real physics/numerics policy, and no
+   public behavior change.
+4. **Clean terminology and public surfaces.** Keep GX wording only in explicit
+   benchmark/comparison artifacts; rename source/test names that describe
+   current SPECTRAX-GK physics or numerics rather than comparison contracts.
+5. **Mirror tests and docs after each tranche.** Tests should move toward
+   package-aligned behavior names, and docs should describe the stable workflow
+   rather than migration history.
+6. **Release only from measured, gated evidence.** New parity, nonlinear
+   optimization, quasilinear, differentiability, or speedup claims need
+   reproducible artifacts, physics gates, and docs updates before README
+   promotion; otherwise they remain scoped or deferred.
 
 ## Final Prioritized Steps
 
