@@ -30,14 +30,14 @@ manifests, then this execution file.
 Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current `main` head: `2c87363c Record linear hypercollision refactor audit`.
-- Worktree at audit start: clean and synchronized with `origin/main`.
+- Current source-simplification head: `3495ad40 Simplify reduced QA core features`.
+- Worktree at audit start: clean before the reduced-QA source tranche.
 - Latest CI state at audit: newest `main` run queued; preceding runs were
   cancelled by newer pushes rather than completed failures.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 38 functions
-  in the 80-89 line band, and 116 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 37 functions
+  in the 80-89 line band, and 115 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Repository-size audit: architecture and size manifests pass. Tracked content
   is about 49 MB, with no unlisted large tracked files. The large local checkout
@@ -71,7 +71,8 @@ Last audited: 2026-06-21 on `main`.
   runtime dispatch, nonlinear IMEX diagnostics, linear implicit preconditioner
   routing, velocity-sharded electrostatic RHS routing, nonlinear electromagnetic
   dispatch, nonlinear timestep policy, reduced cETG integration policy,
-  benchmark diagnostic loading, and linear hypercollision routing.
+  benchmark diagnostic loading, linear hypercollision routing, and reduced QA
+  core-feature assembly.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -250,3 +251,11 @@ Goal: ship the next version from a clean, green, measured state.
   >=70 lines. README already contains the runtime/memory comparison panel near
   the top; this plan now makes keeping or refreshing that panel an explicit
   release deliverable.
+- 2026-06-21: Simplified reduced QA core-feature assembly in
+  `objectives/stellarator_reduced.py` by extracting named gradient-drive,
+  geometry-feature, linear-ITG-feature, and quasilinear-heat-flux helpers. The
+  public observable keys and formulas are unchanged. Focused stellarator
+  optimization tests passed (`20 passed`), along with ruff, mypy for the
+  touched module, compileall, architecture, repository-size, and
+  release-readiness checks; the 80-89 line function count dropped from 38 to 37
+  and the >=70 count dropped from 116 to 115.
