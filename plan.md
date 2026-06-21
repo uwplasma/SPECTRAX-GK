@@ -38,8 +38,8 @@ file for execution priority.
 Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Latest pushed source-simplification commit audited here:
-  `b03a6a77 Simplify velocity sharded electrostatic RHS`.
+- Latest source-simplification commit audited here:
+  `6f990e31 Simplify nonlinear electromagnetic dispatch`.
 - Latest pushed plan-audit commit: `24419653 Record velocity sharded RHS
   refactor audit`; worktree was clean and synchronized with `origin/main` at
   the start of this final plan review.
@@ -58,10 +58,11 @@ Last audited: 2026-06-21 on `main`.
 - Largest package-internal navigation costs are now concentrated in
   `validation`, `objectives`, `solvers`, and `operators`; the refactor target
   is fewer compatibility seams and clearer package ownership, not more files.
-- Function length: 0 source functions at or above 90 lines; 45 functions in the
-  80-89 line range and 123 functions at or above 70 lines after the linear
+- Function length: 0 source functions at or above 90 lines; 43 functions in the
+  80-89 line range and 121 functions at or above 70 lines after the linear
   workflow, nonlinear IMEX diagnostic dispatch, linear implicit
-  preconditioner, and velocity-sharded electrostatic RHS route simplifications.
+  preconditioner, velocity-sharded electrostatic RHS route, and nonlinear
+  electromagnetic dispatch simplifications.
 - Current high-value simplification targets are concentrated in nonlinear
   electromagnetic contribution assembly, validation benchmark path/report
   orchestration, VMEC/Boozer and QA objective assembly, runtime TOML loading,
@@ -123,6 +124,10 @@ Last audited: 2026-06-21 on `main`.
   serial term-contribution helpers. This preserves the existing public
   dispatch and monkeypatch contract while shortening the fused and serial
   route bodies out of the 80-89 line band.
+- The nonlinear electromagnetic contribution/component APIs now share a
+  same-file bracket context and Laguerre-vs-spectral dispatch helpers. Public
+  signatures and diagnostic payload schemas are unchanged, while both public
+  route bodies are now out of the 80-89 line band.
 
 ## Open Lanes And Priority
 
@@ -390,3 +395,11 @@ Goal: ship the next version only from clean, green `main`.
   ruff, mypy, compileall, architecture, repository-size, and
   release-readiness checks passed; the 80-89 line count dropped from 47 to 45
   and the >=70 count dropped from 125 to 123.
+- 2026-06-21: Simplified nonlinear electromagnetic dispatch in
+  `terms/nonlinear.py` by adding a bracket-context helper and shared
+  contribution/component dispatch helpers. Public nonlinear EM signatures,
+  Laguerre/spectral routing, and diagnostic payload schemas stay unchanged.
+  Focused nonlinear E×B/electromagnetic and cached RHS tests passed; ruff,
+  mypy, compileall, architecture, repository-size, and release-readiness checks
+  passed; the 80-89 line count dropped from 45 to 43 and the >=70 count
+  dropped from 123 to 121.
