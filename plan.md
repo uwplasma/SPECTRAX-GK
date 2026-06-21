@@ -958,9 +958,18 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, full nonlinear-gradient evidence tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest,
   release-readiness check, and `git diff --check`.
+- 2026-06-20: split nonlinear spectral identity reporting into shared abs/rel
+  error summaries, identity-pass policy helpers, chunk/tile normalization, and
+  RHS report construction.  This preserves the serial-vs-logical-shard identity
+  report schemas while making the nonlinear domain-decomposition performance
+  gate easier to inspect before any future speedup claim.
+- Focused gates passed for the nonlinear spectral identity tranche: Ruff,
+  focused mypy, nonlinear spectral communication/parallel tests, architecture
+  manifest, repository-size manifest, differentiable-refactor manifest,
+  release-readiness check, and `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 21.
-- Remaining source functions at or above 80 lines: 72.
+- Remaining source functions at or above 90 lines: 20.
+- Remaining source functions at or above 80 lines: 71.
 
 ## Latest Release Log
 
