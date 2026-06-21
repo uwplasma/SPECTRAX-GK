@@ -230,7 +230,7 @@
       "spectrax-gk",
       "spectraxgk"
     ],
-    "version": "1.6.7"
+    "version": "1.6.8"
   },
   "release_target": {
     "status_source": "docs/_static/manuscript_readiness_status.json:lanes",
@@ -317,9 +317,9 @@
     "checked_pypi": false,
     "duplicate_on_pypi": false,
     "package": "spectraxgk",
-    "project_version": "1.6.7",
+    "project_version": "1.6.8",
     "require_tag": false,
-    "source_version": "1.6.7",
+    "source_version": "1.6.8",
     "tag": null
   }
 }
