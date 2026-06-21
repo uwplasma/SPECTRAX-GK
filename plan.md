@@ -31,14 +31,14 @@ Last audited: 2026-06-21 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `1d3105f4 Simplify QA low turbulence envelope trace`.
+  `7ddbabe9 Simplify geometry inverse design report assembly`.
 - Worktree at audit start: clean before the reduced-QA source tranche.
 - Latest CI state at audit: newest `main` run queued; preceding runs were
   cancelled by newer pushes rather than completed failures.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, and zero blocked root-prefix modules.
-- Function-length audit: 0 source functions at or above 90 lines, 35 functions
-  in the 80-89 line band, and 114 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 34 functions
+  in the 80-89 line band, and 113 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Repository-size audit: architecture and size manifests pass. Tracked content
   is about 49 MB, with no unlisted large tracked files. The large local checkout
@@ -74,7 +74,7 @@ Last audited: 2026-06-21 on `main`.
   dispatch, nonlinear timestep policy, reduced cETG integration policy,
   benchmark diagnostic loading, linear hypercollision routing, reduced QA
   core-feature assembly, quasilinear transport payload assembly, and QA
-  low-turbulence envelope tracing.
+  low-turbulence envelope tracing, and geometry inverse-design report assembly.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -276,3 +276,12 @@ Goal: ship the next version from a clean, green, measured state.
   ruff, mypy for the touched module, compileall, architecture, repository-size,
   and release-readiness checks; the 80-89 line function count dropped from 36
   to 35 and the >=70 count dropped from 115 to 114.
+- 2026-06-21: Simplified geometry inverse-design report assembly in
+  `geometry/sensitivity.py` by extracting selected-observable naming,
+  AD/FD/UQ derivative diagnostics, and report packing. Public report keys,
+  covariance diagnostics, and sensitivity conditioning metadata are unchanged.
+  Focused differentiable-geometry inverse-design and facade tests passed
+  (`4 passed`), along with ruff, mypy for the touched module, compileall,
+  architecture, repository-size, and release-readiness checks; the 80-89 line
+  function count dropped from 35 to 34 and the >=70 count dropped from 114 to
+  113.
