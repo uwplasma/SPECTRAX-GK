@@ -1,7 +1,7 @@
 # SPECTRAX-GK Final Closure Plan
 
-This is the active execution plan for the `v1.6.9` compact release checkpoint
-after the differentiable architecture/refactor work. Detailed chronological history is intentionally
+This is the active execution plan after the `v1.6.9` compact release
+checkpoint following the differentiable architecture/refactor work. Detailed chronological history is intentionally
 kept in git commits, release notes, docs artifacts, and CI logs rather than in
 this root file, so the repository stays easy to read and maintain.
 
@@ -36,12 +36,14 @@ file for execution priority.
 
 Last audited: 2026-06-21 on `main`.
 
-- Latest released tag before this checkpoint: `v1.6.8`.
-- Release target for this checkpoint: `v1.6.9`.
-- Latest pushed commit audited here: `3e8dd615 Consolidate runtime command artifact policy`.
-- Latest completed green CI before the version bump: `3e8dd615`. Quick shards,
+- Latest released tag: `v1.6.9`.
+- Latest pushed release commit audited here:
+  `494b9ea2 Bump version to 1.6.9`.
+- Latest completed green CI for the release commit: `494b9ea2`. Quick shards,
   mypy, docs/package build, fast coverage, all 48 wide-coverage shards, and
   wide coverage combine passed.
+- Release workflow `27906940479` passed for tag `v1.6.9`; PyPI lists the
+  `spectraxgk-1.6.9` wheel and sdist, and GitHub Release `v1.6.9` is latest.
 - Package shape: 357 Python files under `src/spectraxgk`, about 106.6k source
   lines, 9 root facade modules, and no blocked root-prefix modules under the
   architecture manifest.
@@ -71,7 +73,7 @@ Last audited: 2026-06-21 on `main`.
   artifact provenance.
 - The root `benchmarks/` directory now contains lightweight drivers, TOMLs, and
   a small result manifest.
-- Release engineering for `v1.6.8` is closed: PyPI/GitHub release passed, CI
+- Release engineering for `v1.6.9` is closed: PyPI/GitHub release passed, CI
   coverage is wide-sharded, and package/docs builds pass.
 
 ## Open Lanes And Priority
@@ -80,8 +82,8 @@ Percentages are engineering status estimates, not scientific claims.
 
 | Priority | Lane | Status | Closure Evidence |
 | --- | --- | ---: | --- |
-| P0 | Plan/docs/readme consistency | 99% | This file, architecture docs, README, and release-scope docs agree on current status and claim scope. |
-| P0 | Release hygiene | 98% | Clean `main`, green CI, bounded local release gates, version bump, tag, release workflow, PyPI publish. |
+| P0 | Plan/docs/readme consistency | 100% | This file, architecture docs, README, and release-scope docs agree on current status and claim scope. |
+| P0 | Release hygiene | 100% | Clean `main`, green CI, bounded local release gates, version bump, tag, release workflow, PyPI publish. |
 | P1 | Source simplification and naming | 96% | No new root-prefix modules, non-benchmark comparison-code terminology removed or justified, fewer navigation-only helpers, tests updated. |
 | P1 | Refactor/testability | 97% | High-value 70-89 line functions reduced only where it exposes a real policy boundary or removes duplication. |
 | P1 | Package coverage and physics tests | 100% gate, 96% margin | Wide package coverage stays >=95%; new tests remain physics/numerics/autodiff/regression tests rather than smoke-only coverage. |
@@ -97,18 +99,14 @@ Percentages are engineering status estimates, not scientific claims.
 
 The remaining path is intentionally short and release-oriented:
 
-1. **Commit the current simplification tranche.** Finish local gates for the
-   runtime command-artifact consolidation, commit it, push it, and confirm CI.
-2. **Ship a small release if CI stays green.** Bump the version, run the bounded
-   release gates, push the tag, and verify the GitHub release/PyPI workflow.
-3. **Keep the README performance figure in place.** The runtime/memory figure is
+1. **Keep the README performance figure in place.** The runtime/memory figure is
    already restored near the top of the README; refresh it only from new
    measured CPU/GPU artifacts with hardware, wall-time, memory, and W7-X/HSX
    rows.
-4. **Resume refactoring only after the release checkpoint.** Further source
+2. **Resume refactoring only after the release checkpoint.** Further source
    simplification should reduce navigation cost inside the largest domain
    packages without adding new root files or compatibility shims.
-5. **Resume science/performance lanes only with gates.** New parity, nonlinear
+3. **Resume science/performance lanes only with gates.** New parity, nonlinear
    optimization, quasilinear, differentiability, or speedup claims need
    reproducible artifacts, physics gates, and docs updates before README
    promotion.
@@ -226,16 +224,16 @@ Goal: ship the next version only from clean, green `main`.
 
 ## Release Blocking Checklist
 
-- [ ] `main` clean and up to date with `origin/main`.
-- [ ] Latest CI success confirmed.
-- [ ] `plan.md`, `README.md`, `docs/architecture_refactor_plan.rst`,
+- [x] `main` clean and up to date with `origin/main`.
+- [x] Latest CI success confirmed.
+- [x] `plan.md`, `README.md`, `docs/architecture_refactor_plan.rst`,
       `docs/code_structure.rst`, and `docs/release_scope.rst` agree on scope.
-- [ ] README runtime/memory panel remains near the top and tied to measured
+- [x] README runtime/memory panel remains near the top and tied to measured
       artifacts.
-- [ ] No new large tracked artifacts or raw simulation outputs.
-- [ ] Architecture, repository-size, release-readiness, docs, package, and
+- [x] No new large tracked artifacts or raw simulation outputs.
+- [x] Architecture, repository-size, release-readiness, docs, package, and
       bounded tests pass locally.
-- [ ] Version bump and tag are pushed only after green gates.
+- [x] Version bump and tag are pushed only after green gates.
 
 ## Short Work Log
 
@@ -254,3 +252,6 @@ Goal: ship the next version only from clean, green `main`.
   saved-output and stdout behavior.
 - 2026-06-21: Green CI confirmed for `3e8dd615`; prepared the `v1.6.9`
   release checkpoint without regenerating runtime/memory artifacts.
+- 2026-06-21: Released `v1.6.9` from `494b9ea2`. CI run `27906389241` and
+  release workflow `27906940479` passed; PyPI published the wheel/sdist and the
+  GitHub Release entry is latest.
