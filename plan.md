@@ -1008,9 +1008,17 @@ The next version should be cut only after these finite gates are satisfied:
   focused mypy, runtime-linear helper tests, architecture manifest,
   repository-size manifest, differentiable-refactor manifest, release-readiness
   check, and `git diff --check`.
+- 2026-06-20: split nonlinear heat-flux convergence metrics into finite-sample
+  validation, post-transient window selection, terminal-window selection, trend
+  extraction, and summary construction.  This preserves the long-window
+  transport-convergence gate while making its acceptance policy more auditable.
+- Focused gates passed for the heat-flux convergence tranche: Ruff, focused
+  mypy, nonlinear-window convergence tests, architecture manifest,
+  repository-size manifest, differentiable-refactor manifest, release-readiness
+  check, and `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
-- Remaining source functions at or above 90 lines: 14.
-- Remaining source functions at or above 80 lines: 65.
+- Remaining source functions at or above 90 lines: 13.
+- Remaining source functions at or above 80 lines: 64.
 
 ## Latest Release Log
 
