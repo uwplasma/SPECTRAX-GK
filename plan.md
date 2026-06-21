@@ -939,13 +939,24 @@ The next version should be cut only after these finite gates are satisfied:
 - Focused gates passed for the ETG linear tranche: Ruff, mypy, ETG linear branch
   tests, differentiable refactor manifest, architecture manifest,
   repository-size manifest, release-readiness check, and `git diff --check`.
+- 2026-06-20: split nonlinear transport audit and landscape admission report
+  builders into explicit metric extraction, blocker evaluation, candidate-row
+  assembly, selection, and next-action helpers.  This preserves the
+  VMEC/Boozer nonlinear turbulent-flux optimization evidence schemas while
+  making the fail-closed policy boundaries smaller and easier to test.
+- Focused gates passed for the transport-admission tranche: Ruff, focused mypy,
+  transport admission tests, landscape/audit builder-script tests,
+  architecture manifest, repository-size manifest, differentiable-refactor
+  manifest, release-readiness check, and `git diff --check`.
 - Remaining source functions at or above 100 lines: 0.
+- Remaining source functions at or above 90 lines: 22.
+- Remaining source functions at or above 80 lines: 74.
 
 ## Latest Release Log
 
-- `v1.6.7` was merged to `main`, tagged, published to PyPI, and released on
+- `v1.6.8` was merged to `main`, tagged, published to PyPI, and released on
   GitHub on 2026-06-20.
-- Exact-head PR CI, post-merge main CI, release readiness, repository-size,
-  architecture, release-artifact, technical-release, package-build, Twine
-  metadata, docs build, and PyPI publish gates passed.
-- PyPI lists `spectraxgk==1.6.7` with wheel and source distribution artifacts.
+- Release readiness, repository-size, architecture, release-artifact,
+  technical-release, package-build, Twine metadata, docs build, GitHub release,
+  and PyPI publish gates passed.
+- PyPI lists `spectraxgk==1.6.8` with wheel and source distribution artifacts.
