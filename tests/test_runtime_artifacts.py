@@ -1535,8 +1535,8 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
     out_path = tmp_path / "direct.out.nc"
     restart_path = tmp_path / "direct.restart.nc"
     cfg = RuntimeConfig(
-        time=TimeConfig(dt=0.1, t_max=0.2, fixed_dt=True, diagnostics=True),
-        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=1),
+        time=TimeConfig(dt=0.1, t_max=1.2, fixed_dt=True, diagnostics=True),
+        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=5),
     )
 
     def _diag(sample_t: float) -> SimulationDiagnostics:
@@ -1555,17 +1555,18 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
         )
 
     def _run(run_cfg, **kwargs):
+        chunk_steps = int(kwargs["steps"])
         calls.append(
             {
                 "init_file": run_cfg.init.init_file,
                 "init_file_mode": run_cfg.init.init_file_mode,
-                "steps": kwargs["steps"],
+                "steps": chunk_steps,
                 "return_state": kwargs["return_state"],
             }
         )
         return RuntimeNonlinearResult(
-            t=np.asarray([0.1]),
-            diagnostics=_diag(0.1),
+            t=np.asarray([0.1 * chunk_steps]),
+            diagnostics=_diag(0.1 * chunk_steps),
             state=np.zeros((1, 1, 1, 1, 1, 1), dtype=np.complex64),
         )
 
@@ -1592,19 +1593,20 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
         cfg,
         out=out_path,
         ky_target=0.2,
-        steps=2,
+        steps=12,
         diagnostics=True,
         deps=deps,
     )
 
     assert result.diagnostics is not None
     assert paths["restart"] == str(restart_path)
-    assert [call["steps"] for call in calls] == [1, 1]
+    assert [call["steps"] for call in calls] == [5, 5, 2]
     assert calls[0]["init_file"] is None
     assert calls[1]["init_file"] == str(restart_path)
     assert calls[1]["init_file_mode"] == "replace"
     assert all(call["return_state"] is True for call in calls)
-    assert writes == pytest.approx([0.1, 0.2])
+    assert writes == pytest.approx([0.5, 1.0, 1.2])
+    assert float(np.asarray(result.diagnostics.t)[-1]) == pytest.approx(1.2)
 
 
 def test_run_runtime_nonlinear_with_artifacts_keeps_adaptive_steps_none(
