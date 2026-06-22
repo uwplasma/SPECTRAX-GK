@@ -31,14 +31,14 @@ Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `54795bfc Simplify quasilinear window promotion gate`.
-- Worktree at audit start: local `main` contains the quasilinear window-promotion
-  source-simplification tranche and this plan update; push both after the
-  bounded local gates pass.
-- Latest CI state at audit: the newest pushed `main` run for `05f7769f` was
-  queued, and the latest completed non-superseded run for `fe77d967` passed.
-  Verify the newest non-superseded run after pushing this tranche, but do not
-  spend time watching runs cancelled or superseded by newer pushes.
+  `39e1c952 Simplify nonlinear gradient and VMEC holdout reports`.
+- Worktree at audit start: local `main` contains the nonlinear-gradient and
+  VMEC/Boozer holdout source-simplification tranche plus this plan update; push
+  both after the bounded local gates pass.
+- Latest CI state at audit: the newest pushed `main` run for `7c10bb18` was in
+  progress, and the latest completed non-superseded run for `fe77d967` passed.
+  Verify the newest non-superseded run after pushing this tranche; do not watch
+  superseded runs.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, 21 required domain packages, and zero
   blocked root-prefix modules.
@@ -47,8 +47,8 @@ Last audited: 2026-06-22 on `main`.
   quasilinear modeling, stellarator optimization, performance, manuscript
   figures, and code structure. The next documentation pass should tighten and
   cross-link rather than add more broad narrative by default.
-- Function-length audit: 0 source functions at or above 90 lines, 15 functions
-  in the 80-89 line band, and 98 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 13 functions
+  in the 80-89 line band, and 96 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
   broad. The remaining refactor work must prefer consolidation of single-use
@@ -96,8 +96,9 @@ Last audited: 2026-06-22 on `main`.
   diagnostic/final-state result routing, linear diffrax setup bundling, and
   VMEC transport table row assembly, and VMEC/Boozer line-search step
   candidate/stop routing, and VMEC state-sensitivity report runner/payload
-  routing, linear implicit sample/scan orchestration, and quasilinear
-  window-promotion gate dispatch.
+  routing, linear implicit sample/scan orchestration, quasilinear
+  window-promotion gate dispatch, nonlinear-gradient variance-report assembly,
+  and VMEC/Boozer holdout config assembly.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -111,8 +112,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest completed non-superseded CI green; queued head run must be checked once, then fixed only if it fails. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible after Highlights; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.8% | No new root modules, zero functions >=90 lines, 15 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
-| P1 | Refactor/testability | 99.6% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 99.85% | No new root modules, zero functions >=90 lines, 13 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
+| P1 | Refactor/testability | 99.65% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -265,11 +266,10 @@ Goal: ship the next version from a clean, green, measured state.
 3. Take one final source-simplification tranche only if it removes a real
    navigation or policy boundary problem. Best current candidates after the
    latest cleanup are
-   `objectives/vmec_boozer_line_search.py::vmec_boozer_aggregate_line_search_holdout_report`,
    `solvers/time/diffrax_nonlinear.py::integrate_nonlinear_diffrax`,
-   `validation/nonlinear_gradient/followup_variance.py::nonlinear_gradient_variance_reduction_plan`,
-   or benchmark scan/report helpers that still duplicate fit-window and
-   branch-selection policies.
+   `solvers/nonlinear/imex_diagnostics.py::_integrate_imex_nonlinear_diagnostics_core`,
+   or benchmark scan/report helpers that still duplicate fit-window,
+   branch-selection, or report-packing policies.
 4. Audit non-benchmark `GX`/comparison terminology in source and tests; rename
    only cases that describe native SPECTRAX-GK physics or numerics rather than
    an explicit comparison artifact.
@@ -295,45 +295,16 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Rolling Log
 
-- 2026-06-22: Re-audited the final-closure state after `042f8d21`. Worktree was
-  clean and synced with `origin/main`; the newest CI run was queued and the
-  latest completed non-superseded run was green. Architecture and repository-size
-  manifests passed. Source audit found 357 Python files, about 107,800 source
-  lines, 316 test files, about 92,600 test lines, 0 functions >=90 lines, 20
-  functions in the 80-89 line band, and 103 functions >=70 lines. README already
-  has the runtime/memory panel immediately after Highlights; the plan now treats
-  keeping that measured panel as a release invariant and prioritizes
-  geometry/objective consolidation plus docs tightening over further file
-  proliferation.
-- 2026-06-22: Simplified VMEC state-sensitivity reports in
-  `geometry/vmec_state_sensitivity.py` by routing optional-backend discovery,
-  fail-closed exception handling, metadata packing, and payload assembly through
-  shared in-file contracts. Public report names and JSON keys are unchanged.
-  Focused VMEC differentiable-geometry tests passed (`5 passed`), facade and
-  differentiable-refactor manifest checks passed (`3 passed`), along with ruff,
-  mypy for the touched module, compileall, architecture, repository-size, and
-  release-readiness checks. The 80-89 line function count dropped from 20 to 17
-  and the >=70 count dropped from 103 to 100 without adding source files.
-- 2026-06-22: Simplified linear implicit integration in
-  `solvers/linear/implicit.py` by extracting sample-cadence validation,
-  per-step GMRES solve construction, and saved-output scan orchestration from
-  `_integrate_linear_implicit_cached`. The matrix-free operator,
-  preconditioner selection, checkpoint policy, saved `phi` cadence, and public
-  helper exports are unchanged. Focused linear implicit tests passed, along
-  with ruff, mypy for the touched module, compileall, architecture,
-  repository-size, release-readiness, release-version tests, and diff-hygiene
-  checks. The 80-89 line function count dropped from 17 to 16 and the >=70
-  count dropped from 100 to 99 without adding source files.
-- 2026-06-22: Simplified the quasilinear nonlinear-window promotion gate in
-  `validation/quasilinear/window_promotion.py` by separating ensemble-report
-  checks, convergence-report checks, declared-transient policy detection, and
-  finite-field validation. Public failure messages, threshold semantics, and
-  the `nonlinear_window_stats_promotion_ready` return contract are unchanged.
-  Focused quasilinear window/calibration tests passed (`3 passed`), along with
-  ruff, mypy for the touched module, compileall, architecture,
-  repository-size, release-readiness, release-version tests, and diff-hygiene
-  checks. The 80-89 line function count dropped from 16 to 15 and the >=70
-  count dropped from 99 to 98 without adding source files.
+- 2026-06-22: Post-release simplification reduced source metrics from 20 to 13
+  functions in the 80-89 line band and from 103 to 96 functions >=70 lines
+  without adding source files or root modules. Recent slices covered VMEC
+  state-sensitivity reports, linear implicit integration, quasilinear
+  nonlinear-window promotion, nonlinear-gradient variance planning, and
+  VMEC/Boozer aggregate holdout config assembly.
+- 2026-06-22: Latest bounded source-simplification gates passed: focused
+  nonlinear-gradient and VMEC/Boozer tests (`29 passed`), ruff, mypy for touched
+  modules, compileall, architecture, repository-size, release-readiness,
+  release-version tests, and diff hygiene.
 - Older 2026-06-21 source-simplification tranche details are preserved in the
   corresponding git commits; this root plan keeps only the current checkpoint
   and latest evidence to avoid becoming a second changelog.
