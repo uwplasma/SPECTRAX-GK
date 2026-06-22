@@ -111,3 +111,24 @@ def test_progress_keeps_checkpoint_below_dt_tolerance_incomplete(tmp_path: Path,
     assert report["time_tolerance"] == 0.1
     assert report["summary"]["target_time_confirmed"] == 0
     assert report["summary"]["ready_for_postprocess"] is False
+
+
+def test_progress_cli_uses_manifest_dt_tolerance_by_default(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    base = tmp_path / "base.out.nc"
+    cand = tmp_path / "cand.out.nc"
+    _touch_bundle(base)
+    _touch_bundle(cand)
+    manifest = _write_manifest(tmp_path, [base, cand], include_dt=True)
+    out_json = tmp_path / "progress.json"
+    monkeypatch.setattr(mod, "_read_output_tmax", lambda _path: 19.927)
+
+    rc = mod.main(["--matrix-manifest", str(manifest), "--out-json", str(out_json)])
+    stdout = capsys.readouterr().out
+    report = json.loads(out_json.read_text(encoding="utf-8"))
+
+    assert rc == 0
+    assert '"ready_for_postprocess": true' in stdout.lower()
+    assert report["time_tolerance"] == 0.1
+    assert report["summary"]["target_time_confirmed"] == 2

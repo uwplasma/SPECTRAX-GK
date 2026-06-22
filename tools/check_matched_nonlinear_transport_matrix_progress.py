@@ -261,7 +261,9 @@ def main(argv: list[str] | None = None) -> int:
     report = build_report(
         matrix_manifest=args.matrix_manifest,
         target_time=args.target_time,
-        time_tolerance=float(args.time_tolerance),
+        time_tolerance=(
+            None if args.time_tolerance is None else float(args.time_tolerance)
+        ),
         skip_time_check=bool(args.skip_time_check),
     )
     if args.out_json is not None:
