@@ -14,7 +14,7 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current head: `7a626442 Simplify linear integration dispatch`.
+- Current head: `e1e52fa5 Simplify twist-shift cache policy`.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -24,7 +24,7 @@ Last audited: 2026-06-22 on `main`.
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 8 functions in the 80-89 line band, and 93 functions at or
+  above 90 lines, 7 functions in the 80-89 line band, and 92 functions at or
   above 70 lines.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
@@ -70,7 +70,8 @@ then this plan.
 - Recent refactors simplified runtime, solver setup, nonlinear Diffrax/IMEX,
   validation reports, VMEC/Boozer gates, nonlinear-gradient/report paths,
   quasilinear optimized-equilibrium audit inputs, KBM beta Krylov sample policy,
-  and linear explicit integration dispatch without adding new public behavior.
+  linear explicit dispatch, and twist-shift cache policy without adding new
+  public behavior.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
   work. Nonlinear domain decomposition remains diagnostic until stronger gates
@@ -142,9 +143,9 @@ facades.
    keep GX naming only in explicit benchmark/comparison tools, tests, docs, and
    plots.
 6. Next source candidates, in priority order:
-   - `operators/linear/cache_builder.py::_resolve_twist_shift_policy`
    - `geometry_backends/vmec_fieldlines.py::_sample_fieldline_boozer_state`
    - `geometry/flux_tube_contract.py::flux_tube_geometry_from_mapping`
+   - `workflows/runtime/orchestration_scan.py::run_runtime_scan_batch`
    - benchmark scan/report helpers that duplicate fit-window, branch-selection,
      or report-packing policies
 
