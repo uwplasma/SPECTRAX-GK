@@ -14,8 +14,8 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Latest implementation checkpoint: `f912c515 Simplify runtime scan batch
-  orchestration`; plan-only checkpoints may follow it.
+- Latest implementation checkpoint: `3d7f3d6f Simplify Cyclone time-batch
+  result paths`; plan-only checkpoints may follow it.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -25,7 +25,7 @@ Last audited: 2026-06-22 on `main`.
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 4 functions in the 80-89 line band, and 89 functions at or
+  above 90 lines, 3 functions in the 80-89 line band, and 88 functions at or
   above 70 lines.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
@@ -33,7 +33,7 @@ Last audited: 2026-06-22 on `main`.
   differentiability, performance, validation, and code-structure docs exist.
   The next pass should tighten, cross-link, and remove stale claims rather than
   add broad narrative by default.
-- Repository footprint: tracked files total 48,414,946 bytes after trimming
+- Repository footprint: tracked files total 48,415,857 bytes after trimming
   unreferenced duplicate stellarator optimization PDFs; no tracked files above
   2 MB. Large local checkout size is from ignored/generated artifacts such as
   `.venv`, caches, `docs/_build`, `dist`, and `tools_out`, not tracked release
@@ -74,8 +74,8 @@ then this plan.
   quasilinear optimized-equilibrium audit inputs, KBM beta Krylov sample policy,
   linear explicit dispatch, twist-shift cache policy, duplicate optimization
   artifacts, solver-ready flux-tube geometry packing, VMEC/Boozer field-line
-  sampling assembly, and runtime scan batch orchestration without adding new
-  public behavior.
+  sampling assembly, runtime scan batch orchestration, and Cyclone time-batch
+  result branching without adding new public behavior.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
   work. Nonlinear domain decomposition remains diagnostic until stronger gates
@@ -87,7 +87,7 @@ then this plan.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest head CI green, bounded local release gates pass, version bump/tag publish cleanly. |
 | P0 | README/docs/plan consistency | 99% | README references current figures only; docs, release scope, and plan agree on promoted and deferred claims. |
-| P1 | Source simplification and naming | 99.97% | No new root modules, source-file count non-increasing, zero functions >=90 lines, and remaining long helpers either simplified or justified. |
+| P1 | Source simplification and naming | 99.98% | No new root modules, source-file count non-increasing, zero functions >=90 lines, and remaining long helpers either simplified or justified. |
 | P1 | Refactor/testability | 99.7% | Tests map to domain ownership; no migration-era wrappers or stale compatibility paths remain in examples/docs. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests are physics, numerics, artifact, AD, or regression gates, not smoke-only scaffolds. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel uses measured artifacts with hardware/backend metadata; new speedup claims require identity plus profiler gates. |
