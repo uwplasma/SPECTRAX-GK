@@ -268,6 +268,12 @@ Current launch log:
   They use the one-point QA baseline WOUT against the tracked projected
   transport-weight `5e-4` and `1e-3` WOUTs; both generated manifests pass the
   same 18-point coverage gate.
+- Added `tools/check_matched_nonlinear_transport_matrix_progress.py` to avoid
+  counting checkpoint bundles as final outputs. The first office progress
+  report at
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_progress.json`
+  found `2/108` complete bundles and `0/108` outputs confirmed at `t=1500`, so
+  postprocessing is not ready yet.
 
 ### 7. Preserve validation scope and GX parity
 
