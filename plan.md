@@ -240,6 +240,28 @@ Goal: close the release lane without overstating the science claim.
    multi-surface, multi-field-line, multi-`k_y` matrix passes for the selected
    optimization family. Single-point positive audits remain scoped evidence.
 
+Current launch log:
+
+- `2026-06-22`: generated the accepted QA/ESS max-mode-5 matrix on office from
+  `/home/rjorge/vmec_jax_autoscalar_20260601/examples/optimization/results/qs_ess_sweep/gpu/continuation/qa/mode5/no_ess/wout_final.nc`
+  to
+  `/home/rjorge/vmec_jax_autoscalar_20260601/examples/optimization/results/qs_ess_sweep/gpu/continuation/qa/mode5/ess/wout_final.nc`.
+  The campaign lives under
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix` with artifacts in
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts`.
+- The first trial exposed a misleading checkpoint log line (`8000` steps for
+  each `t=1500` command). This is checkpoint chunking, not a horizon cap; the
+  strengthened local regression
+  `tests/test_runtime_artifacts.py::test_runtime_orchestration_handoff_chunks_and_restarts`
+  now verifies that checkpointed nonlinear artifact handoff accumulates all
+  requested steps.
+- Relaunched final-horizon direct queues on office at commit `770386d2`:
+  GPU0 PID `255406`, GPU1 PID `255407`. Each queue has 54 independent
+  `t=1500` jobs. After completion, run
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
+  and inspect
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`.
+
 ### 7. Preserve validation scope and GX parity
 
 Goal: claims remain reproducible and honest.
