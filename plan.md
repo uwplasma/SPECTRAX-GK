@@ -31,13 +31,13 @@ Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `39e1c952 Simplify nonlinear gradient and VMEC holdout reports`.
-- Worktree at audit start: local `main` contains the nonlinear-gradient and
-  VMEC/Boozer holdout source-simplification tranche plus this plan update; push
-  both after the bounded local gates pass.
-- Latest CI state at audit: the newest pushed `main` run for `7c10bb18` was in
-  progress, and the latest completed non-superseded run for `fe77d967` passed.
-  Verify the newest non-superseded run after pushing this tranche; do not watch
+  `98ef7682 Simplify nonlinear diffrax and IMEX setup`.
+- Worktree at audit start: local `main` contains the nonlinear Diffrax/IMEX
+  source-simplification tranche plus this plan update; push both after bounded
+  local gates pass.
+- Latest CI state at audit: the newest pushed `main` run for `095e29cd` was in
+  progress; the latest completed non-superseded run for `fe77d967` passed.
+  Check the newest non-superseded run once after pushing; do not watch
   superseded runs.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, 21 required domain packages, and zero
@@ -47,7 +47,7 @@ Last audited: 2026-06-22 on `main`.
   quasilinear modeling, stellarator optimization, performance, manuscript
   figures, and code structure. The next documentation pass should tighten and
   cross-link rather than add more broad narrative by default.
-- Function-length audit: 0 source functions at or above 90 lines, 13 functions
+- Function-length audit: 0 source functions at or above 90 lines, 11 functions
   in the 80-89 line band, and 96 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
@@ -80,25 +80,9 @@ Last audited: 2026-06-22 on `main`.
   manifest.
 - Source simplification has removed root-level prefix sprawl and kept the public
   package surface domain-organized.
-- Recent refactors simplified runtime artifact display, gradient-validation
-  reports, VMEC/Boozer objective tables, VMEC flux-tube parity packing, linear
-  runtime dispatch, nonlinear IMEX diagnostics, linear implicit preconditioner
-  routing, velocity-sharded electrostatic RHS routing, nonlinear electromagnetic
-  dispatch, nonlinear timestep policy, reduced cETG integration policy,
-  benchmark diagnostic loading, linear hypercollision routing, reduced QA
-  core-feature assembly, quasilinear transport payload assembly, QA
-  low-turbulence envelope tracing, geometry inverse-design report assembly, and
-  runtime TOML loading, runtime linear diagnostic fitting, and linear
-  time-series integration dispatch, and QA low-turbulence optimizer state
-  assembly, Cyclone scan setup policy resolution, ETG scan time-batch context
-  packing, TEM path/scan policy packing, cETG linear runtime fitting, and
-  late-time linear metrics signal/tail-stat assembly, and nonlinear runtime
-  diagnostic/final-state result routing, linear diffrax setup bundling, and
-  VMEC transport table row assembly, and VMEC/Boozer line-search step
-  candidate/stop routing, and VMEC state-sensitivity report runner/payload
-  routing, linear implicit sample/scan orchestration, quasilinear
-  window-promotion gate dispatch, nonlinear-gradient variance-report assembly,
-  and VMEC/Boozer holdout config assembly.
+- Recent source simplification removed root-prefix sprawl and turned many long
+  report, runtime, benchmark, objective, and solver functions into named
+  in-file policy boundaries without changing public facades.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -112,8 +96,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest completed non-superseded CI green; queued head run must be checked once, then fixed only if it fails. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible after Highlights; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.85% | No new root modules, zero functions >=90 lines, 13 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
-| P1 | Refactor/testability | 99.65% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 99.9% | No new root modules, zero functions >=90 lines, 11 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
+| P1 | Refactor/testability | 99.7% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -266,8 +250,9 @@ Goal: ship the next version from a clean, green, measured state.
 3. Take one final source-simplification tranche only if it removes a real
    navigation or policy boundary problem. Best current candidates after the
    latest cleanup are
-   `solvers/time/diffrax_nonlinear.py::integrate_nonlinear_diffrax`,
-   `solvers/nonlinear/imex_diagnostics.py::_integrate_imex_nonlinear_diagnostics_core`,
+   `validation/quasilinear/model_selection_inputs.py::_optimized_equilibrium_audit_summary`,
+   `validation/benchmarks/kbm_beta_solver_paths.py::solve_kbm_beta_krylov_sample`,
+   `solvers/linear/integrators.py::integrate_linear`,
    or benchmark scan/report helpers that still duplicate fit-window,
    branch-selection, or report-packing policies.
 4. Audit non-benchmark `GX`/comparison terminology in source and tests; rename
@@ -295,16 +280,17 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Rolling Log
 
-- 2026-06-22: Post-release simplification reduced source metrics from 20 to 13
+- 2026-06-22: Post-release simplification reduced source metrics from 20 to 11
   functions in the 80-89 line band and from 103 to 96 functions >=70 lines
   without adding source files or root modules. Recent slices covered VMEC
   state-sensitivity reports, linear implicit integration, quasilinear
   nonlinear-window promotion, nonlinear-gradient variance planning, and
-  VMEC/Boozer aggregate holdout config assembly.
+  VMEC/Boozer aggregate holdout config assembly, nonlinear Diffrax setup, and
+  IMEX diagnostic scan-context setup.
 - 2026-06-22: Latest bounded source-simplification gates passed: focused
-  nonlinear-gradient and VMEC/Boozer tests (`29 passed`), ruff, mypy for touched
-  modules, compileall, architecture, repository-size, release-readiness,
-  release-version tests, and diff hygiene.
+  nonlinear Diffrax/IMEX tests (`10 passed`), ruff, mypy for touched modules,
+  compileall, architecture, repository-size, release-readiness, release-version
+  tests, and diff hygiene.
 - Older 2026-06-21 source-simplification tranche details are preserved in the
   corresponding git commits; this root plan keeps only the current checkpoint
   and latest evidence to avoid becoming a second changelog.
