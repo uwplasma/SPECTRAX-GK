@@ -106,7 +106,7 @@ then this plan.
 | P2 | VMEC/Boozer differentiable geometry | 99% scoped | Promoted geometry/optimization rows have parity and gradient gates; broad optimization claims remain scoped. |
 | P2 | Production parallelization | 95% scoped | Independent-work paths are production; nonlinear domain decomposition stays diagnostic until full transport-window identity and CPU/GPU speedup pass. |
 | P3 | Quasilinear model development | 99% scoped | Screening/model-development diagnostics are documented; universal absolute-flux predictor remains unpromoted unless held-out gates pass. |
-| P3 | Nonlinear turbulent-flux optimization | 91% scoped | Long post-transient matched audits support scoped examples; broad optimized-stellarator turbulence claims remain unpromoted. |
+| P3 | Nonlinear turbulent-flux optimization | 94% scoped | Long post-transient matched audits plus a user-facing matched-audit example support scoped examples; broad multi-surface optimized-stellarator turbulence claims remain unpromoted. |
 | P4 | W7-X/TEM extensions | deferred | W7-X zonal recurrence, W7-X TEM/multi-flux-tube, and fluctuation-spectrum panels are post-release unless explicitly reopened. |
 
 ## Prioritized Execution Plan
@@ -211,6 +211,25 @@ executable remains fast and informative.
    objective paths.
 4. VMEC/Boozer optimization promotion requires geometry parity, gradient gates,
    conditioning diagnostics, and release-scope entries.
+
+### 6a. Finalize nonlinear turbulent-flux optimization scope
+
+Goal: close the release lane without overstating the science claim.
+
+1. Keep the three VMEC-JAX-style QA optimizer examples as candidate generators:
+   growth, quasilinear flux, and nonlinear-window heat-flux screening.
+2. Use `examples/optimization/QA_nonlinear_ITG_matched_audit.py` as the
+   production-evidence example: it consumes accepted long-window baseline and
+   optimized ensemble sidecars and writes the matched reduction audit.
+3. Promote a new low-turbulence stellarator only when the matched audit passes:
+   both ensembles qualify, the optimized post-transient mean is lower by the
+   configured threshold, and the difference is uncertainty separated.
+4. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
+   plus two projected-weight max-mode-5 audits pass; strict `t=1500`
+   growth/QL/nonlinear-window candidates are negative transfer evidence.
+5. Defer broad nonlinear turbulent-flux optimization claims until at least
+   three surfaces, two field-line labels, and multiple `k_y` values pass the
+   same long-window matched-audit policy for the selected optimization family.
 
 ### 7. Preserve validation scope and GX parity
 

@@ -391,6 +391,21 @@ def _write_plot(report: Mapping[str, Any], path: Path) -> None:
     plt.close(fig)
 
 
+def write_audit_artifacts(
+    report: Mapping[str, Any],
+    *,
+    out_json: Path,
+    out_csv: Path | None = None,
+    out_png: Path | None = None,
+) -> None:
+    """Write the JSON/CSV/PNG sidecars for a matched nonlinear audit."""
+
+    _write_json(report, out_json)
+    _write_csv(report, out_csv or out_json.with_suffix(".csv"))
+    if out_png is not None:
+        _write_plot(report, out_png)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-ensemble", type=Path, default=DEFAULT_BASELINE_ENSEMBLE)
@@ -425,10 +440,12 @@ def main(argv: list[str] | None = None) -> int:
         min_relative_reduction=float(args.min_relative_reduction),
         require_uncertainty_separation=not bool(args.allow_uncertainty_overlap),
     )
-    _write_json(report, args.out_json)
-    _write_csv(report, args.out_csv or args.out_json.with_suffix(".csv"))
-    if args.out_png is not None:
-        _write_plot(report, args.out_png)
+    write_audit_artifacts(
+        report,
+        out_json=args.out_json,
+        out_csv=args.out_csv,
+        out_png=args.out_png,
+    )
     print(
         json.dumps(
             {

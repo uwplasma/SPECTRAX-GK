@@ -483,6 +483,7 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
    python examples/optimization/QA_optimization_linear_ITG.py
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
+   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
    python examples/optimization/QA_parameter_scan.py
 
 The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
@@ -492,6 +493,12 @@ until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.
 They are deliberately edited through top-level constants, not command-line
 arguments. Reproducible campaign drivers, dry-runs, and plotting/gate
 generation scripts live under ``tools/``; for example:
+
+``QA_nonlinear_ITG_matched_audit.py`` is the production-evidence companion:
+after long SPECTRAX-GK nonlinear baseline/candidate campaigns finish, edit its
+ensemble paths and run it to build the matched reduction and uncertainty gate.
+It does not launch simulations and does not consume reduced/startup nonlinear
+optimizer residuals.
 
 .. code-block:: bash
 

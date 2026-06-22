@@ -53,6 +53,8 @@ Source Map
   :download:`QA_optimization_quasilinear_ITG.py <../examples/optimization/QA_optimization_quasilinear_ITG.py>`
 - VMEC-JAX-style nonlinear-window script:
   :download:`QA_optimization_nonlinear_ITG.py <../examples/optimization/QA_optimization_nonlinear_ITG.py>`
+- Matched nonlinear audit script:
+  :download:`QA_nonlinear_ITG_matched_audit.py <../examples/optimization/QA_nonlinear_ITG_matched_audit.py>`
 - VMEC-JAX-style boundary-parameter scan script:
   :download:`QA_parameter_scan.py <../examples/optimization/QA_parameter_scan.py>`
 - Configurable solved-boundary driver:
@@ -76,6 +78,7 @@ VMEC-JAX QA optimizer. They keep top-level constants instead of an argparse
    python examples/optimization/QA_optimization_linear_ITG.py
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
+   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
    python examples/optimization/QA_parameter_scan.py
 
 The objective block should look familiar to VMEC-JAX users:
@@ -1562,6 +1565,9 @@ The public VMEC-JAX QA transport scripts are:
   heat-flux screening objective, then promote only if matched baseline and
   optimized equilibria pass replicated long-window post-transient heat-flux
   audits.
+- ``QA_nonlinear_ITG_matched_audit.py``: consume already accepted baseline and
+  optimized nonlinear ensemble sidecars and write the matched reduction audit
+  that decides whether a nonlinear turbulent-flux reduction is promoted.
 
 Development-only reduced diagnostics remain under
 ``examples/theory_and_demos/reduced_stellarator_itg`` for AD/FD and plotting
@@ -1592,6 +1598,22 @@ The nonlinear heat-flux optimizer must not use startup or reduced-window
 values as final evidence. Production evidence requires long post-transient
 averages whose running means are converged and whose seed/timestep/grid
 replicates agree within the documented gate.
+
+The matched-audit example is the short user-facing command for that production
+evidence path:
+
+.. code-block:: bash
+
+   python examples/optimization/QA_nonlinear_ITG_matched_audit.py
+
+By default it rebuilds the tracked no-ESS reference versus optimized QA/ESS
+audit. For a new low-turbulence stellarator, edit ``BASELINE_ENSEMBLE`` and
+``OPTIMIZED_ENSEMBLE`` in the script after the long nonlinear campaign has
+generated accepted ensemble-gate JSON files. A candidate is promotable only if
+both ensembles qualify, the post-transient optimized mean is lower than the
+matched baseline by the configured threshold, and the difference is separated
+from the combined uncertainty. This is the required final step after the
+linear, quasilinear, or nonlinear-window optimizer proposes a candidate.
 
 Development Portfolio Gate
 --------------------------

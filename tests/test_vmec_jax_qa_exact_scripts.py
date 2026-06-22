@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import py_compile
 import re
@@ -73,6 +74,7 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     assert "python examples/optimization/QA_optimization_linear_ITG.py" in examples_readme
     assert "python examples/optimization/QA_optimization_quasilinear_ITG.py" in examples_readme
     assert "python examples/optimization/QA_optimization_nonlinear_ITG.py" in examples_readme
+    assert "python examples/optimization/QA_nonlinear_ITG_matched_audit.py" in examples_readme
     assert "python tools/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
     assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" not in examples_readme
 
@@ -110,6 +112,63 @@ def test_exact_qa_scripts_reject_unexpected_arguments_before_outputs(tmp_path: P
     assert completed.returncode != 0
     assert "unexpected arguments" in completed.stderr
     assert not (tmp_path / "results").exists()
+
+
+def test_matched_nonlinear_audit_example_rebuilds_tracked_production_gate(tmp_path: Path) -> None:
+    script = EXAMPLES / "QA_nonlinear_ITG_matched_audit.py"
+    py_compile.compile(str(script), doraise=True)
+    text = script.read_text(encoding="utf-8")
+
+    assert "argparse" not in text
+    assert "BASELINE_ENSEMBLE" in text
+    assert "OPTIMIZED_ENSEMBLE" in text
+    assert "MIN_RELATIVE_REDUCTION = 0.02" in text
+
+    help_result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert "matched baseline-vs-optimized audit" in re.sub(r"\s+", " ", help_result.stdout)
+    assert not (tmp_path / "results").exists()
+
+    bad_arg = subprocess.run(
+        [sys.executable, str(script), "--baseline-ensemble", "x.json"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert bad_arg.returncode != 0
+    assert "unexpected arguments" in bad_arg.stderr
+    assert not (tmp_path / "results").exists()
+
+    completed = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    payload_path = (
+        tmp_path
+        / "results/qa_opt/nonlinear_matched_audit/qa_nonlinear_ITG_matched_audit.json"
+    )
+    payload = json.loads(payload_path.read_text(encoding="utf-8"))
+    summary = json.loads(completed.stdout)
+
+    assert payload["passed"] is True
+    assert payload["comparison"]["relative_reduction"] > 0.18
+    assert payload["comparison"]["uncertainty_separation_sigma"] > 7.0
+    assert summary["passed"] is True
+    assert (
+        tmp_path
+        / "results/qa_opt/nonlinear_matched_audit/qa_nonlinear_ITG_matched_audit.png"
+    ).exists()
 
 
 def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:

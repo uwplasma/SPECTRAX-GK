@@ -10,6 +10,7 @@ Use these when the goal is a real VMEC-JAX QA optimization with the upstream hig
 python examples/optimization/QA_optimization_linear_ITG.py
 python examples/optimization/QA_optimization_quasilinear_ITG.py
 python examples/optimization/QA_optimization_nonlinear_ITG.py
+python examples/optimization/QA_nonlinear_ITG_matched_audit.py
 python examples/optimization/QA_parameter_scan.py
 ```
 
@@ -47,6 +48,7 @@ sidecars:
 | `QA_optimization_linear_ITG.py` | Linear ITG growth-rate residual | Trace-safe VMEC-JAX plus SPECTRAX-GK objective-refinement evidence only; not a quasilinear calibration and not a nonlinear heat-flux reduction claim. |
 | `QA_optimization_quasilinear_ITG.py` | Electrostatic quasilinear heat-flux residual | Screening/model-development evidence only; not an absolute flux predictor and not a nonlinear turbulent-flux optimization claim. |
 | `QA_optimization_nonlinear_ITG.py` | Reduced nonlinear-window heat-flux screening residual | Startup/window-estimator evidence only; not a converged nonlinear transport average and not a nonlinear turbulent-flux optimization success claim. |
+| `QA_nonlinear_ITG_matched_audit.py` | Matched replicated nonlinear heat-flux ensemble comparison | Production-evidence audit for already-run long post-transient baseline/candidate ensembles; this is the gate that accepts or rejects a nonlinear turbulent-flux reduction. |
 | `QA_parameter_scan.py` | `RBC(1,1)` linear/QL landscape plus concrete nonlinear sidecars | Landscape and noise/convergence diagnostics only; reduced/startup nonlinear-window diagnostics are excluded from optimization-promotion claims. |
 
 The optimization scripts write strict long-window initial/final nonlinear ITG
@@ -57,6 +59,20 @@ not launched by default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside
 the script to run them and build the initial-vs-final nonlinear `Q(t)`
 comparison plot, or run the commands from the generated `run_manifest.json` on
 a GPU node.
+
+After those long-window runs finish, edit the ensemble paths at the top of
+`QA_nonlinear_ITG_matched_audit.py` and run:
+
+```bash
+python examples/optimization/QA_nonlinear_ITG_matched_audit.py
+```
+
+The script consumes only accepted ensemble-gate JSON sidecars, applies the
+matched baseline-vs-optimized reduction and uncertainty-separation gates, and
+writes `results/qa_opt/nonlinear_matched_audit/qa_nonlinear_ITG_matched_audit.{json,csv,png}`.
+Use this path for production turbulent-flux evidence; do not cite optimizer
+residuals, startup traces, or reduced nonlinear-window values as saturated heat
+flux reductions.
 
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
