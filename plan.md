@@ -31,10 +31,10 @@ Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `64011831 Simplify VMEC state sensitivity reports`.
-- Worktree at audit start: local `main` contains the VMEC state-sensitivity
-  source simplification and this plan update; push both after the bounded local
-  gates pass.
+  `ed432628 Simplify linear implicit integration scan`.
+- Worktree at audit start: local `main` contains the linear implicit
+  source-simplification tranche and this plan update; push both after the
+  bounded local gates pass.
 - Latest CI state at audit: the newest pushed `main` run for `d7b77801` was
   in progress, and the latest completed non-superseded run for `fe77d967`
   passed. Verify the newest non-superseded run after pushing this tranche, but
@@ -47,8 +47,8 @@ Last audited: 2026-06-22 on `main`.
   quasilinear modeling, stellarator optimization, performance, manuscript
   figures, and code structure. The next documentation pass should tighten and
   cross-link rather than add more broad narrative by default.
-- Function-length audit: 0 source functions at or above 90 lines, 17 functions
-  in the 80-89 line band, and 100 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 16 functions
+  in the 80-89 line band, and 99 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
   broad. The remaining refactor work must prefer consolidation of single-use
@@ -96,7 +96,7 @@ Last audited: 2026-06-22 on `main`.
   diagnostic/final-state result routing, linear diffrax setup bundling, and
   VMEC transport table row assembly, and VMEC/Boozer line-search step
   candidate/stop routing, and VMEC state-sensitivity report runner/payload
-  routing.
+  routing, and linear implicit sample/scan orchestration.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -110,8 +110,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest completed non-superseded CI green; queued head run must be checked once, then fixed only if it fails. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible after Highlights; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.7% | No new root modules, zero functions >=90 lines, 17 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
-| P1 | Refactor/testability | 99.5% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 99.75% | No new root modules, zero functions >=90 lines, 16 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
+| P1 | Refactor/testability | 99.55% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -264,8 +264,8 @@ Goal: ship the next version from a clean, green, measured state.
 3. Take one final source-simplification tranche only if it removes a real
    navigation or policy boundary problem. Best current candidates after the
    VMEC state-sensitivity cleanup are
-   `solvers/linear/implicit.py::_integrate_linear_implicit_cached`,
    `objectives/vmec_boozer_line_search.py::vmec_boozer_aggregate_line_search_holdout_report`,
+   `solvers/time/diffrax_nonlinear.py::integrate_nonlinear_diffrax`,
    or benchmark scan/report helpers that still duplicate fit-window and
    branch-selection policies.
 4. Audit non-benchmark `GX`/comparison terminology in source and tests; rename
@@ -312,77 +312,16 @@ Goal: ship the next version from a clean, green, measured state.
   mypy for the touched module, compileall, architecture, repository-size, and
   release-readiness checks. The 80-89 line function count dropped from 20 to 17
   and the >=70 count dropped from 103 to 100 without adding source files.
-- 2026-06-21: Re-audited the repository after `2c87363c`. Worktree was clean,
-  architecture and repository-size manifests passed, tracked content was about
-  49 MB, and ignored local artifacts dominated checkout size. Source audit found
-  0 functions >=90 lines, 38 functions in the 80-89 line band, and 116 functions
-  >=70 lines. README already contains the runtime/memory comparison panel near
-  the top; this plan now makes keeping or refreshing that panel an explicit
-  release deliverable.
-- 2026-06-21: Simplified runtime TOML loading in
-  `workflows/runtime/toml.py` by extracting base dataclass merging, runtime
-  section replacement, species table parsing, and path resolution. TOML section
-  names, species validation errors, and path resolution behavior are unchanged.
-  Runtime config tests passed (`30 passed`), along with ruff, mypy for the
-  touched module, compileall, architecture, repository-size, release-readiness,
-  and diff-hygiene checks. The 80-89 line function count dropped from 34 to 33
-  and the >=70 count dropped from 113 to 112.
-- 2026-06-21: Simplified runtime linear diagnostics and time-series dispatch in
-  `workflows/runtime/diagnostics.py` and `workflows/linear.py`. Runtime fit
-  option/dependency bundles now preserve the public diagnostic API while
-  shrinking the fitting selector, and linear time integration now routes through
-  named diffrax, density-diagnostic, and cached-phi helpers. Focused runtime
-  helper tests passed (`7 passed` plus `30` runtime config tests), along with
-  ruff, mypy for touched modules, compileall, architecture, repository-size,
-  release-readiness, and diff-hygiene checks. The 80-89 line function count
-  dropped from 33 to 31 and the >=70 count dropped from 112 to 111.
-- 2026-06-21: Simplified the reduced QA low-turbulence optimizer in
-  `objectives/qa_low_turbulence_optimizer.py` by making Adam state, update,
-  optimization trace, and result assembly explicit private contracts. The
-  public optimizer signature, result schema, AD/FD sensitivity gates, and
-  artifact payload behavior are unchanged. QA low-turbulence tests passed
-  (`4 passed`), along with ruff, mypy for the touched module, compileall,
-  architecture, repository-size, release-readiness, release-version tests, and
-  diff-hygiene checks. The 80-89 line function count dropped from 31 to 30 and
-  the >=70 count dropped from 111 to 110.
-- 2026-06-21: Simplified Cyclone scan setup policy in
-  `validation/benchmarks/cyclone_scan.py` by extracting reference-aligned
-  geometry/diagnostic defaults and solver/fit/batch dispatch into explicit
-  private policy helpers. Benchmark behavior, reference-aligned branch naming,
-  and comparison terminology are unchanged. Cyclone branch-policy tests passed
-  (`8 passed`) and selected Cyclone benchmark integration nodes passed with the
-  integration marker override (`5 passed`), along with ruff, mypy for the
-  touched module, compileall, architecture, repository-size, release-readiness,
-  and diff-hygiene checks. The 80-89 line function count dropped from 30 to 29.
-- 2026-06-21: Simplified reduced QA core-feature assembly in
-  `objectives/stellarator_reduced.py` by extracting named gradient-drive,
-  geometry-feature, linear-ITG-feature, and quasilinear-heat-flux helpers. The
-  public observable keys and formulas are unchanged. Focused stellarator
-  optimization tests passed (`20 passed`), along with ruff, mypy for the
-  touched module, compileall, architecture, repository-size, and
-  release-readiness checks; the 80-89 line function count dropped from 38 to 37
-  and the >=70 count dropped from 116 to 115.
-- 2026-06-21: Simplified quasilinear transport payload assembly in
-  `diagnostics/quasilinear_transport.py` by extracting saturation-output
-  assembly and result packing. Public `QuasilinearTransportResult` schema,
-  saturation rules, and metadata defaults are unchanged. Focused quasilinear
-  and derivative tests passed (`17 passed`), along with ruff, mypy for the
-  touched module, compileall, architecture, repository-size, and
-  release-readiness checks; the 80-89 line function count dropped from 37 to 36.
-- 2026-06-21: Simplified the QA low-turbulence reduced heat-flux trace in
-  `objectives/qa_low_turbulence_model.py` by extracting gradient-drive,
-  transport-shaping, envelope-coefficient, initial-energy, and RK2 integration
-  helpers. The reduced nonlinear-window formula and public trace signature are
-  unchanged. Focused QA low-turbulence tests passed (`4 passed`), along with
-  ruff, mypy for the touched module, compileall, architecture, repository-size,
-  and release-readiness checks; the 80-89 line function count dropped from 36
-  to 35 and the >=70 count dropped from 115 to 114.
-- 2026-06-21: Simplified geometry inverse-design report assembly in
-  `geometry/sensitivity.py` by extracting selected-observable naming,
-  AD/FD/UQ derivative diagnostics, and report packing. Public report keys,
-  covariance diagnostics, and sensitivity conditioning metadata are unchanged.
-  Focused differentiable-geometry inverse-design and facade tests passed
-  (`4 passed`), along with ruff, mypy for the touched module, compileall,
-  architecture, repository-size, and release-readiness checks; the 80-89 line
-  function count dropped from 35 to 34 and the >=70 count dropped from 114 to
-  113.
+- 2026-06-22: Simplified linear implicit integration in
+  `solvers/linear/implicit.py` by extracting sample-cadence validation,
+  per-step GMRES solve construction, and saved-output scan orchestration from
+  `_integrate_linear_implicit_cached`. The matrix-free operator,
+  preconditioner selection, checkpoint policy, saved `phi` cadence, and public
+  helper exports are unchanged. Focused linear implicit tests passed, along
+  with ruff, mypy for the touched module, compileall, architecture,
+  repository-size, release-readiness, release-version tests, and diff-hygiene
+  checks. The 80-89 line function count dropped from 17 to 16 and the >=70
+  count dropped from 100 to 99 without adding source files.
+- Older 2026-06-21 source-simplification tranche details are preserved in the
+  corresponding git commits; this root plan keeps only the current checkpoint
+  and latest evidence to avoid becoming a second changelog.
