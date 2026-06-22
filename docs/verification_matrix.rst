@@ -306,7 +306,7 @@ with ``gate_index_include=false``.
   case gate ``0.05``.
 - ``docs/_static/nonlinear_w7x_gate_summary.json``: passed at the current
   ``0.10`` mean-relative release gate after the corrected adaptive state
-  continuation and GX-style ``Phi2`` artifact refresh.
+  continuation and comparison-compatible ``Phi2`` artifact refresh.
 - ``docs/_static/nonlinear_cyclone_gate_summary.json``: passed on the mature
   Cyclone ``t=100..400`` transport window at the current ``0.10``
   mean-relative release gate.
