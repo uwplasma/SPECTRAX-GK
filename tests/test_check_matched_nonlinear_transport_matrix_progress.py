@@ -132,3 +132,22 @@ def test_progress_cli_uses_manifest_dt_tolerance_by_default(
     assert '"ready_for_postprocess": true' in stdout.lower()
     assert report["time_tolerance"] == 0.1
     assert report["summary"]["target_time_confirmed"] == 2
+
+
+def test_skip_time_check_does_not_read_output_time(tmp_path: Path, monkeypatch) -> None:
+    base = tmp_path / "base.out.nc"
+    cand = tmp_path / "cand.out.nc"
+    _touch_bundle(base)
+    _touch_bundle(cand)
+    manifest = _write_manifest(tmp_path, [base, cand], include_dt=True)
+
+    def fail_if_called(_path):
+        raise AssertionError("skip_time_check should not read NetCDF times")
+
+    monkeypatch.setattr(mod, "_read_output_tmax", fail_if_called)
+    report = mod.build_report(matrix_manifest=manifest, skip_time_check=True)
+
+    assert report["skip_time_check"] is True
+    assert report["summary"]["complete_bundles"] == 2
+    assert report["summary"]["target_time_confirmed"] == 2
+    assert all(row["output_tmax"] is None for row in report["rows"])

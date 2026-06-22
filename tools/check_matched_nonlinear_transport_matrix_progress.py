@@ -191,7 +191,7 @@ def build_report(
         present = {key: path.exists() for key, path in bundle.items()}
         bundle_complete = all(present.values())
         complete_bundles += int(bundle_complete)
-        tmax = _read_output_tmax(bundle["out"])
+        tmax = None if skip_time_check else _read_output_tmax(bundle["out"])
         target_confirmed = bool(
             bundle_complete
             and (
