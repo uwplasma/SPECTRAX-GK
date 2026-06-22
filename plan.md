@@ -14,7 +14,8 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current head: `74420292 Simplify flux-tube geometry contract packing`.
+- Latest implementation checkpoint: `74420292 Simplify flux-tube geometry
+  contract packing`; plan-only checkpoints may follow it.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -146,7 +147,7 @@ facades.
    plots.
 6. Next source candidates, in priority order:
    - `geometry_backends/vmec_fieldlines.py::_sample_fieldline_boozer_state`
-  - `workflows/runtime/orchestration_scan.py::run_runtime_scan_batch`
+   - `workflows/runtime/orchestration_scan.py::run_runtime_scan_batch`
    - benchmark scan/report helpers that duplicate fit-window, branch-selection,
      or report-packing policies
 
