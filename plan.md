@@ -14,8 +14,8 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Latest implementation checkpoint: `3d7f3d6f Simplify Cyclone time-batch
-  result paths`; plan-only checkpoints may follow it.
+- Latest implementation checkpoint: `81e8cdfe Simplify Miller straight-theta
+  rebuild`; plan-only checkpoints may follow it.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -25,7 +25,7 @@ Last audited: 2026-06-22 on `main`.
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 3 functions in the 80-89 line band, and 88 functions at or
+  above 90 lines, 2 functions in the 80-89 line band, and 87 functions at or
   above 70 lines.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
@@ -33,7 +33,7 @@ Last audited: 2026-06-22 on `main`.
   differentiability, performance, validation, and code-structure docs exist.
   The next pass should tighten, cross-link, and remove stale claims rather than
   add broad narrative by default.
-- Repository footprint: tracked files total 48,415,857 bytes after trimming
+- Repository footprint: tracked files total 48,418,408 bytes after trimming
   unreferenced duplicate stellarator optimization PDFs; no tracked files above
   2 MB. Large local checkout size is from ignored/generated artifacts such as
   `.venv`, caches, `docs/_build`, `dist`, and `tools_out`, not tracked release
@@ -74,8 +74,9 @@ then this plan.
   quasilinear optimized-equilibrium audit inputs, KBM beta Krylov sample policy,
   linear explicit dispatch, twist-shift cache policy, duplicate optimization
   artifacts, solver-ready flux-tube geometry packing, VMEC/Boozer field-line
-  sampling assembly, runtime scan batch orchestration, and Cyclone time-batch
-  result branching without adding new public behavior.
+  sampling assembly, runtime scan batch orchestration, Cyclone time-batch
+  result branching, and Miller straight-theta rebuild staging without adding
+  new public behavior.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
   work. Nonlinear domain decomposition remains diagnostic until stronger gates
