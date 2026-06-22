@@ -747,7 +747,11 @@ seed/timestep replicated nonlinear windows and exact postprocessing commands.
 For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
 ``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
 scripts; they contain only final-horizon direct commands, not the intermediate
-restart-ladder horizons. Use
+restart-ladder horizons. Their skip-existing policy calls
+``tools/check_nonlinear_output_target.py`` for each final output, so rerunning
+after an interruption skips only bundles whose recorded time reaches the target
+within the generated time-step tolerance; partial checkpoint bundles are rerun.
+Use
 ``tools/check_matched_nonlinear_transport_matrix_progress.py`` before
 postprocessing: it reads the manifest, verifies the expected NetCDF bundle
 files, and separately checks that the recorded ``Grids/time`` reaches the

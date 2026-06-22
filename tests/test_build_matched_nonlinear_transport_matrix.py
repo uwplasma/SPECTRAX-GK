@@ -90,6 +90,9 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert "_nonlinear_t20_" in final_script
     assert "_nonlinear_t10_" not in final_script
     assert "--steps 200" in final_script
+    assert "tools/check_nonlinear_output_target.py" in final_script
+    assert "skip-target-confirmed" in final_script
+    assert "skip-existing" not in final_script
     gpu1_script = Path(payload["launch_scripts"]["final_horizon_gpu_splits"][1]).read_text(
         encoding="utf-8"
     )

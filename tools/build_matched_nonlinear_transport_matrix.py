@@ -164,12 +164,6 @@ def _bundle_base(path: Path) -> Path:
     return path.with_suffix("") if path.suffix == ".nc" else path
 
 
-def _bundle_complete_condition(base: Path) -> str:
-    return " && ".join(
-        f"[ -f {base.as_posix()}.{ext} ]" for ext in ("out.nc", "restart.nc", "big.nc")
-    )
-
-
 def _final_horizon_direct_commands(
     written: Sequence[Any],
     *,
@@ -184,9 +178,16 @@ def _final_horizon_direct_commands(
             continue
         direct_steps = int(round(float(item.horizon) / float(item.dt)))
         output_base = _bundle_base(item.output_path)
+        time_tolerance = max(1.0e-9, 2.0 * float(item.dt))
+        target_check = (
+            "PYTHONPATH=src python3 tools/check_nonlinear_output_target.py "
+            f"--output {item.output_path.as_posix()} "
+            f"--target-time {float(item.horizon):.12g} "
+            f"--time-tolerance {time_tolerance:.12g} --quiet"
+        )
         command = (
-            f"if {_bundle_complete_condition(output_base)}; "
-            f"then echo skip-existing {output_base.as_posix()}; "
+            f"if {target_check}; "
+            f"then echo skip-target-confirmed {output_base.as_posix()}; "
             "else PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0} "
             "python3 -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {item.path.as_posix()} --steps {direct_steps} --no-progress; fi"
