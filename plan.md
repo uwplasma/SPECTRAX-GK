@@ -14,7 +14,7 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current head: `c0c35068 Record twist-shift policy simplification`.
+- Current head: `74420292 Simplify flux-tube geometry contract packing`.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -24,7 +24,7 @@ Last audited: 2026-06-22 on `main`.
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 7 functions in the 80-89 line band, and 92 functions at or
+  above 90 lines, 6 functions in the 80-89 line band, and 91 functions at or
   above 70 lines.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
@@ -32,7 +32,8 @@ Last audited: 2026-06-22 on `main`.
   differentiability, performance, validation, and code-structure docs exist.
   The next pass should tighten, cross-link, and remove stale claims rather than
   add broad narrative by default.
-- Repository footprint: tracked files total about 49 MB; no tracked files above
+- Repository footprint: tracked files total 48,410,826 bytes after trimming
+  unreferenced duplicate stellarator optimization PDFs; no tracked files above
   2 MB. Large local checkout size is from ignored/generated artifacts such as
   `.venv`, caches, `docs/_build`, `dist`, and `tools_out`, not tracked release
   content.
@@ -70,7 +71,8 @@ then this plan.
 - Recent refactors simplified runtime, solver setup, nonlinear Diffrax/IMEX,
   validation reports, VMEC/Boozer gates, nonlinear-gradient/report paths,
   quasilinear optimized-equilibrium audit inputs, KBM beta Krylov sample policy,
-  linear explicit dispatch, and twist-shift cache policy without adding new
+  linear explicit dispatch, twist-shift cache policy, duplicate optimization
+  artifacts, and solver-ready flux-tube geometry packing without adding new
   public behavior.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
@@ -83,7 +85,7 @@ then this plan.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest head CI green, bounded local release gates pass, version bump/tag publish cleanly. |
 | P0 | README/docs/plan consistency | 99% | README references current figures only; docs, release scope, and plan agree on promoted and deferred claims. |
-| P1 | Source simplification and naming | 99.9% | No new root modules, source-file count non-increasing, zero functions >=90 lines, and remaining long helpers either simplified or justified. |
+| P1 | Source simplification and naming | 99.95% | No new root modules, source-file count non-increasing, zero functions >=90 lines, and remaining long helpers either simplified or justified. |
 | P1 | Refactor/testability | 99.7% | Tests map to domain ownership; no migration-era wrappers or stale compatibility paths remain in examples/docs. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests are physics, numerics, artifact, AD, or regression gates, not smoke-only scaffolds. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel uses measured artifacts with hardware/backend metadata; new speedup claims require identity plus profiler gates. |
@@ -144,8 +146,7 @@ facades.
    plots.
 6. Next source candidates, in priority order:
    - `geometry_backends/vmec_fieldlines.py::_sample_fieldline_boozer_state`
-   - `geometry/flux_tube_contract.py::flux_tube_geometry_from_mapping`
-   - `workflows/runtime/orchestration_scan.py::run_runtime_scan_batch`
+  - `workflows/runtime/orchestration_scan.py::run_runtime_scan_batch`
    - benchmark scan/report helpers that duplicate fit-window, branch-selection,
      or report-packing policies
 
