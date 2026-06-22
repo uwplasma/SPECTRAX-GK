@@ -68,25 +68,44 @@ def _bundle_paths(output_path: Path) -> dict[str, Path]:
     }
 
 
+def _last_finite_time(values: Any) -> float | None:
+    import numpy as np  # noqa: PLC0415
+
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0:
+        return None
+    value = float(arr.reshape(-1)[-1])
+    return value if math.isfinite(value) else None
+
+
 def _read_output_tmax(path: Path) -> float | None:
     if not path.exists():
         return None
+    try:
+        import netCDF4  # type: ignore[import-not-found]  # noqa: PLC0415
+
+        with netCDF4.Dataset(str(path)) as dataset:
+            for group_name, variable_name in (
+                ("Grids", "time"),
+                ("Diagnostics", "time"),
+                ("", "time"),
+                ("", "t"),
+            ):
+                group = dataset if not group_name else dataset.groups.get(group_name)
+                if group is None or variable_name not in group.variables:
+                    continue
+                value = _last_finite_time(group.variables[variable_name][:])
+                if value is not None:
+                    return value
+    except Exception:
+        pass
     try:
         from spectraxgk.artifacts.nonlinear_netcdf_diagnostics import (  # noqa: PLC0415
             load_nonlinear_netcdf_diagnostics,
         )
 
         diagnostics = load_nonlinear_netcdf_diagnostics(path)
-        t_values = getattr(diagnostics, "t", None)
-        if t_values is None:
-            return None
-        import numpy as np  # noqa: PLC0415
-
-        arr = np.asarray(t_values, dtype=float)
-        if arr.size == 0:
-            return None
-        value = float(arr[-1])
-        return value if math.isfinite(value) else None
+        return _last_finite_time(getattr(diagnostics, "t", []))
     except Exception:
         return None
 
