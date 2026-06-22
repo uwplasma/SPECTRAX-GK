@@ -261,6 +261,13 @@ Current launch log:
   `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
   and inspect
   `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`.
+- Staged, but did not launch, the two projected max-mode-5 follow-up families:
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
+  and
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
+  They use the one-point QA baseline WOUT against the tracked projected
+  transport-weight `5e-4` and `1e-3` WOUTs; both generated manifests pass the
+  same 18-point coverage gate.
 
 ### 7. Preserve validation scope and GX parity
 
