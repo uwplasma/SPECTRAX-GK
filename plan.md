@@ -14,7 +14,7 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Current head: `315b2f08 Record nonlinear solver setup refactor audit`.
+- Current head: `ce8eb80e Simplify quasilinear optimized audit inputs`.
 - Git state at audit: clean local `main`, synced with `origin/main`.
 - CI state at audit: newest head run was queued; latest completed
   non-superseded run was green. Check the head run once before release, but do
@@ -24,7 +24,7 @@ Last audited: 2026-06-22 on `main`.
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 11 functions in the 80-89 line band, and 96 functions at or
+  above 90 lines, 10 functions in the 80-89 line band, and 95 functions at or
   above 70 lines.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
@@ -68,8 +68,9 @@ then this plan.
 - Root-level prefix sprawl was removed; stable public facades now sit over
   domain packages.
 - Recent refactors simplified runtime, solver setup, nonlinear Diffrax/IMEX,
-  validation reports, VMEC/Boozer gates, and nonlinear-gradient/report paths
-  without adding new public behavior.
+  validation reports, VMEC/Boozer gates, nonlinear-gradient/report paths, and
+  quasilinear optimized-equilibrium audit inputs without adding new public
+  behavior.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
   work. Nonlinear domain decomposition remains diagnostic until stronger gates
@@ -141,9 +142,9 @@ facades.
    keep GX naming only in explicit benchmark/comparison tools, tests, docs, and
    plots.
 6. Next source candidates, in priority order:
-   - `validation/quasilinear/model_selection_inputs.py::_optimized_equilibrium_audit_summary`
    - `validation/benchmarks/kbm_beta_solver_paths.py::solve_kbm_beta_krylov_sample`
    - `solvers/linear/integrators.py::integrate_linear`
+   - `operators/linear/cache_builder.py::_resolve_twist_shift_policy`
    - benchmark scan/report helpers that duplicate fit-window, branch-selection,
      or report-packing policies
 
