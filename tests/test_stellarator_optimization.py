@@ -145,6 +145,11 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
             assert 'SURFACES = "0.45,0.64,0.78"' in text
             assert 'ALPHAS = "0.0,0.7853981633974483"' in text
             assert 'KY_VALUES = "0.10,0.30,0.50"' in text
+        elif script.name == "QA_nonlinear_ITG_matched_audit.py":
+            assert "BASELINE_ENSEMBLE" in text
+            assert "OPTIMIZED_ENSEMBLE" in text
+            assert "MIN_RELATIVE_REDUCTION = 0.02" in text
+            assert "REQUIRE_UNCERTAINTY_SEPARATION = True" in text
         else:
             raise AssertionError(f"unexpected optimization example {script.name}")
 
