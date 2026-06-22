@@ -759,6 +759,14 @@ reduction are insufficient. This is the required gate before changing scoped
 single-point optimization evidence into a broad multi-surface turbulent-flux
 optimization claim.
 
+``tools/check_nonlinear_transport_matrix_portfolio.py`` is the final selector
+when several candidate families have been audited. It consumes one or more
+aggregate matrix reports, chooses only a passing broad matrix family, and
+records strict ``t=1500`` growth/QL/nonlinear-window matched comparisons as
+excluded negative-transfer evidence. This prevents the release process from
+counting negative strict rows or single-point matched audits toward the broad
+nonlinear turbulent-flux optimization claim.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local

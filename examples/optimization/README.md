@@ -116,6 +116,25 @@ Run the progress checker before postprocessing; a checkpointed output can have
 all three NetCDF bundle files present while its recorded `Grids/time` is still
 below the final transport window.
 
+When more than one candidate family is available, select the release claim
+with the portfolio gate rather than by hand:
+
+```bash
+python tools/check_nonlinear_transport_matrix_portfolio.py \
+  --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
+  --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
+  --excluded-comparison strict_growth=docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json \
+  --excluded-comparison strict_quasilinear=docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json \
+  --excluded-comparison strict_nonlinear_window=docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json \
+  --out-json tools_out/nonlinear_transport_matrix_portfolio.json \
+  --out-figure tools_out/nonlinear_transport_matrix_portfolio.png
+```
+
+The portfolio report promotes only a passing broad matrix family. The strict
+`t=1500` growth, quasilinear, and nonlinear-window rows are retained as
+negative-transfer evidence and never counted toward broad nonlinear
+turbulent-flux optimization promotion.
+
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
 linear growth and every shipped electrostatic quasilinear heat-flux rule on the

@@ -240,7 +240,12 @@ Goal: close the release lane without overstating the science claim.
    postprocess script. The companion `report` subcommand promotes the matrix
    only if the completed matched comparisons satisfy the configured
    pass-fraction and mean-reduction gates.
-8. Defer broad nonlinear turbulent-flux optimization claims until that
+8. Use `tools/check_nonlinear_transport_matrix_portfolio.py` when multiple
+   selected families have matrix reports. It selects a passing broad family,
+   records strict `t=1500` growth/QL/nonlinear-window rows only as excluded
+   negative-transfer evidence, and blocks release promotion if no broad matrix
+   report passes.
+9. Defer broad nonlinear turbulent-flux optimization claims until that
    multi-surface, multi-field-line, multi-`k_y` matrix passes for the selected
    optimization family. Single-point positive audits remain scoped evidence.
 

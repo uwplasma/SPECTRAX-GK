@@ -1187,6 +1187,11 @@ campaign over ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
 every output gate, ensemble gate, matched comparison, and the aggregate matrix
 report. A broad optimization claim is allowed only when that aggregate report
 passes; otherwise the candidate remains single-point or diagnostic evidence.
+If several candidate families are available, the final release decision is made
+by ``tools/check_nonlinear_transport_matrix_portfolio.py``. It consumes one or
+more aggregate matrix reports, selects the passing family with the largest mean
+heat-flux reduction, and records strict ``t=1500`` growth/QL/nonlinear-window
+matched comparisons only as excluded negative-transfer evidence.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
@@ -1645,6 +1650,20 @@ It writes the campaign manifests plus GPU-split launch scripts. The generated
 aggregate report is the promotion artifact: all baseline/candidate ensembles
 must pass their long post-transient window gates, and the matched comparison
 matrix must satisfy the configured pass-fraction and mean-reduction policy.
+After postprocessing candidate families, use the portfolio gate to pick the
+promoted family and to keep strict negative-transfer rows out of the promotion
+count:
+
+.. code-block:: bash
+
+   python tools/check_nonlinear_transport_matrix_portfolio.py \
+     --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
+     --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
+     --excluded-comparison strict_growth=docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json \
+     --excluded-comparison strict_quasilinear=docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json \
+     --excluded-comparison strict_nonlinear_window=docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json \
+     --out-json tools_out/nonlinear_transport_matrix_portfolio.json \
+     --out-figure tools_out/nonlinear_transport_matrix_portfolio.png
 
 Development Portfolio Gate
 --------------------------
