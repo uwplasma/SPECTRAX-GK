@@ -31,13 +31,14 @@ Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `042f8d21 Record VMEC Boozer line search refactor audit`.
-- Worktree at audit start: local `main` is clean and synced with `origin/main`;
-  this plan update is the only intended pending repo-level change.
-- Latest CI state at audit: the newest `main` run for `042f8d21` is queued, and
-  the latest completed non-superseded run for `fe77d967` passed. Verify the
-  queued run after this plan update, but do not spend time watching runs
-  cancelled or superseded by newer pushes.
+  `64011831 Simplify VMEC state sensitivity reports`.
+- Worktree at audit start: local `main` contains the VMEC state-sensitivity
+  source simplification and this plan update; push both after the bounded local
+  gates pass.
+- Latest CI state at audit: the newest pushed `main` run for `d7b77801` was
+  in progress, and the latest completed non-superseded run for `fe77d967`
+  passed. Verify the newest non-superseded run after pushing this tranche, but
+  do not spend time watching runs cancelled or superseded by newer pushes.
 - Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
   Python tests, 9 root facade modules, 21 required domain packages, and zero
   blocked root-prefix modules.
@@ -46,8 +47,8 @@ Last audited: 2026-06-22 on `main`.
   quasilinear modeling, stellarator optimization, performance, manuscript
   figures, and code structure. The next documentation pass should tighten and
   cross-link rather than add more broad narrative by default.
-- Function-length audit: 0 source functions at or above 90 lines, 20 functions
-  in the 80-89 line band, and 103 functions at or above 70 lines. Long classes
+- Function-length audit: 0 source functions at or above 90 lines, 17 functions
+  in the 80-89 line band, and 100 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
 - Source-tree audit: function size is controlled, but 357 source files is still
   broad. The remaining refactor work must prefer consolidation of single-use
@@ -94,7 +95,8 @@ Last audited: 2026-06-22 on `main`.
   late-time linear metrics signal/tail-stat assembly, and nonlinear runtime
   diagnostic/final-state result routing, linear diffrax setup bundling, and
   VMEC transport table row assembly, and VMEC/Boozer line-search step
-  candidate/stop routing.
+  candidate/stop routing, and VMEC state-sensitivity report runner/payload
+  routing.
 - Package-wide coverage remains gated by wide CI shards at or above 95%.
 - Independent-work parallelization is the production path; nonlinear domain
   decomposition is identity-tested diagnostic evidence only until speedup gates
@@ -108,8 +110,8 @@ Percentages are engineering progress estimates, not scientific claims.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest completed non-superseded CI green; queued head run must be checked once, then fixed only if it fails. |
 | P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible after Highlights; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.6% | No new root modules, zero functions >=90 lines, 20 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
-| P1 | Refactor/testability | 99.4% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P1 | Source simplification and naming | 99.7% | No new root modules, zero functions >=90 lines, 17 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
+| P1 | Refactor/testability | 99.5% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
@@ -260,10 +262,12 @@ Goal: ship the next version from a clean, green, measured state.
 2. Run the bounded local release gates after this plan update, then commit and
    push this plan refactor.
 3. Take one final source-simplification tranche only if it removes a real
-   navigation or policy boundary problem: best current candidates are
-   thin geometry sensitivity report wrappers such as
-   `geometry/vmec_state_sensitivity.py::vmec_jax_metric_tensor_sensitivity_report`
-   or `geometry/vmec_state_sensitivity.py::vmec_jax_boozer_flux_tube_sensitivity_report`.
+   navigation or policy boundary problem. Best current candidates after the
+   VMEC state-sensitivity cleanup are
+   `solvers/linear/implicit.py::_integrate_linear_implicit_cached`,
+   `objectives/vmec_boozer_line_search.py::vmec_boozer_aggregate_line_search_holdout_report`,
+   or benchmark scan/report helpers that still duplicate fit-window and
+   branch-selection policies.
 4. Audit non-benchmark `GX`/comparison terminology in source and tests; rename
    only cases that describe native SPECTRAX-GK physics or numerics rather than
    an explicit comparison artifact.
@@ -299,6 +303,15 @@ Goal: ship the next version from a clean, green, measured state.
   keeping that measured panel as a release invariant and prioritizes
   geometry/objective consolidation plus docs tightening over further file
   proliferation.
+- 2026-06-22: Simplified VMEC state-sensitivity reports in
+  `geometry/vmec_state_sensitivity.py` by routing optional-backend discovery,
+  fail-closed exception handling, metadata packing, and payload assembly through
+  shared in-file contracts. Public report names and JSON keys are unchanged.
+  Focused VMEC differentiable-geometry tests passed (`5 passed`), facade and
+  differentiable-refactor manifest checks passed (`3 passed`), along with ruff,
+  mypy for the touched module, compileall, architecture, repository-size, and
+  release-readiness checks. The 80-89 line function count dropped from 20 to 17
+  and the >=70 count dropped from 103 to 100 without adding source files.
 - 2026-06-21: Re-audited the repository after `2c87363c`. Worktree was clean,
   architecture and repository-size manifests passed, tracked content was about
   49 MB, and ignored local artifacts dominated checkout size. Source audit found
