@@ -87,9 +87,11 @@ python tools/build_matched_nonlinear_transport_matrix.py write \
   --candidate-label low_transport \
   --case-prefix qa_low_transport_matrix \
   --out-dir tools_out/qa_low_transport_matrix \
-  --artifact-dir tools_out/qa_low_transport_matrix/artifacts
+  --artifact-dir tools_out/qa_low_transport_matrix/artifacts \
+  --gpu-splits 2
 
-./tools_out/qa_low_transport_matrix/run_matrix_staged_ladder_skip_existing.sh
+./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu0.sh
+./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu1.sh
 ./tools_out/qa_low_transport_matrix/run_matrix_postprocess.sh
 ```
 

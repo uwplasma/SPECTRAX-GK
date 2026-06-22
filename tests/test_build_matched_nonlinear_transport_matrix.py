@@ -58,6 +58,8 @@ def _write_campaign(tmp_path: Path) -> Path:
             "4",
             "--min-window-samples",
             "2",
+            "--gpu-splits",
+            "2",
         ]
     )
     assert rc == 0
@@ -78,7 +80,20 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert payload["config"]["dt_variants"] == [0.08]
     assert Path(payload["launch_scripts"]["staged_ladder_skip_existing"]).exists()
     assert Path(payload["launch_scripts"]["postprocess"]).exists()
+    assert Path(payload["launch_scripts"]["final_horizon_direct_skip_existing"]).exists()
+    assert len(payload["launch_scripts"]["final_horizon_gpu_splits"]) == 2
+    assert all(Path(path).exists() for path in payload["launch_scripts"]["final_horizon_gpu_splits"])
     assert "build_matched_nonlinear_transport_matrix.py report" in payload["aggregate_report"]["command"]
+    final_script = Path(payload["launch_scripts"]["final_horizon_direct_skip_existing"]).read_text(
+        encoding="utf-8"
+    )
+    assert "_nonlinear_t20_" in final_script
+    assert "_nonlinear_t10_" not in final_script
+    assert "--steps 200" in final_script
+    gpu1_script = Path(payload["launch_scripts"]["final_horizon_gpu_splits"][1]).read_text(
+        encoding="utf-8"
+    )
+    assert "export DEVICE=1" in gpu1_script
 
     first = payload["samples"][0]
     assert first["sample_id"] == "s0p45_a0_ky0p1"

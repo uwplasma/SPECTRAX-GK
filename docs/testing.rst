@@ -744,11 +744,15 @@ baseline/candidate WOUT pair into the default paper-facing matrix:
 ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
 ``k_y rho_i=(0.10,0.30,0.50)``. Each point gets baseline and candidate
 seed/timestep replicated nonlinear windows and exact postprocessing commands.
-The ``report`` subcommand then aggregates the completed matched-comparison
-JSON files and fails closed if sample coverage, pass fraction, missing
-comparisons, or mean heat-flux reduction are insufficient. This is the required
-gate before changing scoped single-point optimization evidence into a broad
-multi-surface turbulent-flux optimization claim.
+For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
+``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
+scripts; they contain only final-horizon direct commands, not the intermediate
+restart-ladder horizons. The ``report`` subcommand then aggregates the
+completed matched-comparison JSON files and fails closed if sample coverage,
+pass fraction, missing comparisons, or mean heat-flux reduction are
+insufficient. This is the required gate before changing scoped single-point
+optimization evidence into a broad multi-surface turbulent-flux optimization
+claim.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
