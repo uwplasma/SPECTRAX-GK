@@ -14,30 +14,30 @@ Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code w
 Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
-- Latest implementation checkpoint: `73db3ba4 Simplify portfolio sensitivity
-  gates`; plan-only checkpoints may follow it.
+- Latest implementation checkpoint: `fd8fd816 Simplify kinetic benchmark
+  dispatch`; plan-only checkpoints may follow it.
 - Git state at audit: clean local `main`, synced with `origin/main` after the
   implementation checkpoint.
-- CI state at audit: the previous head failure was a Miller helper mypy type
-  issue and is fixed locally; check the new head run once before release, but
-  do not spend time watching superseded/cancelled runs.
+- CI state at audit: newest head run is pending; the previous Miller helper
+  mypy failure is fixed. Check the head run once before release, but do not
+  spend time watching superseded/cancelled runs.
 - Source tree: 357 tracked Python source files under `src/spectraxgk`, 9 public
   root facades, and domain packages for API, artifacts, core, diagnostics,
   geometry, geometry backends, objectives, operators, parallel, solvers, terms,
   validation, and workflows.
 - Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, 1 function in the 80-89 line band, and 86 functions at or
-  above 70 lines. The only remaining 80-89 line function is
-  `validation/benchmarks/kinetic_linear.py::run_kinetic_linear`; simplify it
-  only if the public call surface and benchmark artifact schema remain
-  unchanged.
+  above 90 lines, zero functions in the 80-89 line band, and 86 functions at or
+  above 70 lines. The former 80-89 line public benchmark entry point
+  `validation/benchmarks/kinetic_linear.py::run_kinetic_linear` is now a
+  79-line setup/dispatch wrapper with the same public call surface and artifact
+  schema.
 - Tests: 316 tracked Python test files; wide CI coverage gate remains at or
   above 95% package-wide coverage.
 - Docs/readme: README, docs, examples, benchmarks, release scope, architecture,
   differentiability, performance, validation, and code-structure docs exist.
   The next pass should tighten, cross-link, and remove stale claims rather than
   add broad narrative by default.
-- Repository footprint: tracked files total 48,421,292 bytes after trimming
+- Repository footprint: tracked files total 48,423,613 bytes after trimming
   unreferenced duplicate stellarator optimization PDFs; no tracked files above
   2 MB. Large local checkout size is from ignored/generated artifacts such as
   `.venv`, caches, `docs/_build`, `dist`, and `tools_out`, not tracked release
@@ -80,7 +80,13 @@ then this plan.
   artifacts, solver-ready flux-tube geometry packing, VMEC/Boozer field-line
   sampling assembly, runtime scan batch orchestration, Cyclone time-batch
   result branching, Miller straight-theta rebuild staging, and objective
-  portfolio sensitivity gates without adding new public behavior.
+  portfolio sensitivity gates without adding new public behavior. The kinetic
+  benchmark entry point now packs time/fit controls into typed internal request
+  objects, reducing public dispatch complexity while preserving the stable API.
+- A non-benchmark terminology audit found no `GX` tokens in Python source
+  outside the release-scope documentation test. Remaining `reference_aligned`
+  identifiers are benchmark API terms; native operator/solver comments now use
+  benchmark-compatible numerical wording instead.
 - Package-wide coverage gate is maintained by CI shards at or above 95%.
 - Production parallelization claims are limited to independent ky/batch/UQ
   work. Nonlinear domain decomposition remains diagnostic until stronger gates
@@ -92,8 +98,8 @@ then this plan.
 | --- | --- | ---: | --- |
 | P0 | CI/release hygiene | 99% | Latest head CI green, bounded local release gates pass, version bump/tag publish cleanly. |
 | P0 | README/docs/plan consistency | 99% | README references current figures only; docs, release scope, and plan agree on promoted and deferred claims. |
-| P1 | Source simplification and naming | 99.99% | No new root modules, source-file count non-increasing, zero functions >=90 lines, and the last 80-89 line public helper either simplified safely or documented as a deliberate API-bound exception. |
-| P1 | Refactor/testability | 99.8% | Tests map to domain ownership; no migration-era wrappers or stale compatibility paths remain in examples/docs. |
+| P1 | Source simplification and naming | 100% scoped | No new root modules, source-file count non-increasing, zero functions >=90 lines, zero functions in the 80-89 band, and non-benchmark comparison-code terminology audited. |
+| P1 | Refactor/testability | 99.9% | Tests map to domain ownership; no migration-era wrappers or stale compatibility paths remain in examples/docs. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests are physics, numerics, artifact, AD, or regression gates, not smoke-only scaffolds. |
 | P2 | Runtime/memory and performance claims | 98% scoped | README panel uses measured artifacts with hardware/backend metadata; new speedup claims require identity plus profiler gates. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD/tangent/conditioning/covariance or implicit-differentiation checks. |
@@ -157,9 +163,8 @@ facades.
    keep GX naming only in explicit benchmark/comparison tools, tests, docs, and
    plots.
 6. Next source candidates, in priority order:
-   - `validation/benchmarks/kinetic_linear.py::run_kinetic_linear`, only if the
-     public function signature, artifact schema, and benchmark behavior are
-     unchanged;
+   - stop line-count-driven source churn unless a real duplicated policy or
+     stale compatibility path is found;
    - benchmark scan/report helpers that duplicate fit-window, branch-selection,
      or report-packing policies;
    - docs/examples references to stale migration-era paths, if any remain.
@@ -239,10 +244,8 @@ Goal: ship the next version from a clean, green, measured state.
 
 1. Commit and push this plan refresh after bounded release gates pass.
 2. Check the new head CI run once; fix real failures only.
-3. Decide whether `run_kinetic_linear` can be simplified without changing the
-   public API. If not, document it as the lone acceptable long public
-   benchmark entry point and stop source churn.
-4. Audit non-benchmark GX terminology in `src`, `tests`, `docs`, and README;
-   rename only native-code references, not benchmark/comparison artifacts.
+3. Check the new head CI run once; fix only real failures.
+4. Run one final README/docs/release-scope consistency pass, including the
+   runtime/memory figure location and provenance files.
 5. If no real code-quality blockers remain, move directly to release readiness:
    docs/readme consistency pass, package build, version bump, tag, and publish.
