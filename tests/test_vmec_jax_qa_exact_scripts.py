@@ -75,6 +75,7 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     assert "python examples/optimization/QA_optimization_quasilinear_ITG.py" in examples_readme
     assert "python examples/optimization/QA_optimization_nonlinear_ITG.py" in examples_readme
     assert "python examples/optimization/QA_nonlinear_ITG_matched_audit.py" in examples_readme
+    assert "python examples/optimization/QA_nonlinear_ITG_transport_matrix.py" in examples_readme
     assert "python tools/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
     assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" not in examples_readme
 
@@ -168,6 +169,62 @@ def test_matched_nonlinear_audit_example_rebuilds_tracked_production_gate(tmp_pa
     assert (
         tmp_path
         / "results/qa_opt/nonlinear_matched_audit/qa_nonlinear_ITG_matched_audit.png"
+    ).exists()
+
+
+def test_matched_nonlinear_matrix_example_writes_broad_campaign(tmp_path: Path) -> None:
+    script = EXAMPLES / "QA_nonlinear_ITG_transport_matrix.py"
+    py_compile.compile(str(script), doraise=True)
+    text = script.read_text(encoding="utf-8")
+
+    assert "argparse" not in text
+    assert "def main(" not in text
+    assert "BASELINE_VMEC_FILE" in text
+    assert "CANDIDATE_VMEC_FILE" in text
+    assert "SURFACES = \"0.45,0.64,0.78\"" in text
+    assert "KY_VALUES = \"0.10,0.30,0.50\"" in text
+
+    help_result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert "matched nonlinear ITG transport matrix" in help_result.stdout
+    assert not (tmp_path / "results").exists()
+
+    bad_arg = subprocess.run(
+        [sys.executable, str(script), "--baseline-vmec-file", "x.nc"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert bad_arg.returncode != 0
+    assert "unexpected arguments" in bad_arg.stderr
+    assert not (tmp_path / "results").exists()
+
+    completed = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    summary = json.loads(completed.stdout)
+    manifest_path = tmp_path / "results/qa_opt/nonlinear_transport_matrix/matched_transport_matrix_manifest.json"
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert summary["sample_count"] == 18
+    assert summary["coverage_passed"] is True
+    assert payload["config"]["sample_count"] == 18
+    assert payload["coverage_gate"]["passed"] is True
+    assert len(payload["launch_scripts"]["final_horizon_gpu_splits"]) == 2
+    assert (
+        tmp_path / "results/qa_opt/nonlinear_transport_matrix/run_matrix_final_horizon_gpu0.sh"
     ).exists()
 
 

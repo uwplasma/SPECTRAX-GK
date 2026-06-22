@@ -150,6 +150,16 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
             assert "OPTIMIZED_ENSEMBLE" in text
             assert "MIN_RELATIVE_REDUCTION = 0.02" in text
             assert "REQUIRE_UNCERTAINTY_SEPARATION = True" in text
+        elif script.name == "QA_nonlinear_ITG_transport_matrix.py":
+            assert "BASELINE_VMEC_FILE" in text
+            assert "CANDIDATE_VMEC_FILE" in text
+            assert 'SURFACES = "0.45,0.64,0.78"' in text
+            assert 'ALPHAS = "0.0,pi/4"' in text
+            assert 'KY_VALUES = "0.10,0.30,0.50"' in text
+            assert 'HORIZONS = "700,1100,1500"' in text
+            assert "WINDOW_TMIN = 1100.0" in text
+            assert "WINDOW_TMAX = 1500.0" in text
+            assert "GPU_SPLITS = 2" in text
         else:
             raise AssertionError(f"unexpected optimization example {script.name}")
 

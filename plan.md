@@ -221,22 +221,26 @@ Goal: close the release lane without overstating the science claim.
 2. Use `examples/optimization/QA_nonlinear_ITG_matched_audit.py` as the
    production-evidence example: it consumes accepted long-window baseline and
    optimized ensemble sidecars and writes the matched reduction audit.
-3. Promote a new low-turbulence stellarator only when the matched audit passes:
+3. Use `examples/optimization/QA_nonlinear_ITG_transport_matrix.py` as the
+   broad-evidence example: it writes the three-surface, two-field-line,
+   three-`k_y` matched nonlinear matrix and the GPU split launch scripts from a
+   solved baseline/candidate WOUT pair.
+4. Promote a new low-turbulence stellarator only when the matched audit passes:
    both ensembles qualify, the optimized post-transient mean is lower by the
    configured threshold, and the difference is uncertainty separated.
-4. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
+5. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
    plus two projected-weight max-mode-5 audits pass; strict `t=1500`
    growth/QL/nonlinear-window candidates are negative transfer evidence.
-5. Use `tools/build_matched_nonlinear_transport_matrix.py write` to generate
-   the broad-claim audit matrix for the selected family. The default matrix is
-   `s=(0.45,0.64,0.78)`, `alpha=(0,pi/4)`, and
+6. Use `tools/build_matched_nonlinear_transport_matrix.py write` directly only
+   for scripted campaigns; it is the lower-level helper used by the example.
+   The default matrix is `s=(0.45,0.64,0.78)`, `alpha=(0,pi/4)`, and
    `k_y rho_i=(0.10,0.30,0.50)`, with seed/timestep replicated fixed-step
    nonlinear windows over `t=[1100,1500]`.
-6. Run the generated staged-ladder script on office/GPU, then run the generated
+7. Run the generated staged-ladder script on office/GPU, then run the generated
    postprocess script. The companion `report` subcommand promotes the matrix
    only if the completed matched comparisons satisfy the configured
    pass-fraction and mean-reduction gates.
-7. Defer broad nonlinear turbulent-flux optimization claims until that
+8. Defer broad nonlinear turbulent-flux optimization claims until that
    multi-surface, multi-field-line, multi-`k_y` matrix passes for the selected
    optimization family. Single-point positive audits remain scoped evidence.
 

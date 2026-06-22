@@ -11,6 +11,7 @@ python examples/optimization/QA_optimization_linear_ITG.py
 python examples/optimization/QA_optimization_quasilinear_ITG.py
 python examples/optimization/QA_optimization_nonlinear_ITG.py
 python examples/optimization/QA_nonlinear_ITG_matched_audit.py
+python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
 python examples/optimization/QA_parameter_scan.py
 ```
 
@@ -49,6 +50,7 @@ sidecars:
 | `QA_optimization_quasilinear_ITG.py` | Electrostatic quasilinear heat-flux residual | Screening/model-development evidence only; not an absolute flux predictor and not a nonlinear turbulent-flux optimization claim. |
 | `QA_optimization_nonlinear_ITG.py` | Reduced nonlinear-window heat-flux screening residual | Startup/window-estimator evidence only; not a converged nonlinear transport average and not a nonlinear turbulent-flux optimization success claim. |
 | `QA_nonlinear_ITG_matched_audit.py` | Matched replicated nonlinear heat-flux ensemble comparison | Production-evidence audit for already-run long post-transient baseline/candidate ensembles; this is the gate that accepts or rejects a nonlinear turbulent-flux reduction. |
+| `QA_nonlinear_ITG_transport_matrix.py` | Multi-surface, multi-field-line, multi-`k_y` matched nonlinear matrix writer | Broad nonlinear turbulent-flux optimization launch contract; this writes the campaign and promotion scripts but the claim passes only after every long-window ensemble and matched comparison passes. |
 | `QA_parameter_scan.py` | `RBC(1,1)` linear/QL landscape plus concrete nonlinear sidecars | Landscape and noise/convergence diagnostics only; reduced/startup nonlinear-window diagnostics are excluded from optimization-promotion claims. |
 
 The optimization scripts write strict long-window initial/final nonlinear ITG
@@ -75,9 +77,18 @@ residuals, startup traces, or reduced nonlinear-window values as saturated heat
 flux reductions.
 
 For a broad nonlinear turbulent-flux optimization claim, use the matched matrix
-campaign tool instead of a single audit. The default matrix is the current
-paper-facing gate: three surfaces, two field-line labels, and three `k_y`
-values, with seed/timestep replicated nonlinear windows over `t=[1100,1500]`:
+campaign instead of a single audit. Edit
+`QA_nonlinear_ITG_transport_matrix.py` to point at the solved baseline and
+candidate WOUT files, then run:
+
+```bash
+python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
+```
+
+That example writes the same commands as the lower-level tool invocation below.
+The default matrix is the current paper-facing gate: three surfaces, two
+field-line labels, and three `k_y` values, with seed/timestep replicated
+nonlinear windows over `t=[1100,1500]`:
 
 ```bash
 python tools/build_matched_nonlinear_transport_matrix.py write \

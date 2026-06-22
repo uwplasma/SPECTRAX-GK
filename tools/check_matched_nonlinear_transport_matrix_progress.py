@@ -139,15 +139,43 @@ def _iter_expected_outputs(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _default_time_tolerance(cfg: Mapping[str, Any]) -> float:
+    """Allow fixed-step output grids to stop just shy of the nominal horizon."""
+
+    dt_values: list[float] = []
+    for key in ("dt",):
+        try:
+            value = float(cfg.get(key))
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(value) and value > 0.0:
+            dt_values.append(value)
+    raw_variants = cfg.get("dt_variants", ())
+    if isinstance(raw_variants, (list, tuple)):
+        for raw in raw_variants:
+            try:
+                value = float(raw)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(value) and value > 0.0:
+                dt_values.append(value)
+    if not dt_values:
+        return 1.0e-9
+    return max(1.0e-9, 2.0 * max(dt_values))
+
+
 def build_report(
     *,
     matrix_manifest: Path,
     target_time: float | None = None,
-    time_tolerance: float = 1.0e-9,
+    time_tolerance: float | None = None,
     skip_time_check: bool = False,
 ) -> dict[str, Any]:
     manifest = _load_json(matrix_manifest)
     cfg = manifest.get("config") if isinstance(manifest.get("config"), Mapping) else {}
+    effective_time_tolerance = (
+        _default_time_tolerance(cfg) if time_tolerance is None else float(time_tolerance)
+    )
     if target_time is None:
         window = cfg.get("window") if isinstance(cfg.get("window"), Mapping) else {}
         target_time = float(window.get("tmax", 0.0) or 0.0)
@@ -168,7 +196,10 @@ def build_report(
             bundle_complete
             and (
                 skip_time_check
-                or (tmax is not None and tmax >= float(target_time) - float(time_tolerance))
+                or (
+                    tmax is not None
+                    and tmax >= float(target_time) - float(effective_time_tolerance)
+                )
             )
         )
         confirmed_targets += int(target_confirmed)
@@ -188,7 +219,7 @@ def build_report(
         "kind": "matched_nonlinear_transport_matrix_progress_report",
         "matrix_manifest": _repo_relative(matrix_manifest),
         "target_time": float(target_time),
-        "time_tolerance": float(time_tolerance),
+        "time_tolerance": float(effective_time_tolerance),
         "skip_time_check": bool(skip_time_check),
         "summary": {
             "expected_outputs": expected_count,
@@ -207,7 +238,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--matrix-manifest", required=True, type=Path)
     parser.add_argument("--out-json", type=Path)
     parser.add_argument("--target-time", type=float)
-    parser.add_argument("--time-tolerance", type=float, default=1.0e-9)
+    parser.add_argument(
+        "--time-tolerance",
+        type=float,
+        help=(
+            "Absolute tolerance for confirming the final time. Defaults to two "
+            "matrix time steps so fixed-step output grids that stop just shy of "
+            "the nominal horizon are not misclassified as incomplete."
+        ),
+    )
     parser.add_argument(
         "--skip-time-check",
         action="store_true",

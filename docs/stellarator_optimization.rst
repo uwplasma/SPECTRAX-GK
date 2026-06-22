@@ -55,6 +55,8 @@ Source Map
   :download:`QA_optimization_nonlinear_ITG.py <../examples/optimization/QA_optimization_nonlinear_ITG.py>`
 - Matched nonlinear audit script:
   :download:`QA_nonlinear_ITG_matched_audit.py <../examples/optimization/QA_nonlinear_ITG_matched_audit.py>`
+- Matched nonlinear matrix script:
+  :download:`QA_nonlinear_ITG_transport_matrix.py <../examples/optimization/QA_nonlinear_ITG_transport_matrix.py>`
 - VMEC-JAX-style boundary-parameter scan script:
   :download:`QA_parameter_scan.py <../examples/optimization/QA_parameter_scan.py>`
 - Configurable solved-boundary driver:
@@ -79,6 +81,7 @@ VMEC-JAX QA optimizer. They keep top-level constants instead of an argparse
    python examples/optimization/QA_optimization_quasilinear_ITG.py
    python examples/optimization/QA_optimization_nonlinear_ITG.py
    python examples/optimization/QA_nonlinear_ITG_matched_audit.py
+   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
    python examples/optimization/QA_parameter_scan.py
 
 The objective block should look familiar to VMEC-JAX users:
@@ -1174,8 +1177,10 @@ below the ``4%`` calibrated threshold, so a future candidate at this margin
 would be blocked before launching a new expensive nonlinear campaign.
 
 The broad nonlinear turbulent-flux optimization gate is now encoded directly in
-``tools/build_matched_nonlinear_transport_matrix.py``. The ``write`` subcommand
-takes a matched baseline/candidate WOUT pair and emits the full production
+``examples/optimization/QA_nonlinear_ITG_transport_matrix.py`` and the
+lower-level ``tools/build_matched_nonlinear_transport_matrix.py`` helper. The
+example keeps the VMEC-JAX-style top-level-constant workflow: edit the baseline
+and candidate WOUT paths, then run the script to emit the full production
 campaign over ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
 ``k_y rho_i=(0.10,0.30,0.50)`` with seed/timestep replicated
 ``t=[1100,1500]`` nonlinear windows. The generated postprocess script rebuilds
@@ -1578,6 +1583,10 @@ The public VMEC-JAX QA transport scripts are:
 - ``QA_nonlinear_ITG_matched_audit.py``: consume already accepted baseline and
   optimized nonlinear ensemble sidecars and write the matched reduction audit
   that decides whether a nonlinear turbulent-flux reduction is promoted.
+- ``QA_nonlinear_ITG_transport_matrix.py``: write the broad matched
+  baseline/candidate matrix over three surfaces, two field lines, and three
+  ``k_y`` values. This is the required launch/postprocess contract before a
+  low-turbulence QA candidate can be promoted beyond a single-point audit.
 
 Development-only reduced diagnostics remain under
 ``examples/theory_and_demos/reduced_stellarator_itg`` for AD/FD and plotting
@@ -1624,6 +1633,18 @@ both ensembles qualify, the post-transient optimized mean is lower than the
 matched baseline by the configured threshold, and the difference is separated
 from the combined uncertainty. This is the required final step after the
 linear, quasilinear, or nonlinear-window optimizer proposes a candidate.
+
+The broad-matrix example is the corresponding user-facing command for
+multi-surface promotion:
+
+.. code-block:: bash
+
+   python examples/optimization/QA_nonlinear_ITG_transport_matrix.py
+
+It writes the campaign manifests plus GPU-split launch scripts. The generated
+aggregate report is the promotion artifact: all baseline/candidate ensembles
+must pass their long post-transient window gates, and the matched comparison
+matrix must satisfy the configured pass-fraction and mean-reduction policy.
 
 Development Portfolio Gate
 --------------------------

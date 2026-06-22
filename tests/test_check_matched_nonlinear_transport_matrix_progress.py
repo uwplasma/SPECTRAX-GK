@@ -16,10 +16,13 @@ sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
-def _write_manifest(tmp_path: Path, outputs: list[Path]) -> Path:
+def _write_manifest(tmp_path: Path, outputs: list[Path], *, include_dt: bool = False) -> Path:
+    config = {"window": {"tmin": 10.0, "tmax": 20.0}}
+    if include_dt:
+        config.update({"dt": 0.05, "dt_variants": [0.04]})
     manifest = {
         "kind": "matched_nonlinear_transport_matrix_campaign",
-        "config": {"window": {"tmin": 10.0, "tmax": 20.0}},
+        "config": config,
         "samples": [
             {
                 "sample_id": "s0p45_a0_ky0p1",
@@ -76,3 +79,35 @@ def test_progress_passes_when_all_bundles_reach_target_time(tmp_path: Path, monk
     assert report["summary"]["ready_for_postprocess"] is True
     assert all(row["bundle_complete"] for row in report["rows"])
     assert all(row["target_time_confirmed"] for row in report["rows"])
+
+
+def test_progress_accepts_fixed_step_output_within_manifest_dt_tolerance(
+    tmp_path: Path, monkeypatch
+) -> None:
+    base = tmp_path / "base.out.nc"
+    cand = tmp_path / "cand.out.nc"
+    _touch_bundle(base)
+    _touch_bundle(cand)
+    manifest = _write_manifest(tmp_path, [base, cand], include_dt=True)
+    monkeypatch.setattr(mod, "_read_output_tmax", lambda _path: 19.927)
+
+    report = mod.build_report(matrix_manifest=manifest)
+
+    assert report["time_tolerance"] == 0.1
+    assert report["summary"]["target_time_confirmed"] == 2
+    assert report["summary"]["ready_for_postprocess"] is True
+
+
+def test_progress_keeps_checkpoint_below_dt_tolerance_incomplete(tmp_path: Path, monkeypatch) -> None:
+    base = tmp_path / "base.out.nc"
+    cand = tmp_path / "cand.out.nc"
+    _touch_bundle(base)
+    _touch_bundle(cand)
+    manifest = _write_manifest(tmp_path, [base, cand], include_dt=True)
+    monkeypatch.setattr(mod, "_read_output_tmax", lambda _path: 19.85)
+
+    report = mod.build_report(matrix_manifest=manifest)
+
+    assert report["time_tolerance"] == 0.1
+    assert report["summary"]["target_time_confirmed"] == 0
+    assert report["summary"]["ready_for_postprocess"] is False
