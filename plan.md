@@ -27,19 +27,25 @@ manifests, then this execution file.
 
 ## Current Audit Snapshot
 
-Last audited: 2026-06-21 on `main`.
+Last audited: 2026-06-22 on `main`.
 
 - Latest released tag: `v1.6.9`.
 - Current source-simplification head:
-  `cd6fd7e5 Simplify VMEC Boozer line search step`.
-- Worktree at audit start: local `main` is one commit ahead of `origin/main`
-  with the VMEC/Boozer line-search step simplification tranche; this plan
-  update is the only pending repo-level change.
-- Latest CI state at audit: the newest pushed `main` CI run passed on
-  `fe77d967`; verify the newest non-superseded run before release tagging, but
-  do not spend time watching runs cancelled by newer pushes.
-- Package shape: 357 tracked Python files under `src/spectraxgk`, 315 tracked
-  Python tests, 9 root facade modules, and zero blocked root-prefix modules.
+  `042f8d21 Record VMEC Boozer line search refactor audit`.
+- Worktree at audit start: local `main` is clean and synced with `origin/main`;
+  this plan update is the only intended pending repo-level change.
+- Latest CI state at audit: the newest `main` run for `042f8d21` is queued, and
+  the latest completed non-superseded run for `fe77d967` passed. Verify the
+  queued run after this plan update, but do not spend time watching runs
+  cancelled or superseded by newer pushes.
+- Package shape: 357 tracked Python files under `src/spectraxgk`, 316 tracked
+  Python tests, 9 root facade modules, 21 required domain packages, and zero
+  blocked root-prefix modules.
+- Size and docs shape: about 107,800 source lines, 92,600 test lines, a
+  1,287-line README, and large but organized documentation pages for testing,
+  quasilinear modeling, stellarator optimization, performance, manuscript
+  figures, and code structure. The next documentation pass should tighten and
+  cross-link rather than add more broad narrative by default.
 - Function-length audit: 0 source functions at or above 90 lines, 20 functions
   in the 80-89 line band, and 103 functions at or above 70 lines. Long classes
   remain mostly dataclass/config containers, not oversized algorithms.
@@ -47,8 +53,8 @@ Last audited: 2026-06-21 on `main`.
   broad. The remaining refactor work must prefer consolidation of single-use
   slices and clearer domain ownership over adding more files.
 - Repository-size audit: architecture and size manifests pass. Tracked content
-  is about 49 MB, with no unlisted large tracked files. The large local checkout
-  footprint is dominated by ignored `.venv`, caches, `docs/_build`, and
+  is about 49 MB with no unlisted large tracked files. The large local checkout
+  footprint is dominated by ignored `.venv`, caches, `docs/_build`, `dist`, and
   `tools_out`.
 - README status: installation, executable quickstart, `spectraxgk --plot`, claim
   scope, QA optimization scope, VMEC examples, and the runtime/memory comparison
@@ -100,12 +106,12 @@ Percentages are engineering progress estimates, not scientific claims.
 
 | Priority | Lane | Status | Closure Evidence |
 | --- | --- | ---: | --- |
-| P0 | CI/release hygiene | 99% | Latest non-superseded CI green, clean worktree, bounded local gates, version bump/tag only after green checks. |
-| P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible; docs and claim scope agree; this plan is the single execution authority. |
-| P1 | Source simplification and naming | 99.7% | No new root modules, zero functions >=90 lines, 20 functions in the 80-89 band, and next tranches reduce file/navigation sprawl instead of adding thin seams. |
-| P1 | Refactor/testability | 99.3% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
+| P0 | CI/release hygiene | 99% | Latest completed non-superseded CI green; queued head run must be checked once, then fixed only if it fails. |
+| P0 | README/docs/plan consistency | 99% | README runtime/memory panel visible after Highlights; docs and claim scope agree; this plan is the single execution authority. |
+| P1 | Source simplification and naming | 99.6% | No new root modules, zero functions >=90 lines, 20 functions in the 80-89 band, and remaining work is file/navigation consolidation rather than more splits. |
+| P1 | Refactor/testability | 99.4% | Remaining 80-89 line functions reduced only when they expose real physics/numerics policy boundaries, remove duplication, or consolidate single-use wrappers. |
 | P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests protect equations, numerics, diagnostics, AD contracts, artifacts, or regressions. |
-| P2 | Runtime/memory and performance claims | 97% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
+| P2 | Runtime/memory and performance claims | 98% scoped | README panel remains measured; refresh only from new CPU/GPU artifacts with hardware, wall time, memory, and W7-X/HSX rows. |
 | P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD, tangent, conditioning, covariance, or implicit-differentiation gates. |
 | P2 | VMEC/Boozer differentiable geometry | 99% scoped | Promoted geometry rows have parity and gradient gates; broad optimization claims stay scoped. |
 | P2 | Production parallelization | 95% scoped | Independent ky/batch/UQ work is production; nonlinear domain decomposition remains diagnostic until identity plus speedup gates pass. |
@@ -161,6 +167,10 @@ and workflows without following wrapper chains.
   25 functions in the 80-89 line band, and a non-increasing source-file count;
   the stretch goal is to remove 10-20 single-use internal files without moving
   stable public facades.
+- Treat oversized documentation/API pages the same way as oversized source
+  files: tighten indexes, claim ledgers, and cross-links before adding more
+  text, and move examples toward canonical scripts rather than duplicating
+  workflow prose.
 - Split only when the result names a real physics model, numerical policy,
   differentiability boundary, or artifact contract.
 - Consolidate single-use wrappers into their domain owner when that lowers
@@ -170,17 +180,17 @@ and workflows without following wrapper chains.
 - Remove or rename non-benchmark GX/comparison terminology in source/tests when
   it actually describes SPECTRAX-GK physics or numerics.
 
-Execution order:
+Execution order from the current state:
 
-1. `workflows`: finish runtime plotting dispatch, restart/artifact writing, and
-   default-demo paths now that TOML loading is simplified; preserve progress
-   output and `--plot`.
+1. `geometry` and `objectives`: finish the VMEC/Boozer sensitivity and
+   transport-report consolidation because those files still carry the largest
+   adjacent report-assembly wrappers and are central to differentiability.
 2. `validation/benchmarks`: reduce repeated scan/path/report boilerplate in TEM,
    ETG, KBM, Cyclone, and kinetic-electron benchmark families, but keep GX
    terminology only where the code is explicitly a benchmark/comparison lane.
-3. `objectives` and `geometry`: simplify QA transport, VMEC/Boozer line-search,
-   sensitivity, inverse-design, and gradient-report assembly; consolidate
-   single-use report helpers where tests show no public API loss.
+3. `workflows`: keep runtime plotting dispatch, restart/artifact writing, and
+   default-demo paths stable; touch them only for user-visible defects or to
+   consolidate existing owner modules without changing `--plot` or progress.
 4. `diagnostics`: simplify quasilinear-state extraction and transport-rule
    aggregation without changing schemas.
 5. `solvers` and `operators`: touch hot kernels only when the boundary improves
@@ -247,14 +257,16 @@ Goal: ship the next version from a clean, green, measured state.
 
 1. Check the queued CI result and fix only real failures after the local
    simplification commits are pushed; do not wait on superseded runs.
-2. Run the bounded local release gates after this plan update.
-3. Commit and push the plan refactor with the ETG/TEM/cETG source-simplification
-   tranches.
-4. Take one final small source-simplification tranche only if it removes a real
+2. Run the bounded local release gates after this plan update, then commit and
+   push this plan refactor.
+3. Take one final source-simplification tranche only if it removes a real
    navigation or policy boundary problem: best current candidates are
    thin geometry sensitivity report wrappers such as
    `geometry/vmec_state_sensitivity.py::vmec_jax_metric_tensor_sensitivity_report`
    or `geometry/vmec_state_sensitivity.py::vmec_jax_boozer_flux_tube_sensitivity_report`.
+4. Audit non-benchmark `GX`/comparison terminology in source and tests; rename
+   only cases that describe native SPECTRAX-GK physics or numerics rather than
+   an explicit comparison artifact.
 5. Keep the README runtime/memory figure in place. Refresh it only by launching
    a new measured CPU/GPU sweep with hardware/backend metadata, W7-X/HSX rows,
    peak memory, and reference-backend rows.
@@ -277,6 +289,16 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Rolling Log
 
+- 2026-06-22: Re-audited the final-closure state after `042f8d21`. Worktree was
+  clean and synced with `origin/main`; the newest CI run was queued and the
+  latest completed non-superseded run was green. Architecture and repository-size
+  manifests passed. Source audit found 357 Python files, about 107,800 source
+  lines, 316 test files, about 92,600 test lines, 0 functions >=90 lines, 20
+  functions in the 80-89 line band, and 103 functions >=70 lines. README already
+  has the runtime/memory panel immediately after Highlights; the plan now treats
+  keeping that measured panel as a release invariant and prioritizes
+  geometry/objective consolidation plus docs tightening over further file
+  proliferation.
 - 2026-06-21: Re-audited the repository after `2c87363c`. Worktree was clean,
   architecture and repository-size manifests passed, tracked content was about
   49 MB, and ignored local artifacts dominated checkout size. Source audit found
