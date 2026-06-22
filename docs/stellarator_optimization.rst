@@ -1173,6 +1173,16 @@ records the same lesson as a prelaunch rule: the ``2.2876%`` reduced margin is
 below the ``4%`` calibrated threshold, so a future candidate at this margin
 would be blocked before launching a new expensive nonlinear campaign.
 
+The broad nonlinear turbulent-flux optimization gate is now encoded directly in
+``tools/build_matched_nonlinear_transport_matrix.py``. The ``write`` subcommand
+takes a matched baseline/candidate WOUT pair and emits the full production
+campaign over ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
+``k_y rho_i=(0.10,0.30,0.50)`` with seed/timestep replicated
+``t=[1100,1500]`` nonlinear windows. The generated postprocess script rebuilds
+every output gate, ensemble gate, matched comparison, and the aggregate matrix
+report. A broad optimization claim is allowed only when that aggregate report
+passes; otherwise the candidate remains single-point or diagnostic evidence.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%

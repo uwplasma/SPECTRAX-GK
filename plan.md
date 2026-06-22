@@ -227,9 +227,18 @@ Goal: close the release lane without overstating the science claim.
 4. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
    plus two projected-weight max-mode-5 audits pass; strict `t=1500`
    growth/QL/nonlinear-window candidates are negative transfer evidence.
-5. Defer broad nonlinear turbulent-flux optimization claims until at least
-   three surfaces, two field-line labels, and multiple `k_y` values pass the
-   same long-window matched-audit policy for the selected optimization family.
+5. Use `tools/build_matched_nonlinear_transport_matrix.py write` to generate
+   the broad-claim audit matrix for the selected family. The default matrix is
+   `s=(0.45,0.64,0.78)`, `alpha=(0,pi/4)`, and
+   `k_y rho_i=(0.10,0.30,0.50)`, with seed/timestep replicated fixed-step
+   nonlinear windows over `t=[1100,1500]`.
+6. Run the generated staged-ladder script on office/GPU, then run the generated
+   postprocess script. The companion `report` subcommand promotes the matrix
+   only if the completed matched comparisons satisfy the configured
+   pass-fraction and mean-reduction gates.
+7. Defer broad nonlinear turbulent-flux optimization claims until that
+   multi-surface, multi-field-line, multi-`k_y` matrix passes for the selected
+   optimization family. Single-point positive audits remain scoped evidence.
 
 ### 7. Preserve validation scope and GX parity
 

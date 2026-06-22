@@ -74,6 +74,29 @@ Use this path for production turbulent-flux evidence; do not cite optimizer
 residuals, startup traces, or reduced nonlinear-window values as saturated heat
 flux reductions.
 
+For a broad nonlinear turbulent-flux optimization claim, use the matched matrix
+campaign tool instead of a single audit. The default matrix is the current
+paper-facing gate: three surfaces, two field-line labels, and three `k_y`
+values, with seed/timestep replicated nonlinear windows over `t=[1100,1500]`:
+
+```bash
+python tools/build_matched_nonlinear_transport_matrix.py write \
+  --baseline-vmec-file /path/to/baseline/wout_final.nc \
+  --candidate-vmec-file /path/to/candidate/wout_final.nc \
+  --baseline-label strict_qa \
+  --candidate-label low_transport \
+  --case-prefix qa_low_transport_matrix \
+  --out-dir tools_out/qa_low_transport_matrix \
+  --artifact-dir tools_out/qa_low_transport_matrix/artifacts
+
+./tools_out/qa_low_transport_matrix/run_matrix_staged_ladder_skip_existing.sh
+./tools_out/qa_low_transport_matrix/run_matrix_postprocess.sh
+```
+
+The generated aggregate report passes only after every sample has completed
+its baseline and candidate ensemble gates and the matched reductions satisfy
+the configured pass-fraction and mean-reduction policy.
+
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
 linear growth and every shipped electrostatic quasilinear heat-flux rule on the
