@@ -747,12 +747,17 @@ seed/timestep replicated nonlinear windows and exact postprocessing commands.
 For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
 ``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
 scripts; they contain only final-horizon direct commands, not the intermediate
-restart-ladder horizons. The ``report`` subcommand then aggregates the
-completed matched-comparison JSON files and fails closed if sample coverage,
-pass fraction, missing comparisons, or mean heat-flux reduction are
-insufficient. This is the required gate before changing scoped single-point
-optimization evidence into a broad multi-surface turbulent-flux optimization
-claim.
+restart-ladder horizons. Use
+``tools/check_matched_nonlinear_transport_matrix_progress.py`` before
+postprocessing: it reads the manifest, verifies the expected NetCDF bundle
+files, and separately checks that the recorded ``Grids/time`` reaches the
+final target. This prevents a checkpoint bundle at, for example, ``t≈800``
+from being mistaken for a completed ``t=1500`` audit. The ``report`` subcommand
+then aggregates the completed matched-comparison JSON files and fails closed if
+sample coverage, pass fraction, missing comparisons, or mean heat-flux
+reduction are insufficient. This is the required gate before changing scoped
+single-point optimization evidence into a broad multi-surface turbulent-flux
+optimization claim.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips

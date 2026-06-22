@@ -92,12 +92,18 @@ python tools/build_matched_nonlinear_transport_matrix.py write \
 
 ./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu0.sh
 ./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu1.sh
+python tools/check_matched_nonlinear_transport_matrix_progress.py \
+  --matrix-manifest tools_out/qa_low_transport_matrix/matched_transport_matrix_manifest.json \
+  --out-json tools_out/qa_low_transport_matrix/artifacts/progress.json
 ./tools_out/qa_low_transport_matrix/run_matrix_postprocess.sh
 ```
 
 The generated aggregate report passes only after every sample has completed
 its baseline and candidate ensemble gates and the matched reductions satisfy
 the configured pass-fraction and mean-reduction policy.
+Run the progress checker before postprocessing; a checkpointed output can have
+all three NetCDF bundle files present while its recorded `Grids/time` is still
+below the final transport window.
 
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
