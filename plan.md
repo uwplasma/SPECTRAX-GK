@@ -283,6 +283,17 @@ Current launch log:
   `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_progress.json`
   found `2/108` complete bundles and `0/108` outputs confirmed at `t=1500`, so
   postprocessing is not ready yet.
+- `2026-06-22`: added the non-invasive bundle-only progress path
+  (`--skip-time-check`) and `tools/check_nonlinear_output_target.py` so active
+  NetCDF files do not need to be read during office polling and interrupted
+  checkpoint bundles are not skipped on relaunch. The latest safe office poll
+  found `11/108` bundle-complete outputs; a target-time check of non-active
+  bundles confirmed `10` true final-horizon outputs at `t≈1500`, with both
+  GPU queues still active. Postprocessing remains blocked until all `108`
+  outputs are target-confirmed.
+- CI for `c0a6c929` passed. The current head includes only the non-invasive
+  bundle-progress regression and should be checked once before release; do not
+  watch superseded/cancelled runs.
 
 ### 7. Preserve validation scope and GX parity
 
