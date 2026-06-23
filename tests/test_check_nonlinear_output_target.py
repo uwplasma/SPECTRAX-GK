@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -79,3 +80,16 @@ def test_output_target_checker_cli_status_codes(tmp_path: Path, monkeypatch) -> 
         )
         == 1
     )
+
+
+def test_output_target_checker_script_help_runs_directly() -> None:
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--help"],
+        cwd=ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0
+    assert "target-time" in result.stdout
