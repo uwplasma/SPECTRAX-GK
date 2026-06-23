@@ -371,6 +371,13 @@ Current launch log:
   reaches `t=1500` within the generated timestep tolerance. They are ready as
   fallback launch scripts, but remain idle until the accepted QA/ESS matrix
   either passes or fails.
+- `2026-06-23`: tightened the pre-manuscript closure dashboard so the broad
+  nonlinear turbulent-flux optimization lane cannot close from scoped matched
+  audits alone. `tools/build_pre_manuscript_closure_status.py` now requires a
+  passing `docs/_static/nonlinear_transport_matrix_portfolio.json`, so the
+  tracked dashboard reports this lane as `94%` and blocked only by the missing
+  broad matrix portfolio while the accepted QA/ESS office matrix is still
+  running.
 
 ### 7. Preserve validation scope and GX parity
 

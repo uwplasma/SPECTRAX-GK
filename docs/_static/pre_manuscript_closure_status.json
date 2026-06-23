@@ -47,10 +47,13 @@
       "status": "closed"
     },
     {
-      "blockers": [],
-      "claim_level": "broad_nonlinear_turbulent_flux_optimization_ready",
-      "completion_percent": 100.0,
+      "blockers": [
+        "broad_nonlinear_transport_matrix_portfolio_missing_or_failed"
+      ],
+      "claim_level": "scoped_positive_audits_pending_broad_matrix_portfolio",
+      "completion_percent": 94.0,
       "key_metrics": {
+        "broad_matrix_portfolio_passed": false,
         "min_qualifying_matched_optimized_transport_audits": 3,
         "min_qualifying_optimized_equilibrium_ensembles": 3,
         "min_qualifying_replicated_holdout_ensembles": 3,
@@ -62,28 +65,30 @@
         "vmec_boozer_holdout_promotion_passed": true
       },
       "lane": "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
-      "next_action": "Move from one scoped QA positive audit to a multi-equilibrium, multi-surface/multi-alpha campaign; only count long post-transient replicated transport windows, not reduced/startup objectives.",
-      "passed": true,
+      "next_action": "Copy the passing broad matrix portfolio into docs/_static before manuscript-level nonlinear optimization promotion; scoped matched audits remain supporting evidence only.",
+      "passed": false,
       "primary_artifacts": [
         "docs/_static/production_nonlinear_optimization_guard.json",
         "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
         "docs/_static/vmec_jax_qa_transport_optimization_status.json",
-        "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json"
+        "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json",
+        "docs/_static/nonlinear_transport_matrix_portfolio.json"
       ],
       "required_next_artifacts": [
+        "passing nonlinear_transport_matrix_portfolio.json built from at least one three-surface, two-field-line, three-ky matched matrix report",
         "matched long post-transient baseline-vs-optimized audits for at least three independent optimized equilibria",
         "surface/alpha held-out VMEC/Boozer production-scope nonlinear transport artifact",
         "replicated seed/timestep ensembles for each optimized equilibrium",
         "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows"
       ],
-      "status": "closed"
+      "status": "partial"
     },
     {
       "blockers": [
         "combined_strong_scaling_speedup_not_passed",
         "cpu_domain_speedup_below_1p5",
-        "gpu:gpu_2devices_speedup_0.626_below_1",
+        "gpu:gpu_2devices_speedup_0.586_below_1",
         "gpu_domain_speedup_below_1p5",
         "production_speedup_gate_not_passed"
       ],
@@ -170,14 +175,15 @@
   },
   "summary": {
     "blocking_lanes": [
+      "Broad end-to-end nonlinear turbulent-flux stellarator optimization",
       "Production nonlinear domain-decomposition speedup"
     ],
-    "mean_completion_percent": 92.5,
+    "mean_completion_percent": 91.0,
     "n_blocked": 0,
-    "n_closed": 3,
+    "n_closed": 2,
     "n_lanes": 4,
     "n_open": 0,
-    "n_partial": 1,
+    "n_partial": 2,
     "ready_for_manuscript_drafting": false
   }
 }

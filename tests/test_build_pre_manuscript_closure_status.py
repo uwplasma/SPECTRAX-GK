@@ -115,6 +115,24 @@ def _write_all_pass_fixture(root: Path) -> None:
         "docs/_static/vmec_jax_qa_transport_optimization_status.json",
         {"summary": {"long_window_nonlinear_audit_passed": True}},
     )
+    _write_json(
+        root,
+        "docs/_static/nonlinear_transport_matrix_portfolio.json",
+        {
+            "passed": True,
+            "selected_family": "accepted_qa_ess",
+            "selected_report": {
+                "qualifies_for_broad_promotion": True,
+                "summary": {
+                    "total_samples": 18,
+                    "completed_samples": 18,
+                    "pass_fraction": 1.0,
+                    "mean_relative_reduction": 0.03,
+                },
+            },
+            "blockers": [],
+        },
+    )
 
     _write_json(
         root,
@@ -174,6 +192,12 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     assert len(lanes) == 4
     assert lanes["Scoped core quasilinear heat-flux diagnostic"]["passed"] is True
     assert lanes["Production nonlinear domain-decomposition speedup"]["passed"] is False
+    broad_lane = lanes["Broad end-to-end nonlinear turbulent-flux stellarator optimization"]
+    assert broad_lane["passed"] is False
+    assert broad_lane["status"] == "partial"
+    assert broad_lane["completion_percent"] == 94.0
+    assert broad_lane["key_metrics"]["broad_matrix_portfolio_passed"] is False
+    assert "broad_nonlinear_transport_matrix_portfolio_missing_or_failed" in broad_lane["blockers"]
     ql_lane = lanes["Scoped core quasilinear heat-flux diagnostic"]
     assert ql_lane["status"] == "closed"
     assert ql_lane["completion_percent"] == 100.0

@@ -301,6 +301,7 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
     guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
     vmec_holdout = _read_json(root, "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json")
     qa_status = _read_json(root, "docs/_static/vmec_jax_qa_transport_optimization_status.json")
+    matrix_portfolio = _read_json(root, "docs/_static/nonlinear_transport_matrix_portfolio.json")
 
     summary = _as_dict((guard or {}).get("summary"))
     matched = int(summary.get("qualifying_matched_optimized_transport_audits") or 0)
@@ -309,6 +310,7 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
     scoped_guard_passed = bool((guard or {}).get("passed", False))
     holdout_promotion_passed = bool((vmec_holdout or {}).get("passed", False))
     qa_long_window_anchor = bool(_as_dict((qa_status or {}).get("summary")).get("long_window_nonlinear_audit_passed", False))
+    broad_matrix_portfolio_passed = bool((matrix_portfolio or {}).get("passed", False))
 
     blockers: list[str] = []
     if matched < MIN_BROAD_MATCHED_OPTIMIZATION_AUDITS:
@@ -321,8 +323,10 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
         blockers.append("vmec_boozer_production_scope_holdout_missing")
     if not scoped_guard_passed:
         blockers.append("scoped_production_nonlinear_guard_failed")
+    if not broad_matrix_portfolio_passed:
+        blockers.append("broad_nonlinear_transport_matrix_portfolio_missing_or_failed")
 
-    completion = (
+    scoped_completion = (
         _bool_score(scoped_guard_passed, 25.0)
         + _bool_score(qa_long_window_anchor, 10.0)
         + _ratio_score(matched, MIN_BROAD_MATCHED_OPTIMIZATION_AUDITS, 20.0)
@@ -330,6 +334,7 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
         + _ratio_score(replicated, MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES, 15.0)
         + _bool_score(holdout_promotion_passed, 15.0)
     )
+    completion = min(scoped_completion, 100.0) * 0.94 + _bool_score(broad_matrix_portfolio_passed, 6.0)
     passed = bool(not blockers)
 
     return {
@@ -337,13 +342,18 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
         "status": _lane_status(passed, blockers, completion),
         "passed": passed,
         "completion_percent": round(completion, 1),
-        "claim_level": "single_candidate_scoped_positive_audit_not_broad_optimization" if not passed else "broad_nonlinear_turbulent_flux_optimization_ready",
+        "claim_level": (
+            "broad_nonlinear_turbulent_flux_optimization_ready"
+            if passed
+            else "scoped_positive_audits_pending_broad_matrix_portfolio"
+        ),
         "primary_artifacts": [
             "docs/_static/production_nonlinear_optimization_guard.json",
             "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
             "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
             "docs/_static/vmec_jax_qa_transport_optimization_status.json",
             "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json",
+            "docs/_static/nonlinear_transport_matrix_portfolio.json",
         ],
         "key_metrics": {
             "scoped_guard_passed": scoped_guard_passed,
@@ -355,17 +365,21 @@ def _broad_nonlinear_optimization_lane(root: Path) -> dict[str, Any]:
             "qualifying_replicated_holdout_ensembles": replicated,
             "min_qualifying_replicated_holdout_ensembles": MIN_BROAD_REPLICATED_HOLDOUT_ENSEMBLES,
             "vmec_boozer_holdout_promotion_passed": holdout_promotion_passed,
+            "broad_matrix_portfolio_passed": broad_matrix_portfolio_passed,
         },
         "blockers": _normalize_blockers(blockers),
         "required_next_artifacts": [
+            "passing nonlinear_transport_matrix_portfolio.json built from at least one three-surface, two-field-line, three-ky matched matrix report",
             "matched long post-transient baseline-vs-optimized audits for at least three independent optimized equilibria",
             "surface/alpha held-out VMEC/Boozer production-scope nonlinear transport artifact",
             "replicated seed/timestep ensembles for each optimized equilibrium",
             "running-mean, block/SEM, spread, and finite-flux gates for all promoted windows",
         ],
         "next_action": (
-            "Move from one scoped QA positive audit to a multi-equilibrium, multi-surface/multi-alpha campaign; "
-            "only count long post-transient replicated transport windows, not reduced/startup objectives."
+            "Copy the passing broad matrix portfolio into docs/_static before manuscript-level nonlinear "
+            "optimization promotion; scoped matched audits remain supporting evidence only."
+            if not passed
+            else "Use the selected broad matrix family as the manuscript-level nonlinear turbulent-flux optimization evidence."
         ),
     }
 
