@@ -361,15 +361,16 @@ Current launch log:
   `s=0.78, alpha=pi/4, k_y rho_i=0.10, seed31` row and `tmax≈799.95` for the
   baseline `s=0.78, alpha=pi/4, k_y rho_i=0.30, seed31` row, so both processes
   are still useful long-window work rather than duplicate completed outputs.
-- `2026-06-23`: the locally tracked matrix generator now emits target-time
-  aware final-horizon launch commands via
-  `tools/check_nonlinear_output_target.py`, but the already-staged projected
-  fallback scripts on office were generated earlier and only inspect file
-  existence. If the accepted QA/ESS matrix fails and a projected fallback is
-  needed, regenerate the projected matrix scripts from the current checkout or
-  wrap them with the target-time checker before launching. Do not run the stale
-  projected GPU scripts directly, and do not launch projected fallbacks while
-  the accepted GPU queues are active.
+- `2026-06-23`: regenerated the idle projected fallback families on office
+  from the current target-aware matrix generator:
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
+  and
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
+  Their GPU split scripts now call `tools/check_nonlinear_output_target.py`
+  and print `skip-target-confirmed` only for outputs whose recorded time
+  reaches `t=1500` within the generated timestep tolerance. They are ready as
+  fallback launch scripts, but remain idle until the accepted QA/ESS matrix
+  either passes or fails.
 
 ### 7. Preserve validation scope and GX parity
 
@@ -410,8 +411,7 @@ Goal: ship the next version from a clean, green, measured state.
    matrix and portfolio artifacts into `docs/_static`, update README/docs and
    release scope with the final broad nonlinear turbulent-flux optimization
    evidence, then run bounded release gates.
-4. If accepted QA/ESS fails, regenerate or target-check-wrap the projected
-   fallback scripts from the current checkout, launch exactly one projected
+4. If accepted QA/ESS fails, launch exactly one already-regenerated projected
    fallback family on free office GPUs, postprocess it, and rerun the portfolio
    gate.
 5. After the nonlinear optimization portfolio is resolved, finish the final
