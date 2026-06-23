@@ -352,6 +352,24 @@ Current launch log:
 - CI for code head `5e94a51d` passed, and local gates passed after the
   plan-only progress commits. Do not watch superseded/cancelled runs while the
   office final-horizon matrix is still executing.
+- `2026-06-23`: latest accepted-matrix office poll on `main` commit
+  `6563b191` still has GPU0/GPU1 queues active. The bundle-only progress
+  report now correctly labels `--skip-time-check` as non-promotional:
+  `96/108` bundles are present, `0/108` are target-confirmed under the skipped
+  NetCDF-time path, and `ready_for_postprocess=false`. Direct target checks of
+  the active rows found `tmax≈1199.93` for the candidate
+  `s=0.78, alpha=pi/4, k_y rho_i=0.10, seed31` row and `tmax≈799.95` for the
+  baseline `s=0.78, alpha=pi/4, k_y rho_i=0.30, seed31` row, so both processes
+  are still useful long-window work rather than duplicate completed outputs.
+- `2026-06-23`: the locally tracked matrix generator now emits target-time
+  aware final-horizon launch commands via
+  `tools/check_nonlinear_output_target.py`, but the already-staged projected
+  fallback scripts on office were generated earlier and only inspect file
+  existence. If the accepted QA/ESS matrix fails and a projected fallback is
+  needed, regenerate the projected matrix scripts from the current checkout or
+  wrap them with the target-time checker before launching. Do not run the stale
+  projected GPU scripts directly, and do not launch projected fallbacks while
+  the accepted GPU queues are active.
 
 ### 7. Preserve validation scope and GX parity
 
@@ -383,10 +401,19 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Immediate Next Tranche
 
-1. Commit and push this plan refresh after bounded release gates pass.
-2. Check the new head CI run once; fix real failures only.
-3. Check the new head CI run once; fix only real failures.
-4. Run one final README/docs/release-scope consistency pass, including the
-   runtime/memory figure location and provenance files.
-5. If no real code-quality blockers remain, move directly to release readiness:
-   docs/readme consistency pass, package build, version bump, tag, and publish.
+1. Let the accepted QA/ESS matrix finish on office; use only non-invasive
+   bundle-only polling while queue processes are active.
+2. After both queue scripts exit, run the full target-time progress check. If
+   `ready_for_postprocess=true`, let the watcher or manual postprocess build
+   `qa_mode5_ess_matrix_matrix_report.{json,png}`.
+3. Run or inspect the portfolio gate. If accepted QA/ESS passes, copy the
+   matrix and portfolio artifacts into `docs/_static`, update README/docs and
+   release scope with the final broad nonlinear turbulent-flux optimization
+   evidence, then run bounded release gates.
+4. If accepted QA/ESS fails, regenerate or target-check-wrap the projected
+   fallback scripts from the current checkout, launch exactly one projected
+   fallback family on free office GPUs, postprocess it, and rerun the portfolio
+   gate.
+5. After the nonlinear optimization portfolio is resolved, finish the final
+   README/docs/release-scope consistency pass, package build, version bump,
+   tag, and publish.
