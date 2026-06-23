@@ -302,9 +302,17 @@ Current launch log:
   passed: package-architecture manifest, repository-size manifest,
   release-readiness check, Ruff over `src tests examples tools`, and the
   focused nonlinear matrix test shard (`23 passed`).
-- CI for `5e94a51d` passed. The current head is green; do not watch
-  superseded/cancelled runs while the office final-horizon matrix is still
-  executing.
+- `2026-06-23`: installed a bounded office watcher at
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_qa_mode5_ess_matrix_postprocess.sh`.
+  It uses a lock file, polls active queues every five minutes with
+  `--skip-time-check`, switches to the full target-time progress check only
+  after the queue processes exit, and then runs
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
+  exactly once when `ready_for_postprocess=true`. The watcher log is
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_watch.log`.
+- CI for code head `5e94a51d` passed, and local gates passed after the
+  plan-only progress commits. Do not watch superseded/cancelled runs while the
+  office final-horizon matrix is still executing.
 
 ### 7. Preserve validation scope and GX parity
 
