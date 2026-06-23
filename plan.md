@@ -291,9 +291,20 @@ Current launch log:
   bundles confirmed `10` true final-horizon outputs at `t≈1500`, with both
   GPU queues still active. Postprocessing remains blocked until all `108`
   outputs are target-confirmed.
-- CI for `c0a6c929` passed. The current head includes only the non-invasive
-  bundle-progress regression and should be checked once before release; do not
-  watch superseded/cancelled runs.
+- `2026-06-23`: resumed from the active office queues and fast-forwarded the
+  office clone to `5e94a51d`. The non-invasive progress report now finds
+  `95/108` bundle-complete outputs and `95/108` target-confirmed outputs. The
+  remaining rows are all on the outer surface/second field-line label
+  (`s=0.78`, `alpha=pi/4`), mainly `k_y rho_i=0.30,0.50`, plus one candidate
+  `k_y rho_i=0.10` replicate. Both office GPUs remain saturated, so
+  postprocessing is still blocked until the last `13` bundles finish.
+- `2026-06-23`: while the office matrix continued, local release hygiene checks
+  passed: package-architecture manifest, repository-size manifest,
+  release-readiness check, Ruff over `src tests examples tools`, and the
+  focused nonlinear matrix test shard (`23 passed`).
+- CI for `5e94a51d` passed. The current head is green; do not watch
+  superseded/cancelled runs while the office final-horizon matrix is still
+  executing.
 
 ### 7. Preserve validation scope and GX parity
 
