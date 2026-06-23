@@ -210,7 +210,7 @@ or one positive candidate audit does not close a broad manuscript claim.
 .. image:: _static/pre_manuscript_closure_status.png
    :alt: Strict pre-manuscript closure status for scoped and production gates
 
-Current strict closure is ``89.2%`` on average, so manuscript drafting remains
+Current strict closure is ``91.0%`` on average, so manuscript drafting remains
 blocked by broad nonlinear optimization and nonlinear domain speedup, not by
 the scoped QL diagnostic. The required order is:
 
@@ -218,13 +218,17 @@ the scoped QL diagnostic. The required order is:
   10-case core portfolio. The Solovev and shaped-pressure stress outliers
   remain visible negative evidence, so universal runtime absolute-flux
   promotion stays deferred;
-- broad end-to-end nonlinear turbulent-flux stellarator optimization: promote
-  only after at least three independent matched baseline-vs-optimized
-  long-window transport audits. The generic replicated-holdout lane is frozen
-  at three accepted long-window holdout ensembles; no additional holdouts are
-  active for this tranche. The optimized-equilibrium trace-count requirement is closed by the
-  selected t700 optimized-equilibrium audit plus the strict t1500 growth/QL/
-  nonlinear-window candidate trace ensembles;
+- broad end-to-end nonlinear turbulent-flux stellarator optimization: keep the
+  scoped matched-audit evidence as supporting material, but promote the broad
+  manuscript claim only after a passing nonlinear transport matrix portfolio
+  exists for at least three surfaces, two field-line labels, and three
+  ``k_y`` values. The generic replicated-holdout lane is frozen at three
+  accepted long-window holdout ensembles; no additional holdouts are active
+  for this tranche. The optimized-equilibrium trace-count requirement is
+  closed by the selected ``t=700`` optimized-equilibrium audit plus the strict
+  ``t=1500`` growth/QL/nonlinear-window candidate trace ensembles, but those
+  strict candidate rows remain negative transfer evidence and do not close the
+  broad matrix portfolio gate;
 - production nonlinear domain-decomposition speedup: implement a real
   communication-aware nonlinear decomposed RHS/integrator path and require
   serial-vs-decomposed transport-window identity plus large-grid CPU and

@@ -48,10 +48,10 @@ machine-readable dashboard
 track those lanes separately from release-safe scoped diagnostics. The current
 strict status is not ready for manuscript drafting: the scoped core
 quasilinear heat-flux diagnostic is closed at ``100.0%``; broad end-to-end
-nonlinear turbulent-flux stellarator optimization is partial at ``86.7%``;
+nonlinear turbulent-flux stellarator optimization is partial at ``94.0%``;
 production nonlinear domain-decomposition speedup is partial at ``70.0%``; and
 VMEC/Boozer holdout optimization is closed at ``100.0%``. Mean strict closure
-is ``89.2%``. These percentages are strict closure metrics for the current
+is ``91.0%``. These percentages are strict closure metrics for the current
 scoped and production gates, not older release-lane completion estimates.
 
 .. image:: _static/pre_manuscript_closure_status.png
