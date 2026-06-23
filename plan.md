@@ -293,7 +293,7 @@ Current launch log:
   outputs are target-confirmed.
 - `2026-06-23`: resumed from the active office queues and fast-forwarded the
   office clone to `5e94a51d`. The non-invasive progress report now finds
-  `95/108` bundle-complete outputs and `95/108` target-confirmed outputs. The
+  `95/108` bundle-complete outputs under `--skip-time-check`. The
   remaining rows are all on the outer surface/second field-line label
   (`s=0.78`, `alpha=pi/4`), mainly `k_y rho_i=0.30,0.50`, plus one candidate
   `k_y rho_i=0.10` replicate. Both office GPUs remain saturated, so
@@ -320,12 +320,24 @@ Current launch log:
   duplicates while the old GPU queue scripts are active is unsafe because those
   scripts do not coordinate target-aware per-output locks with external
   workers.
-- `2026-06-23`: the watcher second poll still found `95/108` target-confirmed
-  outputs. The active rows are
+- `2026-06-23`: the watcher second poll still found `95/108`
+  bundle-complete outputs under `--skip-time-check`. The active rows are
   `qa_mode5_ess_s0p78_a0p785398_ky0p1_seed31` and
   `qa_mode5_no_ess_s0p78_a0p785398_ky0p3_seed31`; both remain GPU-bound. The
   focused matrix/report/target tests passed (`8 passed`) and the optimization
   example test shard passed (`29 passed`).
+- `2026-06-23`: fixed `tools/check_nonlinear_output_target.py` so direct
+  `python3 tools/check_nonlinear_output_target.py ...` execution works from a
+  repo checkout, matching the generated target-aware relaunch scripts. Also
+  tightened `tools/check_matched_nonlinear_transport_matrix_progress.py` so
+  `--skip-time-check` is explicitly bundle-only: it never marks
+  `ready_for_postprocess=true` or labels outputs target-confirmed without
+  reading their NetCDF time. A direct check of the long active
+  `qa_mode5_ess_s0p78_a0p785398_ky0p1_seed31` output found
+  `tmax≈1199.93`, so the GPU0 process is still useful work rather than a
+  duplicate final output. The latest non-invasive poll has `96/108`
+  bundle-complete outputs; full target confirmation remains deferred until the
+  queue exits and the watcher runs the non-skip progress check.
 - CI for code head `5e94a51d` passed, and local gates passed after the
   plan-only progress commits. Do not watch superseded/cancelled runs while the
   office final-horizon matrix is still executing.

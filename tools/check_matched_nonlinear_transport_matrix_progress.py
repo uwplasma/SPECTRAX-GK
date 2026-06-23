@@ -194,13 +194,9 @@ def build_report(
         tmax = None if skip_time_check else _read_output_tmax(bundle["out"])
         target_confirmed = bool(
             bundle_complete
-            and (
-                skip_time_check
-                or (
-                    tmax is not None
-                    and tmax >= float(target_time) - float(effective_time_tolerance)
-                )
-            )
+            and not skip_time_check
+            and tmax is not None
+            and tmax >= float(target_time) - float(effective_time_tolerance)
         )
         confirmed_targets += int(target_confirmed)
         rows.append(
@@ -228,6 +224,7 @@ def build_report(
             "missing_or_incomplete_bundles": expected_count - complete_bundles,
             "not_confirmed_at_target_time": expected_count - confirmed_targets,
             "ready_for_postprocess": bool(expected_count and confirmed_targets == expected_count),
+            "time_check_skipped": bool(skip_time_check),
         },
         "rows": rows,
     }
@@ -250,7 +247,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--skip-time-check",
         action="store_true",
-        help="Count complete bundles as target-confirmed without reading NetCDF time. Intended only for manifest unit tests.",
+        help=(
+            "Count bundle presence without reading NetCDF time. Target-time "
+            "confirmation and ready_for_postprocess remain false in this mode; "
+            "run without this flag before postprocessing."
+        ),
     )
     parser.add_argument("--fail-on-incomplete", action="store_true")
     return parser

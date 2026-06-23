@@ -149,5 +149,8 @@ def test_skip_time_check_does_not_read_output_time(tmp_path: Path, monkeypatch) 
 
     assert report["skip_time_check"] is True
     assert report["summary"]["complete_bundles"] == 2
-    assert report["summary"]["target_time_confirmed"] == 2
+    assert report["summary"]["target_time_confirmed"] == 0
+    assert report["summary"]["ready_for_postprocess"] is False
+    assert report["summary"]["time_check_skipped"] is True
+    assert all(not row["target_time_confirmed"] for row in report["rows"])
     assert all(row["output_tmax"] is None for row in report["rows"])
