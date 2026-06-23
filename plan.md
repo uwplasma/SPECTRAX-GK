@@ -310,6 +310,22 @@ Current launch log:
   `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
   exactly once when `ready_for_postprocess=true`. The watcher log is
   `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_watch.log`.
+- `2026-06-23`: verified the fallback projected max-mode-5 matrix families are
+  staged but not launched:
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
+  and
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
+  Each has a valid 18-sample manifest and GPU split scripts. Keep them idle
+  until the accepted QA/ESS matrix either passes or fails; launching extra CPU
+  duplicates while the old GPU queue scripts are active is unsafe because those
+  scripts do not coordinate target-aware per-output locks with external
+  workers.
+- `2026-06-23`: the watcher second poll still found `95/108` target-confirmed
+  outputs. The active rows are
+  `qa_mode5_ess_s0p78_a0p785398_ky0p1_seed31` and
+  `qa_mode5_no_ess_s0p78_a0p785398_ky0p3_seed31`; both remain GPU-bound. The
+  focused matrix/report/target tests passed (`8 passed`) and the optimization
+  example test shard passed (`29 passed`).
 - CI for code head `5e94a51d` passed, and local gates passed after the
   plan-only progress commits. Do not watch superseded/cancelled runs while the
   office final-horizon matrix is still executing.
