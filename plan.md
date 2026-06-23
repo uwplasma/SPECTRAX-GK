@@ -338,6 +338,17 @@ Current launch log:
   duplicate final output. The latest non-invasive poll has `96/108`
   bundle-complete outputs; full target confirmation remains deferred until the
   queue exits and the watcher runs the non-skip progress check.
+- `2026-06-23`: installed a second office watcher at
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_nonlinear_matrix_portfolio_gate.sh`.
+  It waits for
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`
+  and then runs `tools/check_nonlinear_transport_matrix_portfolio.py` with the
+  accepted QA/ESS report, the two staged projected max-mode-5 report paths,
+  and the strict growth/QL/nonlinear-window negative-transfer comparisons as
+  excluded evidence. Its output will be
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/nonlinear_transport_matrix_portfolio.{json,png}`.
+  This watcher does not launch simulations; it only automates the gate after
+  accepted-matrix postprocessing finishes.
 - CI for code head `5e94a51d` passed, and local gates passed after the
   plan-only progress commits. Do not watch superseded/cancelled runs while the
   office final-horizon matrix is still executing.
