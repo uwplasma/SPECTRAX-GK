@@ -775,6 +775,13 @@ excluded negative-transfer evidence. This prevents the release process from
 counting negative strict rows or single-point matched audits toward the broad
 nonlinear turbulent-flux optimization claim.
 
+``tools/import_nonlinear_transport_matrix_portfolio.py`` is the release import
+step after that selector passes. It refuses blocked or malformed portfolio
+JSON, then copies the canonical portfolio artifact and the selected family
+matrix report into ``docs/_static``. This keeps the documentation dashboard
+fail-closed: a broad nonlinear turbulent-flux optimization claim can appear in
+the shipped docs only after the matrix portfolio gate has passed.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local

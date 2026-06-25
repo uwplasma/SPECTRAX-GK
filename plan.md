@@ -487,9 +487,12 @@ Goal: ship the next version from a clean, green, measured state.
    postprocess build
    `qa_projected_weight_0p001_matrix_matrix_report.{json,png}`.
 3. Run or inspect the portfolio gate. If projected `0p001` passes, copy the
-   matrix and portfolio artifacts into `docs/_static`, update README/docs and
-   release scope with the final broad nonlinear turbulent-flux optimization
-   evidence, then run bounded release gates.
+   matrix and portfolio artifacts into `docs/_static` with
+   `tools/import_nonlinear_transport_matrix_portfolio.py`, update README/docs
+   and release scope with the final broad nonlinear turbulent-flux optimization
+   evidence, then run bounded release gates. The importer is fail-closed and
+   refuses blocked portfolio JSON, so manual copying cannot accidentally
+   promote a failed broad nonlinear transport matrix.
 4. If projected `0p001` fails, keep the broad nonlinear optimization claim
    blocked and decide whether to defer the claim or launch the remaining
    `projected_0p0005` fallback as a separate tranche.

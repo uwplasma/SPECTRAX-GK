@@ -1192,6 +1192,11 @@ by ``tools/check_nonlinear_transport_matrix_portfolio.py``. It consumes one or
 more aggregate matrix reports, selects the passing family with the largest mean
 heat-flux reduction, and records strict ``t=1500`` growth/QL/nonlinear-window
 matched comparisons only as excluded negative-transfer evidence.
+After that gate passes, import the selected release artifacts with
+``tools/import_nonlinear_transport_matrix_portfolio.py``. The importer is
+fail-closed: it rejects blocked portfolios and writes the canonical
+``docs/_static/nonlinear_transport_matrix_portfolio.{json,png}`` plus the
+selected matrix report only for a passing broad matrix family.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
