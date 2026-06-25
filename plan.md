@@ -399,6 +399,12 @@ Current launch log:
   and rerun the portfolio gate with accepted QA/ESS plus projected `0p001`.
   Do not launch `projected_0p0005` unless this single fallback completes and
   still fails the portfolio gate.
+- `2026-06-25`: rechecked the active `projected_0p001` queue with the full
+  target-time progress checker, not just bundle presence. Both GPU queue
+  scripts and the watcher are still running; the current status is `2/108`
+  complete bundles, `0/108` outputs confirmed at `t=1500`, and
+  `ready_for_postprocess=false`. The two present bundles are therefore
+  intermediate/in-progress outputs and must not be postprocessed or promoted.
 
 ### 7. Preserve validation scope and GX parity
 
