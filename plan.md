@@ -496,6 +496,12 @@ Current launch log:
   with both GPU scripts and a full target-time watcher. Initial fallback status
   is healthy: both GPUs are saturated, target-time progress is `0/108`, and
   the watcher is active.
+- `2026-06-25 16:55 -0500`: monitored the first `projected_0p0005` fallback
+  chunks for five one-minute polls. The fallback is progressing rather than
+  stuck: both GPUs stayed saturated and the first two baseline-seed outputs for
+  `s=0.45, alpha=0, ky=0.1` reached `tmax≈400`. Full target-time progress is
+  still `0/108`, so the strict matrix gate cannot be evaluated yet and no
+  release artifact import is allowed.
 
 ### 7. Preserve validation scope and GX parity
 
