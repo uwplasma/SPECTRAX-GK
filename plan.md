@@ -416,6 +416,13 @@ Current launch log:
   wheel/sdist, and the Sphinx HTML documentation build passed. The only
   remaining release-critical item in this tranche is the nonlinear matrix
   portfolio outcome from office.
+- `2026-06-25`: latest `main` CI for commit `a18149a7` passed. Rechecked the
+  office `projected_0p001` fallback with full target-time validation after the
+  queue had advanced for several hours. The queue is still active on both GPUs,
+  but it now has real long-window progress: `23/108` bundles are present and
+  `21/108` outputs are confirmed at `t=1500`. The matrix remains
+  `ready_for_postprocess=false`, so no report, closure artifact, version bump,
+  or release tag should be created yet.
 
 ### 7. Preserve validation scope and GX parity
 
