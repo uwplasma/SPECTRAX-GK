@@ -486,6 +486,16 @@ Current launch log:
   (`21 passed`), Sphinx builds, and the package wheel/sdist build succeeds for
   `spectraxgk 1.6.9`. Current head CI for `b46aaedb` is queued; earlier runs
   were cancelled by newer pushes, not failed.
+- `2026-06-25 16:47 -0500`: early-postprocessed the first four completed
+  `projected_0p001` samples. This is already decisive against promotion under
+  the documented all-sample gate: only `1/18` samples pass in the generated
+  early-failed matrix report, the mean relative reduction is `0.00748 < 0.02`,
+  and the pass fraction is `0.0556 < 1.0`. To avoid spending GPU time on a
+  family that cannot pass, terminated only the `projected_0p001` queue and
+  watcher, then launched the single planned `projected_0p0005` fallback matrix
+  with both GPU scripts and a full target-time watcher. Initial fallback status
+  is healthy: both GPUs are saturated, target-time progress is `0/108`, and
+  the watcher is active.
 
 ### 7. Preserve validation scope and GX parity
 
