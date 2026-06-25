@@ -423,6 +423,15 @@ Current launch log:
   `21/108` outputs are confirmed at `t=1500`. The matrix remains
   `ready_for_postprocess=false`, so no report, closure artifact, version bump,
   or release tag should be created yet.
+- `2026-06-25`: rechecked office after the latest continuation. Both
+  `projected_0p001` GPU queues and the postprocess watcher are still active,
+  both GPUs are saturated, and the full target-time progress checker reports
+  `24/108` bundles present with `22/108` outputs confirmed at `t=1500`.
+  Two active rows are still below target (`tmax≈1199.93` and `tmax≈799.95`),
+  so the fallback is progressing but remains non-promotional. The latest
+  `main` CI run for commit `49f04c2b` has no failing jobs at this checkpoint:
+  `28` jobs have succeeded, `8` are in progress, and `22` wide-coverage jobs
+  are queued.
 
 ### 7. Preserve validation scope and GX parity
 
