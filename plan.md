@@ -476,6 +476,16 @@ Current launch log:
   `ready_for_postprocess=false`. Two present bundles are intermediate outputs
   (`tmax≈400` and `tmax≈800`), so no postprocess/import/release action is
   allowed yet.
+- `2026-06-25 16:41 -0500`: rechecked the same office queue without modifying
+  the office checkout. Both GPU queue scripts and the full target-time watcher
+  are still active, both GPUs remain saturated, and manual target-time progress
+  is `26/108` confirmed outputs with `27/108` bundles present and
+  `ready_for_postprocess=false`. The local release path is green at this
+  checkpoint: release/artifact/version/repository-size/architecture/performance
+  manifests pass, the selected nonlinear matrix/release pytest shard passes
+  (`21 passed`), Sphinx builds, and the package wheel/sdist build succeeds for
+  `spectraxgk 1.6.9`. Current head CI for `b46aaedb` is queued; earlier runs
+  were cancelled by newer pushes, not failed.
 
 ### 7. Preserve validation scope and GX parity
 
