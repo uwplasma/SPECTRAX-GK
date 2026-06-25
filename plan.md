@@ -441,6 +441,14 @@ Current launch log:
   final-horizon scripts guard each output with a per-output `flock` lock and
   an atomic-directory fallback; this makes any future regenerated fallback
   family safe for split workers or relaunches without output races.
+- `2026-06-25`: rechecked the same office `projected_0p001` fallback after
+  the lock-safe generator commit. The current office checkout is still the
+  pre-lock run context and both active GPU processes remain healthy, so the
+  office tree was intentionally left untouched. Full target-time progress now
+  reports `23/108` outputs confirmed at `t=1500`, `24/108` bundles present,
+  and `ready_for_postprocess=false`; the running candidate row remains at
+  `tmax≈1199.93`. Head CI for commit `3a570f7c` is queued/in progress with no
+  visible failures at this checkpoint.
 
 ### 7. Preserve validation scope and GX parity
 
