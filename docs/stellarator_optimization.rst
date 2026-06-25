@@ -633,9 +633,9 @@ boundary-gradient/branch, and matched long-window nonlinear gates.
    reduction. These are scoped single-surface, single-field-line,
    single-``k_y`` positive audits, not broad stellarator-optimization claims.
    These matched nonlinear traces are tied to the earlier sweep baseline. The
-   strict exact QA baseline above should be used for the next refreshed
-   transport-audit campaign before claiming reductions relative to the stricter
-   constraints-only WOUT.
+   later 18-point matrix campaign against the strict max-mode-5 baseline failed
+   for both projected-weight families, so the single-point positives remain
+   candidate-screening evidence only.
 
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
