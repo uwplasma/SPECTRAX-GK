@@ -378,6 +378,27 @@ Current launch log:
   tracked dashboard reports this lane as `94%` and blocked only by the missing
   broad matrix portfolio while the accepted QA/ESS office matrix is still
   running.
+- `2026-06-25`: audited the completed office accepted QA/ESS matrix. The
+  full target-time progress check passed with `108/108` outputs confirmed at
+  `t=1500` and `ready_for_postprocess=true`; the postprocess report exists at
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`.
+  The aggregate broad matrix gate failed: `9/18` samples passed, mean relative
+  reduction was `9.18%`, and the blocker was `pass_fraction 0.5 < 1`. The
+  portfolio gate therefore selected no family and wrote
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/nonlinear_transport_matrix_portfolio.json`
+  with blocker `no candidate family passed the broad matrix gate`.
+- `2026-06-25`: launched exactly one target-aware fallback family:
+  `projected_0p001`. The scripts
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix/run_matrix_final_horizon_gpu0.sh`
+  and `run_matrix_final_horizon_gpu1.sh` are running on office and use
+  `tools/check_nonlinear_output_target.py` before every output. The companion
+  watcher
+  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_projected_0p001_matrix_postprocess_and_portfolio.sh`
+  will switch from bundle-only polling to full target-time verification after
+  the queue exits, run matrix postprocess only if `ready_for_postprocess=true`,
+  and rerun the portfolio gate with accepted QA/ESS plus projected `0p001`.
+  Do not launch `projected_0p0005` unless this single fallback completes and
+  still fails the portfolio gate.
 
 ### 7. Preserve validation scope and GX parity
 
@@ -409,18 +430,20 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Immediate Next Tranche
 
-1. Let the accepted QA/ESS matrix finish on office; use only non-invasive
-   bundle-only polling while queue processes are active.
-2. After both queue scripts exit, run the full target-time progress check. If
-   `ready_for_postprocess=true`, let the watcher or manual postprocess build
-   `qa_mode5_ess_matrix_matrix_report.{json,png}`.
-3. Run or inspect the portfolio gate. If accepted QA/ESS passes, copy the
+1. Let the single launched `projected_0p001` fallback finish on office. Use
+   only non-invasive bundle-only polling while queue processes are active.
+2. After both projected queue scripts exit, run the full target-time progress
+   check. If `ready_for_postprocess=true`, let the watcher or manual
+   postprocess build
+   `qa_projected_weight_0p001_matrix_matrix_report.{json,png}`.
+3. Run or inspect the portfolio gate. If projected `0p001` passes, copy the
    matrix and portfolio artifacts into `docs/_static`, update README/docs and
    release scope with the final broad nonlinear turbulent-flux optimization
    evidence, then run bounded release gates.
-4. If accepted QA/ESS fails, launch exactly one already-regenerated projected
-   fallback family on free office GPUs, postprocess it, and rerun the portfolio
-   gate.
-5. After the nonlinear optimization portfolio is resolved, finish the final
+4. If projected `0p001` fails, keep the broad nonlinear optimization claim
+   blocked and decide whether to defer the claim or launch the remaining
+   `projected_0p0005` fallback as a separate tranche.
+5. After the nonlinear optimization portfolio is resolved or explicitly
+   deferred in release scope, finish the final
    README/docs/release-scope consistency pass, package build, version bump,
    tag, and publish.
