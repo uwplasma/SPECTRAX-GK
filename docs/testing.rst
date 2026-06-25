@@ -782,6 +782,12 @@ matrix report into ``docs/_static``. This keeps the documentation dashboard
 fail-closed: a broad nonlinear turbulent-flux optimization claim can appear in
 the shipped docs only after the matrix portfolio gate has passed.
 
+``tools/finalize_nonlinear_transport_matrix_release.py`` is the preferred
+release wrapper after a portfolio passes. It calls the fail-closed importer and
+then regenerates the manuscript-readiness, pre-manuscript closure, and closure
+runbook artifacts. Use this wrapper for release candidates; use the lower-level
+importer only when debugging copied paths.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local

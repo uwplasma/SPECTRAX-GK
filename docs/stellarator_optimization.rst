@@ -1197,6 +1197,11 @@ After that gate passes, import the selected release artifacts with
 fail-closed: it rejects blocked portfolios and writes the canonical
 ``docs/_static/nonlinear_transport_matrix_portfolio.{json,png}`` plus the
 selected matrix report only for a passing broad matrix family.
+For release candidates, prefer
+``tools/finalize_nonlinear_transport_matrix_release.py``. It wraps that import
+and immediately rebuilds the manuscript-readiness and strict pre-manuscript
+closure panels, so the documentation dashboard cannot lag behind the selected
+matrix family.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

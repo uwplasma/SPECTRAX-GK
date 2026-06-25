@@ -244,6 +244,7 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
             assert "scalar_trust" in text, path
             assert "custom-VJP" in text or "custom VJP" in text, path
             assert "not a transport-optimization success claim" in normalized, path
+            assert "tools/finalize_nonlinear_transport_matrix_release.py" in text, path
 
 
 def test_optimization_examples_document_user_customization_knobs() -> None:
