@@ -432,6 +432,15 @@ Current launch log:
   `main` CI run for commit `49f04c2b` has no failing jobs at this checkpoint:
   `28` jobs have succeeded, `8` are in progress, and `22` wide-coverage jobs
   are queued.
+- `2026-06-25`: rechecked the running `projected_0p001` fallback again. Both
+  active rows now report `tmax≈1199.93`, but only `22/108` outputs are
+  target-confirmed and the matrix is still `ready_for_postprocess=false`.
+  The already-running office scripts are target-aware but not lock-aware, so
+  no extra CPU workers were launched against the same output tree. Updated
+  `tools/build_matched_nonlinear_transport_matrix.py` so newly generated
+  final-horizon scripts guard each output with a per-output `flock` lock and
+  an atomic-directory fallback; this makes any future regenerated fallback
+  family safe for split workers or relaunches without output races.
 
 ### 7. Preserve validation scope and GX parity
 

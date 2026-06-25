@@ -14,6 +14,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+import shlex
 import sys
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -185,12 +186,28 @@ def _final_horizon_direct_commands(
             f"--target-time {float(item.horizon):.12g} "
             f"--time-tolerance {time_tolerance:.12g} --quiet"
         )
+        lock_file = f"{output_base.as_posix()}.run.lock"
+        run_command = (
+            "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0} "
+            "python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"--config {item.path.as_posix()} --steps {direct_steps} --no-progress"
+        )
         command = (
+            f"lock_file={shlex.quote(lock_file)}; "
             f"if {target_check}; "
             f"then echo skip-target-confirmed {output_base.as_posix()}; "
-            "else PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0} "
-            "python3 -m spectraxgk.cli run-runtime-nonlinear "
-            f"--config {item.path.as_posix()} --steps {direct_steps} --no-progress; fi"
+            "elif command -v flock >/dev/null 2>&1; then "
+            f"(flock -n 9 || {{ echo skip-locked {output_base.as_posix()}; exit 0; }}; "
+            f"if {target_check}; "
+            f"then echo skip-target-confirmed-after-lock {output_base.as_posix()}; "
+            f"else {run_command}; fi) 9>\"$lock_file\"; "
+            "else lock_dir=${lock_file}.d; "
+            "if mkdir \"$lock_dir\" 2>/dev/null; then "
+            f"(trap 'rmdir \"$lock_dir\" 2>/dev/null || true' EXIT; "
+            f"if {target_check}; "
+            f"then echo skip-target-confirmed-after-lock {output_base.as_posix()}; "
+            f"else {run_command}; fi); "
+            f"else echo skip-locked {output_base.as_posix()}; fi; fi"
         )
         commands.append(command)
     if not commands:
@@ -479,6 +496,7 @@ def build_campaign(args: argparse.Namespace) -> dict[str, Any]:
             "max_mean_rel_spread": float(args.max_mean_rel_spread),
             "max_combined_sem_rel": float(args.max_combined_sem_rel),
             "gpu_splits": int(args.gpu_splits),
+            "final_horizon_launch_locking": "per-output flock with mkdir fallback",
         },
         "coverage_gate": {
             "min_surfaces": 3,

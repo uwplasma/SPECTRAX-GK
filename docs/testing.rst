@@ -751,6 +751,10 @@ restart-ladder horizons. Their skip-existing policy calls
 ``tools/check_nonlinear_output_target.py`` for each final output, so rerunning
 after an interruption skips only bundles whose recorded time reaches the target
 within the generated time-step tolerance; partial checkpoint bundles are rerun.
+Newly generated final-horizon scripts also guard each output with a per-output
+``flock`` lock and an atomic-directory fallback. That lets future fallback
+matrices use split workers or be relaunched safely without two workers writing
+the same ``*.out.nc``/``*.big.nc``/``*.restart.nc`` bundle at once.
 Use
 ``tools/check_matched_nonlinear_transport_matrix_progress.py`` before
 postprocessing: it reads the manifest, verifies the expected NetCDF bundle

@@ -78,6 +78,7 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert payload["config"]["ky_values"] == [0.1, 0.3, 0.5]
     assert payload["config"]["seed_variants"] == [7]
     assert payload["config"]["dt_variants"] == [0.08]
+    assert payload["config"]["final_horizon_launch_locking"] == "per-output flock with mkdir fallback"
     assert Path(payload["launch_scripts"]["staged_ladder_skip_existing"]).exists()
     assert Path(payload["launch_scripts"]["postprocess"]).exists()
     assert Path(payload["launch_scripts"]["final_horizon_direct_skip_existing"]).exists()
@@ -91,7 +92,11 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert "_nonlinear_t10_" not in final_script
     assert "--steps 200" in final_script
     assert "tools/check_nonlinear_output_target.py" in final_script
+    assert "flock -n 9" in final_script
+    assert "lock_dir=${lock_file}.d" in final_script
+    assert "skip-locked" in final_script
     assert "skip-target-confirmed" in final_script
+    assert "skip-target-confirmed-after-lock" in final_script
     assert "skip-existing" not in final_script
     gpu1_script = Path(payload["launch_scripts"]["final_horizon_gpu_splits"][1]).read_text(
         encoding="utf-8"
