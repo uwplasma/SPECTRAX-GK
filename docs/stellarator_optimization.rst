@@ -234,6 +234,40 @@ and
 are the machine-readable claim boundary. In particular,
 ``nonlinear_absolute_optimization_promoted`` is intentionally false.
 
+Broad nonlinear matrix outcome
+------------------------------
+
+The strict broad nonlinear turbulent-flux optimization gate is intentionally
+separate from the scoped matched-audit examples above. It requires a completed
+18-point matrix with three surfaces, two field-line labels, three ``k_y`` values,
+seed/timestep replication, and the post-transient averaging window
+``t=[1100,1500]``. The current max-mode-5 campaign did not pass this gate:
+
+- accepted QA/ESS passed ``9/18`` samples and failed the required pass fraction;
+- projected weight ``1e-3`` failed early with only ``1/18`` passing samples and
+  mean relative reduction below the ``2%`` policy threshold;
+- projected weight ``5e-4`` increased heat flux by about ``2.99%`` on its first
+  completed sample, so the family was stopped under the all-sample policy.
+
+This is negative broad-promotion evidence, not a release failure for the scoped
+examples. It means the current release can cite reduced-objective plumbing and
+selected single-point matched audits, but it must not claim broad nonlinear
+turbulent-flux stellarator optimization. The machine-readable ledger is
+:download:`broad_nonlinear_transport_matrix_negative_evidence.json <_static/broad_nonlinear_transport_matrix_negative_evidence.json>`.
+
+.. image:: _static/projected_0p001_matrix_early_failed_matrix_report.png
+   :alt: Projected weight 1e-3 early-failed nonlinear transport matrix report
+   :width: 85%
+
+.. image:: _static/projected_0p0005_first_sample_matched_comparison.png
+   :alt: Projected weight 5e-4 first-sample matched nonlinear comparison
+   :width: 85%
+
+The early-stop logic is part of the scientific guardrail: under a required
+``pass_fraction=1.0`` policy, one failed sample is enough to prevent broad
+promotion. Stopping a failed family avoids spending GPU time on a candidate that
+cannot satisfy the documented gate.
+
 Optimizer-Comparison Manifest
 -----------------------------
 

@@ -89,6 +89,22 @@ unavailable optional backends as missing unit coverage while preserving the
 requirement that every differentiable-geometry claim has an explicit
 finite-difference or parity artifact.
 
+Nonlinear matrix release gates
+------------------------------
+
+Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
+portfolio tools rather than manual figure selection.
+``tools/build_matched_nonlinear_transport_matrix.py`` writes the long-window
+matched matrix, ``tools/check_nonlinear_transport_matrix_portfolio.py`` selects
+only a passing family, and ``tools/import_nonlinear_transport_matrix_portfolio.py``
+refuses blocked portfolios. The current tracked max-mode-5 campaign is negative
+evidence: accepted QA/ESS passed only ``9/18`` samples, projected weight
+``1e-3`` failed early, and projected weight ``5e-4`` increased heat flux on its
+first completed sample. The negative ledger is
+``docs/_static/broad_nonlinear_transport_matrix_negative_evidence.json``; it
+keeps scoped single-point examples from being misread as broad optimized
+stellarator claims.
+
 Test categories
 ---------------
 

@@ -149,6 +149,7 @@ with the portfolio gate rather than by hand:
 python tools/check_nonlinear_transport_matrix_portfolio.py \
   --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
   --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
+  --matrix-report projected_0p0005=tools_out/projected_0p0005_matrix/artifacts/projected_0p0005_matrix_report.json \
   --excluded-comparison strict_growth=docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json \
   --excluded-comparison strict_quasilinear=docs/_static/vmec_qa_t1500_baseline_to_quasilinear_comparison.json \
   --excluded-comparison strict_nonlinear_window=docs/_static/vmec_qa_t1500_baseline_to_nonlinear_window_comparison.json \
@@ -159,7 +160,10 @@ python tools/check_nonlinear_transport_matrix_portfolio.py \
 The portfolio report promotes only a passing broad matrix family. The strict
 `t=1500` growth, quasilinear, and nonlinear-window rows are retained as
 negative-transfer evidence and never counted toward broad nonlinear
-turbulent-flux optimization promotion.
+turbulent-flux optimization promotion. The tracked max-mode-5 release campaign
+failed this gate for accepted QA/ESS and both projected-weight families; keep
+those reports as negative evidence and do not run the finalizer/importer unless
+a future portfolio JSON has `passed=true`.
 
 After the portfolio gate passes, finalize the release-facing docs and status
 panels with the fail-closed wrapper:
@@ -168,8 +172,8 @@ panels with the fail-closed wrapper:
 python tools/finalize_nonlinear_transport_matrix_release.py \
   --portfolio-json tools_out/nonlinear_transport_matrix_portfolio.json \
   --portfolio-figure tools_out/nonlinear_transport_matrix_portfolio.png \
-  --matrix-report-json projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
-  --matrix-report-figure projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.png
+  --matrix-report-json selected_family=tools_out/selected_matrix/artifacts/selected_matrix_report.json \
+  --matrix-report-figure selected_family=tools_out/selected_matrix/artifacts/selected_matrix_report.png
 ```
 
 This wrapper imports only a passing portfolio into `docs/_static` and then

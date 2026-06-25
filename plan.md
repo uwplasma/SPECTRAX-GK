@@ -229,8 +229,10 @@ Goal: close the release lane without overstating the science claim.
    both ensembles qualify, the optimized post-transient mean is lower by the
    configured threshold, and the difference is uncertainty separated.
 5. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
-   plus two projected-weight max-mode-5 audits pass; strict `t=1500`
-   growth/QL/nonlinear-window candidates are negative transfer evidence.
+   plus two projected-weight max-mode-5 single-point audits pass, but the broad
+   max-mode-5 18-point matrix failed for accepted QA/ESS and both projected
+   fallback families. Strict `t=1500` growth/QL/nonlinear-window candidates are
+   negative transfer evidence.
 6. Use `tools/build_matched_nonlinear_transport_matrix.py write` directly only
    for scripted campaigns; it is the lower-level helper used by the example.
    The default matrix is `s=(0.45,0.64,0.78)`, `alpha=(0,pi/4)`, and
@@ -497,11 +499,28 @@ Current launch log:
   is healthy: both GPUs are saturated, target-time progress is `0/108`, and
   the watcher is active.
 - `2026-06-25 16:55 -0500`: monitored the first `projected_0p0005` fallback
-  chunks for five one-minute polls. The fallback is progressing rather than
+  chunks for five one-minute polls. The fallback was progressing rather than
   stuck: both GPUs stayed saturated and the first two baseline-seed outputs for
-  `s=0.45, alpha=0, ky=0.1` reached `tmax≈400`. Full target-time progress is
-  still `0/108`, so the strict matrix gate cannot be evaluated yet and no
-  release artifact import is allowed.
+  `s=0.45, alpha=0, ky=0.1` reached `tmax≈400`. Full target-time progress was
+  still `0/108`, so the strict matrix gate could not yet be evaluated.
+- `2026-06-25 18:50 -0500`: harvested the first completed `projected_0p0005`
+  matched sample. It failed the matched reduction gate: baseline mean
+  `10.3555`, candidate mean `10.6656`, relative reduction `-2.99%`,
+  `z=-1.42`. Because the broad policy requires every sample to pass, this
+  single negative sample makes the projected `5e-4` family impossible to
+  promote; stopped its queue and watcher. The office GPUs are now free of the
+  SPECTRAX-GK matrix campaign. Copied the negative artifacts to `docs/_static`:
+  `projected_0p001_matrix_early_failed_matrix_report.*`,
+  `projected_0p0005_matrix_early_failed_matrix_report.*`,
+  `projected_0p0005_first_sample_matched_comparison.*`, and
+  `broad_nonlinear_transport_matrix_negative_evidence.json`.
+- `2026-06-25 18:55 -0500`: broad nonlinear turbulent-flux optimization is
+  resolved as deferred for this release. Accepted QA/ESS failed with `9/18`
+  passing samples; projected `1e-3` failed early with `1/18` passing samples and
+  mean reduction `0.748%`; projected `5e-4` failed on the first completed sample
+  by increasing heat flux. No broad matrix family is selected. Release docs must
+  keep only scoped single-point nonlinear audit claims and must not run the
+  finalizer/importer for these blocked portfolios.
 
 ### 7. Preserve validation scope and GX parity
 
@@ -533,23 +552,17 @@ Goal: ship the next version from a clean, green, measured state.
 
 ## Immediate Next Tranche
 
-1. Let the single launched `projected_0p001` fallback finish on office. Use
-   only non-invasive bundle-only polling while queue processes are active.
-2. After both projected queue scripts exit, run the full target-time progress
-   check. If `ready_for_postprocess=true`, let the watcher or manual
-   postprocess build
-   `qa_projected_weight_0p001_matrix_matrix_report.{json,png}`.
-3. Run or inspect the portfolio gate. If projected `0p001` passes, copy the
-   matrix and portfolio artifacts into `docs/_static` with
-   `tools/import_nonlinear_transport_matrix_portfolio.py`, update README/docs
-   and release scope with the final broad nonlinear turbulent-flux optimization
-   evidence, then run bounded release gates. The importer is fail-closed and
-   refuses blocked portfolio JSON, so manual copying cannot accidentally
-   promote a failed broad nonlinear transport matrix.
-4. If projected `0p001` fails, keep the broad nonlinear optimization claim
-   blocked and decide whether to defer the claim or launch the remaining
-   `projected_0p0005` fallback as a separate tranche.
-5. After the nonlinear optimization portfolio is resolved or explicitly
-   deferred in release scope, finish the final
-   README/docs/release-scope consistency pass, package build, version bump,
-   tag, and publish.
+1. Keep the office matrix queue closed; no SPECTRAX-GK broad-matrix workers are
+   running and all selected candidate families are already decisive under the
+   all-sample policy.
+2. Treat broad nonlinear turbulent-flux optimization as deferred for this
+   release. Do not import or finalize a blocked portfolio.
+3. Finish the README/docs/release-scope consistency pass using the negative
+   evidence ledger in `docs/_static/broad_nonlinear_transport_matrix_negative_evidence.json`.
+4. Run bounded local release gates: focused portfolio/finalizer/importer tests,
+   release-readiness manifests, repository-size checks, package build, and Sphinx
+   docs.
+5. If local gates and CI are green, bump/tag/release only with the scoped claim
+   boundary: selected single-point nonlinear audit evidence is release-ready;
+   broad multi-surface nonlinear turbulent-flux optimization remains a future
+   candidate-family problem.

@@ -174,10 +174,14 @@ passes the same ensemble protocol, and the optimized QA/ESS equilibrium reduces
 the audited late-window heat flux by ``18.4%``. Together with the two
 full max-mode-5 projected-weight matched audits (``2.68%`` and ``3.35%``),
 this closes the scoped production nonlinear turbulent-flux optimization guard
-under its explicit ``2%`` late-window reduction policy. Broader nonlinear
-heat-flux stellarator optimization still requires multi-surface,
-multi-field-line, multi-``k_y`` evidence plus local-gradient conditioning and
-converged long post-transient running-average heat-flux windows.
+under its explicit ``2%`` late-window reduction policy. The broader
+multi-surface matrix campaign remains negative: accepted QA/ESS passed only
+``9/18`` samples, projected ``1e-3`` failed early, and projected ``5e-4``
+increased heat flux on its first completed sample. Broader nonlinear heat-flux
+stellarator optimization therefore still requires a new candidate family with
+multi-surface, multi-field-line, multi-``k_y`` evidence plus local-gradient
+conditioning and converged long post-transient running-average heat-flux
+windows.
 The latest QL-seeded nonlinear-gradient control screen admits
 ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as internal VMEC-state
 controls. The first measured mapping response is a negative result:

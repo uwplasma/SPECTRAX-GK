@@ -114,8 +114,13 @@ score.
        multi-field-line, multi-``k_y`` objective before another nonlinear
        audit can be used for promotion. A later strict top-12 QA edge audit
        uses that 18-point objective coverage but still fails promotion
-       (``0.58%`` relative reduction, uncertainty z-score ``0.20``), so the
-       release scope remains reduced-objective/model-development only.
+       (``0.58%`` relative reduction, uncertainty z-score ``0.20``). The
+       subsequent broad max-mode-5 matrix campaign is also negative: accepted
+       QA/ESS passes only ``9/18`` samples, projected weight ``1e-3`` fails
+       early with ``1/18`` passing samples and mean reduction below ``2%``, and
+       projected weight ``5e-4`` increases heat flux on the first completed
+       sample. The release scope therefore remains reduced-objective and
+       scoped-audit evidence only.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
@@ -141,6 +146,9 @@ Do not make these claims from the current artifacts:
   option;
 - electromagnetic quasilinear transport calibration for KBM;
 - broad multi-surface production nonlinear heat-flux stellarator optimization;
+  the tracked broad matrix campaign failed all selected candidate families and
+  is recorded as negative evidence in
+  ``docs/_static/broad_nonlinear_transport_matrix_negative_evidence.json``;
 - production nonlinear optimization without converged post-transient audits of
   optimized equilibria; the selected QA optimized-equilibrium audit is the
   current scoped exception;
