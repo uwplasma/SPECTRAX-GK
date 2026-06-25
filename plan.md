@@ -405,6 +405,17 @@ Current launch log:
   complete bundles, `0/108` outputs confirmed at `t=1500`, and
   `ready_for_postprocess=false`. The two present bundles are therefore
   intermediate/in-progress outputs and must not be postprocessed or promoted.
+- `2026-06-25`: while the office fallback queue continued, reran bounded local
+  release checks. `tools/check_release_readiness.py`,
+  `tools/check_release_artifact_manifest.py`, `tools/check_release_version.py`,
+  `tools/check_repository_size_manifest.py`,
+  `tools/check_package_architecture_manifest.py`,
+  `tools/check_performance_optimization_manifest.py`, and
+  `tools/check_parallel_scaling_artifacts.py` passed. The matrix-focused
+  pytest shard passed (`14 passed`), the package build produced the `1.6.9`
+  wheel/sdist, and the Sphinx HTML documentation build passed. The only
+  remaining release-critical item in this tranche is the nonlinear matrix
+  portfolio outcome from office.
 
 ### 7. Preserve validation scope and GX parity
 
