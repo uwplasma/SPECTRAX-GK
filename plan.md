@@ -449,6 +449,26 @@ Current launch log:
   and `ready_for_postprocess=false`; the running candidate row remains at
   `tmax≈1199.93`. Head CI for commit `3a570f7c` is queued/in progress with no
   visible failures at this checkpoint.
+- `2026-06-25`: added a fail-closed release importer,
+  `tools/import_nonlinear_transport_matrix_portfolio.py`, so passing portfolio
+  artifacts are copied into `docs/_static` only after
+  `nonlinear_transport_matrix_portfolio_gate.passed=true`. The importer and
+  portfolio tests pass, Ruff passes, release-readiness/artifact/repository-size
+  checks pass, and the Sphinx docs build passes. This removes the remaining
+  manual-copy ambiguity after the office matrix gate.
+- `2026-06-25`: tightened the public optimization example contract in
+  `examples/optimization/README.md`. The examples now explicitly document the
+  top-level knobs for optimizer algorithm, VMEC seed/WOUT geometry, SPECTRAX-GK
+  objective kind, sample set, extra VMEC-JAX objective tuples, and production
+  long-window nonlinear audit policy. The VMEC-JAX QA exact-script test shard
+  now guards those user-facing customization instructions.
+- `2026-06-25`: rechecked the active office `projected_0p001` fallback after
+  the importer/examples commits. Both GPU queue scripts and the watcher are
+  still active; both GPUs are saturated. Full target-time progress reports
+  `24/108` outputs confirmed at `t=1500`, `26/108` bundles present, and
+  `ready_for_postprocess=false`. Two present bundles are intermediate outputs
+  (`tmax≈400` and `tmax≈800`), so no postprocess/import/release action is
+  allowed yet.
 
 ### 7. Preserve validation scope and GX parity
 
