@@ -161,6 +161,20 @@ The portfolio report promotes only a passing broad matrix family. The strict
 negative-transfer evidence and never counted toward broad nonlinear
 turbulent-flux optimization promotion.
 
+After the portfolio gate passes, finalize the release-facing docs and status
+panels with the fail-closed wrapper:
+
+```bash
+python tools/finalize_nonlinear_transport_matrix_release.py \
+  --portfolio-json tools_out/nonlinear_transport_matrix_portfolio.json \
+  --portfolio-figure tools_out/nonlinear_transport_matrix_portfolio.png \
+  --matrix-report-json projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
+  --matrix-report-figure projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.png
+```
+
+This wrapper imports only a passing portfolio into `docs/_static` and then
+regenerates the manuscript-readiness and pre-manuscript closure dashboards.
+
 `QA_parameter_scan.py` scans `RBC(1,1)` from `-75%` to `+75%` by default and
 regenerates the linear/quasilinear objective landscape. The top panel includes
 linear growth and every shipped electrostatic quasilinear heat-flux rule on the

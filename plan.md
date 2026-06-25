@@ -462,6 +462,13 @@ Current launch log:
   objective kind, sample set, extra VMEC-JAX objective tuples, and production
   long-window nonlinear audit policy. The VMEC-JAX QA exact-script test shard
   now guards those user-facing customization instructions.
+- `2026-06-25`: added
+  `tools/finalize_nonlinear_transport_matrix_release.py`, a fail-closed wrapper
+  for the post-portfolio release path. Once office writes a passing portfolio,
+  this tool imports the selected family artifacts, rejects blocked portfolios,
+  and regenerates the manuscript-readiness plus pre-manuscript closure panels.
+  It is documented in `examples/optimization/README.md` next to the broad
+  nonlinear transport matrix workflow.
 - `2026-06-25`: rechecked the active office `projected_0p001` fallback after
   the importer/examples commits. Both GPU queue scripts and the watcher are
   still active; both GPUs are saturated. Full target-time progress reports
