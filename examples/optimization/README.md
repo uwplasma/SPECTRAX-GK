@@ -41,6 +41,27 @@ The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transpor
 Running one script is not a transport-optimization success claim, and is not,
 by itself, a nonlinear turbulent-flux optimization success claim.
 
+## How To Modify The Optimization Examples
+
+The production examples are meant to be edited in-place, not wrapped by hidden
+driver APIs. Keep the upstream QA/aspect/iota block intact and change only the
+top-level constants needed for the scientific question:
+
+| What to change | Constants or files | Notes |
+| --- | --- | --- |
+| Optimizer algorithm | `METHOD`, `SCIPY_TR_SOLVER`, `USE_ESS`, `ALPHA`, `MAX_NFEV`, `INNER_MAX_ITER`, `INNER_FTOL` | Use `scalar_trust` or `lbfgs_adjoint` for SPECTRAX-GK transport objectives. Use dense `scipy`/`exact` mainly for constraints-only QA baselines because it asks for forward-mode JVP columns. |
+| Geometry or VMEC seed | `WARM_START_INPUT_FILE`, `SIMPLE_SEED_INPUT_FILE`, `INPUT_FILE`, `MAX_MODE`, `MIN_VMEC_MODE`, `USE_SIMPLE_SEED` | Point these to another VMEC-JAX input deck when studying a different QA/QH/QI family. For matrix audits, edit `BASELINE_VMEC_FILE` and `CANDIDATE_VMEC_FILE` in `QA_nonlinear_ITG_transport_matrix.py` to use solved WOUT files. |
+| Transport objective | `SPECTRAX_KIND`, `SPECTRAX_WEIGHT`, `SPECTRAX_OBJECTIVE_TRANSFORM`, `SPECTRAX_OBJECTIVE_SCALE` | Supported example objectives are `growth`, `quasilinear_flux`, and `nonlinear_window_heat_flux`. Treat the nonlinear-window objective as a differentiable screening residual, not as a saturated turbulent-flux average. |
+| Physics sample set | `SPECTRAX_SURFACES`, `SPECTRAX_ALPHAS`, `SPECTRAX_KY_VALUES`, `SPECTRAX_NTHETA`, `SPECTRAX_MBOZ`, `SPECTRAX_NBOZ` | Keep `mboz,nboz >= 21` for VMEC/Boozer transport rows. The default sample set matches the broad matrix gate: three surfaces, two field-line labels, and three `k_y` values. |
+| Extra equilibrium objectives | Append another `(objective.J, target, weight)` tuple to `objective_tuples` | Examples include magnetic well, `LgradB`, finite-beta, bootstrap-current, or current-profile terms from VMEC-JAX. Keep weights explicit so transport changes cannot silently weaken the QA/iota/aspect gate. |
+| Production nonlinear audit | `NONLINEAR_AUDIT_*` constants or `QA_nonlinear_ITG_transport_matrix.py` | A production claim requires long post-transient replicated windows over `t=[1100,1500]`, followed by the matched audit or broad matrix portfolio gate. Do not promote optimizer residuals or startup traces. |
+
+For a new geometry family, first run a constraints-only QA/QH/QI equilibrium
+solve, save the admitted WOUT, and only then add a small SPECTRAX-GK transport
+weight. For a new objective function, add it as one explicit tuple in
+`objective_tuples`, run AD/finite-difference checks, and keep the long-window
+nonlinear audit separate from the differentiable optimizer residual.
+
 Use the following claim boundaries when citing these scripts or their generated
 sidecars:
 

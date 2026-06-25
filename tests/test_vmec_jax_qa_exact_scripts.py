@@ -246,6 +246,27 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
             assert "not a transport-optimization success claim" in normalized, path
 
 
+def test_optimization_examples_document_user_customization_knobs() -> None:
+    examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")
+
+    assert "How To Modify The Optimization Examples" in examples_readme
+    assert "METHOD" in examples_readme
+    assert "SCIPY_TR_SOLVER" in examples_readme
+    assert "WARM_START_INPUT_FILE" in examples_readme
+    assert "SIMPLE_SEED_INPUT_FILE" in examples_readme
+    assert "BASELINE_VMEC_FILE" in examples_readme
+    assert "CANDIDATE_VMEC_FILE" in examples_readme
+    assert "SPECTRAX_KIND" in examples_readme
+    assert "SPECTRAX_SURFACES" in examples_readme
+    assert "SPECTRAX_ALPHAS" in examples_readme
+    assert "SPECTRAX_KY_VALUES" in examples_readme
+    assert "NONLINEAR_AUDIT_*" in examples_readme
+    assert "objective_tuples" in examples_readme
+    assert "mboz,nboz >= 21" in examples_readme
+    assert "long post-transient replicated windows over `t=[1100,1500]`" in examples_readme
+    assert "Do not promote optimizer residuals or startup traces" in examples_readme
+
+
 def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     docs = (ROOT / "docs" / "stellarator_optimization.rst").read_text(encoding="utf-8")
