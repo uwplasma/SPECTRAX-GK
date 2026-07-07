@@ -113,19 +113,6 @@ public_exports = [
 fast_tests = ["tests/unit/core/test_core_contracts.py"]
 doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.initialization"
-source_path = "src/spectraxgk/validation/benchmarks/initialization.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark Gaussian and moment initial-condition builders plus kinetic-reference seed policy"
-moved_exports = [
-  "_build_gaussian_profile",
-  "_build_initial_condition",
-  "_kinetic_reference_init_cfg",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
 

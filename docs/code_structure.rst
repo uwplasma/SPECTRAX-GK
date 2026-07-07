@@ -690,8 +690,9 @@ one long branch.
 The benchmark helper split now uses focused domain modules directly.
 Benchmark case presets live directly in ``spectraxgk.config`` so user-facing
 configuration objects do not depend on the temporary validation package.
-Benchmark initial conditions live in
-``spectraxgk.validation.benchmarks.initialization``. Reference data containers,
+Benchmark initial conditions, reference data containers, CSV loaders, species
+parameter policy, normalization constants, Krylov defaults, and solver-selection
+policy live in ``spectraxgk.validation.benchmarks.defaults``. Reference data containers,
 CSV loaders, normalization constants, Krylov defaults, and solver-selection
 policy live in ``spectraxgk.validation.benchmarks.defaults``. Benchmark species-to-``LinearParams`` construction, reference
 hypercollision/end-damping policy, reference containers, normalization constants,

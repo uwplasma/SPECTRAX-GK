@@ -558,13 +558,6 @@ Benchmarks
    :members:
    :no-index:
 
-Benchmark Initialization
-------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.initialization
-   :members:
-   :private-members:
-
 Benchmark Defaults
 ------------------
 

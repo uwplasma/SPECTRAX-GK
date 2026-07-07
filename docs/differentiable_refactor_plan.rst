@@ -429,7 +429,7 @@ Phase 1: introduce protocols and containers
   benchmark split also lives in this phase. Benchmark-family case presets now
   live directly in ``spectraxgk.config`` so the stable public import location is
   also the physical owner for those dataclasses.
-  ``spectraxgk.validation.benchmarks.initialization`` owns benchmark initial-condition
+  ``spectraxgk.validation.benchmarks.defaults`` owns benchmark initial-condition
   construction and ``spectraxgk.validation.benchmarks.defaults`` owns reference containers
   and CSV loaders. ``spectraxgk.validation.benchmarks.defaults`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
