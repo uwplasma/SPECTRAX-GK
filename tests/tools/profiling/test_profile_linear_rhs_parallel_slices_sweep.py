@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools import profile_linear_rhs_parallel_slices_sweep as sweep
+from tools.profiling import profile_linear_rhs_parallel_slices_sweep as sweep
 
 
 def test_profile_linear_rhs_parallel_slices_sweep_builds_summary(monkeypatch) -> None:
@@ -44,7 +44,9 @@ def test_profile_linear_rhs_parallel_slices_sweep_builds_summary(monkeypatch) ->
     assert {row["speedup"] for row in summary["rows"]} == {1.0, 2.0}
 
 
-def test_profile_linear_rhs_parallel_slices_sweep_writes_artifacts(tmp_path: Path) -> None:
+def test_profile_linear_rhs_parallel_slices_sweep_writes_artifacts(
+    tmp_path: Path,
+) -> None:
     summary = {
         "identity_passed": True,
         "rtol": 1.0e-5,
@@ -80,7 +82,12 @@ def test_profile_linear_rhs_parallel_slices_sweep_writes_artifacts(tmp_path: Pat
     out = tmp_path / "linear_rhs_parallel_slices_sweep"
     paths = sweep.write_artifacts(summary, out)
 
-    assert json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))["identity_passed"] is True
+    assert (
+        json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))[
+            "identity_passed"
+        ]
+        is True
+    )
     assert "requested_devices" in out.with_suffix(".csv").read_text(encoding="utf-8")
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()

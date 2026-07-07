@@ -6,8 +6,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profile_nonlinear_spectral_domain_routing.py"
-spec = importlib.util.spec_from_file_location("profile_nonlinear_spectral_domain_routing", SCRIPT)
+SCRIPT = ROOT / "tools" / "profiling" / "profile_nonlinear_spectral_domain_routing.py"
+spec = importlib.util.spec_from_file_location(
+    "profile_nonlinear_spectral_domain_routing", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -52,7 +54,9 @@ def test_profile_nonlinear_spectral_domain_routing_builds_identity_payload() -> 
     assert payload["strong_speedup_vs_serial"] is not None
 
 
-def test_profile_nonlinear_spectral_domain_routing_writes_artifacts(tmp_path: Path) -> None:
+def test_profile_nonlinear_spectral_domain_routing_writes_artifacts(
+    tmp_path: Path,
+) -> None:
     payload = mod.build_profile(
         shape=(2, 2, 4, 4, 1),
         y_chunks=(2, 2),

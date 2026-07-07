@@ -1,7 +1,11 @@
 from pathlib import Path
 import json
 
-from tools.profile_runtime_startup import PhaseTiming, _write_phase_csv, _write_phase_json
+from tools.profiling.profile_runtime_startup import (
+    PhaseTiming,
+    _write_phase_csv,
+    _write_phase_json,
+)
 
 
 def test_profile_runtime_startup_writes_csv_and_json(tmp_path: Path) -> None:

@@ -18,10 +18,12 @@ from typing import Any
 import numpy as np
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling"
-PROFILE_TOOL = REPO_ROOT / "tools" / "profile_nonlinear_sharding.py"
-OFFICE_GPU_XLARGE_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling_gpu_xlarge"
+PROFILE_TOOL = REPO_ROOT / "tools" / "profiling" / "profile_nonlinear_sharding.py"
+OFFICE_GPU_XLARGE_PREFIX = (
+    REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling_gpu_xlarge"
+)
 
 
 def _json_clean(value: Any) -> Any:
@@ -41,7 +43,9 @@ def _json_clean(value: Any) -> Any:
 def _parse_int_list(text: str) -> list[int]:
     values = [int(part.strip()) for part in str(text).split(",") if part.strip()]
     if not values:
-        raise argparse.ArgumentTypeError("expected a comma-separated list of positive integers")
+        raise argparse.ArgumentTypeError(
+            "expected a comma-separated list of positive integers"
+        )
     if any(value < 1 for value in values):
         raise argparse.ArgumentTypeError("all values must be positive")
     return values
@@ -50,7 +54,9 @@ def _parse_int_list(text: str) -> list[int]:
 def _append_xla_flag(existing: str, flag: str) -> str:
     key = flag.split("=")[0]
     if key == "--xla_force_host_platform_device_count":
-        cleaned = re.sub(r"--xla_force_host_platform_device_count=\S+", "", existing).strip()
+        cleaned = re.sub(
+            r"--xla_force_host_platform_device_count=\S+", "", existing
+        ).strip()
         return f"{cleaned} {flag}".strip()
     if key in existing:
         return existing
@@ -67,7 +73,9 @@ def _tail_text(value: Any, *, limit: int = 4000) -> str:
     return text[-int(limit) :]
 
 
-def _device_env(base_env: dict[str, str], *, backend: str, devices: int) -> dict[str, str]:
+def _device_env(
+    base_env: dict[str, str], *, backend: str, devices: int
+) -> dict[str, str]:
     env = dict(base_env)
     env.setdefault("MPLBACKEND", "Agg")
     env.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
@@ -80,7 +88,9 @@ def _device_env(base_env: dict[str, str], *, backend: str, devices: int) -> dict
         )
     elif backend_key in {"gpu", "cuda"}:
         env["JAX_PLATFORMS"] = "cuda"
-        env["CUDA_VISIBLE_DEVICES"] = ",".join(str(index) for index in range(int(devices)))
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(
+            str(index) for index in range(int(devices))
+        )
     else:
         raise ValueError("backend must be 'cpu' or 'gpu'")
     return env
@@ -146,13 +156,18 @@ def _select_parallel_row(payload: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     best_spec = best.get("spec")
     if best_spec is not None:
         result = dict(payload["sharded_results"][str(best_spec)])
-        if bool(result.get("identity_gate_pass", False)) and result.get("stats_s") is not None:
+        if (
+            bool(result.get("identity_gate_pass", False))
+            and result.get("stats_s") is not None
+        ):
             return str(best_spec), result
     requested = str(payload.get("state_sharding_requested", "auto"))
     return requested, dict(payload["sharded_results"][requested])
 
 
-def _row_from_payload(payload: dict[str, Any], *, requested_devices: int) -> dict[str, Any]:
+def _row_from_payload(
+    payload: dict[str, Any], *, requested_devices: int
+) -> dict[str, Any]:
     spec, result = _select_parallel_row(payload)
     stats = result.get("stats_s")
     parallel_median = float(stats["median"]) if stats else math.nan
@@ -167,7 +182,9 @@ def _row_from_payload(payload: dict[str, Any], *, requested_devices: int) -> dic
         "identity_gate_pass": bool(result.get("identity_gate_pass", False)),
         "serial_median_s": serial_median,
         "parallel_median_s": parallel_median,
-        "same_process_speedup": serial_median / parallel_median if parallel_median > 0.0 else math.nan,
+        "same_process_speedup": serial_median / parallel_median
+        if parallel_median > 0.0
+        else math.nan,
         "strong_speedup_vs_1_device": math.nan,
         "max_abs_state_error": result.get("max_abs_state_error"),
         "max_rel_state_error": result.get("max_rel_state_error"),
@@ -180,7 +197,9 @@ def _row_from_payload(payload: dict[str, Any], *, requested_devices: int) -> dic
         "timing_warmup_repeat": payload.get("timing_warmup_repeat"),
         "profile_backend": payload.get("backend", payload.get("default_backend")),
         "profile_device_count": payload.get("device_count"),
-        "profile_sharding_axis": payload.get("sharding_axis", payload.get("state_sharding_requested")),
+        "profile_sharding_axis": payload.get(
+            "sharding_axis", payload.get("state_sharding_requested")
+        ),
         "error": result.get("error"),
     }
 
@@ -218,12 +237,16 @@ def _speedup_status(rows: list[dict[str, Any]], *, backend: str) -> dict[str, An
     for row in parallel_rows:
         requested_devices = int(row.get("requested_devices") or 0)
         if not bool(row.get("identity_gate_pass", False)):
-            speedup_blockers.append(f"{backend}_{requested_devices}devices_identity_failed")
+            speedup_blockers.append(
+                f"{backend}_{requested_devices}devices_identity_failed"
+            )
             continue
         speedup = row.get("strong_speedup_vs_1_device")
         speedup_value = float(speedup) if speedup is not None else math.nan
         if not math.isfinite(speedup_value):
-            speedup_blockers.append(f"{backend}_{requested_devices}devices_speedup_missing")
+            speedup_blockers.append(
+                f"{backend}_{requested_devices}devices_speedup_missing"
+            )
         elif speedup_value < speedup_threshold:
             speedup_blockers.append(
                 f"{backend}_{requested_devices}devices_speedup_{speedup_value:.3g}_below_{speedup_threshold:.3g}"
@@ -233,7 +256,9 @@ def _speedup_status(rows: list[dict[str, Any]], *, backend: str) -> dict[str, An
         "speedup_passed": speedup_passed,
         "speedup_threshold_vs_1_device": speedup_threshold,
         "speedup_blockers": speedup_blockers,
-        "status": "identity_and_speedup" if speedup_passed else "diagnostic_identity_only",
+        "status": "identity_and_speedup"
+        if speedup_passed
+        else "diagnostic_identity_only",
     }
 
 
@@ -259,12 +284,18 @@ def run_sweep(
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     profiles: dict[str, Any] = {}
-    with tempfile.TemporaryDirectory(prefix="spectraxgk-nonlinear-scaling-") as tmp_name:
+    with tempfile.TemporaryDirectory(
+        prefix="spectraxgk-nonlinear-scaling-"
+    ) as tmp_name:
         tmp = Path(tmp_name)
         for requested_devices in devices:
             profile_json = tmp / f"{backend}_{requested_devices}devices.json"
-            trace_dir = tmp / f"trace_{backend}_{requested_devices}devices" if trace else None
-            env = _device_env(os.environ, backend=backend, devices=int(requested_devices))
+            trace_dir = (
+                tmp / f"trace_{backend}_{requested_devices}devices" if trace else None
+            )
+            env = _device_env(
+                os.environ, backend=backend, devices=int(requested_devices)
+            )
             cmd = _profile_command(
                 out_json=profile_json,
                 trace_dir=trace_dir,
@@ -315,7 +346,9 @@ def run_sweep(
                     payload["_profile_json"] = str(profile_json)
                     payload["profile_returncode"] = int(completed.returncode)
                     profiles[str(requested_devices)] = payload
-                    row = _row_from_payload(payload, requested_devices=int(requested_devices))
+                    row = _row_from_payload(
+                        payload, requested_devices=int(requested_devices)
+                    )
                     row["profile_returncode"] = int(completed.returncode)
                     rows.append(row)
                     continue
@@ -325,7 +358,8 @@ def run_sweep(
                         requested_devices=int(requested_devices),
                         backend=backend,
                         profile_json=profile_json,
-                        error=_tail_text(completed.stderr) or _tail_text(completed.stdout),
+                        error=_tail_text(completed.stderr)
+                        or _tail_text(completed.stdout),
                     )
                 )
                 continue
@@ -338,12 +372,24 @@ def run_sweep(
                 )
             )
 
-    valid_rows = [row for row in rows if bool(row.get("identity_gate_pass")) and float(row["parallel_median_s"]) > 0.0]
-    baseline_row = next((row for row in valid_rows if int(row["requested_devices"]) == 1), None)
+    valid_rows = [
+        row
+        for row in rows
+        if bool(row.get("identity_gate_pass")) and float(row["parallel_median_s"]) > 0.0
+    ]
+    baseline_row = next(
+        (row for row in valid_rows if int(row["requested_devices"]) == 1), None
+    )
     baseline = float(baseline_row["parallel_median_s"]) if baseline_row else math.nan
     for row in rows:
-        current = float(row["parallel_median_s"]) if row["parallel_median_s"] is not None else math.nan
-        row["strong_speedup_vs_1_device"] = baseline / current if baseline > 0.0 and current > 0.0 else math.nan
+        current = (
+            float(row["parallel_median_s"])
+            if row["parallel_median_s"] is not None
+            else math.nan
+        )
+        row["strong_speedup_vs_1_device"] = (
+            baseline / current if baseline > 0.0 and current > 0.0 else math.nan
+        )
 
     passed = all(bool(row.get("identity_gate_pass")) for row in rows)
     speedup_status = _speedup_status(rows, backend=backend)
@@ -352,7 +398,13 @@ def run_sweep(
             "kind": "nonlinear_sharding_strong_scaling_sweep",
             "backend": str(backend),
             "devices": [int(device) for device in devices],
-            "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Nz": int(nz), "Nl": int(nl), "Nm": int(nm)},
+            "grid": {
+                "Nx": int(nx),
+                "Ny_requested": int(ny),
+                "Nz": int(nz),
+                "Nl": int(nl),
+                "Nm": int(nm),
+            },
             "dt": float(dt),
             "steps": int(steps),
             "method": str(method),
@@ -389,7 +441,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
 
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     rows = list(summary["rows"])
     fieldnames = [
         "requested_devices",
@@ -425,13 +479,22 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
 
     set_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(10.8, 3.9), constrained_layout=True)
-    valid = [row for row in rows if row["parallel_median_s"] is not None and math.isfinite(float(row["parallel_median_s"]))]
+    valid = [
+        row
+        for row in rows
+        if row["parallel_median_s"] is not None
+        and math.isfinite(float(row["parallel_median_s"]))
+    ]
     x = np.asarray([int(row["requested_devices"]) for row in valid], dtype=float)
-    y = np.asarray([float(row["strong_speedup_vs_1_device"]) for row in valid], dtype=float)
+    y = np.asarray(
+        [float(row["strong_speedup_vs_1_device"]) for row in valid], dtype=float
+    )
     times = np.asarray([float(row["parallel_median_s"]) for row in valid], dtype=float)
     errors = np.asarray(
         [
-            float(row["max_rel_state_error"]) if row["max_rel_state_error"] is not None else np.nan
+            float(row["max_rel_state_error"])
+            if row["max_rel_state_error"] is not None
+            else np.nan
             for row in valid
         ],
         dtype=float,
@@ -445,9 +508,23 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[0].set_title(f"{str(summary['backend']).upper()} nonlinear strong scaling")
     axes[0].legend(frameon=False, fontsize=8)
 
-    axes[1].semilogy(x, np.maximum(times, 1.0e-16), "s-", lw=2.0, color="#b45f06", label="median time")
+    axes[1].semilogy(
+        x,
+        np.maximum(times, 1.0e-16),
+        "s-",
+        lw=2.0,
+        color="#b45f06",
+        label="median time",
+    )
     ax_err = axes[1].twinx()
-    ax_err.semilogy(x + 0.03, np.maximum(errors, 1.0e-16), "^-", lw=1.7, color="#4f7f2d", label="rel. error")
+    ax_err.semilogy(
+        x + 0.03,
+        np.maximum(errors, 1.0e-16),
+        "^-",
+        lw=1.7,
+        color="#4f7f2d",
+        label="rel. error",
+    )
     axes[1].set_xlabel("devices")
     axes[1].set_ylabel("median time [s]")
     ax_err.set_ylabel("max relative state error")
@@ -461,7 +538,12 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
     plt.close(fig)
-    return {"json": str(json_path), "csv": str(csv_path), "png": str(png_path), "pdf": str(pdf_path)}
+    return {
+        "json": str(json_path),
+        "csv": str(csv_path),
+        "png": str(png_path),
+        "pdf": str(pdf_path),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:

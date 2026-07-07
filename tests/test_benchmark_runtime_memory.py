@@ -21,7 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_runtime_memory_manifest_loads_runs() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
-    assert any(run.case == "cyclone-linear" and run.backend == "spectrax_cpu" for run in runs)
+    assert any(
+        run.case == "cyclone-linear" and run.backend == "spectrax_cpu" for run in runs
+    )
     assert any(run.backend == "gx" for run in runs)
 
 
@@ -67,9 +69,14 @@ def test_parse_profile_times_extracts_warmup_and_run_fields() -> None:
 
 def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
     first = tmp_path / "a.json"
-    first.write_text('{"rows":[{"case":"a","backend":"spectrax_cpu","status":"success"}]}\n', encoding="utf-8")
+    first.write_text(
+        '{"rows":[{"case":"a","backend":"spectrax_cpu","status":"success"}]}\n',
+        encoding="utf-8",
+    )
     second = tmp_path / "b.json"
-    second.write_text('{"rows":[{"case":"a","backend":"gx","status":"success"}]}\n', encoding="utf-8")
+    second.write_text(
+        '{"rows":[{"case":"a","backend":"gx","status":"success"}]}\n', encoding="utf-8"
+    )
     rows = _load_summary_rows([str(tmp_path / "*.json")])
     assert len(rows) == 2
     assert {row["backend"] for row in rows} == {"spectrax_cpu", "gx"}
@@ -96,11 +103,16 @@ def test_gx_runtime_memory_manifest_runs_in_isolated_tempdir() -> None:
 
 def test_gx_stellarator_runtime_manifest_uses_pregenerated_nc_geometry() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
-    stellarator = [run for run in runs if run.backend == "gx" and run.case in {"w7x-linear", "w7x-nonlinear", "hsx-linear", "hsx-nonlinear"}]
+    stellarator = [
+        run
+        for run in runs
+        if run.backend == "gx"
+        and run.case in {"w7x-linear", "w7x-nonlinear", "hsx-linear", "hsx-nonlinear"}
+    ]
     assert len(stellarator) == 4
     for run in stellarator:
         assert 'geo_option = "nc"' in run.command
-        assert 'vmec_file' in run.command
+        assert "vmec_file" in run.command
         assert 'geo_file = "' in run.command
         assert "REFERENCE_GK_NETCDF_LIBDIR" in run.command
         assert "REFERENCE_GK_PYTHON_BIN" in run.command
@@ -119,10 +131,15 @@ def test_short_nonlinear_gpu_rows_request_warm_profile_pass() -> None:
     selected = {
         (run.case, run.backend): run.profile_command
         for run in runs
-        if run.backend == "spectrax_gpu" and run.case in {"cyclone-nonlinear", "kbm-nonlinear"}
+        if run.backend == "spectrax_gpu"
+        and run.case in {"cyclone-nonlinear", "kbm-nonlinear"}
     }
-    assert "profile_nonlinear_cyclone.py" in str(selected[("cyclone-nonlinear", "spectrax_gpu")])
-    assert "profile_nonlinear_cyclone.py" in str(selected[("kbm-nonlinear", "spectrax_gpu")])
+    assert "profile_nonlinear_cyclone.py" in str(
+        selected[("cyclone-nonlinear", "spectrax_gpu")]
+    )
+    assert "profile_nonlinear_cyclone.py" in str(
+        selected[("kbm-nonlinear", "spectrax_gpu")]
+    )
 
 
 def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
@@ -130,14 +147,18 @@ def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
 
     def fake_run(cmd, capture_output, text):  # type: ignore[no-untyped-def]
         captured["cmd"] = cmd
+
         class Proc:
             returncode = 0
             stdout = ""
             stderr = ""
+
         return Proc()
 
     monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
-    run = RuntimeBenchRun(case="c", label="C", backend="gx", command="echo hi", cwd="/tmp", host="office")
+    run = RuntimeBenchRun(
+        case="c", label="C", backend="gx", command="echo hi", cwd="/tmp", host="office"
+    )
     row = _run_command(run)
     assert row["status"] == "success"
     assert captured["cmd"][:2] == ["ssh", "-x"]
@@ -153,7 +174,14 @@ def test_runtime_memory_command_captures_profile_times(monkeypatch) -> None:
         return Proc()
 
     monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
-    run = RuntimeBenchRun(case="c", label="C", backend="spectrax_cpu", command="echo hi", cwd="/tmp", wrap_time=False)
+    run = RuntimeBenchRun(
+        case="c",
+        label="C",
+        backend="spectrax_cpu",
+        command="echo hi",
+        cwd="/tmp",
+        wrap_time=False,
+    )
     row = _run_command(run)
     assert row["runtime_s"] >= 0.0
     assert row["peak_rss_mb"] == 2.0
@@ -170,7 +198,9 @@ def test_runtime_memory_command_runs_profile_subcommand(monkeypatch) -> None:
         class Proc:
             returncode = 0
             stdout = "main\n" if len(calls) == 1 else "warmup_time_s=20 run_time_s=7\n"
-            stderr = "Maximum resident set size (kbytes): 2048\n" if len(calls) == 1 else ""
+            stderr = (
+                "Maximum resident set size (kbytes): 2048\n" if len(calls) == 1 else ""
+            )
 
         return Proc()
 

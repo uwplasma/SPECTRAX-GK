@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import jax.numpy as jnp
 
-from tools.profile_linear_cache_build import build_low_rank_moment_cache
+from tools.profiling.profile_linear_cache_build import build_low_rank_moment_cache
 
 
 def test_profile_linear_cache_uses_low_rank_moment_factors() -> None:
@@ -17,7 +17,9 @@ def test_profile_linear_cache_uses_low_rank_moment_factors() -> None:
         p_hyper_lm=2,
     )
 
-    cache = build_low_rank_moment_cache(nl=3, nm=4, params=params, real_dtype=jnp.float32)
+    cache = build_low_rank_moment_cache(
+        nl=3, nm=4, params=params, real_dtype=jnp.float32
+    )
 
     assert cache["lb_lam"].shape == (3, 4)
     assert cache["collision_lam"].shape == (0,)

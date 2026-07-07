@@ -30,7 +30,7 @@ from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "nonlinear_sharding_profile.json"
 CPU_WHOLE_STATE_SHARDING_SKIP_REASON = (
     "skipped: cpu_whole_state_pjit_sharding_unsafe_for_fft_layout; "
@@ -52,7 +52,11 @@ def _artifact_path_for_contract(path: Path) -> str:
 
 def _profile_command_argv(argv: list[str] | None) -> list[str]:
     raw_args = list(sys.argv[1:] if argv is None else argv)
-    return [sys.executable, str(Path(__file__).resolve()), *[str(item) for item in raw_args]]
+    return [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        *[str(item) for item in raw_args],
+    ]
 
 
 def _profile_command(argv: list[str] | None) -> str:
@@ -80,7 +84,9 @@ def _source_contract(
     return {
         "source_contract_version": 1,
         "backend": str(jax.default_backend() if backend is None else backend),
-        "device_count": int(jax.device_count() if device_count is None else device_count),
+        "device_count": int(
+            jax.device_count() if device_count is None else device_count
+        ),
         "sharding_axis": str(args.sharding),
         "profile_command": _profile_command(argv),
         "profile_command_argv": _profile_command_argv(argv),
@@ -148,7 +154,9 @@ def _time_stats(times: list[float]) -> dict[str, float]:
     }
 
 
-def _max_abs_rel_error(candidate: Any, reference: Any, *, floor: float = 1.0e-30) -> tuple[float, float]:
+def _max_abs_rel_error(
+    candidate: Any, reference: Any, *, floor: float = 1.0e-30
+) -> tuple[float, float]:
     """Return max absolute and scale-normalized errors for two array-like values."""
 
     candidate_arr = np.asarray(candidate)
@@ -187,7 +195,9 @@ def _nonlinear_diagnostic_identity_metrics(
         compressed_real_fft=compressed_real_fft,
         laguerre_mode=laguerre_mode,
     )
-    _block_until_ready((reference_rhs, reference_fields, candidate_rhs, candidate_fields))
+    _block_until_ready(
+        (reference_rhs, reference_fields, candidate_rhs, candidate_fields)
+    )
     rhs_abs, rhs_rel = _max_abs_rel_error(candidate_rhs, reference_rhs)
     phi_abs, phi_rel = _max_abs_rel_error(candidate_fields.phi, reference_fields.phi)
     return {
@@ -210,7 +220,9 @@ def _sharding_specs(primary: str, extra: str | None) -> list[str]:
     return specs
 
 
-def _best_identity_preserving_candidate(sharded_results: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def _best_identity_preserving_candidate(
+    sharded_results: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     """Return the fastest identity-preserving candidate from a profile payload."""
 
     candidates: list[tuple[float, str, dict[str, Any]]] = []
@@ -340,7 +352,9 @@ def main(argv: list[str] | None = None) -> int:
 
     G0, cache, params = _build_problem(args)
     G0_host = np.asarray(G0)
-    terms = TermConfig(nonlinear=1.0, collisions=0.0, hypercollisions=0.0, apar=0.0, bpar=0.0)
+    terms = TermConfig(
+        nonlinear=1.0, collisions=0.0, hypercollisions=0.0, apar=0.0, bpar=0.0
+    )
     sharding_specs = _sharding_specs(str(args.sharding), args.sharding_options)
 
     def serial_run():
@@ -377,7 +391,11 @@ def main(argv: list[str] | None = None) -> int:
 
         return state_sharding, sharded_run
 
-    trace_status: dict[str, Any] = {"requested": args.trace_dir is not None, "path": None, "error": None}
+    trace_status: dict[str, Any] = {
+        "requested": args.trace_dir is not None,
+        "path": None,
+        "error": None,
+    }
     sharded_fns: dict[str, Any] = {}
     sharded_state_active: dict[str, bool] = {}
     for spec in sharding_specs:
@@ -397,19 +415,25 @@ def main(argv: list[str] | None = None) -> int:
                     backend=str(jax.default_backend()),
                     device_count=int(jax.device_count()),
                     state_sharding_active=bool(sharded_state_active[spec]),
-                    allow_unsafe_cpu_state_sharding=bool(args.allow_unsafe_cpu_state_sharding),
+                    allow_unsafe_cpu_state_sharding=bool(
+                        args.allow_unsafe_cpu_state_sharding
+                    ),
                 ):
                     continue
                 _block_until_ready(fn())
             jax.profiler.stop_trace()
-        except Exception as exc:  # pragma: no cover - profiler availability is platform-specific.
+        except (
+            Exception
+        ) as exc:  # pragma: no cover - profiler availability is platform-specific.
             trace_status["error"] = repr(exc)
             try:
                 jax.profiler.stop_trace()
             except Exception:
                 pass
 
-    serial_final, serial_times = _time_repeated(serial_run, warmups=int(args.warmups), repeats=int(args.repeats))
+    serial_final, serial_times = _time_repeated(
+        serial_run, warmups=int(args.warmups), repeats=int(args.repeats)
+    )
     serial_stats = _time_stats(serial_times)
 
     scale = max(float(np.max(np.abs(np.asarray(serial_final)))), 1.0e-30)
@@ -431,7 +455,9 @@ def main(argv: list[str] | None = None) -> int:
             identity_passes.append(identity_pass)
             continue
         try:
-            sharded_final, sharded_times = _time_repeated(fn, warmups=int(args.warmups), repeats=int(args.repeats))
+            sharded_final, sharded_times = _time_repeated(
+                fn, warmups=int(args.warmups), repeats=int(args.repeats)
+            )
             sharded_stats = _time_stats(sharded_times)
             err = np.asarray(sharded_final - serial_final)
             max_abs = float(np.max(np.abs(err)))
@@ -451,12 +477,16 @@ def main(argv: list[str] | None = None) -> int:
                 and diagnostic_metrics["max_abs_phi_error"] <= 1.0e-5
                 and diagnostic_metrics["max_rel_phi_error"] <= 1.0e-5
             )
-            identity_pass = bool(max_abs <= 1.0e-5 and max_rel <= 1.0e-5 and diagnostic_pass)
+            identity_pass = bool(
+                max_abs <= 1.0e-5 and max_rel <= 1.0e-5 and diagnostic_pass
+            )
             sharded_results[spec] = {
                 "state_sharding_active": bool(sharded_state_active[spec]),
                 "times_s": sharded_times,
                 "stats_s": sharded_stats,
-                "engineering_speedup_median": float(serial_stats["median"] / sharded_stats["median"])
+                "engineering_speedup_median": float(
+                    serial_stats["median"] / sharded_stats["median"]
+                )
                 if sharded_stats["median"] > 0.0
                 else None,
                 "max_abs_state_error": max_abs,
@@ -510,7 +540,9 @@ def main(argv: list[str] | None = None) -> int:
         ),
     }
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["identity_gate_pass"] else 2
 

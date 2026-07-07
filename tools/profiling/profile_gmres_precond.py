@@ -21,7 +21,9 @@ from spectraxgk.linear import (
 from spectraxgk.solvers.linear.implicit import _build_implicit_operator
 
 
-def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, maxiter: int = 40) -> int:
+def gmres_iterations(
+    matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, maxiter: int = 40
+) -> int:
     """Basic GMRES iteration count for a left-preconditioned system."""
 
     def apply_precond(v):
@@ -62,7 +64,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--y0", type=float, default=20.0)
     parser.add_argument("--ntheta", type=int, default=16)
     parser.add_argument("--nperiod", type=int, default=1)
-    parser.add_argument("--boundary", choices=["periodic", "linked"], default="periodic")
+    parser.add_argument(
+        "--boundary", choices=["periodic", "linked"], default="periodic"
+    )
     parser.add_argument("--Nl", type=int, default=2)
     parser.add_argument("--Nm", type=int, default=3)
     parser.add_argument("--dt", type=float, default=0.02)

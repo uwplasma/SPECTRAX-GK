@@ -7,7 +7,7 @@ import jax
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profile_device_z_pencil_transport_window.py"
+SCRIPT = ROOT / "tools" / "profiling" / "profile_device_z_pencil_transport_window.py"
 spec = importlib.util.spec_from_file_location(
     "profile_device_z_pencil_transport_window",
     SCRIPT,

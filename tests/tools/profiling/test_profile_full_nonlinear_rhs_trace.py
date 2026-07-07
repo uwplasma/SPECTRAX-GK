@@ -5,8 +5,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profile_full_nonlinear_rhs_trace.py"
-spec = importlib.util.spec_from_file_location("profile_full_nonlinear_rhs_trace", SCRIPT)
+SCRIPT = ROOT / "tools" / "profiling" / "profile_full_nonlinear_rhs_trace.py"
+spec = importlib.util.spec_from_file_location(
+    "profile_full_nonlinear_rhs_trace", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)

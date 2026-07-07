@@ -2,7 +2,7 @@
 """Profile nonlinear Cyclone runs with optional XLA + Perfetto traces.
 
 Example:
-  python tools/profile_nonlinear_cyclone.py --trace-dir /tmp/spectrax_nl_trace \
+  python tools/profiling/profile_nonlinear_cyclone.py --trace-dir /tmp/spectrax_nl_trace \
     --xla-dump-dir /tmp/spectrax_nl_xla --steps 400 --dt 0.0377 --Nl 4 --Nm 8
 """
 
@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 try:
-    from tools._profiler_options import make_profile_options
+    from tools.profiling._profiler_options import make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
     from _profiler_options import make_profile_options
 

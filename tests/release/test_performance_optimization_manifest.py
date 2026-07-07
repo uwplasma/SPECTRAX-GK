@@ -8,8 +8,15 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[2] / "tools" / "release" / "check_performance_optimization_manifest.py"
-    spec = importlib.util.spec_from_file_location("check_performance_optimization_manifest", path)
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "tools"
+        / "release"
+        / "check_performance_optimization_manifest.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "check_performance_optimization_manifest", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -68,7 +75,10 @@ def test_performance_manifest_rejects_missing_tool(tmp_path: Path) -> None:
     artifact.parent.mkdir(parents=True)
     artifact.write_text("artifact\n", encoding="utf-8")
     manifest = tmp_path / "manifest.toml"
-    manifest.write_text(_manifest_text(tool="tools/missing.py", artifact="docs/_static/runtime.png"), encoding="utf-8")
+    manifest.write_text(
+        _manifest_text(tool="tools/missing.py", artifact="docs/_static/runtime.png"),
+        encoding="utf-8",
+    )
     old_root = mod.REPO_ROOT
     try:
         mod.REPO_ROOT = tmp_path
@@ -88,7 +98,11 @@ def test_performance_manifest_rejects_invalid_status(tmp_path: Path) -> None:
     artifact.write_text("artifact\n", encoding="utf-8")
     manifest = tmp_path / "manifest.toml"
     manifest.write_text(
-        _manifest_text(tool="tools/profile.py", artifact="docs/_static/runtime.png", status="halfway"),
+        _manifest_text(
+            tool="tools/profile.py",
+            artifact="docs/_static/runtime.png",
+            status="halfway",
+        ),
         encoding="utf-8",
     )
     old_root = mod.REPO_ROOT

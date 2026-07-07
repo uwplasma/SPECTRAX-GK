@@ -13,7 +13,7 @@ import time
 from typing import Any, Callable
 
 try:
-    from tools._profiler_options import make_profile_options
+    from tools.profiling._profiler_options import make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
     from _profiler_options import make_profile_options
 

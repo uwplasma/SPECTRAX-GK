@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools import profile_linear_rhs_parallel_slices as profile
+from tools.profiling import profile_linear_rhs_parallel_slices as profile
 
 
 def test_profile_linear_rhs_parallel_slices_builds_summary(monkeypatch) -> None:
@@ -16,7 +16,12 @@ def test_profile_linear_rhs_parallel_slices_builds_summary(monkeypatch) -> None:
     def fake_problem(**_kwargs):  # type: ignore[no-untyped-def]
         import jax.numpy as jnp
 
-        return jnp.ones((1, 4, 2, 1, 4), dtype=jnp.complex64), object(), object(), FakeGrid()
+        return (
+            jnp.ones((1, 4, 2, 1, 4), dtype=jnp.complex64),
+            object(),
+            object(),
+            FakeGrid(),
+        )
 
     def fake_rhs(state, *_args, **_kwargs):  # type: ignore[no-untyped-def]
         import jax.numpy as jnp
@@ -65,7 +70,12 @@ def test_profile_linear_rhs_parallel_slices_writes_artifacts(tmp_path: Path) -> 
     out = tmp_path / "linear_rhs_parallel_slices_profile"
     paths = profile.write_artifacts(summary, out)
 
-    assert json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))["identity_passed"] is True
+    assert (
+        json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))[
+            "identity_passed"
+        ]
+        is True
+    )
     assert "median_s" in out.with_suffix(".csv").read_text(encoding="utf-8")
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()

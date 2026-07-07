@@ -17,8 +17,10 @@ import jax.numpy as jnp
 import numpy as np
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUT_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_spectral_domain_routing_profile"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUT_PREFIX = (
+    REPO_ROOT / "docs" / "_static" / "nonlinear_spectral_domain_routing_profile"
+)
 
 
 def _json_clean(value: Any) -> Any:
@@ -72,7 +74,9 @@ def _stats(times: list[float]) -> dict[str, float]:
     }
 
 
-def _max_abs_rel_error(candidate: Any, reference: Any, *, floor: float = 1.0e-30) -> tuple[float, float]:
+def _max_abs_rel_error(
+    candidate: Any, reference: Any, *, floor: float = 1.0e-30
+) -> tuple[float, float]:
     candidate_arr = np.asarray(candidate)
     reference_arr = np.asarray(reference)
     err = candidate_arr - reference_arr
@@ -154,10 +158,12 @@ def build_profile(
         out = item
         local_dt = jnp.asarray(float(dt), dtype=jnp.real(item).dtype)
         for _ in range(int(steps)):
-            _reconstructed, _field, _bracket, rhs = npmod._logical_sharded_nonlinear_spectral_rhs(
-                out,
-                y_chunks=y_chunks,
-                x_chunks=x_chunks,
+            _reconstructed, _field, _bracket, rhs = (
+                npmod._logical_sharded_nonlinear_spectral_rhs(
+                    out,
+                    y_chunks=y_chunks,
+                    x_chunks=x_chunks,
+                )
             )
             out = out + local_dt * rhs
         return out
@@ -192,8 +198,12 @@ def build_profile(
     else:
         pencil_out = serial_out
         pencil_times = []
-    routed_abs, routed_rel = _max_abs_rel_error(logical_out, serial_out, floor=float(atol))
-    pencil_abs, pencil_rel = _max_abs_rel_error(pencil_out, serial_out, floor=float(atol))
+    routed_abs, routed_rel = _max_abs_rel_error(
+        logical_out, serial_out, floor=float(atol)
+    )
+    pencil_abs, pencil_rel = _max_abs_rel_error(
+        pencil_out, serial_out, floor=float(atol)
+    )
     serial_stats = _stats(serial_times)
     logical_stats = _stats(logical_times)
     pencil_stats = _stats(pencil_times) if pencil_times else {}
@@ -309,7 +319,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     json_path = out_prefix.with_suffix(".json")
     csv_path = out_prefix.with_suffix(".csv")
     png_path = out_prefix.with_suffix(".png")
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     rows = [
         {
@@ -359,7 +371,11 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
             max(float(summary["pencil_timing_identity_max_rel_error"]), 1.0e-16),
         ]
     )
-    axes[1].bar(["logical\nabs", "logical\nrel", "pencil\nabs", "pencil\nrel"], errors, color="#1b6ca8")
+    axes[1].bar(
+        ["logical\nabs", "logical\nrel", "pencil\nabs", "pencil\nrel"],
+        errors,
+        color="#1b6ca8",
+    )
     axes[1].axhline(float(summary["atol"]), color="0.25", ls=":", lw=1.1, label="atol")
     axes[1].axhline(float(summary["rtol"]), color="0.45", ls="--", lw=1.1, label="rtol")
     axes[1].set_yscale("log")
@@ -371,7 +387,11 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     ratio = float(summary["communication_to_owned_work_ratio"])
     pencil_ratio = float(summary["pencil_communication_to_fft_work_ratio"])
     efficiency = float(summary["pencil_parallel_efficiency_ceiling"])
-    axes[2].bar(["global\ncomm/owned", "pencil\ncomm/FFT"], [ratio, pencil_ratio], color=["#d88c39", "#2a9d8f"])
+    axes[2].bar(
+        ["global\ncomm/owned", "pencil\ncomm/FFT"],
+        [ratio, pencil_ratio],
+        color=["#d88c39", "#2a9d8f"],
+    )
     axes[2].axhline(
         float(summary["pencil_work_model"]["max_communication_to_fft_work_ratio"]),
         color="0.25",
@@ -384,9 +404,14 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[2].grid(True, axis="y", alpha=0.25)
     axes[2].legend(frameon=False, fontsize=8)
 
-    speedup = float(summary.get("pencil_strong_speedup_vs_serial") or summary["strong_speedup_vs_serial"])
+    speedup = float(
+        summary.get("pencil_strong_speedup_vs_serial")
+        or summary["strong_speedup_vs_serial"]
+    )
     status = str(summary["status"]).replace("_", " ")
-    fig.suptitle(f"Logical nonlinear domain route: {speedup:.2f}x ({status})", fontsize=11)
+    fig.suptitle(
+        f"Logical nonlinear domain route: {speedup:.2f}x ({status})", fontsize=11
+    )
     fig.savefig(png_path, dpi=220)
     plt.close(fig)
     return {"json": str(json_path), "csv": str(csv_path), "png": str(png_path)}

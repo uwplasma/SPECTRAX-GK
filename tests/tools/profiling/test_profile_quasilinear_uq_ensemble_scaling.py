@@ -7,8 +7,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "profile_quasilinear_uq_ensemble_scaling.py"
-    spec = importlib.util.spec_from_file_location("profile_quasilinear_uq_ensemble_scaling", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "profiling"
+        / "profile_quasilinear_uq_ensemble_scaling.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "profile_quasilinear_uq_ensemble_scaling", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -16,7 +23,9 @@ def _load_tool_module():
     return module
 
 
-def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case() -> None:
+def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case() -> (
+    None
+):
     mod = _load_tool_module()
 
     args = mod.build_parser().parse_args([])
@@ -32,7 +41,9 @@ def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case(
     assert args.fit_end_fraction == 0.95
 
 
-def test_quasilinear_uq_ensemble_scaling_reduced_observable_is_positive_for_unstable_modes() -> None:
+def test_quasilinear_uq_ensemble_scaling_reduced_observable_is_positive_for_unstable_modes() -> (
+    None
+):
     mod = _load_tool_module()
 
     obs = mod._quasilinear_reduced_observables(
@@ -46,7 +57,9 @@ def test_quasilinear_uq_ensemble_scaling_reduced_observable_is_positive_for_unst
     assert obs["omega_span"] == 0.19999999999999998
 
 
-def test_quasilinear_uq_ensemble_scaling_identity_metrics_detect_equal_members() -> None:
+def test_quasilinear_uq_ensemble_scaling_identity_metrics_detect_equal_members() -> (
+    None
+):
     mod = _load_tool_module()
     members = [
         {

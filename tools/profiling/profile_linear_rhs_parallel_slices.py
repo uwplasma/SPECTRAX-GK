@@ -17,7 +17,7 @@ from typing import Any, Callable
 import numpy as np
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -111,7 +111,9 @@ def profile_linear_rhs_parallel_slices(
     platform_name = str(platform).lower()
     device_list = list(jax.devices(platform_name))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
-        raise RuntimeError(f"requested {requested_devices} {platform_name} devices, but only {len(device_list)} are available")
+        raise RuntimeError(
+            f"requested {requested_devices} {platform_name} devices, but only {len(device_list)} are available"
+        )
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
     terms = _terms()
     parallel_cfg = RuntimeParallelConfig(
@@ -122,7 +124,9 @@ def profile_linear_rhs_parallel_slices(
     )
 
     def serial_call():
-        return linear_rhs_cached(state, cache, params, terms=terms, use_jit=True, use_custom_vjp=True)
+        return linear_rhs_cached(
+            state, cache, params, terms=terms, use_jit=True, use_custom_vjp=True
+        )
 
     def sharded_call():
         return linear_rhs_parallel_cached(
@@ -153,7 +157,11 @@ def profile_linear_rhs_parallel_slices(
     serial_median = float(median(serial_samples))
     sharded_median = float(median(sharded_samples))
     speedup = serial_median / sharded_median if sharded_median > 0.0 else math.nan
-    identity_passed = bool(float(abs_err) <= float(atol) and float(rel_err) <= float(rtol) and float(phi_abs_err) <= float(atol))
+    identity_passed = bool(
+        float(abs_err) <= float(atol)
+        and float(rel_err) <= float(rtol)
+        and float(phi_abs_err) <= float(atol)
+    )
 
     rows = [
         {"route": "serial", "median_s": serial_median, "samples_s": serial_samples},
@@ -167,7 +175,12 @@ def profile_linear_rhs_parallel_slices(
                 "not a publication speedup claim"
             ),
             "state_shape": tuple(int(x) for x in state.shape),
-            "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Ny_actual": int(grid.ky.size), "Nz": int(grid.z.size)},
+            "grid": {
+                "Nx": int(nx),
+                "Ny_requested": int(ny),
+                "Ny_actual": int(grid.ky.size),
+                "Nz": int(grid.z.size),
+            },
             "platform": platform_name,
             "requested_devices": int(requested_devices),
             "actual_devices": len(device_list),
@@ -206,10 +219,14 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
 
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     rows = list(summary["rows"])
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=["route", "median_s", "samples_s"], lineterminator="\n")
+        writer = csv.DictWriter(
+            fh, fieldnames=["route", "median_s", "samples_s"], lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
 
@@ -232,9 +249,15 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
         ],
         dtype=float,
     )
-    axes[1].semilogy(["RHS abs", "RHS rel", "phi abs"], np.maximum(errors, 1.0e-16), "s-", lw=2.0)
-    axes[1].axhline(float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="abs gate")
-    axes[1].axhline(float(summary["rtol"]), ls="--", lw=1.2, color="0.35", label="rel gate")
+    axes[1].semilogy(
+        ["RHS abs", "RHS rel", "phi abs"], np.maximum(errors, 1.0e-16), "s-", lw=2.0
+    )
+    axes[1].axhline(
+        float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="abs gate"
+    )
+    axes[1].axhline(
+        float(summary["rtol"]), ls="--", lw=1.2, color="0.35", label="rel gate"
+    )
     status = "passed" if bool(summary["identity_passed"]) else "failed"
     axes[1].set_ylabel("error")
     axes[1].set_title(f"Identity {status}; speedup={float(summary['speedup']):.2f}x")
@@ -288,7 +311,16 @@ def main() -> None:
         rtol=float(args.rtol),
     )
     paths = write_artifacts(summary, args.out_prefix)
-    print(json.dumps({"identity_passed": summary["identity_passed"], "speedup": summary["speedup"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {
+                "identity_passed": summary["identity_passed"],
+                "speedup": summary["speedup"],
+                "paths": paths,
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

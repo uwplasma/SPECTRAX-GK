@@ -22,7 +22,7 @@ cases = [
 ]
 profiling_tools = [
   "tools/benchmark_runtime_memory.py",
-  "tools/profile_nonlinear_cyclone.py",
+  "tools/profiling/profile_nonlinear_cyclone.py",
 ]
 metrics = [
   "cold_runtime_s",
@@ -58,8 +58,8 @@ priority = "high"
 platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear"]
 profiling_tools = [
-  "tools/profile_runtime_startup.py",
-  "tools/profile_linear_cache_build.py",
+  "tools/profiling/profile_runtime_startup.py",
+  "tools/profiling/profile_linear_cache_build.py",
 ]
 metrics = [
   "startup_total_s",
@@ -69,8 +69,8 @@ metrics = [
 ]
 artifact_paths = [
   "docs/performance.rst",
-  "tools/profile_runtime_startup.py",
-  "tools/profile_linear_cache_build.py",
+  "tools/profiling/profile_runtime_startup.py",
+  "tools/profiling/profile_linear_cache_build.py",
 ]
 bottleneck_hypotheses = [
   "compile_first_integrator_run is the largest remaining cold-start cost",
@@ -94,12 +94,12 @@ priority = "high"
 platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
-  "tools/profile_nonlinear_step_split.py",
-  "tools/profile_full_nonlinear_rhs_trace.py",
-  "tools/profile_nonlinear_cyclone.py",
-  "tools/profile_nonlinear_sharding.py",
-  "tools/profile_linear_rhs_terms.py",
-  "tools/profile_full_linear_rhs_trace.py",
+  "tools/profiling/profile_nonlinear_step_split.py",
+  "tools/profiling/profile_full_nonlinear_rhs_trace.py",
+  "tools/profiling/profile_nonlinear_cyclone.py",
+  "tools/profiling/profile_nonlinear_sharding.py",
+  "tools/profiling/profile_linear_rhs_terms.py",
+  "tools/profiling/profile_full_linear_rhs_trace.py",
   "tools/gate_linear_rhs_zero_norm_state_window.py",
   "tools/gate_laguerre_nonlinear_modes.py",
 ]
@@ -183,7 +183,7 @@ platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
   "tools/benchmark_runtime_memory.py",
-  "tools/profile_runtime_startup.py",
+  "tools/profiling/profile_runtime_startup.py",
 ]
 metrics = [
   "peak_rss_mb",
@@ -234,10 +234,10 @@ profiling_tools = [
   "tools/generate_linear_rhs_electrostatic_slices_gate.py",
   "tools/release/check_parallel_scaling_artifacts.py",
   "tools/artifacts/build_parallelization_completion_status.py",
-  "tools/profile_linear_rhs_parallel_slices.py",
-  "tools/profile_nonlinear_sharding.py",
-  "tools/profile_device_z_pencil_nonlinear_rhs.py",
-  "tools/profile_device_z_pencil_transport_window.py",
+  "tools/profiling/profile_linear_rhs_parallel_slices.py",
+  "tools/profiling/profile_nonlinear_sharding.py",
+  "tools/profiling/profile_device_z_pencil_nonlinear_rhs.py",
+  "tools/profiling/profile_device_z_pencil_transport_window.py",
 ]
 metrics = [
   "strong_scaling_speedup",
@@ -354,7 +354,7 @@ optimization_actions = [
   "use tools/generate_linear_rhs_electrostatic_slices_gate.py as the composed electrostatic linear-RHS identity gate",
   "use tools/release/check_parallel_scaling_artifacts.py as the fast local contract check for tracked large-run scaling artifacts",
   "use tools/artifacts/build_parallelization_completion_status.py as the release closure artifact for production independent-work parallelization",
-  "use tools/profile_linear_rhs_parallel_slices.py as the engineering profile before making any Hermite-sharded RHS speedup claim",
+  "use tools/profiling/profile_linear_rhs_parallel_slices.py as the engineering profile before making any Hermite-sharded RHS speedup claim",
   "gate CPU sharding locally and two-GPU sharding on office",
   "profile fixed-step nonlinear state sharding and keep local plus two-GPU identity artifacts attached to the manifest",
   "profile the device-z fused pencil nonlinear RHS and keep it diagnostic until CPU/GPU speedup gates pass",

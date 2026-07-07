@@ -22,7 +22,7 @@ evaluation on a modest grid:
 
 .. code-block:: bash
 
-   python tools/profile_linear_cache.py
+   python tools/profiling/profile_linear_cache.py
 
 On a reference CPU run (Nx=Ny=16, Nz=32, Nl=2, Nm=4), this reported:
 
@@ -134,7 +134,7 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 
 .. code-block:: bash
 
-   python tools/profile_nonlinear_cyclone.py \
+   python tools/profiling/profile_nonlinear_cyclone.py \
      --trace-dir /tmp/spectrax_nl_trace \
      --xla-dump-dir /tmp/spectrax_nl_xla \
      --steps 400 --dt 0.0377 --Nl 4 --Nm 8
@@ -172,7 +172,7 @@ Reference run configuration (March 4, 2026):
 - ``ky=0.3``, ``Nl=4``, ``Nm=8``
 - ``dt=0.01``, ``steps=400``
 - ``sample_stride=10``, ``diagnostics_stride=10``
-- ``tools/profile_nonlinear_cyclone.py`` with the tracked Cyclone runtime config
+- ``tools/profiling/profile_nonlinear_cyclone.py`` with the tracked Cyclone runtime config
 
 CPU profiling (Apple CPU, JAX CPU backend):
 
@@ -236,7 +236,7 @@ full RHS kernels after compilation:
 
 .. code-block:: bash
 
-   python tools/profile_nonlinear_step_split.py \
+   python tools/profiling/profile_nonlinear_step_split.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml \
      --repeats 10 \
      --out docs/_static/nonlinear_rhs_profile_gpu.csv
@@ -290,7 +290,7 @@ short Cyclone case.
 
 .. code-block:: bash
 
-   python tools/profile_nonlinear_step_split.py \
+   python tools/profiling/profile_nonlinear_step_split.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --repeats 5 \
      --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
@@ -316,7 +316,7 @@ The full fused nonlinear-RHS trace companion is generated with:
 
 .. code-block:: bash
 
-   python tools/profile_full_nonlinear_rhs_trace.py \
+   python tools/profiling/profile_full_nonlinear_rhs_trace.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --ky 0.3 \
      --Nl 4 \
@@ -376,7 +376,7 @@ inside nonlinear runs:
 
 .. code-block:: bash
 
-   python tools/profile_linear_rhs_terms.py \
+   python tools/profiling/profile_linear_rhs_terms.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --ky 0.3 \
      --Nl 4 \
@@ -457,7 +457,7 @@ helper:
 
 .. code-block:: bash
 
-   python tools/profile_full_linear_rhs_trace.py \
+   python tools/profiling/profile_full_linear_rhs_trace.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --ky 0.3 \
      --Nl 4 \
@@ -593,13 +593,13 @@ It is regenerated with:
 
    KY=$(python -c "print(','.join(f'{0.04 + 0.0125*i:.3f}' for i in range(64)))")
 
-   python tools/profile_independent_ky_scan_scaling.py \
+   python tools/profiling/profile_independent_ky_scan_scaling.py \
      --backend cpu --devices 1,2,4,8 \
      --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_cpu_large
 
-   python tools/profile_independent_ky_scan_scaling.py \
+   python tools/profiling/profile_independent_ky_scan_scaling.py \
      --backend gpu --devices 1,2 \
      --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
@@ -672,11 +672,11 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+   python tools/profiling/profile_quasilinear_uq_ensemble_scaling.py \
      --backend cpu --devices 1,2,4,8 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_cpu_large
 
-   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+   python tools/profiling/profile_quasilinear_uq_ensemble_scaling.py \
      --backend gpu --devices 1,2 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
 
@@ -927,7 +927,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profile_linear_rhs_parallel_slices.py \
+   python tools/profiling/profile_linear_rhs_parallel_slices.py \
      --logical-devices 8 --nl 4 --nm 128 --ny 32 --nz 128 --rtol 1e-5
 
 The tracked CPU artifact uses a Hermite-heavy workload and keeps the sharded
@@ -950,7 +950,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+   python tools/profiling/profile_linear_rhs_parallel_slices_sweep.py \
      --platform cpu --devices 1,2,4,8 --nms 64,128 \
      --nl 4 --ny 32 --nz 128 --rtol 1e-5
 
@@ -968,7 +968,7 @@ The same profiler can target GPUs on the office node:
 .. code-block:: bash
 
    PYTHONPATH=/tmp/spectrax-gk-profile/src python3 \
-     tools/profile_linear_rhs_parallel_slices.py \
+     tools/profiling/profile_linear_rhs_parallel_slices.py \
      --platform gpu --logical-devices 2 \
      --nl 4 --nm 64 --ny 32 --nz 128 --rtol 1e-5 \
      --out-prefix docs/_static/linear_rhs_parallel_slices_profile_gpu
@@ -997,7 +997,7 @@ The profiler/identity artifact is generated with:
 
 .. code-block:: bash
 
-   python tools/profile_nonlinear_sharding.py \
+   python tools/profiling/profile_nonlinear_sharding.py \
      --sharding auto --sharding-options auto,kx \
      --out-json docs/_static/nonlinear_sharding_profile.json
 
@@ -1033,18 +1033,18 @@ each device count gets a clean JAX runtime:
 
 .. code-block:: bash
 
-   python tools/profile_nonlinear_sharding_sweep.py \
+   python tools/profiling/profile_nonlinear_sharding_sweep.py \
      --backend cpu --devices 1,2,4,8 \
      --nx 24 --ny 48 --nz 96 --nl 4 --nm 8 --steps 8 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_cpu_large
 
-   python tools/profile_nonlinear_sharding_sweep.py \
+   python tools/profiling/profile_nonlinear_sharding_sweep.py \
      --backend gpu --devices 1,2 \
      --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
 
    # Equivalent office two-GPU profile preset with JAX traces enabled.
-   python tools/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
+   python tools/profiling/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
 
    python tools/artifacts/plot_nonlinear_sharding_strong_scaling.py
 
@@ -1291,7 +1291,7 @@ For cold-start deep dives, use the dedicated startup profiler:
 
 .. code-block:: bash
 
-   python tools/profile_runtime_startup.py \
+   python tools/profiling/profile_runtime_startup.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --ky 0.3 --Nl 4 --Nm 8 --compile-steps 1 \
      --json-out tools_out/startup_cyclone_gpu.json \
@@ -1342,7 +1342,7 @@ To break the cache-construction lump down further, use:
 
 .. code-block:: bash
 
-   python tools/profile_linear_cache_build.py \
+   python tools/profiling/profile_linear_cache_build.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --Nl 4 --Nm 8 \
      --json-out tools_out/linear_cache_cyclone_gpu.json \
@@ -1394,7 +1394,7 @@ preconditioners:
 
 .. code-block:: bash
 
-   python tools/profile_gmres_precond.py
+   python tools/profiling/profile_gmres_precond.py
 
 On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
 

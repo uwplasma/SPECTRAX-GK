@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "quasilinear_uq_ensemble_scaling"
 
 
@@ -48,7 +48,9 @@ def _parse_float_list(text: str) -> list[float]:
 def _parse_int_list(text: str) -> list[int]:
     values = [int(part.strip()) for part in str(text).split(",") if part.strip()]
     if not values:
-        raise argparse.ArgumentTypeError("expected a comma-separated list of positive integers")
+        raise argparse.ArgumentTypeError(
+            "expected a comma-separated list of positive integers"
+        )
     if any(value < 1 for value in values):
         raise argparse.ArgumentTypeError("all device counts must be positive")
     return values
@@ -62,7 +64,9 @@ def _split_values(values: np.ndarray, n_parts: int) -> list[np.ndarray]:
     return [chunk for chunk in np.array_split(arr, parts) if chunk.size > 0]
 
 
-def _worker_env(base_env: dict[str, str], *, backend: str, worker_index: int) -> dict[str, str]:
+def _worker_env(
+    base_env: dict[str, str], *, backend: str, worker_index: int
+) -> dict[str, str]:
     env = dict(base_env)
     env.setdefault("MPLBACKEND", "Agg")
     env.setdefault("PYTHONPATH", str(REPO_ROOT / "src"))
@@ -93,7 +97,9 @@ def _time_stats(samples: list[float]) -> dict[str, float]:
     }
 
 
-def _quasilinear_reduced_observables(ky: np.ndarray, gamma: np.ndarray, omega: np.ndarray) -> dict[str, Any]:
+def _quasilinear_reduced_observables(
+    ky: np.ndarray, gamma: np.ndarray, omega: np.ndarray
+) -> dict[str, Any]:
     from spectraxgk.quasilinear import quasilinear_feature_objective
 
     ky_arr = np.asarray(ky, dtype=float)
@@ -102,11 +108,15 @@ def _quasilinear_reduced_observables(ky: np.ndarray, gamma: np.ndarray, omega: n
     kperp_eff2 = np.maximum(ky_arr**2, 1.0e-12)
     linear_weight = np.maximum(gamma_arr, 0.0)
     features = np.stack([gamma_arr, kperp_eff2, linear_weight], axis=-1)
-    spectrum = np.asarray(quasilinear_feature_objective(features, rule="mixing_length"), dtype=float)
+    spectrum = np.asarray(
+        quasilinear_feature_objective(features, rule="mixing_length"), dtype=float
+    )
     finite = np.isfinite(spectrum)
     heat_proxy = float(np.sum(np.where(finite, spectrum, 0.0)))
     weighted_growth = float(np.sum(np.maximum(gamma_arr, 0.0)))
-    omega_span = float(np.nanmax(omega_arr) - np.nanmin(omega_arr)) if omega_arr.size else 0.0
+    omega_span = (
+        float(np.nanmax(omega_arr) - np.nanmin(omega_arr)) if omega_arr.size else 0.0
+    )
     return {
         "heat_flux_proxy": heat_proxy,
         "weighted_growth": weighted_growth,
@@ -141,7 +151,9 @@ def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
         start = time.perf_counter()
         members: list[dict[str, Any]] = []
         for gradient in gradients:
-            cfg = replace(base_cfg, model=replace(base_cfg.model, R_over_LTi=float(gradient)))
+            cfg = replace(
+                base_cfg, model=replace(base_cfg.model, R_over_LTi=float(gradient))
+            )
             result = run_cyclone_scan(
                 ky,
                 cfg=cfg,
@@ -177,7 +189,9 @@ def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
         last_members = members
         if repeat_index >= int(args.warmups):
             samples.append(float(elapsed))
-    heat = np.asarray([member["heat_flux_proxy"] for member in last_members], dtype=float)
+    heat = np.asarray(
+        [member["heat_flux_proxy"] for member in last_members], dtype=float
+    )
     payload = {
         "gradients": gradients.tolist(),
         "members": last_members,
@@ -186,11 +200,15 @@ def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
         "samples_s": samples,
         "stats_s": _time_stats(samples),
     }
-    Path(args.worker_out).write_text(json.dumps(_json_clean(payload), indent=2) + "\n", encoding="utf-8")
+    Path(args.worker_out).write_text(
+        json.dumps(_json_clean(payload), indent=2) + "\n", encoding="utf-8"
+    )
     return payload
 
 
-def _worker_command(args: argparse.Namespace, *, gradients: np.ndarray, out_path: Path) -> list[str]:
+def _worker_command(
+    args: argparse.Namespace, *, gradients: np.ndarray, out_path: Path
+) -> list[str]:
     return [
         sys.executable,
         str(Path(__file__).resolve()),
@@ -244,7 +262,9 @@ def _run_device_count(
     start_wall = time.perf_counter()
     for worker_index, chunk in enumerate(chunks):
         out_path = tmp / f"{args.backend}_{device_count}_worker_{worker_index}.json"
-        env = _worker_env(os.environ, backend=str(args.backend), worker_index=worker_index)
+        env = _worker_env(
+            os.environ, backend=str(args.backend), worker_index=worker_index
+        )
         proc = subprocess.Popen(
             _worker_command(args, gradients=chunk, out_path=out_path),
             cwd=REPO_ROOT,
@@ -263,10 +283,14 @@ def _run_device_count(
         except subprocess.TimeoutExpired:
             proc.kill()
             stdout, stderr = proc.communicate()
-            errors.append(f"worker {worker_index} timed out after {args.timeout_s}s\n{stderr[-2000:]}")
+            errors.append(
+                f"worker {worker_index} timed out after {args.timeout_s}s\n{stderr[-2000:]}"
+            )
             continue
         if proc.returncode != 0:
-            errors.append(f"worker {worker_index} failed with code {proc.returncode}\n{stderr[-4000:]}\n{stdout[-1000:]}")
+            errors.append(
+                f"worker {worker_index} failed with code {proc.returncode}\n{stderr[-4000:]}\n{stdout[-1000:]}"
+            )
             continue
         payloads.append(json.loads(out_path.read_text(encoding="utf-8")))
     wall_s = time.perf_counter() - start_wall
@@ -300,7 +324,13 @@ def _run_device_count(
     )
 
 
-def _identity_metrics(reference: dict[str, Any], row: dict[str, Any], *, value_rtol: float, value_atol: float) -> dict[str, Any]:
+def _identity_metrics(
+    reference: dict[str, Any],
+    row: dict[str, Any],
+    *,
+    value_rtol: float,
+    value_atol: float,
+) -> dict[str, Any]:
     if row.get("error") is not None:
         return {
             "max_heat_flux_proxy_rel_error": math.nan,
@@ -308,7 +338,9 @@ def _identity_metrics(reference: dict[str, Any], row: dict[str, Any], *, value_r
             "max_gamma_abs_error": math.nan,
             "identity_gate_pass": False,
         }
-    ref_members = {float(member["R_over_LTi"]): member for member in reference["members"]}
+    ref_members = {
+        float(member["R_over_LTi"]): member for member in reference["members"]
+    }
     row_members = {float(member["R_over_LTi"]): member for member in row["members"]}
     if set(ref_members) != set(row_members):
         return {
@@ -327,7 +359,16 @@ def _identity_metrics(reference: dict[str, Any], row: dict[str, Any], *, value_r
         cur_heat = float(cur["heat_flux_proxy"])
         heat_abs.append(abs(cur_heat - ref_heat))
         heat_rel.append(abs(cur_heat - ref_heat) / max(abs(ref_heat), 1.0e-12))
-        gamma_abs.append(float(np.max(np.abs(np.asarray(cur["gamma"], dtype=float) - np.asarray(ref["gamma"], dtype=float)))))
+        gamma_abs.append(
+            float(
+                np.max(
+                    np.abs(
+                        np.asarray(cur["gamma"], dtype=float)
+                        - np.asarray(ref["gamma"], dtype=float)
+                    )
+                )
+            )
+        )
     max_heat_abs = float(max(heat_abs)) if heat_abs else 0.0
     max_heat_rel = float(max(heat_rel)) if heat_rel else 0.0
     max_gamma_abs = float(max(gamma_abs)) if gamma_abs else 0.0
@@ -335,7 +376,11 @@ def _identity_metrics(reference: dict[str, Any], row: dict[str, Any], *, value_r
         "max_heat_flux_proxy_abs_error": max_heat_abs,
         "max_heat_flux_proxy_rel_error": max_heat_rel,
         "max_gamma_abs_error": max_gamma_abs,
-        "identity_gate_pass": bool(max_heat_abs <= value_atol and max_heat_rel <= value_rtol and max_gamma_abs <= value_atol),
+        "identity_gate_pass": bool(
+            max_heat_abs <= value_atol
+            and max_heat_rel <= value_rtol
+            and max_gamma_abs <= value_atol
+        ),
     }
 
 
@@ -345,12 +390,28 @@ def run_sweep(args: argparse.Namespace) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="spectraxgk-ql-uq-scaling-") as tmp_name:
         tmp = Path(tmp_name)
         for device_count in args.devices:
-            rows.append(_run_device_count(args, gradients=gradients, tmp=tmp, device_count=int(device_count)))
-    reference = next((row for row in rows if int(row["requested_devices"]) == 1 and row.get("error") is None), None)
+            rows.append(
+                _run_device_count(
+                    args, gradients=gradients, tmp=tmp, device_count=int(device_count)
+                )
+            )
+    reference = next(
+        (
+            row
+            for row in rows
+            if int(row["requested_devices"]) == 1 and row.get("error") is None
+        ),
+        None,
+    )
     baseline = float(reference["timed_wall_s"]) if reference is not None else math.nan
     for row in rows:
         metrics = (
-            _identity_metrics(reference, row, value_rtol=float(args.value_rtol), value_atol=float(args.value_atol))
+            _identity_metrics(
+                reference,
+                row,
+                value_rtol=float(args.value_rtol),
+                value_atol=float(args.value_atol),
+            )
             if reference is not None
             else {
                 "max_heat_flux_proxy_rel_error": math.nan,
@@ -360,8 +421,14 @@ def run_sweep(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
         row.update(metrics)
-        current = float(row["timed_wall_s"]) if row.get("timed_wall_s") is not None else math.nan
-        row["strong_speedup_vs_1_device"] = baseline / current if baseline > 0.0 and current > 0.0 else math.nan
+        current = (
+            float(row["timed_wall_s"])
+            if row.get("timed_wall_s") is not None
+            else math.nan
+        )
+        row["strong_speedup_vs_1_device"] = (
+            baseline / current if baseline > 0.0 and current > 0.0 else math.nan
+        )
         row["parallel_efficiency"] = (
             row["strong_speedup_vs_1_device"] / float(row["requested_devices"])
             if math.isfinite(float(row["strong_speedup_vs_1_device"]))
@@ -374,7 +441,13 @@ def run_sweep(args: argparse.Namespace) -> dict[str, Any]:
             "devices": [int(value) for value in args.devices],
             "gradients": gradients.tolist(),
             "ky": list(map(float, args.ky)),
-            "grid": {"Nx": int(args.nx), "Ny": int(args.ny), "Nz": int(args.nz), "Nl": int(args.nl), "Nm": int(args.nm)},
+            "grid": {
+                "Nx": int(args.nx),
+                "Ny": int(args.ny),
+                "Nz": int(args.nz),
+                "Nl": int(args.nl),
+                "Nm": int(args.nm),
+            },
             "time": {
                 "dt": float(args.dt),
                 "steps": int(args.steps),
@@ -411,7 +484,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     csv_path = out_prefix.with_suffix(".csv")
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     rows = list(summary["rows"])
     fieldnames = [
         "requested_devices",
@@ -429,17 +504,25 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         "error",
     ]
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore", lineterminator="\n")
+        writer = csv.DictWriter(
+            fh, fieldnames=fieldnames, extrasaction="ignore", lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
 
     set_plot_style()
     fig, axes = plt.subplots(1, 3, figsize=(13.4, 4.0), constrained_layout=True)
     x = np.asarray([int(row["requested_devices"]) for row in rows], dtype=float)
-    speedup = np.asarray([float(row["strong_speedup_vs_1_device"]) for row in rows], dtype=float)
+    speedup = np.asarray(
+        [float(row["strong_speedup_vs_1_device"]) for row in rows], dtype=float
+    )
     elapsed = np.asarray([float(row["timed_wall_s"]) for row in rows], dtype=float)
-    heat_rel = np.asarray([float(row["max_heat_flux_proxy_rel_error"]) for row in rows], dtype=float)
-    gamma_abs = np.asarray([float(row["max_gamma_abs_error"]) for row in rows], dtype=float)
+    heat_rel = np.asarray(
+        [float(row["max_heat_flux_proxy_rel_error"]) for row in rows], dtype=float
+    )
+    gamma_abs = np.asarray(
+        [float(row["max_gamma_abs_error"]) for row in rows], dtype=float
+    )
     axes[0].plot(x, speedup, "o-", lw=2.2, color="#276b8e", label="measured")
     axes[0].plot(x, x, ":", lw=1.3, color="0.35", label="ideal")
     axes[0].set_xlabel("workers/devices")
@@ -452,8 +535,12 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     axes[1].set_ylabel("median ensemble time [s]")
     axes[1].set_title("Solver throughput")
 
-    axes[2].semilogy(x, np.maximum(heat_rel, 1.0e-16), "o-", lw=2.0, label="QL proxy rel.")
-    axes[2].semilogy(x + 0.04, np.maximum(gamma_abs, 1.0e-16), "s--", lw=1.8, label=r"$\gamma$ abs.")
+    axes[2].semilogy(
+        x, np.maximum(heat_rel, 1.0e-16), "o-", lw=2.0, label="QL proxy rel."
+    )
+    axes[2].semilogy(
+        x + 0.04, np.maximum(gamma_abs, 1.0e-16), "s--", lw=1.8, label=r"$\gamma$ abs."
+    )
     axes[2].axhline(float(summary["value_rtol"]), ls=":", color="#276b8e", lw=1.2)
     axes[2].axhline(float(summary["value_atol"]), ls=":", color="#b45f06", lw=1.2)
     axes[2].set_xlabel("workers/devices")
@@ -466,19 +553,35 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
     plt.close(fig)
-    return {"json": str(json_path), "csv": str(csv_path), "png": str(png_path), "pdf": str(pdf_path)}
+    return {
+        "json": str(json_path),
+        "csv": str(csv_path),
+        "png": str(png_path),
+        "pdf": str(pdf_path),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--worker-out", type=Path, default=None, help=argparse.SUPPRESS)
-    parser.add_argument("--worker-gradients", type=_parse_float_list, default=None, help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--worker-gradients",
+        type=_parse_float_list,
+        default=None,
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_PREFIX)
     parser.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--devices", type=_parse_int_list, default=[1, 2, 4])
-    parser.add_argument("--gradients", type=_parse_float_list, default=[2.20, 2.40, 2.60, 2.80, 3.00, 3.20])
-    parser.add_argument("--ky", type=_parse_float_list, default=[0.10, 0.20, 0.30, 0.40, 0.50])
+    parser.add_argument(
+        "--gradients",
+        type=_parse_float_list,
+        default=[2.20, 2.40, 2.60, 2.80, 3.00, 3.20],
+    )
+    parser.add_argument(
+        "--ky", type=_parse_float_list, default=[0.10, 0.20, 0.30, 0.40, 0.50]
+    )
     parser.add_argument("--nx", type=int, default=1)
     parser.add_argument("--ny", type=int, default=96)
     parser.add_argument("--nz", type=int, default=64)
@@ -508,7 +611,11 @@ def main() -> int:
         return 0
     summary = run_sweep(args)
     paths = write_artifacts(summary, Path(args.out_prefix))
-    print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {"identity_passed": summary["identity_passed"], "paths": paths}, indent=2
+        )
+    )
     return 0 if bool(summary["identity_passed"]) else 2
 
 

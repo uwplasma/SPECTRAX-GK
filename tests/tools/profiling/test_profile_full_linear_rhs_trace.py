@@ -8,7 +8,7 @@ import jax.numpy as jnp
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profile_full_linear_rhs_trace.py"
+SCRIPT = ROOT / "tools" / "profiling" / "profile_full_linear_rhs_trace.py"
 spec = importlib.util.spec_from_file_location("profile_full_linear_rhs_trace", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -65,7 +65,10 @@ def test_write_summary_json_roundtrips(tmp_path: Path) -> None:
     path = tmp_path / "summary.json"
     mod._write_summary_json({"kind": "full", "value": 2.0}, path)
 
-    assert json.loads(path.read_text(encoding="utf-8")) == {"kind": "full", "value": 2.0}
+    assert json.loads(path.read_text(encoding="utf-8")) == {
+        "kind": "full",
+        "value": 2.0,
+    }
 
 
 def test_inject_z_wave_adds_parallel_variation() -> None:

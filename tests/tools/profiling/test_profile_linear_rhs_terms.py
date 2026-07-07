@@ -8,7 +8,7 @@ import jax.numpy as jnp
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profile_linear_rhs_terms.py"
+SCRIPT = ROOT / "tools" / "profiling" / "profile_linear_rhs_terms.py"
 spec = importlib.util.spec_from_file_location("profile_linear_rhs_terms", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -50,7 +50,10 @@ def test_write_summary_json_roundtrips(tmp_path: Path) -> None:
     path = tmp_path / "summary.json"
     mod._write_summary_json({"kind": "linear", "value": 2.0}, path)
 
-    assert json.loads(path.read_text(encoding="utf-8")) == {"kind": "linear", "value": 2.0}
+    assert json.loads(path.read_text(encoding="utf-8")) == {
+        "kind": "linear",
+        "value": 2.0,
+    }
 
 
 def test_inject_z_wave_adds_parallel_variation() -> None:
@@ -64,7 +67,9 @@ def test_inject_z_wave_adds_parallel_variation() -> None:
 
 def test_hypercollision_kz_source_uses_nu_hyper_m_path() -> None:
     state = jnp.zeros((1, 2, 4, 1, 1, 4), dtype=jnp.complex64)
-    state = state.at[0, 0, 3, 0, 0, :].set(jnp.asarray([0.0, 1.0, 0.0, -1.0], dtype=jnp.complex64))
+    state = state.at[0, 0, 3, 0, 0, :].set(
+        jnp.asarray([0.0, 1.0, 0.0, -1.0], dtype=jnp.complex64)
+    )
     mask_kz = jnp.ones((2, 4, 1, 1, 1), dtype=bool)
     m_pow = jnp.ones((2, 4, 1, 1, 1), dtype=jnp.float32)
 

@@ -8,8 +8,15 @@ import subprocess
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "profile_nonlinear_sharding_sweep.py"
-    spec = importlib.util.spec_from_file_location("profile_nonlinear_sharding_sweep", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "profiling"
+        / "profile_nonlinear_sharding_sweep.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "profile_nonlinear_sharding_sweep", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -33,11 +40,20 @@ def test_profile_nonlinear_sharding_sweep_parser_defaults_to_bounded_artifact() 
 def test_profile_nonlinear_sharding_sweep_office_gpu_preset_is_canonical() -> None:
     mod = _load_tool_module()
 
-    args = mod.apply_profile_preset(mod.build_parser().parse_args(["--office-gpu-xlarge"]))
+    args = mod.apply_profile_preset(
+        mod.build_parser().parse_args(["--office-gpu-xlarge"])
+    )
 
     assert args.backend == "gpu"
     assert args.devices == [1, 2]
-    assert (args.nx, args.ny, args.nz, args.nl, args.nm, args.steps) == (48, 96, 128, 4, 8, 12)
+    assert (args.nx, args.ny, args.nz, args.nl, args.nm, args.steps) == (
+        48,
+        96,
+        128,
+        4,
+        8,
+        12,
+    )
     assert args.sharding_options == "auto,kx"
     assert args.out_prefix == mod.OFFICE_GPU_XLARGE_PREFIX
     assert args.trace is True
@@ -56,7 +72,9 @@ def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> No
 
     assert cpu_env["JAX_PLATFORMS"] == "cpu"
     assert "--xla_force_host_platform_device_count=4" in cpu_env["XLA_FLAGS"]
-    assert "--xla_force_host_platform_device_count=8" not in replaced_cpu_env["XLA_FLAGS"]
+    assert (
+        "--xla_force_host_platform_device_count=8" not in replaced_cpu_env["XLA_FLAGS"]
+    )
     assert "--xla_force_host_platform_device_count=2" in replaced_cpu_env["XLA_FLAGS"]
     assert "--foo=bar" in replaced_cpu_env["XLA_FLAGS"]
     assert gpu_env["JAX_PLATFORMS"] == "cuda"
@@ -64,7 +82,9 @@ def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> No
     assert gpu_env["XLA_PYTHON_CLIENT_PREALLOCATE"] == "false"
 
 
-def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate() -> None:
+def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate() -> (
+    None
+):
     mod = _load_tool_module()
     payload = {
         "source_contract_version": 1,
@@ -72,8 +92,13 @@ def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate
         "device_count": 2,
         "default_backend": "gpu",
         "sharding_axis": "kx",
-        "profile_command": "python tools/profile_nonlinear_sharding.py --sharding kx",
-        "profile_command_argv": ["python", "tools/profile_nonlinear_sharding.py", "--sharding", "kx"],
+        "profile_command": "python tools/profiling/profile_nonlinear_sharding.py --sharding kx",
+        "profile_command_argv": [
+            "python",
+            "tools/profiling/profile_nonlinear_sharding.py",
+            "--sharding",
+            "kx",
+        ],
         "source_artifact": "/tmp/profile.json",
         "software_versions": {
             "python": "3.11.0",
@@ -114,7 +139,9 @@ def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate
     assert row["same_process_speedup"] == 2.0
     assert row["identity_gate_pass"] is True
     assert row["source_contract_version"] == 1
-    assert row["profile_command"].startswith("python tools/profile_nonlinear_sharding.py")
+    assert row["profile_command"].startswith(
+        "python tools/profiling/profile_nonlinear_sharding.py"
+    )
     assert row["profile_command_argv"][-2:] == ["--sharding", "kx"]
     assert row["source_artifact"] == "/tmp/profile.json"
     assert row["software_versions"]["spectraxgk"] == "test"
@@ -174,7 +201,9 @@ def test_profile_nonlinear_sharding_sweep_records_timeout_rows(monkeypatch) -> N
     assert summary["speedup_blockers"] == ["cpu_2devices_identity_failed"]
 
 
-def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(monkeypatch) -> None:
+def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(
+    monkeypatch,
+) -> None:
     mod = _load_tool_module()
 
     def _fake_run(cmd, **_kwargs):
@@ -232,7 +261,9 @@ def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(monkeypat
     assert summary["speedup_blockers"] == ["gpu_2devices_speedup_0.5_below_1"]
 
 
-def test_profile_nonlinear_sharding_sweep_preserves_failed_profile_json(monkeypatch) -> None:
+def test_profile_nonlinear_sharding_sweep_preserves_failed_profile_json(
+    monkeypatch,
+) -> None:
     mod = _load_tool_module()
 
     def _fake_run(cmd, **_kwargs):

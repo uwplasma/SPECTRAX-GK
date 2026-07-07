@@ -2,7 +2,7 @@
 """Profile Cyclone time integration with diffrax (adaptive) and XLA dumps.
 
 Example:
-  python tools/profile_cyclone.py --trace-dir /tmp/spectrax_trace \
+  python tools/profiling/profile_cyclone.py --trace-dir /tmp/spectrax_trace \
     --xla-dump-dir /tmp/spectrax_xla --t-max 10 --dt 0.01 --Nl 16 --Nm 48
 """
 
@@ -14,7 +14,7 @@ import time
 from dataclasses import replace
 
 try:
-    from tools._profiler_options import make_profile_options
+    from tools.profiling._profiler_options import make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
     from _profiler_options import make_profile_options
 
@@ -124,9 +124,7 @@ def main() -> None:
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - args.ky)))
 
-    print(
-        "warmup_time_s={:.3f} run_time_s={:.3f}".format(t1 - t0, t3 - t2)
-    )
+    print("warmup_time_s={:.3f} run_time_s={:.3f}".format(t1 - t0, t3 - t2))
     print(
         "gamma={:.6f} omega={:.6f} ref_gamma={:.6f} ref_omega={:.6f}".format(
             res.gamma, res.omega, ref.gamma[idx], ref.omega[idx]

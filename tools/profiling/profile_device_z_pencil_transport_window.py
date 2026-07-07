@@ -18,7 +18,7 @@ import numpy as np
 from jax.sharding import Mesh, NamedSharding, PartitionSpec
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_PREFIX = (
     REPO_ROOT / "docs" / "_static" / "nonlinear_device_z_pencil_transport_cpu4_profile"
 )
@@ -71,7 +71,9 @@ def _stats(times: list[float]) -> dict[str, float]:
     }
 
 
-def _max_abs_rel(candidate: Any, reference: Any, *, floor: float) -> tuple[float, float]:
+def _max_abs_rel(
+    candidate: Any, reference: Any, *, floor: float
+) -> tuple[float, float]:
     candidate_arr = np.asarray(candidate)
     reference_arr = np.asarray(reference)
     max_abs = float(np.max(np.abs(candidate_arr - reference_arr)))
@@ -103,7 +105,11 @@ def _write_hlo(path: Path, lowered: Any) -> dict[str, Any]:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = _hlo_text(lowered)
     path.write_text(text, encoding="utf-8")
-    return {"path": str(path), "line_count": text.count("\n") + 1, **_hlo_keyword_counts(text)}
+    return {
+        "path": str(path),
+        "line_count": text.count("\n") + 1,
+        **_hlo_keyword_counts(text),
+    }
 
 
 def _run_trace(fn: Any, trace_dir: Path) -> dict[str, Any]:
@@ -158,7 +164,9 @@ def build_profile(
         raise ValueError("observable_repeats must be non-negative")
     if observable_mode not in {"host_gather", "sharded_reduce"}:
         raise ValueError("observable_mode must be 'host_gather' or 'sharded_reduce'")
-    requested_parallel_counts = tuple(int(count) for count in device_counts if int(count) > 1)
+    requested_parallel_counts = tuple(
+        int(count) for count in device_counts if int(count) > 1
+    )
     batch_model: dict[str, Any] | None = None
     if requested_parallel_counts:
         target_count = max(requested_parallel_counts)
@@ -354,13 +362,17 @@ def build_profile(
         state_abs, state_rel = _max_abs_rel(sharded_out, serial_out, floor=float(atol))
         sharded_stats = _stats(sharded_times)
         speedup = serial_stats["median"] / sharded_stats["median"]
-        observable_gate_median = observable_stats.get("median") if observable_stats else None
+        observable_gate_median = (
+            observable_stats.get("median") if observable_stats else None
+        )
         observable_gate_overhead = (
             float(observable_gate_median) / sharded_stats["median"]
             if observable_gate_median is not None and sharded_stats["median"] > 0.0
             else None
         )
-        timing_identity_passed = bool(state_abs <= float(atol) or state_rel <= float(rtol))
+        timing_identity_passed = bool(
+            state_abs <= float(atol) or state_rel <= float(rtol)
+        )
         row_blockers = list(report.blocked_reasons)
         if not timing_identity_passed:
             row_blockers.append("timed_device_z_pencil_transport_identity_failed")
@@ -474,7 +486,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     out_json = out_prefix.with_suffix(".json")
     out_csv = out_prefix.with_suffix(".csv")
     out_png = out_prefix.with_suffix(".png")
-    out_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     rows = list(summary["rows"])
     with out_csv.open("w", newline="", encoding="utf-8") as handle:
@@ -520,14 +534,18 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     speedups = [float(row["speedup_vs_serial"] or 0.0) for row in rows]
     errors = [float(row["final_state_max_abs_error"] or 0.0) for row in rows]
     axes[0].plot(counts, speedups, "o-", lw=2.0, color="#1b6ca8")
-    axes[0].axhline(float(summary["min_speedup"]), color="0.25", ls=":", lw=1.2, label="gate")
+    axes[0].axhline(
+        float(summary["min_speedup"]), color="0.25", ls=":", lw=1.2, label="gate"
+    )
     axes[0].set_xlabel("local devices")
     axes[0].set_ylabel("speedup vs serial")
     axes[0].set_title("z-sharded transport window")
     axes[0].legend(frameon=False, fontsize=8)
     axes[0].grid(True, alpha=0.25)
 
-    axes[1].bar([str(count) for count in counts], np.maximum(errors, 1.0e-16), color="#b65f23")
+    axes[1].bar(
+        [str(count) for count in counts], np.maximum(errors, 1.0e-16), color="#b65f23"
+    )
     axes[1].axhline(float(summary["atol"]), color="0.25", ls=":", lw=1.2, label="atol")
     axes[1].set_yscale("log")
     axes[1].set_xlabel("local devices")

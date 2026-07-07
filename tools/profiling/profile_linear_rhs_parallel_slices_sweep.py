@@ -14,11 +14,11 @@ from typing import Any
 import numpy as np
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.profile_linear_rhs_parallel_slices import (  # noqa: E402
+from tools.profiling.profile_linear_rhs_parallel_slices import (  # noqa: E402
     _configure_logical_cpu_devices,
     profile_linear_rhs_parallel_slices,
 )
@@ -43,7 +43,9 @@ def _json_clean(value: Any) -> Any:
 def _parse_int_list(text: str) -> list[int]:
     values = [int(part.strip()) for part in str(text).split(",") if part.strip()]
     if not values:
-        raise argparse.ArgumentTypeError("expected a comma-separated list of positive integers")
+        raise argparse.ArgumentTypeError(
+            "expected a comma-separated list of positive integers"
+        )
     if any(value < 1 for value in values):
         raise argparse.ArgumentTypeError("all values must be positive")
     return values
@@ -107,7 +109,12 @@ def run_sweep(
             "platform": platform,
             "devices": [int(x) for x in devices],
             "nms": [int(x) for x in nms],
-            "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Nz": int(nz), "Nl": int(nl)},
+            "grid": {
+                "Nx": int(nx),
+                "Ny_requested": int(ny),
+                "Nz": int(nz),
+                "Nl": int(nl),
+            },
             "warmups": int(warmups),
             "repeats": int(repeats),
             "atol": float(atol),
@@ -136,7 +143,9 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
 
-    json_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     rows = list(summary["rows"])
     fieldnames = [
         "platform",
@@ -162,11 +171,16 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     palette = plt.get_cmap("viridis")(np.linspace(0.15, 0.85, max(len(nms), 1)))
     center = 0.5 * (len(nms) - 1)
     for series_index, (color, nm) in enumerate(zip(palette, nms, strict=True)):
-        subset = sorted((row for row in rows if int(row["nm"]) == nm), key=lambda row: int(row["requested_devices"]))
+        subset = sorted(
+            (row for row in rows if int(row["nm"]) == nm),
+            key=lambda row: int(row["requested_devices"]),
+        )
         x = np.asarray([int(row["requested_devices"]) for row in subset], dtype=float)
         x_visible = x + 0.05 * (series_index - center)
         speedup = np.asarray([float(row["speedup"]) for row in subset], dtype=float)
-        rel_error = np.asarray([float(row["max_rel_error"]) for row in subset], dtype=float)
+        rel_error = np.asarray(
+            [float(row["max_rel_error"]) for row in subset], dtype=float
+        )
         axes[0].plot(x, speedup, "o-", lw=2.0, color=color, label=f"Nm={nm}")
         axes[1].semilogy(
             x_visible,
@@ -180,7 +194,9 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     axes[0].set_xlabel("devices")
     axes[0].set_ylabel("serial / sharded median time")
     axes[0].set_title("Electrostatic RHS engineering speedup")
-    axes[1].axhline(float(summary["rtol"]), color="0.35", ls="--", lw=1.1, label="relative gate")
+    axes[1].axhline(
+        float(summary["rtol"]), color="0.35", ls="--", lw=1.1, label="relative gate"
+    )
     axes[1].set_xlabel("devices")
     axes[1].set_ylabel("max relative RHS error")
     status = "passed" if bool(summary["identity_passed"]) else "failed"
@@ -191,7 +207,12 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
     plt.close(fig)
-    return {"json": str(json_path), "csv": str(csv_path), "png": str(png_path), "pdf": str(pdf_path)}
+    return {
+        "json": str(json_path),
+        "csv": str(csv_path),
+        "png": str(png_path),
+        "pdf": str(pdf_path),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -230,7 +251,11 @@ def main() -> None:
         rtol=float(args.rtol),
     )
     paths = write_artifacts(summary, args.out_prefix)
-    print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {"identity_passed": summary["identity_passed"], "paths": paths}, indent=2
+        )
+    )
 
 
 if __name__ == "__main__":

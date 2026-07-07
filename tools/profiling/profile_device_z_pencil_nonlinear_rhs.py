@@ -17,8 +17,10 @@ import numpy as np
 from jax.sharding import Mesh, NamedSharding, PartitionSpec
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUT_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_device_z_pencil_rhs_cpu4_profile"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUT_PREFIX = (
+    REPO_ROOT / "docs" / "_static" / "nonlinear_device_z_pencil_rhs_cpu4_profile"
+)
 
 
 def _json_clean(value: Any) -> Any:
@@ -68,7 +70,9 @@ def _stats(times: list[float]) -> dict[str, float]:
     }
 
 
-def _max_abs_rel(candidate: Any, reference: Any, *, floor: float) -> tuple[float, float]:
+def _max_abs_rel(
+    candidate: Any, reference: Any, *, floor: float
+) -> tuple[float, float]:
     candidate_arr = np.asarray(candidate)
     reference_arr = np.asarray(reference)
     max_abs = float(np.max(np.abs(candidate_arr - reference_arr)))
@@ -201,7 +205,9 @@ def build_profile(
                 "rhs_max_rel_error": rhs_rel,
                 "median_s": sharded_stats["median"],
                 "speedup_vs_serial": speedup,
-                "speedup_gate_passed": bool(speedup >= min_speedup and timing_identity_passed),
+                "speedup_gate_passed": bool(
+                    speedup >= min_speedup and timing_identity_passed
+                ),
                 "blocked_reasons": row_blockers,
                 "stats": sharded_stats,
             }
@@ -265,7 +271,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     out_json = out_prefix.with_suffix(".json")
     out_csv = out_prefix.with_suffix(".csv")
     out_png = out_prefix.with_suffix(".png")
-    out_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     rows = list(summary["rows"])
     with out_csv.open("w", newline="", encoding="utf-8") as handle:
@@ -294,14 +302,22 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> None:
     speedups = [float(row["speedup_vs_serial"] or 0.0) for row in rows]
     errors = [float(row["rhs_max_abs_error"] or 0.0) for row in rows]
     axes[0].plot(counts, speedups, "o-", lw=2.0, color="#1b6ca8")
-    axes[0].axhline(float(summary["min_speedup"]), color="0.25", ls=":", lw=1.2, label="promotion gate")
+    axes[0].axhline(
+        float(summary["min_speedup"]),
+        color="0.25",
+        ls=":",
+        lw=1.2,
+        label="promotion gate",
+    )
     axes[0].set_xlabel("logical CPU devices")
     axes[0].set_ylabel("speedup vs serial")
     axes[0].set_title("z-sharded fused pencil RHS")
     axes[0].legend(frameon=False, fontsize=8)
     axes[0].grid(True, alpha=0.25)
 
-    axes[1].bar([str(count) for count in counts], np.maximum(errors, 1.0e-16), color="#b65f23")
+    axes[1].bar(
+        [str(count) for count in counts], np.maximum(errors, 1.0e-16), color="#b65f23"
+    )
     axes[1].axhline(float(summary["atol"]), color="0.25", ls=":", lw=1.2, label="atol")
     axes[1].set_yscale("log")
     axes[1].set_xlabel("logical CPU devices")

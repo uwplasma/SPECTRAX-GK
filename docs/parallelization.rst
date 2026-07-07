@@ -276,7 +276,7 @@ locations; both CPU and GPU sharded HLO summaries show local FFTs and no
 all-to-all or collective-permute operations. The remaining nonlinear
 parallelization blocker is therefore production workload granularity and
 end-to-end solver routing, not this micro-route's serial-vs-sharded identity.
-For larger diagnostic grids, ``tools/profile_device_z_pencil_transport_window.py``
+For larger diagnostic grids, ``tools/profiling/profile_device_z_pencil_transport_window.py``
 also accepts ``--z-chunk-size`` and ``--auto-z-chunk-size``. The automatic
 mode uses the device-z pencil FFT batch-pressure model to keep the largest
 axis-wise cuFFT batch below a configured cap before timing. Combined with

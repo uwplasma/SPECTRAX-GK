@@ -1,4 +1,4 @@
-from tools._profiler_options import make_profile_options
+from tools.profiling._profiler_options import make_profile_options
 
 
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:

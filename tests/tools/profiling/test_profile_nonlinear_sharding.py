@@ -10,7 +10,12 @@ from spectraxgk.terms.config import FieldState
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "profile_nonlinear_sharding.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "profiling"
+        / "profile_nonlinear_sharding.py"
+    )
     spec = importlib.util.spec_from_file_location("profile_nonlinear_sharding", path)
     assert spec is not None
     assert spec.loader is not None
@@ -30,10 +35,15 @@ def test_profile_nonlinear_sharding_parser_defaults_to_tracked_artifact() -> Non
     assert args.warmups == 1
     assert args.repeats == 3
     assert args.allow_unsafe_cpu_state_sharding is False
-    assert mod._artifact_path_for_contract(args.out_json) == "docs/_static/nonlinear_sharding_profile.json"
+    assert (
+        mod._artifact_path_for_contract(args.out_json)
+        == "docs/_static/nonlinear_sharding_profile.json"
+    )
 
 
-def test_profile_nonlinear_sharding_source_contract_is_machine_readable(tmp_path: Path) -> None:
+def test_profile_nonlinear_sharding_source_contract_is_machine_readable(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     out_json = tmp_path / "profile.json"
     argv = [
@@ -58,8 +68,12 @@ def test_profile_nonlinear_sharding_source_contract_is_machine_readable(tmp_path
     assert contract["timing_warmup_repeat"] == {"warmups": 0, "repeats": 2}
     assert contract["allow_unsafe_cpu_state_sharding"] is False
     assert contract["profile_command_argv"][-len(argv) :] == argv
-    assert "tools/profile_nonlinear_sharding.py" in contract["profile_command"]
-    assert {"python", "spectraxgk", "jax", "jaxlib", "numpy"} <= set(contract["software_versions"])
+    assert (
+        "tools/profiling/profile_nonlinear_sharding.py" in contract["profile_command"]
+    )
+    assert {"python", "spectraxgk", "jax", "jaxlib", "numpy"} <= set(
+        contract["software_versions"]
+    )
     assert all(contract["software_versions"].values())
 
 
@@ -149,13 +163,19 @@ def test_profile_nonlinear_sharding_skips_unsafe_cpu_state_sharding() -> None:
     assert "unsafe_for_fft_layout" in row["error"]
 
 
-def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(monkeypatch) -> None:
+def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(
+    monkeypatch,
+) -> None:
     mod = _load_tool_module()
 
-    def fake_rhs(state, cache, params, terms, *, compressed_real_fft=True, laguerre_mode="grid"):
+    def fake_rhs(
+        state, cache, params, terms, *, compressed_real_fft=True, laguerre_mode="grid"
+    ):
         del cache, params, terms, compressed_real_fft, laguerre_mode
         arr = jnp.asarray(state)
-        return 2.0 * arr, FieldState(phi=jnp.sum(arr, axis=(0, 1)), apar=None, bpar=None)
+        return 2.0 * arr, FieldState(
+            phi=jnp.sum(arr, axis=(0, 1)), apar=None, bpar=None
+        )
 
     monkeypatch.setattr(mod, "nonlinear_rhs_cached", fake_rhs)
 

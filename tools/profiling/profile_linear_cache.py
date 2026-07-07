@@ -10,7 +10,12 @@ import jax.numpy as jnp
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache, linear_rhs, linear_rhs_cached
+from spectraxgk.linear import (
+    LinearParams,
+    build_linear_cache,
+    linear_rhs,
+    linear_rhs_cached,
+)
 
 
 def time_call(fn, G, repeats: int) -> float:

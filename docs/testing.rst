@@ -1278,7 +1278,7 @@ performance claims:
   ``docs/_static/linear_rhs_electrostatic_slices_gate.{png,pdf,csv,json}``
   is the current single-species periodic electrostatic linear-RHS identity
   gate for velocity-space parallelization.
-- ``tools/profile_linear_rhs_parallel_slices.py`` times that same composed
+- ``tools/profiling/profile_linear_rhs_parallel_slices.py`` times that same composed
   route on a larger bounded CPU workload and writes
   ``docs/_static/linear_rhs_parallel_slices_profile.{png,pdf,csv,json}``.
   The tracked profile is explicitly an engineering artifact, not a publication
@@ -1288,7 +1288,7 @@ performance claims:
   ``docs/_static/linear_rhs_parallel_slices_profile_gpu.{png,pdf,csv,json}``
   is currently a negative performance baseline: it passes identity but is much
   slower than the single-GPU serial JIT path.
-- ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
+- ``tools/profiling/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and
   ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` for the two-GPU

@@ -7,8 +7,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "profile_independent_ky_scan_scaling.py"
-    spec = importlib.util.spec_from_file_location("profile_independent_ky_scan_scaling", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "profiling"
+        / "profile_independent_ky_scan_scaling.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "profile_independent_ky_scan_scaling", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -51,7 +58,9 @@ def test_independent_ky_scan_scaling_worker_env_is_backend_specific() -> None:
     assert gpu_env["XLA_PYTHON_CLIENT_PREALLOCATE"] == "false"
 
 
-def test_independent_ky_scan_scaling_identity_metrics_pass_for_reordered_equal_values() -> None:
+def test_independent_ky_scan_scaling_identity_metrics_pass_for_reordered_equal_values() -> (
+    None
+):
     mod = _load_tool_module()
     reference = {"ky": [0.1, 0.2], "gamma": [0.3, 0.4], "omega": [-0.1, -0.2]}
     row = {"ky": [0.1, 0.2], "gamma": [0.3, 0.4], "omega": [-0.1, -0.2], "error": None}

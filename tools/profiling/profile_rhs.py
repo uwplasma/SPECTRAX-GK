@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import jax.profiler as jprof
 
 try:
-    from tools._profiler_options import make_profile_options
+    from tools.profiling._profiler_options import make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
     from _profiler_options import make_profile_options
 
@@ -23,14 +23,23 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
+from spectraxgk.linear import (
+    LinearParams,
+    LinearTerms,
+    build_linear_cache,
+    linear_rhs_cached,
+)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--trace-dir", type=Path, default=Path("/tmp/spectrax_profile_rhs"))
+    parser.add_argument(
+        "--trace-dir", type=Path, default=Path("/tmp/spectrax_profile_rhs")
+    )
     parser.add_argument("--hlo", type=Path, default=Path("/tmp/spectrax_rhs_hlo.txt"))
-    parser.add_argument("--mem", type=Path, default=Path("/tmp/spectrax_rhs_memory.prof"))
+    parser.add_argument(
+        "--mem", type=Path, default=Path("/tmp/spectrax_rhs_memory.prof")
+    )
     parser.add_argument("--steps", type=int, default=10)
     args = parser.parse_args()
 
@@ -65,7 +74,9 @@ def main() -> None:
     Nl, Nm = 4, 8
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
 
-    G0 = jnp.zeros((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G0 = jnp.zeros(
+        (Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
     G0 = G0.at[0, 0, 1, 0, :].set(1e-3 + 0.0j)
 
     def rhs_fn(G):

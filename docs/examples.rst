@@ -352,7 +352,7 @@ engineering sweep helper:
 
 .. code-block:: bash
 
-   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+   python tools/profiling/profile_linear_rhs_parallel_slices_sweep.py \
      --platform cpu --devices 1,2,4,8 --nms 64,128 \
      --nl 4 --ny 32 --nz 128 --rtol 1e-5
 

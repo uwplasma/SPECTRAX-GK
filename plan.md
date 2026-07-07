@@ -35,7 +35,7 @@ Last audited: 2026-07-07 on `main`.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 265 Python files after adding purpose-folder package initializers while moving flat tools.
+  - `tools`: 266 Python files after adding purpose-folder package initializers while moving flat tools.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
 - The repository inventory classifies 88 installable validation files as
@@ -83,7 +83,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 265 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 266 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -108,7 +108,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 66 Python scripts in one directory | Move profiling/generator utilities into purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 45 Python scripts in one directory | Classify generator, benchmark, compression, figure/table, and diagnostic helpers; merge duplicate builders/checkers; delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -235,14 +235,14 @@ campaign/release-tool move before it is committed:
   biggest root files are historical aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
-- `tools/` has 265 Python scripts after adding purpose-folder package
-  initializers. The remaining top-level `tools/` problem is now 66 flat scripts,
-  not hundreds: 20 `profile_*`, 25 `generate_*`, 4 `benchmark_*`, 3
-  `compress_*`, and a small set of tables/figures/reference helpers.
+- `tools/` has 266 Python scripts after adding purpose-folder package
+  initializers. The remaining top-level `tools/` problem is now 45 flat scripts,
+  not hundreds: 25 `generate_*`, 4 `benchmark_*`, 3 `compress_*`, and a small
+  set of tables/figures/reference helpers.
 - The current tool folders are `tools/artifacts` with 91 scripts,
-  `tools/campaigns` with 47 scripts, `tools/comparison` with 32 scripts, and
-  `tools/release` with 29 scripts. The next move should be `tools/profiling`,
-  followed by classification of the remaining generators as artifact builders,
+  `tools/campaigns` with 47 scripts, `tools/comparison` with 32 scripts,
+  `tools/profiling` with 22 scripts, and `tools/release` with 29 scripts. The
+  next move should classify the remaining generators as artifact builders,
   release gates, benchmark drivers, or deletions.
 - `benchmarks/` is already at the root and is small: 7 Python files. It should
   stay as the canonical lightweight benchmark-driver layer, not absorb raw
@@ -272,18 +272,15 @@ Decision rules from this audit:
 
 Immediate execution sequence from this audited state:
 
-1. Commit the campaign/release-tool move after the local architecture, ruff,
-   release-readiness, size, validation-coverage, and campaign/release test gates
-   pass.
-2. Move all `profile_*` tools and `_profiler_options.py` to
-   `tools/profiling/`, then update the performance manifest and profiling tests.
-3. Classify the remaining `generate_*` tools. Figure or gate artifact refreshers
+1. Commit the profiling-tool move after the local architecture, ruff,
+   release-readiness, size, validation-coverage, and profiling test gates pass.
+2. Classify the remaining `generate_*` tools. Figure or gate artifact refreshers
    move to `tools/artifacts`; CI/release gate refreshers move to
    `tools/release`; benchmark reproducibility drivers move to `benchmarks`;
    unreferenced generators are deleted or moved out of `main`.
-4. Collapse tool tests by family before moving more source code. The goal is
+3. Collapse tool tests by family before moving more source code. The goal is
    fewer tests with stronger parametrization, not weaker assertions.
-5. Start validation-out-of-package only after the tool/test path churn is
+4. Start validation-out-of-package only after the tool/test path churn is
    complete, so import rewrites are not repeated.
 
 ## Immediate Obsolete/Experimental Candidates
@@ -562,8 +559,8 @@ Suggested target file budget:
 
 ## Tool Consolidation Plan
 
-Current problem: `tools/` has 265 Python scripts, but the flat root has already
-dropped to 66 scripts after the release, comparison, artifact, and campaign
+Current problem: `tools/` has 266 Python scripts, but the flat root has already
+dropped to 45 scripts after the release, comparison, artifact, and campaign
 moves. The remaining problem is classification and consolidation, not only
 mechanical moves.
 
@@ -598,7 +595,6 @@ Delete or move out of `main`:
 
 The remaining flat-tool disposition is:
 
-- `profile_*` and `_profiler_options.py`: move to `tools/profiling/`.
 - `generate_*`: move to `tools/artifacts/` only when the command refreshes a
   documented figure/table/gate artifact; otherwise move to `tools/release/`,
   `benchmarks/`, or delete.
@@ -1120,6 +1116,12 @@ Exit gates:
   `tools.campaigns.*`, `tools/release/...`, or `tools.release.*`. Total tool
   count increased by one campaign package initializer to 265, and flat root
   tool scripts dropped from 114 to 66.
+
+- 2026-07-07: moved twenty-one profiling reproducers plus profiler options into
+  `tools/profiling/`. Performance docs, manifests, runtime profile commands,
+  and profiling tests now use `tools/profiling/...` or `tools.profiling.*`.
+  Total tool count increased by one profiling package initializer to 266, and
+  flat root tool scripts dropped from 66 to 45.
 
 ## Immediate Next Steps
 
