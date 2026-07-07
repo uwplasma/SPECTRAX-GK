@@ -1820,7 +1820,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_differentiable_geometry_bridge.py",
-  "tests/tools/artifacts/test_build_vmec_boozer_parity_matrix.py",
+  "tests/tools/artifacts/test_vmec_boozer_artifact_reports.py",
   "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_vmec_eik.py",
 ]
@@ -3208,12 +3208,10 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_solver_objective_gradients.py",
-  "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
+  "tests/tools/artifacts/test_vmec_boozer_artifact_reports.py",
   "tests/tools/artifacts/test_vmec_boozer_aggregate_artifacts.py",
   "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
-  "tests/tools/artifacts/test_build_vmec_boozer_gradient_holdout_matrix.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
-  "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
   "tests/unit/objectives/test_vmec_jax_candidate_gate.py",

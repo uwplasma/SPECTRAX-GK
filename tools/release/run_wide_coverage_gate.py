@@ -20,7 +20,7 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     # These files exercise JAX compilation, plotting, or runtime orchestration
     # paths. Keeping them isolated prevents one CI shard from exceeding the
     # five-minute per-shard budget while preserving package-wide coverage.
-    "test_build_vmec_boozer_nonlinear_window_fd_audit.py",
+    "test_vmec_boozer_artifact_reports.py",
     "test_diffrax_integrators.py",
     "test_diffrax_integrators_core.py",
     "test_make_benchmark_atlas.py",
