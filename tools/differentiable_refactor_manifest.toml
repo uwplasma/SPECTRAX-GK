@@ -2203,7 +2203,7 @@ moved_exports = [
   "_ensemble_statistics",
   "build_nonlinear_landscape_admission_report",
 ]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_landscape_admission_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2216,7 +2216,7 @@ moved_exports = [
   "_sample_statistics_summary",
   "build_reduced_nonlinear_audit_prelaunch_report",
 ]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2228,7 +2228,7 @@ responsibility = "next-campaign admission gates combining reduced, cross-sample,
 moved_exports = [
   "build_nonlinear_campaign_admission_report",
 ]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_campaign_admission_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
