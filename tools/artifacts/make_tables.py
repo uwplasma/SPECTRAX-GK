@@ -203,13 +203,18 @@ def _write_kbm_public_mismatch_table(
     stiff_spot_replace: bool,
 ) -> None:
     kbm_table = outdir / "kbm_mismatch_table.csv"
-    kbm_gx_mismatch = outdir / "kbm_gx_mismatch.csv"
+    comparison_dir = outdir / "comparison"
+    kbm_reference_mismatch = comparison_dir / "kbm_reference_mismatch.csv"
+    if not kbm_reference_mismatch.exists():
+        legacy_reference_mismatch = outdir / "kbm_reference_mismatch.csv"
+        if legacy_reference_mismatch.exists():
+            kbm_reference_mismatch = legacy_reference_mismatch
     kbm_lowky_ckpt = outdir / "kbm_probe_lowky_ckpt.csv"
-    if kbm_gx_mismatch.exists():
+    if kbm_reference_mismatch.exists():
         kbm_table.write_text(
             "\n".join(
                 _kbm_public_rows_from_gx_mismatch(
-                    kbm_gx_mismatch, lowky_ckpt_path=kbm_lowky_ckpt
+                    kbm_reference_mismatch, lowky_ckpt_path=kbm_lowky_ckpt
                 )
             )
             + "\n",
@@ -890,7 +895,7 @@ def _gx_window_policy(ky: float, base_window: dict) -> dict:
     return window
 
 
-def _fit_cyclone_gx_signal(
+def _fit_cyclone_reference_signal(
     *,
     t: np.ndarray,
     phi_t: np.ndarray,
@@ -921,7 +926,7 @@ def _fit_cyclone_gx_signal(
     return last
 
 
-def _cyclone_gx_scan(
+def _cyclone_reference_scan(
     ky_values: np.ndarray,
     cfg: CycloneBaseCase,
     window_kw: dict,
@@ -990,7 +995,7 @@ def _cyclone_gx_scan(
             z_index=_midplane_index(grid),
         )
         sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-        gamma, omega, tmin, tmax_fit, mode_method = _fit_cyclone_gx_signal(
+        gamma, omega, tmin, tmax_fit, mode_method = _fit_cyclone_reference_signal(
             t=np.asarray(t),
             phi_t=np.asarray(phi_t),
             sel=sel,

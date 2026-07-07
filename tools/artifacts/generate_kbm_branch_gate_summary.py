@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CANDIDATES = REPO_ROOT / "docs" / "_static" / "kbm_gx_candidates.csv"
+DEFAULT_CANDIDATES = REPO_ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"
 DEFAULT_OUT = REPO_ROOT / "docs" / "_static" / "kbm_branch_gate_summary.json"
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dump term-by-term RHS contributions for a single ky point."""
+"""Write term-by-term RHS diagnostics for a single ky point."""
 
 from __future__ import annotations
 

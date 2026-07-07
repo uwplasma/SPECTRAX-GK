@@ -284,7 +284,7 @@ headline atlas tiles. Current examples include:
   corrected short nonlinear Cyclone replay, which now uses the explicit
   short-reference dissipation contract and localizes the remaining mismatch in
   resolved ``k_y`` field-energy diagnostics.
-- ``docs/_static/secondary_gx_out_compare.csv`` for the refreshed secondary
+- ``docs/_static/comparison/secondary_reference_out_compare.csv`` for the refreshed secondary
   stage-2 mode table built from the dense ``kh01a`` GX replay.
 - ``docs/_static/nonlinear_w7x_diag_compare_t200.png``,
   ``docs/_static/hsx_nonlinear_compare_t50_true.png``, and

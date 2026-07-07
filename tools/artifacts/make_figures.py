@@ -505,7 +505,7 @@ def _gx_window_policy(ky: float, base_window: dict) -> dict:
     return window
 
 
-def _fit_cyclone_gx_signal(
+def _fit_cyclone_reference_signal(
     *,
     t: np.ndarray,
     phi_t: np.ndarray,
@@ -536,7 +536,7 @@ def _fit_cyclone_gx_signal(
     return last
 
 
-def _run_cyclone_gx_case(
+def _run_cyclone_reference_case(
     *,
     ky: float,
     cfg: CycloneBaseCase,
@@ -603,7 +603,7 @@ def _run_cyclone_gx_case(
         z_index=_midplane_index(grid),
     )
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-    gamma, omega, tmin, tmax_fit, mode_method = _fit_cyclone_gx_signal(
+    gamma, omega, tmin, tmax_fit, mode_method = _fit_cyclone_reference_signal(
         t=np.asarray(t),
         phi_t=np.asarray(phi_t),
         sel=sel,
@@ -619,7 +619,7 @@ def _run_cyclone_gx_case(
     return gamma, omega, np.asarray(t), np.asarray(phi_t), sel, tmin, tmax_fit, grid
 
 
-def _cyclone_gx_scan(
+def _cyclone_reference_scan(
     ky_values: np.ndarray,
     cfg: CycloneBaseCase,
     window_kw: dict,
@@ -633,7 +633,7 @@ def _cyclone_gx_scan(
     ky_out: list[float] = []
     iterator = tqdm(ky_values, desc="Cyclone GX ky scan") if progress else ky_values
     for ky in iterator:
-        gamma, omega, _t, _phi_t, _sel, _tmin, _tmax, _grid = _run_cyclone_gx_case(
+        gamma, omega, _t, _phi_t, _sel, _tmin, _tmax, _grid = _run_cyclone_reference_case(
             ky=float(ky),
             cfg=cfg,
             geom=geom,

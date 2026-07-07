@@ -13,7 +13,7 @@ import pandas as pd
 from tools.comparison.compare_gx_kbm import (
     _build_cfg,
     _load_gx_eigenfunction,
-    _load_kbm_gx_input_contract,
+    _load_kbm_reference_input_contract,
     _normalize_mode,
     _prepare_gx_reference,
 )
@@ -51,7 +51,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--candidate-csv",
         type=Path,
-        default=ROOT / "docs" / "_static" / "kbm_gx_candidates.csv",
+        default=ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv",
         help="Per-candidate KBM comparison table with the selected branch rows.",
     )
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky value.")
@@ -109,8 +109,9 @@ def _parse_args() -> argparse.Namespace:
         default=ROOT
         / "docs"
         / "_static"
+        / "comparison"
         / "reference_modes"
-        / "kbm_linear_gx_ky0p3000.npz",
+        / "kbm_linear_reference_ky0p3000.npz",
         help="Output path for the frozen GX reference bundle.",
     )
     return parser.parse_args()
@@ -169,7 +170,7 @@ def main() -> None:
             y0_fallback=10.0,
         )
     )
-    contract = _load_kbm_gx_input_contract(args.gx_input)
+    contract = _load_kbm_reference_input_contract(args.gx_input)
     ny = infer_triple_dealiased_ny(int(nky_full))
     cfg = _build_cfg(
         beta=float(contract.beta),

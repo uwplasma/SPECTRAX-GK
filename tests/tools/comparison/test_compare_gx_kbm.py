@@ -762,7 +762,7 @@ fprim = [0.8, 0.8]
 """.strip()
     )
 
-    contract = mod._load_kbm_gx_input_contract(gx_in)
+    contract = mod._load_kbm_reference_input_contract(gx_in)
     assert contract.mass_ratio == pytest.approx(1.0 / 2.7e-4)
     assert contract.init_electrons_only is True
     assert contract.init_field == "all"

@@ -62,7 +62,7 @@ class KBMGXInputContract:
     init_electrons_only: bool
 
 
-def _load_kbm_gx_input_contract(path: Path) -> KBMGXInputContract:
+def _load_kbm_reference_input_contract(path: Path) -> KBMGXInputContract:
     data = load_toml(path)
     dims = data.get("Dimensions", {})
     domain = data.get("Domain", {})
@@ -1008,7 +1008,7 @@ def main() -> None:
         ky_arg=str(args.ky),
         y0_fallback=float(args.y0),
     )
-    gx_input_contract = None if args.gx_input is None else _load_kbm_gx_input_contract(args.gx_input)
+    gx_input_contract = None if args.gx_input is None else _load_kbm_reference_input_contract(args.gx_input)
     args.Nl = int(args.Nl) if args.Nl is not None else int(16 if gx_input_contract is None else gx_input_contract.nlaguerre)
     args.Nm = int(args.Nm) if args.Nm is not None else int(48 if gx_input_contract is None else gx_input_contract.nhermite)
     nky = int(args.nky) if args.nky is not None else nky_full

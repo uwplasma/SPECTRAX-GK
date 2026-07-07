@@ -1331,7 +1331,7 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   ``Wphi_kyst`` is still the dominant residual mismatch.
 - **Secondary (`kh01a`)**: the tracked secondary comparison now uses a dense
   real GX run (`kh01a_shortdense.out.nc`, 10 samples in ``omega_kxkyt``) and
-  the rebuilt ``secondary_gx_out_compare.csv``. The comparison helper now uses
+  the rebuilt ``secondary_reference_out_compare.csv``. The comparison helper now uses
   the GX file horizon automatically in ``out-nc`` mode, so it no longer mixes a
   short GX replay with a ``t_max = 100`` SPECTRAX stage-2 run. On the matched
   short window, growth rates match tightly (``max rel_gamma ~= 1.87e-4``) and
@@ -1411,7 +1411,7 @@ published benchmarks and trend tests:
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
 - **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
   streaming and linear-kernel RHS components against GX for a single Cyclone
-  state (see ``tools/comparison/dump_rhs_terms.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
+  state (see ``tools/comparison/write_rhs_term_diagnostics.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
 - **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
   ``tools/comparison/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders
@@ -1483,7 +1483,7 @@ benchmark figures move):
 For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
 
-- ``tools/campaigns/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
+- ``tools/comparison/run_reference_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/campaigns/run_imported_linear_targeted_audit.py`` (generic per-``ky`` targeted imported-linear wrapper)
 - ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/campaigns/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)

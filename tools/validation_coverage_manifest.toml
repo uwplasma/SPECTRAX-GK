@@ -3537,7 +3537,7 @@ artifact_paths = [
   "docs/_static/pre_manuscript_closure_status.png",
   "docs/_static/pre_manuscript_closure_runbook.json",
   "docs/_static/pre_manuscript_closure_runbook.png",
-  "docs/_static/gx_publication_panel.png",
+  "docs/_static/comparison/reference_publication_panel.png",
 ]
 next_tests = [
   "add finite-difference/tangent checks to autodiff figure scripts",

@@ -74,7 +74,7 @@ def test_secondary_table_rows_format_expected_values(tmp_path: Path) -> None:
 
 def test_parser_defaults_to_real_secondary_out_nc_asset() -> None:
     args = build_parser().parse_args([])
-    assert args.secondary_csv == STATIC / "secondary_gx_out_compare.csv"
+    assert args.secondary_csv == STATIC / "comparison" / "secondary_reference_out_compare.csv"
 
 
 def test_load_imported_linear_requires_expected_columns(tmp_path: Path) -> None:

@@ -76,7 +76,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--kbm-linear",
         type=Path,
-        default=STATIC / "kbm_gx_mismatch.csv",
+        default=STATIC / "comparison" / "kbm_reference_mismatch.csv",
         help="Tracked KBM linear mismatch CSV.",
     )
     parser.add_argument(
@@ -94,7 +94,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--out",
         type=Path,
-        default=STATIC / "gx_cyclone_kbm_panel.png",
+        default=STATIC / "comparison" / "reference_cyclone_kbm_panel.png",
         help="Output tokamak panel path.",
     )
     return parser

@@ -101,8 +101,9 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=ROOT
         / "docs"
         / "_static"
+        / "comparison"
         / "reference_modes"
-        / "w7x_linear_gx_ky0p3000.npz",
+        / "w7x_linear_reference_ky0p3000.npz",
         help="Frozen GX reference bundle path.",
     )
     parser.add_argument(

@@ -29,7 +29,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--csv",
         type=Path,
-        default=ROOT / "docs" / "_static" / "kbm_gx_candidates.csv",
+        default=ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv",
         help="Input CSV with ky/eig_overlap_gx/eig_rel_l2 columns.",
     )
     parser.add_argument(

@@ -1,5 +1,5 @@
 {
-  "candidate_csv": "docs/_static/kbm_gx_candidates.csv",
+  "candidate_csv": "docs/_static/comparison/kbm_reference_candidates.csv",
   "case": "kbm_linear_branch_continuity",
   "gate_passed": true,
   "gate_report": {

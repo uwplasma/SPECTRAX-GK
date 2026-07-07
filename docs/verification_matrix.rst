@@ -103,7 +103,7 @@ Frozen artifact paths for the currently closed tokamak linear lanes:
 - ``docs/_static/etg_comparison.png``
 - ``docs/_static/kbm_comparison.png``
 - ``docs/_static/kbm_eigenfunction_overlap_summary.png``
-- ``docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz``
+- ``docs/_static/comparison/reference_modes/kbm_linear_reference_ky0p3000.npz``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
 Closed raw-overlay diagnostic artifacts for the KBM lane:
@@ -205,7 +205,7 @@ Frozen artifact paths for the currently closed stellarator linear lanes:
 - ``docs/_static/hsx_linear_t2_scan.csv``
 - ``docs/_static/w7x_linear_t2_lastvalue.csv``
 - ``docs/_static/hsx_linear_t2_lastvalue.csv``
-- ``docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz``
+- ``docs/_static/comparison/reference_modes/w7x_linear_reference_ky0p3000.npz``
 - ``docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv``
 - ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png``
 - ``docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json``
@@ -643,7 +643,9 @@ Notes
 - README figures should use only ``Closed`` lanes unless a panel is explicitly
   marked exploratory.
 - Raw eigenfunction overlays for manuscript use should be rendered only from
-  frozen reference bundles checked into ``docs/_static/reference_modes/``.
+  frozen reference bundles checked into
+  ``docs/_static/comparison/reference_modes/``; companion SPECTRAX traces and
+  JSON gate reports stay in ``docs/_static/reference_modes/``.
   Do not build publication figures from transient external files or ad hoc
   office-machine outputs.
 - Experimental-facing figures such as W7-X fluctuation spectra should remain

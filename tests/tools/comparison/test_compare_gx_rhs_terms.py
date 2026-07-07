@@ -313,8 +313,8 @@ def test_ky_diagnostics_build_problem_seeds_multispecies_tem() -> None:
     assert np.allclose(np.asarray(G0[0]), 0.0)
 
 
-def test_dump_rhs_terms_seed_state_handles_multispecies_tem() -> None:
-    from tools.comparison import dump_rhs_terms as mod
+def test_write_rhs_term_diagnostics_seed_state_handles_multispecies_tem() -> None:
+    from tools.comparison import write_rhs_term_diagnostics as mod
 
     args = type(
         "Args",

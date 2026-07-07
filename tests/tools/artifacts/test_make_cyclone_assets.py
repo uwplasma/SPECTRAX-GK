@@ -34,7 +34,7 @@ def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
             omega=np.array([0.5, 0.6]),
         )
 
-    def fail_gx_scan(*_args, **_kwargs):
+    def fail_reference_scan(*_args, **_kwargs):
         raise AssertionError(
             "GX-balanced Cyclone scan should not be used for refresh_minimal"
         )
@@ -44,7 +44,7 @@ def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
     monkeypatch.setattr(
         make_tables, "_cyclone_reference_mismatch_scan", fake_reference_scan
     )
-    monkeypatch.setattr(make_tables, "_cyclone_gx_scan", fail_gx_scan)
+    monkeypatch.setattr(make_tables, "_cyclone_reference_scan", fail_reference_scan)
     monkeypatch.setattr(
         make_tables,
         "_build_rows",
@@ -95,7 +95,7 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(
             omega=np.array([0.5, 0.6]),
         )
 
-    def fail_gx_scan(*_args, **_kwargs):
+    def fail_reference_scan(*_args, **_kwargs):
         raise AssertionError(
             "GX-balanced Cyclone figure scan should not be used in fallback path"
         )
@@ -105,7 +105,7 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(
     monkeypatch.setattr(
         make_figures, "_cyclone_reference_mismatch_scan", fake_reference_scan
     )
-    monkeypatch.setattr(make_figures, "_cyclone_gx_scan", fail_gx_scan)
+    monkeypatch.setattr(make_figures, "_cyclone_reference_scan", fail_reference_scan)
     monkeypatch.setattr(
         make_figures, "cyclone_reference_figure", lambda _ref: (_DummyFigure(), None)
     )
@@ -403,7 +403,7 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(
     make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
 
 
-def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(
+def test_make_tables_cyclone_reference_scan_falls_back_from_project_to_max(
     monkeypatch,
 ) -> None:
     import tools.artifacts.make_tables as make_tables
@@ -467,7 +467,7 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(
 
     monkeypatch.setattr(make_tables, "fit_growth_rate_auto", fake_fit)
 
-    scan = make_tables._cyclone_gx_scan(
+    scan = make_tables._cyclone_reference_scan(
         np.array([0.4]),
         cfg,
         make_tables.WINDOWS["cyclone"],
@@ -485,7 +485,7 @@ def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(
 ) -> None:
     import tools.artifacts.make_tables as make_tables
 
-    csv_path = tmp_path / "kbm_gx_mismatch.csv"
+    csv_path = tmp_path / "kbm_reference_mismatch.csv"
     csv_path.write_text(
         "\n".join(
             [
@@ -513,7 +513,7 @@ def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
 ) -> None:
     import tools.artifacts.make_tables as make_tables
 
-    csv_path = tmp_path / "kbm_gx_mismatch.csv"
+    csv_path = tmp_path / "kbm_reference_mismatch.csv"
     csv_path.write_text(
         "\n".join(
             [
@@ -548,7 +548,7 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
 ) -> None:
     import tools.artifacts.make_tables as make_tables
 
-    (tmp_path / "kbm_gx_mismatch.csv").write_text(
+    (tmp_path / "kbm_reference_mismatch.csv").write_text(
         "\n".join(
             [
                 "ky,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,eig_overlap_gx,eig_rel_l2,eig_overlap_prev,branch_score,fit_window_tmin,fit_window_tmax",
@@ -564,7 +564,7 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
         "load_kbm_reference",
         lambda: (_ for _ in ()).throw(
             AssertionError(
-                "load_kbm_reference should not be called when gx mismatch csv exists"
+                "load_kbm_reference should not be called when reference mismatch csv exists"
             )
         ),
     )

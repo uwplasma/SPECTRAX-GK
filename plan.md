@@ -84,8 +84,8 @@ Near-term implementation rule:
 - Benchmark/comparison references to other codes are allowed only in
   `benchmarks/`, `tools/comparison/`, `tests/tools/comparison/`, benchmark docs,
   and explicitly labeled comparison figures/tables. Current naming blockers to
-  classify are `tools/campaigns/run_gx_linear_stress_matrix.py`,
-  `tools/gx_etg_ky25.in`, and `tools/gx_etg_runtime_ky15.in`.
+  classify are `tools/comparison/run_reference_linear_stress_matrix.py`,
+  `tools/comparison/fixtures/etg_ky25_reference.in`, and `tools/comparison/fixtures/etg_runtime_ky15_reference.in`.
 
 Authoritative domain consolidation:
 
@@ -2409,8 +2409,8 @@ Exit gates:
    - replace one-file-per-panel and one-file-per-status scripts with
      manifest-driven family commands;
    - classify or move the current comparison-code naming blockers:
-     `tools/campaigns/run_gx_linear_stress_matrix.py`, `tools/gx_etg_ky25.in`,
-     and `tools/gx_etg_runtime_ky15.in`.
+     `tools/comparison/run_reference_linear_stress_matrix.py`, `tools/comparison/fixtures/etg_ky25_reference.in`,
+     and `tools/comparison/fixtures/etg_runtime_ky15_reference.in`.
 4. Run a docs/static and examples deletion audit:
    - keep only README/docs/release-manifest referenced evidence;
    - remove stale pilot/probe/reduced-window companions from `main`;

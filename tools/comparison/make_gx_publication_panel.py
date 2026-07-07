@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cyclone-kbm-panel",
         type=Path,
-        default=STATIC / "gx_cyclone_kbm_panel.png",
+        default=STATIC / "comparison" / "reference_cyclone_kbm_panel.png",
         help="Tracked Cyclone/KBM tokamak panel.",
     )
     parser.add_argument(
@@ -76,13 +76,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--out",
         type=Path,
-        default=STATIC / "gx_publication_panel.png",
+        default=STATIC / "comparison" / "reference_publication_panel.png",
         help="Output PNG path.",
     )
     parser.add_argument(
         "--pdf-out",
         type=Path,
-        default=STATIC / "gx_publication_panel.pdf",
+        default=STATIC / "comparison" / "reference_publication_panel.pdf",
         help="Optional PDF output path for publication workflows.",
     )
     return parser

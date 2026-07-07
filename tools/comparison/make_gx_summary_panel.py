@@ -226,7 +226,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cyclone-kbm-panel",
         type=Path,
-        default=STATIC / "gx_cyclone_kbm_panel.png",
+        default=STATIC / "comparison" / "reference_cyclone_kbm_panel.png",
         help="Existing Cyclone/KBM GX comparison panel.",
     )
     parser.add_argument(
@@ -244,7 +244,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--secondary-csv",
         type=Path,
-        default=STATIC / "secondary_gx_out_compare.csv",
+        default=STATIC / "comparison" / "secondary_reference_out_compare.csv",
         help="Tracked secondary comparison CSV.",
     )
     parser.add_argument(
@@ -274,7 +274,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--out",
         type=Path,
-        default=STATIC / "gx_summary_panel.png",
+        default=STATIC / "comparison" / "reference_summary_panel.png",
         help="Output PNG path.",
     )
     return parser

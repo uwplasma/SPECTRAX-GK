@@ -76,47 +76,47 @@ preview_strategy = "compressed docs/_static preview below 500 kB"
 replay_command = "python tools/artifacts/make_benchmark_atlas.py"
 
 [[artifacts]]
-path = "docs/_static/gx_publication_panel.png"
+path = "docs/_static/comparison/reference_publication_panel.png"
 size_bytes = 142940
 sha256 = "f0efa3af8a11b316c43bafece659616dce70953adcedd7b64fe1aab8edd7aced"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
-release_asset_name = "gx_publication_panel.png"
+release_asset_name = "reference_publication_panel.png"
 reason = "Compressed comparison preview kept in Git for documentation rendering; high-resolution exports should be regenerated or release-hosted."
 preview_strategy = "compressed docs/_static preview below 500 kB"
 replay_command = "python tools/artifacts/make_benchmark_atlas.py"
 
 [[artifacts]]
-path = "docs/_static/gx_publication_panel.pdf"
+path = "docs/_static/comparison/reference_publication_panel.pdf"
 size_bytes = 372218
 sha256 = "421a77c3b44b9052f06efb3e08f849f385b8585998e0f1d93d39bd8599b43f30"
 action = "move_to_release"
 artifact_type = "high_resolution_panel"
-release_asset_name = "gx_publication_panel.pdf"
+release_asset_name = "reference_publication_panel.pdf"
 release_tag = "v1.5.0"
-release_url = "https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.5.0/gx_publication_panel.pdf"
+release_url = "https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.5.0/reference_publication_panel.pdf"
 reason = "PDF comparison panel should be release-hosted."
 preview_strategy = "release-only high-resolution PDF"
 replay_command = "python tools/artifacts/make_benchmark_atlas.py"
 
 [[artifacts]]
-path = "docs/_static/gx_summary_panel.png"
+path = "docs/_static/comparison/reference_summary_panel.png"
 size_bytes = 142910
 sha256 = "6635d367da28dd1fe725fa162df9e30931ecc59247d6a82ac9bd06ff2c0a4ac5"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
-release_asset_name = "gx_summary_panel.png"
+release_asset_name = "reference_summary_panel.png"
 reason = "Compressed comparison summary kept in Git for documentation rendering; high-resolution exports should be regenerated or release-hosted."
 preview_strategy = "compressed docs/_static preview below 500 kB"
 replay_command = "python tools/artifacts/make_benchmark_atlas.py"
 
 [[artifacts]]
-path = "docs/_static/gx_cyclone_kbm_panel.png"
+path = "docs/_static/comparison/reference_cyclone_kbm_panel.png"
 size_bytes = 112474
 sha256 = "c477ed140de98335efc559fa642a65774de93aa2e2a59fec8f13140b9a5bf690"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
-release_asset_name = "gx_cyclone_kbm_panel.png"
+release_asset_name = "reference_cyclone_kbm_panel.png"
 reason = "Compressed comparison preview kept in Git for documentation rendering; high-resolution exports should be regenerated or release-hosted."
 preview_strategy = "compressed docs/_static preview below 500 kB"
 replay_command = "python tools/artifacts/make_benchmark_atlas.py"
