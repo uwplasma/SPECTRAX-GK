@@ -565,13 +565,6 @@ Benchmark Initialization
    :members:
    :private-members:
 
-Benchmark Species Policies
---------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.species
-   :members:
-   :private-members:
-
 Benchmark Defaults
 ------------------
 

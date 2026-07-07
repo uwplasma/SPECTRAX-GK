@@ -431,7 +431,7 @@ Phase 1: introduce protocols and containers
   also the physical owner for those dataclasses.
   ``spectraxgk.validation.benchmarks.initialization`` owns benchmark initial-condition
   construction and ``spectraxgk.validation.benchmarks.defaults`` owns reference containers
-  and CSV loaders. ``spectraxgk.validation.benchmarks.species`` owns benchmark
+  and CSV loaders. ``spectraxgk.validation.benchmarks.defaults`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic
   normalization policies, ``spectraxgk.validation.benchmarks.scan`` owns scan batching, streaming windows,

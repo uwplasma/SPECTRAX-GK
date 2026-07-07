@@ -128,27 +128,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.species"
-source_path = "src/spectraxgk/validation/benchmarks/species.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark species-to-LinearParams builders, reference hypercollision constants, and linked-boundary damping policy"
-moved_exports = [
-  "REFERENCE_DAMP_ENDS_AMP",
-  "REFERENCE_DAMP_ENDS_WIDTHFRAC",
-  "REFERENCE_NU_HYPER_L",
-  "REFERENCE_NU_HYPER_M",
-  "REFERENCE_P_HYPER_L",
-  "REFERENCE_P_HYPER_M",
-  "_apply_reference_hypercollisions",
-  "_electron_only_params",
-  "_linked_boundary_end_damping",
-  "_reference_hypercollision_power",
-  "_two_species_params",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.cyclone_scan"

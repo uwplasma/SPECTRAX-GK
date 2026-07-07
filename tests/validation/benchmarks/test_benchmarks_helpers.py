@@ -39,7 +39,7 @@ from spectraxgk.validation.benchmarks.defaults import (
     _midplane_index,
     select_kbm_solver_auto,
 )
-from spectraxgk.validation.benchmarks.species import (
+from spectraxgk.validation.benchmarks.defaults import (
     _apply_reference_hypercollisions,
     _electron_only_params,
     _linked_boundary_end_damping,

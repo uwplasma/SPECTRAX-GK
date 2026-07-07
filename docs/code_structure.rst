@@ -693,9 +693,10 @@ configuration objects do not depend on the temporary validation package.
 Benchmark initial conditions live in
 ``spectraxgk.validation.benchmarks.initialization``. Reference data containers,
 CSV loaders, normalization constants, Krylov defaults, and solver-selection
-policy live in ``spectraxgk.validation.benchmarks.defaults``. Benchmark species-to-``LinearParams``
-construction and reference hypercollision/end-damping policy live in
-``spectraxgk.validation.benchmarks.species``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``. Scan batching and
+policy live in ``spectraxgk.validation.benchmarks.defaults``. Benchmark species-to-``LinearParams`` construction, reference
+hypercollision/end-damping policy, reference containers, normalization constants,
+Krylov defaults, and solver-selection policy live in
+``spectraxgk.validation.benchmarks.defaults``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``. Scan batching and
 scan-window policies live in ``spectraxgk.validation.benchmarks.scan``. Benchmark
 solver-selection policies live with Krylov defaults in
 ``spectraxgk.validation.benchmarks.defaults``. Import-identity tests pin the old
