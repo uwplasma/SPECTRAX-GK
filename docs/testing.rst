@@ -1206,8 +1206,12 @@ performance claims:
   bounded local stencil. The second covers split/reassemble spectral layout
   identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
   Both fail closed and carry no production routing or speedup claim.
-- ``tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
-  for the real Cyclone ``k_y``-batch gate.
+- ``tests/tools/artifacts/test_parallel_identity_gate_artifacts.py`` tests the
+  parallel identity artifact family: velocity reduction, Hermite exchange and
+  streaming, electrostatic field/drive/drift routes, linear-RHS parallel
+  routes, independent ``k_y`` batching, logical CPU batching, and quasilinear
+  runtime batching. It replaces the previous one-file-per-gate tests with one
+  parametrized artifact-family suite.
 - ``tests/unit/parallel/test_parallel_artifact_contracts.py`` locks the tracked large-run
   scaling artifacts themselves. It requires the performance and validation
   manifests to list the CPU/GPU split artifacts, verifies serial numerical

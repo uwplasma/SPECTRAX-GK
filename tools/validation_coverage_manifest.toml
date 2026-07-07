@@ -2241,7 +2241,7 @@ fast_tests = [
   "tests/unit/parallel/test_sharding.py",
   "tests/unit/solvers/test_sharded_integrators.py",
   "tests/unit/parallel/test_parallel.py",
-  "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/artifacts/test_parallel_identity_gate_artifacts.py",
   "tests/unit/parallel/test_velocity_sharding.py",
 ]
 artifact_paths = [
@@ -3813,7 +3813,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/parallel/test_parallel.py",
-  "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/artifacts/test_parallel_identity_gate_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_ky_scan_gate.json",
