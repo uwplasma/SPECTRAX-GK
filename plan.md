@@ -18,13 +18,15 @@ preserving validated solver behavior and public user workflows.
 
 Last audited: 2026-07-07 on `main`.
 
-- Latest local head: `6c25eb1d Enforce topology targets and folderize tool tests`.
-- Latest reachable release tag: `v1.6.10`; current `main` is one commit after
-  that tag.
+- Audited baseline head: `8fa2332c Retire reduced cETG runtime path`.
+- Latest reachable release tag at the audit: `v1.6.10`; the audited baseline
+  was three commits after that tag.
 - Git state at audit: clean `main`, tracking `origin/main`.
-- Latest GitHub `main` CI, dependency graph, release workflow, and PyPI publish
-  for `v1.6.10` passed.
+- Latest GitHub release workflow and PyPI publish for `v1.6.10` passed. CI for
+  the post-release refactor commits must be rechecked before the next tag.
 - Active local/remote branches: only `main` and `origin/main`.
+- Stale detached worktree metadata for old local investigations was pruned on
+  2026-07-07; the only remaining worktree is this `main` checkout.
 - Closed obsolete experimental PRs remain closed: #4, #5, and #6.
 - Tracked repository size is acceptable for now; no tracked file is above 1 MB.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`.
@@ -72,9 +74,9 @@ usable codebase.
 
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 357 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 322 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 265 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
+| Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Tool Python files | 264 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -99,9 +101,9 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 265 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
-| Flat `tests/` | 141 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
-| Legacy cETG/reduced-model path | Source, examples, docs, and tests preserve a non-promoted workflow | Retire from `main` or move to experiment branch; keep a clear unsupported-config error | Removes about one solver family plus docs/tests |
+| Flat `tools/` | 264 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
+| Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
 | Comparison-code terminology | Some source/test names use external-code names for physical conventions | Rename to physical/numerical names except explicit benchmark/comparison tools/docs | Cleaner clean-room library surface |
 | Validation API breadth | `api/validation.py` exposes many campaign objects as public API | Shrink public validation to stable metrics/gates; move campaign policies to tools/tests | Smaller API and less backward-compatibility burden |
@@ -115,16 +117,63 @@ The plan is deliberately deletion-first:
 4. Refactor hot kernels only behind profiler and identity gates.
 5. Update docs/readme only after the file layout and claims are true.
 
+## Latest Complexity Audit And Consolidation Decisions
+
+Audited on 2026-07-07 after commit `8fa2332c`:
+
+- Branches are not the complexity problem: only `main`/`origin/main` exist.
+  Stale detached worktree metadata was pruned.
+- The git object pack is still about 133 MiB after earlier history cleanup.
+  No tracked file is above 1 MiB; the remaining clone size is mostly historical
+  packed objects plus many small tracked docs/static artifacts.
+- Ignored local noise is large but not release-blocking: `.venv`,
+  `tools_out`, `outputs`, caches, docs build products, and generated VMEC
+  `wout_*.nc` files are ignored and should stay untracked.
+- The installable source still has 351 Python files. The largest structural
+  offender is `src/spectraxgk/validation` with 88 installable files.
+- The test tree still has 320 Python files, including 139 flat root files. The
+  biggest root files are historical aggregate tests such as
+  `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
+  `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
+- `tools/` still has 264 flat Python scripts. Prefix families show the actual
+  consolidation route: 57 `build_*`, 33 `plot_*`, 25 `check_*`, 25
+  `compare_*`, 25 `generate_*`, 20 `profile_*`, 16 `write_*`, and 15 `run_*`
+  scripts. These should become manifest-driven families, not hundreds of
+  standalone entry points.
+- `benchmarks/` is already at the root and is small: 7 Python files. It should
+  stay as the canonical lightweight benchmark-driver layer, not absorb raw
+  results or long campaign histories.
+- `examples/` has 42 Python files. The main risk is not count, but scope:
+  theory/demo and optimization scripts must be clearly marked as promoted,
+  pedagogical, benchmark, or long-run research.
+- `docs/code_structure.rst` still mirrors the migration history and is too
+  verbose. It should become a concise developer guide after the file moves,
+  not an archival list of every split file.
+
+Decision rules from this audit:
+
+1. If a source file only supports one manuscript/campaign artifact, move it out
+   of `src` or delete it.
+2. If a tool differs from another tool only by case name, figure name, or
+   manifest path, merge it into a manifest-driven builder/checker.
+3. If a test only checks a single tool wrapper, fold it into a parametrized
+   tool-family test.
+4. If a docs/static artifact is not referenced by README/docs or a release
+   manifest, delete it or regenerate it only in release artifacts.
+5. If a name uses comparison-code terminology for a physical convention or
+   numerical method, rename it unless the file is explicitly a benchmark or
+   comparison utility.
+6. If a feature is not promoted, validated, documented, and tested, it should
+   not stay in the main runtime path.
+
 ## Immediate Obsolete/Experimental Candidates
 
 These are candidates, not automatic deletions. Each must be checked for imports,
 docs references, tests, and promoted claims before removal.
 
-- `src/spectraxgk/terms/reduced/`, `src/spectraxgk/workflows/reduced_models.py`,
-  `examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py`,
-  `examples/nonlinear/axisymmetric/runtime_cetg_reference.toml`,
-  `tools/inspect_gx_reduced_model.py`, and cETG tests/docs. Default action:
-  retire from `main`.
+- cETG/reduced-model runtime implementation has been retired from `main`.
+  Remaining references must be limited to fail-closed input validation,
+  progress-log history, and explicit notes that the path is not promoted.
 - `examples/theory_and_demos/reduced_stellarator_itg/` and synthetic
   low-turbulence plotting paths. Default action: keep only if explicitly
   documented as a pedagogical differentiability demo; otherwise move out of
@@ -327,11 +376,10 @@ Every file should be classified before it is retained.
 
 Specific first candidate:
 
-- The cETG reduced-model path is legacy/non-promoted for the simplified next
-  version. It is currently wired through source, examples, docs, and tests. The
-  default plan is to remove it from `main`. If it must be preserved for research
-  archaeology, move it to a draft PR or external branch with clear non-release
-  status. Do not keep cETG as a hidden compatibility burden in the core runtime.
+- The cETG reduced-model path is already retired from `main`. Keep only the
+  fail-closed runtime input validation and progress-log history. Do not preserve
+  old examples, docs, tools, compatibility wrappers, or tests for that
+  non-promoted solver family.
 
 ## Test Consolidation Plan
 
@@ -494,7 +542,7 @@ Actions:
   - required optional dependencies,
   - expected output files,
   - whether it is pedagogical, benchmark-level, or long-run research.
-- Remove cETG examples if cETG is retired.
+- Remove examples for retired or non-promoted features.
 - Remove or move examples that depend on untracked private artifacts unless the
   README gives a reproducible path to generate inputs.
 - Keep optimization examples close to the VMEC-JAX style requested by users, but
@@ -716,7 +764,7 @@ Steps:
 6. Keep public root facades stable but thin.
 7. Remove migration wrappers and compatibility aliases after tests/examples use
    canonical names.
-8. Retire cETG or move it out of `main`.
+8. Remove remaining compatibility wrappers for retired or non-promoted paths.
 
 Exit gates:
 
@@ -732,7 +780,8 @@ Goal: examples are pedagogical and benchmarks are reproducible.
 Steps:
 
 1. Rewrite `examples/README.md` with a task-oriented map.
-2. Remove or move legacy examples such as cETG if the feature is retired.
+2. Remove or move legacy examples whose underlying feature is retired or not
+   promoted.
 3. Ensure each example has bounded runtime guidance and expected outputs.
 4. Move any benchmark-like example into `benchmarks/`.
 5. Move any test-only/example-smoke helper into `tests/integration/examples`.
@@ -776,8 +825,8 @@ Steps:
    runtime/memory panel, and claim boundaries.
 2. Update docs for architecture, code structure, testing, validation strategy,
    performance, examples, and API.
-3. Remove stale references to deleted files, cETG if retired, old tool paths,
-   and obsolete validation lanes.
+3. Remove stale references to deleted files, retired reduced-model paths, old
+   tool paths, and obsolete validation lanes.
 4. Run release gates:
    - repository size manifest,
    - architecture/topology manifest,
@@ -803,17 +852,19 @@ Exit gates:
 
 1. Keep the topology manifest current and fail any regression in source, test,
    tool, flat-test, flat-tool, or installable-validation file counts.
-2. Retire cETG and other legacy/non-promoted paths from `main` or move them to
-   an experiment PR/branch.
-3. Reorganize and merge the remaining flat tests below 100 total files.
-4. Reorganize, merge, and delete tools below 100 total files.
-5. Move validation/campaign code out of `src`.
-6. Consolidate source domains below 100 files.
-7. Clean examples and benchmarks.
-8. Run performance profiling and targeted hot-path refactors.
-9. Update docs/readme/API references.
-10. Run full local and CI release gates.
-11. Bump, tag, release.
+2. Generate and review a file-classification inventory for `src`, `tests`,
+   `tools`, `examples`, `benchmarks`, and docs artifacts.
+3. Remove remaining stale references and scaffolding for retired/non-promoted
+   paths.
+4. Reorganize and merge the remaining flat tests below 100 total files.
+5. Reorganize, merge, and delete tools below 100 total files.
+6. Move validation/campaign code out of `src`.
+7. Consolidate source domains below 100 files.
+8. Clean examples and benchmarks.
+9. Run performance profiling and targeted hot-path refactors.
+10. Update docs/readme/API references.
+11. Run full local and CI release gates.
+12. Bump, tag, release.
 
 ## Progress Log
 
@@ -860,23 +911,31 @@ Exit gates:
 
 ## Immediate Next Steps
 
-1. Collapse the remaining flat tests:
+1. Generate a repository inventory with classification columns:
+   promoted library, public example, benchmark driver, release gate, artifact
+   builder, profiler, comparison utility, active campaign, test-only helper,
+   docs artifact, retired legacy, or delete.
+2. Use that inventory to make the next deletions safe:
+   - delete stale docs/static artifacts not referenced by README/docs/manifests;
+   - delete or move one-off probes and status builders with no current owner;
+   - remove remaining tutorial/docs language for retired reduced-model paths.
+3. Collapse the remaining flat tests:
    - move physics/unit tests into `tests/unit/*`;
    - move runtime/executable tests into `tests/integration/runtime`;
    - merge tool tests by family instead of one test file per tool script.
-2. Move `tools/` into purpose folders and delete more probes:
+4. Move `tools/` into purpose folders and delete more probes:
    - release gates to `tools/release`;
    - publication/readme builders to `tools/artifacts`;
    - external-comparison utilities to `tools/comparison`;
    - profiler reproducers to `tools/profiling`;
    - active long-run launchers to `tools/campaigns`.
-3. Start the validation-out-of-package move:
+5. Start the validation-out-of-package move:
    - migrate `validation.benchmarks` behind root `benchmarks/` drivers or
      `spectraxgk.benchmarks` facade only where still public;
    - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and
      quasilinear holdout builders out of installable source unless they are
      reusable metrics.
-4. Only after the topology is smaller, profile and refactor the hot paths:
+6. Only after the topology is smaller, profile and refactor the hot paths:
    linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
    and VMEC/Boozer in-memory differentiable geometry.
 
@@ -890,8 +949,8 @@ following:
 - `tools` has fewer than 100 Python files.
 - Validation/campaign code no longer lives in the installable package except for
   tiny reusable metric helpers.
-- cETG and other obsolete/non-promoted paths are removed from `main` or moved to
-  a non-release PR/branch.
+- cETG and other obsolete/non-promoted paths are removed from `main`, except
+  fail-closed unsupported-input validation where needed.
 - Examples have a clear README and only current runnable/promoted workflows.
 - Benchmarks are root-level, small, documented, and free of raw outputs.
 - README and docs match the new structure and claim scope.

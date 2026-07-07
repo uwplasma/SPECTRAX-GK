@@ -19,8 +19,10 @@ refactor sequence.
 Plan Authority And Conflict Resolution
 --------------------------------------
 
-This page is the authoritative refactor plan for package layout, naming,
-migration order, and acceptance gates.
+``plan.md`` in the repository root is the active refactor authority and work
+log. This page is the architectural companion: it explains target package
+layout, naming rules, and acceptance gates, but it should be updated whenever
+``plan.md`` changes direction.
 
 - :doc:`code_structure` documents the current source tree and public facades.
   It should not be read as the target architecture.
@@ -31,9 +33,9 @@ migration order, and acceptance gates.
 - ``tools/differentiable_refactor_manifest.toml`` remains the executable
   migration ledger for active tranches. When a manifest row conflicts with this
   page, update the manifest row rather than adding a new root-level module.
-- ``plan.md`` is the active execution plan and short work log. It records
-  priority, current status, and recent checkpoints, but it does not override
-  this page's target architecture.
+- ``plan.md`` records priority, current status, recent checkpoints, and the
+  current execution order. If this page conflicts with ``plan.md``, update this
+  page or the relevant manifest rather than creating another plan.
 - README and user docs should describe stable user workflows, not internal
   migration scaffolding.
 
@@ -66,17 +68,18 @@ The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
 longer the main problem. The current blockers are installable validation
 campaign code and flat maintenance namespaces:
 
-- 357 Python source files under ``src/spectraxgk``.
+- 351 Python source files under ``src/spectraxgk`` after retiring the
+  non-promoted reduced cETG runtime path.
 - 88 Python files under ``src/spectraxgk/validation``.
-- 322 Python test files, of which 141 still live directly under ``tests``.
-- 265 Python tool scripts, all still directly under ``tools``.
+- 320 Python test files, of which 139 still live directly under ``tests``.
+- 264 Python tool scripts, all still directly under ``tools``.
 - no tracked files above 1 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 
 The next refactor should therefore delete or move non-promoted code before
 adding new modules. In particular, validation campaigns should leave the
 installable package, tool scripts should move into purpose-specific folders,
-remaining flat tests should be reorganized by domain, and legacy reduced-model
+remaining flat tests should be reorganized by domain, and retired/non-promoted
 or synthetic workflows should not remain on ``main`` unless they are promoted
 and documented.
 
