@@ -324,7 +324,7 @@ Core Validation Figures
    * - Velocity-space convergence panel
      - ``tools/artifacts/generate_observed_order_gate.py`` plus dedicated full convergence refresh script to add
      - Open
-     - should follow observed-order convergence evidence and write an observed-order gate report through ``spectraxgk.validation.benchmarks.harness.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The CSV-backed Cyclone velocity-space artifact is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; the current office/GPU ``ky=0.30`` sweep passes the strict pairwise-order and final-error gate.
+     - should follow observed-order convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarks.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The CSV-backed Cyclone velocity-space artifact is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; the current office/GPU ``ky=0.30`` sweep passes the strict pairwise-order and final-error gate.
    * - Stellarator validation panel
      - dedicated script to add
      - Open

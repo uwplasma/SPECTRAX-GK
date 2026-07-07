@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.validation.benchmarks.harness import estimate_observed_order
+from spectraxgk.benchmarks import estimate_observed_order
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.validation.benchmarks.harness import load_eigenfunction_reference_bundle
+from spectraxgk.benchmarks import load_eigenfunction_reference_bundle
 from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure
 
 ROOT = Path(__file__).resolve().parents[2]

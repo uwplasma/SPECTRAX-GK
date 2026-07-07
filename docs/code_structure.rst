@@ -105,7 +105,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/demo.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
-   - ``validation/benchmarks/harness.py``
+   - ``spectraxgk.benchmarks``
    - ``benchmarks.py``
    - ``tools/*.py``
 
@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``validation/benchmarks/harness.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -346,7 +346,7 @@ Completed extractions:
   finite-difference comparison stages.
 - benchmark-harness physics metric extraction and scan/mode orchestration:
   ``diagnostics/validation_gates.py`` and the public
-  ``validation/benchmarks/harness.py`` facade. Eigenfunction normalization,
+  ``spectraxgk.benchmarks`` facade. Eigenfunction normalization,
   phase alignment, comparison metrics, and reference-bundle IO live in
   ``diagnostics/modes.py``; diagnostic time-series loading, late/leading
   windows, analytic-signal construction, real-FFT ky-grid inference, late-time
@@ -354,7 +354,7 @@ Completed extractions:
   observed-order checks, and branch-continuity metrics live in
   ``diagnostics/validation_gates.py``. Zonal-flow residual/GAM metric extraction lives in
   ``diagnostics/zonal_validation.py``. The public
-  ``validation/benchmarks/harness.py`` facade keeps existing imports and test
+  ``spectraxgk.benchmarks`` facade keeps existing imports and test
   monkeypatch seams stable. Zonal-response metrics are staged as trace
   coercion, initial-level normalization, tail residual extraction,
   extrema/envelope detection, damping/frequency fits, and final

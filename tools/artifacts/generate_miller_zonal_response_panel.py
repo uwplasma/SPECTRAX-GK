@@ -18,7 +18,7 @@ from pathlib import Path
 import netCDF4 as nc
 import numpy as np
 
-from spectraxgk.validation.benchmarks.harness import (
+from spectraxgk.benchmarks import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,

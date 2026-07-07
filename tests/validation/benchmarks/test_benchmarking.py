@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.validation.benchmarks.harness import (
+from spectraxgk.benchmarks import (
     _analytic_signal,
     _explicit_time_window,
     _leading_window,
@@ -764,19 +764,19 @@ def test_run_scan_and_mode_uses_selected_ky_and_fit_window(monkeypatch) -> None:
         return run
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.extract_mode_time_series",
+        "spectraxgk.benchmarks.extract_mode_time_series",
         lambda phi_t, sel, method: np.array([1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j]),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.fit_growth_rate_auto",
+        "spectraxgk.benchmarks.fit_growth_rate_auto",
         lambda t, signal, **kwargs: (0.5, -0.1, 0.25, 1.75),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.extract_eigenfunction",
+        "spectraxgk.benchmarks.extract_eigenfunction",
         lambda phi_t, t, selection, z, method, tmin, tmax: np.array([1.0, 2.0, 3.0]),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 0.0, 1.0])),
     )
     cfg = SimpleNamespace(grid=object())
@@ -822,11 +822,11 @@ def test_run_scan_and_mode_short_trace_skips_fit(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 1.0])),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.harness.extract_eigenfunction",
+        "spectraxgk.benchmarks.extract_eigenfunction",
         lambda *args, **kwargs: np.array([1.0, -1.0]),
     )
 

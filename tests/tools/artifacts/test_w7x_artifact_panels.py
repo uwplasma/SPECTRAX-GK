@@ -22,7 +22,7 @@ from spectraxgk.config import (
     InitializationConfig,
     TimeConfig,
 )
-from spectraxgk.validation.benchmarks.harness import (
+from spectraxgk.benchmarks import (
     EigenfunctionComparisonMetrics,
     save_eigenfunction_reference_bundle,
 )

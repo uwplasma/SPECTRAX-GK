@@ -6,9 +6,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.validation.benchmarks.harness as benchmark_harness
-import spectraxgk.diagnostics.validation_gates as benchmark_gate_metrics
-import spectraxgk.diagnostics.zonal_validation as benchmark_zonal_metrics
+import spectraxgk.benchmarks as benchmark_harness
 from spectraxgk.diagnostics.validation_gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,

@@ -28,7 +28,7 @@ from spectraxgk.workflows.runtime.orchestration import (
     format_duration,
     run_runtime_scan_ky_task,
 )
-from spectraxgk.validation.benchmarks.harness import late_time_linear_metrics
+from spectraxgk.benchmarks import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
     GridConfig,

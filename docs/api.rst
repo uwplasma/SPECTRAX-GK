@@ -564,13 +564,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.defaults
    :members:
 
-Benchmarking
-------------
-
-.. automodule:: spectraxgk.validation.benchmarks.harness
-   :members:
-   :no-index:
-
 .. automodule:: spectraxgk.validation.benchmarks.cyclone_linear
    :members:
 

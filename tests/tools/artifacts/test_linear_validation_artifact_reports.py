@@ -13,7 +13,7 @@ import pandas as pd
 from PIL import Image, ImageDraw
 import pytest
 
-from spectraxgk.validation.benchmarks.harness import EigenfunctionComparisonMetrics
+from spectraxgk.benchmarks import EigenfunctionComparisonMetrics
 from support.paths import REPO_ROOT
 
 

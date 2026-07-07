@@ -1312,7 +1312,6 @@ next_tests = [
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
-  "spectraxgk.validation.benchmarks.harness",
   "spectraxgk.validation.benchmarks.cyclone_linear",
   "spectraxgk.validation.benchmarks.cyclone_scan",
   "spectraxgk.validation.benchmarks.cyclone_scan_branches",

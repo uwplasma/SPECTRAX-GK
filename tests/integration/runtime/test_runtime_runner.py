@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.workflows.runtime.startup as startup
-from spectraxgk.validation.benchmarks.harness import late_time_linear_metrics
+from spectraxgk.benchmarks import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
     GridConfig,

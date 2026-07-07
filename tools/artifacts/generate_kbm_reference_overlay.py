@@ -18,7 +18,7 @@ from tools.comparison.compare_gx_kbm import (
     _prepare_gx_reference,
 )
 from spectraxgk.diagnostics.analysis import extract_eigenfunction
-from spectraxgk.validation.benchmarks.harness import (
+from spectraxgk.benchmarks import (
     compare_eigenfunctions,
     eigenfunction_gate_report,
     gate_report_to_dict,

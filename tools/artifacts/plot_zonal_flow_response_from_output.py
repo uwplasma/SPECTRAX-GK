@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.validation.benchmarks.harness import (
+from spectraxgk.benchmarks import (
     load_diagnostic_time_series,
     zonal_flow_response_metrics,
 )
