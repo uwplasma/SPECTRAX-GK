@@ -2693,19 +2693,6 @@ fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.harness_scan"
-source_path = "src/spectraxgk/validation/benchmarks/harness_scan.py"
-facade_module = "spectraxgk.validation.benchmarks.harness"
-status = "active"
-responsibility = "linear ky-scan orchestration and representative eigenfunction extraction with fit-window metadata"
-moved_exports = [
-  "ScanAndModeResult",
-  "run_linear_scan",
-  "run_scan_and_mode",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.parallel.velocity_plan"
