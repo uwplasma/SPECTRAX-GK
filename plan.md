@@ -52,6 +52,101 @@ deleted from `main` or moved to a draft experiment branch/PR.
   release decisions stay in `tools/release`, and installable validation
   packages disappear.
 
+### Repository Role Model
+
+The repository should have one obvious destination for every retained file. If a
+file does not fit one of these roles, it does not belong on `main`.
+
+| Location | Role | Keep examples | Remove or move |
+| --- | --- | --- | --- |
+| `src/spectraxgk` | installed user and developer API | kernels, solvers, geometry providers, diagnostics, objectives, executable workflows | benchmark-case branch logic, manuscript campaigns, raw comparison scripts, one-off artifact builders |
+| `examples` | small runnable user tutorials | default run, plotting, geometry input, linear/QL/nonlinear optimization examples | long campaigns, parameter sweeps, unreleased research probes |
+| `benchmarks` | reproducible benchmark drivers | compact scripts that run a documented physics/performance benchmark from inputs | duplicate test wrappers, generated outputs, hidden policy code imported by the package |
+| `tools` | maintainer commands | artifact builders, release checks, campaign launchers, profiling, external-code comparison utilities | single-panel scripts that can be a manifest entry, stale fallback launchers, scratch dumps |
+| `tests` | automated correctness gates | table-driven unit/integration/validation/tool/release contracts | one-file-per-helper mirrors, monkeypatch forests, redundant branch tests |
+| `docs/_static` | curated evidence for current docs/readme claims | compressed figures, compact JSON summaries, CSV tables referenced by docs or release manifests | stale pilot traces, negative scratch probes, unreferenced historical panels |
+
+This role model resolves the `benchmarks` versus `tools` confusion:
+
+- `benchmarks/` answers "what should a researcher run to reproduce a benchmark?"
+- `tools/` answers "what should a maintainer run to build evidence, profile, or release?"
+- `tests/` answers "what must CI run automatically and quickly?"
+- `examples/` answers "what should a new user copy and modify?"
+
+### Deletion And Quarantine Policy
+
+Every consolidation tranche must run this triage before adding or moving files:
+
+1. **Delete from `main`** if the file is unreferenced, obsolete, a completed
+   pilot/probe, a stale reduced-window artifact, or a compatibility shim for an
+   unsupported workflow.
+2. **Move to a draft experiment PR** if the file is scientifically plausible but
+   not validated, not documented, or too expensive/noisy for release gates.
+3. **Fold into an existing owner** if the file only forwards to another module,
+   contains one case variant, or differs only by constants/manifest data.
+4. **Keep as a separate file** only when it owns a stable public concept,
+   a performance-critical JIT boundary, or a documented testable physics model.
+
+No new source package file is allowed unless it removes at least one old source
+file or isolates a JIT/performance boundary that is measured in the profiler
+manifest. No new test file is allowed unless it replaces larger duplicated tests
+or introduces a genuinely new gate family.
+
+### Complexity Reduction Targets
+
+These targets are intentionally aggressive but realistic:
+
+| Area | Current audit | Release target | How to get there |
+| --- | ---: | ---: | --- |
+| Installed source files | 288 | <= 150 near term, <= 100 final | delete `validation`, merge tiny geometry/objective/operator shards, remove legacy facades |
+| Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
+| Test files | 243 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
+| Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
+| Tool scripts | 247 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
+| Docs static files | 1605 | reference-graph curated | keep only docs/readme/release-manifest referenced evidence |
+
+The immediate milestone is not a cosmetic move. It is a measurable shrink:
+delete the installable benchmark-validation package, reduce the largest runtime
+and benchmark test files, and convert one-off artifact builders to
+manifest-driven commands.
+
+### Obsolete And Experimental-Code Audit Rules
+
+Use these searches before each release candidate and record the result in this
+plan:
+
+```bash
+git ls-files | rg -i '(^|/)(scratch|tmp|temp|probe|experimental|draft|old|legacy|deprecated|debug|dump|transient|prototype|smoke|scaffold|synthetic)'
+git ls-files | rg -v '(^benchmarks/|^tools/comparison/|^tests/tools/comparison/|^docs/.*(benchmark|comparison)|^README.md|^plan.md)' | xargs rg -n '\bGX\b|gx_|_gx|Gx'
+python tools/release/audit_repository_size.py --json-out docs/_static/repository_size_audit.json
+python tools/release/check_release_artifact_manifest.py
+```
+
+Allowed outcomes:
+
+- comparison-code names may remain only in explicit benchmark/comparison context;
+- "legacy", "probe", "dump", "synthetic", and "smoke" names are blockers on
+  `main` unless a release gate explicitly justifies them;
+- local ignored output such as `tools_out`, `docs/_build`, caches, and
+  `__pycache__` must stay untracked and may be deleted locally before release.
+
+### Performance Bottleneck Ownership
+
+Performance work should happen after ownership cleanup so measurements point to
+one responsible module. The current bottleneck map is:
+
+| Path | Likely bottleneck | Owner after refactor | Required gate before claim |
+| --- | --- | --- | --- |
+| Default executable run | compile latency, progress/reporting, setup overhead | `workflows` + `solvers` | wall-time, progress output, same linear fit |
+| Linear scans | repeated geometry/cache setup, batched RHS/eigensolve throughput | `operators/linear`, `solvers/linear`, `parallel` | serial-vs-batched identity and scan parity |
+| Nonlinear RHS | spectral bracket, field solve, diagnostics materialization | `operators/nonlinear`, `solvers/nonlinear` | serial-vs-decomposed identity on transport window |
+| VMEC/Boozer geometry | interpolation and coordinate transforms | `geometry` | geometry parity plus AD/FD gradient gate |
+| Output/plotting | NetCDF and large diagnostic writes | `artifacts`, `workflows` | artifact schema identity and reduced IO timing |
+
+Every runtime improvement must include: equivalent workload, before/after wall
+time, memory when practical, numerical identity or physics metric, and a profiler
+artifact if it supports a public speed claim.
+
 ### 2026-07-07 Final Topology Audit And Refactor Direction
 
 This audit supersedes older count snapshots below where they conflict.
