@@ -1219,15 +1219,9 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/quasilinear/test_quasilinear.py",
-  "tests/tools/artifacts/test_plot_quasilinear_spectrum.py",
-  "tests/tools/artifacts/test_plot_quasilinear_spectrum_shape_gate.py",
-  "tests/tools/artifacts/test_plot_quasilinear_saturation_rule_sweep.py",
-  "tests/tools/artifacts/test_plot_quasilinear_shape_aware_saturation.py",
-  "tests/tools/artifacts/test_plot_quasilinear_candidate_uncertainty.py",
-  "tests/tools/artifacts/test_plot_quasilinear_dataset_sufficiency.py",
+  "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
-  "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py",
   "tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py",
   "tests/validation/stellarator/test_external_holdout_plan.py",
 ]
@@ -1283,7 +1277,7 @@ fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
   "tests/release/test_check_quasilinear_calibration_inputs.py",
   "tests/validation/stellarator/test_check_external_vmec_high_grid_admission.py",
-  "tests/tools/artifacts/test_plot_quasilinear_calibration.py",
+  "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/tools/artifacts/test_plot_external_vmec_nonlinear_convergence_gate.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
   "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",

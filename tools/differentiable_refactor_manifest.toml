@@ -3371,7 +3371,7 @@ moved_exports = [
   "build_quasilinear_model_selection_status",
   "build_quasilinear_model_selection_status_from_paths",
 ]
-fast_tests = ["tests/unit/quasilinear/test_quasilinear_model_selection.py", "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py", "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py"]
+fast_tests = ["tests/unit/quasilinear/test_quasilinear_model_selection.py", "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py", "tests/tools/artifacts/test_quasilinear_artifact_plots.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 
 [[phase1_split_modules]]
