@@ -805,12 +805,7 @@ standard saved-time/streaming scan execution to
 ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
 hook bundle while keeping scan setup, default species/term policy,
 reference-aligned normalization, fit-window policy packing, ky-batch selection,
-and branch dispatch in focused local helpers. Trace-seed branch initialization lives in
-``spectraxgk.validation.benchmarks.cyclone_scan_seed`` and reference-aligned
-explicit-time reselection lives in
-``spectraxgk.validation.benchmarks.cyclone_scan_explicit``. The branch module
-owns the patchable hook bundle used by Cyclone scan tests while the solver
-policies stay isolated for review. The Cyclone single-mode time path shares
+and branch dispatch in focused local helpers. Trace-seed branch initialization, Krylov branch following, and reference-aligned explicit-time reselection now live in ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` so the scan has one patchable branch-policy owner. The Cyclone single-mode time path shares
 one local automatic-fit keyword policy between automatic signal selection and
 direct signal fitting, avoiding drift in late-window fit semantics. The Cyclone
 scan time path now keeps batch construction, per-batch time-configuration

@@ -31,7 +31,6 @@ from spectraxgk.benchmarks import (
     run_tem_linear,
 )
 import spectraxgk.validation.benchmarks.cyclone_scan_branches as cyclone_branches
-import spectraxgk.validation.benchmarks.cyclone_scan_krylov as cyclone_krylov
 from spectraxgk.validation.benchmarks.cyclone_scan_branches import (
     _resolve_time_branch_growth,
 )
@@ -81,11 +80,8 @@ def _fake_initial_condition(grid, *args, **kwargs):
 
 
 def test_cyclone_krylov_branch_has_single_canonical_owner() -> None:
-    assert cyclone_branches.run_krylov_cyclone_scan is (
-        cyclone_krylov.run_krylov_cyclone_scan
-    )
     assert inspect.getmodule(cyclone_branches.run_krylov_cyclone_scan) is (
-        cyclone_krylov
+        cyclone_branches
     )
 
 
@@ -2899,7 +2895,7 @@ def test_run_cyclone_scan_time_cached_uses_integrate_linear_output(monkeypatch) 
 
 
 def test_cyclone_scan_seed_policy_rejects_weak_and_accepts_mismatched_seed() -> None:
-    from spectraxgk.validation.benchmarks.cyclone_scan_seed import (
+    from spectraxgk.validation.benchmarks.cyclone_scan_branches import (
         seed_shift,
         use_explicit_seed,
     )
@@ -2939,7 +2935,7 @@ def test_cyclone_scan_seed_policy_rejects_weak_and_accepts_mismatched_seed() -> 
 
 
 def test_cyclone_explicit_reselection_policy_tracks_continuation_branch() -> None:
-    from spectraxgk.validation.benchmarks.cyclone_scan_explicit import (
+    from spectraxgk.validation.benchmarks.cyclone_scan_branches import (
         choose_reselected_frequency,
         explicit_reselection_target,
     )

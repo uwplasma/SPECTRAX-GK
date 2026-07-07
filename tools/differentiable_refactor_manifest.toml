@@ -143,49 +143,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_scan_krylov"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_krylov.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
-status = "active"
-responsibility = "Cyclone ky-scan Krylov branch following and explicit-trace seed-shift execution policy"
-moved_exports = [
-  "run_krylov_cyclone_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_scan_seed"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_seed.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
-status = "active"
-responsibility = "Cyclone ky-scan explicit-trace seed and Krylov shift policies"
-moved_exports = [
-  "reduced_seed_from_explicit_trace",
-  "seed_from_explicit_trace",
-  "seed_shift",
-  "use_explicit_seed",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_scan_explicit"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_explicit.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
-status = "active"
-responsibility = "Cyclone ky-scan reference-aligned explicit-time reselection policies"
-moved_exports = [
-  "choose_reselected_frequency",
-  "explicit_reselection_target",
-  "explicit_time_config_for_scan_point",
-  "krylov_reselected_frequency",
-  "run_explicit_time_cyclone_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_beta"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_beta.py"
 facade_module = "spectraxgk.benchmarks"
