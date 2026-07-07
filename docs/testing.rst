@@ -42,7 +42,7 @@ implemented physics or numerics.
 
 Source-layout hygiene is checked separately by
 ``tools/package_architecture_manifest.toml`` and
-``tools/check_package_architecture_manifest.py``. That guard follows
+``tools/release/check_package_architecture_manifest.py``. That guard follows
 :doc:`architecture_refactor_plan` and prevents new root-level prefix modules
 such as ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
 ``benchmark_*`` from being added without an explicit migration entry. This keeps

@@ -53,7 +53,7 @@ baseline and the final target. The default architecture check fails if the tool
 count regresses upward. The final consolidation release should additionally run:
 
 ```bash
-python tools/check_package_architecture_manifest.py --require-topology-targets
+python tools/release/check_package_architecture_manifest.py --require-topology-targets
 ```
 
 That strict mode fails until `tools/` contains fewer than 100 Python scripts and

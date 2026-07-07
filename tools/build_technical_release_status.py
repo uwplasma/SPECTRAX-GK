@@ -70,7 +70,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
     "refactor_modularity": (
         EvidenceCheck("architecture refactor plan", "docs/architecture_refactor_plan.rst", "authoritative refactor plan"),
         EvidenceCheck("package architecture manifest", "tools/package_architecture_manifest.toml", "allowed_root_prefix_modules"),
-        EvidenceCheck("package architecture checker", "tools/check_package_architecture_manifest.py", "root-level prefix modules"),
+        EvidenceCheck("package architecture checker", "tools/release/check_package_architecture_manifest.py", "root-level prefix modules"),
         EvidenceCheck("operators package facade", "src/spectraxgk/operators/__init__.py", "hermite_streaming"),
         EvidenceCheck("linear operator package", "src/spectraxgk/operators/linear/__init__.py", "build_linear_cache"),
         EvidenceCheck("linear solver package", "src/spectraxgk/solvers/linear/__init__.py", "KrylovConfig"),

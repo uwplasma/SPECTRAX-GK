@@ -280,7 +280,7 @@
           "exists": true,
           "name": "package architecture checker",
           "passed": true,
-          "path": "tools/check_package_architecture_manifest.py",
+          "path": "tools/release/check_package_architecture_manifest.py",
           "required": true,
           "snippet": "root-level prefix modules"
         },

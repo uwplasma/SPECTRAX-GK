@@ -19,7 +19,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
     import tomli as tomllib  # type: ignore[no-redef]
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "package_architecture_manifest.toml"
 DEFAULT_SOURCE_ROOT = REPO_ROOT / "src" / "spectraxgk"
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from tools.check_package_architecture_manifest import validate_architecture_policy
+from tools.release.check_package_architecture_manifest import validate_architecture_policy
 
 
 def _manifest(*, allowed: list[str]) -> dict[str, object]:
