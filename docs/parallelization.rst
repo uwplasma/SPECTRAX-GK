@@ -246,7 +246,9 @@ production step is therefore device-level pencil-FFT routing with real
 collectives and profiler evidence, not a speedup claim from the local
 axis-staged diagnostic.
 
-The first real-device candidate is a ``z``-sharded fused pencil RHS. This route
+The first real-device candidate is a ``z``-sharded fused pencil RHS, produced
+with ``tools/profiling/profile_device_z_pencil_transport_window.py --mode rhs``.
+This route
 keeps the FFT axes local on each device, shards the field-line dimension, and
 avoids global spectral tile reconstruction. The tracked logical-CPU artifact
 ``docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json`` confirms

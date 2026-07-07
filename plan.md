@@ -302,7 +302,7 @@ Last audited: 2026-07-07 on `main`.
   - `src/spectraxgk`: 292 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, and benchmark scan/mode orchestration.
   - `tests`: 243 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
-  - `tools`: 248 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, and deletion of obsolete unreferenced tool scripts.
+  - `tools`: 247 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, deletion of obsolete unreferenced tool scripts, and consolidation of the device-z RHS profiler into the transport-window profiler.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
 - The repository inventory classifies 46 installable validation files as
@@ -379,10 +379,10 @@ window diagnostics, and benchmark zonal-response metrics:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 300 Python files, about 101.4k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
-| `src/spectraxgk/validation` | 25 Python files, about 15.2k LOC | benchmark validation policy is still installed as runtime code |
-| `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
-| `tools` | 248 Python scripts, about 100.8k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
+| `src/spectraxgk` | 292 Python files, about 101.3k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
+| `src/spectraxgk/validation` | 17 Python files, about 14.9k LOC | benchmark validation policy is still installed as runtime code |
+| `tests` | 243 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
+| `tools` | 247 Python scripts, about 100.7k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
 | `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
 | `benchmarks` | 12 Python files, about 1.6k LOC | already small; keep as root-level reproducible benchmark entry points |
 | `examples` | 42 Python files, about 6.2k LOC | keep only promoted pedagogical workflows; move long campaigns and reduced scaffolds out |
@@ -559,11 +559,11 @@ usable codebase.
 
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 308 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 246 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 248 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Installable source Python files | 292 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
+| Test Python files | 243 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Tool Python files | 247 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
-| `src/spectraxgk/validation` package | 25 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| `src/spectraxgk/validation` package | 17 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
 | Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
 | Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
@@ -2151,3 +2151,11 @@ following:
 - 2026-07-07: folded `src/spectraxgk/validation/benchmarks/kbm_beta_solver_paths.py` into `kbm_beta.py`. Fixed-ky KBM beta explicit-time, Krylov, and saved-time sample policies now live with the beta-scan owner instead of a separate installable path module. Source Python files dropped to 293, installable validation files to 18, and validation benchmark files to 17.
 
 - 2026-07-07: folded `src/spectraxgk/validation/benchmarks/tem_paths.py` into `tem.py`. TEM remains scoped as a validation lane, but its scan/single-mode path helpers now live with the public benchmark owner instead of a separate installable path module. Source Python files dropped to 292, installable validation files to 17, and validation benchmark files to 16.
+
+- 2026-07-07: consolidated the standalone device-z fused-RHS profiling script into
+  `tools/profiling/profile_device_z_pencil_transport_window.py --mode rhs`,
+  deleting the old RHS-only profiler while keeping the existing RHS profile
+  artifact schema and manifest metric. Tool
+  Python files dropped to 247 and `tools/profiling` dropped to 19 scripts.
+  Focused profiling tests plus performance, architecture, and differentiable-
+  refactor manifest checks passed for this tranche.
