@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -729,7 +729,7 @@ separate from the numerical fitting and trajectory code that remains local to
 ``kbm_linear``.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
-``spectraxgk.validation.benchmarks.tem`` for ``run_tem_linear`` and ``run_tem_scan``.
+``spectraxgk.benchmarks`` for ``run_tem_linear`` and ``run_tem_scan``.
 The KBM beta-scan owner keeps patchable numerical hooks local while staging
 shared setup, fit-window policy construction, kinetic-species index validation,
 per-beta state/cache construction, solver-path dispatch, Krylov continuation
@@ -741,8 +741,8 @@ policy between primary auto-window fitting and invalid-window fallback fitting,
 and configured-time versus fixed-time integration is split before signal
 selection so stride and density-output policy cannot drift.
 The TEM public owner now keeps setup, parameter construction, and species
-validation local while ``spectraxgk.validation.benchmarks.tem`` owns the
-single-ky Krylov path, saved-time fit path, streaming scan branch, and scan
+validation local while ``spectraxgk.benchmarks`` owns the
+TEM single-ky Krylov path, saved-time fit path, streaming scan branch, and scan
 batch loop through an explicit hook bundle. The TEM Krylov path shares one
 forwarded-key policy for dominant-eigenpair configuration, matching the KBM
 benchmark-path guard against target/shift policy drift. The TEM single-ky

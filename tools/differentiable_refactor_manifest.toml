@@ -199,19 +199,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.tem"
-source_path = "src/spectraxgk/validation/benchmarks/tem.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "TEM benchmark-family public owner for setup, parameter construction, species validation, and stable run_tem_linear/run_tem_scan imports"
-moved_exports = [
-  "run_tem_linear",
-  "run_tem_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.validation_gates"
 source_path = "src/spectraxgk/diagnostics/validation_gates.py"
 facade_module = "spectraxgk.diagnostics"
@@ -1706,7 +1693,6 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
-  "spectraxgk.validation.benchmarks.tem",
   "spectraxgk.validation.reference_data",
   "spectraxgk.validation.fit_policies",
 ]

@@ -210,7 +210,7 @@ High-Risk Module Split Plan
   ``validation.benchmarks.kbm_linear``.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
-  ``validation.benchmarks.tem``. TEM single-ky saved-time fits share
+  ``spectraxgk.benchmarks``. TEM single-ky saved-time fits share
   one primary/fallback automatic-fit keyword policy in the same path module,
   and the single-ky time path resolves time configuration before dispatching
   to density, configured-phi, or explicit-phi integration. TEM scan streaming
@@ -439,8 +439,7 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.cyclone_scan``,
   ``spectraxgk.validation.benchmarks.kbm_beta``,
   ``spectraxgk.validation.benchmarks.kbm_linear``,
-  ``spectraxgk.benchmarks``, ``spectraxgk.validation.benchmarks.tem``,
-  ``spectraxgk.benchmarks`` owns the kinetic-electron and ETG single-run and scan implementations directly while remaining the public
+  ``spectraxgk.benchmarks`` owns the kinetic-electron, ETG, and TEM benchmark implementations directly while remaining the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core

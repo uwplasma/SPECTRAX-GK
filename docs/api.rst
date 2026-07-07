@@ -581,10 +581,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.kbm_linear
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.tem
-   :members:
-
-
 Validation Gates
 ----------------
 

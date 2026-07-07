@@ -1317,7 +1317,6 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.cyclone_scan_branches",
   "spectraxgk.validation.benchmarks.kbm_beta",
   "spectraxgk.validation.benchmarks.kbm_linear",
-  "spectraxgk.validation.benchmarks.tem",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
