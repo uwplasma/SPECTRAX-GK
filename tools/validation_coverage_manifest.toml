@@ -1246,9 +1246,6 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.diagnostics.quasilinear_calibration"
 path = "src/spectraxgk/diagnostics/quasilinear_calibration.py"
-owned_modules = [
-  "spectraxgk.validation.quasilinear.holdout_admission",
-]
 owner_lane = "nonlinear-window calibration and train/holdout quasilinear reports"
 status = "active"
 coverage_priority = "high"

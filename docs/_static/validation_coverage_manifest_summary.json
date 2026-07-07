@@ -88,8 +88,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 83,
   "n_modules": 106,
-  "n_owned_modules": 210,
-  "n_package_modules": 341,
+  "n_owned_modules": 209,
+  "n_package_modules": 340,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -164,9 +164,7 @@
       "spectraxgk.diagnostics.transport",
       "spectraxgk.diagnostics.weights"
     ],
-    "spectraxgk.diagnostics.quasilinear_calibration": [
-      "spectraxgk.validation.quasilinear.holdout_admission"
-    ],
+    "spectraxgk.diagnostics.quasilinear_calibration": [],
     "spectraxgk.diagnostics.transport_windows": [],
     "spectraxgk.diagnostics.validation_gates": [],
     "spectraxgk.diagnostics.zonal_validation": [],
@@ -879,7 +877,7 @@
       "n_fast_tests": 10,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 1,
+      "n_owned_modules": 0,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/diagnostics/quasilinear_calibration.py",
