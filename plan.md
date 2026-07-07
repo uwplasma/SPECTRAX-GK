@@ -52,6 +52,77 @@ deleted from `main` or moved to a draft experiment branch/PR.
   release decisions stay in `tools/release`, and installable validation
   packages disappear.
 
+### 2026-07-07 Re-Audit Decisions
+
+The latest inventory pass after the profiler consolidation found 2,527 tracked
+files. No tracked byte-size problem remains: the largest tracked file is below
+1 MiB, and generated caches/build trees are ignored. The remaining problem is
+maintainer complexity, not clone size.
+
+| Area | Current evidence | Decision |
+| --- | --- | --- |
+| Branches | only `main` and `origin/main` | no branch cleanup needed; keep future experimental work in draft PRs, not `main` |
+| `benchmarks/` | 18 tracked files, 12 Python files, about 1k lines | keep as the root reproducibility layer; do not merge with `tools/` or `examples/` |
+| `tools/` | 247 Python files, 19 profilers, 122 artifact builders | keep family folders but merge script forests into manifest-driven entry points |
+| `tests/` | 243 Python files; largest runtime and benchmark tests are 2k-4k lines | reduce by parametrizing repeated branch/tool tests, not by splitting monoliths into more files |
+| `src/spectraxgk/validation` | 17 files, all benchmark-related | close this package next by moving benchmark policy to a clearer benchmark-cases owner or root benchmark drivers |
+| comparison-code names | comparison tooling is correctly explicit, but some unit/runtime tests still use comparison-code terminology for numerical conventions | rename to physical/numerical names outside explicit comparison/benchmark context |
+
+The next work should avoid cosmetic moves. A file move is allowed only when it
+also removes a duplicated entry point, shrinks an installable validation surface,
+or clarifies a public user workflow.
+
+### Next Consolidation Tranches
+
+1. **Benchmark validation exit from `src/spectraxgk/validation`.**
+   - Keep `spectraxgk.benchmarks` as the public facade for documented benchmark
+     helpers.
+   - Rename implementation ownership away from `validation.benchmarks` because
+     these modules are benchmark-case workflows, not runtime validation logic.
+   - Collapse shared request, fit, scan, reference-data, and branch-selection
+     code before moving files; do not create a new 16-file package with a
+     different name.
+   - Gate with `tests/validation/benchmarks`, public API import tests, CLI
+     quickstart tests, and a comparison-terminology scan.
+
+2. **Benchmark and runtime test contraction.**
+   - Convert repeated monkeypatch-heavy branch tests into table-driven cases
+     with reusable fake runners and fake field/fit outputs.
+   - Target the largest files first:
+     `tests/integration/runtime/test_runtime_runner.py`,
+     `tests/validation/benchmarks/test_benchmarks_runner_branches.py`,
+     `tests/integration/runtime/test_runtime_helpers.py`, and
+     `tests/integration/runtime/test_cli.py`.
+   - Preserve coverage by testing contracts: configuration normalization,
+     progress reporting, geometry input, initialization, restart, artifact
+     writing, branch selection, and plotting.
+
+3. **Tool script forest contraction.**
+   - `tools/artifacts`: merge builders that only differ by labels, manifests, or
+     input paths into family drivers with a TOML/JSON manifest.
+   - `tools/campaigns`: keep only active long-run launch/postprocess scripts;
+     delete stale probes and move future experiments to draft PRs.
+   - `tools/comparison`: keep explicit comparison-code names here only; do not
+     import comparison terminology into runtime package names.
+   - `tools/profiling`: keep profiler entry points only when tied to a manifest
+     metric and artifact path.
+
+4. **Source-domain contraction after validation exits.**
+   - Merge `geometry_backends` into `geometry` around provider/back-end
+     contracts.
+   - Fold `terms` into `operators` unless a term module is a documented
+     mathematical API.
+   - Shrink root/public API facades to documented imports only.
+   - Consolidate NetCDF/TOML/plot/restart helpers by artifact contract, not by
+     historical output section.
+
+5. **Performance work tied to refactor ownership.**
+   - Profile the hot owner before changing it; no new runtime claim without a
+     before/after artifact and identity or physics gate.
+   - Current hot owners are linear cache construction, nonlinear bracket/RHS,
+     field solves, diagnostic materialization, VMEC/Boozer conversion, restart
+     IO, and nonlinear domain-decomposition communication.
+
 ### Consolidation Priorities
 
 1. **Finish validation leaving the package.**
