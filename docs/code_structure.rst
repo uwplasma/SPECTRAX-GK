@@ -12,9 +12,13 @@ explicit.
 The long-term consolidation target is documented in
 :doc:`architecture_refactor_plan`. New refactor work should move implementation
 into domain packages such as ``operators``, ``solvers``, ``objectives``,
-``parallel``, ``diagnostics``, ``workflows``, ``artifacts``, and ``validation``
-instead of adding more root-level ``runtime_*``, ``nonlinear_*``,
-``vmec_jax_*``, ``quasilinear_*``, or ``benchmark_*`` modules.
+``parallel``, ``diagnostics``, ``workflows``, and ``artifacts`` instead of
+adding more root-level ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``,
+``quasilinear_*``, or ``benchmark_*`` modules. The ``validation`` package is a
+temporary compatibility and metrics surface during the consolidation; campaign
+and benchmark-branch implementation should move to root ``benchmarks``,
+``tools``, or ``tests/validation`` rather than deeper installable validation
+subpackages.
 
 Public API vs Internal Modules
 ------------------------------
@@ -32,7 +36,9 @@ on:
 - ``spectraxgk.artifacts.plotting``
 - ``spectraxgk.parallel``
 - ``spectraxgk.operators.nonlinear.parallel``
-- documented benchmark/example scripts under ``examples/`` and ``tools/``
+- documented benchmark/example scripts under ``benchmarks/`` and ``examples/``
+- documented repository-maintenance entry points under purpose-specific
+  ``tools/`` subfolders
 
 Internal modules that are free to move as long as the public behavior and tests
 remain unchanged:

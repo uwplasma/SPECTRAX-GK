@@ -89,6 +89,47 @@ purpose-specific folders, one-file-per-tool tests should become parametrized
 family tests, and retired/non-promoted or synthetic workflows should not remain
 on ``main`` unless they are promoted and documented.
 
+Current Consolidation Decision
+------------------------------
+
+The 2026-07-07 planning reset in ``plan.md`` is the current execution
+authority. Older notes that describe flat root tests or flat root tools as the
+main blocker are historical. The present blocker is that release machinery,
+campaign validation, generated-artifact policy, benchmark branch history, and
+runtime library code are still too interwoven.
+
+The target ownership is:
+
+- ``src/spectraxgk`` contains the installable solver, geometry contracts,
+  diagnostics, differentiable objectives, parallel execution, artifact IO, and
+  executable workflows.
+- ``benchmarks`` contains small reproducible benchmark drivers and manifests,
+  not raw outputs or long campaign launch trees.
+- ``examples`` contains pedagogical promoted workflows, not hidden release
+  machinery or reduced scaffolds.
+- ``tools`` contains repository machinery: release gates, docs/readme artifact
+  builders, comparison utilities, profiling reproducers, and active long-run
+  campaign launch/postprocess scripts.
+- ``tests`` protects physics, numerics, API, artifact, release, and workflow
+  contracts through domain-organized parametrized suites.
+
+This means the next implementation order is:
+
+1. Define the small stable ``spectraxgk.benchmarks`` public surface and move
+   benchmark/campaign implementation out of ``spectraxgk.validation`` in
+   staged tranches.
+2. Collapse tool scripts by capability, especially artifact/status builders
+   that only differ by labels, case names, or output paths.
+3. Collapse tests by physical contract and shared fixtures, especially the
+   runtime and benchmark branch monoliths.
+4. Delete non-promoted examples, docs artifacts, and compatibility shims that
+   are not part of the next supported product.
+5. Consolidate source domains only after validation exits the package, so
+   ``terms``/``operators``, ``geometry``/``geometry_backends``, and root facade
+   cleanup can happen without preserving obsolete imports.
+6. Run profiler-backed hot-path changes only behind numerical-identity or
+   physics gates.
+
 External Design Guidance
 ------------------------
 

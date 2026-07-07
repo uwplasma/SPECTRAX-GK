@@ -19,13 +19,13 @@ preserving validated solver behavior and public user workflows.
 Last audited: 2026-07-07 on `main`.
 
 - Audited baseline head for the current topology plan:
-  `1aa584b2 Consolidate VMEC aggregate artifact tests`.
+  `4b57ef41 Consolidate preview compression tooling`.
 - Latest reachable release tag at the audit: `v1.6.10`; the audited baseline
   was three commits after that tag.
 - Git state at audit: clean `main`, tracking `origin/main`.
 - Latest GitHub release workflow and PyPI publish for `v1.6.10` passed. CI for
   the post-release refactor commits must be rechecked before the next tag; the
-  `1aa584b2` CI run was in progress at the latest audit.
+  `4b57ef41` CI run was in progress at the latest audit.
 - Active local/remote branches: only `main` and `origin/main`.
 - Stale detached worktree metadata for old local investigations was pruned on
   2026-07-07; the only remaining worktree is this `main` checkout.
@@ -42,12 +42,7 @@ Last audited: 2026-07-07 on `main`.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
 - The repository inventory classifies 88 installable validation files as
-  `move-or-shrink`, 239 tool files as `move-or-merge`, 268 files as
-  `keep-and-consolidate`, and 39 active-campaign/probe files as
-  `move-or-delete`. That inventory is now the source of truth for each
-  deletion or move tranche.
-- The refreshed repository inventory after `1aa584b2` classifies 88 files as
-  `move-or-shrink`, 561 files as `keep-or-merge`, 268 files as
+  `move-or-shrink`, 503 files as `keep-or-merge`, 268 files as
   `keep-and-consolidate`, 82 files as `keep-or-scope`, and 26 files as
   `keep-or-review`. The 88 `move-or-shrink` files are the validation package;
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
@@ -105,6 +100,112 @@ Latest focused audit for this tranche:
   come from deleting non-promoted paths, merging parametrizable tools/tests, and
   moving campaign validation out of the installable package.
 
+## 2026-07-07 Planning Reset: What Actually Needs To Change
+
+This section supersedes older migration notes whenever there is a conflict. The
+current tree no longer has a flat-test or flat-tool problem. It has a product
+boundary problem: package code, validation campaigns, artifact builders,
+profilers, benchmark drivers, and historical branch tests are all treated as if
+they were equally central to the runtime library.
+
+Current measured topology after `4b57ef41`:
+
+| Area | Files / lines | Main issue |
+| --- | ---: | --- |
+| `src/spectraxgk` | 351 Python files, about 106.8k LOC | installable package still contains validation campaigns and many public/internal facades |
+| `src/spectraxgk/validation` | 88 Python files, about 32.8k LOC | campaign, benchmark, nonlinear-gradient, quasilinear, and stellarator validation policy is installed as runtime code |
+| `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
+| `tools` | 259 Python scripts, about 98.7k LOC | many scripts differ by case labels, artifact names, or campaign paths |
+| `tools/artifacts` | 125 Python scripts, about 52.8k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
+| `benchmarks` | 12 Python files, about 1.6k LOC | already small; keep as root-level reproducible benchmark entry points |
+| `examples` | 42 Python files, about 6.2k LOC | keep only promoted pedagogical workflows; move long campaigns and reduced scaffolds out |
+
+Branch and PR state:
+
+- There are no obsolete local or remote branches in this clone: only `main` and
+  `origin/main` are present.
+- Closed experimental PRs should stay closed. If an experiment is still useful,
+  port only the specific, validated idea into the main refactor; do not
+  resurrect historical branches or keep stale compatibility code in `main`.
+- Future exploratory code belongs in draft PRs or external scratch branches
+  until it is promoted by tests, docs, and validation artifacts.
+
+Obsolete and experimental-code concentration:
+
+- Current solver kernels are not the main obsolete-code source. Keyword and
+  ownership scans put most `pilot`, `probe`, `reduced`, `legacy`, and
+  compatibility residue in docs, examples, tests/tools, `tools/artifacts`,
+  `tools/campaigns`, and `src/spectraxgk/validation`.
+- The first deletion candidates are files that only build historical,
+  non-promoted, reduced-window, pilot, or probe artifacts and are not referenced
+  by README, docs, release manifests, or current tests.
+- Compatibility aliases should be kept only for documented public user imports.
+  Test-only compatibility should be removed with the behavior it preserves.
+
+Benchmarks, tools, and examples are now defined as follows:
+
+- `examples/` teaches a user how to run promoted workflows. It should be small,
+  runnable, documented, and free of hidden campaign machinery.
+- `benchmarks/` contains small, reproducible accuracy/runtime benchmark drivers
+  and benchmark manifests. It should not contain raw outputs, docs figures, or
+  long campaign launch forests.
+- `tools/` is repository machinery: release gates, artifact builders,
+  comparison utilities, profiling reproducers, and active long-run campaign
+  launch/postprocess scripts. A tool must either be called by CI/release/docs or
+  be explicitly listed as an active campaign.
+- `src/spectraxgk/` is the installable library and executable. It should not
+  contain manuscript campaign policy, plotting scripts, long-run launchers, or
+  benchmark-branch history.
+
+The required consolidation path is therefore:
+
+1. **Move campaign validation out of `src` before further solver reshaping.**
+   The `spectraxgk.benchmarks` public facade currently imports from
+   `spectraxgk.validation.benchmarks`, so this must be staged: define the small
+   public benchmark API first, then relocate case-specific branch runners,
+   holdout ledgers, and campaign policy to root `benchmarks/`, `tools/`, or
+   `tests/validation`.
+2. **Merge tools by capability, not by file prefix.** Artifact builders should
+   become manifest-driven builders for families such as linear validation,
+   nonlinear transport, W7-X/zonal, VMEC/Boozer, quasilinear, release status,
+   and performance panels. The target is fewer maintained entry points, not one
+   mega-tool with unreadable modes.
+3. **Merge tests by physical contract.** The current highest-value test work is
+   replacing historical branch tests with parametrized contracts:
+   benchmark-fit policy, runtime progress/output policy, nonlinear diagnostics,
+   validation gates, artifact schema, and release policy.
+4. **Delete non-promoted examples and docs artifacts.** Reduced/synthetic or
+   short-window scaffolds stay only if they validate a promoted step and are
+   labeled as such. Otherwise they move to a draft experiment branch or are
+   deleted from `main`.
+5. **Only then consolidate source domains.** After validation exits the package,
+   merge adjacent runtime domains where names become simpler: `terms` into
+   `operators`, `geometry_backends` into `geometry`, package validation metrics
+   into `diagnostics`/`artifacts`, and root facades into a minimal public API.
+6. **Use profiler evidence for performance changes.** The known bottlenecks are
+   default-demo latency, linear cache construction, linear RHS, nonlinear
+   bracket/field solve, diagnostic materialization, VMEC/Boozer conversion, and
+   nonlinear decomposition communication. Each speedup claim needs before/after
+   profiler artifacts plus numerical-identity or physics gates.
+
+Every file should pass this keep test:
+
+1. Does it implement promoted runtime/library functionality?
+2. Does it teach a current user workflow?
+3. Does it drive a small reproducible benchmark?
+4. Does it enforce a CI/release gate?
+5. Does it build a README/docs/manuscript artifact that is referenced?
+6. Does it compare against an external code or reference in an explicit
+   benchmark context?
+7. Does it reproduce a profiler result cited by performance docs?
+8. Does it launch or postprocess an active documented campaign?
+9. Does it test a physics, numerics, API, artifact, or release contract that
+   still belongs to the promoted product?
+
+If the answer is no, the file leaves `main`. If the answer is yes but the file
+duplicates another file's policy, merge it. If the answer is yes but the file is
+installed campaign machinery, move it out of `src`.
+
 ## Hard Targets For The Refactor
 
 These targets are release gates for this refactor. They are intentionally strict
@@ -140,8 +241,8 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 13 Python scripts in one directory | Classify generator, benchmark, compression, figure/table, and diagnostic helpers; merge duplicate builders/checkers; delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
-| Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
+| Tool-family sprawl | 259 scripts, with 125 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
+| Test-family sprawl | 246 files, including runtime and benchmark branch monoliths plus one-file-per-tool wrappers | Merge by physical contract and shared fixtures; parametrize tool-family tests | Lower navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
 | Comparison-code terminology | Some source/test names use external-code names for physical conventions | Rename to physical/numerical names except explicit benchmark/comparison tools/docs | Cleaner clean-room library surface |
@@ -200,10 +301,12 @@ ambiguity, not just move files.
      where the only differences are case name, paths, or plotted labels.
 
 2. **Test topology wave.**
-   - Move the remaining flat root tests into `tests/unit`,
-     `tests/integration`, and `tests/validation`.
+   - Keep the flat root closed except for `conftest.py`; do not add new flat
+     root tests.
    - Merge one-file-per-script tool tests into family suites under
      `tests/tools/{release,artifacts,campaigns,comparison,profiling}`.
+   - Split the largest historical monoliths by physical/runtime contract rather
+     than by old branch history.
    - Keep 95% package-wide coverage by replacing duplicated tests with
      parameterization and shared physical fixtures, not by deleting coverage.
    - Enforce the local fast shard under five minutes; long nonlinear and GPU
@@ -251,17 +354,17 @@ ambiguity, not just move files.
 ## Latest Complexity Audit And Consolidation Decisions
 
 Audited on 2026-07-07 after commit
-`71d0f2de Consolidate VMEC Boozer artifact tests`:
+`4b57ef41 Consolidate preview compression tooling`:
 
 - Branch and PR hygiene is clean. This clone has only `main` and `origin/main`;
   obsolete experimental PRs #4, #5, and #6 remain closed; PR #7 is merged. The
-  current CI run for `71d0f2de` is queued and earlier runs were cancelled by
+  current CI run for `4b57ef41` is in progress and earlier runs were cancelled by
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
 - The active topology is `src/spectraxgk`: 351 Python files,
   `tests`: 246 Python files, `tools`: 259 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
-  consolidations reduced `tests/tools/artifacts` from 94 to 27 files while
+  consolidations reduced `tests/tools/artifacts` from 94 to 26 files while
   preserving focused artifact gates.
 - `docs/_static` is the largest tracked data footprint by count and size:
   1,572 tracked files and about 36.4 MiB, mostly compressed PNG/JSON/CSV
@@ -271,7 +374,8 @@ Audited on 2026-07-07 after commit
   The only tracked binary array bundles are the two small reference-mode NPZ
   files under `docs/_static/reference_modes`.
 - The largest structural source offender is still
-  `src/spectraxgk/validation`: 88 installable Python files and about 17k lines.
+  `src/spectraxgk/validation`: 88 installable Python files and about 32.8k
+  Python lines.
   It mixes benchmark branch policies, nonlinear-gradient campaigns,
   quasilinear ledgers, and stellarator campaign gates with the runtime package.
 - The largest test-maintenance offenders are
@@ -281,7 +385,7 @@ Audited on 2026-07-07 after commit
   not flat roots, but giant historical-branch files and one-family-per-script
   preservation.
 - The largest tool-maintenance offenders remain `tools/artifacts` with
-  126 scripts, `tools/campaigns` with 48 scripts, `tools/comparison` with
+  125 scripts, `tools/campaigns` with 48 scripts, `tools/comparison` with
   34 scripts, `tools/profiling` with 22 scripts, and `tools/release` with
   29 scripts. The next tool work should merge duplicate builders/checkers
   inside these folders, not create more folders.
@@ -1434,6 +1538,15 @@ Exit gates:
   wrapper. Tool Python files dropped from 260 to 259, tests from 247 to 246,
   `tools/artifacts` from 126 to 125, and `tests/tools/artifacts` from 27 to
   26 files.
+
+- 2026-07-07: tightened the refactor plan after a fresh repository audit. The
+  new planning reset records the current `4b57ef41` topology, clarifies that
+  obsolete branches are not present in this clone, identifies validation-in-src,
+  tool-family sprawl, test-family sprawl, and non-promoted examples/artifacts as
+  the actual complexity drivers, and defines the keep/move/delete test for every
+  file. The architecture and testing docs now point to this ownership model, and
+  `tests/README.md` defines how to add or merge tests without increasing
+  file-count and maintenance debt.
 
 ## Immediate Next Steps
 

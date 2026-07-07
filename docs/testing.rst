@@ -32,6 +32,12 @@ Long reference-code runs and office/GPU comparisons should not be hidden inside
 the default local suite. They should live behind explicit manifests or CI/manual
 lanes so local tests remain fast enough for routine development.
 
+The test-tree ownership map lives in ``tests/README.md``. New tests should go
+into ``unit``, ``integration``, ``validation``, ``tools``, ``release``, or
+``support`` according to the contract they protect. Do not add new flat
+``tests/test_*.py`` files, and do not add one-file-per-script wrappers when a
+parametrized family test can protect the same artifact or tool contract.
+
 The refactor branch also carries a machine-readable validation/coverage
 manifest at ``tools/validation_coverage_manifest.toml``. It is checked by
 ``tools/release/check_validation_coverage_manifest.py`` and maps each critical module
