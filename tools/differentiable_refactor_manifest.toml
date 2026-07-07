@@ -91,7 +91,7 @@ public_exports = [
   "ExtensionPointContract",
   "ModuleRefactorContract",
 ]
-fast_tests = ["tests/test_core_contracts.py"]
+fast_tests = ["tests/unit/core/test_core_contracts.py"]
 doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
 [[phase1_contract_modules]]
@@ -110,7 +110,7 @@ public_exports = [
   "Objective",
   "ArtifactWriter",
 ]
-fast_tests = ["tests/test_core_contracts.py"]
+fast_tests = ["tests/unit/core/test_core_contracts.py"]
 doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -124,7 +124,7 @@ moved_exports = [
   "_build_initial_condition",
   "_kinetic_reference_init_cfg",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -148,7 +148,7 @@ moved_exports = [
   "load_kbm_reference",
   "load_tem_reference",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -170,7 +170,7 @@ moved_exports = [
   "_reference_hypercollision_power",
   "_two_species_params",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -186,7 +186,7 @@ moved_exports = [
   "_select_fit_signal",
   "_select_fit_signal_auto",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -200,7 +200,7 @@ moved_exports = [
   "_iter_ky_batches",
   "_resolve_streaming_window",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmark_scan.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmark_scan.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -216,7 +216,7 @@ moved_exports = [
   "_midplane_index",
   "select_kbm_solver_auto",
 ]
-fast_tests = ["tests/test_benchmarks_helpers.py", "tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -228,7 +228,7 @@ responsibility = "Cyclone single-ky linear benchmark setup, parameter constructi
 moved_exports = [
   "run_cyclone_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_full_operator.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/unit/operators/test_full_operator.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -242,7 +242,7 @@ moved_exports = [
   "run_cyclone_time_path",
   "sync_path_hooks",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -254,7 +254,7 @@ responsibility = "Cyclone ky-scan runner setup and batched time integration behi
 moved_exports = [
   "run_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -268,7 +268,7 @@ moved_exports = [
   "run_explicit_time_cyclone_scan",
   "run_time_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -280,7 +280,7 @@ responsibility = "Cyclone ky-scan Krylov branch following and explicit-trace see
 moved_exports = [
   "run_krylov_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -295,7 +295,7 @@ moved_exports = [
   "seed_shift",
   "use_explicit_seed",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -311,7 +311,7 @@ moved_exports = [
   "krylov_reselected_frequency",
   "run_explicit_time_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -323,7 +323,7 @@ responsibility = "KBM fixed-ky beta-scan runner, per-beta setup, time/diffrax in
 moved_exports = [
   "run_kbm_beta_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/comparison/test_compare_gx_kbm.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/comparison/test_compare_gx_kbm.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -339,7 +339,7 @@ moved_exports = [
   "fit_kbm_beta_explicit_time_sample",
   "solve_kbm_beta_krylov_sample",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -351,7 +351,7 @@ responsibility = "KBM single-ky setup, state/cache construction, saved-time inte
 moved_exports = [
   "run_kbm_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_kbm_reference_overlay.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_kbm_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -366,7 +366,7 @@ moved_exports = [
   "run_kbm_krylov_path",
   "sync_path_hooks",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -386,7 +386,7 @@ moved_exports = [
   "TEMBaseCase",
   "TEMModelConfig",
 ]
-fast_tests = ["tests/test_config.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/unit/core/test_config.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -398,7 +398,7 @@ responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays i
 moved_exports = [
   "run_kbm_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -418,7 +418,7 @@ moved_exports = [
   "_valid_etg_growth",
   "run_etg_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -430,7 +430,7 @@ responsibility = "ETG ky-scan setup, batching, parameter construction, and publi
 moved_exports = [
   "run_etg_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -446,7 +446,7 @@ moved_exports = [
   "run_etg_time_batch",
   "sync_path_hooks",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 
@@ -459,7 +459,7 @@ responsibility = "single-ky kinetic-electron linear benchmark runner with explic
 moved_exports = [
   "run_kinetic_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -471,7 +471,7 @@ responsibility = "kinetic-electron ky-scan runner with focused setup, batch-stat
 moved_exports = [
   "run_kinetic_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -484,7 +484,7 @@ moved_exports = [
   "run_tem_linear",
   "run_tem_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -499,7 +499,7 @@ moved_exports = [
   "run_tem_scan_batches",
   "run_tem_time_linear_path",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_benchmarks.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -531,7 +531,7 @@ moved_exports = [
   "observed_order_gate_report",
   "zonal_response_gate_report",
 ]
-fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -553,7 +553,7 @@ moved_exports = [
   "ScalarGateResult",
   "ZonalFlowResponseMetrics",
 ]
-fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -574,7 +574,7 @@ moved_exports = [
   "observed_order_gate_report",
   "zonal_response_gate_report",
 ]
-fast_tests = ["tests/test_validation_gates.py", "tests/test_benchmarking.py"]
+fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -609,7 +609,7 @@ moved_exports = [
   "runtime_energy_total",
   "total_energy",
 ]
-fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -628,7 +628,7 @@ moved_exports = [
   "turbulent_heating_species",
   "turbulent_heating_total",
 ]
-fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_quasilinear.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py", "tests/unit/quasilinear/test_quasilinear.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -650,7 +650,7 @@ moved_exports = [
   "shape_aware_power_law_objective",
   "spectral_phi_weights",
 ]
-fast_tests = ["tests/test_quasilinear.py", "tests/test_autodiff_validation.py"]
+fast_tests = ["tests/unit/quasilinear/test_quasilinear.py", "tests/unit/objectives/test_autodiff_validation.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -674,7 +674,7 @@ moved_exports = [
   "zonal_phi_line_kxt",
   "zonal_phi_mode_kxt",
 ]
-fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py", "tests/unit/nonlinear/test_nonlinear_diagnostic_state.py", "tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -694,7 +694,7 @@ moved_exports = [
   "_rk3_heun_step",
   "_rk4_step",
 ]
-fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py"]
+fast_tests = ["tests/unit/solvers/test_explicit_time_integrators_lowlevel.py", "tests/integration/runtime/test_runtime_diagnostics.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -707,7 +707,7 @@ moved_exports = [
   "ExplicitTimeConfigLike",
   "integrate_linear_explicit_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_diagnostics.py", "tests/test_explicit_time_integrators_lowlevel.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py", "tests/unit/solvers/test_explicit_time_integrators_lowlevel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -725,7 +725,7 @@ moved_exports = [
   "_non_twist_shift_frequency_max",
   "_parallel_periods_from_grid",
 ]
-fast_tests = ["tests/test_explicit_time_integrators_lowlevel.py", "tests/test_runtime_diagnostics.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/unit/solvers/test_explicit_time_integrators_lowlevel.py", "tests/integration/runtime/test_runtime_diagnostics.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -738,7 +738,7 @@ moved_exports = [
   "_emit_time_progress",
   "_format_wall_time",
 ]
-fast_tests = ["tests/test_runtime_diagnostics.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -756,7 +756,7 @@ moved_exports = [
   "extract_mode_time_series",
   "select_ky_index",
 ]
-fast_tests = ["tests/test_analysis.py"]
+fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -776,7 +776,7 @@ moved_exports = [
   "select_fit_window_loglinear",
   "windowed_growth_rate_from_omega_series",
 ]
-fast_tests = ["tests/test_analysis.py"]
+fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -790,7 +790,7 @@ moved_exports = [
   "fit_growth_rate",
   "fit_growth_rate_with_stats",
 ]
-fast_tests = ["tests/test_analysis.py"]
+fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -803,7 +803,7 @@ moved_exports = [
   "select_fit_window",
   "select_fit_window_loglinear",
 ]
-fast_tests = ["tests/test_analysis.py"]
+fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -816,7 +816,7 @@ moved_exports = [
   "instantaneous_growth_rate_from_phi",
   "windowed_growth_rate_from_omega_series",
 ]
-fast_tests = ["tests/test_analysis.py"]
+fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -830,7 +830,7 @@ moved_exports = [
   "effective_boundary",
   "zero_shear_enabled",
 ]
-fast_tests = ["tests/test_geometry.py"]
+fast_tests = ["tests/unit/geometry/test_geometry.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -843,7 +843,7 @@ moved_exports = [
   "SAlphaGeometry",
   "SlabGeometry",
 ]
-fast_tests = ["tests/test_geometry.py"]
+fast_tests = ["tests/unit/geometry/test_geometry.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -859,7 +859,7 @@ moved_exports = [
   "load_imported_geometry_netcdf",
   "sample_flux_tube_geometry",
 ]
-fast_tests = ["tests/test_geometry.py"]
+fast_tests = ["tests/unit/geometry/test_geometry.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -874,7 +874,7 @@ moved_exports = [
   "finite_difference_jacobian",
   "observable_gradient_validation_report",
 ]
-fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -930,7 +930,7 @@ moved_exports = [
   "geometry_inverse_design_report",
   "geometry_sensitivity_report",
 ]
-fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1070,7 +1070,7 @@ moved_exports = [
   "build_boundary_chain_collection_summary",
   "build_boundary_chain_summary",
 ]
-fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1085,7 +1085,7 @@ moved_exports = [
   "_collection_row",
   "_empty_boundary_chain_counts",
 ]
-fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1176,7 +1176,7 @@ moved_exports = [
   "linear_solver_geometry_gradient_report",
   "solver_objective_branch_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
+fast_tests = ["tests/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1193,7 +1193,7 @@ moved_exports = [
   "mode21_vmec_boozer_quasilinear_gradient_report",
   "mode21_vmec_boozer_nonlinear_window_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_solver_gradient_gate_modules.py"]
+fast_tests = ["tests/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1206,7 +1206,7 @@ moved_exports = [
   "_mode21_vmec_boozer_linear_context",
   "_mode21_vmec_boozer_quasilinear_features",
 ]
-fast_tests = ["tests/test_solver_gradient_gate_modules.py"]
+fast_tests = ["tests/unit/solvers/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1287,7 +1287,7 @@ moved_exports = [
   "_pencil_spectral_bracket_z_chunked",
   "_within_abs_or_rel_tolerance",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1301,7 +1301,7 @@ moved_exports = [
   "nonlinear_spectral_communication_identity_report",
   "nonlinear_spectral_rhs_identity_report",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1314,7 +1314,7 @@ moved_exports = [
   "logical_decomposed_nonlinear_spectral_rhs",
   "nonlinear_spectral_rhs_identity_gate",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1327,7 +1327,7 @@ moved_exports = [
   "nonlinear_spectral_integrator_identity_gate",
   "integrate_logical_decomposed_nonlinear_spectral",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1346,7 +1346,7 @@ moved_exports = [
   "_device_z_rhs_identity_report",
   "_device_z_transport_window_report",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1365,7 +1365,7 @@ moved_exports = [
   "_spectral_physical_transport_observable_vector_from_sums",
   "_spectral_physical_transport_observables",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1608,7 +1608,7 @@ moved_exports = [
   "FullNonlinearRuntimeDeps",
   "run_full_nonlinear_runtime",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -1622,7 +1622,7 @@ moved_exports = [
   "FullLinearRuntimeDeps",
   "run_full_linear_runtime",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/test_quasilinear.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/unit/quasilinear/test_quasilinear.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -1681,7 +1681,7 @@ moved_exports = [
   "scan_runtime_linear_command",
   "should_show_progress",
 ]
-fast_tests = ["tests/test_cli.py", "tests/test_runtime_helpers.py"]
+fast_tests = ["tests/test_cli.py", "tests/integration/runtime/test_runtime_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1713,7 +1713,7 @@ moved_exports = [
   "validate_finite_array",
   "validate_finite_runtime_result",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_runtime_helpers.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py", "tests/integration/runtime/test_runtime_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1732,7 +1732,7 @@ moved_exports = [
   "_write_csv",
   "_write_state",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1754,7 +1754,7 @@ moved_exports = [
   "_state_basis_moments",
   "_condense_kykx_for_output",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1766,7 +1766,7 @@ responsibility = "nonlinear NetCDF output-bundle orchestration facade"
 moved_exports = [
   "_write_nonlinear_netcdf_outputs",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1782,7 +1782,7 @@ moved_exports = [
   "_write_resolved_species_spectra",
   "_write_zonal_phi_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart_gate.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py", "tests/integration/runtime/test_restart_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1797,7 +1797,7 @@ moved_exports = [
   "_write_geometry_group",
   "_write_input_parameters_group",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1809,7 +1809,7 @@ responsibility = "nonlinear NetCDF final-field big-file writing"
 moved_exports = [
   "_write_big_netcdf",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1823,7 +1823,7 @@ moved_exports = [
   "write_runtime_linear_scan_artifacts",
   "write_runtime_linear_artifacts",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1836,7 +1836,7 @@ moved_exports = [
   "_nonlinear_summary",
   "write_runtime_nonlinear_table_artifacts",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1853,7 +1853,7 @@ moved_exports = [
   "_condense_diagnostics_for_netcdf_output",
   "load_nonlinear_netcdf_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1870,7 +1870,7 @@ moved_exports = [
   "_laguerre_to_grid",
   "_laguerre_to_spectral",
 ]
-fast_tests = ["tests/test_nonlinear_exb.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_exb.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1894,7 +1894,7 @@ moved_exports = [
   "_spectral_bracket_real_fft",
   "_stack_fields",
 ]
-fast_tests = ["tests/test_nonlinear_exb.py", "tests/test_nonlinear_rhs.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_exb.py", "tests/unit/nonlinear/test_nonlinear_rhs.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1908,7 +1908,7 @@ moved_exports = [
   "integrate_linear_diffrax_streaming",
   "integrate_nonlinear_diffrax",
 ]
-fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1926,7 +1926,7 @@ moved_exports = [
   "_unpack_complex_state",
   "_density_from_G_cached",
 ]
-fast_tests = ["tests/test_diffrax_integrators_core.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1936,7 +1936,7 @@ facade_module = "spectraxgk.solvers.time.diffrax"
 status = "active"
 responsibility = "Diffrax linear integration with state/field/mode/density save paths and optional state sharding"
 moved_exports = ["integrate_linear_diffrax"]
-fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1946,7 +1946,7 @@ facade_module = "spectraxgk.solvers.time.diffrax"
 status = "active"
 responsibility = "Diffrax streaming linear growth/frequency accumulation without storing full time histories"
 moved_exports = ["integrate_linear_diffrax_streaming"]
-fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1956,7 +1956,7 @@ facade_module = "spectraxgk.solvers.time.diffrax"
 status = "active"
 responsibility = "Diffrax nonlinear explicit/IMEX integration and nonlinear bracket RHS routing"
 moved_exports = ["integrate_nonlinear_diffrax"]
-fast_tests = ["tests/test_diffrax_integrators_core.py", "tests/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1971,7 +1971,7 @@ moved_exports = [
   "nonlinear_em_term_cached_impl",
   "nonlinear_rhs_cached_impl",
 ]
-fast_tests = ["tests/test_nonlinear_rhs.py", "tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_rhs.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1989,7 +1989,7 @@ moved_exports = [
   "compute_nonlinear_diagnostic_tuple",
   "make_nonlinear_diagnostic_tuple_fn",
 ]
-fast_tests = ["tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_diagnostic_state.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2009,7 +2009,7 @@ moved_exports = [
   "sampled_scan_intervals",
   "select_nonlinear_step_diagnostics",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2035,7 +2035,7 @@ moved_exports = [
   "build_nonlinear_imex_operator",
   "build_nonlinear_time_step_policy",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/architecture.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2050,7 +2050,7 @@ moved_exports = [
   "_collision_damping",
   "build_nonlinear_collision_split_policy",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/api.rst", "docs/architecture.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2064,7 +2064,7 @@ moved_exports = [
   "_make_hermitian_projector",
   "_make_nonlinear_state_projector",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 
@@ -2081,7 +2081,7 @@ moved_exports = [
   "integrate_nonlinear_imex_cached",
   "nonlinear_rhs_cached",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py", "tests/test_nonlinear_rhs.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_rhs.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2096,7 +2096,7 @@ moved_exports = [
   "integrate_nonlinear_explicit_diagnostics_state",
   "integrate_nonlinear_imex_diagnostics",
 ]
-fast_tests = ["tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2112,7 +2112,7 @@ moved_exports = [
   "make_explicit_diagnostic_step",
   "run_explicit_diagnostic_scan",
 ]
-fast_tests = ["tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/solvers/test_nonlinear_explicit_step.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2127,7 +2127,7 @@ moved_exports = [
   "IMEXNonlinearDiagnosticsDeps",
   "integrate_imex_nonlinear_diagnostics_impl",
 ]
-fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_explicit_step.py"]
+fast_tests = ["tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/solvers/test_nonlinear_explicit_step.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2146,7 +2146,7 @@ moved_exports = [
   "run_imex_diagnostic_scan",
   "solve_imex_step",
 ]
-fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/solvers/test_nonlinear_imex.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2160,7 +2160,7 @@ moved_exports = [
   "make_imex_diagnostic_step",
   "run_imex_diagnostic_scan",
 ]
-fast_tests = ["tests/test_nonlinear_imex.py", "tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/solvers/test_nonlinear_imex.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2176,7 +2176,7 @@ moved_exports = [
   "VMECJAXReducedPrelaunchPolicy",
   "VMECJAXTransportAdmissionPolicy",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2189,7 +2189,7 @@ moved_exports = [
   "candidate_transport_metric",
   "transport_objective_sample_summary",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2203,7 +2203,7 @@ moved_exports = [
   "_ensemble_statistics",
   "build_nonlinear_landscape_admission_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_landscape_admission_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_landscape_admission_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2216,7 +2216,7 @@ moved_exports = [
   "_sample_statistics_summary",
   "build_reduced_nonlinear_audit_prelaunch_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2228,7 +2228,7 @@ responsibility = "next-campaign admission gates combining reduced, cross-sample,
 moved_exports = [
   "build_nonlinear_campaign_admission_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_campaign_admission_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_campaign_admission_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2240,7 +2240,7 @@ responsibility = "matched nonlinear audit redesign gates for turbulent-flux opti
 moved_exports = [
   "build_nonlinear_audit_redesign_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_transport_audit_redesign_report.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_transport_audit_redesign_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2253,7 +2253,7 @@ moved_exports = [
   "build_transport_admission_report",
   "select_admitted_transport_candidate",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2311,7 +2311,7 @@ target_packages = [
 public_facade = "spectraxgk.benchmarks"
 line_target = 800
 status = "planned"
-existing_fast_tests = ["tests/test_benchmarks.py", "tests/test_benchmark_scan.py"]
+existing_fast_tests = ["tests/validation/benchmarks/test_benchmarks.py", "tests/validation/benchmarks/test_benchmark_scan.py"]
 planned_tests = [
   "case-family import identity tests",
   "reference-data schema tests",
@@ -2347,7 +2347,7 @@ target_packages = [
 public_facade = "spectraxgk.geometry.differentiable"
 line_target = 200
 status = "active"
-existing_fast_tests = ["tests/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+existing_fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
 planned_tests = [
   "optional-backend discovery without import side effects",
   "sampled geometry PyTree round-trip tests",
@@ -2384,7 +2384,7 @@ target_packages = [
 public_facade = "spectraxgk.operators.nonlinear.parallel"
 line_target = 900
 status = "planned"
-existing_fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
+existing_fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
 planned_tests = [
   "serial-vs-decomposed RHS identity tests",
   "physical transport-window identity tests",
@@ -2417,7 +2417,7 @@ moved_exports = [
   "stellarator_itg_vmec_boozer_portfolio_objective_from_state",
   "stellarator_itg_vmec_boozer_sample_objective_table_from_state",
 ]
-fast_tests = ["tests/test_stellarator_optimization.py", "tests/test_stellarator_objective_portfolio.py"]
+fast_tests = ["tests/test_stellarator_optimization.py", "tests/unit/objectives/test_stellarator_objective_portfolio.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2446,7 +2446,7 @@ moved_exports = [
   "_finite_metric_tensor_from_records",
   "_zonal_row_table",
 ]
-fast_tests = ["tests/test_zonal_objective.py", "tests/tools/artifacts/test_build_zonal_flow_objective_gate.py"]
+fast_tests = ["tests/unit/objectives/test_zonal_objective.py", "tests/tools/artifacts/test_build_zonal_flow_objective_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
 
 [[phase1_split_modules]]
@@ -2590,7 +2590,7 @@ moved_exports = [
   "_transport_objective_raw_value_from_state",
   "vmec_jax_transport_objective_from_state",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_objective.py", "tests/test_vmec_jax_transport_gradient.py"]
+fast_tests = ["tests/test_vmec_jax_transport_objective.py", "tests/unit/objectives/test_vmec_jax_transport_gradient.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2663,7 +2663,7 @@ target_packages = [
 public_facade = "spectraxgk.nonlinear"
 line_target = 250
 status = "closed"
-existing_fast_tests = ["tests/test_nonlinear.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_rhs.py", "tests/test_nonlinear_diagnostic_state.py", "tests/test_nonlinear_explicit_step.py", "tests/test_nonlinear_imex.py"]
+existing_fast_tests = ["tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear_rhs.py", "tests/unit/nonlinear/test_nonlinear_diagnostic_state.py", "tests/unit/solvers/test_nonlinear_explicit_step.py", "tests/unit/solvers/test_nonlinear_imex.py"]
 planned_tests = [
   "RHS component identity tests",
   "IMEX/fixed-step/adaptive path equivalence tests",
@@ -2688,7 +2688,7 @@ facade_module = "spectraxgk.operators"
 status = "active"
 responsibility = "Hermite streaming kernel exposed through the linear operator package facade"
 moved_exports = ["hermite_streaming"]
-fast_tests = ["tests/test_linear.py"]
+fast_tests = ["tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2698,7 +2698,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linear parameter pytrees, term toggles, validation/coercion helpers, and term-config conversions"
 moved_exports = ["LinearParams", "LinearTerms", "linear_terms_to_term_config", "term_config_to_linear_terms"]
-fast_tests = ["tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2708,7 +2708,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linked-boundary FFT maps, signed spectral-index mapping, and linked-end damping profiles"
 moved_exports = ["_build_linked_fft_maps", "_build_linked_end_damping_profile", "_signed_to_index"]
-fast_tests = ["tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2718,7 +2718,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "Hermite-Laguerre moment operators, field-coupling primitives, and quasineutrality field solve helpers"
 moved_exports = ["build_H", "quasineutrality_phi", "streaming_term", "grad_z_periodic"]
-fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2728,7 +2728,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linear cache public facade over the pytree model, array factories, damping factors, and geometry-dependent builder"
 moved_exports = ["LinearCache", "build_linear_cache", "collision_damping", "hypercollision_damping"]
-fast_tests = ["tests/test_linear_helpers_extra.py", "tests/test_linear.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2738,7 +2738,7 @@ facade_module = "spectraxgk.operators.linear.cache"
 status = "active"
 responsibility = "LinearCache JAX pytree data model and deterministic flatten/unflatten contract"
 moved_exports = ["LinearCache"]
-fast_tests = ["tests/test_linear.py"]
+fast_tests = ["tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2754,7 +2754,7 @@ moved_exports = [
   "collision_damping",
   "hypercollision_damping",
 ]
-fast_tests = ["tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2764,7 +2764,7 @@ facade_module = "spectraxgk.operators.linear.cache"
 status = "active"
 responsibility = "geometry-dependent LinearCache construction staged into twist-shift policy, k-perp/drift arrays, Laguerre gyroaverages, linked-boundary metadata, and nonlinear-dealias cache fields"
 moved_exports = ["build_linear_cache"]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2774,7 +2774,7 @@ facade_module = "spectraxgk.operators.linear"
 status = "active"
 responsibility = "linear RHS assembly entry points and cache-backed field-solve dispatch"
 moved_exports = ["linear_rhs", "linear_rhs_cached"]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_velocity_sharding.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/parallel/test_velocity_sharding.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2789,7 +2789,7 @@ moved_exports = [
   "hypercollisions_contribution",
   "hyperdiffusion_contribution",
 ]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_gx_consistency.py", "tests/test_terms_assembly.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/validation/benchmarks/test_gx_consistency.py", "tests/unit/operators/test_terms_assembly.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2806,7 +2806,7 @@ moved_exports = [
   "assemble_rhs_terms_cached",
   "compute_fields_cached",
 ]
-fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2816,7 +2816,7 @@ facade_module = "spectraxgk.terms.assembly"
 status = "active"
 responsibility = "cached full linear-term RHS composition and generic/electrostatic JIT entry points"
 moved_exports = ["assemble_rhs_cached", "assemble_rhs_cached_jit", "assemble_rhs_cached_electrostatic_jit"]
-fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2826,7 +2826,7 @@ facade_module = "spectraxgk.terms.assembly"
 status = "active"
 responsibility = "per-term RHS contribution decomposition for diagnostics and reference-code parity audits"
 moved_exports = ["assemble_rhs_terms_cached"]
-fast_tests = ["tests/test_terms_assembly.py", "tests/tools/comparison/test_compare_gx_rhs_terms.py"]
+fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/tools/comparison/test_compare_gx_rhs_terms.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2836,7 +2836,7 @@ facade_module = "spectraxgk.terms.assembly"
 status = "active"
 responsibility = "field-only cached solve path used by runtime diagnostics, quasilinear tools, and validation comparisons"
 moved_exports = ["compute_fields_cached"]
-fast_tests = ["tests/test_terms_assembly.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2846,7 +2846,7 @@ facade_module = "spectraxgk.terms.assembly"
 status = "active"
 responsibility = "shared field-source, electrostatic-field, static-zero, and collision-skip helper policies"
 moved_exports = ["_apply_external_phi_source", "_collision_contribution_or_zero", "_is_static_zero", "_rhs_field_views"]
-fast_tests = ["tests/test_terms_assembly.py"]
+fast_tests = ["tests/unit/operators/test_terms_assembly.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2856,7 +2856,7 @@ facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "public facade and status-reporting wrapper for matrix-free Krylov eigenmode solves"
 moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
-fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2866,7 +2866,7 @@ facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
 responsibility = "immutable eigenmode-solver configuration policy used by runtime and benchmark scans"
 moved_exports = ["KrylovConfig"]
-fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_benchmarks_helpers.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2876,7 +2876,7 @@ facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
 responsibility = "matrix-free linear operator applications, damping extraction, normalization, and IMEX propagator step used by eigenmode solvers"
 moved_exports = ["_apply_operator", "_advance_imex2", "_compute_damping", "_normalize"]
-fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2886,7 +2886,7 @@ facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
 responsibility = "target-frequency, sign, overlap, and mode-family branch-selection rules for linear eigenmode solves"
 moved_exports = ["_select_by_target", "_select_by_overlap", "_omega_scale", "_mode_family_sign"]
-fast_tests = ["tests/test_linear_krylov_core.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2896,7 +2896,7 @@ facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
 responsibility = "shift-invert preconditioner construction and fallback policy for damped Hermite-line solves"
 moved_exports = ["_build_shift_invert_precond"]
-fast_tests = ["tests/test_linear_krylov_core.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2906,7 +2906,7 @@ facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
 responsibility = "compiled power, Arnoldi, propagator, and shift-invert Krylov algorithms for linear eigenmode extraction"
 moved_exports = ["dominant_eigenpair_power", "_arnoldi", "dominant_eigenpair_cached", "dominant_eigenpair_propagator_cached", "dominant_eigenpair_shift_invert_cached"]
-fast_tests = ["tests/test_linear_krylov_core.py", "tests/test_linear.py"]
+fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2916,7 +2916,7 @@ facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
 moved_exports = ["linear_rhs_parallel_cached", "linear_rhs_streaming_velocity_sharded", "linear_rhs_electrostatic_slices_velocity_sharded"]
-fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/parallel/test_linear_parallel_dispatch.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2926,7 +2926,7 @@ facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "implicit linear matrix-free operator construction, linked Hermite-line/coarse preconditioner policy, and GMRES time integration"
 moved_exports = ["_build_implicit_operator", "_integrate_linear_implicit_cached"]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_nonlinear_helpers_extra.py", "tests/test_nonlinear_imex.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py", "tests/unit/solvers/test_nonlinear_imex.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2936,7 +2936,7 @@ facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "linear fixed-step integration, implicit dispatch, parallel fallback, and diagnostic sampling"
 moved_exports = ["_integrate_linear_cached", "_integrate_linear_cached_donate", "_integrate_linear_cached_impl", "integrate_linear", "integrate_linear_diagnostics"]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_fast_smoke.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/integration/runtime/test_fast_smoke.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -2952,7 +2952,7 @@ moved_exports = [
   "finalize_runtime_linear_quasilinear",
   "fit_runtime_linear_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2968,7 +2968,7 @@ moved_exports = [
   "truncate_runtime_diagnostics",
   "validate_finite_runtime_diagnostics",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_diagnostics.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_diagnostics.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -2990,7 +2990,7 @@ moved_exports = [
   "_select_nonlinear_mode_indices",
   "_zero_kx_index",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -3012,7 +3012,7 @@ moved_exports = [
   "_periodic_zp_from_grid",
   "_reshape_netcdf_state",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3025,7 +3025,7 @@ moved_exports = [
   "_as_runtime_species_array",
   "_density_moments_for_target_phi",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3042,7 +3042,7 @@ moved_exports = [
   "run_runtime_linear_impl",
   "run_runtime_nonlinear_impl",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3068,7 +3068,7 @@ moved_exports = [
   "run_runtime_scan_batch",
   "run_runtime_scan_orchestration",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -3085,7 +3085,7 @@ moved_exports = [
   "run_runtime_scan_batch",
   "run_runtime_scan_orchestration",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3099,7 +3099,7 @@ moved_exports = [
   "build_runtime_progress_message",
   "format_duration",
 ]
-fast_tests = ["tests/test_runtime_helpers.py", "tests/test_runtime_chunks.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_chunks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3123,7 +3123,7 @@ moved_exports = [
   "write_linear_runtime_command_outputs",
   "write_scan_runtime_command_outputs",
 ]
-fast_tests = ["tests/test_runtime_artifacts.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3139,7 +3139,7 @@ moved_exports = [
   "phase_align_eigenfunction",
   "save_eigenfunction_reference_bundle",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/tools/artifacts/test_generate_w7x_reference_overlay.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_generate_w7x_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3158,7 +3158,7 @@ moved_exports = [
   "late_time_window",
   "load_diagnostic_time_series",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3175,10 +3175,10 @@ moved_exports = [
   "windowed_nonlinear_metrics",
 ]
 fast_tests = [
-  "tests/test_benchmarking.py",
+  "tests/validation/benchmarks/test_benchmarking.py",
   "tests/test_runtime_runner.py",
-  "tests/test_runtime_helpers.py",
-  "tests/test_terms_integrators.py",
+  "tests/integration/runtime/test_runtime_helpers.py",
+  "tests/unit/operators/test_terms_integrators.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3192,7 +3192,7 @@ moved_exports = [
   "zonal_flow_response_metrics",
 ]
 fast_tests = [
-  "tests/test_validation_gates.py",
+  "tests/validation/physics_gates/test_validation_gates.py",
   "tests/tools/artifacts/test_generate_miller_zonal_response_pilot.py",
   "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
 ]
@@ -3209,7 +3209,7 @@ moved_exports = [
   "run_linear_scan",
   "run_scan_and_mode",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3222,7 +3222,7 @@ moved_exports = [
   "VelocityShardingPlan",
   "build_velocity_sharding_plan",
 ]
-fast_tests = ["tests/test_velocity_sharding.py"]
+fast_tests = ["tests/unit/parallel/test_velocity_sharding.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3240,7 +3240,7 @@ moved_exports = [
   "velocity_field_reduce_shard_map",
 ]
 fast_tests = [
-  "tests/test_velocity_sharding.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
   "tests/tools/artifacts/test_generate_hermite_exchange_gate.py",
   "tests/tools/artifacts/test_generate_velocity_field_reduce_gate.py",
 ]
@@ -3263,7 +3263,7 @@ moved_exports = [
   "periodic_streaming_shard_map",
 ]
 fast_tests = [
-  "tests/test_velocity_sharding.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
   "tests/tools/artifacts/test_generate_periodic_streaming_microkernel_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
@@ -3281,7 +3281,7 @@ moved_exports = [
   "electrostatic_phi_shard_map",
 ]
 fast_tests = [
-  "tests/test_velocity_sharding.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
   "tests/tools/artifacts/test_generate_electrostatic_field_reduce_gate.py",
   "tests/tools/artifacts/test_generate_electrostatic_diamagnetic_gate.py",
 ]
@@ -3373,7 +3373,7 @@ moved_exports = [
   "build_quasilinear_model_selection_status",
   "build_quasilinear_model_selection_status_from_paths",
 ]
-fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py", "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py"]
+fast_tests = ["tests/unit/quasilinear/test_quasilinear_model_selection.py", "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py", "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 
 [[phase1_split_modules]]
@@ -3388,7 +3388,7 @@ moved_exports = [
   "_calibration_summary",
   "_optimized_equilibrium_audit_summary",
 ]
-fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py"]
+fast_tests = ["tests/unit/quasilinear/test_quasilinear_model_selection.py", "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[hotspots]]
@@ -3413,9 +3413,9 @@ status = "closed"
 existing_fast_tests = [
   "tests/test_stellarator_optimization.py",
   "tests/test_vmec_jax_transport_objective.py",
-  "tests/test_quasilinear_model_selection_extra.py",
-  "tests/test_parallel.py",
-  "tests/test_nonlinear_parallel.py",
+  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
+  "tests/unit/parallel/test_parallel.py",
+  "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 planned_tests = [
   "dedicated exact-order public __all__ regression test if future API churn grows",
@@ -3450,7 +3450,7 @@ target_packages = [
 public_facade = "spectraxgk.runtime"
 line_target = 700
 status = "planned"
-existing_fast_tests = ["tests/test_runtime_config.py", "tests/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+existing_fast_tests = ["tests/test_runtime_config.py", "tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
 planned_tests = [
   "default executable run contract tests",
   "progress/ETA reporter tests",
@@ -3475,7 +3475,7 @@ target_packages = [
 public_facade = "spectraxgk.workflows.runtime.artifacts"
 line_target = 700
 status = "planned"
-existing_fast_tests = ["tests/test_runtime_artifacts.py", "tests/test_restart.py"]
+existing_fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py", "tests/integration/runtime/test_restart.py"]
 planned_tests = [
   "NetCDF round-trip schema tests",
   "restart append normalization tests",
@@ -3500,7 +3500,7 @@ target_packages = [
 public_facade = "spectraxgk.linear"
 line_target = 800
 status = "planned"
-existing_fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_terms_assembly.py"]
+existing_fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/unit/operators/test_terms_assembly.py"]
 planned_tests = [
   "field-solve contract tests",
   "RHS assembly identity tests",
@@ -3555,7 +3555,7 @@ moved_exports = [
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
 ]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_miller_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py", "tests/unit/geometry/test_miller_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3572,7 +3572,7 @@ moved_exports = [
   "reflect_n_append",
   "to_ballooning",
 ]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3589,7 +3589,7 @@ moved_exports = [
   "compute_equal_arc_theta",
   "rebuild_straight_theta_state",
 ]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3599,7 +3599,7 @@ facade_module = "spectraxgk.geometry_backends.miller"
 status = "active"
 responsibility = "Miller imported-geometry profile assembly on the selected ballooning theta grid"
 moved_exports = ["assemble_miller_profiles"]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3609,7 +3609,7 @@ facade_module = "spectraxgk.geometry_backends.miller"
 status = "active"
 responsibility = "NetCDF writeout for internal Miller imported-geometry profiles"
 moved_exports = ["write_miller_eik_netcdf"]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3622,7 +3622,7 @@ moved_exports = [
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
 ]
-fast_tests = ["tests/test_geometry_backend_miller_internal.py", "tests/test_miller_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py", "tests/unit/geometry/test_miller_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3636,7 +3636,7 @@ moved_exports = [
   "internal_vmec_backend_available",
   "write_vmec_eik_netcdf",
 ]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3651,7 +3651,7 @@ moved_exports = [
   "_import_module_with_search_paths",
   "internal_vmec_backend_available",
 ]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3733,7 +3733,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "VMEC imported-geometry NetCDF writeout and atomic cache replacement"
 moved_exports = ["_write_vmec_eik_netcdf_atomically", "write_vmec_eik_netcdf"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3743,7 +3743,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "high-level VMEC request normalization, betaprim policy, remap orchestration, and EIK output generation"
 moved_exports = ["generate_vmec_eik_internal"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/test_vmec_eik.py"]
+fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3767,7 +3767,7 @@ moved_exports = [
   "NonlinearDomainIdentityReport",
   "NonlinearDomainTransportWindowReport",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_domain_parallel.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_domain_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3782,7 +3782,7 @@ moved_exports = [
   "NonlinearSpectralPencilWorkModel",
   "NonlinearSpectralDevicePencilFFTBatchModel",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3796,7 +3796,7 @@ moved_exports = [
   "NonlinearParallelStrategyName",
   "ParallelReadiness",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3809,7 +3809,7 @@ moved_exports = [
   "deterministic_nonlinear_spectral_state",
   "_validate_spectral_state_shape",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3826,7 +3826,7 @@ moved_exports = [
   "_spectral_tile_bounds",
   "_validate_chunks",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3840,7 +3840,7 @@ moved_exports = [
   "nonlinear_spectral_domain_work_model",
   "nonlinear_spectral_pencil_work_model",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/tools/profiling/test_profile_nonlinear_sharding.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/tools/profiling/test_profile_nonlinear_sharding.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3856,7 +3856,7 @@ moved_exports = [
   "_serial_nonlinear_spectral_rhs",
   "_spectral_bracket",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3871,7 +3871,7 @@ moved_exports = [
   "_max_abs_rel_error",
   "_within_abs_or_rel_tolerance",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_nonlinear_spectral_communication_gate.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3884,7 +3884,7 @@ moved_exports = [
   "ParallelIdentityReport",
   "parallel_identity_report",
 ]
-fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3900,7 +3900,7 @@ moved_exports = [
   "pad_to_multiple",
   "split_evenly",
 ]
-fast_tests = ["tests/test_parallel.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3918,7 +3918,7 @@ moved_exports = [
   "independent_map_identity_report",
   "independent_worker_metadata",
 ]
-fast_tests = ["tests/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3928,7 +3928,7 @@ facade_module = "spectraxgk.solvers.linear.parallel"
 status = "active"
 responsibility = "shared term-eligibility predicates and device-list resolution for velocity-parallel linear RHS routes"
 moved_exports = ["_is_electrostatic_field_terms", "_is_electrostatic_slice_terms", "_is_streaming_only_terms", "_resolve_parallel_devices"]
-fast_tests = ["tests/test_linear_parallel_dispatch.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/parallel/test_linear_parallel_dispatch.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3938,7 +3938,7 @@ facade_module = "spectraxgk.solvers.linear.parallel"
 status = "active"
 responsibility = "Hermite-sharded streaming-only and electrostatic-streaming linear RHS routes"
 moved_exports = ["linear_rhs_streaming_velocity_sharded", "linear_rhs_streaming_electrostatic_velocity_sharded", "_streaming_electrostatic_from_phi_velocity_sharded", "_electrostatic_streaming_field_rhs"]
-fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_helpers_extra.py"]
+fast_tests = ["tests/unit/parallel/test_velocity_sharding.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3948,7 +3948,7 @@ facade_module = "spectraxgk.solvers.linear.parallel"
 status = "active"
 responsibility = "electrostatic slice linear RHS route and fused multi-device Hermite shard-map kernel cache"
 moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
-fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/tools/profiling/test_profile_linear_rhs_parallel_slices.py"]
+fast_tests = ["tests/unit/parallel/test_velocity_sharding.py", "tests/unit/parallel/test_linear_parallel_dispatch.py", "tests/tools/profiling/test_profile_linear_rhs_parallel_slices.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3958,7 +3958,7 @@ facade_module = "spectraxgk.solvers.linear.integrators"
 status = "active"
 responsibility = "linear fixed-step diagnostic sampling policy for phi, density, Hermite-Laguerre energy, progress, and every-step/strided histories"
 moved_exports = ["integrate_linear_diagnostics"]
-fast_tests = ["tests/test_linear.py", "tests/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

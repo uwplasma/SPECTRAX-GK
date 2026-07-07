@@ -14,7 +14,7 @@ release_tag = "v1.6.1"
 release_url = "https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.6.1/wout_HSX_QHS_vacuum_ns201.nc"
 reason = "HSX VMEC fixture used by non-axisymmetric examples; hosted as a release asset so normal Git clones stay lightweight."
 preview_strategy = "release-hosted VMEC NetCDF fixture, not checked into Git"
-replay_command = "pytest -q tests/test_example_smoke.py tests/test_geometry.py"
+replay_command = "pytest -q tests/integration/examples/test_example_smoke.py tests/unit/geometry/test_geometry.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_readme_panel.png"

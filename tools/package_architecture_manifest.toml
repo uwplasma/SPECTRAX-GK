@@ -83,7 +83,7 @@ name = "flat_test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = false
-baseline = 139
+baseline = 47
 target = 1
 
 [[topology_policy.counts]]

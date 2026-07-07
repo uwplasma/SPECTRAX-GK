@@ -68,9 +68,9 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_stellarator_optimization.py",
   "tests/test_vmec_jax_transport_objective.py",
-  "tests/test_quasilinear_model_selection_extra.py",
-  "tests/test_parallel.py",
-  "tests/test_nonlinear_parallel.py",
+  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
+  "tests/unit/parallel/test_parallel.py",
+  "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 artifact_paths = [
   "docs/code_structure.rst",
@@ -104,7 +104,7 @@ numerics_contracts = [
   "validation-gate contracts require evidence paths before refactor claims are promoted",
 ]
 fast_tests = [
-  "tests/test_core_contracts.py",
+  "tests/unit/core/test_core_contracts.py",
 ]
 artifact_paths = [
   "tools/differentiable_refactor_manifest.toml",
@@ -159,10 +159,10 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_runtime_config.py",
-  "tests/test_runtime_helpers.py",
+  "tests/integration/runtime/test_runtime_helpers.py",
   "tests/test_runtime_runner.py",
-  "tests/test_runtime_artifacts.py",
-  "tests/test_restart.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_restart.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -193,7 +193,7 @@ numerics_contracts = [
   "adaptive step-count ceilings remain finite and reject zero-length runs",
 ]
 fast_tests = [
-  "tests/test_runtime_helpers.py",
+  "tests/integration/runtime/test_runtime_helpers.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -230,8 +230,8 @@ numerics_contracts = [
   "checkpointed nonlinear artifact handoff validates finite chunks before writing restart or output artifacts",
 ]
 fast_tests = [
-  "tests/test_runtime_helpers.py",
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_helpers.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -332,10 +332,10 @@ numerics_contracts = [
   "velocity-space and field-line resolution studies use observed-order gates",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_terms_assembly.py",
-  "tests/test_terms_fields.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/operators/test_terms_assembly.py",
+  "tests/unit/operators/test_terms_fields.py",
   "tests/tools/artifacts/test_generate_observed_order_gate.py",
 ]
 artifact_paths = [
@@ -373,9 +373,9 @@ numerics_contracts = [
   "cache builders preserve dtype policy, linked-boundary metadata, dealias masks, and moment-space array shapes",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_geometry.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/geometry/test_geometry.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -406,9 +406,9 @@ numerics_contracts = [
   "jit and non-jit RHS dispatch return identical state and phi shapes with deterministic dtype policy",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_velocity_sharding.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
   "tests/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
@@ -440,10 +440,10 @@ numerics_contracts = [
   "sampled implicit integration preserves shape, dtype, species squeezing, and finite sampled field diagnostics",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_nonlinear_helpers_extra.py",
-  "tests/test_nonlinear_imex.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
+  "tests/unit/solvers/test_nonlinear_imex.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -477,10 +477,10 @@ numerics_contracts = [
   "observed-order gates exercise RK2, RK4, SSPX3, IMEX, and IMEX2 against manufactured exact solutions",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_fast_smoke.py",
-  "tests/test_benchmarks_runner_branches.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/integration/runtime/test_fast_smoke.py",
+  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -511,10 +511,10 @@ numerics_contracts = [
   "quasineutrality protects zero denominators and preserves multi-species broadcasting",
 ]
 fast_tests = [
-  "tests/test_linear.py",
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_terms_fields.py",
-  "tests/test_terms_assembly.py",
+  "tests/unit/linear/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/operators/test_terms_fields.py",
+  "tests/unit/operators/test_terms_assembly.py",
 ]
 artifact_paths = [
   "docs/_static/hermite_streaming_ladder_gate.json",
@@ -545,8 +545,8 @@ numerics_contracts = [
   "positive/nonnegative validation rejects invalid host values while allowing traced autodiff values",
 ]
 fast_tests = [
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/linear/test_linear.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -577,8 +577,8 @@ numerics_contracts = [
   "linked FFT kz arrays and damping profiles preserve chain length and endpoint behavior",
 ]
 fast_tests = [
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_linear.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/linear/test_linear.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -614,9 +614,9 @@ numerics_contracts = [
   "Hermite-sharded streaming and electrostatic-slice routes preserve shape, dtype, and phi identity gates",
 ]
 fast_tests = [
-  "tests/test_linear_helpers_extra.py",
-  "tests/test_linear_parallel_dispatch.py",
-  "tests/test_velocity_sharding.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+  "tests/unit/parallel/test_linear_parallel_dispatch.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
 ]
 artifact_paths = [
   "docs/_static/linear_rhs_streaming_gate.json",
@@ -654,15 +654,15 @@ numerics_contracts = [
   "late-time fixed-mode frequency diagnostics remain conditioned when amplitudes are small",
 ]
 fast_tests = [
-  "tests/test_nonlinear.py",
-  "tests/test_nonlinear_rhs.py",
-  "tests/test_nonlinear_diagnostic_state.py",
-  "tests/test_nonlinear_explicit_step.py",
-  "tests/test_nonlinear_imex.py",
-  "tests/test_nonlinear_exb.py",
-  "tests/test_nonlinear_domain_parallel.py",
-  "tests/test_nonlinear_spectral_communication_gate.py",
-  "tests/test_terms_assembly.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_rhs.py",
+  "tests/unit/nonlinear/test_nonlinear_diagnostic_state.py",
+  "tests/unit/solvers/test_nonlinear_explicit_step.py",
+  "tests/unit/solvers/test_nonlinear_imex.py",
+  "tests/unit/nonlinear/test_nonlinear_exb.py",
+  "tests/unit/parallel/test_nonlinear_domain_parallel.py",
+  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/operators/test_terms_assembly.py",
   "tests/tools/artifacts/test_plot_nonlinear_window_statistics.py",
   "tests/tools/artifacts/test_plot_w7x_fluctuation_spectrum_panel.py",
   "tests/tools/artifacts/test_build_tem_branch_parity_audit.py",
@@ -710,8 +710,8 @@ numerics_contracts = [
   "zero-nonlinearity IMEX terms bypass field solves and return an exact zero state-shaped array",
 ]
 fast_tests = [
-  "tests/test_nonlinear_rhs.py",
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear_rhs.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_domain_parallel_identity_gate.json",
@@ -744,8 +744,8 @@ numerics_contracts = [
   "closure construction binds static diagnostic metadata once while leaving state arrays JAX-transformable",
 ]
 fast_tests = [
-  "tests/test_nonlinear_diagnostic_state.py",
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear_diagnostic_state.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -776,9 +776,9 @@ numerics_contracts = [
   "state dtype and projection are applied after the final stage for scan-carry stability",
 ]
 fast_tests = [
-  "tests/test_nonlinear_explicit_step.py",
-  "tests/test_nonlinear.py",
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/solvers/test_nonlinear_explicit_step.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -812,9 +812,9 @@ numerics_contracts = [
   "dependency injection keeps branch choices explicit while leaving traced state arrays JAX-transformable",
 ]
 fast_tests = [
-  "tests/test_nonlinear.py",
-  "tests/test_nonlinear_helpers_extra.py",
-  "tests/test_nonlinear_explicit_step.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
+  "tests/unit/solvers/test_nonlinear_explicit_step.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -850,9 +850,9 @@ numerics_contracts = [
   "constant-RHS SSPX3 stage composition gives the same one-step update as the exact constant derivative",
 ]
 fast_tests = [
-  "tests/test_nonlinear_imex.py",
-  "tests/test_nonlinear.py",
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/solvers/test_nonlinear_imex.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -889,9 +889,9 @@ numerics_contracts = [
   "profiler artifacts separate identity failures from speedup failures and record blocker reasons explicitly",
 ]
 fast_tests = [
-  "tests/test_nonlinear_parallel.py",
-  "tests/test_nonlinear_domain_parallel.py",
-  "tests/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/parallel/test_nonlinear_parallel.py",
+  "tests/unit/parallel/test_nonlinear_domain_parallel.py",
+  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
   "tests/tools/artifacts/test_build_parallelization_completion_status.py",
   "tests/tools/profiling/test_profile_nonlinear_sharding.py",
 ]
@@ -941,8 +941,8 @@ numerics_contracts = [
   "host-staged sharding and allclose-style tolerance helpers keep device-routing artifacts fail-closed and reproducible",
 ]
 fast_tests = [
-  "tests/test_nonlinear_parallel.py",
-  "tests/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/parallel/test_nonlinear_parallel.py",
+  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.json",
@@ -977,7 +977,7 @@ numerics_contracts = [
   "observable reductions compare final state, free energy, field energy, physical-flux proxy, and bracket RMS before enabling decomposed routing",
 ]
 fast_tests = [
-  "tests/test_nonlinear_parallel.py",
+  "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
@@ -1015,7 +1015,7 @@ numerics_contracts = [
   "progress emission is a no-op on the state when progress output is disabled",
 ]
 fast_tests = [
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1051,8 +1051,8 @@ numerics_contracts = [
   "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
 ]
 fast_tests = [
-  "tests/test_nonlinear_helpers_extra.py",
-  "tests/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1085,8 +1085,8 @@ numerics_contracts = [
   "species-squeezed damping preserves the state layout used by single-species nonlinear scans",
 ]
 fast_tests = [
-  "tests/test_nonlinear_helpers_extra.py",
-  "tests/test_nonlinear.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1116,7 +1116,7 @@ numerics_contracts = [
   "composed nonlinear-state projection applies fixed-mode preservation before Hermitian completion",
 ]
 fast_tests = [
-  "tests/test_nonlinear_helpers_extra.py",
+  "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1146,7 +1146,7 @@ numerics_contracts = [
   "seed and timestep variant labels are inferred deterministically from ensemble rows when explicit metadata is absent",
 ]
 fast_tests = [
-  "tests/test_nonlinear_replicate_diagnostics.py",
+  "tests/unit/nonlinear/test_nonlinear_replicate_diagnostics.py",
   "tests/tools/campaigns/test_summarize_nonlinear_replicate_spread.py",
 ]
 artifact_paths = [
@@ -1178,7 +1178,7 @@ numerics_contracts = [
   "missing seed/timestep metadata keeps the campaign blocked instead of fabricating run labels",
 ]
 fast_tests = [
-  "tests/test_nonlinear_replicate_followup.py",
+  "tests/unit/nonlinear/test_nonlinear_replicate_followup.py",
   "tests/tools/campaigns/test_write_nonlinear_replicate_followup_campaign.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
   "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",
@@ -1218,15 +1218,15 @@ numerics_contracts = [
   "candidate models must beat null baselines and pass data-volume/conditioning gates before runtime exposure",
 ]
 fast_tests = [
-  "tests/test_quasilinear.py",
+  "tests/unit/quasilinear/test_quasilinear.py",
   "tests/tools/artifacts/test_plot_quasilinear_spectrum.py",
   "tests/tools/artifacts/test_plot_quasilinear_spectrum_shape_gate.py",
   "tests/tools/artifacts/test_plot_quasilinear_saturation_rule_sweep.py",
   "tests/tools/artifacts/test_plot_quasilinear_shape_aware_saturation.py",
   "tests/tools/artifacts/test_plot_quasilinear_candidate_uncertainty.py",
   "tests/tools/artifacts/test_plot_quasilinear_dataset_sufficiency.py",
-  "tests/test_quasilinear_model_selection.py",
-  "tests/test_quasilinear_model_selection_extra.py",
+  "tests/unit/quasilinear/test_quasilinear_model_selection.py",
+  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py",
   "tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py",
   "tests/test_external_holdout_plan.py",
@@ -1420,10 +1420,10 @@ numerics_contracts = [
   "scan runners preserve ky ordering, finite filtering, and table schema",
 ]
 fast_tests = [
-  "tests/test_benchmarks.py",
-  "tests/test_benchmarks_helpers.py",
-  "tests/test_benchmarks_runner_branches.py",
-  "tests/test_benchmarking.py",
+  "tests/validation/benchmarks/test_benchmarks.py",
+  "tests/validation/benchmarks/test_benchmarks_helpers.py",
+  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
+  "tests/validation/benchmarks/test_benchmarking.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -1455,8 +1455,8 @@ numerics_contracts = [
   "fixed-shape ky batching is disabled for array-valued per-point controls",
 ]
 fast_tests = [
-  "tests/test_benchmark_scan.py",
-  "tests/test_benchmarks_helpers.py",
+  "tests/validation/benchmarks/test_benchmark_scan.py",
+  "tests/validation/benchmarks/test_benchmarks_helpers.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -1490,7 +1490,7 @@ numerics_contracts = [
   "reference-aligned kinetic-electron default differs only by documented shift source",
 ]
 fast_tests = [
-  "tests/test_normalization.py",
+  "tests/unit/core/test_normalization.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -1529,7 +1529,7 @@ numerics_contracts = [
   "resolved diagnostic reductions preserve shape and mode indexing",
 ]
 fast_tests = [
-  "tests/test_runtime_diagnostics.py",
+  "tests/integration/runtime/test_runtime_diagnostics.py",
   "tests/tools/comparison/test_compare_gx_nonlinear_diagnostics.py",
   "tests/tools/comparison/test_compare_gx_runtime_diag_state.py",
   "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
@@ -1567,7 +1567,7 @@ numerics_contracts = [
   "observed-order gates use pairwise slopes and final-error thresholds",
 ]
 fast_tests = [
-  "tests/test_validation_gates.py",
+  "tests/validation/physics_gates/test_validation_gates.py",
   "tests/tools/artifacts/test_make_validation_gate_index.py",
   "tests/tools/artifacts/test_generate_observed_order_gate.py",
   "tests/tools/artifacts/test_generate_kbm_branch_gate_summary.py",
@@ -1601,7 +1601,7 @@ numerics_contracts = [
   "closure probes expose hypercollision source and strength explicitly",
 ]
 fast_tests = [
-  "tests/test_zonal_validation.py",
+  "tests/validation/physics_gates/test_zonal_validation.py",
   "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
   "tests/tools/artifacts/test_generate_w7x_zonal_response_panel.py",
   "tests/tools/artifacts/test_plot_w7x_zonal_closure_ladder.py",
@@ -1647,7 +1647,7 @@ numerics_contracts = [
   "AD/JVP finite-difference and conditioning gates are required before optimizer use",
 ]
 fast_tests = [
-  "tests/test_zonal_objective.py",
+  "tests/unit/objectives/test_zonal_objective.py",
   "tests/tools/artifacts/test_build_zonal_flow_objective_gate.py",
 ]
 artifact_paths = [
@@ -1684,7 +1684,7 @@ numerics_contracts = [
   "finite-difference helper ownership remains re-exported through validation.autodiff for public API compatibility",
 ]
 fast_tests = [
-  "tests/test_autodiff_validation.py",
+  "tests/unit/objectives/test_autodiff_validation.py",
   "tests/test_autodiff_demo.py",
   "tests/test_autodiff_twomode_demo.py",
 ]
@@ -1723,7 +1723,7 @@ numerics_contracts = [
   "sampled theta grids reject mismatched solver coordinates and trim closed imported intervals only when appropriate",
 ]
 fast_tests = [
-  "tests/test_geometry.py",
+  "tests/unit/geometry/test_geometry.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_parity_matrix.png",
@@ -1774,11 +1774,11 @@ numerics_contracts = [
   "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
 ]
 fast_tests = [
-  "tests/test_geometry_backend_miller_internal.py",
+  "tests/unit/geometry/test_geometry_backend_miller_internal.py",
   "tests/test_geometry_backend_vmec_helpers.py",
-  "tests/test_miller_eik.py",
-  "tests/test_vmec_eik.py",
-  "tests/test_vmec_roundtrip_gate.py",
+  "tests/unit/geometry/test_miller_eik.py",
+  "tests/unit/geometry/test_vmec_eik.py",
+  "tests/unit/geometry/test_vmec_roundtrip_gate.py",
   "tests/tools/campaigns/test_run_vmec_roundtrip_gate.py",
 ]
 artifact_paths = [
@@ -1832,7 +1832,7 @@ fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
   "tests/tools/artifacts/test_build_vmec_boozer_parity_matrix.py",
   "tests/test_geometry_backend_vmec_helpers.py",
-  "tests/test_vmec_eik.py",
+  "tests/unit/geometry/test_vmec_eik.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
@@ -1867,10 +1867,10 @@ numerics_contracts = [
   "JSON summaries are strict and avoid nonfinite values",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
   "tests/test_runtime_runner.py",
   "tests/test_cli.py",
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1898,7 +1898,7 @@ numerics_contracts = [
   "package imports preserve identity with implementation modules and legacy facades",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1925,7 +1925,7 @@ numerics_contracts = [
   "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1955,7 +1955,7 @@ numerics_contracts = [
   "series flattening preserves scalar time traces and averages higher-rank diagnostic channels only along non-time axes",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -1986,7 +1986,7 @@ numerics_contracts = [
   "ky-scan and quasilinear-spectrum rows preserve solver ordering for serial and parallel scan comparisons",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2017,7 +2017,7 @@ numerics_contracts = [
   "scalar phi2-only nonlinear results still emit finite JSON summaries when diagnostics are disabled",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2048,7 +2048,7 @@ numerics_contracts = [
   "spectral complex arrays are converted to deterministic float32 real/imag layout before NetCDF writes",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2079,7 +2079,7 @@ numerics_contracts = [
   "particle moments use deterministic float32 arrays on the dealiased output grid",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2106,7 +2106,7 @@ numerics_contracts = [
   "active kx/ky dealiased field variables preserve the same condensed axes as diagnostic histories",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/runtime_memory_benchmark.png",
@@ -2135,8 +2135,8 @@ numerics_contracts = [
   "complex zonal diagnostics are written in deterministic real/imag layout",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
-  "tests/test_restart_gate.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_restart_gate.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2166,7 +2166,7 @@ numerics_contracts = [
   "restart and big-file outputs retain deterministic real/imag layout and finite final-time metadata",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2197,7 +2197,7 @@ numerics_contracts = [
   "missing optional turbulent-heating channels are filled with finite zero traces rather than NaNs",
 ]
 fast_tests = [
-  "tests/test_runtime_artifacts.py",
+  "tests/integration/runtime/test_runtime_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -2238,11 +2238,11 @@ numerics_contracts = [
   "strong-scaling panels separate compile, transfer, and warm runtime",
 ]
 fast_tests = [
-  "tests/test_sharding.py",
-  "tests/test_sharded_integrators.py",
-  "tests/test_parallel.py",
+  "tests/unit/parallel/test_sharding.py",
+  "tests/unit/solvers/test_sharded_integrators.py",
+  "tests/unit/parallel/test_parallel.py",
   "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
-  "tests/test_velocity_sharding.py",
+  "tests/unit/parallel/test_velocity_sharding.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",
@@ -2957,7 +2957,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
-  "tests/test_solver_gradient_gate_modules.py",
+  "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2988,7 +2988,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
-  "tests/test_solver_gradient_gate_modules.py",
+  "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -3020,7 +3020,7 @@ numerics_contracts = [
   "feature extraction must build the same linear cache and quadrature weights used by the promoted solver-objective reports",
 ]
 fast_tests = [
-  "tests/test_solver_gradient_gate_modules.py",
+  "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
@@ -3233,12 +3233,12 @@ fast_tests = [
   "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/tools/artifacts/test_build_nonlinear_transport_horizon_audit.py",
   "tests/test_nonlinear_transport_optimization.py",
-  "tests/test_vmec_jax_boundary_chain.py",
-  "tests/test_vmec_jax_candidate_gate.py",
+  "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
+  "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
   "tests/test_vmec_jax_qa_optimization_driver.py",
-  "tests/test_vmec_jax_transport_admission.py",
-  "tests/test_vmec_jax_transport_gradient.py",
-  "tests/test_vmec_jax_transport_line_search.py",
+  "tests/unit/objectives/test_vmec_jax_transport_admission.py",
+  "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
+  "tests/unit/objectives/test_vmec_jax_transport_line_search.py",
   "tests/test_vmec_jax_transport_objective.py",
   "tests/tools/campaigns/test_write_vmec_jax_projected_transport_line_search_inputs.py",
 ]
@@ -3567,7 +3567,7 @@ numerics_contracts = [
   "sample and objective weights are finite, non-negative, normalized, and shape checked",
 ]
 fast_tests = [
-  "tests/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -3597,7 +3597,7 @@ numerics_contracts = [
   "row-Jacobian conditioning and covariance diagnostics are reported with explicit rank gates",
 ]
 fast_tests = [
-  "tests/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -3656,7 +3656,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_vmec_jax_transport_objective.py",
-  "tests/test_vmec_jax_transport_gradient.py",
+  "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
@@ -3717,7 +3717,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_stellarator_optimization.py",
-  "tests/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_itg_portfolio_gate.json",
@@ -3812,7 +3812,7 @@ numerics_contracts = [
   "multi-device batches pad only by edge repetition and drop padded outputs deterministically",
 ]
 fast_tests = [
-  "tests/test_parallel.py",
+  "tests/unit/parallel/test_parallel.py",
   "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
 ]
 artifact_paths = [
@@ -3908,7 +3908,7 @@ numerics_contracts = [
   "font sizes, grid alpha, and dpi are deterministic across generated figures",
 ]
 fast_tests = [
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
 ]
 artifact_paths = [
   "docs/_static/manuscript_readiness_status.png",
@@ -3935,7 +3935,7 @@ numerics_contracts = [
   "log axes use positive floors and saved-output bundle inference is deterministic",
 ]
 fast_tests = [
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
   "tests/test_check_nonlinear_runtime_outputs.py",
 ]
 artifact_paths = [
@@ -3962,7 +3962,7 @@ numerics_contracts = [
   "scan axes and normalized eigenfunction rows remain readable across mixed ky ranges",
 ]
 fast_tests = [
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
   "tests/tools/comparison/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
@@ -3991,7 +3991,7 @@ numerics_contracts = [
   "fit overlays use the same fit routine as diagnostics and preserve phase-aligned references",
 ]
 fast_tests = [
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
@@ -4047,7 +4047,7 @@ numerics_contracts = [
   "empty panels are removed instead of shipped",
 ]
 fast_tests = [
-  "tests/test_plotting.py",
+  "tests/unit/diagnostics/test_plotting.py",
   "tests/test_autodiff_demo.py",
   "tests/test_autodiff_twomode_demo.py",
   "tests/tools/artifacts/test_build_manuscript_readiness_status.py",

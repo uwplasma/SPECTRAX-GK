@@ -1557,7 +1557,7 @@ Implementation Map
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/artifacts/build_nonlinear_campaign_admission_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
-  ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
+  ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.
 - Legacy nonlinear landscape admission report from the earlier narrow scan:
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
@@ -2162,7 +2162,7 @@ The CI-scale gate is:
 
 .. code-block:: bash
 
-   pytest -q tests/test_zonal_objective.py tests/tools/artifacts/test_build_zonal_flow_objective_gate.py
+   pytest -q tests/unit/objectives/test_zonal_objective.py tests/tools/artifacts/test_build_zonal_flow_objective_gate.py
    python tools/artifacts/build_zonal_flow_objective_gate.py
 
 The test exercises the optimization contract that the literature motivates:

@@ -143,8 +143,8 @@ Representative unit checks include:
   :func:`spectraxgk.terms.assemble_rhs_cached`,
   :func:`spectraxgk.linear.linear_rhs_cached`.
 
-These tests live in ``tests/test_linear.py`` and ``tests/test_grids.py`` and
-``tests/test_normalization.py`` and ``tests/test_terms_assembly.py`` and are
+These tests live in ``tests/unit/linear/test_linear.py`` and ``tests/unit/core/test_grids.py`` and
+``tests/unit/core/test_normalization.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
 designed to fail deterministically if a discretization, assembly path, or
 normalization changes.
 
@@ -165,7 +165,7 @@ remain invariant across refactors:
 - **End-cap damping**: the linked-boundary taper only affects :math:`k_y>0`
   modes and vanishes when ``damp_ends_amp = 0``.
 
-These checks are in ``tests/test_linear.py`` and are meant to be future-proof
+These checks are in ``tests/unit/linear/test_linear.py`` and are meant to be future-proof
 physics invariants.
 
 Benchmark regression tests
@@ -179,7 +179,7 @@ growth-rate extraction pipeline:
   and :func:`spectraxgk.benchmarks.run_cyclone_scan`.
 - Reduced ky regression with tightened tolerances on the field-aligned grid.
 
-These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
+These tests live in ``tests/validation/benchmarks/test_benchmarks.py`` and ``tests/unit/operators/test_full_operator.py``.
 
 Literature-anchored response and spectrum tests
 -----------------------------------------------
@@ -1152,23 +1152,23 @@ Diffrax and nonlinear smoke tests
 Diffrax integration and the nonlinear driver are exercised with fast smoke
 tests:
 
-- ``tests/test_diffrax_integrators.py`` runs explicit and IMEX diffrax solvers
+- ``tests/unit/solvers/test_diffrax_integrators.py`` runs explicit and IMEX diffrax solvers
   on tiny grids.
-- ``tests/test_diffrax_integrators_core.py`` hardens branch coverage for
+- ``tests/unit/solvers/test_diffrax_integrators_core.py`` hardens branch coverage for
   diffrax helper paths (solver selection, save modes, streaming fits, IMEX
   branches, parallelization, and validation errors).
-- ``tests/test_linear_krylov_core.py`` hardens matrix-free Krylov internals
+- ``tests/unit/solvers/test_linear_krylov_core.py`` hardens matrix-free Krylov internals
   (mode-family targeting, shift-invert preconditioner selection, fallback
   policy, and dominant eigenpair wrappers).
-- ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
+- ``tests/integration/examples/test_example_smoke.py`` verifies the config-driven runner (diffrax
   enabled) and a short nonlinear scan through the assembled E×B nonlinear
   bracket.
-- ``tests/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
+- ``tests/unit/nonlinear/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
   real-FFT path, flutter coupling, scalar/precomputed gyroaverage paths, and
   EM component accounting. The targeted nonlinear-term tranche covers the
   pseudo-spectral bracket and electromagnetic decomposition branches without
   launching benchmark-size turbulence runs.
-- ``tests/test_nonlinear_helpers_extra.py`` locks the higher-level nonlinear
+- ``tests/unit/nonlinear/test_nonlinear_helpers_extra.py`` locks the higher-level nonlinear
   diagnostic contracts: Hermitian real-FFT projection, signed-mode masks,
   explicit Runge-Kutta variants, fixed-mode frequency extraction, collision
   splitting, and IMEX nonlinear terms.
@@ -1185,23 +1185,23 @@ Parallelization identity gates
 Independent scan and ensemble parallelization is tested before it is used for
 performance claims:
 
-- ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
+- ``tests/unit/parallel/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
   helper semantics, including deterministic padding, one-device fallback, and
   pytree outputs used by UQ and sensitivity workflows.
-- ``tests/test_velocity_sharding.py`` locks the species/Hermite
+- ``tests/unit/parallel/test_velocity_sharding.py`` locks the species/Hermite
   velocity-decomposition planner. These tests verify load balance metadata,
   Hermite ghost-exchange flags, and field-reduction axes before any production
   ``shard_map`` implementation can use that layout. The same test file also
   covers the full-array Hermite-neighbor reference and one-device fallback for
   the communication kernel.
-- ``tests/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
+- ``tests/unit/solvers/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
   both no-sharding and explicit-sharding modes using a mocked RHS and mocked
   ``pjit``. It also locks the fixed-step nonlinear state-sharded wrapper,
   including final-state-only profiling mode and the config-runner route through
   ``TimeConfig.state_sharding``. These are numerical-identity and control-flow
   gates, not speedup claims.
-- ``tests/test_nonlinear_domain_parallel.py`` and
-  ``tests/test_nonlinear_spectral_communication_gate.py`` lock the diagnostic
+- ``tests/unit/parallel/test_nonlinear_domain_parallel.py`` and
+  ``tests/unit/parallel/test_nonlinear_spectral_communication_gate.py`` lock the diagnostic
   nonlinear decomposition gates. The first covers one-cell halo chunks for a
   bounded local stencil. The second covers split/reassemble spectral layout
   identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
@@ -1445,25 +1445,25 @@ In addition to unit/regression tests, SPECTRAX-GK includes a small set of
 "stress-matrix" gates meant to catch parity regressions early (before tracked
 benchmark figures move):
 
-- **Restart parity**: ``tests/test_restart_gate.py`` verifies that a nonlinear
+- **Restart parity**: ``tests/integration/runtime/test_restart_gate.py`` verifies that a nonlinear
   run resumed from a compatible restart reproduces the same final state as a
   continuous run. This now covers both the raw binary state path and the
   nonlinear ``*.restart.nc`` bundle path, together with append-on-restart
   history preservation in ``*.out.nc``.
-- **CPU/GPU short-window parity** (optional): ``tests/test_device_parity_gate.py``
+- **CPU/GPU short-window parity** (optional): ``tests/unit/parallel/test_device_parity_gate.py``
   compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
 
   .. code-block:: bash
 
-     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/test_device_parity_gate.py
+     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_device_parity_gate.py
 
-- **VMEC roundtrip determinism** (optional): ``tests/test_vmec_roundtrip_gate.py``
+- **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_roundtrip_gate.py``
   regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the
   imported geometry arrays are bitwise identical. Enable explicitly:
 
   .. code-block:: bash
 
-     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/test_vmec_roundtrip_gate.py
+     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/unit/geometry/test_vmec_roundtrip_gate.py
 
 For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
@@ -1722,11 +1722,11 @@ coverage gate for ``spectraxgk.terms``:
 
 .. code-block:: bash
 
-   pytest -q tests/test_terms_assembly.py \
-          tests/test_terms_operators.py \
-          tests/test_terms_fields.py \
-          tests/test_terms_integrators.py \
-          tests/test_terms_validation.py \
+   pytest -q tests/unit/operators/test_terms_assembly.py \
+          tests/unit/operators/test_terms_operators.py \
+          tests/unit/operators/test_terms_fields.py \
+          tests/unit/operators/test_terms_integrators.py \
+          tests/unit/operators/test_terms_validation.py \
           --maxfail=1 --disable-warnings \
           --cov=src/spectraxgk/terms \
           --cov-fail-under=90
@@ -1748,9 +1748,9 @@ The gate runs focused tests and checks each module from ``coverage-core.xml``:
 
 .. code-block:: bash
 
-   pytest -q tests/test_linear_krylov_core.py \
-          tests/test_diffrax_integrators.py \
-          tests/test_diffrax_integrators_core.py \
+   pytest -q tests/unit/solvers/test_linear_krylov_core.py \
+          tests/unit/solvers/test_diffrax_integrators.py \
+          tests/unit/solvers/test_diffrax_integrators_core.py \
           --maxfail=1 --disable-warnings \
           --cov=src/spectraxgk \
           --cov-report=xml:coverage-core.xml

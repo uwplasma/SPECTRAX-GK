@@ -34,7 +34,8 @@ Last audited: 2026-07-07 on `main`.
   at about 0.94 MiB.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
-  - `tests`: 320 Python files after deleting cETG/reduced-model tests.
+  - `tests`: 320 Python files; 47 files remain at the flat `tests/` root
+    after moving the safe first batch into domain folders.
   - `tools`: 260 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
@@ -169,8 +170,8 @@ ambiguity, not just move files.
      where the only differences are case name, paths, or plotted labels.
 
 2. **Test topology wave.**
-   - Move the 139 flat root tests into `tests/unit`, `tests/integration`, and
-     `tests/validation`.
+   - Move the remaining flat root tests into `tests/unit`,
+     `tests/integration`, and `tests/validation`.
    - Merge one-file-per-script tool tests into family suites under
      `tests/tools/{release,artifacts,campaigns,comparison,profiling}`.
    - Keep 95% package-wide coverage by replacing duplicated tests with
@@ -232,8 +233,11 @@ compression-helper move before it is committed:
   `wout_*.nc` files are ignored and should stay untracked.
 - The installable source still has 351 Python files. The largest structural
   offender is `src/spectraxgk/validation` with 88 installable files.
-- The test tree still has 320 Python files, including 139 flat root files. The
-  biggest root files are historical aggregate tests such as
+- The test tree still has 320 Python files, including 47 flat root files after
+  the first safe topology move. The remaining root files are path-sensitive
+  runtime, executable, benchmark-artifact, nonlinear-gradient, quasilinear,
+  VMEC, and release-manifest tests. The biggest root files are historical
+  aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
 - `tools/` has 260 Python scripts after adding purpose-folder package
@@ -325,9 +329,11 @@ files.
    into manifest-driven builders where only case names, labels, or output paths
    differ. Target: `tools/` below 180 scripts before source moves, then below
    100 before release.
-3. **Reorganize tests by domain.** Move flat root tests into
-   `tests/unit`, `tests/integration`, and `tests/validation`; merge
-   one-file-per-script tool tests into parametrized family tests. Target:
+3. **Reorganize tests by domain.** The first safe move relocated 92 tests into
+   `tests/unit`, `tests/integration`, `tests/validation`, and existing tool
+   folders. The next move should handle the 46 path-sensitive root tests by
+   replacing parent-depth assumptions with shared repository-root fixtures, then
+   merge one-file-per-script tool tests into parametrized family tests. Target:
    fewer than 180 tests before validation extraction, then fewer than 100.
 4. **Move validation campaigns out of the installable package.** Keep reusable
    physics metrics in `diagnostics` or a tiny `validation` facade; move campaign
@@ -594,11 +600,12 @@ Specific first candidate:
 
 ## Test Consolidation Plan
 
-Current problem: `tests/` has 320 Python files. The root still has 139 flat
-tests and carries about 65k lines; the largest unmanaged families are runtime,
-nonlinear, benchmark, linear, VMEC, quasilinear, geometry, CLI, parallel, and
-solver tests. `tests/tools` now has 169 files and must be consolidated by tool
-family instead of preserving one test file per script.
+Current problem: `tests/` has 320 Python files. The root now has 47 flat Python
+files after moving the safe first batch; those remaining tests carry the
+path-sensitive runtime, executable, benchmark-artifact, nonlinear-gradient,
+quasilinear, VMEC, and release-manifest work. `tests/tools` still has many
+one-file-per-script tests and must be consolidated by tool family instead of
+preserving one test file per script.
 
 Target: fewer than 100 Python test files while preserving >=95% package-wide
 coverage and physics confidence.
@@ -1245,6 +1252,14 @@ Exit gates:
   `etg_eigenspectrum.py` probes from `main`. Tool Python files dropped from
   262 to 260, and flat root tool scripts dropped from 13 to 1
   (`tools/__init__.py`).
+
+- 2026-07-07: moved the first safe root-test tranche into domain folders:
+  unit core, diagnostics, geometry, linear, nonlinear, objectives, operators,
+  parallel, quasilinear, solvers; integration runtime/examples; validation
+  benchmarks/physics gates; and the profiling-options tool test. Test Python
+  file count stayed at 320, but flat root Python files dropped from 139 to 47.
+  The remaining flat tests are path-sensitive and should be moved only after
+  replacing parent-depth assumptions with shared fixtures/helpers.
 
 ## Immediate Next Steps
 
