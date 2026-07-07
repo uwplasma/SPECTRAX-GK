@@ -117,7 +117,11 @@ This means the next implementation order is:
 
 1. Define the small stable ``spectraxgk.benchmarks`` public surface and move
    benchmark/campaign implementation out of installable runtime packages and
-   split the large ``spectraxgk.benchmarks`` facade into cleaner owners.
+   split the large ``spectraxgk.benchmarks`` facade into cleaner owners. The
+   first internal owner is ``spectraxgk.benchmarking.shared`` for reference
+   data, result containers, initial-condition helpers, and common scan/fit
+   policies; case-family runners stay behind the public facade until their
+   tests and docs are pinned.
 2. Collapse tool scripts by capability, especially artifact/status builders
    that only differ by labels, case names, or output paths.
 3. Collapse tests by physical contract and shared fixtures, especially the

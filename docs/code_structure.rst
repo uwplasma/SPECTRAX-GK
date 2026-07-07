@@ -693,8 +693,10 @@ configuration objects do not depend on the temporary validation package.
 Benchmark initial conditions, reference containers and CSV loaders, species-to-
 ``LinearParams`` construction, reference hypercollision/end-damping policy,
 normalization constants, Krylov defaults, solver-selection policy, scan
-batching, and scan-window policy live in
-``spectraxgk.benchmarks``. Fit-signal selection and
+batching, and scan-window policy live in the internal
+``spectraxgk.benchmarking.shared`` owner and are re-exported by the public
+``spectraxgk.benchmarks`` facade where legacy tests and documented workflows
+still import them. Fit-signal selection and
 diagnostic growth-rate normalization live in
 ``spectraxgk.diagnostics.growth_rates``. Import-identity tests pin the old helper
 symbols to their consolidated owners before larger benchmark-family runners are

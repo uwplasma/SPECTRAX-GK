@@ -2555,3 +2555,15 @@ following:
   branch-test shard, the full bounded `tests/validation/benchmarks` shard, ruff,
   architecture manifest, differentiable-refactor manifest, and `git diff
   --check` passed for this tranche.
+
+- 2026-07-07: split shared benchmark mechanics out of the large public
+  `spectraxgk.benchmarks` facade into `spectraxgk.benchmarking.shared`.
+  Reference containers/loaders, scan-window policy, normalization constants,
+  KBM solver defaults, reference hypercollision/end-damping policy, species
+  parameter helpers, and initial-condition builders now have one internal
+  owner while the public facade keeps legacy/documented imports stable.
+  `benchmarks.py` dropped from about 13.96k to about 13.21k lines; source file
+  count rises from 275 to 277 for this tranche, which is acceptable because the
+  added package replaces hidden complexity inside a monolithic facade. Next
+  benchmark-refactor tranche should move one complete case family behind the
+  facade rather than adding ad hoc helper modules.

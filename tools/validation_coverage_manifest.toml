@@ -11,6 +11,7 @@ excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
   "spectraxgk.api.__init__",
+  "spectraxgk.benchmarking.__init__",
   "spectraxgk.core.__init__",
   "spectraxgk.diagnostics.__init__",
   "spectraxgk.geometry_backends.__init__",
@@ -1310,6 +1311,7 @@ next_tests = [
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
+  "spectraxgk.benchmarking.shared",
   "spectraxgk.diagnostics.normalization",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"

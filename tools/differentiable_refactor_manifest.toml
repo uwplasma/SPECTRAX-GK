@@ -149,6 +149,28 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
+module = "spectraxgk.benchmarking.shared"
+source_path = "src/spectraxgk/benchmarking/shared.py"
+facade_module = "spectraxgk.benchmarks"
+status = "active"
+responsibility = "shared benchmark reference-data loaders, result containers, scan-window policy, normalization defaults, branch solver defaults, and initial-condition helpers behind the public benchmark facade"
+moved_exports = [
+  "CycloneReference",
+  "CycloneRunResult",
+  "LinearRunResult",
+  "ScanFitWindowPolicy",
+  "_build_initial_condition",
+  "load_cyclone_reference",
+  "select_kbm_solver_auto",
+]
+fast_tests = [
+  "tests/validation/benchmarks/test_benchmarks.py",
+  "tests/validation/benchmarks/test_benchmarks_helpers.py",
+  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
+]
+doc_pages = ["docs/code_structure.rst"]
+
+[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.validation_gates"
 source_path = "src/spectraxgk/diagnostics/validation_gates.py"
 facade_module = "spectraxgk.diagnostics"
@@ -1643,8 +1665,8 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
-  "spectraxgk.benchmark_data",
-  "spectraxgk.benchmark_policies",
+  "spectraxgk.benchmarking.shared",
+  "spectraxgk.benchmarking.case_families",
 ]
 public_facade = "spectraxgk.benchmarks"
 line_target = 800
