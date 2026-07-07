@@ -13,7 +13,12 @@ import lineax as lx
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarks import CYCLONE_OMEGA_D_SCALE, CYCLONE_OMEGA_STAR_SCALE, CYCLONE_RHO_STAR, _build_initial_condition
+from spectraxgk.benchmarks import (
+    CYCLONE_OMEGA_D_SCALE,
+    CYCLONE_OMEGA_STAR_SCALE,
+    CYCLONE_RHO_STAR,
+    _build_initial_condition,
+)
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
@@ -37,7 +42,9 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def _build_case(*, ky: float, Nl: int, Nm: int, Ny: int, Nz: int, dt: float, preconditioner: str):
+def _build_case(
+    *, ky: float, Nl: int, Nm: int, Ny: int, Nz: int, dt: float, preconditioner: str
+):
     cfg = CycloneBaseCase(
         grid=GridConfig(
             Nx=1,
@@ -122,7 +129,16 @@ def _timed_jax_gmres(
     return sol1, t1 - t0, t2 - t1
 
 
-def _timed_lineax_gmres(matvec, precond_op, rhs: jnp.ndarray, *, shape, tol: float, maxiter: int, restart: int):
+def _timed_lineax_gmres(
+    matvec,
+    precond_op,
+    rhs: jnp.ndarray,
+    *,
+    shape,
+    tol: float,
+    maxiter: int,
+    restart: int,
+):
     struct = jax.ShapeDtypeStruct(shape=rhs.shape, dtype=rhs.dtype)
     operator = lx.FunctionLinearOperator(matvec, struct)
     preconditioner = lx.IdentityLinearOperator(struct)
@@ -133,7 +149,9 @@ def _timed_lineax_gmres(matvec, precond_op, rhs: jnp.ndarray, *, shape, tol: flo
     soln1 = lx.linear_solve(operator, rhs, solver, options=options, throw=False)
     soln1.value.block_until_ready()
     t1 = time.perf_counter()
-    soln2 = lx.linear_solve(operator, rhs, solver, options=options, state=soln1.state, throw=False)
+    soln2 = lx.linear_solve(
+        operator, rhs, solver, options=options, state=soln1.state, throw=False
+    )
     soln2.value.block_until_ready()
     t2 = time.perf_counter()
     return soln1, soln2, t1 - t0, t2 - t1
@@ -146,7 +164,14 @@ def _residual_norm(matvec, x: jnp.ndarray, b: jnp.ndarray) -> float:
 
 def main() -> None:
     args = build_parser().parse_args()
-    G, shape, size, _dt_val, precond_op, matvec, = _build_case(
+    (
+        G,
+        shape,
+        size,
+        _dt_val,
+        precond_op,
+        matvec,
+    ) = _build_case(
         ky=float(args.ky),
         Nl=int(args.Nl),
         Nm=int(args.Nm),

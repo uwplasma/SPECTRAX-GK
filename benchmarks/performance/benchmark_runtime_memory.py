@@ -18,7 +18,7 @@ import subprocess
 import time
 import tomllib
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = ROOT / "tools" / "runtime_memory_manifest.toml"
 DEFAULT_CSV = ROOT / "tools_out" / "runtime_memory_results.csv"
 DEFAULT_PNG = ROOT / "docs" / "_static" / "runtime_memory_benchmark.png"
@@ -97,7 +97,9 @@ def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
     return runs
 
 
-def _select_runs(runs: list[RuntimeBenchRun], cases: set[str] | None, backends: set[str] | None) -> list[RuntimeBenchRun]:
+def _select_runs(
+    runs: list[RuntimeBenchRun], cases: set[str] | None, backends: set[str] | None
+) -> list[RuntimeBenchRun]:
     out = [run for run in runs if run.enabled]
     if cases:
         out = [run for run in out if run.case in cases]
@@ -139,7 +141,10 @@ def _parse_profile_times(text: str) -> dict[str, float]:
     fields = ("warmup_time_s", "run_time_s")
     out: dict[str, float] = {}
     for field in fields:
-        match = re.search(rf"(?mi)(?:^|\s){re.escape(field)}=([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", text)
+        match = re.search(
+            rf"(?mi)(?:^|\s){re.escape(field)}=([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)",
+            text,
+        )
         if match:
             out[field] = float(match.group(1))
     return out
@@ -218,7 +223,9 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
     rendered_cwd = _render(run.cwd)
     rendered_command = _render(run.command)
     start = time.perf_counter()
-    proc = _execute_command(host=run.host, cwd=run.cwd, command=run.command, wrap_time=run.wrap_time)
+    proc = _execute_command(
+        host=run.host, cwd=run.cwd, command=run.command, wrap_time=run.wrap_time
+    )
     elapsed = time.perf_counter() - start
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
     peak_rss_mb = _parse_peak_rss_mb(combined)
@@ -246,7 +253,9 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
             command=run.profile_command,
             wrap_time=run.profile_wrap_time,
         )
-        profile_combined = (profile_proc.stdout or "") + "\n" + (profile_proc.stderr or "")
+        profile_combined = (
+            (profile_proc.stdout or "") + "\n" + (profile_proc.stderr or "")
+        )
         row["stdout"] = (
             f"{proc.stdout}\n--- profile stdout ---\n{profile_proc.stdout}"
             if (proc.stdout or profile_proc.stdout)
@@ -348,16 +357,38 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
 
     x = list(range(len(order)))
     width = 0.24
-    fig, axes = plt.subplots(1, 2, figsize=(max(15.5, 1.45 * len(order) + 6.5), 7.4), constrained_layout=True)
+    fig, axes = plt.subplots(
+        1, 2, figsize=(max(15.5, 1.45 * len(order) + 6.5), 7.4), constrained_layout=True
+    )
     warm_handles: list[Line2D] = []
 
     for idx, backend in enumerate(BACKEND_ORDER):
         sub = ok[ok["backend"] == backend].set_index("case")
-        runtime_vals = [float(sub.loc[case, "runtime_s"]) if case in sub.index else float("nan") for case in order]
-        memory_vals = [float(sub.loc[case, "peak_rss_mb"]) if case in sub.index and not pd.isna(sub.loc[case, "peak_rss_mb"]) else float("nan") for case in order]
+        runtime_vals = [
+            float(sub.loc[case, "runtime_s"]) if case in sub.index else float("nan")
+            for case in order
+        ]
+        memory_vals = [
+            float(sub.loc[case, "peak_rss_mb"])
+            if case in sub.index and not pd.isna(sub.loc[case, "peak_rss_mb"])
+            else float("nan")
+            for case in order
+        ]
         offset = (idx - 1) * width
-        axes[0].bar([v + offset for v in x], runtime_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
-        axes[1].bar([v + offset for v in x], memory_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
+        axes[0].bar(
+            [v + offset for v in x],
+            runtime_vals,
+            width=width,
+            color=BACKEND_COLORS[backend],
+            label=BACKEND_LABELS[backend],
+        )
+        axes[1].bar(
+            [v + offset for v in x],
+            memory_vals,
+            width=width,
+            color=BACKEND_COLORS[backend],
+            label=BACKEND_LABELS[backend],
+        )
         if "run_time_s" in sub.columns:
             warm_vals = [
                 float(sub.loc[case, "run_time_s"])
@@ -404,7 +435,13 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         ax.grid(axis="y", alpha=0.25, linewidth=0.6)
     axes[0].set_yscale("log")
     handles, labels_ = axes[0].get_legend_handles_labels()
-    axes[0].legend(handles + warm_handles, labels_ + [h.get_label() for h in warm_handles], loc="upper left", ncols=4, frameon=False)
+    axes[0].legend(
+        handles + warm_handles,
+        labels_ + [h.get_label() for h in warm_handles],
+        loc="upper left",
+        ncols=4,
+        frameon=False,
+    )
     fig.suptitle("Runtime and Memory Comparison", fontsize=21)
     png_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(png_path, dpi=220)
@@ -415,10 +452,24 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    p.add_argument("--case", action="append", default=None, help="Run only the named case (repeatable).")
-    p.add_argument("--backend", action="append", default=None, help="Run only the named backend (repeatable).")
-    p.add_argument("--list", action="store_true", help="List enabled manifest rows and exit.")
-    p.add_argument("--dry-run", action="store_true", help="Print commands without executing them.")
+    p.add_argument(
+        "--case",
+        action="append",
+        default=None,
+        help="Run only the named case (repeatable).",
+    )
+    p.add_argument(
+        "--backend",
+        action="append",
+        default=None,
+        help="Run only the named backend (repeatable).",
+    )
+    p.add_argument(
+        "--list", action="store_true", help="List enabled manifest rows and exit."
+    )
+    p.add_argument(
+        "--dry-run", action="store_true", help="Print commands without executing them."
+    )
     p.add_argument("--csv-out", type=Path, default=DEFAULT_CSV)
     p.add_argument("--plot-out", type=Path, default=DEFAULT_PNG)
     p.add_argument("--summary-out", type=Path, default=DEFAULT_SUMMARY)
@@ -429,7 +480,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Read existing summary JSON files matching this glob and assemble the combined CSV/plot without executing commands.",
     )
-    p.add_argument("--skip-plot", action="store_true", help="Only write CSV/summary, do not build the plot.")
+    p.add_argument(
+        "--skip-plot",
+        action="store_true",
+        help="Only write CSV/summary, do not build the plot.",
+    )
     p.add_argument(
         "--continue-on-error",
         action="store_true",
@@ -443,7 +498,9 @@ def main() -> int:
     if args.summary_glob:
         summary_rows = _load_summary_rows(list(args.summary_glob))
         if not summary_rows:
-            raise ValueError("no summary rows matched the provided --summary-glob patterns")
+            raise ValueError(
+                "no summary rows matched the provided --summary-glob patterns"
+            )
         _write_csv(_resolve(args.csv_out), summary_rows)
         _write_summary(_resolve(args.summary_out), summary_rows)
         if not args.skip_plot:
@@ -453,7 +510,9 @@ def main() -> int:
         return 0
 
     runs = _load_manifest(_resolve(args.manifest))
-    selected = _select_runs(runs, set(args.case or [] ) or None, set(args.backend or []) or None)
+    selected = _select_runs(
+        runs, set(args.case or []) or None, set(args.backend or []) or None
+    )
 
     if args.list:
         for run in selected:
@@ -468,9 +527,13 @@ def main() -> int:
         rendered_cwd = _render(run.cwd)
         if args.dry_run:
             if run.host:
-                print(f"[dry-run] {run.case} [{run.backend}] ssh {run.host} 'cd {rendered_cwd} && {rendered_command}'")
+                print(
+                    f"[dry-run] {run.case} [{run.backend}] ssh {run.host} 'cd {rendered_cwd} && {rendered_command}'"
+                )
             else:
-                print(f"[dry-run] {run.case} [{run.backend}] cd {_resolve(rendered_cwd)} && {rendered_command}")
+                print(
+                    f"[dry-run] {run.case} [{run.backend}] cd {_resolve(rendered_cwd)} && {rendered_command}"
+                )
             continue
         row = _run_command(run)
         row.update(_write_row_logs(_resolve(args.log_dir), row))
@@ -479,8 +542,12 @@ def main() -> int:
         _write_summary(_resolve(args.summary_out), rows)
         runtime_obj = row["runtime_s"]
         returncode_obj = row["returncode"]
-        if not isinstance(runtime_obj, (int, float)) or not isinstance(returncode_obj, int):
-            raise TypeError("runtime benchmark row has invalid runtime or return code types")
+        if not isinstance(runtime_obj, (int, float)) or not isinstance(
+            returncode_obj, int
+        ):
+            raise TypeError(
+                "runtime benchmark row has invalid runtime or return code types"
+            )
         runtime_s = float(runtime_obj)
         return_code = returncode_obj
         print(

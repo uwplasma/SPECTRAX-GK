@@ -21,7 +21,7 @@ cases = [
   "hsx-nonlinear",
 ]
 profiling_tools = [
-  "tools/benchmark_runtime_memory.py",
+  "benchmarks/performance/benchmark_runtime_memory.py",
   "tools/profiling/profile_nonlinear_cyclone.py",
 ]
 metrics = [
@@ -182,7 +182,7 @@ priority = "high"
 platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
-  "tools/benchmark_runtime_memory.py",
+  "benchmarks/performance/benchmark_runtime_memory.py",
   "tools/profiling/profile_runtime_startup.py",
 ]
 metrics = [

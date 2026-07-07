@@ -33,7 +33,9 @@ def _measure(func, *, repeat: int) -> tuple[float, float]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Benchmark custom vs diffrax integrators.")
+    parser = argparse.ArgumentParser(
+        description="Benchmark custom vs diffrax integrators."
+    )
     parser.add_argument("--repeat", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=1)
     parser.add_argument("--diffrax-solver", default="Heun")

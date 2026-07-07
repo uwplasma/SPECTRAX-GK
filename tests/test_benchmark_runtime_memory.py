@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.benchmark_runtime_memory import (
+from benchmarks.performance.benchmark_runtime_memory import (
     RuntimeBenchRun,
     _load_manifest,
     _load_summary_rows,
@@ -155,7 +155,9 @@ def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
 
         return Proc()
 
-    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "benchmarks.performance.benchmark_runtime_memory.subprocess.run", fake_run
+    )
     run = RuntimeBenchRun(
         case="c", label="C", backend="gx", command="echo hi", cwd="/tmp", host="office"
     )
@@ -173,7 +175,9 @@ def test_runtime_memory_command_captures_profile_times(monkeypatch) -> None:
 
         return Proc()
 
-    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "benchmarks.performance.benchmark_runtime_memory.subprocess.run", fake_run
+    )
     run = RuntimeBenchRun(
         case="c",
         label="C",
@@ -204,7 +208,9 @@ def test_runtime_memory_command_runs_profile_subcommand(monkeypatch) -> None:
 
         return Proc()
 
-    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "benchmarks.performance.benchmark_runtime_memory.subprocess.run", fake_run
+    )
     run = RuntimeBenchRun(
         case="c",
         label="C",

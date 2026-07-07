@@ -88,6 +88,61 @@ def test_performance_manifest_rejects_missing_tool(tmp_path: Path) -> None:
         mod.REPO_ROOT = old_root
 
 
+def test_performance_manifest_accepts_benchmark_performance_driver(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    tool = tmp_path / "benchmarks" / "performance" / "benchmark_runtime_memory.py"
+    tool.parent.mkdir(parents=True)
+    tool.write_text("# benchmark\n", encoding="utf-8")
+    artifact = tmp_path / "docs" / "_static" / "runtime.png"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("artifact\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            tool="benchmarks/performance/benchmark_runtime_memory.py",
+            artifact="docs/_static/runtime.png",
+        ),
+        encoding="utf-8",
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        summary = mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+    assert summary["rows"][0]["n_tools"] == 1
+
+
+def test_performance_manifest_rejects_unowned_driver_path(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    tool = tmp_path / "scripts" / "benchmark.py"
+    tool.parent.mkdir(parents=True)
+    tool.write_text("# benchmark\n", encoding="utf-8")
+    artifact = tmp_path / "docs" / "_static" / "runtime.png"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("artifact\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            tool="scripts/benchmark.py", artifact="docs/_static/runtime.png"
+        ),
+        encoding="utf-8",
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(
+            ValueError,
+            match=r"tools/ or benchmarks/performance/",
+        ):
+            mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
 def test_performance_manifest_rejects_invalid_status(tmp_path: Path) -> None:
     mod = _load_tool_module()
     tool = tmp_path / "tools" / "profile.py"

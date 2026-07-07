@@ -209,7 +209,7 @@ benchmark harness:
 
 .. code-block:: bash
 
-   python tools/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
+   python benchmarks/performance/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
      --out /tmp/spectrax_nl_bench.csv
 
 The harness records scalar diagnostics through the compact diagnostics path, so
@@ -220,13 +220,13 @@ To test the optional spectral nonlinear mode (no Laguerre quadrature grid):
 
 .. code-block:: bash
 
-   python tools/benchmark_nonlinear_suite.py --laguerre-mode spectral
+   python benchmarks/performance/benchmark_nonlinear_suite.py --laguerre-mode spectral
 
 You can optionally pass a reference-code log file to compare runtime per step:
 
 .. code-block:: bash
 
-   python tools/benchmark_nonlinear_suite.py --gx-log /path/to/gx_run.out
+   python benchmarks/performance/benchmark_nonlinear_suite.py --gx-log /path/to/gx_run.out
 
 RHS kernel profile (nonlinear Cyclone)
 --------------------------------------
@@ -1156,9 +1156,9 @@ For the publication runtime comparison pass, use the manifest-driven runner:
 
 .. code-block:: bash
 
-   python tools/benchmark_runtime_memory.py --list
-   python tools/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend spectrax_cpu
-   python tools/benchmark_runtime_memory.py --continue-on-error --log-dir tools_out/runtime_memory_logs
+   python benchmarks/performance/benchmark_runtime_memory.py --list
+   python benchmarks/performance/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend spectrax_cpu
+   python benchmarks/performance/benchmark_runtime_memory.py --continue-on-error --log-dir tools_out/runtime_memory_logs
 
 The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
 
@@ -1225,7 +1225,7 @@ geometry cases. The memory subplot stays linear because the peak RSS spread is
 much narrower.
 
 The assembled figure is generated from the collected per-case summaries with
-``tools/benchmark_runtime_memory.py --summary-glob ...`` and written to:
+``benchmarks/performance/benchmark_runtime_memory.py --summary-glob ...`` and written to:
 
 - ``docs/_static/runtime_memory_benchmark.png``
 - ``docs/_static/runtime_memory_benchmark.pdf``
@@ -1236,7 +1236,7 @@ rows:
 
 .. code-block:: bash
 
-   python tools/benchmark_runtime_memory.py \
+   python benchmarks/performance/benchmark_runtime_memory.py \
      --summary-glob docs/_static/runtime_memory_summary_ship_refresh.json \
      --csv-out docs/_static/runtime_memory_results_ship_refresh.csv \
      --summary-out docs/_static/runtime_memory_summary_ship_refresh.json \

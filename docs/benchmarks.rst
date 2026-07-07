@@ -91,15 +91,15 @@ duplicating large run products. The current tracked result set is:
    * - Runtime and memory comparison
      - ``docs/_static/runtime_memory_benchmark.png``
      - tracked wall-time and memory comparison rows
-     - ``python tools/benchmark_runtime_memory.py --summary-glob ...``
+     - ``python benchmarks/performance/benchmark_runtime_memory.py --summary-glob ...``
    * - Runtime and memory result rows
      - ``docs/_static/runtime_memory_results_ship_refresh.csv``
      - machine-readable runtime/memory rows used by the tracked panel
-     - ``python tools/benchmark_runtime_memory.py``
+     - ``python benchmarks/performance/benchmark_runtime_memory.py``
    * - Runtime and memory summary
      - ``docs/_static/runtime_memory_summary_ship_refresh.json``
      - machine-readable summary for runtime/memory panel generation
-     - ``python tools/benchmark_runtime_memory.py``
+     - ``python benchmarks/performance/benchmark_runtime_memory.py``
    * - Core linear atlas inputs
      - ``tools/benchmark_atlas_manifest.toml``
      - manifest of small tracked benchmark inputs

@@ -35,6 +35,14 @@ def _repo_path(raw: str) -> Path:
     return (REPO_ROOT / raw).resolve()
 
 
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
 def _as_nonempty_string(value: object, field: str, lane: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{lane}: {field} must be a non-empty string")
@@ -103,16 +111,21 @@ def validate_manifest(
         if priority not in ALLOWED_PRIORITIES:
             raise ValueError(f"{name}: invalid priority {priority!r}")
 
+        allowed_tool_roots = (
+            REPO_ROOT / "tools",
+            REPO_ROOT / "benchmarks" / "performance",
+        )
         for tool in lists["profiling_tools"]:
             resolved = _repo_path(tool)
             if not resolved.exists():
                 raise ValueError(f"{name}: profiling tool does not exist: {tool}")
-            try:
-                resolved.relative_to((REPO_ROOT / "tools").resolve())
-            except ValueError as exc:
+            if not any(
+                _is_relative_to(resolved, root.resolve()) for root in allowed_tool_roots
+            ):
                 raise ValueError(
-                    f"{name}: profiling tool must live under tools/: {tool}"
-                ) from exc
+                    f"{name}: profiling tool must live under tools/ or "
+                    f"benchmarks/performance/: {tool}"
+                )
 
         if check_artifacts:
             for artifact in lists["artifact_paths"]:

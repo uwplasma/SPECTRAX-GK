@@ -35,7 +35,7 @@ Last audited: 2026-07-07 on `main`.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 266 Python files after adding purpose-folder package initializers while moving flat tools.
+  - `tools`: 262 Python files after moving performance benchmark drivers to `benchmarks/performance`.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
 - The repository inventory classifies 88 installable validation files as
@@ -83,7 +83,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 266 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 262 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -108,7 +108,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 20 Python scripts in one directory | Classify generator, benchmark, compression, figure/table, and diagnostic helpers; merge duplicate builders/checkers; delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 16 Python scripts in one directory | Classify generator, benchmark, compression, figure/table, and diagnostic helpers; merge duplicate builders/checkers; delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -236,12 +236,13 @@ campaign/release-tool move before it is committed:
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
 - `tools/` has 266 Python scripts after adding purpose-folder package
-  initializers. The remaining top-level `tools/` problem is now 20 flat scripts,
-  including `__init__.py`: 4 `benchmark_*`, 3 `compress_*`, and a small
-  set of tables/figures/reference helpers.
+  initializers. The remaining top-level `tools/` problem is now 16 flat scripts,
+  including `__init__.py`: 3 `compress_*` helpers and a small set of
+  tables/figures/reference, diagnostics, and VMEC metadata helpers.
 - The current tool folders are `tools/artifacts` with 116 scripts,
   `tools/campaigns` with 47 scripts, `tools/comparison` with 32 scripts,
-  `tools/profiling` with 22 scripts, and `tools/release` with 29 scripts. The
+  `tools/profiling` with 22 scripts, and `tools/release` with 29 scripts;
+  performance benchmark drivers now live under `benchmarks/performance`. The
   next move should classify the remaining generators as artifact builders,
   release gates, benchmark drivers, or deletions.
 - `benchmarks/` is already at the root and is small: 7 Python files. It should
@@ -274,10 +275,10 @@ Immediate execution sequence from this audited state:
 
 1. Commit the profiling-tool move after the local architecture, ruff,
    release-readiness, size, validation-coverage, and profiling test gates pass.
-2. Classify the remaining benchmark, compression, figure/table, reference, and
-   diagnostic helpers. Benchmark reproducibility drivers move to `benchmarks`,
-   artifact helpers move to `tools/artifacts`, comparison diagnostics move to
-   `tools/comparison`, and unreferenced probes leave `main`.
+2. Classify the remaining compression, figure/table, reference, diagnostic,
+   and VMEC metadata helpers. Artifact helpers move to `tools/artifacts`,
+   comparison diagnostics move to `tools/comparison`, and unreferenced probes
+   leave `main`.
 3. Collapse tool tests by family before moving more source code. The goal is
    fewer tests with stronger parametrization, not weaker assertions.
 4. Start validation-out-of-package only after the tool/test path churn is
@@ -595,9 +596,6 @@ Delete or move out of `main`:
 
 The remaining flat-tool disposition is:
 
-- `benchmark_*`: keep under `benchmarks/` if user-facing and reproducible;
-  otherwise move to `tools/profiling/` or `tools/artifacts/` depending on the
-  output.
 - `compress_*`: keep only one maintained image/document compression entry point
   if release docs still need it; delete redundant wrappers.
 - `make_figures.py`, `make_tables.py`, and `make_benchmark_atlas.py`: merge
@@ -608,13 +606,12 @@ Current flat-tool audit:
 
 | Family | Current files | Decision |
 | --- | ---: | --- |
-| `benchmark_*` scripts | 4 | Move small user-facing benchmark drivers to `benchmarks/performance`; move engineering profilers to `tools/profiling`; delete unreferenced experiments. |
 | `compress_*` helpers | 3 | Collapse to one maintained compression entry point or move release-specific wrappers to `tools/artifacts`. |
 | `make_*`, `derive_*`, `digitize_*` builders | 7 | Move to `tools/artifacts` or `tools/comparison` and merge duplicated table/figure policy. |
 | diagnostic helpers | 4 | Move `dump_rhs_terms.py` to `tools/comparison` if still used for parity diagnostics; delete or quarantine no-reference probes such as `ky_diagnostics.py`, `etg_eigenspectrum.py`, and stale resolution sweeps unless docs/tests prove ownership. |
 | VMEC metadata patch helper | 1 | Move to `tools/campaigns` or a geometry utility only if it remains part of documented VMEC-JAX workflows; otherwise quarantine. |
 
-The next tool tranche should reduce flat root scripts from 20 to fewer than 10
+The next tool tranche should reduce flat root scripts from 16 to fewer than 10
 without changing solver behavior. The follow-up tranche should merge duplicate
 artifact builders and drive total tool scripts below 100.
 
@@ -1140,6 +1137,12 @@ Exit gates:
   optional nonlinear fast-path gates. The former generator-test shard
   now lives under `tests/tools/artifacts`. Total tool count stayed at 266, and
   flat root tool scripts dropped from 45 to 20.
+
+- 2026-07-07: moved the four performance benchmark drivers into
+  `benchmarks/performance/`: integrator, linear-solve, nonlinear-suite, and
+  runtime/memory benchmark entry points. Docs, manifests, and tests now use
+  `benchmarks/performance/...` or `benchmarks.performance.*`. Tool Python files
+  dropped from 266 to 262, and flat root tool scripts dropped from 20 to 16.
 
 ## Immediate Next Steps
 

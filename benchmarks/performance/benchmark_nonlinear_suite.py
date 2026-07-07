@@ -2,7 +2,7 @@
 """Benchmark nonlinear Cyclone runtime for SPECTRAX and parse GX runtimes.
 
 Example:
-  python tools/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
+  python benchmarks/performance/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
     --out /tmp/spectrax_nl_bench.csv
 """
 
@@ -83,7 +83,9 @@ def main() -> None:
     diag = res.diagnostics
     Wg_end = float(np.asarray(diag.Wg_t[-1])) if diag is not None else float("nan")
     Wphi_end = float(np.asarray(diag.Wphi_t[-1])) if diag is not None else float("nan")
-    heat_end = float(np.asarray(diag.heat_flux_t[-1])) if diag is not None else float("nan")
+    heat_end = (
+        float(np.asarray(diag.heat_flux_t[-1])) if diag is not None else float("nan")
+    )
 
     run_time = t3 - t2
     warmup_time = t1 - t0
@@ -110,7 +112,9 @@ def main() -> None:
                 "warmup_s": float("nan"),
                 "run_s": gx_runtime_s if gx_runtime_s is not None else float("nan"),
                 "steps": float("nan"),
-                "s_per_step": gx_s_per_step if gx_s_per_step is not None else float("nan"),
+                "s_per_step": gx_s_per_step
+                if gx_s_per_step is not None
+                else float("nan"),
                 "Wg_end": float("nan"),
                 "Wphi_end": float("nan"),
                 "heat_end": float("nan"),
