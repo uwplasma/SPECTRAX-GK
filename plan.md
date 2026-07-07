@@ -452,7 +452,7 @@ window diagnostics, and benchmark zonal-response metrics:
 | --- | ---: | --- |
 | `src/spectraxgk` | 292 Python files, about 101.3k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
 | `src/spectraxgk/validation` | 17 Python files, about 14.9k LOC | benchmark validation policy is still installed as runtime code |
-| `tests` | 243 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
+| `tests` | 243 Python files, about 96.7k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
 | `tools` | 247 Python scripts, about 100.7k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
 | `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
 | `benchmarks` | 12 Python files, about 1.6k LOC | already small; keep as root-level reproducible benchmark entry points |
@@ -2230,3 +2230,12 @@ following:
   Python files dropped to 247 and `tools/profiling` dropped to 19 scripts.
   Focused profiling tests plus performance, architecture, and differentiable-
   refactor manifest checks passed for this tranche.
+
+- 2026-07-07: contracted the largest benchmark branch test by introducing
+  local reusable grid/geometry/cache/growth-normalization scaffolds inside
+  `tests/validation/benchmarks/test_benchmarks_runner_branches.py` and replacing
+  repeated Cyclone, ETG, kinetic-electron, and TEM setup blocks. The file
+  dropped from 2975 to 2690 lines without adding new test files. The focused
+  branch-test shard, the full bounded `tests/validation/benchmarks` shard, ruff,
+  architecture manifest, differentiable-refactor manifest, and `git diff
+  --check` passed for this tranche.

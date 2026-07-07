@@ -79,6 +79,66 @@ def _fake_initial_condition(grid, *args, **kwargs):
     )
 
 
+def _benchmark_module_attr(module: str, attr: str) -> str:
+    return f"spectraxgk.validation.benchmarks.{module}.{attr}"
+
+
+def _patch_attr(monkeypatch, module: str, attr: str, value) -> None:
+    monkeypatch.setattr(_benchmark_module_attr(module, attr), value)
+
+
+def _fake_salpha_geometry(cfg):
+    return SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8)
+
+
+def _fake_cache(*args, **kwargs):
+    return SimpleNamespace()
+
+
+def _fake_fields(*args, **kwargs):
+    return SimpleNamespace(phi=np.ones((1, 1, 3), dtype=np.complex64))
+
+
+def _identity_normalization(gamma, omega, params, norm):
+    return gamma, omega
+
+
+def _patch_salpha_scaffold(
+    monkeypatch,
+    module: str,
+    *,
+    select_grid=lambda grid, idx: _grid_sel(),
+    init=_fake_initial_condition,
+    with_cache: bool = True,
+    with_normalization: bool = True,
+) -> None:
+    _patch_attr(monkeypatch, module, "build_spectral_grid", lambda cfg: _grid_full())
+    _patch_attr(monkeypatch, module, "select_ky_grid", select_grid)
+    _patch_attr(monkeypatch, module, "SAlphaGeometry.from_config", _fake_salpha_geometry)
+    _patch_attr(monkeypatch, module, "_build_initial_condition", init)
+    if with_cache:
+        _patch_attr(monkeypatch, module, "build_linear_cache", _fake_cache)
+    if with_normalization:
+        _patch_attr(monkeypatch, module, "_normalize_growth_rate", _identity_normalization)
+
+
+def _patch_krylov_output(
+    monkeypatch,
+    module: str,
+    eig: complex,
+    *,
+    shape=(2, 2, 1, 1, 3),
+) -> None:
+    _patch_attr(
+        monkeypatch,
+        module,
+        "dominant_eigenpair",
+        lambda *args, **kwargs: (eig, np.ones(shape, dtype=np.complex64)),
+    )
+    _patch_attr(monkeypatch, module, "compute_fields_cached", _fake_fields)
+    _patch_attr(monkeypatch, module, "linear_terms_to_term_config", lambda terms: object())
+
+
 def test_cyclone_krylov_branch_has_single_canonical_owner() -> None:
     assert inspect.getmodule(cyclone_branches.run_krylov_cyclone_scan) is (
         cyclone_branches
@@ -87,39 +147,26 @@ def test_cyclone_krylov_branch_has_single_canonical_owner() -> None:
 
 def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
     status: list[str] = []
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.integrate_linear",
+    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "integrate_linear",
         lambda *args, **kwargs: (
             np.arange(3),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._select_fit_signal_auto",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "_select_fit_signal_auto",
         lambda *args, **kwargs: (np.ones(3, dtype=np.complex64), "phi", -0.1, 0.2),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.integrate_linear_explicit",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -127,31 +174,13 @@ def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
             None,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.3, -0.2, None, None, 0.5),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.dominant_eigenpair",
-        lambda *args, **kwargs: (
-            0.4 + 0.1j,
-            np.ones((2, 2, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.compute_fields_cached",
-        lambda *args, **kwargs: SimpleNamespace(
-            phi=np.ones((1, 1, 3), dtype=np.complex64)
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.linear_terms_to_term_config",
-        lambda terms: object(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
+    _patch_krylov_output(monkeypatch, "cyclone_linear", 0.4 + 0.1j)
 
     result = run_cyclone_linear(
         cfg=CycloneBaseCase(),
@@ -175,28 +204,11 @@ def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
     monkeypatch,
 ) -> None:
     status: list[str] = []
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.integrate_linear_explicit",
+    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0, 2.0]),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
@@ -204,8 +216,10 @@ def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
             None,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.45, -0.25, None, None, 1.0),
     )
 
@@ -213,23 +227,10 @@ def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
         assert kwargs["shift"] == pytest.approx(complex(0.45, 0.25))
         return 0.01 + 1.2j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.dominant_eigenpair",
-        _fake_eigenpair,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.compute_fields_cached",
-        lambda *args, **kwargs: SimpleNamespace(
-            phi=np.ones((1, 1, 3), dtype=np.complex64)
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.linear_terms_to_term_config",
-        lambda terms: object(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
+    _patch_attr(monkeypatch, "cyclone_linear", "dominant_eigenpair", _fake_eigenpair)
+    _patch_attr(monkeypatch, "cyclone_linear", "compute_fields_cached", _fake_fields)
+    _patch_attr(
+        monkeypatch, "cyclone_linear", "linear_terms_to_term_config", lambda terms: object()
     )
 
     result = run_cyclone_linear(
@@ -316,28 +317,11 @@ def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
     monkeypatch,
 ) -> None:
     status: list[str] = []
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.integrate_linear_explicit",
+    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0, 2.0]),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
@@ -355,31 +339,13 @@ def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
             raise value
         return value
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "instantaneous_growth_rate_from_phi",
         _fake_growth,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.dominant_eigenpair",
-        lambda *args, **kwargs: (
-            0.02 + 0.9j,
-            np.ones((2, 2, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.compute_fields_cached",
-        lambda *args, **kwargs: SimpleNamespace(
-            phi=np.ones((1, 1, 3), dtype=np.complex64)
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.linear_terms_to_term_config",
-        lambda terms: object(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
+    _patch_krylov_output(monkeypatch, "cyclone_linear", 0.02 + 0.9j)
 
     result = run_cyclone_linear(
         cfg=CycloneBaseCase(),
@@ -400,26 +366,7 @@ def test_run_cyclone_linear_reference_aligned_time_path_uses_reference_contract(
     monkeypatch,
 ) -> None:
     captured: dict[str, object] = {}
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._build_initial_condition",
-        _fake_initial_condition,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
+    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
 
     def _fake_reference_integrator(*args, **kwargs):
         captured["time_cfg"] = args[5]
@@ -431,17 +378,17 @@ def test_run_cyclone_linear_reference_aligned_time_path_uses_reference_contract(
             None,
         )
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.integrate_linear_explicit",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "integrate_linear_explicit",
         _fake_reference_integrator,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_linear",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (0.31, -0.17, None, None, 0.1),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     result = run_cyclone_linear(
@@ -477,47 +424,28 @@ def test_run_etg_linear_streaming_density_path(monkeypatch) -> None:
             diffrax_max_steps=8,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch, "etg_linear", init=_fake_initial_condition
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._resolve_streaming_window",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "_resolve_streaming_window",
         lambda *args, **kwargs: (0.2, 0.8),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diffrax_streaming",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "integrate_linear_diffrax_streaming",
         lambda *args, **kwargs: (
             np.ones((1, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.array([0.25]),
             np.array([-0.15]),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.compute_fields_cached",
-        lambda *args, **kwargs: SimpleNamespace(
-            phi=np.ones((1, 1, 3), dtype=np.complex64)
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.linear_terms_to_term_config",
-        lambda terms: object(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
+    _patch_attr(monkeypatch, "etg_linear", "compute_fields_cached", _fake_fields)
+    _patch_attr(
+        monkeypatch, "etg_linear", "linear_terms_to_term_config", lambda terms: object()
     )
 
     result = run_etg_linear(
@@ -555,25 +483,10 @@ def test_run_etg_linear_honors_explicit_time_config_density_paths(
         ),
     )
     called: dict[str, object] = {}
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "etg_linear",
+        init=lambda *args, **kwargs: np.zeros((2, 1, 1, 3), dtype=np.complex64),
     )
 
     phi_t = np.ones((3, 1, 1, 3), dtype=np.complex64)
@@ -597,27 +510,31 @@ def test_run_etg_linear_honors_explicit_time_config_density_paths(
             density_t,
         )
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diffrax",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "integrate_linear_diffrax",
         _fake_diffrax,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_diagnostics",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "integrate_linear_diagnostics",
         _fake_diagnostics,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._select_fit_signal",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "_select_fit_signal",
         lambda *args, **kwargs: np.array(
             [1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j], dtype=np.complex64
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.29, -0.14, 0.0, 0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     result = run_etg_linear(
@@ -648,25 +565,10 @@ def test_run_etg_linear_explicit_time_config_phi_path_uses_config_integrator(
         ),
     )
     captured: dict[str, object] = {}
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "etg_linear",
+        init=lambda *args, **kwargs: np.zeros((2, 1, 1, 3), dtype=np.complex64),
     )
 
     def _fake_from_config(*args, **kwargs):
@@ -676,23 +578,25 @@ def test_run_etg_linear_explicit_time_config_phi_path_uses_config_integrator(
             np.ones((3, 1, 1, 3), dtype=np.complex64),
         )
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.integrate_linear_from_config",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "integrate_linear_from_config",
         _fake_from_config,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._select_fit_signal",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "_select_fit_signal",
         lambda *args, **kwargs: np.array(
             [1.0 + 0.0j, 1.5 + 0.0j, 2.25 + 0.0j], dtype=np.complex64
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "etg_linear",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.33, -0.12, 0.0, 0.45),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     result = run_etg_linear(
@@ -857,28 +761,15 @@ def test_compare_cyclone_to_reference_handles_zero_reference() -> None:
 
 
 def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "cyclone_scan",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear_explicit",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -886,8 +777,10 @@ def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
             None,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no seed")),
     )
     vals = iter(
@@ -896,13 +789,11 @@ def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
             (0.4 + 0.2j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)),
         ]
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.dominant_eigenpair",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "dominant_eigenpair",
         lambda *args, **kwargs: next(vals),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     scan = run_cyclone_scan(
@@ -920,39 +811,18 @@ def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
 
 
 def test_run_cyclone_scan_plain_krylov_branch(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        _fake_initial_condition,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
+    _patch_salpha_scaffold(monkeypatch, "cyclone_scan")
     vals = iter(
         [
             (0.21 + 0.09j, np.zeros((2, 2, 1, 1, 3), dtype=np.complex64)),
             (0.31 - 0.11j, np.zeros((2, 2, 1, 1, 3), dtype=np.complex64)),
         ]
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.dominant_eigenpair",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "dominant_eigenpair",
         lambda *args, **kwargs: next(vals),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     scan = run_cyclone_scan(
@@ -984,41 +854,24 @@ def test_run_cyclone_scan_diffrax_streaming_time_config_batch(monkeypatch) -> No
             diffrax_max_steps=8,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch, "cyclone_scan", select_grid=_select_grid_dynamic
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        _select_grid_dynamic,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        _fake_initial_condition,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._resolve_streaming_window",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "_resolve_streaming_window",
         lambda *args, **kwargs: (0.0, 0.2),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear_diffrax_streaming",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear_diffrax_streaming",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 3), dtype=np.complex64),
             np.array([0.12, 0.18]),
             np.array([-0.04, -0.06]),
         ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     scan = run_cyclone_scan(
@@ -1046,28 +899,11 @@ def test_run_cyclone_scan_time_config_auto_signal_fallback(monkeypatch) -> None:
         cfg0,
         time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.2, sample_stride=1),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        _fake_initial_condition,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear_from_config",
+    _patch_salpha_scaffold(monkeypatch, "cyclone_scan")
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear_from_config",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             (
@@ -1076,17 +912,17 @@ def test_run_cyclone_scan_time_config_auto_signal_fallback(monkeypatch) -> None:
             ),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._select_fit_signal_auto",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "_select_fit_signal_auto",
         lambda *args, **kwargs: (np.ones(2, dtype=np.complex64), "phi", -0.2, -0.05),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.run_cyclone_linear",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "run_cyclone_linear",
         lambda *args, **kwargs: SimpleNamespace(gamma=0.44, omega=-0.22),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     scan = run_cyclone_scan(
@@ -1110,41 +946,33 @@ def test_run_cyclone_scan_time_config_auto_signal_fallback(monkeypatch) -> None:
 
 
 def test_run_kinetic_linear_time_density_path(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "kinetic_linear",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
+        with_cache=False,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.integrate_linear_diagnostics",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "integrate_linear_diagnostics",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
             2.0 * np.ones((2, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._select_fit_signal",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "_select_fit_signal",
         lambda *args, **kwargs: np.array([1.0 + 0.0j, 2.0 + 0.0j]),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.12, -0.05, 0.0, 1.0),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     result = run_kinetic_linear(
@@ -1163,46 +991,16 @@ def test_run_kinetic_linear_time_density_path(monkeypatch) -> None:
 
 
 def test_run_kinetic_linear_krylov_path(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "kinetic_linear",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.dominant_eigenpair",
-        lambda *args, **kwargs: (
-            0.31 + 0.27j,
-            np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.compute_fields_cached",
-        lambda *args, **kwargs: SimpleNamespace(
-            phi=np.ones((1, 1, 3), dtype=np.complex64)
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.linear_terms_to_term_config",
-        lambda terms: object(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
+    _patch_krylov_output(
+        monkeypatch,
+        "kinetic_linear",
+        0.31 + 0.27j,
+        shape=(2, 2, 2, 1, 1, 3),
     )
 
     result = run_kinetic_linear(
@@ -1243,52 +1041,41 @@ def test_run_kinetic_linear_time_config_branches(
             diffrax_max_steps=8,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "kinetic_linear",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.integrate_linear_from_config",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "integrate_linear_from_config",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.integrate_linear_diagnostics",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "integrate_linear_diagnostics",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
             2.0 * np.ones((2, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._select_fit_signal",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "_select_fit_signal",
         lambda *args, **kwargs: np.array([1.0 + 0.0j, 2.0 + 0.0j], dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "kinetic_linear",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.16, -0.08, 0.0, 0.2),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     result = run_kinetic_linear(
@@ -1311,25 +1098,10 @@ def test_run_kinetic_linear_time_config_branches(
 def test_run_tem_linear_rejects_invalid_fit_signal_and_time_density(
     monkeypatch,
 ) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "tem",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
     with np.testing.assert_raises(ValueError):
         run_tem_linear(
@@ -1343,25 +1115,27 @@ def test_run_tem_linear_rejects_invalid_fit_signal_and_time_density(
             steps=2,
         )
 
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.integrate_linear_diagnostics",
+    _patch_attr(
+        monkeypatch,
+        "tem",
+        "integrate_linear_diagnostics",
         lambda *args, **kwargs: (
             np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
             3.0 * np.ones((2, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.extract_mode_time_series",
+    _patch_attr(
+        monkeypatch,
+        "tem",
+        "extract_mode_time_series",
         lambda arr, sel, method: np.array([1.0 + 0.0j, 3.0 + 0.0j]),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "tem",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.2, -0.1, 0.0, 1.0),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.tem._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
     result = run_tem_linear(
         solver="time",
@@ -1378,32 +1152,21 @@ def test_run_tem_linear_rejects_invalid_fit_signal_and_time_density(
 
 
 def test_run_cyclone_scan_auto_explicit_time_falls_back_to_krylov(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "cyclone_scan",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._apply_reference_hypercollisions",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "_apply_reference_hypercollisions",
         lambda params, **kwargs: params,
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear_explicit",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1411,21 +1174,13 @@ def test_run_cyclone_scan_auto_explicit_time_falls_back_to_krylov(monkeypatch) -
             None,
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no fit")),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.dominant_eigenpair",
-        lambda *args, **kwargs: (
-            0.25 + 0.4j,
-            np.ones((2, 2, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
+    _patch_krylov_output(monkeypatch, "cyclone_scan", 0.25 + 0.4j)
 
     scan = run_cyclone_scan(
         np.array([0.3]),
@@ -1443,28 +1198,15 @@ def test_run_cyclone_scan_auto_explicit_time_falls_back_to_krylov(monkeypatch) -
 def test_run_cyclone_scan_explicit_time_reselects_branch_with_previous_frequency(
     monkeypatch,
 ) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "cyclone_scan",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear_explicit",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear_explicit",
         lambda *args, **kwargs: (
             np.array([0.0, 1.0]),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
@@ -1479,21 +1221,13 @@ def test_run_cyclone_scan_explicit_time_reselects_branch_with_previous_frequency
             (0.11, 0.10, None, None, 1.0),
         ]
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.instantaneous_growth_rate_from_phi",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "instantaneous_growth_rate_from_phi",
         lambda *args, **kwargs: next(growth_values),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.dominant_eigenpair",
-        lambda *args, **kwargs: (
-            0.13 - 0.38j,
-            np.ones((2, 2, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
+    _patch_krylov_output(monkeypatch, "cyclone_scan", 0.13 - 0.38j)
 
     scan = run_cyclone_scan(
         np.array([0.2, 0.3, 0.4]),
@@ -1513,14 +1247,8 @@ def test_run_cyclone_scan_explicit_time_reselects_branch_with_previous_frequency
 
 
 def test_run_cyclone_scan_empty_explicit_time_returns_empty(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
+    _patch_attr(monkeypatch, "cyclone_scan", "build_spectral_grid", lambda cfg: _grid_full())
+    _patch_attr(monkeypatch, "cyclone_scan", "SAlphaGeometry.from_config", _fake_salpha_geometry)
 
     scan = run_cyclone_scan(
         np.asarray([]),
@@ -2832,46 +2560,33 @@ def test_run_cyclone_scan_time_cached_uses_integrate_linear_output(monkeypatch) 
         cfg0,
         time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.3, sample_stride=1),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_spectral_grid",
-        lambda cfg: _grid_full(),
+    _patch_salpha_scaffold(
+        monkeypatch,
+        "cyclone_scan",
+        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.integrate_linear",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "integrate_linear",
         lambda *args, **kwargs: (
             np.zeros((3, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((3, 1, 1, 3), dtype=np.complex64),
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.extract_mode_time_series",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "extract_mode_time_series",
         lambda arr, sel, method: np.array(
             [1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j], dtype=np.complex64
         ),
     )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan.fit_growth_rate_auto",
+    _patch_attr(
+        monkeypatch,
+        "cyclone_scan",
+        "fit_growth_rate_auto",
         lambda *args, **kwargs: (0.19, -0.05, 0.0, 0.2),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.cyclone_scan._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
     )
 
     scan = run_cyclone_scan(
