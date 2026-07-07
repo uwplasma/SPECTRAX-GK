@@ -342,7 +342,7 @@ fast_tests = [
   "tests/test_linear_helpers_extra.py",
   "tests/test_terms_assembly.py",
   "tests/test_terms_fields.py",
-  "tests/test_generate_observed_order_gate.py",
+  "tests/tools/generators/test_generate_observed_order_gate.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -669,10 +669,10 @@ fast_tests = [
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
   "tests/test_terms_assembly.py",
-  "tests/test_plot_nonlinear_window_statistics.py",
-  "tests/test_plot_w7x_fluctuation_spectrum_panel.py",
-  "tests/test_build_tem_branch_parity_audit.py",
-  "tests/test_build_w7x_tem_extension_status.py",
+  "tests/tools/artifacts/test_plot_nonlinear_window_statistics.py",
+  "tests/tools/artifacts/test_plot_w7x_fluctuation_spectrum_panel.py",
+  "tests/tools/artifacts/test_build_tem_branch_parity_audit.py",
+  "tests/tools/artifacts/test_build_w7x_tem_extension_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -898,8 +898,8 @@ fast_tests = [
   "tests/test_nonlinear_parallel.py",
   "tests/test_nonlinear_domain_parallel.py",
   "tests/test_nonlinear_spectral_communication_gate.py",
-  "tests/test_build_parallelization_completion_status.py",
-  "tests/test_profile_nonlinear_sharding.py",
+  "tests/tools/artifacts/test_build_parallelization_completion_status.py",
+  "tests/tools/profiling/test_profile_nonlinear_sharding.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_domain_parallel_identity_gate.json",
@@ -1153,7 +1153,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear_replicate_diagnostics.py",
-  "tests/test_summarize_nonlinear_replicate_spread.py",
+  "tests/tools/campaigns/test_summarize_nonlinear_replicate_spread.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.json",
@@ -1185,9 +1185,9 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear_replicate_followup.py",
-  "tests/test_write_nonlinear_replicate_followup_campaign.py",
-  "tests/test_write_external_vmec_holdout_configs.py",
-  "tests/test_build_external_vmec_replicate_ensemble.py",
+  "tests/tools/campaigns/test_write_nonlinear_replicate_followup_campaign.py",
+  "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
+  "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json",
@@ -1225,16 +1225,16 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_quasilinear.py",
-  "tests/test_plot_quasilinear_spectrum.py",
-  "tests/test_plot_quasilinear_spectrum_shape_gate.py",
-  "tests/test_plot_quasilinear_saturation_rule_sweep.py",
-  "tests/test_plot_quasilinear_shape_aware_saturation.py",
-  "tests/test_plot_quasilinear_candidate_uncertainty.py",
-  "tests/test_plot_quasilinear_dataset_sufficiency.py",
+  "tests/tools/artifacts/test_plot_quasilinear_spectrum.py",
+  "tests/tools/artifacts/test_plot_quasilinear_spectrum_shape_gate.py",
+  "tests/tools/artifacts/test_plot_quasilinear_saturation_rule_sweep.py",
+  "tests/tools/artifacts/test_plot_quasilinear_shape_aware_saturation.py",
+  "tests/tools/artifacts/test_plot_quasilinear_candidate_uncertainty.py",
+  "tests/tools/artifacts/test_plot_quasilinear_dataset_sufficiency.py",
   "tests/test_quasilinear_model_selection.py",
   "tests/test_quasilinear_model_selection_extra.py",
-  "tests/test_plot_quasilinear_model_selection_status.py",
-  "tests/test_build_quasilinear_holdout_gap_report.py",
+  "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py",
+  "tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py",
   "tests/test_external_holdout_plan.py",
 ]
 artifact_paths = [
@@ -1287,13 +1287,13 @@ fast_tests = [
   "tests/test_quasilinear_calibration.py",
   "tests/test_quasilinear_window.py",
   "tests/test_quasilinear_promotion_guardrails.py",
-  "tests/test_check_quasilinear_calibration_inputs.py",
+  "tests/release/test_check_quasilinear_calibration_inputs.py",
   "tests/test_check_external_vmec_high_grid_admission.py",
-  "tests/test_plot_quasilinear_calibration.py",
-  "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
-  "tests/test_write_external_vmec_holdout_configs.py",
-  "tests/test_build_external_vmec_replicate_ensemble.py",
-  "tests/test_prepare_external_vmec_holdout_from_screen.py",
+  "tests/tools/artifacts/test_plot_quasilinear_calibration.py",
+  "tests/tools/artifacts/test_plot_external_vmec_nonlinear_convergence_gate.py",
+  "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
+  "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",
+  "tests/tools/campaigns/test_prepare_external_vmec_holdout_from_screen.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_validated_calibration_inputs.json",
@@ -1536,9 +1536,9 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_runtime_diagnostics.py",
-  "tests/test_compare_gx_nonlinear_diagnostics.py",
-  "tests/test_compare_gx_runtime_diag_state.py",
-  "tests/test_plot_zonal_flow_response_from_output.py",
+  "tests/tools/comparison/test_compare_gx_nonlinear_diagnostics.py",
+  "tests/tools/comparison/test_compare_gx_runtime_diag_state.py",
+  "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
@@ -1574,9 +1574,9 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_validation_gates.py",
-  "tests/test_make_validation_gate_index.py",
-  "tests/test_generate_observed_order_gate.py",
-  "tests/test_generate_kbm_branch_gate_summary.py",
+  "tests/tools/artifacts/test_make_validation_gate_index.py",
+  "tests/tools/generators/test_generate_observed_order_gate.py",
+  "tests/tools/generators/test_generate_kbm_branch_gate_summary.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -1608,12 +1608,12 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_zonal_validation.py",
-  "tests/test_compare_w7x_zonal_reference.py",
-  "tests/test_generate_w7x_zonal_response_panel.py",
-  "tests/test_plot_w7x_zonal_closure_ladder.py",
-  "tests/test_plot_w7x_zonal_state_convention_audit.py",
-  "tests/test_plot_w7x_zonal_recurrence_sweep.py",
-  "tests/test_build_open_research_lane_status.py",
+  "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
+  "tests/tools/generators/test_generate_w7x_zonal_response_panel.py",
+  "tests/tools/artifacts/test_plot_w7x_zonal_closure_ladder.py",
+  "tests/tools/artifacts/test_plot_w7x_zonal_state_convention_audit.py",
+  "tests/tools/artifacts/test_plot_w7x_zonal_recurrence_sweep.py",
+  "tests/tools/artifacts/test_build_open_research_lane_status.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.json",
@@ -1654,7 +1654,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_zonal_objective.py",
-  "tests/test_build_zonal_flow_objective_gate.py",
+  "tests/tools/artifacts/test_build_zonal_flow_objective_gate.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -1785,7 +1785,7 @@ fast_tests = [
   "tests/test_miller_eik.py",
   "tests/test_vmec_eik.py",
   "tests/test_vmec_roundtrip_gate.py",
-  "tests/test_run_vmec_roundtrip_gate.py",
+  "tests/tools/campaigns/test_run_vmec_roundtrip_gate.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
@@ -1836,7 +1836,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
-  "tests/test_build_vmec_boozer_parity_matrix.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_parity_matrix.py",
   "tests/test_geometry_backend_vmec_helpers.py",
   "tests/test_vmec_eik.py",
 ]
@@ -2247,7 +2247,7 @@ fast_tests = [
   "tests/test_sharding.py",
   "tests/test_sharded_integrators.py",
   "tests/test_parallel.py",
-  "tests/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/generators/test_generate_parallel_ky_scan_gate.py",
   "tests/test_velocity_sharding.py",
 ]
 artifact_paths = [
@@ -2299,14 +2299,14 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_nonlinear_gradient_evidence.py",
   "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+  "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
   "tests/test_nonlinear_gradient_state_control_runbook.py",
-  "tests/test_build_vmec_state_to_input_mapping_response.py",
-  "tests/test_write_vmec_boundary_perturbation_inputs.py",
-  "tests/test_write_vmec_state_to_input_mapping_campaign.py",
-  "tests/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py",
-  "tests/test_write_vmec_state_control_short_bracket_launch.py",
-  "tests/test_build_vmec_state_control_bracket_sweep_status.py",
+  "tests/tools/artifacts/test_build_vmec_state_to_input_mapping_response.py",
+  "tests/tools/campaigns/test_write_vmec_boundary_perturbation_inputs.py",
+  "tests/tools/campaigns/test_write_vmec_state_to_input_mapping_campaign.py",
+  "tests/tools/campaigns/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py",
+  "tests/tools/campaigns/test_write_vmec_state_control_short_bracket_launch.py",
+  "tests/tools/artifacts/test_build_vmec_state_control_bracket_sweep_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2772,7 +2772,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+  "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json",
@@ -3225,19 +3225,19 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
-  "tests/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
-  "tests/test_build_vmec_boozer_aggregate_objective_gate.py",
-  "tests/test_build_vmec_boozer_aggregate_line_search_gate.py",
-  "tests/test_build_vmec_boozer_multi_point_objective_gate.py",
-  "tests/test_build_vmec_boozer_aggregate_line_search_comparison.py",
-  "tests/test_build_vmec_boozer_aggregate_alpha_holdout_gate.py",
-  "tests/test_build_vmec_boozer_aggregate_surface_holdout_gate.py",
-  "tests/test_build_vmec_boozer_second_equilibrium_aggregate_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_aggregate_objective_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_aggregate_line_search_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_multi_point_objective_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_aggregate_line_search_comparison.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_aggregate_alpha_holdout_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_aggregate_surface_holdout_gate.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_second_equilibrium_aggregate_gate.py",
   "tests/test_check_vmec_boozer_aggregate_holdout_gate.py",
-  "tests/test_build_vmec_boozer_gradient_holdout_matrix.py",
-  "tests/test_build_nonlinear_window_fd_audit.py",
-  "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
-  "tests/test_build_nonlinear_transport_horizon_audit.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_gradient_holdout_matrix.py",
+  "tests/tools/artifacts/test_build_nonlinear_window_fd_audit.py",
+  "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
+  "tests/tools/artifacts/test_build_nonlinear_transport_horizon_audit.py",
   "tests/test_nonlinear_transport_optimization.py",
   "tests/test_vmec_jax_boundary_chain.py",
   "tests/test_vmec_jax_candidate_gate.py",
@@ -3246,7 +3246,7 @@ fast_tests = [
   "tests/test_vmec_jax_transport_gradient.py",
   "tests/test_vmec_jax_transport_line_search.py",
   "tests/test_vmec_jax_transport_objective.py",
-  "tests/test_write_vmec_jax_projected_transport_line_search_inputs.py",
+  "tests/tools/campaigns/test_write_vmec_jax_projected_transport_line_search_inputs.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -3819,7 +3819,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_parallel.py",
-  "tests/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/generators/test_generate_parallel_ky_scan_gate.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_ky_scan_gate.json",
@@ -3969,7 +3969,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_plotting.py",
-  "tests/test_make_gx_publication_panel.py",
+  "tests/tools/artifacts/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -4023,8 +4023,8 @@ numerics_contracts = [
   "time and response arrays are one-dimensional and length-matched before plotting",
 ]
 fast_tests = [
-  "tests/test_plot_zonal_flow_response_from_output.py",
-  "tests/test_generate_miller_zonal_response_pilot.py",
+  "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
+  "tests/tools/generators/test_generate_miller_zonal_response_pilot.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.png",
@@ -4056,10 +4056,10 @@ fast_tests = [
   "tests/test_plotting.py",
   "tests/test_autodiff_demo.py",
   "tests/test_autodiff_twomode_demo.py",
-  "tests/test_build_manuscript_readiness_status.py",
-  "tests/test_build_pre_manuscript_closure_status.py",
-  "tests/test_build_pre_manuscript_closure_runbook.py",
-  "tests/test_make_gx_publication_panel.py",
+  "tests/tools/artifacts/test_build_manuscript_readiness_status.py",
+  "tests/tools/artifacts/test_build_pre_manuscript_closure_status.py",
+  "tests/tools/artifacts/test_build_pre_manuscript_closure_runbook.py",
+  "tests/tools/artifacts/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth_summary.json",

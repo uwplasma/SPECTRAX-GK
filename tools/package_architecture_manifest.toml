@@ -46,3 +46,55 @@ required_docs = [
   "docs/code_structure.rst",
   "docs/differentiable_refactor_plan.rst",
 ]
+
+[topology_policy]
+mode = "no_regression_until_target"
+description = "Track the consolidation plan without breaking current CI before files are moved. Counts must not increase beyond the audited baseline; final release can pass --require-topology-targets to enforce the target ceilings."
+
+[[topology_policy.counts]]
+name = "installable_source_python_files"
+path = "src/spectraxgk"
+pattern = "*.py"
+recursive = true
+baseline = 357
+target = 100
+
+[[topology_policy.counts]]
+name = "test_python_files"
+path = "tests"
+pattern = "*.py"
+recursive = true
+baseline = 322
+target = 99
+
+[[topology_policy.counts]]
+name = "tool_python_files"
+path = "tools"
+pattern = "*.py"
+recursive = true
+baseline = 265
+target = 99
+
+[[topology_policy.counts]]
+name = "installable_validation_python_files"
+path = "src/spectraxgk/validation"
+pattern = "*.py"
+recursive = true
+baseline = 88
+target = 5
+
+[[topology_policy.counts]]
+name = "flat_test_python_files"
+path = "tests"
+pattern = "*.py"
+recursive = false
+baseline = 141
+target = 1
+
+[[topology_policy.counts]]
+name = "flat_tool_python_files"
+path = "tools"
+pattern = "*.py"
+recursive = false
+baseline = 265
+target = 0

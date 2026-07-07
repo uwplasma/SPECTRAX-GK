@@ -1,568 +1,785 @@
-# SPECTRAX-GK Final Closure Plan
+# SPECTRAX-GK Consolidation And Performance Refactor Plan
 
-This is the single active execution plan after the `v1.6.9` release checkpoint
-and the post-release simplification passes. Chronology belongs in git history,
-CI logs, release notes, and validation artifacts; this file defines the finite
-steps needed to ship the next polished version.
+This is the active plan for the next large refactor. It replaces the previous
+campaign-log-oriented plan with a finite implementation plan focused on a
+smaller, clearer, faster, research-grade codebase.
 
 ## One-Sentence Plan
 
-Finish SPECTRAX-GK as a compact, domain-organized, JAX-native gyrokinetic code with a small and easy-to-manage source tree, explicit GX parity only in benchmark/comparison lanes, physics-anchored tests and documentation, an accurate README with the runtime/memory GX-vs-SPECTRAX-GK panel near the top, differentiable Python research workflows, and low-runtime/low-memory CPU/GPU execution backed only by measured artifacts.
+Refactor SPECTRAX-GK into a compact JAX-native gyrokinetic package with at most
+100 installable source files, fewer than 100 test files, fewer than 100 tool
+scripts, validation code moved out of the runtime package, legacy or
+non-promoted functionality removed from `main`, a clearer examples and
+benchmarks layout, physics-anchored tests, explicit benchmark-only comparison
+references, and profiler-backed CPU/GPU performance improvements while
+preserving validated solver behavior and public user workflows.
 
-## Current State
+## Current Audited State
 
-Last audited: 2026-06-22 on `main`.
+Last audited: 2026-07-07 on `main`.
 
-- Latest released tag: `v1.6.9`.
-- Latest implementation checkpoint: `fd8fd816 Simplify kinetic benchmark
-  dispatch`; plan-only checkpoints may follow it.
-- Git state at audit: clean local `main`, synced with `origin/main` after the
-  implementation checkpoint.
-- CI state at audit: newest head run is pending; the previous Miller helper
-  mypy failure is fixed. Check the head run once before release, but do not
-  spend time watching superseded/cancelled runs.
-- Source tree: 357 tracked Python source files under `src/spectraxgk`, 9 public
-  root facades, and domain packages for API, artifacts, core, diagnostics,
-  geometry, geometry backends, objectives, operators, parallel, solvers, terms,
-  validation, and workflows.
-- Function-size audit from the latest source pass: zero source functions at or
-  above 90 lines, zero functions in the 80-89 line band, and 86 functions at or
-  above 70 lines. The former 80-89 line public benchmark entry point
-  `validation/benchmarks/kinetic_linear.py::run_kinetic_linear` is now a
-  79-line setup/dispatch wrapper with the same public call surface and artifact
-  schema.
-- Tests: 316 tracked Python test files; wide CI coverage gate remains at or
-  above 95% package-wide coverage.
-- Docs/readme: README, docs, examples, benchmarks, release scope, architecture,
-  differentiability, performance, validation, and code-structure docs exist.
-  The next pass should tighten, cross-link, and remove stale claims rather than
-  add broad narrative by default.
-- Repository footprint: tracked files total 48,423,613 bytes after trimming
-  unreferenced duplicate stellarator optimization PDFs; no tracked files above
-  2 MB. Large local checkout size is from ignored/generated artifacts such as
-  `.venv`, caches, `docs/_build`, `dist`, and `tools_out`, not tracked release
-  content.
-- README performance surface: `docs/_static/runtime_memory_benchmark.png` is
-  restored after Highlights and before claim scope, with measured CPU/GPU and
-  GX/reference rows including W7-X and HSX.
-- Benchmark layout: lightweight benchmark drivers and manifests live at root
-  `benchmarks/`; raw transient outputs remain ignored/out of git.
+- Latest local head: `7817628e Bump version to 1.6.10`.
+- Latest tag at local head: `v1.6.10`.
+- Git state at audit: clean `main`, tracking `origin/main`.
+- Latest GitHub `main` CI, dependency graph, release workflow, and PyPI publish
+  for `v1.6.10` passed.
+- Active local/remote branches: only `main` and `origin/main`.
+- Closed obsolete experimental PRs remain closed: #4, #5, and #6.
+- Tracked repository size is acceptable for now; no tracked file is above 1 MB.
+  The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`.
+- Current tracked file counts:
+  - `src/spectraxgk`: 362 tracked files, 357 Python files, about 109k lines.
+  - `tests`: 322 Python files, about 94k lines.
+  - `tools`: 282 tracked files, 265 Python files, about 101k lines.
+  - `examples`: 83 tracked files, 43 Python files, about 10k lines.
+  - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
+- Source-package Python file counts by domain:
+  - `validation`: 88 files.
+  - `objectives`: 38 files.
+  - `operators`: 34 files.
+  - `solvers`: 34 files.
+  - `geometry`: 25 files.
+  - `workflows`: 25 files.
+  - `terms`: 21 files.
+  - `artifacts`: 18 files.
+  - `geometry_backends`: 18 files.
+  - `diagnostics`: 16 files.
+  - `parallel`: 12 files.
+  - `api`: 11 files.
+  - root facades: 9 files.
+  - `core`: 6 files.
+  - `utils`: 2 files.
+- Source-function size is no longer the main problem: there are currently no
+  source functions at or above 90 lines and none in the 80-89 line band.
+- The main maintainability problem is repository topology: validation, campaign,
+  plotting, profiling, release, comparison, and debug code has grown to roughly
+  the same size as the solver and is spread across flat `tests/` and `tools/`
+  namespaces.
 
-## Authority Map
+## Hard Targets For The Refactor
 
-- `plan.md`: active priorities, gates, and release sequence.
-- `docs/architecture_refactor_plan.rst`: target package layout, naming policy,
-  and what counts as useful simplification.
-- `docs/differentiable_refactor_plan.rst`: differentiability strategy and AD
-  gate requirements.
-- `docs/code_structure.rst`: current source-tree map.
-- `docs/release_scope.rst`: claim ledger for README, docs, releases, and papers.
-- `tools/*manifest*.toml`: executable gates for architecture, size,
-  validation, performance, differentiability, artifacts, and release readiness.
+These targets are release gates for this refactor. They are intentionally strict
+because the goal is not another incremental split, but a much smaller and more
+usable codebase.
 
-Conflict order: release-scope claims, architecture plan, executable manifests,
-then this plan.
+| Area | Current | Target | Requirement |
+| --- | ---: | ---: | --- |
+| Installable source Python files | 357 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
+| Test Python files | 322 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Tool Python files | 265 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
+| `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
+| Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
+| Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
+| README/docs claims | scoped | current and scoped | No unsupported speedup, optimization, or validation claims. |
 
-## Closed Results
+A file-count reduction that merely hides code in larger files is not acceptable.
+A successful consolidation must also reduce duplicated policy, redundant tests,
+patch-heavy test design, broad public exports, and unclear ownership.
 
-- `v1.6.9` release passed GitHub release and PyPI publication.
-- `spectraxgk` executable quickstart works, emits progress/ETA, writes a
-  reproducible default input in the current directory, and supports
-  `spectraxgk --plot` for supported saved linear/nonlinear outputs.
-- Runtime/memory comparison panel is back near the top of the README and tied
-  to measured artifacts.
-- Root-level prefix sprawl was removed; stable public facades now sit over
-  domain packages.
-- Recent refactors simplified runtime, solver setup, nonlinear Diffrax/IMEX,
-  validation reports, VMEC/Boozer gates, nonlinear-gradient/report paths,
-  quasilinear optimized-equilibrium audit inputs, KBM beta Krylov sample policy,
-  linear explicit dispatch, twist-shift cache policy, duplicate optimization
-  artifacts, solver-ready flux-tube geometry packing, VMEC/Boozer field-line
-  sampling assembly, runtime scan batch orchestration, Cyclone time-batch
-  result branching, Miller straight-theta rebuild staging, and objective
-  portfolio sensitivity gates without adding new public behavior. The kinetic
-  benchmark entry point now packs time/fit controls into typed internal request
-  objects, reducing public dispatch complexity while preserving the stable API.
-- A non-benchmark terminology audit found no `GX` tokens in Python source
-  outside the release-scope documentation test. Remaining `reference_aligned`
-  identifiers are benchmark API terms; native operator/solver comments now use
-  benchmark-compatible numerical wording instead.
-- Package-wide coverage gate is maintained by CI shards at or above 95%.
-- Production parallelization claims are limited to independent ky/batch/UQ
-  work. Nonlinear domain decomposition remains diagnostic until stronger gates
-  pass.
+## Non-Negotiable Invariants
 
-## Open Lanes and Closure Gates
+- Preserve validated numerical behavior for promoted linear, nonlinear,
+  quasilinear, geometry, plotting, executable, and artifact workflows.
+- Preserve the user entry points `spectraxgk`, `spectrax-gk`, `spectraxgk --plot`,
+  default demo execution, TOML-driven runtime execution, and documented Python
+  workflows.
+- Keep comparison-code references only in explicit benchmark/comparison contexts:
+  benchmark panels, parity tools, reference reruns, comparison tests, and docs
+  sections that discuss external validation.
+- Do not keep native source names such as `gx_*`, `GX-reference`, or
+  `GX-style` when the object is really a physical convention, numerical scheme,
+  file schema, or benchmark-compatible normalization.
+- Keep differentiable Python workflows pure: no file I/O, plotting,
+  subprocesses, terminal progress, global mutable state, or host callbacks
+  inside promoted objective functions.
+- The executable path may be faster and non-differentiable; the Python research
+  API must remain JAX-compatible where promoted.
+- Do not make new performance claims without profiler artifacts, identity gates,
+  and equivalent workload definitions.
+- Do not track transient raw outputs, NetCDF dumps, scratch logs, profiler
+  traces, or generated office campaign directories in git.
+- Keep `benchmarks/` small: benchmark drivers and manifests only, not raw
+  results or large campaign code.
+- Keep `examples/` user-facing: scripts should be runnable and pedagogical, not
+  hidden release machinery.
 
-| Priority | Lane | Current status | Closure gate |
-| --- | --- | ---: | --- |
-| P0 | CI/release hygiene | 99% | Latest head CI green, bounded local release gates pass, version bump/tag publish cleanly. |
-| P0 | README/docs/plan consistency | 99% | README references current figures only; docs, release scope, and plan agree on promoted and deferred claims. |
-| P1 | Source simplification and naming | 100% scoped | No new root modules, source-file count non-increasing, zero functions >=90 lines, zero functions in the 80-89 band, and non-benchmark comparison-code terminology audited. |
-| P1 | Refactor/testability | 99.9% | Tests map to domain ownership; no migration-era wrappers or stale compatibility paths remain in examples/docs. |
-| P1 | Package coverage and physics tests | 100% gate | Wide package coverage stays >=95%; new tests are physics, numerics, artifact, AD, or regression gates, not smoke-only scaffolds. |
-| P2 | Runtime/memory and performance claims | 98% scoped | README panel uses measured artifacts with hardware/backend metadata; new speedup claims require identity plus profiler gates. |
-| P2 | Differentiable Python workflows | 99% scoped | Promoted observables have AD/FD/tangent/conditioning/covariance or implicit-differentiation checks. |
-| P2 | VMEC/Boozer differentiable geometry | 99% scoped | Promoted geometry/optimization rows have parity and gradient gates; broad optimization claims remain scoped. |
-| P2 | Production parallelization | 95% scoped | Independent-work paths are production; nonlinear domain decomposition stays diagnostic until full transport-window identity and CPU/GPU speedup pass. |
-| P3 | Quasilinear model development | 99% scoped | Screening/model-development diagnostics are documented; universal absolute-flux predictor remains unpromoted unless held-out gates pass. |
-| P3 | Nonlinear turbulent-flux optimization | 94% scoped | Long post-transient matched audits plus a user-facing matched-audit example support scoped examples; broad multi-surface optimized-stellarator turbulence claims remain unpromoted. |
-| P4 | W7-X/TEM extensions | deferred | W7-X zonal recurrence, W7-X TEM/multi-flux-tube, and fluctuation-spectrum panels are post-release unless explicitly reopened. |
+## Target Repository Layout
 
-## Prioritized Execution Plan
+The final layout should make ownership obvious from the path.
 
-The remaining work is deliberately ordered to finish release-critical technical
-lanes before reopening science lanes. Do not start new large validation
-campaigns until the codebase, documentation, and release gates below are
-stable.
+```text
+src/spectraxgk/
+  __init__.py
+  _version.py
+  cli.py
+  config.py
+  runtime.py
+  linear.py
+  nonlinear.py
+  quasilinear.py
+  core/
+  geometry/
+  operators/
+  solvers/
+  diagnostics/
+  objectives/
+  parallel/
+  io/
+  workflows/
 
-### 1. Freeze the checkpoint and CI
+tests/
+  unit/
+  integration/
+  validation/
+  tools/
+  release/
+  conftest.py
 
-Goal: keep `main` clean before further refactor or release work.
+benchmarks/
+  README.md
+  linear/
+  nonlinear/
+  performance/
+  manifests/
 
-1. Check the newest non-superseded CI run once.
-2. Fix real failures only; ignore cancelled runs superseded by newer pushes.
-3. Run bounded local gates after any plan/docs/readme or source tranche:
-   - `python tools/check_package_architecture_manifest.py`
-   - `python tools/check_repository_size_manifest.py`
-   - `python tools/check_release_readiness.py --out-json /tmp/spectrax_release_readiness.json`
-   - `python -m pytest -q tests/test_check_release_readiness.py tests/test_check_repository_size_manifest.py tests/test_check_release_version.py --maxfail=1`
-   - `python -m ruff check src tests tools benchmarks`
-   - `python -m sphinx -b html docs /tmp/spectrax_docs_plan_build`
-   - `git diff --check`
+tools/
+  release/
+  artifacts/
+  profiling/
+  comparison/
+  campaigns/
+  README.md
 
-### 2. Lock the README/runtime-memory claim surface
+examples/
+  README.md
+  quickstart/
+  linear/
+  nonlinear/
+  geometry/
+  quasilinear/
+  optimization/
+  plotting/
+  parallelization/
 
-Goal: the README clearly shows measured CPU/GPU runtime and memory against GX
-benchmark rows without unsupported speedup claims.
+docs/
+  _static/
+  user guides, theory, numerics, validation, performance, API, developer docs
+```
 
-1. Keep `docs/_static/runtime_memory_benchmark.png` immediately after
-   Highlights and before the claim-scope ledger.
-2. Keep the figure provenance files tracked:
-   - `docs/_static/runtime_memory_summary_ship_refresh.json`
-   - `docs/_static/runtime_memory_results_ship_refresh.csv`
-   - `docs/_static/runtime_memory_benchmark.png`
-3. Refresh the panel only from new measured CPU/GPU artifacts with hardware,
-   backend, wall-time, peak-memory, and W7-X/HSX rows.
-4. Keep nonlinear domain-decomposition speedup out of the README until identity
-   and profiler gates pass.
+The target `src/spectraxgk` package should be around 60-90 Python files. A
+possible allocation is:
 
-### 3. Finish source simplification without adding file sprawl
+| Package | Target files | Notes |
+| --- | ---: | --- |
+| root facades | 7-8 | Stable user imports and executable only. |
+| `core` | 5-7 | Grids, velocity basis, species, PyTree/state contracts. |
+| `geometry` | 8-10 | Analytic, Miller, VMEC/Boozer bridge, flux-tube sampling, sensitivities. |
+| `operators` | 8-12 | Linear RHS, nonlinear bracket/RHS, fields, collisions, gyroaverages, caches. |
+| `solvers` | 8-10 | Time stepping, eigen/Krylov, IMEX, explicit, Diffrax wrappers. |
+| `diagnostics` | 6-8 | Growth/frequency, modes, transport, quasilinear diagnostics, normalization. |
+| `objectives` | 7-10 | Linear, quasilinear, nonlinear-window, stellarator, AD/FD/UQ helpers. |
+| `parallel` | 4-6 | Independent work, velocity sharding, experimental domain decomposition gates. |
+| `io` / `artifacts` | 5-7 | NetCDF, restart, plotting, TOML, artifact schemas. |
+| `workflows` | 6-8 | Runtime orchestration, named cases, examples support, optimization workflows. |
+| `validation` | 0-5 | Only reusable public metrics if they cannot live under `diagnostics` or `benchmarks`. |
 
-Goal: make the code easier to navigate and extend while keeping stable public
-facades.
+## What Moves Out Of `src/spectraxgk`
 
-1. Do not add new root modules or migration-era compatibility facades.
-2. Do not increase the 357-file source count unless the same tranche deletes or
-   consolidates at least as many files and lowers navigation cost.
-3. Keep public facades (`linear.py`, `nonlinear.py`, `runtime.py`,
-   `quasilinear.py`, `benchmarks.py`, and `cli.py`) as user entry points only.
-4. Consolidate single-use internal wrappers into domain owners when this lowers
-   navigation cost and preserves tests.
-5. Rename non-benchmark GX/comparison terminology to physics or numerics names;
-   keep GX naming only in explicit benchmark/comparison tools, tests, docs, and
-   plots.
-6. Next source candidates, in priority order:
-   - stop line-count-driven source churn unless a real duplicated policy or
-     stale compatibility path is found;
-   - benchmark scan/report helpers that duplicate fit-window, branch-selection,
-     or report-packing policies;
-   - docs/examples references to stale migration-era paths, if any remain.
+The installable package should contain solver functionality, reusable public
+APIs, and lightweight runtime workflows. It should not contain manuscript
+campaign orchestration or one-off validation report builders.
 
-### 4. Complete naming and documentation consistency
+Move out of `src/spectraxgk`:
 
-Goal: make the repository understandable to new users and contributors.
+- Long benchmark campaigns and scan-specific branch logic.
+- External-reference comparison harnesses that are not needed by normal users.
+- Manuscript status report builders.
+- Nonlinear-gradient campaign design and follow-up generators.
+- Quasilinear calibration holdout admission ledgers when they are artifact
+  builders rather than reusable diagnostics.
+- Stellarator transport campaign launchers and selection policies that only
+  postprocess a specific research campaign.
+- Any file whose only caller is a `tools/build_*`, `tools/write_*`,
+  `tools/postprocess_*`, or one-off test.
 
-1. Keep GX mentions only in benchmark/comparison context: parity reruns,
-   reference plots, validation tables, and comparison documentation.
-2. Rename native-code wording such as "GX-style" or "GX-reference" to the
-   underlying numerical or physical convention when it is not explicitly a
-   benchmark artifact.
-3. Keep docs organized by domain: theory, numerics, geometry, validation,
-   performance, examples, differentiability, and release scope.
-4. Do not expand the README with long derivations. README should show install,
-   quickstart, runtime/memory panel, main validation/optimization figures, and
-   claim boundaries; detailed equations and derivations belong in docs.
+Move to one of these destinations:
 
-### 5. Keep tests fast and physics-anchored
+- `benchmarks/` for small reproducible benchmark drivers and manifests.
+- `tools/artifacts/` for docs/readme figure builders.
+- `tools/comparison/` for explicit external-code comparison utilities.
+- `tools/campaigns/` for long-run launch and postprocess helpers.
+- `tests/validation/` for test-only reference data assembly.
+- A draft PR or experiment branch for non-promoted research code that should not
+  ship on `main`.
 
-Goal: keep confidence high without unbounded local runs.
+Keep in `src/spectraxgk` only if the code is a reusable solver, diagnostic,
+objective, geometry bridge, artifact schema, or documented public workflow.
 
-1. Local test selections should stay under five minutes.
-2. Wide coverage remains a CI-matrix responsibility.
-3. New tests must protect equations, numerical convergence, diagnostic
-   conventions, artifact schemas, restart behavior, differentiability
-   contracts, or known regressions.
-4. Office/GPU/GX reruns stay in explicit benchmark/validation manifests, not
-   default local tests.
+## Obsolete, Experimental, And Non-Promoted Code Policy
 
-### 6. Preserve differentiability and fast executable paths
+Every file should be classified before it is retained.
 
-Goal: Python research workflows are differentiable where promoted, while the
-executable remains fast and informative.
+| Classification | Action |
+| --- | --- |
+| Promoted runtime/library functionality | Keep in `src`, consolidate into target domains. |
+| Public example functionality | Keep in `examples`, with README navigation and tested commands. |
+| Reproducible benchmark driver | Keep in `benchmarks`, with small manifest and no raw outputs. |
+| Release gate | Keep in `tools/release`, with tests under `tests/release` or `tests/tools`. |
+| Figure/artifact builder | Keep in `tools/artifacts`, if the output is referenced by docs/readme. |
+| Profiler/performance reproducer | Keep in `tools/profiling`, if referenced by performance docs or manifests. |
+| External comparison utility | Keep in `tools/comparison`, only if used by benchmark docs or parity reruns. |
+| Long campaign launcher | Keep in `tools/campaigns`, only if documented and still useful. |
+| Debug/probe script | Delete from `main` or move to a draft PR/experiment branch. |
+| Legacy behavior | Delete unless it is a documented promoted feature. |
+| Non-validated physics path | Remove from README/docs claims and move out of `main` unless it has gates. |
 
-1. Keep solver/objective kernels pure: no file I/O, plotting, subprocesses,
-   terminal progress, host callbacks, or global mutable state inside
-   differentiated objectives.
-2. Use native JAX AD for smooth fixed-step/reduced workflows, implicit eigenpair
-   differentiation for isolated linear branches, and implicit/adjoint methods
-   only after FD/tangent gates pass.
-3. Keep adaptive/progress executable paths separate from differentiable Python
-   objective paths.
-4. VMEC/Boozer optimization promotion requires geometry parity, gradient gates,
-   conditioning diagnostics, and release-scope entries.
+Specific first candidate:
 
-### 6a. Finalize nonlinear turbulent-flux optimization scope
+- The cETG reduced-model path is legacy/non-promoted for the simplified next
+  version. It is currently wired through source, examples, docs, and tests. The
+  default plan is to remove it from `main`. If it must be preserved for research
+  archaeology, move it to a draft PR or external branch with clear non-release
+  status. Do not keep cETG as a hidden compatibility burden in the core runtime.
 
-Goal: close the release lane without overstating the science claim.
+## Test Consolidation Plan
 
-1. Keep the three VMEC-JAX-style QA optimizer examples as candidate generators:
-   growth, quasilinear flux, and nonlinear-window heat-flux screening.
-2. Use `examples/optimization/QA_nonlinear_ITG_matched_audit.py` as the
-   production-evidence example: it consumes accepted long-window baseline and
-   optimized ensemble sidecars and writes the matched reduction audit.
-3. Use `examples/optimization/QA_nonlinear_ITG_transport_matrix.py` as the
-   broad-evidence example: it writes the three-surface, two-field-line,
-   three-`k_y` matched nonlinear matrix and the GPU split launch scripts from a
-   solved baseline/candidate WOUT pair.
-4. Promote a new low-turbulence stellarator only when the matched audit passes:
-   both ensembles qualify, the optimized post-transient mean is lower by the
-   configured threshold, and the difference is uncertainty separated.
-5. Treat the current positive evidence as scoped: no-ESS-to-optimized QA/ESS
-   plus two projected-weight max-mode-5 single-point audits pass, but the broad
-   max-mode-5 18-point matrix failed for accepted QA/ESS and both projected
-   fallback families. Strict `t=1500` growth/QL/nonlinear-window candidates are
-   negative transfer evidence.
-6. Use `tools/build_matched_nonlinear_transport_matrix.py write` directly only
-   for scripted campaigns; it is the lower-level helper used by the example.
-   The default matrix is `s=(0.45,0.64,0.78)`, `alpha=(0,pi/4)`, and
-   `k_y rho_i=(0.10,0.30,0.50)`, with seed/timestep replicated fixed-step
-   nonlinear windows over `t=[1100,1500]`.
-7. Run the generated staged-ladder script on office/GPU, then run the generated
-   postprocess script. The companion `report` subcommand promotes the matrix
-   only if the completed matched comparisons satisfy the configured
-   pass-fraction and mean-reduction gates.
-8. Use `tools/check_nonlinear_transport_matrix_portfolio.py` when multiple
-   selected families have matrix reports. It selects a passing broad family,
-   records strict `t=1500` growth/QL/nonlinear-window rows only as excluded
-   negative-transfer evidence, and blocks release promotion if no broad matrix
-   report passes.
-9. Defer broad nonlinear turbulent-flux optimization claims until that
-   multi-surface, multi-field-line, multi-`k_y` matrix passes for the selected
-   optimization family. Single-point positive audits remain scoped evidence.
+Current problem: `tests/` has 322 top-level files, including 188 files that
+mostly test individual tool scripts. This is not maintainable.
 
-Current launch log:
+Target: fewer than 100 Python test files while preserving >=95% package-wide
+coverage and physics confidence.
 
-- `2026-06-22`: generated the accepted QA/ESS max-mode-5 matrix on office from
-  `/home/rjorge/vmec_jax_autoscalar_20260601/examples/optimization/results/qs_ess_sweep/gpu/continuation/qa/mode5/no_ess/wout_final.nc`
-  to
-  `/home/rjorge/vmec_jax_autoscalar_20260601/examples/optimization/results/qs_ess_sweep/gpu/continuation/qa/mode5/ess/wout_final.nc`.
-  The campaign lives under
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix` with artifacts in
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts`.
-- The first trial exposed a misleading checkpoint log line (`8000` steps for
-  each `t=1500` command). This is checkpoint chunking, not a horizon cap; the
-  strengthened local regression
-  `tests/test_runtime_artifacts.py::test_runtime_orchestration_handoff_chunks_and_restarts`
-  now verifies that checkpointed nonlinear artifact handoff accumulates all
-  requested steps.
-- Relaunched final-horizon direct queues on office at commit `770386d2`:
-  GPU0 PID `255406`, GPU1 PID `255407`. Each queue has 54 independent
-  `t=1500` jobs. After completion, run
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
-  and inspect
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`.
-- Staged, but did not launch, the two projected max-mode-5 follow-up families:
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
-  and
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
-  They use the one-point QA baseline WOUT against the tracked projected
-  transport-weight `5e-4` and `1e-3` WOUTs; both generated manifests pass the
-  same 18-point coverage gate.
-- Added `tools/check_matched_nonlinear_transport_matrix_progress.py` to avoid
-  counting checkpoint bundles as final outputs. The first office progress
-  report at
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_progress.json`
-  found `2/108` complete bundles and `0/108` outputs confirmed at `t=1500`, so
-  postprocessing is not ready yet.
-- `2026-06-22`: added the non-invasive bundle-only progress path
-  (`--skip-time-check`) and `tools/check_nonlinear_output_target.py` so active
-  NetCDF files do not need to be read during office polling and interrupted
-  checkpoint bundles are not skipped on relaunch. The latest safe office poll
-  found `11/108` bundle-complete outputs; a target-time check of non-active
-  bundles confirmed `10` true final-horizon outputs at `t≈1500`, with both
-  GPU queues still active. Postprocessing remains blocked until all `108`
-  outputs are target-confirmed.
-- `2026-06-23`: resumed from the active office queues and fast-forwarded the
-  office clone to `5e94a51d`. The non-invasive progress report now finds
-  `95/108` bundle-complete outputs under `--skip-time-check`. The
-  remaining rows are all on the outer surface/second field-line label
-  (`s=0.78`, `alpha=pi/4`), mainly `k_y rho_i=0.30,0.50`, plus one candidate
-  `k_y rho_i=0.10` replicate. Both office GPUs remain saturated, so
-  postprocessing is still blocked until the last `13` bundles finish.
-- `2026-06-23`: while the office matrix continued, local release hygiene checks
-  passed: package-architecture manifest, repository-size manifest,
-  release-readiness check, Ruff over `src tests examples tools`, and the
-  focused nonlinear matrix test shard (`23 passed`).
-- `2026-06-23`: installed a bounded office watcher at
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_qa_mode5_ess_matrix_postprocess.sh`.
-  It uses a lock file, polls active queues every five minutes with
-  `--skip-time-check`, switches to the full target-time progress check only
-  after the queue processes exit, and then runs
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix/run_matrix_postprocess.sh`
-  exactly once when `ready_for_postprocess=true`. The watcher log is
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_watch.log`.
-- `2026-06-23`: verified the fallback projected max-mode-5 matrix families are
-  staged but not launched:
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
-  and
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
-  Each has a valid 18-sample manifest and GPU split scripts. Keep them idle
-  until the accepted QA/ESS matrix either passes or fails; launching extra CPU
-  duplicates while the old GPU queue scripts are active is unsafe because those
-  scripts do not coordinate target-aware per-output locks with external
-  workers.
-- `2026-06-23`: the watcher second poll still found `95/108`
-  bundle-complete outputs under `--skip-time-check`. The active rows are
-  `qa_mode5_ess_s0p78_a0p785398_ky0p1_seed31` and
-  `qa_mode5_no_ess_s0p78_a0p785398_ky0p3_seed31`; both remain GPU-bound. The
-  focused matrix/report/target tests passed (`8 passed`) and the optimization
-  example test shard passed (`29 passed`).
-- `2026-06-23`: fixed `tools/check_nonlinear_output_target.py` so direct
-  `python3 tools/check_nonlinear_output_target.py ...` execution works from a
-  repo checkout, matching the generated target-aware relaunch scripts. Also
-  tightened `tools/check_matched_nonlinear_transport_matrix_progress.py` so
-  `--skip-time-check` is explicitly bundle-only: it never marks
-  `ready_for_postprocess=true` or labels outputs target-confirmed without
-  reading their NetCDF time. A direct check of the long active
-  `qa_mode5_ess_s0p78_a0p785398_ky0p1_seed31` output found
-  `tmax≈1199.93`, so the GPU0 process is still useful work rather than a
-  duplicate final output. The latest non-invasive poll has `96/108`
-  bundle-complete outputs; full target confirmation remains deferred until the
-  queue exits and the watcher runs the non-skip progress check.
-- `2026-06-23`: installed a second office watcher at
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_nonlinear_matrix_portfolio_gate.sh`.
-  It waits for
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`
-  and then runs `tools/check_nonlinear_transport_matrix_portfolio.py` with the
-  accepted QA/ESS report, the two staged projected max-mode-5 report paths,
-  and the strict growth/QL/nonlinear-window negative-transfer comparisons as
-  excluded evidence. Its output will be
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/nonlinear_transport_matrix_portfolio.{json,png}`.
-  This watcher does not launch simulations; it only automates the gate after
-  accepted-matrix postprocessing finishes.
-- CI for code head `5e94a51d` passed, and local gates passed after the
-  plan-only progress commits. Do not watch superseded/cancelled runs while the
-  office final-horizon matrix is still executing.
-- `2026-06-23`: latest accepted-matrix office poll on `main` commit
-  `6563b191` still has GPU0/GPU1 queues active. The bundle-only progress
-  report now correctly labels `--skip-time-check` as non-promotional:
-  `96/108` bundles are present, `0/108` are target-confirmed under the skipped
-  NetCDF-time path, and `ready_for_postprocess=false`. Direct target checks of
-  the active rows found `tmax≈1199.93` for the candidate
-  `s=0.78, alpha=pi/4, k_y rho_i=0.10, seed31` row and `tmax≈799.95` for the
-  baseline `s=0.78, alpha=pi/4, k_y rho_i=0.30, seed31` row, so both processes
-  are still useful long-window work rather than duplicate completed outputs.
-- `2026-06-23`: regenerated the idle projected fallback families on office
-  from the current target-aware matrix generator:
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p0005_matrix`
-  and
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix`.
-  Their GPU split scripts now call `tools/check_nonlinear_output_target.py`
-  and print `skip-target-confirmed` only for outputs whose recorded time
-  reaches `t=1500` within the generated timestep tolerance. They are ready as
-  fallback launch scripts, but remain idle until the accepted QA/ESS matrix
-  either passes or fails.
-- `2026-06-23`: tightened the pre-manuscript closure dashboard so the broad
-  nonlinear turbulent-flux optimization lane cannot close from scoped matched
-  audits alone. `tools/build_pre_manuscript_closure_status.py` now requires a
-  passing `docs/_static/nonlinear_transport_matrix_portfolio.json`, so the
-  tracked dashboard reports this lane as `94%` and blocked only by the missing
-  broad matrix portfolio while the accepted QA/ESS office matrix is still
-  running.
-- `2026-06-25`: audited the completed office accepted QA/ESS matrix. The
-  full target-time progress check passed with `108/108` outputs confirmed at
-  `t=1500` and `ready_for_postprocess=true`; the postprocess report exists at
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/qa_mode5_ess_matrix_matrix_report.json`.
-  The aggregate broad matrix gate failed: `9/18` samples passed, mean relative
-  reduction was `9.18%`, and the blocker was `pass_fraction 0.5 < 1`. The
-  portfolio gate therefore selected no family and wrote
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/matrix_artifacts/nonlinear_transport_matrix_portfolio.json`
-  with blocker `no candidate family passed the broad matrix gate`.
-- `2026-06-25`: launched exactly one target-aware fallback family:
-  `projected_0p001`. The scripts
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/projected_0p001_matrix/run_matrix_final_horizon_gpu0.sh`
-  and `run_matrix_final_horizon_gpu1.sh` are running on office and use
-  `tools/check_nonlinear_output_target.py` before every output. The companion
-  watcher
-  `/home/rjorge/spectrax_nonlinear_matrix_20260622/watch_projected_0p001_matrix_postprocess_and_portfolio.sh`
-  will switch from bundle-only polling to full target-time verification after
-  the queue exits, run matrix postprocess only if `ready_for_postprocess=true`,
-  and rerun the portfolio gate with accepted QA/ESS plus projected `0p001`.
-  Do not launch `projected_0p0005` unless this single fallback completes and
-  still fails the portfolio gate.
-- `2026-06-25`: rechecked the active `projected_0p001` queue with the full
-  target-time progress checker, not just bundle presence. Both GPU queue
-  scripts and the watcher are still running; the current status is `2/108`
-  complete bundles, `0/108` outputs confirmed at `t=1500`, and
-  `ready_for_postprocess=false`. The two present bundles are therefore
-  intermediate/in-progress outputs and must not be postprocessed or promoted.
-- `2026-06-25`: while the office fallback queue continued, reran bounded local
-  release checks. `tools/check_release_readiness.py`,
-  `tools/check_release_artifact_manifest.py`, `tools/check_release_version.py`,
-  `tools/check_repository_size_manifest.py`,
-  `tools/check_package_architecture_manifest.py`,
-  `tools/check_performance_optimization_manifest.py`, and
-  `tools/check_parallel_scaling_artifacts.py` passed. The matrix-focused
-  pytest shard passed (`14 passed`), the package build produced the `1.6.9`
-  wheel/sdist, and the Sphinx HTML documentation build passed. The only
-  remaining release-critical item in this tranche is the nonlinear matrix
-  portfolio outcome from office.
-- `2026-06-25`: latest `main` CI for commit `a18149a7` passed. Rechecked the
-  office `projected_0p001` fallback with full target-time validation after the
-  queue had advanced for several hours. The queue is still active on both GPUs,
-  but it now has real long-window progress: `23/108` bundles are present and
-  `21/108` outputs are confirmed at `t=1500`. The matrix remains
-  `ready_for_postprocess=false`, so no report, closure artifact, version bump,
-  or release tag should be created yet.
-- `2026-06-25`: rechecked office after the latest continuation. Both
-  `projected_0p001` GPU queues and the postprocess watcher are still active,
-  both GPUs are saturated, and the full target-time progress checker reports
-  `24/108` bundles present with `22/108` outputs confirmed at `t=1500`.
-  Two active rows are still below target (`tmax≈1199.93` and `tmax≈799.95`),
-  so the fallback is progressing but remains non-promotional. The latest
-  `main` CI run for commit `49f04c2b` has no failing jobs at this checkpoint:
-  `28` jobs have succeeded, `8` are in progress, and `22` wide-coverage jobs
-  are queued.
-- `2026-06-25`: rechecked the running `projected_0p001` fallback again. Both
-  active rows now report `tmax≈1199.93`, but only `22/108` outputs are
-  target-confirmed and the matrix is still `ready_for_postprocess=false`.
-  The already-running office scripts are target-aware but not lock-aware, so
-  no extra CPU workers were launched against the same output tree. Updated
-  `tools/build_matched_nonlinear_transport_matrix.py` so newly generated
-  final-horizon scripts guard each output with a per-output `flock` lock and
-  an atomic-directory fallback; this makes any future regenerated fallback
-  family safe for split workers or relaunches without output races.
-- `2026-06-25`: rechecked the same office `projected_0p001` fallback after
-  the lock-safe generator commit. The current office checkout is still the
-  pre-lock run context and both active GPU processes remain healthy, so the
-  office tree was intentionally left untouched. Full target-time progress now
-  reports `23/108` outputs confirmed at `t=1500`, `24/108` bundles present,
-  and `ready_for_postprocess=false`; the running candidate row remains at
-  `tmax≈1199.93`. Head CI for commit `3a570f7c` is queued/in progress with no
-  visible failures at this checkpoint.
-- `2026-06-25`: added a fail-closed release importer,
-  `tools/import_nonlinear_transport_matrix_portfolio.py`, so passing portfolio
-  artifacts are copied into `docs/_static` only after
-  `nonlinear_transport_matrix_portfolio_gate.passed=true`. The importer and
-  portfolio tests pass, Ruff passes, release-readiness/artifact/repository-size
-  checks pass, and the Sphinx docs build passes. This removes the remaining
-  manual-copy ambiguity after the office matrix gate.
-- `2026-06-25`: tightened the public optimization example contract in
-  `examples/optimization/README.md`. The examples now explicitly document the
-  top-level knobs for optimizer algorithm, VMEC seed/WOUT geometry, SPECTRAX-GK
-  objective kind, sample set, extra VMEC-JAX objective tuples, and production
-  long-window nonlinear audit policy. The VMEC-JAX QA exact-script test shard
-  now guards those user-facing customization instructions.
-- `2026-06-25`: added
-  `tools/finalize_nonlinear_transport_matrix_release.py`, a fail-closed wrapper
-  for the post-portfolio release path. Once office writes a passing portfolio,
-  this tool imports the selected family artifacts, rejects blocked portfolios,
-  and regenerates the manuscript-readiness plus pre-manuscript closure panels.
-  It is documented in `examples/optimization/README.md` next to the broad
-  nonlinear transport matrix workflow.
-- `2026-06-25`: rechecked the active office `projected_0p001` fallback after
-  the importer/examples commits. Both GPU queue scripts and the watcher are
-  still active; both GPUs are saturated. Full target-time progress reports
-  `24/108` outputs confirmed at `t=1500`, `26/108` bundles present, and
-  `ready_for_postprocess=false`. Two present bundles are intermediate outputs
-  (`tmax≈400` and `tmax≈800`), so no postprocess/import/release action is
-  allowed yet.
-- `2026-06-25 16:41 -0500`: rechecked the same office queue without modifying
-  the office checkout. Both GPU queue scripts and the full target-time watcher
-  are still active, both GPUs remain saturated, and manual target-time progress
-  is `26/108` confirmed outputs with `27/108` bundles present and
-  `ready_for_postprocess=false`. The local release path is green at this
-  checkpoint: release/artifact/version/repository-size/architecture/performance
-  manifests pass, the selected nonlinear matrix/release pytest shard passes
-  (`21 passed`), Sphinx builds, and the package wheel/sdist build succeeds for
-  `spectraxgk 1.6.9`. Current head CI for `b46aaedb` is queued; earlier runs
-  were cancelled by newer pushes, not failed.
-- `2026-06-25 16:47 -0500`: early-postprocessed the first four completed
-  `projected_0p001` samples. This is already decisive against promotion under
-  the documented all-sample gate: only `1/18` samples pass in the generated
-  early-failed matrix report, the mean relative reduction is `0.00748 < 0.02`,
-  and the pass fraction is `0.0556 < 1.0`. To avoid spending GPU time on a
-  family that cannot pass, terminated only the `projected_0p001` queue and
-  watcher, then launched the single planned `projected_0p0005` fallback matrix
-  with both GPU scripts and a full target-time watcher. Initial fallback status
-  is healthy: both GPUs are saturated, target-time progress is `0/108`, and
-  the watcher is active.
-- `2026-06-25 16:55 -0500`: monitored the first `projected_0p0005` fallback
-  chunks for five one-minute polls. The fallback was progressing rather than
-  stuck: both GPUs stayed saturated and the first two baseline-seed outputs for
-  `s=0.45, alpha=0, ky=0.1` reached `tmax≈400`. Full target-time progress was
-  still `0/108`, so the strict matrix gate could not yet be evaluated.
-- `2026-06-25 18:50 -0500`: harvested the first completed `projected_0p0005`
-  matched sample. It failed the matched reduction gate: baseline mean
-  `10.3555`, candidate mean `10.6656`, relative reduction `-2.99%`,
-  `z=-1.42`. Because the broad policy requires every sample to pass, this
-  single negative sample makes the projected `5e-4` family impossible to
-  promote; stopped its queue and watcher. The office GPUs are now free of the
-  SPECTRAX-GK matrix campaign. Copied the negative artifacts to `docs/_static`:
-  `projected_0p001_matrix_early_failed_matrix_report.*`,
-  `projected_0p0005_matrix_early_failed_matrix_report.*`,
-  `projected_0p0005_first_sample_matched_comparison.*`, and
-  `broad_nonlinear_transport_matrix_negative_evidence.json`.
-- `2026-06-25 18:55 -0500`: broad nonlinear turbulent-flux optimization is
-  resolved as deferred for this release. Accepted QA/ESS failed with `9/18`
-  passing samples; projected `1e-3` failed early with `1/18` passing samples and
-  mean reduction `0.748%`; projected `5e-4` failed on the first completed sample
-  by increasing heat flux. No broad matrix family is selected. Release docs must
-  keep only scoped single-point nonlinear audit claims and must not run the
-  finalizer/importer for these blocked portfolios.
+Final test folders:
 
-### 7. Preserve validation scope and GX parity
+```text
+tests/unit/core/
+tests/unit/geometry/
+tests/unit/operators/
+tests/unit/solvers/
+tests/unit/diagnostics/
+tests/unit/objectives/
+tests/unit/parallel/
+tests/integration/runtime/
+tests/integration/examples/
+tests/validation/benchmarks/
+tests/validation/physics_gates/
+tests/tools/
+tests/release/
+```
 
-Goal: claims remain reproducible and honest.
+Consolidation rules:
 
-1. Keep validated linear/nonlinear atlas cases and release gates intact.
-2. Use GX only for explicit comparison lanes: parity reruns, reference dumps,
-   benchmark figures, and algorithm checks.
-3. Do not leave GX naming in core source or user workflows unless the object is
-   truly a comparison artifact.
-4. Keep deferred lanes scoped in README/docs: universal absolute QL flux,
-   broad nonlinear turbulent-flux optimization, production nonlinear domain
-   decomposition, W7-X zonal recurrence, W7-X TEM/multi-flux-tube, and W7-X
-   fluctuation spectra.
+- Replace one-test-file-per-tool with parametrized test modules by tool family:
+  `test_release_gates.py`, `test_artifact_builders.py`,
+  `test_campaign_generators.py`, `test_comparison_tools.py`, and
+  `test_profilers.py`.
+- Replace large monolithic runtime files with domain files:
+  runtime config, startup, initial conditions, progress/output, artifact writing,
+  linear execution, nonlinear execution, and plotting.
+- Move shared builders to fixtures instead of copy-pasting state setup across
+  many tests.
+- Keep physics tests as tests, not smoke-only scaffolds: basis orthogonality,
+  conservation/symmetry, manufactured solutions, observed-order checks,
+  late-time growth/frequency metrics, nonlinear window metrics, restart parity,
+  geometry parity, AD/FD consistency, and artifact schema stability.
+- Long office/GPU/external comparison campaigns remain explicit benchmark or
+  validation commands, not default local tests.
+- Keep local tests under five minutes. Keep wide coverage in CI shards.
 
-### 8. Release sequence
+Suggested target file budget:
 
-Goal: ship the next version from a clean, green, measured state.
+| Test area | Target files |
+| --- | ---: |
+| unit tests | 35-45 |
+| runtime/integration tests | 10-15 |
+| validation/physics gate tests | 15-20 |
+| tool/release tests | 15-20 |
+| examples/CLI tests | 5-8 |
+| total | 80-95 |
 
-1. Confirm head CI is green.
-2. Run bounded local release gates.
-3. Verify README/docs/plan claim consistency.
-4. Verify repository-size manifest and no raw outputs are tracked.
-5. Bump version in `pyproject.toml` and `src/spectraxgk/_version.py`.
-6. Run package, docs, release-version, and artifact checks.
-7. Commit and push the version bump.
-8. Confirm CI for the bump commit.
-9. Tag `vX.Y.Z`, push the tag, and verify GitHub release plus PyPI publish.
+## Tool Consolidation Plan
 
-## Immediate Next Tranche
+Current problem: `tools/` has 269 Python scripts in one flat namespace.
 
-1. Keep the office matrix queue closed; no SPECTRAX-GK broad-matrix workers are
-   running and all selected candidate families are already decisive under the
-   all-sample policy.
-2. Treat broad nonlinear turbulent-flux optimization as deferred for this
-   release. Do not import or finalize a blocked portfolio.
-3. Finish the README/docs/release-scope consistency pass using the negative
-   evidence ledger in `docs/_static/broad_nonlinear_transport_matrix_negative_evidence.json`.
-4. Run bounded local release gates: focused portfolio/finalizer/importer tests,
-   release-readiness manifests, repository-size checks, package build, and Sphinx
-   docs.
-5. If local gates and CI are green, bump/tag/release only with the scoped claim
-   boundary: selected single-point nonlinear audit evidence is release-ready;
-   broad multi-surface nonlinear turbulent-flux optimization remains a future
-   candidate-family problem.
+Target: fewer than 100 Python tool scripts, organized by purpose.
+
+Final tool folders:
+
+```text
+tools/release/
+tools/artifacts/
+tools/profiling/
+tools/comparison/
+tools/campaigns/
+tools/README.md
+```
+
+Retain only:
+
+- Release gates used by CI or release workflows.
+- Artifact builders for figures/tables referenced by README/docs.
+- Profilers tied to `docs/performance.rst` and performance manifests.
+- External comparison utilities tied to benchmark validation docs.
+- Campaign launch/postprocess helpers that are still needed and documented.
+
+Delete or move out of `main`:
+
+- One-off debug/probe scripts.
+- Duplicated plot/build scripts that differ only by one case name.
+- Historical manuscript status builders not referenced by current docs.
+- Launch writers for blocked/deferred campaigns.
+- Any script whose generated artifact is no longer tracked or referenced.
+
+Suggested target file budget:
+
+| Tool area | Target files |
+| --- | ---: |
+| release gates | 15-20 |
+| artifact builders | 25-35 |
+| profiling/performance | 10-15 |
+| comparison utilities | 10-15 |
+| campaigns | 15-20 |
+| total | 75-95 |
+
+## Source Consolidation Plan
+
+Current problem: `src/spectraxgk` has 357 Python files, and 88 are validation
+modules. The package contains too much campaign and validation machinery.
+
+Target: at most 100 Python files in `src/spectraxgk`.
+
+Source consolidation rules:
+
+- Merge over-split modules when they share one conceptual contract and one test
+  ownership area.
+- Do not merge unrelated physics just to reduce file count.
+- Prefer cohesive domain modules over chains of tiny `_core`, `_helpers`,
+  `_reports`, `_policies`, and `_contracts` files.
+- Replace broad public API re-export lists with small documented facades.
+- Remove migration-era wrappers once examples and tests use canonical imports.
+- Keep low-level kernels close to their public operator/solver owner.
+- Keep runtime orchestration outside pure differentiable objective code.
+- Keep optional VMEC/Boozer integration isolated from the base solver import path.
+
+Primary source moves:
+
+1. Move `src/spectraxgk/validation/benchmarks` into `benchmarks/` and
+   `tests/validation/benchmarks`, keeping only reusable metrics in package code.
+2. Move `src/spectraxgk/validation/nonlinear_gradient`,
+   `src/spectraxgk/validation/nonlinear_transport`, and most stellarator
+   campaign code into `tools/campaigns` or `tests/validation`.
+3. Merge `geometry` and `geometry_backends` into one `geometry` package with
+   clear files: `analytic.py`, `miller.py`, `vmec.py`, `booz_xform.py`,
+   `flux_tube.py`, `sensitivity.py`, and `io.py`.
+4. Merge `terms` into `operators` unless a term is a public mathematical
+   interface. Users should see operators and solvers, not two overlapping
+   implementation namespaces.
+5. Merge `artifacts` and runtime IO into `io` where possible. Keep plotting
+   interfaces clear, but remove one-file-per-NetCDF-section sprawl.
+6. Merge `api/*` into a smaller root API registry or package-level `__init__`
+   files. The broad public export list should shrink.
+7. Consolidate `objectives` into a few research workflows: linear growth,
+   quasilinear flux, nonlinear window, stellarator, autodiff checks, and UQ.
+8. Keep `parallel` focused on production independent-work parallelism and
+   identity-gated experimental nonlinear decomposition. Move historical
+   sharding status/report builders out of the package.
+
+## Examples Plan
+
+Current problem: `examples/` contains useful workflows but also legacy configs,
+research scaffolds, and scripts whose purpose is not obvious.
+
+Target: a small, navigable examples tree with a README and tested commands.
+
+Actions:
+
+- Add or rewrite `examples/README.md` as the navigation entry point.
+- Split examples by user task: quickstart, linear, nonlinear, geometry,
+  quasilinear, optimization, plotting, and parallelization.
+- Every example folder should state:
+  - what the example demonstrates,
+  - expected runtime on a laptop,
+  - required optional dependencies,
+  - expected output files,
+  - whether it is pedagogical, benchmark-level, or long-run research.
+- Remove cETG examples if cETG is retired.
+- Remove or move examples that depend on untracked private artifacts unless the
+  README gives a reproducible path to generate inputs.
+- Keep optimization examples close to the VMEC-JAX style requested by users, but
+  label long nonlinear optimization as research/long-run unless fully gated.
+- Add a plotting example showing `spectraxgk --plot output_file` and Python
+  plotting from saved outputs.
+
+## Benchmarks Plan
+
+`benchmarks/` should stay at the repository root. It is currently small and
+mostly well scoped.
+
+Target role:
+
+- Small benchmark drivers.
+- Small TOML configs.
+- Small manifests pointing to promoted docs artifacts.
+- No raw outputs, NetCDF dumps, restart bundles, or long campaign directories.
+
+Actions:
+
+- Move reusable benchmark harness code out of `src/spectraxgk/validation` into
+  `benchmarks/` if it is not a runtime library feature.
+- Keep benchmark results as small CSV/JSON summaries and compressed figures in
+  `docs/_static` only after review.
+- Add docs pages that explain what each benchmark proves and what it does not
+  prove.
+- Keep external-code comparisons in benchmarks/docs context only.
+
+## Performance Refactor Plan
+
+Refactoring must improve simplicity and performance together. The goal is not
+just fewer files.
+
+Known performance-sensitive areas:
+
+- JAX cold-start and first compile.
+- Linear cache construction.
+- Linear RHS kernels.
+- Nonlinear bracket and field solve.
+- Diagnostic materialization in nonlinear runs.
+- Restart/artifact writing for long runs.
+- VMEC/Boozer geometry sampling and repeated equilibrium conversion.
+- Python orchestration overhead in runtime and campaign tools.
+- Nonlinear domain decomposition communication overhead.
+
+Performance actions:
+
+1. Preserve stable JIT boundaries while consolidating modules. Do not introduce
+   shape-changing wrappers or dynamic Python branches inside hot kernels.
+2. Move Python orchestration out of inner loops and into workflow layers.
+3. Cache geometry, linear terms, gyroaverages, and field-solve coefficients
+   where shapes/configuration are static.
+4. Stream diagnostics by default for long nonlinear runs; make full histories
+   opt-in.
+5. Keep differentiable objectives pure and small, but use fast executable paths
+   for CLI runs where AD is not required.
+6. Use profiler-backed tranches: collect before/after CPU and GPU artifacts for
+   any runtime claim.
+7. Keep nonlinear domain decomposition diagnostic until a real transport-window
+   identity gate and speedup gate pass.
+8. Do not let refactor increase memory footprint. Track peak RSS and device
+   memory for headline cases.
+
+Performance gates:
+
+- Existing benchmark diagnostics remain within validation envelopes.
+- Runtime/memory panels use equivalent workloads and hardware metadata.
+- Any new speedup claim has serial-vs-parallel identity, timing, memory, and
+  profiler artifacts.
+- CLI quickstart remains responsive and prints progress/ETA.
+
+## Documentation Plan
+
+Documentation should explain the smaller architecture and claim boundaries.
+
+Actions:
+
+- Update `docs/code_structure.rst` after each major phase.
+- Update `docs/architecture_refactor_plan.rst` or replace it with this plan as
+  the current authority once implementation starts.
+- Add a developer guide explaining the target file layout, where to add new
+  physics, where to add tests, and where not to add campaign code.
+- Keep README concise: install, quickstart, executable plotting, headline
+  benchmark/runtime panel, main validation figures, examples map, and claim
+  scope.
+- Move long derivations, equations, algorithms, and validation details to docs.
+- Add clear docs for benchmarks vs examples vs tools vs tests.
+
+## Branch And PR Policy
+
+The user-facing `main` branch should contain only promoted, validated,
+maintainable functionality.
+
+- Keep one main refactor branch or draft PR for this consolidation if a PR is
+  needed. Do not create many overlapping refactor PRs.
+- Obsolete closed PR branches stay closed and should not be resurrected unless a
+  specific piece is intentionally ported.
+- Experimental or non-validated code should leave `main`. If it may be useful
+  later, move it to a draft PR or experiment branch with explicit non-release
+  status.
+- Do not keep backward-compatible legacy behavior solely because tests exist.
+  If the behavior is not part of the next promoted product, remove it and remove
+  or rewrite its tests/docs/examples.
+
+## Phase Plan
+
+### Phase 0: Inventory And Classification
+
+Goal: every tracked Python file has an owner and a keep/move/delete decision.
+
+Steps:
+
+1. Generate a machine-readable inventory for `src`, `tests`, `tools`,
+   `examples`, and `benchmarks` with file owner, importers, line count, test
+   coverage relevance, docs references, and artifact outputs.
+2. Classify each file as promoted library, public example, benchmark driver,
+   release gate, artifact builder, profiler, comparison utility, campaign
+   helper, test-only helper, legacy, or delete.
+3. Identify files with no importers, no tests, no docs references, or only
+   blocked/deferred campaign references.
+4. Produce deletion and move lists before code edits.
+5. Add a repository-topology manifest that records target counts and fails when
+   new flat files are added in disallowed locations.
+
+Exit gates:
+
+- Inventory exists and is reproducible.
+- Every file has a classification.
+- Initial deletion/move list is reviewed in git diff.
+- No solver behavior changes yet.
+
+### Phase 1: Test Tree Collapse
+
+Goal: reduce `tests/` below 100 Python files without losing coverage or physics
+confidence.
+
+Steps:
+
+1. Create the new test folder hierarchy.
+2. Move tests mechanically first; keep names and assertions unchanged where
+   possible.
+3. Merge one-file-per-tool tests into parametrized modules by tool family.
+4. Extract common fixtures for runtime configs, geometry stubs, small arrays,
+   artifact tempdirs, and mock CLI dependencies.
+5. Split huge runtime and benchmark runner tests by behavior, not by historical
+   file name.
+6. Remove tests that only preserve deleted legacy behavior.
+7. Update CI shards to point at folders rather than long flat file lists.
+
+Exit gates:
+
+- `find tests -name '*.py' | wc -l` is below 100.
+- Wide package coverage is at least 95%.
+- Fast local tests stay below five minutes.
+- Physics/numerics gate coverage is preserved or improved.
+
+### Phase 2: Tools Collapse
+
+Goal: reduce `tools/` below 100 Python scripts and make each remaining tool's
+purpose obvious.
+
+Steps:
+
+1. Create `tools/release`, `tools/artifacts`, `tools/profiling`,
+   `tools/comparison`, and `tools/campaigns`.
+2. Move scripts mechanically into folders and update tests/CI/docs references.
+3. Merge repetitive figure builders into shared artifact-builder modules with
+   case manifests.
+4. Merge repetitive checkers into manifest-driven release gates where possible.
+5. Delete debug/probe scripts that are not referenced by current docs, tests, or
+   release manifests.
+6. Move blocked/deferred campaign launchers out of `main` unless they are still
+   explicitly part of the roadmap.
+7. Add `tools/README.md` explaining what belongs in each folder.
+
+Exit gates:
+
+- `find tools -name '*.py' | wc -l` is below 100.
+- Release workflow still runs all release gates.
+- Docs/readme artifact builders still regenerate promoted figures.
+- No raw generated outputs are tracked.
+
+### Phase 3: Validation Leaves The Installable Package
+
+Goal: remove campaign validation machinery from `src/spectraxgk`.
+
+Steps:
+
+1. Move benchmark harnesses to `benchmarks/` unless they are public runtime APIs.
+2. Move manuscript/campaign validation code to `tools/campaigns` or
+   `tests/validation`.
+3. Keep only reusable metrics under `src/spectraxgk/diagnostics` or a tiny
+   `src/spectraxgk/validation` facade if unavoidable.
+4. Update public API exports and docs.
+5. Remove imports from runtime/library code into campaign validation code.
+6. Replace package validation references in examples with benchmark or tools
+   entry points.
+
+Exit gates:
+
+- `src/spectraxgk/validation` has 0-5 Python files.
+- Installable package file count drops substantially.
+- Runtime package imports do not depend on benchmark/campaign modules.
+- Benchmark and validation docs still explain external comparisons.
+
+### Phase 4: Source Package Consolidation
+
+Goal: reduce `src/spectraxgk` to at most 100 Python files.
+
+Steps:
+
+1. Consolidate `geometry` and `geometry_backends` into one geometry package.
+2. Consolidate `terms` into `operators` and remove overlapping abstractions.
+3. Consolidate `artifacts` and runtime IO into a smaller `io`/artifact surface.
+4. Reduce broad `api/*` re-export modules and shrink public API exports.
+5. Consolidate objectives into linear, quasilinear, nonlinear-window,
+   stellarator, AD/FD/UQ modules.
+6. Keep public root facades stable but thin.
+7. Remove migration wrappers and compatibility aliases after tests/examples use
+   canonical names.
+8. Retire cETG or move it out of `main`.
+
+Exit gates:
+
+- `find src/spectraxgk -name '*.py' | wc -l` is at most 100.
+- Public CLI and documented Python examples still work.
+- No unintentional import cycles or optional-dependency import failures.
+- Ruff, mypy, fast tests, wide coverage, and docs build pass.
+
+### Phase 5: Examples And Benchmarks Cleanup
+
+Goal: examples are pedagogical and benchmarks are reproducible.
+
+Steps:
+
+1. Rewrite `examples/README.md` with a task-oriented map.
+2. Remove or move legacy examples such as cETG if the feature is retired.
+3. Ensure each example has bounded runtime guidance and expected outputs.
+4. Move any benchmark-like example into `benchmarks/`.
+5. Move any test-only/example-smoke helper into `tests/integration/examples`.
+6. Keep root `benchmarks/README.md` and manifests current.
+
+Exit gates:
+
+- Example scripts run or are explicitly marked long-run/manual.
+- README links only current examples and current figures.
+- Benchmarks contain no raw transient outputs.
+
+### Phase 6: Performance-Aware Kernel Refactor
+
+Goal: use the cleaner architecture to reduce runtime and memory.
+
+Steps:
+
+1. Run baseline CPU/GPU profiling for quickstart, Cyclone linear/nonlinear, KBM,
+   W7-X, HSX, and a VMEC/Boozer optimization micro-workflow.
+2. Identify compile, cache-build, RHS, bracket, field-solve, diagnostic, and IO
+   shares separately.
+3. Refactor one hot path at a time, with before/after profiler artifacts.
+4. Prefer vectorized/JIT-fused kernels over Python orchestration.
+5. Stream diagnostics and reduce full-history materialization.
+6. Validate numerical identity or physics envelopes after each change.
+7. Refresh runtime/memory panel only after measured wins are real.
+
+Exit gates:
+
+- No headline benchmark regresses without a documented accuracy tradeoff.
+- Runtime/memory panel is regenerated from fresh measured artifacts.
+- Any speedup claim has profiler and identity evidence.
+
+### Phase 7: Documentation, Claim Scope, And Release
+
+Goal: ship the refactored version from a clean, documented, green state.
+
+Steps:
+
+1. Update README to describe the smaller package, examples map, benchmark map,
+   runtime/memory panel, and claim boundaries.
+2. Update docs for architecture, code structure, testing, validation strategy,
+   performance, examples, and API.
+3. Remove stale references to deleted files, cETG if retired, old tool paths,
+   and obsolete validation lanes.
+4. Run release gates:
+   - repository size manifest,
+   - architecture/topology manifest,
+   - release artifact manifest,
+   - release readiness,
+   - ruff,
+   - mypy,
+   - fast tests,
+   - wide coverage,
+   - docs build,
+   - package build.
+5. Bump version only after gates pass.
+6. Tag and release only from green `main`.
+
+Exit gates:
+
+- All hard file-count targets pass.
+- Documentation matches actual file layout and promoted claims.
+- CI is green.
+- Package builds and publishes cleanly.
+
+## Implementation Order
+
+1. Add inventory/topology tooling and manifests.
+2. Reorganize and merge tests below 100 files.
+3. Reorganize and merge tools below 100 files.
+4. Move validation/campaign code out of `src`.
+5. Remove cETG and other legacy/non-promoted paths from `main` or move them to
+   an experiment PR/branch.
+6. Consolidate source domains below 100 files.
+7. Clean examples and benchmarks.
+8. Run performance profiling and targeted hot-path refactors.
+9. Update docs/readme/API references.
+10. Run full local and CI release gates.
+11. Bump, tag, release.
+
+## Progress Log
+
+- 2026-07-07: added topology counts to
+  `tools/package_architecture_manifest.toml` and extended
+  `tools/check_package_architecture_manifest.py` so source, test, tool, flat
+  test/tool, and installable-validation file counts are executable gates. The
+  default mode fails on count regressions while reporting the remaining gap to
+  the final targets; `--require-topology-targets` fails closed until all final
+  file-count targets are met.
+- 2026-07-07: removed four unreferenced probe/audit scripts from `main`:
+  `tools/debug_vmec_nonzero_check.py`, `tools/diffrax_mismatch_sweep.py`,
+  `tools/etg_physics_audit.py`, and `tools/hl_evolution.py`. Tool Python count
+  dropped from 269 to 265, and the topology baseline was tightened to prevent
+  reintroducing those files.
+- 2026-07-07: added root navigation documents for `tools/` and `examples/` so
+  future moves have explicit ownership rules. `tools/README.md` separates
+  release gates, artifact builders, profilers, comparison utilities, and active
+  campaigns from probes and local debugging. `examples/README.md` defines the
+  user-facing example map and the required metadata for maintained examples.
+- 2026-07-07: moved 181 release/tool-related test files out of the flat
+  `tests/` root into `tests/release/` and `tests/tools/{artifacts,campaigns,
+  comparison,generators,profiling}/`. Flat test files dropped from 322 to 141.
+  CI path references, validation coverage manifest paths, and nested test
+  repository-root lookups were updated. The moved release shard and full
+  `tests/tools` shard passed locally under the five-minute cap.
+
+## Immediate Next Steps
+
+1. Build the inventory script and topology manifest so the reduction targets are
+   enforced by tooling rather than memory.
+2. Start with test consolidation because it reduces friction without changing
+   solver behavior.
+3. Collapse tool-script tests into parametrized families, then move actual tools
+   into purpose-specific folders.
+4. Remove cETG from examples/docs/tests/source unless a draft PR is created to
+   preserve it outside `main`.
+5. Move `src/spectraxgk/validation` campaign code into benchmarks/tools/tests
+   and shrink the installable package.
+6. Only then perform source package consolidation and performance hot-path work.
+
+## Completion Definition
+
+This plan is complete only when current repository evidence proves all of the
+following:
+
+- `src/spectraxgk` has at most 100 Python files.
+- `tests` has fewer than 100 Python files.
+- `tools` has fewer than 100 Python files.
+- Validation/campaign code no longer lives in the installable package except for
+  tiny reusable metric helpers.
+- cETG and other obsolete/non-promoted paths are removed from `main` or moved to
+  a non-release PR/branch.
+- Examples have a clear README and only current runnable/promoted workflows.
+- Benchmarks are root-level, small, documented, and free of raw outputs.
+- README and docs match the new structure and claim scope.
+- Package-wide coverage remains at least 95%.
+- Fast local tests, release gates, docs build, package build, and CI pass.
+- Runtime/memory and speedup claims are backed by fresh profiler artifacts and
+  numerical identity or physics gates.

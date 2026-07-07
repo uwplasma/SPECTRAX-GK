@@ -1206,7 +1206,7 @@ performance claims:
   bounded local stencil. The second covers split/reassemble spectral layout
   identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
   Both fail closed and carry no production routing or speedup claim.
-- ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
+- ``tests/tools/generators/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
 - ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run
   scaling artifacts themselves. It requires the performance and validation

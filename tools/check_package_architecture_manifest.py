@@ -50,6 +50,18 @@ def _as_string_list(value: object, field: str) -> list[str]:
     return result
 
 
+def _as_bool(value: object, field: str) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"{field} must be a boolean")
+    return value
+
+
+def _as_nonnegative_int(value: object, field: str) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise ValueError(f"{field} must be a non-negative integer")
+    return value
+
+
 def _repo_path(raw: str) -> Path:
     return (REPO_ROOT / raw).resolve()
 
@@ -80,11 +92,88 @@ def _package_path(package: str, source_root: Path) -> Path:
     return source_root.joinpath(*remainder.split(".")) / "__init__.py"
 
 
+def _count_matching_files(path: Path, *, pattern: str, recursive: bool) -> int:
+    """Count files for topology gates, treating deleted targets as zero."""
+
+    if not path.exists():
+        return 0
+    iterator = path.rglob(pattern) if recursive else path.glob(pattern)
+    return sum(1 for item in iterator if item.is_file())
+
+
+def _validate_topology_policy(
+    data: dict[str, Any],
+    *,
+    require_targets: bool = False,
+) -> list[dict[str, Any]]:
+    topology = data.get("topology_policy")
+    if topology is None:
+        return []
+    if not isinstance(topology, dict):
+        raise ValueError("topology_policy must be a TOML table")
+    mode = _as_nonempty_string(topology.get("mode"), "topology_policy.mode")
+    if mode != "no_regression_until_target":
+        raise ValueError(
+            "topology_policy.mode must be 'no_regression_until_target'"
+        )
+    _as_nonempty_string(
+        topology.get("description"),
+        "topology_policy.description",
+    )
+    counts = topology.get("counts")
+    if not isinstance(counts, list) or not counts:
+        raise ValueError("topology_policy.counts must be a non-empty list")
+
+    rows: list[dict[str, Any]] = []
+    for index, entry in enumerate(counts):
+        if not isinstance(entry, dict):
+            raise ValueError(f"topology_policy.counts[{index}] must be a table")
+        prefix = f"topology_policy.counts[{index}]"
+        name = _as_nonempty_string(entry.get("name"), f"{prefix}.name")
+        raw_path = _as_nonempty_string(entry.get("path"), f"{prefix}.path")
+        pattern = _as_nonempty_string(entry.get("pattern"), f"{prefix}.pattern")
+        recursive = _as_bool(entry.get("recursive"), f"{prefix}.recursive")
+        baseline = _as_nonnegative_int(entry.get("baseline"), f"{prefix}.baseline")
+        target = _as_nonnegative_int(entry.get("target"), f"{prefix}.target")
+        if target > baseline:
+            raise ValueError(
+                f"{name}: topology target {target} cannot exceed baseline {baseline}"
+            )
+        count = _count_matching_files(
+            _repo_path(raw_path),
+            pattern=pattern,
+            recursive=recursive,
+        )
+        if count > baseline:
+            raise ValueError(
+                f"{name}: topology count regressed to {count}, above baseline {baseline}"
+            )
+        if require_targets and count > target:
+            raise ValueError(
+                f"{name}: topology target not met; count {count} exceeds target {target}"
+            )
+        rows.append(
+            {
+                "name": name,
+                "path": raw_path,
+                "pattern": pattern,
+                "recursive": recursive,
+                "count": count,
+                "baseline": baseline,
+                "target": target,
+                "remaining_to_target": max(0, count - target),
+                "target_met": count <= target,
+            }
+        )
+    return rows
+
+
 def validate_architecture_policy(
     data: dict[str, Any],
     *,
     source_root: Path = DEFAULT_SOURCE_ROOT,
     check_paths: bool = True,
+    require_topology_targets: bool = False,
 ) -> dict[str, Any]:
     """Validate architecture-policy content and return a compact summary."""
 
@@ -160,6 +249,11 @@ def validate_architecture_policy(
             if not path.is_file():
                 raise ValueError(f"required architecture doc does not exist: {doc}")
 
+    topology_counts = _validate_topology_policy(
+        data,
+        require_targets=require_topology_targets,
+    )
+
     return {
         "layout_authority": str(metadata["layout_authority"]),
         "n_blocked_prefixes": len(blocked_prefixes),
@@ -167,6 +261,9 @@ def validate_architecture_policy(
         "n_current_root_prefix_modules": len(root_modules),
         "n_required_domain_packages": len(required_packages),
         "required_domain_packages": required_packages,
+        "n_topology_counts": len(topology_counts),
+        "topology_counts": topology_counts,
+        "topology_targets_met": all(row["target_met"] for row in topology_counts),
         "status": str(metadata["status"]),
     }
 
@@ -176,6 +273,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--source-root", type=Path, default=DEFAULT_SOURCE_ROOT)
     parser.add_argument("--out-json", type=Path, default=None)
+    parser.add_argument(
+        "--require-topology-targets",
+        action="store_true",
+        help="Fail unless all topology counts are already at their final targets.",
+    )
     return parser
 
 
@@ -185,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
         load_manifest(args.manifest),
         source_root=args.source_root,
         check_paths=True,
+        require_topology_targets=args.require_topology_targets,
     )
     payload = json.dumps(summary, indent=2, sort_keys=True) + "\n"
     if args.out_json is not None:

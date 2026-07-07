@@ -254,7 +254,7 @@ responsibility = "Cyclone ky-scan runner setup and batched time integration behi
 moved_exports = [
   "run_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/generators/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -323,7 +323,7 @@ responsibility = "KBM fixed-ky beta-scan runner, per-beta setup, time/diffrax in
 moved_exports = [
   "run_kbm_beta_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_compare_gx_kbm.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/comparison/test_compare_gx_kbm.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -351,7 +351,7 @@ responsibility = "KBM single-ky setup, state/cache construction, saved-time inte
 moved_exports = [
   "run_kbm_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_generate_kbm_reference_overlay.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/generators/test_generate_kbm_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -418,7 +418,7 @@ moved_exports = [
   "_valid_etg_growth",
   "run_etg_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -430,7 +430,7 @@ responsibility = "ETG ky-scan setup, batching, parameter construction, and publi
 moved_exports = [
   "run_etg_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/test_make_cyclone_assets.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1070,7 +1070,7 @@ moved_exports = [
   "build_boundary_chain_collection_summary",
   "build_boundary_chain_summary",
 ]
-fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1085,7 +1085,7 @@ moved_exports = [
   "_collection_row",
   "_empty_boundary_chain_counts",
 ]
-fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1403,7 +1403,7 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
+  "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -2259,7 +2259,7 @@ moved_exports = [
   "_ensemble_statistics",
   "build_nonlinear_landscape_admission_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_nonlinear_landscape_admission_report.py"]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_landscape_admission_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2272,7 +2272,7 @@ moved_exports = [
   "_sample_statistics_summary",
   "build_reduced_nonlinear_audit_prelaunch_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_reduced_nonlinear_audit_prelaunch_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2284,7 +2284,7 @@ responsibility = "next-campaign admission gates combining reduced, cross-sample,
 moved_exports = [
   "build_nonlinear_campaign_admission_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_nonlinear_campaign_admission_report.py"]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_nonlinear_campaign_admission_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2296,7 +2296,7 @@ responsibility = "matched nonlinear audit redesign gates for turbulent-flux opti
 moved_exports = [
   "build_nonlinear_audit_redesign_report",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/test_build_transport_audit_redesign_report.py"]
+fast_tests = ["tests/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_transport_audit_redesign_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2502,7 +2502,7 @@ moved_exports = [
   "_finite_metric_tensor_from_records",
   "_zonal_row_table",
 ]
-fast_tests = ["tests/test_zonal_objective.py", "tests/test_build_zonal_flow_objective_gate.py"]
+fast_tests = ["tests/test_zonal_objective.py", "tests/tools/artifacts/test_build_zonal_flow_objective_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
 
 [[phase1_split_modules]]
@@ -2882,7 +2882,7 @@ facade_module = "spectraxgk.terms.assembly"
 status = "active"
 responsibility = "per-term RHS contribution decomposition for diagnostics and reference-code parity audits"
 moved_exports = ["assemble_rhs_terms_cached"]
-fast_tests = ["tests/test_terms_assembly.py", "tests/test_compare_gx_rhs_terms.py"]
+fast_tests = ["tests/test_terms_assembly.py", "tests/tools/comparison/test_compare_gx_rhs_terms.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3195,7 +3195,7 @@ moved_exports = [
   "phase_align_eigenfunction",
   "save_eigenfunction_reference_bundle",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/test_generate_w7x_reference_overlay.py"]
+fast_tests = ["tests/test_benchmarking.py", "tests/tools/generators/test_generate_w7x_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3214,7 +3214,7 @@ moved_exports = [
   "late_time_window",
   "load_diagnostic_time_series",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/test_plot_zonal_flow_response_from_output.py"]
+fast_tests = ["tests/test_benchmarking.py", "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3249,8 +3249,8 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_validation_gates.py",
-  "tests/test_generate_miller_zonal_response_pilot.py",
-  "tests/test_plot_zonal_flow_response_from_output.py",
+  "tests/tools/generators/test_generate_miller_zonal_response_pilot.py",
+  "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/testing.rst"]
 
@@ -3297,8 +3297,8 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/test_generate_hermite_exchange_gate.py",
-  "tests/test_generate_velocity_field_reduce_gate.py",
+  "tests/tools/generators/test_generate_hermite_exchange_gate.py",
+  "tests/tools/generators/test_generate_velocity_field_reduce_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3320,7 +3320,7 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/test_generate_periodic_streaming_microkernel_gate.py",
+  "tests/tools/generators/test_generate_periodic_streaming_microkernel_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3338,8 +3338,8 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/test_generate_electrostatic_field_reduce_gate.py",
-  "tests/test_generate_electrostatic_diamagnetic_gate.py",
+  "tests/tools/generators/test_generate_electrostatic_field_reduce_gate.py",
+  "tests/tools/generators/test_generate_electrostatic_diamagnetic_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3429,7 +3429,7 @@ moved_exports = [
   "build_quasilinear_model_selection_status",
   "build_quasilinear_model_selection_status_from_paths",
 ]
-fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py", "tests/test_plot_quasilinear_model_selection_status.py"]
+fast_tests = ["tests/test_quasilinear_model_selection.py", "tests/test_quasilinear_model_selection_extra.py", "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 
 [[phase1_split_modules]]
@@ -3896,7 +3896,7 @@ moved_exports = [
   "nonlinear_spectral_domain_work_model",
   "nonlinear_spectral_pencil_work_model",
 ]
-fast_tests = ["tests/test_nonlinear_parallel.py", "tests/test_profile_nonlinear_sharding.py"]
+fast_tests = ["tests/test_nonlinear_parallel.py", "tests/tools/profiling/test_profile_nonlinear_sharding.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3956,7 +3956,7 @@ moved_exports = [
   "pad_to_multiple",
   "split_evenly",
 ]
-fast_tests = ["tests/test_parallel.py", "tests/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/test_parallel.py", "tests/tools/generators/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -4004,7 +4004,7 @@ facade_module = "spectraxgk.solvers.linear.parallel"
 status = "active"
 responsibility = "electrostatic slice linear RHS route and fused multi-device Hermite shard-map kernel cache"
 moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
-fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/test_profile_linear_rhs_parallel_slices.py"]
+fast_tests = ["tests/test_velocity_sharding.py", "tests/test_linear_parallel_dispatch.py", "tests/tools/profiling/test_profile_linear_rhs_parallel_slices.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
