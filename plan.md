@@ -19,13 +19,13 @@ preserving validated solver behavior and public user workflows.
 Last audited: 2026-07-07 on `main`.
 
 - Audited baseline head for the current topology plan:
-  `4b57ef41 Consolidate preview compression tooling`.
+  `b503c0d4 Move quasilinear model selection into diagnostics`.
 - Latest reachable release tag at the audit: `v1.6.10`; the audited baseline
   was three commits after that tag.
 - Git state at audit: clean `main`, tracking `origin/main`.
 - Latest GitHub release workflow and PyPI publish for `v1.6.10` passed. CI for
   the post-release refactor commits must be rechecked before the next tag; the
-  `4b57ef41` CI run was in progress at the latest audit.
+  `b503c0d4` CI run was in progress at the latest audit.
 - Active local/remote branches: only `main` and `origin/main`.
 - Stale detached worktree metadata for old local investigations was pruned on
   2026-07-07; the only remaining worktree is this `main` checkout.
@@ -42,7 +42,7 @@ Last audited: 2026-07-07 on `main`.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
 - The repository inventory classifies 69 installable validation files as
-  `move-or-shrink`, 503 files as `keep-or-merge`, 268 files as
+  `move-or-shrink`, 503 files as `keep-or-merge`, 274 files as
   `keep-and-consolidate`, 82 files as `keep-or-scope`, and 26 files as
   `keep-or-review`. The 69 `move-or-shrink` files are the validation package;
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
@@ -54,7 +54,7 @@ Last audited: 2026-07-07 on `main`.
   - `solvers`: 34 files.
   - `geometry`: 25 files.
   - `workflows`: 24 files.
-  - `terms`: 21 files.
+  - `terms`: 16 files.
   - `artifacts`: 18 files.
   - `geometry_backends`: 18 files.
   - `diagnostics`: 21 files.
@@ -187,6 +187,41 @@ The required consolidation path is therefore:
    bracket/field solve, diagnostic materialization, VMEC/Boozer conversion, and
    nonlinear decomposition communication. Each speedup claim needs before/after
    profiler artifacts plus numerical-identity or physics gates.
+
+Single active priority queue from the current audit:
+
+1. **Validation out of package.** Do this before more source reshaping. First
+   move shared validation metrics and nonlinear-gradient evidence/follow-up
+   helpers to `diagnostics`, `objectives`, `tools/campaigns`, or
+   `tools/release`; leave only a tiny stable facade if a documented import
+   needs it. Then stage the benchmark family after the public
+   `spectraxgk.benchmarks` facade is made independent of case-history modules.
+2. **Tool families, not script forests.** Consolidate `tools/artifacts` by
+   family: VMEC/Boozer, quasilinear, nonlinear transport, W7-X/zonal,
+   benchmark/runtime panels, release-status/readiness, and generic plotting
+   utilities. Each family should have one manifest-driven entry point plus
+   small internal helpers, not one script per figure.
+3. **Test families, not one-wrapper tests.** Merge `tests/tools/*` into
+   parametrized family tests and split only the two large historical monoliths
+   by behavior contract: runtime config/progress/output/execution/restart/plot
+   and benchmark setup/fit/branch/scan policy. Do not create more one-case
+   files.
+4. **Docs/static artifact audit.** Keep images/CSV/JSON only when referenced by
+   README, docs, or a release/artifact manifest. Delete stale pilot/probe and
+   reduced-window companions before generating new figures.
+5. **Source-domain collapse.** After validation moves, merge overlapping
+   package domains in this order: `terms` into `operators`,
+   `geometry_backends` into `geometry`, runtime/artifact IO into a smaller IO
+   surface, broad `api/*` re-exports into thin documented facades, then
+   objectives by physical workflow.
+6. **Performance pass after topology shrink.** Profile quickstart, linear
+   cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
+   VMEC/Boozer in-memory geometry, and parallel execution. Make speedup claims
+   only when the physical workload, numerical-identity gate, profiler artifact,
+   wall time, and memory evidence all match.
+
+This queue is the active plan. Older sections below are retained as rationale
+and progress log; where they conflict with this queue, this queue wins.
 
 Every file should pass this keep test:
 
@@ -1618,7 +1653,7 @@ Exit gates:
   installable validation files dropped from 88 to 85.
 
 - 2026-07-07: tightened the refactor plan after a fresh repository audit. The
-  new planning reset records the current `4b57ef41` topology, clarifies that
+  new planning reset records the current `b503c0d4` topology, clarifies that
   obsolete branches are not present in this clone, identifies validation-in-src,
   tool-family sprawl, test-family sprawl, and non-promoted examples/artifacts as
   the actual complexity drivers, and defines the keep/move/delete test for every
@@ -1628,43 +1663,42 @@ Exit gates:
 
 ## Immediate Next Steps
 
-1. Collapse artifact tooling and tests by family:
-   - merge the `build_vmec*` scripts/tests into one VMEC artifact builder with
-     manifest-selected modes;
-   - merge remaining `build_quasilinear*` scripts/tests into one quasilinear
-     report builder where possible;
-   - merge the remaining nonlinear artifact tools only after the nonlinear
-     tests have been centralized and tool-level mode boundaries are clear;
-   - merge remaining W7-X/zonal/status tools into a small set of documented
-     status and physics-panel builders after the tests are already centralized;
-   - target `tools/artifacts` below 80 and keep `tests/tools/artifacts` below 30
-     before moving source validation code.
-2. Collapse the biggest tests without weakening assertions:
-   - split `test_runtime_runner.py` into parametrized runtime contracts for
-     config, progress, output, linear execution, nonlinear execution, restart,
-     and plotting;
-   - split `test_benchmarks_runner_branches.py` into common benchmark fixtures
-     plus parametrized case-family branch tests;
-   - move repeated mock objects into shared fixtures and remove tests that only
-     preserve deleted legacy behavior.
-3. Use `tools/release/inventory_repository.py` before every deletion tranche:
-   - delete stale docs/static artifacts not referenced by README/docs/manifests;
-   - delete or move one-off probe/pilot/candidate/status builders with no
-     current owner;
-   - remove remaining tutorial/docs language for retired or non-promoted
-     reduced/synthetic paths.
-4. Move validation out of the installable package:
-   - migrate `validation.benchmarks` behind root `benchmarks/` drivers or the
-     `spectraxgk.benchmarks` facade only where still public;
-   - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and
-     quasilinear holdout builders out of `src` unless they are reusable physics
-     metrics;
-   - keep only small reusable gate/metric helpers in package code.
-5. After topology is smaller, profile and refactor hot paths:
-   linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
-   and VMEC/Boozer in-memory differentiable geometry. Each performance change
-   needs a before/after profiler artifact and numerical identity or physics
-   gate.
+1. Move validation out of the installable package:
+   - start with `validation.nonlinear_gradient` because its importers are mostly
+     tools/release/tests and it is less coupled to public benchmark APIs;
+   - move reusable evidence/window/FD math to diagnostics or objectives;
+   - move follow-up design, candidate ranking, campaign planning, and launch
+     policy to `tools/campaigns` or `tools/release`;
+   - update manifests, docs, and tests in the same commit.
+2. Stage `validation.benchmarks` behind a smaller public benchmark facade:
+   - define the supported `spectraxgk.benchmarks` API explicitly;
+   - keep benchmark metrics and case configs only where reusable;
+   - move case-specific branch histories and long-run policies to root
+     `benchmarks/` or `tests/validation/benchmarks`.
+3. Collapse artifact tooling and tests by family:
+   - VMEC/Boozer, quasilinear, nonlinear transport, W7-X/zonal,
+     benchmark/runtime, release-status/readiness, and generic plotting builders
+     each get one manifest-driven entry point;
+   - target `tools/artifacts` below 80 and `tests/tools/artifacts` below 20 in
+     the next two tool tranches.
+4. Collapse the biggest tests without weakening assertions:
+   - split `test_runtime_runner.py` by runtime contracts: config, progress,
+     output, linear execution, nonlinear execution, restart, and plotting;
+   - split `test_benchmarks_runner_branches.py` into shared fixtures plus
+     parametrized setup/fit/branch/scan policy tests;
+   - merge one-wrapper tool tests into family tests.
+5. Run a docs/static and examples deletion audit:
+   - delete stale docs artifacts not referenced by README/docs/manifests;
+   - remove or move pilot/probe/reduced/synthetic examples that are not
+     promoted workflows;
+   - keep root `benchmarks/` small and documented.
+6. After topology is smaller, collapse source domains and profile hot paths:
+   - merge `terms` into `operators`, `geometry_backends` into `geometry`, and
+     runtime/artifact IO into a smaller IO surface;
+   - profile linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics
+     streaming, and VMEC/Boozer in-memory differentiable geometry;
+   - every performance change needs before/after profiler artifacts and
+     numerical identity or physics gates.
 
 ## Completion Definition
 
