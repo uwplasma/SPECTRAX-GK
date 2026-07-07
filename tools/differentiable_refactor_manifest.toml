@@ -155,22 +155,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.kbm_beta_solver_paths"
-source_path = "src/spectraxgk/validation/benchmarks/kbm_beta_solver_paths.py"
-facade_module = "spectraxgk.validation.benchmarks.kbm_beta"
-status = "active"
-responsibility = "KBM beta-scan explicit-time diagnostic fallback ladder and multi-target Krylov branch policy with patchable solver hooks"
-moved_exports = [
-  "KBMBetaExplicitHooks",
-  "KBMBetaKrylovHooks",
-  "KBMBetaKrylovResult",
-  "fit_kbm_beta_explicit_time_sample",
-  "solve_kbm_beta_krylov_sample",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kbm_linear.py"
 facade_module = "spectraxgk.benchmarks"

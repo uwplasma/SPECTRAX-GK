@@ -185,7 +185,7 @@ High-Risk Module Split Plan
   KBM beta scans now keep the public runner in
   ``validation.benchmarks.kbm_beta`` while explicit-time diagnostics fallback
   and multi-target Krylov branch selection live in
-  ``validation.benchmarks.kbm_beta_solver_paths`` with patchable hooks for
+  ``validation.benchmarks.kbm_beta`` with patchable hooks for
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits, saved-time

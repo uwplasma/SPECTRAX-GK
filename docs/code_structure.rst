@@ -707,7 +707,7 @@ moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.validation.benchmarks.kbm_linear``, and
 ``spectraxgk.validation.benchmarks.kbm_scan`` and are re-exported through
 ``spectraxgk.benchmarks``, while
-``spectraxgk.validation.benchmarks.kbm_beta_solver_paths`` owns the explicit-time
+``spectraxgk.validation.benchmarks.kbm_beta`` owns the explicit-time
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
 runner. Its beta-scan Krylov path shares one forwarded-key policy for
 multi-target branch selection and continuation/shifted solves, so target and
@@ -738,7 +738,7 @@ The KBM beta-scan owner keeps patchable numerical hooks local while staging
 shared setup, fit-window policy construction, kinetic-species index validation,
 per-beta state/cache construction, solver-path dispatch, Krylov continuation
 updates, and result packing through focused private helpers. The existing
-``kbm_beta_solver_paths`` module remains the owner of explicit-time, Krylov,
+``kbm_beta`` module remains the owner of explicit-time, Krylov,
 streaming, and saved-time fitting details.
 The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
 policy between primary auto-window fitting and invalid-window fallback fitting,

@@ -598,8 +598,6 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.kbm_beta
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kbm_beta_solver_paths
-   :members:
 
 .. automodule:: spectraxgk.validation.benchmarks.kbm_linear
    :members:
