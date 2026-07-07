@@ -50,7 +50,7 @@
           "passed": true,
           "path": ".github/workflows/ci.yml",
           "required": true,
-          "snippet": "tools/check_release_readiness.py"
+          "snippet": "tools/release/check_release_readiness.py"
         }
       ],
       "completion_percent": 100.0,

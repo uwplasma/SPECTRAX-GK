@@ -54,7 +54,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("95 percent gate", ".github/workflows/ci.yml", "--fail-under 95"),
         EvidenceCheck("measured manifest coverage audit", ".github/workflows/ci.yml", "--coverage-xml coverage-wide.xml"),
         EvidenceCheck("codecov upload", ".github/workflows/ci.yml", "codecov/codecov-action"),
-        EvidenceCheck("release readiness check", ".github/workflows/ci.yml", "tools/check_release_readiness.py"),
+        EvidenceCheck("release readiness check", ".github/workflows/ci.yml", "tools/release/check_release_readiness.py"),
     ),
     "parallelization_release_surface": (
         EvidenceCheck("parallelization policy docs", "docs/parallelization.rst", "Production-ready parallelism"),

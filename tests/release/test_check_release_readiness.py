@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from tools.check_release_readiness import TECHNICAL_COMPLETION_TARGET
-from tools.check_release_readiness import (
+from tools.release.check_release_readiness import TECHNICAL_COMPLETION_TARGET
+from tools.release.check_release_readiness import (
     ReleaseReadinessError,
     check_release_readiness,
 )
@@ -48,7 +48,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/check_vmec_boozer_differentiability_claim.py",
                 "tools/build_parallelization_completion_status.py",
                 "tools/build_technical_release_status.py",
-                "tools/check_release_readiness.py",
+                "tools/release/check_release_readiness.py",
             ]
         ),
         encoding="utf-8",
@@ -86,7 +86,7 @@ coverage:
         "tools/check_vmec_boozer_differentiability_claim.py\n"
         "tools/build_parallelization_completion_status.py\n"
         "tools/build_technical_release_status.py\n"
-        "tools/check_release_readiness.py\n"
+        "tools/release/check_release_readiness.py\n"
         "gh-action-pypi-publish\n",
         encoding="utf-8",
     )

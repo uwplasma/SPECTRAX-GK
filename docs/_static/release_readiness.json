@@ -250,7 +250,7 @@
     "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
-    "tools/check_release_readiness.py"
+    "tools/release/check_release_readiness.py"
   ],
   "required_codecov_snippets": [
     "after_n_builds: 2",
@@ -276,7 +276,7 @@
     "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
-    "tools/check_release_readiness.py"
+    "tools/release/check_release_readiness.py"
   ],
   "required_static_artifacts": [
     "docs/_static/runtime_memory_benchmark.png",

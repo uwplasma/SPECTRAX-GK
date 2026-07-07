@@ -14,7 +14,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
     import tomli as tomllib  # type: ignore[no-redef]
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -34,7 +34,7 @@ REQUIRED_CI_SNIPPETS = (
     "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
-    "tools/check_release_readiness.py",
+    "tools/release/check_release_readiness.py",
 )
 REQUIRED_CODECOV_SNIPPETS = (
     "after_n_builds: 2",
@@ -55,7 +55,7 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
-    "tools/check_release_readiness.py",
+    "tools/release/check_release_readiness.py",
 )
 REQUIRED_README_SNIPPETS = (
     "pip install spectraxgk",
