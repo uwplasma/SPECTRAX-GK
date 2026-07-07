@@ -194,7 +194,7 @@ def _optimizer_audit_commands(
         out_dir = audit_root / name
         case = f"premanuscript_{name}"
         generate = (
-            "python3 tools/write_optimized_equilibrium_transport_configs.py "
+            "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py "
             f"--vmec-file {wout.relative_to(office_root).as_posix()} "
             f"--case {case} "
             f"--out-dir {out_dir.as_posix()} "
@@ -246,7 +246,7 @@ def _vmec_boozer_holdout_transport_commands(
     case = "vmec_boozer_qh_torflux078_alpha120_holdout"
     out_dir = out_root / case
     generate = (
-        "python3 tools/write_optimized_equilibrium_transport_configs.py "
+        "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py "
         f"--vmec-file {wout.as_posix()} "
         f"--case {case} "
         f"--out-dir {out_dir.as_posix()} "

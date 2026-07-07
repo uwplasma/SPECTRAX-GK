@@ -9,11 +9,15 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_state_control_short_bracket_launch.py"
+SCRIPT = (
+    ROOT / "tools" / "campaigns" / "write_vmec_state_control_short_bracket_launch.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_vmec_state_control_short_bracket_launch", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_vmec_state_control_short_bracket_launch", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -55,7 +59,9 @@ def _input_text() -> str:
 """
 
 
-def test_state_control_short_bracket_writer_inserts_weighted_lasym_inputs(tmp_path: Path) -> None:
+def test_state_control_short_bracket_writer_inserts_weighted_lasym_inputs(
+    tmp_path: Path,
+) -> None:
     pytest.importorskip("vmec_jax")
     mod = _load_tool_module()
     runbook_path = tmp_path / "runbook.json"
@@ -113,9 +119,15 @@ def test_state_control_short_bracket_writer_inserts_weighted_lasym_inputs(tmp_pa
     assert "ZBC(1,1) = -2.5000000000000001E-04" in plus
     assert "RBS(1,1) = -1.5000000000000000E-03" in minus
     assert "--outdir . --fast" in payload["vmec_run_commands"][0]
-    assert "write_nonlinear_turbulence_gradient_campaign.py" in payload["campaign_commands_after_vmec_runs"][0]
+    assert (
+        "write_nonlinear_turbulence_gradient_campaign.py"
+        in payload["campaign_commands_after_vmec_runs"][0]
+    )
     assert "--output-min-samples 60" in payload["campaign_commands_after_vmec_runs"][0]
-    assert "--output-min-window-samples 30" in payload["campaign_commands_after_vmec_runs"][0]
+    assert (
+        "--output-min-window-samples 30"
+        in payload["campaign_commands_after_vmec_runs"][0]
+    )
     assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()

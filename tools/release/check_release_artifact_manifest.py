@@ -38,7 +38,14 @@ def _load_manifest(path: Path) -> dict[str, Any]:
     for idx, item in enumerate(artifacts):
         if not isinstance(item, dict):
             raise ValueError(f"{path} artifacts[{idx}] must be a table")
-        for key in ("path", "size_bytes", "sha256", "action", "reason", "replay_command"):
+        for key in (
+            "path",
+            "size_bytes",
+            "sha256",
+            "action",
+            "reason",
+            "replay_command",
+        ):
             if key not in item:
                 raise ValueError(f"{path} artifacts[{idx}] is missing {key!r}")
         artifact_path = item["path"]
@@ -48,15 +55,23 @@ def _load_manifest(path: Path) -> dict[str, Any]:
             raise ValueError(f"{path} lists duplicate artifact path {artifact_path!r}")
         seen.add(artifact_path)
         if not isinstance(item["size_bytes"], int) or int(item["size_bytes"]) <= 0:
-            raise ValueError(f"{path} artifacts[{idx}].size_bytes must be a positive integer")
+            raise ValueError(
+                f"{path} artifacts[{idx}].size_bytes must be a positive integer"
+            )
         if not isinstance(item["sha256"], str) or len(item["sha256"]) != 64:
-            raise ValueError(f"{path} artifacts[{idx}].sha256 must be a hex sha256 string")
+            raise ValueError(
+                f"{path} artifacts[{idx}].sha256 must be a hex sha256 string"
+            )
         if item["action"] not in VALID_ACTIONS:
-            raise ValueError(f"{path} artifacts[{idx}].action must be one of {sorted(VALID_ACTIONS)}")
+            raise ValueError(
+                f"{path} artifacts[{idx}].action must be one of {sorted(VALID_ACTIONS)}"
+            )
         if item["action"] in {"move_to_release", "keep_preview_in_repo"}:
             for key in ("release_asset_name", "preview_strategy"):
                 if not isinstance(item.get(key), str) or not item[key].strip():
-                    raise ValueError(f"{path} artifacts[{idx}] {item['action']} entries need {key!r}")
+                    raise ValueError(
+                        f"{path} artifacts[{idx}] {item['action']} entries need {key!r}"
+                    )
     return data
 
 
@@ -104,16 +119,26 @@ def check_release_artifact_manifest(
         if not exists:
             release_url = item.get("release_url")
             release_tag = item.get("release_tag")
-            if action == "move_to_release" and isinstance(release_url, str) and release_url.strip():
+            if (
+                action == "move_to_release"
+                and isinstance(release_url, str)
+                and release_url.strip()
+            ):
                 if not isinstance(release_tag, str) or not release_tag.strip():
-                    failures.append(f"{item['path']} moved to release but is missing release_tag")
+                    failures.append(
+                        f"{item['path']} moved to release but is missing release_tag"
+                    )
                 continue
             failures.append(f"{item['path']} does not exist")
             continue
         if actual_size != int(item["size_bytes"]):
-            failures.append(f"{item['path']} size {actual_size} != manifest size {item['size_bytes']}")
+            failures.append(
+                f"{item['path']} size {actual_size} != manifest size {item['size_bytes']}"
+            )
         if actual_sha != item["sha256"]:
-            failures.append(f"{item['path']} sha256 {actual_sha} != manifest sha256 {item['sha256']}")
+            failures.append(
+                f"{item['path']} sha256 {actual_sha} != manifest sha256 {item['sha256']}"
+            )
 
     return {
         "kind": "release_artifact_manifest_check",
@@ -136,7 +161,11 @@ def check_release_artifact_manifest(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(ROOT), help="Repository root to check.")
-    parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST), help="Release artifact manifest TOML.")
+    parser.add_argument(
+        "--manifest",
+        default=str(DEFAULT_MANIFEST),
+        help="Release artifact manifest TOML.",
+    )
     parser.add_argument("--json-out", help="Optional JSON output path.")
     return parser
 

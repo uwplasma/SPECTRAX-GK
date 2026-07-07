@@ -122,7 +122,7 @@ def test_pre_manuscript_runbook_reports_launchable_external_holdout(
         {
             "passed": True,
             "launch_commands": [
-                "python tools/write_external_vmec_holdout_configs.py --case solovev"
+                "python tools/campaigns/write_external_vmec_holdout_configs.py --case solovev"
             ],
             "min_launch_gamma": 0.02,
             "selected_new_family_candidate": {
@@ -164,7 +164,7 @@ def test_pre_manuscript_runbook_marks_selected_external_holdout_harvested(
         {
             "passed": True,
             "launch_commands": [
-                "python tools/write_external_vmec_holdout_configs.py --case solovev"
+                "python tools/campaigns/write_external_vmec_holdout_configs.py --case solovev"
             ],
             "selected_new_family_candidate": {
                 "case": "solovev_reference_nc",

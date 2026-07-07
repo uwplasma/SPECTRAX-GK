@@ -9,8 +9,7 @@ import sys
 def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
-        / "tools"
-        / "compact_replicate_ensemble_bundle.py"
+        / "campaigns" / "compact_replicate_ensemble_bundle.py"
     )
     spec = importlib.util.spec_from_file_location("compact_replicate_ensemble_bundle", path)
     assert spec is not None

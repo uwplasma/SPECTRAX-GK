@@ -32,7 +32,7 @@ from spectraxgk.validation.nonlinear_gradient.followup_variance import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "plan_nonlinear_gradient_followup.py"
+SCRIPT = ROOT / "campaigns" / "plan_nonlinear_gradient_followup.py"
 
 
 def _load_tool_module():
@@ -788,7 +788,7 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
 
 
 def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = ROOT / "tools" / "write_nonlinear_gradient_control_variate_campaign.py"
+    path = ROOT / "campaigns" / "write_nonlinear_gradient_control_variate_campaign.py"
     spec = importlib.util.spec_from_file_location(
         "write_nonlinear_gradient_control_variate_campaign", path
     )
@@ -891,7 +891,7 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
 def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = ROOT / "tools" / "design_nonlinear_gradient_next_campaign.py"
+    path = ROOT / "campaigns" / "design_nonlinear_gradient_next_campaign.py"
     spec = importlib.util.spec_from_file_location(
         "design_nonlinear_gradient_next_campaign", path
     )
@@ -1010,7 +1010,7 @@ def test_composite_control_report_validates_config_and_metadata() -> None:
 def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = ROOT / "tools" / "design_nonlinear_gradient_composite_control.py"
+    path = ROOT / "campaigns" / "design_nonlinear_gradient_composite_control.py"
     spec = importlib.util.spec_from_file_location(
         "design_nonlinear_gradient_composite_control", path
     )

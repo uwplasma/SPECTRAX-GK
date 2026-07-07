@@ -174,13 +174,17 @@ def build_report(
     manifest = _load_json(matrix_manifest)
     cfg = manifest.get("config") if isinstance(manifest.get("config"), Mapping) else {}
     effective_time_tolerance = (
-        _default_time_tolerance(cfg) if time_tolerance is None else float(time_tolerance)
+        _default_time_tolerance(cfg)
+        if time_tolerance is None
+        else float(time_tolerance)
     )
     if target_time is None:
         window = cfg.get("window") if isinstance(cfg.get("window"), Mapping) else {}
         target_time = float(window.get("tmax", 0.0) or 0.0)
     if target_time <= 0.0:
-        raise ValueError("target time must be positive; pass --target-time if the manifest has no window.tmax")
+        raise ValueError(
+            "target time must be positive; pass --target-time if the manifest has no window.tmax"
+        )
     expected = _iter_expected_outputs(manifest)
     rows: list[dict[str, Any]] = []
     complete_bundles = 0
@@ -223,7 +227,9 @@ def build_report(
             "target_time_confirmed": confirmed_targets,
             "missing_or_incomplete_bundles": expected_count - complete_bundles,
             "not_confirmed_at_target_time": expected_count - confirmed_targets,
-            "ready_for_postprocess": bool(expected_count and confirmed_targets == expected_count),
+            "ready_for_postprocess": bool(
+                expected_count and confirmed_targets == expected_count
+            ),
             "time_check_skipped": bool(skip_time_check),
         },
         "rows": rows,
@@ -269,7 +275,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.out_json is not None:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
-        args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.out_json.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     print(json.dumps(report["summary"], indent=2, sort_keys=True))
     if args.fail_on_incomplete and not bool(report["summary"]["ready_for_postprocess"]):
         return 1

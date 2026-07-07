@@ -25,7 +25,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         nargs="+",
         required=True,
-        help="One or more JSON files from tools/probe_vmec_jax_boundary_chain.py.",
+        help="One or more JSON files from tools/campaigns/audit_vmec_jax_boundary_chain.py.",
     )
     parser.add_argument("--out-json", type=Path, required=True)
     parser.add_argument("--exact-relative-tolerance", type=float, default=1.0e-1)

@@ -150,7 +150,7 @@ def test_state_control_runbook_rejects_bad_mapping_and_validates_config() -> Non
 
 
 def test_design_nonlinear_gradient_state_control_runbook_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = ROOT / "tools" / "design_nonlinear_gradient_state_control_runbook.py"
+    path = ROOT / "campaigns" / "design_nonlinear_gradient_state_control_runbook.py"
     spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_state_control_runbook", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

@@ -10,8 +10,15 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_jax_projected_transport_line_search_inputs.py"
-spec = importlib.util.spec_from_file_location("write_vmec_jax_projected_transport_line_search_inputs", SCRIPT)
+SCRIPT = (
+    ROOT
+    / "tools"
+    / "campaigns"
+    / "write_vmec_jax_projected_transport_line_search_inputs.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "write_vmec_jax_projected_transport_line_search_inputs", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -69,7 +76,9 @@ def _boundary_chain_collection(path: Path) -> None:
     )
 
 
-def test_projected_writer_defaults_to_multisample_transport_contract(tmp_path: Path) -> None:
+def test_projected_writer_defaults_to_multisample_transport_contract(
+    tmp_path: Path,
+) -> None:
     args = mod._parse_args(
         [
             "--input",
@@ -91,7 +100,9 @@ def test_projected_writer_defaults_to_multisample_transport_contract(tmp_path: P
     assert summary["sample_count"] == 18
 
 
-def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_manifest_records_sample_coverage(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
@@ -104,7 +115,9 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
             path.write_text("! projected input\n", encoding="utf-8")
             saved.append((Path(path), delta))
 
-    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    fake_stage = SimpleNamespace(
+        specs=[object(), object(), object(), object()], optimizer=FakeOptimizer()
+    )
     monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
 
     rc = mod.main(
@@ -131,7 +144,10 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert payload["objective_sample_summary"]["passed"] is True
     assert payload["objective_sample_summary"]["sample_count"] == 18
     assert payload["transport_objective_sample_set"]["surfaces"] == [0.45, 0.64, 0.78]
-    assert payload["transport_objective_sample_set"]["alphas"] == [0.0, 0.7853981633974483]
+    assert payload["transport_objective_sample_set"]["alphas"] == [
+        0.0,
+        0.7853981633974483,
+    ]
     assert payload["transport_objective_sample_set"]["ky_values"] == [0.1, 0.3, 0.5]
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
     command = payload["rows"][0]["replay_command"]
@@ -151,12 +167,16 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert "0" in command
 
 
-def test_projected_writer_requires_boundary_chain_collection_by_default(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_requires_boundary_chain_collection_by_default(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     _gradient_report(gradient)
 
     def unexpected_stage(_args):
-        raise AssertionError("ungated projected update should fail before VMEC-JAX stage construction")
+        raise AssertionError(
+            "ungated projected update should fail before VMEC-JAX stage construction"
+        )
 
     monkeypatch.setattr(mod, "_build_stage", unexpected_stage)
     with pytest.raises(ValueError, match="require --boundary-chain-collection-json"):
@@ -172,7 +192,9 @@ def test_projected_writer_requires_boundary_chain_collection_by_default(tmp_path
         )
 
 
-def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_filters_direction_by_boundary_chain_collection(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
@@ -185,7 +207,9 @@ def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_pat
             Path(path).write_text("! projected input\n", encoding="utf-8")
             saved.append(delta)
 
-    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    fake_stage = SimpleNamespace(
+        specs=[object(), object(), object(), object()], optimizer=FakeOptimizer()
+    )
     monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
 
     rc = mod.main(
@@ -205,7 +229,11 @@ def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_pat
         ]
     )
 
-    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (tmp_path / "out" / "projected_line_search_inputs.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert rc == 0
     assert len(saved) == 1
     assert list(saved[0]) == pytest.approx([0.0, 1.0e-3, 0.0, 0.0])
@@ -213,7 +241,9 @@ def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_pat
     assert payload["boundary_chain_collection_json"] == str(collection)
 
 
-def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
@@ -226,7 +256,9 @@ def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_pat
             Path(path).write_text("! projected input\n", encoding="utf-8")
             saved.append(delta)
 
-    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    fake_stage = SimpleNamespace(
+        specs=[object(), object(), object(), object()], optimizer=FakeOptimizer()
+    )
     monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
 
     mod.main(
@@ -247,13 +279,19 @@ def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_pat
         ]
     )
 
-    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (tmp_path / "out" / "projected_line_search_inputs.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert list(saved[0]) == pytest.approx([0.0, 6.0e-4, 0.0, -8.0e-4])
     assert payload["boundary_chain_filter"]["require_exact_fd"] is False
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1, 3]
 
 
-def test_projected_writer_can_require_growth_branch_locality(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_can_require_growth_branch_locality(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
@@ -266,7 +304,9 @@ def test_projected_writer_can_require_growth_branch_locality(tmp_path: Path, mon
             Path(path).write_text("! projected input\n", encoding="utf-8")
             saved.append(delta)
 
-    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    fake_stage = SimpleNamespace(
+        specs=[object(), object(), object(), object()], optimizer=FakeOptimizer()
+    )
     monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
 
     mod.main(
@@ -288,7 +328,11 @@ def test_projected_writer_can_require_growth_branch_locality(tmp_path: Path, mon
         ]
     )
 
-    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (tmp_path / "out" / "projected_line_search_inputs.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert list(saved[0]) == pytest.approx([0.0, 1.0e-3, 0.0, 0.0])
     assert payload["boundary_chain_filter"]["require_exact_fd"] is False
     assert payload["boundary_chain_filter"]["require_growth_branch_locality"] is True
@@ -310,7 +354,9 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
             Path(path).parent.mkdir(parents=True, exist_ok=True)
             Path(path).write_text("! projected input\n", encoding="utf-8")
 
-    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    fake_stage = SimpleNamespace(
+        specs=[object(), object(), object(), object()], optimizer=FakeOptimizer()
+    )
     monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
 
     mod.main(
@@ -354,7 +400,11 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
         ]
     )
 
-    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (tmp_path / "out" / "projected_line_search_inputs.json").read_text(
+            encoding="utf-8"
+        )
+    )
     command = payload["rows"][0]["replay_command"]
     assert command[0] == "python3"
     assert command[command.index("--target-aspect") + 1] == "5.0"
@@ -373,17 +423,23 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
 
 
-def test_projected_writer_fails_closed_for_underresolved_sample_set(tmp_path: Path, monkeypatch) -> None:
+def test_projected_writer_fails_closed_for_underresolved_sample_set(
+    tmp_path: Path, monkeypatch
+) -> None:
     gradient = tmp_path / "gradient.json"
     collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
     _boundary_chain_collection(collection)
 
     def unexpected_stage(_args):
-        raise AssertionError("under-resolved sample set should fail before VMEC-JAX stage construction")
+        raise AssertionError(
+            "under-resolved sample set should fail before VMEC-JAX stage construction"
+        )
 
     monkeypatch.setattr(mod, "_build_stage", unexpected_stage)
-    with pytest.raises(ValueError, match="under-resolved transport objective sample set"):
+    with pytest.raises(
+        ValueError, match="under-resolved transport objective sample set"
+    ):
         mod.main(
             [
                 "--input",

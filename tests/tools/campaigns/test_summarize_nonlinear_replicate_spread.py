@@ -7,8 +7,15 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "summarize_nonlinear_replicate_spread.py"
-    spec = importlib.util.spec_from_file_location("summarize_nonlinear_replicate_spread", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "campaigns"
+        / "summarize_nonlinear_replicate_spread.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "summarize_nonlinear_replicate_spread", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)

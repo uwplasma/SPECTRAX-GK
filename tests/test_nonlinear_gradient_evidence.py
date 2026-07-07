@@ -42,9 +42,9 @@ from spectraxgk.validation.quasilinear.window_statistics import (
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_turbulence_gradient_evidence.py"
 FD_SCRIPT = ROOT / "tools" / "artifacts" / "build_nonlinear_turbulence_gradient_fd_gate.py"
-CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign.py"
-RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py"
-BRACKET_SCRIPT = ROOT / "tools" / "summarize_nonlinear_gradient_bracket_sweep.py"
+CAMPAIGN_SCRIPT = ROOT / "campaigns" / "write_nonlinear_turbulence_gradient_campaign.py"
+RANK_SCRIPT = ROOT / "campaigns" / "rank_nonlinear_turbulence_gradient_candidates.py"
+BRACKET_SCRIPT = ROOT / "campaigns" / "summarize_nonlinear_gradient_bracket_sweep.py"
 
 
 def test_nonlinear_gradient_evidence_facade_reexports_core_contracts() -> None:

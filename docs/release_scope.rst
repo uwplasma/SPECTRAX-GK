@@ -389,14 +389,14 @@ Quasilinear model-selection state:
   promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
-- ``tools/rank_nonlinear_turbulence_gradient_candidates.py`` ranks failed
+- ``tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py`` ranks failed
   central finite-difference candidates without promoting them. The current
   ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` summary
   compares the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` campaigns
   and recommends an overdetermined least-squares/profile-gradient campaign next
   because the best single-control candidates have complementary locality and
   uncertainty failures.
-- ``tools/plan_nonlinear_gradient_followup.py`` turns completed central-FD
+- ``tools/campaigns/plan_nonlinear_gradient_followup.py`` turns completed central-FD
   artifacts into a bounded follow-up prescription. For the completed
   overdetermined QA/ESS campaign it writes
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``:
@@ -404,7 +404,7 @@ Quasilinear model-selection state:
   state, because ``RBC(1,1)`` is local and response-resolved but slightly too
   uncertain. It refuses more replicas for the nonlocal ``ZBS(1,1)`` bracket
   and the unresolved ``ZBS(1,0)`` response.
-- ``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
+- ``tools/campaigns/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
   follow-up for a same-control perturbation-amplitude sweep. It writes
   JSON/CSV/PNG sidecars and an optional PDF from completed central
   finite-difference artifacts and recommends whether to add replicas,
@@ -414,7 +414,7 @@ Quasilinear model-selection state:
   for mixed-control inputs, and the tracked ``RBC(1,1)`` amplitude sweep
   confirms that the current larger bracket worsens locality instead of closing
   the nonlinear turbulence-gradient gate.
-- ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
+- ``tools/campaigns/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
   launch-contract writer for that next campaign shape. The current tracked
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
   uses the optimized-QA/ESS baseline input and prepares ``ZBS(1,1)``,
@@ -422,7 +422,7 @@ Quasilinear model-selection state:
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
 - ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` and
-  ``tools/run_overdetermined_nonlinear_gradient_campaign.py`` make that
+  ``tools/campaigns/run_overdetermined_nonlinear_gradient_campaign.py`` make that
   launch contract executable. The current status artifact,
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
   records that all three VMEC-JAX re-equilibrated controls are ready for
@@ -431,11 +431,11 @@ Quasilinear model-selection state:
   claim blocked until real post-transient outputs exist. The status check now
   requires each runtime NetCDF to reach the analysis-window endpoint, not just
   exist on disk, so in-progress files remain blocked.
-- ``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
+- ``tools/campaigns/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
   matching fail-closed post-runtime driver. It runs each nested campaign's
   output, ensemble, and central-FD gates, then runs the overdetermined
   candidate ranking and final status checker before any release promotion.
-- ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
+- ``tools/campaigns/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
   launch-contract for a smoother composite VMEC boundary direction. The
   tracked
   ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` applies
@@ -443,7 +443,7 @@ Quasilinear model-selection state:
   records the finite-difference normalization by coefficient-vector norm. This
   is not nonlinear turbulence-gradient evidence until the generated VMEC states
   are re-equilibrated and passed through the long-window nonlinear FD gate.
-- ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
+- ``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
   launch-contract writer for the same lane. Given explicit baseline,
   plus-perturbation, and minus-perturbation VMEC files, it writes the matched
   fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
@@ -453,7 +453,7 @@ Quasilinear model-selection state:
   files have byte-identical SHA256 contents. The only override is
   ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
   manifest flag and must not be used for production turbulence-gradient claims.
-- ``tools/write_vmec_boundary_perturbation_inputs.py`` is the upstream
+- ``tools/campaigns/write_vmec_boundary_perturbation_inputs.py`` is the upstream
   boundary-gradient launch helper. It writes matched ``baseline``,
   ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
   ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands

@@ -33,9 +33,15 @@ PRODUCTION_GATE_ARTIFACT_PATHS = (
     f"docs/_static/{PRODUCTION_GATE_JSON}",
     f"docs/_static/{PRODUCTION_GATE_CSV}",
 )
-OBSERVABLE_SPLIT_JSON = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json"
-OBSERVABLE_SPLIT_CSV = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv"
-OBSERVABLE_SPLIT_PNG = "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png"
+OBSERVABLE_SPLIT_JSON = (
+    "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json"
+)
+OBSERVABLE_SPLIT_CSV = (
+    "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.csv"
+)
+OBSERVABLE_SPLIT_PNG = (
+    "nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.png"
+)
 OBSERVABLE_SPLIT_ARTIFACT_PATHS = (
     f"docs/_static/{OBSERVABLE_SPLIT_JSON}",
     f"docs/_static/{OBSERVABLE_SPLIT_CSV}",
@@ -128,8 +134,17 @@ FAMILIES = (
         expected_split_kind="independent_ky_scan_strong_scaling",
         identity_claim_phrase="not a nonlinear domain-decomposition",
         split_identity_claim_phrase=None,
-        timing_fields=("timed_wall_s", "wall_s", "strong_speedup_vs_1_device", "parallel_efficiency"),
-        error_fields=("max_gamma_abs_error", "max_gamma_rel_error", "max_omega_abs_error"),
+        timing_fields=(
+            "timed_wall_s",
+            "wall_s",
+            "strong_speedup_vs_1_device",
+            "parallel_efficiency",
+        ),
+        error_fields=(
+            "max_gamma_abs_error",
+            "max_gamma_rel_error",
+            "max_omega_abs_error",
+        ),
         min_rows=2,
         min_grid=(("Nl", 2), ("Nm", 4), ("Ny", 64), ("Nz", 32)),
         min_steps=100,
@@ -145,8 +160,17 @@ FAMILIES = (
         expected_split_kind="quasilinear_uq_ensemble_scaling",
         identity_claim_phrase="not a promoted absolute nonlinear heat-flux predictor",
         split_identity_claim_phrase="not an absolute nonlinear heat-flux validation claim",
-        timing_fields=("timed_wall_s", "wall_s", "strong_speedup_vs_1_device", "parallel_efficiency"),
-        error_fields=("max_gamma_abs_error", "max_heat_flux_proxy_abs_error", "max_heat_flux_proxy_rel_error"),
+        timing_fields=(
+            "timed_wall_s",
+            "wall_s",
+            "strong_speedup_vs_1_device",
+            "parallel_efficiency",
+        ),
+        error_fields=(
+            "max_gamma_abs_error",
+            "max_heat_flux_proxy_abs_error",
+            "max_heat_flux_proxy_rel_error",
+        ),
         min_rows=2,
         min_grid=(("Nl", 2), ("Nm", 4), ("Ny", 64), ("Nz", 32)),
         min_steps=500,
@@ -162,7 +186,12 @@ FAMILIES = (
         expected_split_kind="nonlinear_sharding_strong_scaling_sweep",
         identity_claim_phrase="not a production speedup claim",
         split_identity_claim_phrase="not as a broad production speedup claim",
-        timing_fields=("parallel_median_s", "serial_median_s", "same_process_speedup", "strong_speedup_vs_1_device"),
+        timing_fields=(
+            "parallel_median_s",
+            "serial_median_s",
+            "same_process_speedup",
+            "strong_speedup_vs_1_device",
+        ),
         error_fields=("max_abs_state_error", "max_rel_state_error"),
         profile_payloads_required=True,
         min_rows=2,
@@ -250,11 +279,15 @@ def _csv_row_count(path: Path) -> int:
         return sum(1 for _ in reader)
 
 
-def _assert_csv_matches_json(root: Path, family: ArtifactFamily, name: str, row_count: int) -> None:
+def _assert_csv_matches_json(
+    root: Path, family: ArtifactFamily, name: str, row_count: int
+) -> None:
     csv_path = root / f"{Path(name).stem}.csv"
     count = _csv_row_count(csv_path)
     if count != row_count:
-        raise ValueError(f"{family.name}: {csv_path.name} has {count} rows, expected {row_count}")
+        raise ValueError(
+            f"{family.name}: {csv_path.name} has {count} rows, expected {row_count}"
+        )
 
 
 def _assert_claim_scope(payload: dict[str, Any], phrase: str, context: str) -> None:
@@ -273,25 +306,40 @@ def _assert_optional_profile_source_contract(row: dict[str, Any], context: str) 
         raise ValueError(
             f"{context}: source_contract_version must be {PROFILE_SOURCE_CONTRACT_VERSION}"
         )
-    for field in ("profile_command", "source_artifact", "profile_backend", "profile_sharding_axis"):
+    for field in (
+        "profile_command",
+        "source_artifact",
+        "profile_backend",
+        "profile_sharding_axis",
+    ):
         if not isinstance(row.get(field), str) or not row[field]:
             raise ValueError(f"{context}: {field} must be a non-empty string")
     argv = row.get("profile_command_argv")
-    if not isinstance(argv, list) or not argv or not all(isinstance(item, str) and item for item in argv):
-        raise ValueError(f"{context}: profile_command_argv must be a non-empty string list")
+    if (
+        not isinstance(argv, list)
+        or not argv
+        or not all(isinstance(item, str) and item for item in argv)
+    ):
+        raise ValueError(
+            f"{context}: profile_command_argv must be a non-empty string list"
+        )
     versions = row.get("software_versions")
     if not isinstance(versions, dict):
         raise ValueError(f"{context}: software_versions must be an object")
     for key in PROFILE_SOURCE_CONTRACT_VERSION_KEYS:
         if not isinstance(versions.get(key), str) or not versions[key]:
-            raise ValueError(f"{context}: software_versions.{key} must be a non-empty string")
+            raise ValueError(
+                f"{context}: software_versions.{key} must be a non-empty string"
+            )
     timing = row.get("timing_warmup_repeat")
     if not isinstance(timing, dict):
         raise ValueError(f"{context}: timing_warmup_repeat must be an object")
     for field in ("warmups", "repeats"):
         value = timing.get(field)
         if not isinstance(value, int) or value < 0:
-            raise ValueError(f"{context}: timing_warmup_repeat.{field} must be a non-negative integer")
+            raise ValueError(
+                f"{context}: timing_warmup_repeat.{field} must be a non-negative integer"
+            )
     if str(row.get("profile_backend")).lower() != str(row.get("backend", "")).lower():
         raise ValueError(f"{context}: profile_backend must match row backend")
     if int(row.get("profile_device_count") or 0) != int(row.get("actual_devices") or 0):
@@ -396,7 +444,9 @@ def _assert_worker_stats(rows: list[dict[str, Any]], context: str) -> None:
         for index, worker in enumerate(workers):
             worker_context = f"{context}: worker {index}"
             if not isinstance(worker, dict):
-                raise ValueError(f"{worker_context}: worker_stats entries must be objects")
+                raise ValueError(
+                    f"{worker_context}: worker_stats entries must be objects"
+                )
             samples = worker.get("samples_s")
             if not isinstance(samples, list) or not samples:
                 raise ValueError(f"{worker_context}: samples_s must be non-empty")
@@ -410,7 +460,9 @@ def _assert_worker_stats(rows: list[dict[str, Any]], context: str) -> None:
             _finite_nonnegative(stats.get("std"), "std", worker_context)
 
 
-def _assert_profile_payloads(payload: dict[str, Any], rows: list[dict[str, Any]], context: str) -> None:
+def _assert_profile_payloads(
+    payload: dict[str, Any], rows: list[dict[str, Any]], context: str
+) -> None:
     profiles = payload.get("profiles")
     if not isinstance(profiles, dict):
         raise ValueError(f"{context}: profiles must be an object")
@@ -428,7 +480,9 @@ def _assert_profile_payloads(payload: dict[str, Any], rows: list[dict[str, Any]]
         _assert_claim_scope(profile, "Do not use as a published runtime claim", context)
         trace = profile.get("profiler_trace")
         if not isinstance(trace, dict) or trace.get("error") is not None:
-            raise ValueError(f"{context}: profiler_trace must be present and error-free")
+            raise ValueError(
+                f"{context}: profiler_trace must be present and error-free"
+            )
 
 
 def _nonlinear_sharding_split_artifacts() -> tuple[str, ...]:
@@ -438,7 +492,9 @@ def _nonlinear_sharding_split_artifacts() -> tuple[str, ...]:
     raise AssertionError("nonlinear_sharding artifact family is not configured")
 
 
-def _production_gate_candidate_key(row: dict[str, Any]) -> tuple[str, int, int, str, float]:
+def _production_gate_candidate_key(
+    row: dict[str, Any],
+) -> tuple[str, int, int, str, float]:
     return (
         str(row.get("backend", "")).lower(),
         int(row.get("requested_devices") or 0),
@@ -452,7 +508,9 @@ def _production_gate_candidate_key(row: dict[str, Any]) -> tuple[str, int, int, 
     )
 
 
-def _production_gate_source_row_key(row: dict[str, Any], source_name: str) -> tuple[str, str, int, int]:
+def _production_gate_source_row_key(
+    row: dict[str, Any], source_name: str
+) -> tuple[str, str, int, int]:
     return (
         source_name,
         str(row.get("backend", "")).lower(),
@@ -482,7 +540,9 @@ def _assert_production_gate_row_matches_source(
             )
 
 
-def _load_production_gate_source_rows(root: Path) -> dict[tuple[str, str, int, int], dict[str, Any]]:
+def _load_production_gate_source_rows(
+    root: Path,
+) -> dict[tuple[str, str, int, int], dict[str, Any]]:
     source_rows: dict[tuple[str, str, int, int], dict[str, Any]] = {}
     for source_name in _nonlinear_sharding_split_artifacts():
         payload = _load_json(root, source_name)
@@ -497,10 +557,15 @@ def _load_production_gate_source_rows(root: Path) -> dict[tuple[str, str, int, i
 
 
 def _production_gate_source_artifacts_exist(root: Path) -> bool:
-    return all((root / source_name).exists() for source_name in _nonlinear_sharding_split_artifacts())
+    return all(
+        (root / source_name).exists()
+        for source_name in _nonlinear_sharding_split_artifacts()
+    )
 
 
-def _count_production_gate_values(rows: list[dict[str, Any]], field: str) -> dict[str, int]:
+def _count_production_gate_values(
+    rows: list[dict[str, Any]], field: str
+) -> dict[str, int]:
     counts: dict[str, int] = {}
     for row in rows:
         value = row.get(field)
@@ -519,13 +584,17 @@ def _expected_backend_blocker_report(
 ) -> dict[str, dict[str, Any]]:
     expected: dict[str, dict[str, Any]] = {}
     for backend in required:
-        backend_rows = [row for row in rows if str(row.get("backend", "")).lower() == backend]
+        backend_rows = [
+            row for row in rows if str(row.get("backend", "")).lower() == backend
+        ]
         candidate_rows = [
             row
             for row in backend_rows
             if not (PRODUCTION_GATE_REFERENCE_BLOCKERS & set(row.get("blockers", [])))
         ]
-        passing_rows = [row for row in candidate_rows if bool(row.get("candidate_passed"))]
+        passing_rows = [
+            row for row in candidate_rows if bool(row.get("candidate_passed"))
+        ]
         identity_complete_rows = [
             row
             for row in candidate_rows
@@ -585,7 +654,9 @@ def _assert_backend_blocker_report(
     if not isinstance(report, dict):
         raise ValueError(f"{context}: backend_blocker_report must be an object")
     if set(report) != set(required):
-        raise ValueError(f"{context}: backend_blocker_report keys must match required_backends")
+        raise ValueError(
+            f"{context}: backend_blocker_report keys must match required_backends"
+        )
     expected = _expected_backend_blocker_report(rows, required)
     for backend in required:
         if report.get(backend) != expected[backend]:
@@ -603,7 +674,9 @@ def validate_nonlinear_sharding_production_gate(
     sidecars = 0
     if check_sidecars:
         for artifact in PRODUCTION_GATE_ARTIFACT_PATHS:
-            path = REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            path = (
+                REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            )
             if not path.exists():
                 raise ValueError(
                     f"nonlinear_sharding_production_gate: missing sidecar artifact {artifact}"
@@ -613,7 +686,9 @@ def validate_nonlinear_sharding_production_gate(
     payload = _load_json(root, PRODUCTION_GATE_JSON)
     context = PRODUCTION_GATE_JSON
     if payload.get("kind") != "nonlinear_sharding_production_speedup_gate":
-        raise ValueError(f"{context}: kind must be 'nonlinear_sharding_production_speedup_gate'")
+        raise ValueError(
+            f"{context}: kind must be 'nonlinear_sharding_production_speedup_gate'"
+        )
     _assert_claim_scope(payload, "Whole-state nonlinear sharding", context)
     _assert_claim_scope(payload, "diagnostic identity/profiler artifact", context)
 
@@ -624,7 +699,9 @@ def validate_nonlinear_sharding_production_gate(
         raise ValueError(
             f"{context}: production_speedup_claim_allowed must match gate_passed"
         )
-    expected_status = "production_speedup_candidate" if gate_passed else "diagnostic_only"
+    expected_status = (
+        "production_speedup_candidate" if gate_passed else "diagnostic_only"
+    )
     if payload.get("status") != expected_status:
         raise ValueError(f"{context}: status must be {expected_status!r}")
 
@@ -646,8 +723,12 @@ def validate_nonlinear_sharding_production_gate(
         "min_parallel_efficiency",
         context,
     )
-    identity_atol = _finite_nonnegative(payload.get("identity_atol"), "identity_atol", context)
-    identity_rtol = _finite_nonnegative(payload.get("identity_rtol"), "identity_rtol", context)
+    identity_atol = _finite_nonnegative(
+        payload.get("identity_atol"), "identity_atol", context
+    )
+    identity_rtol = _finite_nonnegative(
+        payload.get("identity_rtol"), "identity_rtol", context
+    )
     rows = _as_rows(payload, context)
 
     if check_sidecars:
@@ -664,7 +745,9 @@ def validate_nonlinear_sharding_production_gate(
         if check_sidecars or _production_gate_source_artifacts_exist(root)
         else {}
     )
-    candidates_by_backend: dict[str, list[dict[str, Any]]] = {backend: [] for backend in required}
+    candidates_by_backend: dict[str, list[dict[str, Any]]] = {
+        backend: [] for backend in required
+    }
     observed_backends: set[str] = set()
     for index, row in enumerate(rows):
         row_context = f"{context}: row {index}"
@@ -674,7 +757,9 @@ def validate_nonlinear_sharding_production_gate(
         observed_backends.add(backend)
         source_name = _path_basename(row.get("source"))
         if source_name not in source_artifacts:
-            raise ValueError(f"{row_context}: source must be a nonlinear sharding split artifact")
+            raise ValueError(
+                f"{row_context}: source must be a nonlinear sharding split artifact"
+            )
         if source_rows:
             _assert_production_gate_row_matches_source(
                 row,
@@ -683,7 +768,11 @@ def validate_nonlinear_sharding_production_gate(
             )
         requested_devices = int(row.get("requested_devices") or 0)
         actual_devices = int(row.get("actual_devices") or 0)
-        if requested_devices < 1 or actual_devices < 1 or actual_devices > requested_devices:
+        if (
+            requested_devices < 1
+            or actual_devices < 1
+            or actual_devices > requested_devices
+        ):
             raise ValueError(f"{row_context}: device counts are invalid")
 
         blockers = row.get("blockers")
@@ -699,7 +788,9 @@ def validate_nonlinear_sharding_production_gate(
 
         classification = str(row.get("classification", ""))
         if classification not in PRODUCTION_GATE_CLASSIFICATIONS:
-            raise ValueError(f"{row_context}: unknown classification {classification!r}")
+            raise ValueError(
+                f"{row_context}: unknown classification {classification!r}"
+            )
         if candidate_passed and classification != "production_candidate":
             raise ValueError(
                 f"{row_context}: passing candidates must be classified as production_candidate"
@@ -707,14 +798,20 @@ def validate_nonlinear_sharding_production_gate(
         if classification == "production_candidate" and not candidate_passed:
             raise ValueError(f"{row_context}: production_candidate rows must pass")
 
-        max_abs = _finite_nonnegative(row.get("max_abs_state_error"), "max_abs_state_error", row_context)
-        max_rel = _finite_nonnegative(row.get("max_rel_state_error"), "max_rel_state_error", row_context)
+        max_abs = _finite_nonnegative(
+            row.get("max_abs_state_error"), "max_abs_state_error", row_context
+        )
+        max_rel = _finite_nonnegative(
+            row.get("max_rel_state_error"), "max_rel_state_error", row_context
+        )
         speedup = _finite_positive(
             row.get("strong_speedup_vs_1_device"),
             "strong_speedup_vs_1_device",
             row_context,
         )
-        efficiency = _finite_positive(row.get("parallel_efficiency"), "parallel_efficiency", row_context)
+        efficiency = _finite_positive(
+            row.get("parallel_efficiency"), "parallel_efficiency", row_context
+        )
         identity_passed = bool(row.get("identity_gate_pass", False))
         if identity_passed and (max_abs > identity_atol or max_rel > identity_rtol):
             raise ValueError(f"{row_context}: identity errors exceed gate tolerances")
@@ -722,18 +819,28 @@ def validate_nonlinear_sharding_production_gate(
             if not identity_passed:
                 raise ValueError(f"{row_context}: passing candidate must pass identity")
             if not bool(row.get("state_sharding_active", False)):
-                raise ValueError(f"{row_context}: passing candidate must use active sharding")
+                raise ValueError(
+                    f"{row_context}: passing candidate must use active sharding"
+                )
             if actual_devices < min_devices:
-                raise ValueError(f"{row_context}: passing candidate is below min_devices")
+                raise ValueError(
+                    f"{row_context}: passing candidate is below min_devices"
+                )
             if speedup < min_speedup:
-                raise ValueError(f"{row_context}: passing candidate is below min_speedup")
+                raise ValueError(
+                    f"{row_context}: passing candidate is below min_speedup"
+                )
             if efficiency < min_efficiency:
-                raise ValueError(f"{row_context}: passing candidate is below min_parallel_efficiency")
+                raise ValueError(
+                    f"{row_context}: passing candidate is below min_parallel_efficiency"
+                )
             candidates_by_backend[backend].append(row)
 
     missing_backend_rows = sorted(set(required) - observed_backends)
     if missing_backend_rows:
-        raise ValueError(f"{context}: missing rows for backend(s): {', '.join(missing_backend_rows)}")
+        raise ValueError(
+            f"{context}: missing rows for backend(s): {', '.join(missing_backend_rows)}"
+        )
 
     best_candidates = payload.get("best_candidates")
     if not isinstance(best_candidates, dict):
@@ -747,12 +854,18 @@ def validate_nonlinear_sharding_production_gate(
         candidates = candidates_by_backend.get(backend, [])
         best = best_candidates.get(backend)
         if not candidates:
-            expected_gate_blockers.append(f"{backend}_production_speedup_candidate_missing")
+            expected_gate_blockers.append(
+                f"{backend}_production_speedup_candidate_missing"
+            )
             if best is not None:
-                raise ValueError(f"{context}: best_candidates[{backend!r}] must be null")
+                raise ValueError(
+                    f"{context}: best_candidates[{backend!r}] must be null"
+                )
             continue
         if not isinstance(best, dict):
-            raise ValueError(f"{context}: best_candidates[{backend!r}] must be an object")
+            raise ValueError(
+                f"{context}: best_candidates[{backend!r}] must be an object"
+            )
         expected_best = max(
             candidates,
             key=lambda item: (
@@ -760,7 +873,9 @@ def validate_nonlinear_sharding_production_gate(
                 int(item["requested_devices"]),
             ),
         )
-        if _production_gate_candidate_key(best) != _production_gate_candidate_key(expected_best):
+        if _production_gate_candidate_key(best) != _production_gate_candidate_key(
+            expected_best
+        ):
             raise ValueError(f"{context}: best candidate for {backend} is stale")
 
     if gate_blockers != expected_gate_blockers:
@@ -777,7 +892,9 @@ def validate_nonlinear_sharding_production_gate(
         "n_sidecars": sidecars,
         "required_backends": list(required),
         "gate_passed": gate_passed,
-        "production_speedup_claim_allowed": bool(payload["production_speedup_claim_allowed"]),
+        "production_speedup_claim_allowed": bool(
+            payload["production_speedup_claim_allowed"]
+        ),
         "status": payload["status"],
         "blockers": gate_blockers,
         "production_candidate_backends": [
@@ -797,7 +914,9 @@ def validate_device_z_pencil_observable_split(
     sidecars = 0
     if check_sidecars:
         for artifact in OBSERVABLE_SPLIT_ARTIFACT_PATHS:
-            path = REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            path = (
+                REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            )
             if not path.exists():
                 raise ValueError(
                     "device_z_pencil_observable_split: missing sidecar artifact "
@@ -831,7 +950,9 @@ def validate_device_z_pencil_observable_split(
         context,
     )
     if max_speedup >= min_speedup:
-        raise ValueError(f"{context}: tracked observable-overhead artifact is no longer below gate")
+        raise ValueError(
+            f"{context}: tracked observable-overhead artifact is no longer below gate"
+        )
 
     model = payload.get("fft_batch_pressure_model")
     if not isinstance(model, dict) or model.get("profiling_candidate") is not True:
@@ -849,18 +970,26 @@ def validate_device_z_pencil_observable_split(
         if bool(row.get("active")) and int(row.get("device_count") or 0) > 1
     ]
     if not active_parallel_rows:
-        raise ValueError(f"{context}: must include at least one active multi-device row")
+        raise ValueError(
+            f"{context}: must include at least one active multi-device row"
+        )
     for index, row in enumerate(active_parallel_rows):
         row_context = f"{context}: active multi-device row {index}"
         if row.get("identity_passed") is not True:
             raise ValueError(f"{row_context}: identity_passed must be true")
         if row.get("transport_window_identity_passed") is not True:
-            raise ValueError(f"{row_context}: transport_window_identity_passed must be true")
+            raise ValueError(
+                f"{row_context}: transport_window_identity_passed must be true"
+            )
         if row.get("speedup_gate_passed") is not False:
             raise ValueError(f"{row_context}: speedup gate must remain false")
-        speedup = _finite_positive(row.get("speedup_vs_serial"), "speedup_vs_serial", row_context)
+        speedup = _finite_positive(
+            row.get("speedup_vs_serial"), "speedup_vs_serial", row_context
+        )
         if speedup >= min_speedup:
-            raise ValueError(f"{row_context}: speedup unexpectedly exceeds the promotion gate")
+            raise ValueError(
+                f"{row_context}: speedup unexpectedly exceeds the promotion gate"
+            )
         blockers = row.get("blocked_reasons")
         if not isinstance(blockers, list) or "speedup_below_gate" not in blockers:
             raise ValueError(f"{row_context}: blockers must include speedup_below_gate")
@@ -901,7 +1030,9 @@ def validate_device_z_pencil_observable_split(
     }
 
 
-def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool = True) -> dict[str, Any]:
+def validate_family(
+    root: Path, family: ArtifactFamily, *, check_sidecars: bool = True
+) -> dict[str, Any]:
     """Validate one artifact family under ``root`` and return a compact summary."""
 
     root = root.resolve()
@@ -919,17 +1050,29 @@ def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool 
     if family.combined_has_inputs:
         inputs = combined.get("inputs")
         if not isinstance(inputs, list) or not inputs:
-            raise ValueError(f"{family.combined}: inputs must list split source artifacts")
-        input_names = {_path_basename(entry.get("path")) for entry in inputs if isinstance(entry, dict)}
+            raise ValueError(
+                f"{family.combined}: inputs must list split source artifacts"
+            )
+        input_names = {
+            _path_basename(entry.get("path"))
+            for entry in inputs
+            if isinstance(entry, dict)
+        }
         source_names = {_path_basename(row.get("source")) for row in rows}
         expected_names = set(family.split)
         if input_names != expected_names:
-            raise ValueError(f"{family.combined}: inputs do not match expected split artifacts")
+            raise ValueError(
+                f"{family.combined}: inputs do not match expected split artifacts"
+            )
         if source_names != expected_names:
-            raise ValueError(f"{family.combined}: row sources do not match expected split artifacts")
+            raise ValueError(
+                f"{family.combined}: row sources do not match expected split artifacts"
+            )
         for entry in inputs:
             if not isinstance(entry, dict) or entry.get("identity_passed") is not True:
-                raise ValueError(f"{family.combined}: each split input must pass identity")
+                raise ValueError(
+                    f"{family.combined}: each split input must pass identity"
+                )
 
     backends: set[str] = set()
     split_rows = 0
@@ -989,7 +1132,10 @@ def validate_all(
 ) -> dict[str, Any]:
     """Validate all tracked parallel scaling families."""
 
-    summaries = [validate_family(root, family, check_sidecars=check_sidecars) for family in FAMILIES]
+    summaries = [
+        validate_family(root, family, check_sidecars=check_sidecars)
+        for family in FAMILIES
+    ]
     production_gate = validate_nonlinear_sharding_production_gate(
         root,
         check_sidecars=check_sidecars,
@@ -1028,7 +1174,12 @@ def validate_all(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=STATIC, help="Directory containing scaling artifacts.")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=STATIC,
+        help="Directory containing scaling artifacts.",
+    )
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--out-json", type=Path, default=None)
     parser.add_argument("--skip-manifest-check", action="store_true")

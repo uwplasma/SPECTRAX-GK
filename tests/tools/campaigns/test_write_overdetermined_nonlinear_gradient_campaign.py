@@ -9,11 +9,15 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_overdetermined_nonlinear_gradient_campaign.py"
+SCRIPT = (
+    ROOT / "tools" / "campaigns" / "write_overdetermined_nonlinear_gradient_campaign.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_overdetermined_nonlinear_gradient_campaign", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_overdetermined_nonlinear_gradient_campaign", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -31,7 +35,9 @@ def _input_text() -> str:
 """
 
 
-def test_overdetermined_writer_creates_multi_control_launch_manifest(tmp_path: Path) -> None:
+def test_overdetermined_writer_creates_multi_control_launch_manifest(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.final"
     baseline.write_text(_input_text(), encoding="utf-8")
@@ -74,15 +80,31 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(tmp_path: P
         ]
     )
 
-    manifest_path = tmp_path / "campaign" / "overdetermined_nonlinear_gradient_campaign_manifest.json"
+    manifest_path = (
+        tmp_path
+        / "campaign"
+        / "overdetermined_nonlinear_gradient_campaign_manifest.json"
+    )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert rc == 0
-    assert manifest["kind"] == "overdetermined_nonlinear_turbulence_gradient_campaign_manifest"
+    assert (
+        manifest["kind"]
+        == "overdetermined_nonlinear_turbulence_gradient_campaign_manifest"
+    )
     assert manifest["control_count"] == 2
     assert manifest["previous_ranking"]["passed"] is False
-    assert "least-squares/profile-gradient" in manifest["previous_ranking"]["recommendation"]
-    assert [row["coefficient_slug"] for row in manifest["controls"]] == ["zbs_1_0", "zbs_1_1"]
-    assert all("vmec_jax input." in row["vmec_run_commands"]["plus_delta"] for row in manifest["controls"])
+    assert (
+        "least-squares/profile-gradient"
+        in manifest["previous_ranking"]["recommendation"]
+    )
+    assert [row["coefficient_slug"] for row in manifest["controls"]] == [
+        "zbs_1_0",
+        "zbs_1_1",
+    ]
+    assert all(
+        "vmec_jax input." in row["vmec_run_commands"]["plus_delta"]
+        for row in manifest["controls"]
+    )
     assert all(
         "write_nonlinear_turbulence_gradient_campaign.py"
         in row["nonlinear_campaign_command_after_vmec_runs"]
@@ -94,16 +116,20 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(tmp_path: P
         )
         for row in manifest["controls"]
     )
-    assert "rank_nonlinear_turbulence_gradient_candidates.py" in manifest["promotion_contract"][
-        "candidate_ranking_command"
-    ]
-    assert "--campaign-context overdetermined_followup" in manifest["promotion_contract"][
-        "candidate_ranking_command"
-    ]
+    assert (
+        "rank_nonlinear_turbulence_gradient_candidates.py"
+        in manifest["promotion_contract"]["candidate_ranking_command"]
+    )
+    assert (
+        "--campaign-context overdetermined_followup"
+        in manifest["promotion_contract"]["candidate_ranking_command"]
+    )
     assert len(manifest["promotion_contract"]["expected_fd_artifacts"]) == 2
 
 
-def test_overdetermined_writer_requires_multiple_distinct_controls(tmp_path: Path) -> None:
+def test_overdetermined_writer_requires_multiple_distinct_controls(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.final"
     baseline.write_text(_input_text(), encoding="utf-8")

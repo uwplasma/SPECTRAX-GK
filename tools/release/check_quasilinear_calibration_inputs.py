@@ -26,7 +26,9 @@ from spectraxgk.validation.quasilinear.holdout_admission import (  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GATE_GLOB = str(ROOT / "docs" / "_static" / "**" / "*.json")
-DEFAULT_JSON = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.json"
+DEFAULT_JSON = (
+    ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.json"
+)
 DEFAULT_PNG = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.png"
 
 
@@ -181,9 +183,7 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
             "raw_gate_passed": bool(admission["raw_gate_passed"]),
             "promotion_gate_passed": bool(admission["promotion_gate_passed"]),
             "claim_level_acceptable": bool(admission["claim_level_acceptable"]),
-            "admissible_for_calibration": bool(
-                admission["admissible_for_calibration"]
-            ),
+            "admissible_for_calibration": bool(admission["admissible_for_calibration"]),
             "negative_evidence": bool(admission["negative_evidence"]),
             "admission_blockers": list(admission["admission_blockers"]),
             "kind": str(data.get("kind", "")),
@@ -198,7 +198,7 @@ def build_gate_index(patterns: list[str]) -> dict[str, dict[str, Any]]:
 
 
 def _negative_evidence_rows(
-    gate_index: dict[str, dict[str, Any]]
+    gate_index: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
@@ -254,7 +254,11 @@ def audit_calibration_inputs(
             reason = "not required split"
             if required and gate is None:
                 reason = "no matching nonlinear validation/convergence gate"
-            elif required and gate is not None and bool(gate.get("negative_evidence", False)):
+            elif (
+                required
+                and gate is not None
+                and bool(gate.get("negative_evidence", False))
+            ):
                 reason = "matching nonlinear gate is negative evidence for calibration admission"
             elif required and gate is not None and not bool(gate["passed"]):
                 reason = "matching nonlinear gate is not passed"
@@ -277,7 +281,9 @@ def audit_calibration_inputs(
                 "passed": report_passed,
                 "n_points": len(point_rows),
                 "n_required": sum(1 for row in point_rows if row["required"]),
-                "n_required_passed": sum(1 for row in point_rows if row["required"] and row["passed"]),
+                "n_required_passed": sum(
+                    1 for row in point_rows if row["required"] and row["passed"]
+                ),
                 "points": point_rows,
             }
         )
@@ -287,7 +293,9 @@ def audit_calibration_inputs(
             "claim_level": "calibration_inputs_validated_by_passed_nonlinear_gates",
             "passed": all_passed,
             "required_splits": list(required_splits),
-            "gate_patterns": [str(pattern) for pattern in (gate_patterns or [DEFAULT_GATE_GLOB])],
+            "gate_patterns": [
+                str(pattern) for pattern in (gate_patterns or [DEFAULT_GATE_GLOB])
+            ],
             "n_gate_artifact_matches": len(gate_index),
             "n_negative_evidence": len(_negative_evidence_rows(gate_index)),
             "negative_evidence": _negative_evidence_rows(gate_index),
@@ -296,7 +304,9 @@ def audit_calibration_inputs(
     )
 
 
-def write_audit_plot(payload: dict[str, Any], out_png: str | Path = DEFAULT_PNG) -> None:
+def write_audit_plot(
+    payload: dict[str, Any], out_png: str | Path = DEFAULT_PNG
+) -> None:
     """Write a compact calibration-input audit plot."""
 
     rows = []
@@ -304,14 +314,25 @@ def write_audit_plot(payload: dict[str, Any], out_png: str | Path = DEFAULT_PNG)
     for report in payload["reports"]:
         for point in report["points"]:
             if point["required"]:
-                gate_case = "" if point["matched_gate"] is None else str(point["matched_gate"]["case"]).replace("_", " ")
-                key = (str(point["case"]), str(point["split"]), gate_case, bool(point["passed"]))
+                gate_case = (
+                    ""
+                    if point["matched_gate"] is None
+                    else str(point["matched_gate"]["case"]).replace("_", " ")
+                )
+                key = (
+                    str(point["case"]),
+                    str(point["split"]),
+                    gate_case,
+                    bool(point["passed"]),
+                )
                 if key in seen:
                     continue
                 seen.add(key)
                 rows.append(
                     {
-                        "report": Path(str(report["report"])).stem.replace("quasilinear_", "").replace("_report", ""),
+                        "report": Path(str(report["report"]))
+                        .stem.replace("quasilinear_", "")
+                        .replace("_report", ""),
                         "case": str(point["case"]).replace("_", " "),
                         "split": str(point["split"]),
                         "passed": bool(point["passed"]),
@@ -354,10 +375,15 @@ def write_audit(
 ) -> dict[str, str]:
     """Write a quasilinear calibration input audit artifact set."""
 
-    payload = audit_calibration_inputs(reports, gate_patterns=gate_patterns, required_splits=required_splits)
+    payload = audit_calibration_inputs(
+        reports, gate_patterns=gate_patterns, required_splits=required_splits
+    )
     json_path = Path(out_json)
     json_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     paths = {"json": str(json_path)}
     if not no_plot:
         write_audit_plot(payload, out_png)
@@ -372,8 +398,19 @@ def _parse_required_splits(raw: str) -> tuple[str, ...]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", action="append", required=True, help="Calibration report or point-list JSON.")
-    parser.add_argument("--gate-json", action="append", dest="gate_patterns", default=None, help="Gate JSON glob.")
+    parser.add_argument(
+        "--report",
+        action="append",
+        required=True,
+        help="Calibration report or point-list JSON.",
+    )
+    parser.add_argument(
+        "--gate-json",
+        action="append",
+        dest="gate_patterns",
+        default=None,
+        help="Gate JSON glob.",
+    )
     parser.add_argument("--required-splits", default="train,holdout")
     parser.add_argument("--out-json", default=str(DEFAULT_JSON))
     parser.add_argument("--out-png", default=str(DEFAULT_PNG))

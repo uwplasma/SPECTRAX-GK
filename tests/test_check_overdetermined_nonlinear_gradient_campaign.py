@@ -116,7 +116,7 @@ def _manifest(
                 "expected_fd_artifact": str(fd),
                 "vmec_run_commands": {"baseline": "vmec_jax input.baseline"},
                 "nonlinear_campaign_command_after_vmec_runs": (
-                    f"python tools/write_nonlinear_turbulence_gradient_campaign.py --out-dir {nested_manifest.parent}"
+                    f"python tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py --out-dir {nested_manifest.parent}"
                 ),
             }
         ],

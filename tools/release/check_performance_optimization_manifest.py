@@ -62,7 +62,9 @@ def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     return data
 
 
-def validate_manifest(data: dict[str, Any], *, check_artifacts: bool = True) -> dict[str, Any]:
+def validate_manifest(
+    data: dict[str, Any], *, check_artifacts: bool = True
+) -> dict[str, Any]:
     """Validate manifest content and return a compact summary."""
 
     metadata = data.get("metadata")
@@ -86,8 +88,14 @@ def validate_manifest(data: dict[str, Any], *, check_artifacts: bool = True) -> 
             raise ValueError(f"{name}: duplicate lane entry")
         seen.add(name)
 
-        strings = {field: _as_nonempty_string(entry.get(field), field, name) for field in REQUIRED_STRING_FIELDS}
-        lists = {field: _as_nonempty_list(entry.get(field), field, name) for field in REQUIRED_LIST_FIELDS}
+        strings = {
+            field: _as_nonempty_string(entry.get(field), field, name)
+            for field in REQUIRED_STRING_FIELDS
+        }
+        lists = {
+            field: _as_nonempty_list(entry.get(field), field, name)
+            for field in REQUIRED_LIST_FIELDS
+        }
         status = strings["status"]
         priority = strings["priority"]
         if status not in ALLOWED_STATUSES:
@@ -102,12 +110,16 @@ def validate_manifest(data: dict[str, Any], *, check_artifacts: bool = True) -> 
             try:
                 resolved.relative_to((REPO_ROOT / "tools").resolve())
             except ValueError as exc:
-                raise ValueError(f"{name}: profiling tool must live under tools/: {tool}") from exc
+                raise ValueError(
+                    f"{name}: profiling tool must live under tools/: {tool}"
+                ) from exc
 
         if check_artifacts:
             for artifact in lists["artifact_paths"]:
                 if not _repo_path(artifact).exists():
-                    raise ValueError(f"{name}: artifact path does not exist: {artifact}")
+                    raise ValueError(
+                        f"{name}: artifact path does not exist: {artifact}"
+                    )
 
         rows.append(
             {
@@ -153,7 +165,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    summary = validate_manifest(load_manifest(args.manifest), check_artifacts=not args.skip_artifact_check)
+    summary = validate_manifest(
+        load_manifest(args.manifest), check_artifacts=not args.skip_artifact_check
+    )
     payload = json.dumps(summary, indent=2, sort_keys=True) + "\n"
     if args.out_json is None:
         print(payload, end="")

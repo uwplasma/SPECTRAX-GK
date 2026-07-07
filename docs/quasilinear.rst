@@ -1598,7 +1598,7 @@ fitted growth because sampled effective ``k_perp^2`` is non-positive. This is
 candidate triage, not nonlinear transport validation.
 
 Nonlinear follow-up configs for these external VMEC candidates should be
-generated with ``tools/write_external_vmec_holdout_configs.py`` rather than by
+generated with ``tools/campaigns/write_external_vmec_holdout_configs.py`` rather than by
 hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs
 for a ``t = 150`` initial run and a ``t = 250`` restart continuation, plus a
 JSON manifest containing the launch commands and restart-copy commands. This

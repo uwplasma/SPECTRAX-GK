@@ -18,7 +18,9 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUT = REPO_ROOT / "docs" / "_static" / "vmec_boozer_differentiability_claim_guard.json"
+DEFAULT_OUT = (
+    REPO_ROOT / "docs" / "_static" / "vmec_boozer_differentiability_claim_guard.json"
+)
 
 DEFAULT_PARITY_MATRIX = "docs/_static/vmec_boozer_parity_matrix.json"
 DEFAULT_GRADIENT_MATRIX = "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
@@ -125,22 +127,28 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
     summary = _as_dict(parity.get("summary"))
     rows = _as_rows(parity.get("rows"))
     minimum_mode_count = parity.get("minimum_boozer_mode_count")
-    mode_floor_passed = isinstance(minimum_mode_count, (int, float)) and minimum_mode_count >= MINIMUM_BOOZER_MODE_COUNT
+    mode_floor_passed = (
+        isinstance(minimum_mode_count, (int, float))
+        and minimum_mode_count >= MINIMUM_BOOZER_MODE_COUNT
+    )
     row_mode_failures = [
         row.get("case_name", "<unknown>")
         for row in rows
-        if min(float(row.get("mboz", 0.0)), float(row.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT
+        if min(float(row.get("mboz", 0.0)), float(row.get("nboz", 0.0)))
+        < MINIMUM_BOOZER_MODE_COUNT
         or row.get("mode_floor_passed") is False
     ]
     direct_open_rows = [
         row.get("case_name", "<unknown>")
         for row in rows
-        if row.get("production_parity_passed") is False and row.get("status") == "diagnostic_open"
+        if row.get("production_parity_passed") is False
+        and row.get("status") == "diagnostic_open"
     ]
     hidden_direct_failures = [
         row.get("case_name", "<unknown>")
         for row in rows
-        if row.get("production_parity_passed") is False and row.get("status") != "diagnostic_open"
+        if row.get("production_parity_passed") is False
+        and row.get("status") != "diagnostic_open"
     ]
     passed_families = {
         str(row.get("family", "")).strip()
@@ -166,12 +174,20 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
         "mode_floor_passed": mode_floor_passed and not row_mode_failures,
         "n_cases": summary.get("n_cases", len(rows)),
         "n_equal_arc_passed": summary.get("n_equal_arc_passed"),
-        "direct_tensor_parity_open_rows": sorted(str(item) for item in direct_open_rows),
-        "direct_tensor_parity_hidden_failures": sorted(str(item) for item in hidden_direct_failures),
+        "direct_tensor_parity_open_rows": sorted(
+            str(item) for item in direct_open_rows
+        ),
+        "direct_tensor_parity_hidden_failures": sorted(
+            str(item) for item in hidden_direct_failures
+        ),
         "passed_families": sorted(passed_families),
         "required_families": sorted(REQUIRED_PARITY_ROW_FAMILIES),
-        "missing_required_families": sorted(REQUIRED_PARITY_ROW_FAMILIES - passed_families),
-        "finite_beta_pressure_equal_arc_rows": sorted(str(item) for item in finite_beta_pressure_rows),
+        "missing_required_families": sorted(
+            REQUIRED_PARITY_ROW_FAMILIES - passed_families
+        ),
+        "finite_beta_pressure_equal_arc_rows": sorted(
+            str(item) for item in finite_beta_pressure_rows
+        ),
         "claim_level": claim_level,
         "claim_scoped_not_full_transport_gradient": claim_scoped,
     }
@@ -193,7 +209,9 @@ def _parity_matrix_checks(parity: dict[str, Any]) -> tuple[dict[str, Any], list[
     return checks, blockers
 
 
-def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _gradient_matrix_checks(
+    gradient: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
     summary = _as_dict(gradient.get("summary"))
     rows = _as_rows(gradient.get("rows"))
     cases = {str(row.get("case_name")) for row in rows if row.get("case_name")}
@@ -206,7 +224,8 @@ def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], l
     mode_failures = [
         row.get("path") or row.get("case_name", "<unknown>")
         for row in rows
-        if min(float(row.get("mboz", 0.0)), float(row.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT
+        if min(float(row.get("mboz", 0.0)), float(row.get("nboz", 0.0)))
+        < MINIMUM_BOOZER_MODE_COUNT
     ]
     failed_rows = [
         row.get("path") or row.get("case_name", "<unknown>")
@@ -238,7 +257,9 @@ def _gradient_matrix_checks(gradient: dict[str, Any]) -> tuple[dict[str, Any], l
             failed_objectives[row_id] = failed
         threshold = MAX_REL_ERROR_BY_GATE_TYPE.get(gate_type)
         max_rel_error = _finite_float_or_none(row.get("max_rel_error"))
-        if threshold is not None and (max_rel_error is None or max_rel_error > threshold):
+        if threshold is not None and (
+            max_rel_error is None or max_rel_error > threshold
+        ):
             row_error_failures[row_id] = {
                 "max_rel_error": max_rel_error,
                 "threshold": threshold,
@@ -310,9 +331,10 @@ def _bridge_checks(bridge: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     status = str(direct.get("status", ""))
     production_parity_passed = direct.get("production_parity_passed")
     interpretation = str(direct.get("interpretation", ""))
-    direct_gap_scoped = (
-        production_parity_passed is True
-        or (production_parity_passed is False and status == "diagnostic_open" and bool(interpretation))
+    direct_gap_scoped = production_parity_passed is True or (
+        production_parity_passed is False
+        and status == "diagnostic_open"
+        and bool(interpretation)
     )
     equal_arc_keys = (
         "equal_arc_core_passed",
@@ -327,13 +349,19 @@ def _bridge_checks(bridge: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
         "direct_interpretation_present": bool(interpretation),
         "direct_tensor_gap_explicitly_scoped": direct_gap_scoped,
         "equal_arc_checks": equal_arc_checks,
-        "vmec_jax_boozer_available": _bool(_as_dict(bridge.get("vmec_jax_boozer_flux_tube")).get("available")),
-        "booz_xform_flux_tube_available": _bool(_as_dict(bridge.get("booz_xform_flux_tube")).get("available")),
+        "vmec_jax_boozer_available": _bool(
+            _as_dict(bridge.get("vmec_jax_boozer_flux_tube")).get("available")
+        ),
+        "booz_xform_flux_tube_available": _bool(
+            _as_dict(bridge.get("booz_xform_flux_tube")).get("available")
+        ),
     }
     blockers: list[str] = []
     if not direct_gap_scoped:
         blockers.append("direct_tensor_parity_gap_not_explicitly_scoped")
-    if equal_arc_checks and not all(value is True for value in equal_arc_checks.values()):
+    if equal_arc_checks and not all(
+        value is True for value in equal_arc_checks.values()
+    ):
         blockers.append("bridge_equal_arc_subcheck_failed")
     if not checks["vmec_jax_boozer_available"]:
         blockers.append("vmec_jax_boozer_bridge_unavailable")
@@ -346,8 +374,12 @@ def _nonlinear_fd_checks(audit: dict[str, Any]) -> tuple[dict[str, Any], list[st
     claim_level = str(audit.get("claim_level", ""))
     production_gate = _bool(audit.get("production_nonlinear_window_gradient_gate"))
     transport_average_gate = _bool(audit.get("transport_average_gate"))
-    production_path_gate = _bool(audit.get("vmec_boozer_production_nonlinear_observable_fd_path_gate"))
-    startup_gate = _bool(audit.get("vmec_boozer_startup_nonlinear_plumbing_fd_path_gate"))
+    production_path_gate = _bool(
+        audit.get("vmec_boozer_production_nonlinear_observable_fd_path_gate")
+    )
+    startup_gate = _bool(
+        audit.get("vmec_boozer_startup_nonlinear_plumbing_fd_path_gate")
+    )
     scoped_startup = "not_transport_average" in claim_level
     checks = {
         "passed": _bool(audit.get("passed")),
@@ -370,20 +402,32 @@ def _nonlinear_fd_checks(audit: dict[str, Any]) -> tuple[dict[str, Any], list[st
     return checks, blockers
 
 
-def _finite_beta_frequency_checks(gate: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _finite_beta_frequency_checks(
+    gate: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
     case_name = str(gate.get("case_name", ""))
     kind = str(gate.get("kind", ""))
     source_scope = str(gate.get("source_scope", ""))
     objectives = _as_dict(
-        {row.get("objective"): row.get("passed") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("passed")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     objective_rel_errors = _as_dict(
-        {row.get("objective"): row.get("rel_error") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("rel_error")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     required = REQUIRED_OBJECTIVES_BY_GATE_TYPE["frequency"]
     missing = sorted(required - set(objectives))
-    failed = sorted(objective for objective in required if objectives.get(objective) is not True)
-    max_rel_error = _finite_float_or_none(_as_dict(gate.get("eigenpair_gate")).get("max_rel_error"))
+    failed = sorted(
+        objective for objective in required if objectives.get(objective) is not True
+    )
+    max_rel_error = _finite_float_or_none(
+        _as_dict(gate.get("eigenpair_gate")).get("max_rel_error")
+    )
     threshold = MAX_REL_ERROR_BY_GATE_TYPE["frequency"]
     objective_error_failures = {
         objective: _finite_float_or_none(objective_rel_errors.get(objective))
@@ -399,10 +443,16 @@ def _finite_beta_frequency_checks(gate: dict[str, Any]) -> tuple[dict[str, Any],
         "mboz": gate.get("mboz"),
         "nboz": gate.get("nboz"),
         "surface_stencil_width": gate.get("surface_stencil_width"),
-        "linear_frequency_gradient_gate": _bool(gate.get("linear_frequency_gradient_gate")),
+        "linear_frequency_gradient_gate": _bool(
+            gate.get("linear_frequency_gradient_gate")
+        ),
         "linear_growth_gradient_gate": _bool(gate.get("linear_growth_gradient_gate")),
-        "quasilinear_weight_gradient_gate": _bool(gate.get("quasilinear_weight_gradient_gate")),
-        "nonlinear_window_gradient_gate": _bool(gate.get("nonlinear_window_gradient_gate")),
+        "quasilinear_weight_gradient_gate": _bool(
+            gate.get("quasilinear_weight_gradient_gate")
+        ),
+        "nonlinear_window_gradient_gate": _bool(
+            gate.get("nonlinear_window_gradient_gate")
+        ),
         "required_objectives": sorted(required),
         "missing_objectives": missing,
         "failed_objectives": failed,
@@ -419,7 +469,10 @@ def _finite_beta_frequency_checks(gate: dict[str, Any]) -> tuple[dict[str, Any],
         blockers.append("finite_beta_frequency_gate_wrong_kind")
     if source_scope != REQUIRED_SOURCE_SCOPE:
         blockers.append("finite_beta_frequency_gate_wrong_source_scope")
-    if min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT:
+    if (
+        min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0)))
+        < MINIMUM_BOOZER_MODE_COUNT
+    ):
         blockers.append("finite_beta_frequency_gate_mode_floor_failed")
     if missing:
         blockers.append("finite_beta_frequency_gate_missing_objective")
@@ -427,25 +480,40 @@ def _finite_beta_frequency_checks(gate: dict[str, Any]) -> tuple[dict[str, Any],
         blockers.append("finite_beta_frequency_gate_objective_failed")
     if max_rel_error is None or max_rel_error > threshold or objective_error_failures:
         blockers.append("finite_beta_frequency_gate_error_threshold_failed")
-    if checks["quasilinear_weight_gradient_gate"] or checks["nonlinear_window_gradient_gate"]:
+    if (
+        checks["quasilinear_weight_gradient_gate"]
+        or checks["nonlinear_window_gradient_gate"]
+    ):
         blockers.append("finite_beta_frequency_gate_attempts_transport_gradient_claim")
     return checks, blockers
 
 
-def _finite_beta_quasilinear_checks(gate: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _finite_beta_quasilinear_checks(
+    gate: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
     case_name = str(gate.get("case_name", ""))
     kind = str(gate.get("kind", ""))
     source_scope = str(gate.get("source_scope", ""))
     objectives = _as_dict(
-        {row.get("objective"): row.get("passed") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("passed")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     objective_rel_errors = _as_dict(
-        {row.get("objective"): row.get("rel_error") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("rel_error")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     required = REQUIRED_OBJECTIVES_BY_GATE_TYPE["quasilinear"]
     missing = sorted(required - set(objectives))
-    failed = sorted(objective for objective in required if objectives.get(objective) is not True)
-    max_rel_error = _finite_float_or_none(_as_dict(gate.get("eigenpair_gate")).get("max_rel_error"))
+    failed = sorted(
+        objective for objective in required if objectives.get(objective) is not True
+    )
+    max_rel_error = _finite_float_or_none(
+        _as_dict(gate.get("eigenpair_gate")).get("max_rel_error")
+    )
     threshold = MAX_REL_ERROR_BY_GATE_TYPE["quasilinear"]
     objective_error_failures = {
         objective: _finite_float_or_none(objective_rel_errors.get(objective))
@@ -461,10 +529,16 @@ def _finite_beta_quasilinear_checks(gate: dict[str, Any]) -> tuple[dict[str, Any
         "mboz": gate.get("mboz"),
         "nboz": gate.get("nboz"),
         "surface_stencil_width": gate.get("surface_stencil_width"),
-        "linear_frequency_gradient_gate": _bool(gate.get("linear_frequency_gradient_gate")),
+        "linear_frequency_gradient_gate": _bool(
+            gate.get("linear_frequency_gradient_gate")
+        ),
         "linear_growth_gradient_gate": _bool(gate.get("linear_growth_gradient_gate")),
-        "quasilinear_weight_gradient_gate": _bool(gate.get("quasilinear_weight_gradient_gate")),
-        "nonlinear_window_gradient_gate": _bool(gate.get("nonlinear_window_gradient_gate")),
+        "quasilinear_weight_gradient_gate": _bool(
+            gate.get("quasilinear_weight_gradient_gate")
+        ),
+        "nonlinear_window_gradient_gate": _bool(
+            gate.get("nonlinear_window_gradient_gate")
+        ),
         "required_objectives": sorted(required),
         "missing_objectives": missing,
         "failed_objectives": failed,
@@ -481,7 +555,10 @@ def _finite_beta_quasilinear_checks(gate: dict[str, Any]) -> tuple[dict[str, Any
         blockers.append("finite_beta_quasilinear_gate_wrong_kind")
     if source_scope != REQUIRED_SOURCE_SCOPE:
         blockers.append("finite_beta_quasilinear_gate_wrong_source_scope")
-    if min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT:
+    if (
+        min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0)))
+        < MINIMUM_BOOZER_MODE_COUNT
+    ):
         blockers.append("finite_beta_quasilinear_gate_mode_floor_failed")
     if missing:
         blockers.append("finite_beta_quasilinear_gate_missing_objective")
@@ -490,24 +567,38 @@ def _finite_beta_quasilinear_checks(gate: dict[str, Any]) -> tuple[dict[str, Any
     if max_rel_error is None or max_rel_error > threshold or objective_error_failures:
         blockers.append("finite_beta_quasilinear_gate_error_threshold_failed")
     if checks["nonlinear_window_gradient_gate"]:
-        blockers.append("finite_beta_quasilinear_gate_attempts_nonlinear_gradient_claim")
+        blockers.append(
+            "finite_beta_quasilinear_gate_attempts_nonlinear_gradient_claim"
+        )
     return checks, blockers
 
 
-def _finite_beta_nonlinear_window_checks(gate: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _finite_beta_nonlinear_window_checks(
+    gate: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
     case_name = str(gate.get("case_name", ""))
     kind = str(gate.get("kind", ""))
     source_scope = str(gate.get("source_scope", ""))
     objectives = _as_dict(
-        {row.get("objective"): row.get("passed") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("passed")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     objective_rel_errors = _as_dict(
-        {row.get("objective"): row.get("rel_error") for row in _as_rows(gate.get("objective_gates"))}
+        {
+            row.get("objective"): row.get("rel_error")
+            for row in _as_rows(gate.get("objective_gates"))
+        }
     )
     required = REQUIRED_OBJECTIVES_BY_GATE_TYPE["nonlinear-window estimator"]
     missing = sorted(required - set(objectives))
-    failed = sorted(objective for objective in required if objectives.get(objective) is not True)
-    max_rel_error = _finite_float_or_none(_as_dict(gate.get("eigenpair_gate")).get("max_rel_error"))
+    failed = sorted(
+        objective for objective in required if objectives.get(objective) is not True
+    )
+    max_rel_error = _finite_float_or_none(
+        _as_dict(gate.get("eigenpair_gate")).get("max_rel_error")
+    )
     threshold = MAX_REL_ERROR_BY_GATE_TYPE["nonlinear-window estimator"]
     objective_error_failures = {
         objective: _finite_float_or_none(objective_rel_errors.get(objective))
@@ -523,10 +614,16 @@ def _finite_beta_nonlinear_window_checks(gate: dict[str, Any]) -> tuple[dict[str
         "mboz": gate.get("mboz"),
         "nboz": gate.get("nboz"),
         "surface_stencil_width": gate.get("surface_stencil_width"),
-        "linear_frequency_gradient_gate": _bool(gate.get("linear_frequency_gradient_gate")),
+        "linear_frequency_gradient_gate": _bool(
+            gate.get("linear_frequency_gradient_gate")
+        ),
         "linear_growth_gradient_gate": _bool(gate.get("linear_growth_gradient_gate")),
-        "quasilinear_weight_gradient_gate": _bool(gate.get("quasilinear_weight_gradient_gate")),
-        "nonlinear_window_gradient_gate": _bool(gate.get("nonlinear_window_gradient_gate")),
+        "quasilinear_weight_gradient_gate": _bool(
+            gate.get("quasilinear_weight_gradient_gate")
+        ),
+        "nonlinear_window_gradient_gate": _bool(
+            gate.get("nonlinear_window_gradient_gate")
+        ),
         "production_nonlinear_window_gradient_gate": _bool(
             gate.get("production_nonlinear_window_gradient_gate")
         ),
@@ -546,7 +643,10 @@ def _finite_beta_nonlinear_window_checks(gate: dict[str, Any]) -> tuple[dict[str
         blockers.append("finite_beta_nonlinear_window_gate_wrong_kind")
     if source_scope != REQUIRED_SOURCE_SCOPE:
         blockers.append("finite_beta_nonlinear_window_gate_wrong_source_scope")
-    if min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0))) < MINIMUM_BOOZER_MODE_COUNT:
+    if (
+        min(float(gate.get("mboz", 0.0)), float(gate.get("nboz", 0.0)))
+        < MINIMUM_BOOZER_MODE_COUNT
+    ):
         blockers.append("finite_beta_nonlinear_window_gate_mode_floor_failed")
     if missing:
         blockers.append("finite_beta_nonlinear_window_gate_missing_objective")
@@ -555,7 +655,9 @@ def _finite_beta_nonlinear_window_checks(gate: dict[str, Any]) -> tuple[dict[str
     if max_rel_error is None or max_rel_error > threshold or objective_error_failures:
         blockers.append("finite_beta_nonlinear_window_gate_error_threshold_failed")
     if checks["production_nonlinear_window_gradient_gate"]:
-        blockers.append("finite_beta_nonlinear_window_gate_attempts_production_transport_claim")
+        blockers.append(
+            "finite_beta_nonlinear_window_gate_attempts_production_transport_claim"
+        )
     return checks, blockers
 
 
@@ -594,7 +696,9 @@ def build_vmec_boozer_differentiability_claim_guard(
 
     try:
         gradient = _read_json(root, gradient_matrix_path)
-        checks["gradient_holdout_matrix"], gradient_blockers = _gradient_matrix_checks(gradient)
+        checks["gradient_holdout_matrix"], gradient_blockers = _gradient_matrix_checks(
+            gradient
+        )
         blockers.extend(gradient_blockers)
     except ValueError as exc:
         checks["gradient_holdout_matrix"] = {"error": str(exc)}
@@ -602,7 +706,9 @@ def build_vmec_boozer_differentiability_claim_guard(
 
     try:
         bridge = _read_json(root, bridge_path)
-        checks["differentiable_geometry_bridge"], bridge_blockers = _bridge_checks(bridge)
+        checks["differentiable_geometry_bridge"], bridge_blockers = _bridge_checks(
+            bridge
+        )
         blockers.extend(bridge_blockers)
     except ValueError as exc:
         checks["differentiable_geometry_bridge"] = {"error": str(exc)}
@@ -610,7 +716,9 @@ def build_vmec_boozer_differentiability_claim_guard(
 
     try:
         nonlinear_fd = _read_json(root, nonlinear_fd_audit_path)
-        checks["nonlinear_fd_audit"], nonlinear_fd_blockers = _nonlinear_fd_checks(nonlinear_fd)
+        checks["nonlinear_fd_audit"], nonlinear_fd_blockers = _nonlinear_fd_checks(
+            nonlinear_fd
+        )
         blockers.extend(nonlinear_fd_blockers)
     except ValueError as exc:
         checks["nonlinear_fd_audit"] = {"error": str(exc)}
@@ -618,8 +726,8 @@ def build_vmec_boozer_differentiability_claim_guard(
 
     try:
         finite_beta_frequency = _read_json(root, finite_beta_frequency_gate_path)
-        checks["finite_beta_frequency_gate"], finite_beta_blockers = _finite_beta_frequency_checks(
-            finite_beta_frequency
+        checks["finite_beta_frequency_gate"], finite_beta_blockers = (
+            _finite_beta_frequency_checks(finite_beta_frequency)
         )
         blockers.extend(finite_beta_blockers)
     except ValueError as exc:
@@ -628,8 +736,8 @@ def build_vmec_boozer_differentiability_claim_guard(
 
     try:
         finite_beta_quasilinear = _read_json(root, finite_beta_quasilinear_gate_path)
-        checks["finite_beta_quasilinear_gate"], finite_beta_ql_blockers = _finite_beta_quasilinear_checks(
-            finite_beta_quasilinear
+        checks["finite_beta_quasilinear_gate"], finite_beta_ql_blockers = (
+            _finite_beta_quasilinear_checks(finite_beta_quasilinear)
         )
         blockers.extend(finite_beta_ql_blockers)
     except ValueError as exc:
@@ -637,7 +745,9 @@ def build_vmec_boozer_differentiability_claim_guard(
         blockers.append("finite_beta_quasilinear_gate_unreadable")
 
     try:
-        finite_beta_nonlinear_window = _read_json(root, finite_beta_nonlinear_window_gate_path)
+        finite_beta_nonlinear_window = _read_json(
+            root, finite_beta_nonlinear_window_gate_path
+        )
         (
             checks["finite_beta_nonlinear_window_gate"],
             finite_beta_nl_blockers,
@@ -680,8 +790,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--gradient-matrix", default=DEFAULT_GRADIENT_MATRIX)
     parser.add_argument("--bridge", default=DEFAULT_BRIDGE)
     parser.add_argument("--nonlinear-fd-audit", default=DEFAULT_NONLINEAR_FD_AUDIT)
-    parser.add_argument("--finite-beta-frequency-gate", default=DEFAULT_FINITE_BETA_FREQUENCY_GATE)
-    parser.add_argument("--finite-beta-quasilinear-gate", default=DEFAULT_FINITE_BETA_QUASILINEAR_GATE)
+    parser.add_argument(
+        "--finite-beta-frequency-gate", default=DEFAULT_FINITE_BETA_FREQUENCY_GATE
+    )
+    parser.add_argument(
+        "--finite-beta-quasilinear-gate", default=DEFAULT_FINITE_BETA_QUASILINEAR_GATE
+    )
     parser.add_argument(
         "--finite-beta-nonlinear-window-gate",
         default=DEFAULT_FINITE_BETA_NONLINEAR_WINDOW_GATE,
@@ -710,7 +824,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
         out_json.parent.mkdir(parents=True, exist_ok=True)
-        out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        out_json.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         print(f"Wrote {_path_rel(root, out_json)}")
     if not report["passed"]:
         print(json.dumps(report, indent=2, sort_keys=True))

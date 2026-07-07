@@ -40,7 +40,9 @@ def _directory_size(path: Path) -> int:
 
 
 def _tracked_paths(root: Path) -> list[Path]:
-    proc = subprocess.run(["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True)
+    proc = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True
+    )
     raw = proc.stdout.split(b"\0")
     return [Path(item.decode()) for item in raw if item]
 
@@ -56,7 +58,9 @@ def _category(path: Path) -> str:
     return parts[0]
 
 
-def build_repository_size_report(root: str | Path = ROOT, *, top_n: int = 30) -> dict[str, Any]:
+def build_repository_size_report(
+    root: str | Path = ROOT, *, top_n: int = 30
+) -> dict[str, Any]:
     """Return a JSON-ready size report for tracked files and local artifact roots."""
 
     root_path = Path(root).resolve()
@@ -75,14 +79,18 @@ def build_repository_size_report(root: str | Path = ROOT, *, top_n: int = 30) ->
     local_roots = []
     for rel in LOCAL_ARTIFACT_ROOTS:
         path = root_path / rel
-        local_roots.append({"path": rel, "bytes": int(_directory_size(path)), "exists": path.exists()})
+        local_roots.append(
+            {"path": rel, "bytes": int(_directory_size(path)), "exists": path.exists()}
+        )
 
     return {
         "kind": "repository_size_audit",
         "root": str(root_path),
         "tracked_total_bytes": int(sum(int(row["bytes"]) for row in rows)),
         "tracked_file_count": len(rows),
-        "tracked_by_category": dict(sorted(by_category.items(), key=lambda item: item[1], reverse=True)),
+        "tracked_by_category": dict(
+            sorted(by_category.items(), key=lambda item: item[1], reverse=True)
+        ),
         "largest_tracked_files": rows[:top_n],
         "local_artifact_roots": local_roots,
         "notes": (
@@ -96,7 +104,9 @@ def build_repository_size_report(root: str | Path = ROOT, *, top_n: int = 30) ->
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(ROOT), help="Repository root to audit.")
-    parser.add_argument("--top", type=int, default=30, help="Number of tracked files to list.")
+    parser.add_argument(
+        "--top", type=int, default=30, help="Number of tracked files to list."
+    )
     parser.add_argument("--json-out", help="Optional JSON output path.")
     return parser
 

@@ -38,7 +38,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
+from tools.campaigns.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
     CoefficientSpec,
     _coefficient_value,
     _parse_coefficient_spec,
@@ -186,7 +186,7 @@ def _run_reduced_metric(
     out_json = metric_dir / str(row["label"]) / f"{kind}.json"
     cmd = [
         sys.executable,
-        str(ROOT / "tools/evaluate_vmec_jax_spectrax_transport_metric.py"),
+        str(ROOT / "tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py"),
         "--input",
         str(row["input_path"]),
         "--out-json",
@@ -284,7 +284,7 @@ def _run_reduced_metric_batch(
     out_json = out_dir / "batch.json"
     cmd = [
         sys.executable,
-        str(ROOT / "tools/evaluate_vmec_jax_spectrax_transport_metric.py"),
+        str(ROOT / "tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py"),
         "--input",
         str(row["input_path"]),
         "--out-json",
@@ -744,7 +744,7 @@ def _nonlinear_launch_manifest(
                 "vmec_command": f"cd {_repo_relative(input_path.parent)} && vmec_jax {input_path.name}",
                 "expected_wout": _repo_relative(expected_wout),
                 "write_nonlinear_configs_command": (
-                    "python tools/write_optimized_equilibrium_transport_configs.py "
+                    "python tools/campaigns/write_optimized_equilibrium_transport_configs.py "
                     f"--vmec-file {_repo_relative(expected_wout)} "
                     f"--case {point} "
                     f"--out-dir {_repo_relative(config_dir)} "

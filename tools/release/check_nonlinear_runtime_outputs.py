@@ -22,12 +22,21 @@ DEFAULT_HEAT_FLUX_VARIABLE = "Diagnostics/HeatFlux_st"
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("outputs", nargs="+", type=Path, help="Nonlinear runtime .out.nc files")
+    parser.add_argument(
+        "outputs", nargs="+", type=Path, help="Nonlinear runtime .out.nc files"
+    )
     parser.add_argument("--json-out", type=Path, help="Optional JSON report path")
     parser.add_argument("--heat-flux-variable", default=DEFAULT_HEAT_FLUX_VARIABLE)
     parser.add_argument("--min-samples", type=int, default=2)
-    parser.add_argument("--tmin", type=float, default=None, help="Optional required analysis-window start")
-    parser.add_argument("--tmax", type=float, default=None, help="Optional required analysis-window end")
+    parser.add_argument(
+        "--tmin",
+        type=float,
+        default=None,
+        help="Optional required analysis-window start",
+    )
+    parser.add_argument(
+        "--tmax", type=float, default=None, help="Optional required analysis-window end"
+    )
     parser.add_argument(
         "--tmax-atol",
         type=float,
@@ -55,7 +64,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def _netcdf_variable(root: Any, variable_path: str) -> np.ndarray:
@@ -71,7 +82,9 @@ def _netcdf_variable(root: Any, variable_path: str) -> np.ndarray:
     return np.asarray(group.variables[name][:], dtype=float)
 
 
-def _window_mask(time: np.ndarray, *, tmin: float | None, tmax: float | None) -> np.ndarray:
+def _window_mask(
+    time: np.ndarray, *, tmin: float | None, tmax: float | None
+) -> np.ndarray:
     mask = np.isfinite(time)
     if tmin is not None:
         mask &= time >= float(tmin)
@@ -157,8 +170,7 @@ def validate_output(
         row["heat_flux_last"] = float(heat_total[-1]) if heat_total.size else None
 
     if tmax is not None and (
-        not time.size
-        or float(np.nanmax(time)) + float(row["tmax_atol"]) < float(tmax)
+        not time.size or float(np.nanmax(time)) + float(row["tmax_atol"]) < float(tmax)
     ):
         failures.append("does_not_reach_required_tmax")
 
@@ -169,7 +181,9 @@ def validate_output(
             else int(min_samples)
         )
         mask = _window_mask(time, tmin=tmin, tmax=tmax)
-        window_heat = heat_total[mask] if heat_total.size else np.asarray([], dtype=float)
+        window_heat = (
+            heat_total[mask] if heat_total.size else np.asarray([], dtype=float)
+        )
         row["window"] = {
             "tmin": None if tmin is None else float(tmin),
             "tmax": None if tmax is None else float(tmax),

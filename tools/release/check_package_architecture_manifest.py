@@ -81,7 +81,9 @@ def _root_module_path(module: str, source_root: Path) -> Path:
         raise ValueError(f"root-prefix module must start with spectraxgk.: {module}")
     remainder = module.removeprefix("spectraxgk.")
     if "." in remainder:
-        raise ValueError(f"root-prefix allowlist entries must be root modules: {module}")
+        raise ValueError(
+            f"root-prefix allowlist entries must be root modules: {module}"
+        )
     return source_root / f"{remainder}.py"
 
 
@@ -113,9 +115,7 @@ def _validate_topology_policy(
         raise ValueError("topology_policy must be a TOML table")
     mode = _as_nonempty_string(topology.get("mode"), "topology_policy.mode")
     if mode != "no_regression_until_target":
-        raise ValueError(
-            "topology_policy.mode must be 'no_regression_until_target'"
-        )
+        raise ValueError("topology_policy.mode must be 'no_regression_until_target'")
     _as_nonempty_string(
         topology.get("description"),
         "topology_policy.description",
@@ -226,7 +226,9 @@ def validate_architecture_policy(
         for module in allowed_modules:
             path = _root_module_path(module, source_root)
             if not path.is_file():
-                raise ValueError(f"allowed root-prefix module source does not exist: {module}")
+                raise ValueError(
+                    f"allowed root-prefix module source does not exist: {module}"
+                )
 
     package_policy = data.get("package_policy")
     if not isinstance(package_policy, dict):
@@ -243,7 +245,9 @@ def validate_architecture_policy(
         for package in required_packages:
             path = _package_path(package, source_root)
             if not path.is_file():
-                raise ValueError(f"required domain package is missing __init__.py: {package}")
+                raise ValueError(
+                    f"required domain package is missing __init__.py: {package}"
+                )
         for doc in required_docs:
             path = _repo_path(doc)
             if not path.is_file():

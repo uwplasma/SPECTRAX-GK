@@ -9,7 +9,12 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "postprocess_overdetermined_nonlinear_gradient_campaign.py"
+SCRIPT = (
+    ROOT
+    / "tools"
+    / "campaigns"
+    / "postprocess_overdetermined_nonlinear_gradient_campaign.py"
+)
 
 
 def _load_module():
@@ -43,7 +48,7 @@ def _manifest(tmp_path: Path) -> Path:
                 ],
                 "promotion_contract": {
                     "candidate_ranking_command": (
-                        "python3 tools/rank_nonlinear_turbulence_gradient_candidates.py "
+                        "python3 tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py "
                         "docs/_static/a.json docs/_static/b.json --json-out docs/_static/rank.json"
                     )
                 },
@@ -85,7 +90,19 @@ def test_dry_run_writes_summary(tmp_path: Path) -> None:
     summary = tmp_path / "summary.json"
     status = tmp_path / "status.json"
 
-    assert module.main([str(manifest_path), "--status-json", str(status), "--summary-json", str(summary), "--dry-run"]) == 0
+    assert (
+        module.main(
+            [
+                str(manifest_path),
+                "--status-json",
+                str(status),
+                "--summary-json",
+                str(summary),
+                "--dry-run",
+            ]
+        )
+        == 0
+    )
 
     payload = json.loads(summary.read_text(encoding="utf-8"))
     assert payload["kind"] == "overdetermined_nonlinear_gradient_postprocess_summary"
@@ -98,7 +115,10 @@ def test_dry_run_writes_summary(tmp_path: Path) -> None:
 def test_wrong_manifest_kind_rejected(tmp_path: Path) -> None:
     module = _load_module()
     path = tmp_path / "bad.json"
-    path.write_text(json.dumps({"kind": "wrong", "controls": [], "promotion_contract": {}}), encoding="utf-8")
+    path.write_text(
+        json.dumps({"kind": "wrong", "controls": [], "promotion_contract": {}}),
+        encoding="utf-8",
+    )
 
     with pytest.raises(ValueError, match="expected kind"):
         module.load_manifest(path)

@@ -105,7 +105,9 @@ def main(argv: list[str] | None = None) -> int:
             analysis_tmax=args.analysis_tmax,
             minimum_tmax=args.minimum_tmax,
             minimum_grid=args.minimum_grid,
-            replicate_labels=tuple(args.replicate_label or ["seed31", "seed32", "dt0p04"]),
+            replicate_labels=tuple(
+                args.replicate_label or ["seed31", "seed32", "dt0p04"]
+            ),
         ),
     )
     text = json.dumps(report, indent=2, sort_keys=True)

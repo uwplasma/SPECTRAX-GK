@@ -87,15 +87,21 @@ def _matrix_row(
             "blockers": ["missing matrix report"],
         }
     payload = _load_json(path)
-    summary = payload.get("summary") if isinstance(payload.get("summary"), Mapping) else {}
+    summary = (
+        payload.get("summary") if isinstance(payload.get("summary"), Mapping) else {}
+    )
     total_samples = int(_finite_float(summary.get("total_samples")) or 0)
     completed_samples = int(_finite_float(summary.get("completed_samples")) or 0)
     passed_samples = int(_finite_float(summary.get("passed_samples")) or 0)
     pass_fraction = _finite_float(summary.get("pass_fraction"))
     mean_reduction = _finite_float(summary.get("mean_relative_reduction"))
-    surfaces = summary.get("surfaces") if isinstance(summary.get("surfaces"), list) else []
+    surfaces = (
+        summary.get("surfaces") if isinstance(summary.get("surfaces"), list) else []
+    )
     alphas = summary.get("alphas") if isinstance(summary.get("alphas"), list) else []
-    ky_values = summary.get("ky_values") if isinstance(summary.get("ky_values"), list) else []
+    ky_values = (
+        summary.get("ky_values") if isinstance(summary.get("ky_values"), list) else []
+    )
     blockers: list[str] = []
     if payload.get("kind") != "matched_nonlinear_transport_matrix_report":
         blockers.append("not a matched nonlinear transport matrix report")
@@ -104,7 +110,9 @@ def _matrix_row(
     if total_samples < int(min_total_samples):
         blockers.append(f"total_samples {total_samples} < {int(min_total_samples)}")
     if completed_samples < total_samples:
-        blockers.append(f"completed_samples {completed_samples} < total_samples {total_samples}")
+        blockers.append(
+            f"completed_samples {completed_samples} < total_samples {total_samples}"
+        )
     if len(set(surfaces)) < int(min_surfaces):
         blockers.append(f"surfaces {len(set(surfaces))} < {int(min_surfaces)}")
     if len(set(alphas)) < int(min_alphas):
@@ -147,8 +155,16 @@ def _excluded_row(label: str, path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"label": label, "path": _repo_relative(path), "exists": False}
     payload = _load_json(path)
-    stats = payload.get("statistics") if isinstance(payload.get("statistics"), Mapping) else {}
-    comparison = payload.get("comparison") if isinstance(payload.get("comparison"), Mapping) else {}
+    stats = (
+        payload.get("statistics")
+        if isinstance(payload.get("statistics"), Mapping)
+        else {}
+    )
+    comparison = (
+        payload.get("comparison")
+        if isinstance(payload.get("comparison"), Mapping)
+        else {}
+    )
     return {
         "label": label,
         "path": _repo_relative(path),
@@ -215,7 +231,8 @@ def build_report(
         },
         "matrix_reports": rows,
         "excluded_comparisons": [
-            _excluded_row(label, path) for label, path in sorted(excluded_comparisons.items())
+            _excluded_row(label, path)
+            for label, path in sorted(excluded_comparisons.items())
         ],
         "blockers": blockers,
         "notes": [
@@ -240,7 +257,9 @@ def _write_figure(report: Mapping[str, Any], path: Path) -> None:
         for row in rows
     ]
     if rows:
-        ax.bar(range(len(rows)), reductions, color=colors, edgecolor="0.2", linewidth=0.6)
+        ax.bar(
+            range(len(rows)), reductions, color=colors, edgecolor="0.2", linewidth=0.6
+        )
         ax.set_xticks(range(len(rows)), labels, rotation=25, ha="right")
         ax.set_ylabel("mean heat-flux reduction across matrix (%)")
         ax.axhline(0.0, color="0.2", linewidth=0.8)
@@ -298,7 +317,9 @@ def main(argv: list[str] | None = None) -> int:
         min_mean_relative_reduction=float(args.min_mean_relative_reduction),
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out_json.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     if args.out_figure is not None:
         _write_figure(report, args.out_figure)
     print(

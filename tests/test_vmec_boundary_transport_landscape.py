@@ -18,7 +18,7 @@ from tools.artifacts.build_vmec_boundary_transport_landscape import (
     build_parser,
 )
 from tools.patch_vmec_jax_wout_metadata import patch_wout
-from tools.write_vmec_boundary_perturbation_inputs import _parse_coefficient_spec
+from tools.campaigns.write_vmec_boundary_perturbation_inputs import _parse_coefficient_spec
 
 
 def _coefficient_value(text: str, name: str) -> float:

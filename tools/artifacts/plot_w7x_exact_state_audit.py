@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plot the W7-X nonlinear exact-state convention audit against GX.
 
-The audit consumes the output of ``tools/run_exact_state_audit.py`` for the
+The audit consumes the output of ``tools/campaigns/run_exact_state_audit.py`` for the
 ``w7x_vmec`` lane. It is intentionally a no-rerun plotting/reporting step: the
 state dumps already contain the GX startup and late diagnostic states, and this
 script turns their scalar/array agreement into a tracked publication artifact.

@@ -60,7 +60,9 @@ def _expected_nested_manifest(control: dict[str, Any]) -> Path | None:
     explicit = control.get("expected_nonlinear_campaign_manifest")
     if explicit:
         return _resolve_repo_path(str(explicit))
-    out_dir = _extract_out_dir_from_command(str(control.get("nonlinear_campaign_command_after_vmec_runs", "")))
+    out_dir = _extract_out_dir_from_command(
+        str(control.get("nonlinear_campaign_command_after_vmec_runs", ""))
+    )
     return None if out_dir is None else out_dir / "gradient_campaign_manifest.json"
 
 
@@ -133,16 +135,24 @@ def _runtime_completion_tolerance(required_tmax: float | None) -> float:
     return max(0.5, abs(float(required_tmax)) * 1.0e-4)
 
 
-def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) -> dict[str, Any]:
+def _runtime_output_status(
+    paths: list[Path], *, required_tmax: float | None
+) -> dict[str, Any]:
     tolerance = _runtime_completion_tolerance(required_tmax)
     rows: list[dict[str, Any]] = []
     for path in paths:
         exists = path.exists()
         size_bytes = int(path.stat().st_size) if exists else 0
-        time_max = _read_runtime_time_max(path) if exists and size_bytes > 0 and required_tmax is not None else None
+        time_max = (
+            _read_runtime_time_max(path)
+            if exists and size_bytes > 0 and required_tmax is not None
+            else None
+        )
         complete = bool(exists and size_bytes > 0)
         if complete and required_tmax is not None:
-            complete = bool(time_max is not None and time_max >= required_tmax - tolerance)
+            complete = bool(
+                time_max is not None and time_max >= required_tmax - tolerance
+            )
         rows.append(
             {
                 "path": _repo_path(path),
@@ -153,7 +163,11 @@ def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) ->
             }
         )
     missing = [row for row in rows if not row["exists"] or int(row["size_bytes"]) <= 0]
-    incomplete = [row for row in rows if row["exists"] and int(row["size_bytes"]) > 0 and not row["complete"]]
+    incomplete = [
+        row
+        for row in rows
+        if row["exists"] and int(row["size_bytes"]) > 0 and not row["complete"]
+    ]
     return {
         "expected_count": len(rows),
         "complete_count": sum(1 for row in rows if row["complete"]),
@@ -184,7 +198,8 @@ def _state_file_status(paths: dict[str, Any] | None) -> dict[str, Any]:
             "size_bytes": int(path.stat().st_size) if path.exists() else 0,
         }
     return {
-        "passed": bool(rows) and all(row["exists"] and row["size_bytes"] > 0 for row in rows.values()),
+        "passed": bool(rows)
+        and all(row["exists"] and row["size_bytes"] > 0 for row in rows.values()),
         "rows": rows,
     }
 
@@ -192,12 +207,19 @@ def _state_file_status(paths: dict[str, Any] | None) -> dict[str, Any]:
 def _fd_status(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
     if payload is None:
-        return {"path": _repo_path(path), "exists": False, "passed": False, "blockers": ["missing_fd_artifact"]}
+        return {
+            "path": _repo_path(path),
+            "exists": False,
+            "passed": False,
+            "blockers": ["missing_fd_artifact"],
+        }
     return {
         "path": _repo_path(path),
         "exists": True,
         "passed": bool(payload.get("passed", False)),
-        "blockers": list(payload.get("blockers", [])) if isinstance(payload.get("blockers", []), list) else [],
+        "blockers": list(payload.get("blockers", []))
+        if isinstance(payload.get("blockers", []), list)
+        else [],
         "metrics": payload.get("metrics", {}),
     }
 
@@ -220,19 +242,35 @@ def _ranking_status(path: Path) -> dict[str, Any]:
     }
 
 
-def _control_status(control: dict[str, Any], *, required_tmax: float | None) -> dict[str, Any]:
+def _control_status(
+    control: dict[str, Any], *, required_tmax: float | None
+) -> dict[str, Any]:
     slug = str(control.get("coefficient_slug", "unknown"))
-    vmec_inputs = _state_file_status(control.get("state_input_files") if isinstance(control.get("state_input_files"), dict) else {})
-    vmec_wouts = _state_file_status(control.get("expected_wout_files") if isinstance(control.get("expected_wout_files"), dict) else {})
+    vmec_inputs = _state_file_status(
+        control.get("state_input_files")
+        if isinstance(control.get("state_input_files"), dict)
+        else {}
+    )
+    vmec_wouts = _state_file_status(
+        control.get("expected_wout_files")
+        if isinstance(control.get("expected_wout_files"), dict)
+        else {}
+    )
     nested_manifest_path = _expected_nested_manifest(control)
-    nested_manifest = _load_json(nested_manifest_path) if nested_manifest_path is not None else None
+    nested_manifest = (
+        _load_json(nested_manifest_path) if nested_manifest_path is not None else None
+    )
     runtime_outputs = _expected_runtime_outputs(nested_manifest)
-    runtime_status = _runtime_output_status(runtime_outputs, required_tmax=required_tmax)
+    runtime_status = _runtime_output_status(
+        runtime_outputs, required_tmax=required_tmax
+    )
     fd_artifact = _resolve_repo_path(str(control.get("expected_fd_artifact", "")))
     fd = _fd_status(fd_artifact)
     nonlinear_manifest_exists = nested_manifest is not None
     ready_for_runtime = bool(vmec_wouts["passed"] and nonlinear_manifest_exists)
-    runtime_outputs_complete = bool(runtime_outputs) and runtime_status["complete_count"] == len(runtime_outputs)
+    runtime_outputs_complete = bool(runtime_outputs) and runtime_status[
+        "complete_count"
+    ] == len(runtime_outputs)
     passed = bool(ready_for_runtime and runtime_outputs_complete and fd["passed"])
     blockers: list[str] = []
     if not vmec_inputs["passed"]:
@@ -266,14 +304,21 @@ def _control_status(control: dict[str, Any], *, required_tmax: float | None) -> 
         "runtime_output_status": runtime_status,
         "central_fd_status": fd,
         "vmec_run_commands": control.get("vmec_run_commands", {}),
-        "write_nonlinear_campaign_command": control.get("nonlinear_campaign_command_after_vmec_runs", ""),
+        "write_nonlinear_campaign_command": control.get(
+            "nonlinear_campaign_command_after_vmec_runs", ""
+        ),
     }
 
 
-def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_path: Path | None = None) -> dict[str, Any]:
+def overdetermined_campaign_status_report(
+    manifest: dict[str, Any], *, manifest_path: Path | None = None
+) -> dict[str, Any]:
     """Return a fail-closed status report for an overdetermined campaign."""
 
-    if manifest.get("kind") != "overdetermined_nonlinear_turbulence_gradient_campaign_manifest":
+    if (
+        manifest.get("kind")
+        != "overdetermined_nonlinear_turbulence_gradient_campaign_manifest"
+    ):
         raise ValueError(
             "expected kind='overdetermined_nonlinear_turbulence_gradient_campaign_manifest', "
             f"got {manifest.get('kind')!r}"
@@ -286,7 +331,9 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
         raise ValueError("all controls must be JSON objects")
 
     required_tmax = _required_runtime_tmax(manifest)
-    control_rows = [_control_status(control, required_tmax=required_tmax) for control in controls]
+    control_rows = [
+        _control_status(control, required_tmax=required_tmax) for control in controls
+    ]
     contract = manifest.get("promotion_contract")
     contract_map = contract if isinstance(contract, dict) else {}
     ranking_json = contract_map.get("candidate_ranking_json")
@@ -301,8 +348,12 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
         }
     )
     ready_controls = [row for row in control_rows if bool(row["ready_for_runtime"])]
-    completed_controls = [row for row in control_rows if bool(row["runtime_outputs_complete"])]
-    promoted_controls = [row for row in control_rows if bool(row["central_fd_status"]["passed"])]
+    completed_controls = [
+        row for row in control_rows if bool(row["runtime_outputs_complete"])
+    ]
+    promoted_controls = [
+        row for row in control_rows if bool(row["central_fd_status"]["passed"])
+    ]
     passed = bool(
         len(promoted_controls) >= 1
         and all(bool(row["passed"]) for row in control_rows)
@@ -316,11 +367,23 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
         and not row["nested_nonlinear_campaign_manifest"]["exists"]
         for row in control_rows
     ):
-        next_actions.append("run nonlinear_campaign_command_after_vmec_runs for each VMEC-complete control")
-    if any(row["ready_for_runtime"] and not row["runtime_outputs_complete"] for row in control_rows):
-        next_actions.append("run direct full-horizon nonlinear tasks for each nested campaign manifest")
-    if all(row["runtime_outputs_complete"] for row in control_rows) and not promoted_controls:
-        all_fd_artifacts_exist = all(bool(row["central_fd_status"]["exists"]) for row in control_rows)
+        next_actions.append(
+            "run nonlinear_campaign_command_after_vmec_runs for each VMEC-complete control"
+        )
+    if any(
+        row["ready_for_runtime"] and not row["runtime_outputs_complete"]
+        for row in control_rows
+    ):
+        next_actions.append(
+            "run direct full-horizon nonlinear tasks for each nested campaign manifest"
+        )
+    if (
+        all(row["runtime_outputs_complete"] for row in control_rows)
+        and not promoted_controls
+    ):
+        all_fd_artifacts_exist = all(
+            bool(row["central_fd_status"]["exists"]) for row in control_rows
+        )
         if all_fd_artifacts_exist and bool(ranking.get("exists", False)):
             recommendation = str(ranking.get("recommendation", "")).strip()
             next_actions.append(
@@ -328,9 +391,13 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
                 or "keep the nonlinear-gradient claim fail-closed; no candidate passes production gates"
             )
         else:
-            next_actions.append("run output gates, ensemble gates, central-FD gates, then candidate ranking")
+            next_actions.append(
+                "run output gates, ensemble gates, central-FD gates, then candidate ranking"
+            )
     if not next_actions and not passed:
-        next_actions.append("inspect failed central-FD/ranking blockers before any release promotion")
+        next_actions.append(
+            "inspect failed central-FD/ranking blockers before any release promotion"
+        )
     return {
         "kind": "overdetermined_nonlinear_gradient_campaign_status",
         "claim_level": "multi_control_profile_gradient_status_not_simulation_claim",
@@ -370,10 +437,14 @@ def main(argv: list[str] | None = None) -> int:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(manifest, dict):
         raise ValueError(f"{manifest_path} does not contain a JSON object")
-    report = overdetermined_campaign_status_report(manifest, manifest_path=manifest_path)
+    report = overdetermined_campaign_status_report(
+        manifest, manifest_path=manifest_path
+    )
     if args.out_json:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
-        args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.out_json.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     else:
         print(json.dumps(report, indent=2, sort_keys=True))
     return 1 if args.fail_on_blocked and not bool(report["passed"]) else 0

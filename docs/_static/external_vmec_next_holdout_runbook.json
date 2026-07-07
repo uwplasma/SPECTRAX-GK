@@ -27,7 +27,7 @@
   },
   "kind": "external_vmec_holdout_runbook",
   "launch_commands": [
-    "python tools/write_external_vmec_holdout_configs.py --case solovev_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc --out-dir tools_out/external_vmec_holdouts/solovev_reference --ky 0.2857 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
+    "python tools/campaigns/write_external_vmec_holdout_configs.py --case solovev_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_solovev_reference.nc --out-dir tools_out/external_vmec_holdouts/solovev_reference --ky 0.2857 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
   ],
   "min_launch_gamma": 0.02,
   "modified_protocol_note": "",

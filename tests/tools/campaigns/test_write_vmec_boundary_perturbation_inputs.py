@@ -9,11 +9,13 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_boundary_perturbation_inputs.py"
+SCRIPT = ROOT / "tools" / "campaigns" / "write_vmec_boundary_perturbation_inputs.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_vmec_boundary_perturbation_inputs", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_vmec_boundary_perturbation_inputs", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -51,7 +53,11 @@ def test_writer_creates_baseline_plus_minus_inputs_and_manifest(tmp_path: Path) 
         ]
     )
 
-    manifest = json.loads((out_dir / "vmec_boundary_perturbation_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (out_dir / "vmec_boundary_perturbation_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert rc == 0
     assert manifest["coefficient"] == "RBC(1,1)"
     assert manifest["coefficient_slug"] == "rbc_1_1"
@@ -69,11 +75,19 @@ def test_writer_creates_baseline_plus_minus_inputs_and_manifest(tmp_path: Path) 
     assert "ZBS(1,0) = -2.0000000000000000E-02" in (
         out_dir / "input.qa_ess_rbc11_plus_delta"
     ).read_text(encoding="utf-8")
-    assert "write_nonlinear_turbulence_gradient_campaign.py" in manifest["campaign_command_after_vmec_runs"]
-    assert "vmec_jax input.qa_ess_rbc11_plus_delta" in manifest["vmec_run_commands"]["plus_delta"]
+    assert (
+        "write_nonlinear_turbulence_gradient_campaign.py"
+        in manifest["campaign_command_after_vmec_runs"]
+    )
+    assert (
+        "vmec_jax input.qa_ess_rbc11_plus_delta"
+        in manifest["vmec_run_commands"]["plus_delta"]
+    )
 
 
-def test_writer_patches_second_coefficient_on_combined_vmec_line(tmp_path: Path) -> None:
+def test_writer_patches_second_coefficient_on_combined_vmec_line(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.final"
     baseline.write_text(_input_text(), encoding="utf-8")
@@ -88,17 +102,21 @@ def test_writer_patches_second_coefficient_on_combined_vmec_line(tmp_path: Path)
     )
 
     plus_text = (out_dir / "input.qa_ess_zbs10_plus_delta").read_text(encoding="utf-8")
-    minus_text = (out_dir / "input.qa_ess_zbs10_minus_delta").read_text(encoding="utf-8")
+    minus_text = (out_dir / "input.qa_ess_zbs10_minus_delta").read_text(
+        encoding="utf-8"
+    )
     assert manifest["baseline_value"] == pytest.approx(-0.02)
     assert manifest["delta_parameter"] == pytest.approx(0.002)
     assert "RBC(1,1) = 1.0000000000000000E-01" in plus_text
     assert "ZBS(1,0) = -1.8000000000000002E-02" in plus_text
-    assert mod._coefficient_value(minus_text, mod._parse_coefficient_spec("ZBS(1,0)")) == pytest.approx(
-        -0.022
-    )
+    assert mod._coefficient_value(
+        minus_text, mod._parse_coefficient_spec("ZBS(1,0)")
+    ) == pytest.approx(-0.022)
 
 
-def test_writer_ignores_commented_coefficients_and_rejects_same_line_duplicates(tmp_path: Path) -> None:
+def test_writer_ignores_commented_coefficients_and_rejects_same_line_duplicates(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.comments"
     baseline.write_text(

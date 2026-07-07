@@ -9,11 +9,15 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_boundary_profile_perturbation_inputs.py"
+SCRIPT = (
+    ROOT / "tools" / "campaigns" / "write_vmec_boundary_profile_perturbation_inputs.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_vmec_boundary_profile_perturbation_inputs", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_vmec_boundary_profile_perturbation_inputs", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -30,7 +34,9 @@ def _input_text() -> str:
 """
 
 
-def test_profile_direction_writer_creates_normalized_launch_manifest(tmp_path: Path) -> None:
+def test_profile_direction_writer_creates_normalized_launch_manifest(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.final"
     baseline.write_text(_input_text(), encoding="utf-8")
@@ -62,14 +68,16 @@ def test_profile_direction_writer_creates_normalized_launch_manifest(tmp_path: P
         ]
     )
 
-    manifest_path = tmp_path / "profile" / "vmec_boundary_profile_direction_manifest.json"
+    manifest_path = (
+        tmp_path / "profile" / "vmec_boundary_profile_direction_manifest.json"
+    )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    plus_text = (tmp_path / "profile" / "input.qa_profile_direction_plus_delta").read_text(
-        encoding="utf-8"
-    )
-    minus_text = (tmp_path / "profile" / "input.qa_profile_direction_minus_delta").read_text(
-        encoding="utf-8"
-    )
+    plus_text = (
+        tmp_path / "profile" / "input.qa_profile_direction_plus_delta"
+    ).read_text(encoding="utf-8")
+    minus_text = (
+        tmp_path / "profile" / "input.qa_profile_direction_minus_delta"
+    ).read_text(encoding="utf-8")
 
     assert rc == 0
     assert manifest["kind"] == "vmec_boundary_profile_direction_perturbation_manifest"
@@ -81,29 +89,40 @@ def test_profile_direction_writer_creates_normalized_launch_manifest(tmp_path: P
         "zbs_1_0",
         "rbc_1_1",
     ]
-    assert manifest["controls"][0]["coefficient_delta_per_unit_alpha"] == pytest.approx(0.005)
-    assert manifest["controls"][1]["coefficient_delta_per_unit_alpha"] == pytest.approx(-0.001)
-    assert manifest["controls"][2]["coefficient_delta_per_unit_alpha"] == pytest.approx(0.0025)
-    assert manifest["delta_parameter"] == pytest.approx((0.005**2 + 0.001**2 + 0.0025**2) ** 0.5)
-    assert mod._coefficient_value(plus_text, mod._parse_coefficient_spec("ZBS(1,1)")) == pytest.approx(
-        0.055
+    assert manifest["controls"][0]["coefficient_delta_per_unit_alpha"] == pytest.approx(
+        0.005
     )
-    assert mod._coefficient_value(plus_text, mod._parse_coefficient_spec("ZBS(1,0)")) == pytest.approx(
-        -0.021
+    assert manifest["controls"][1]["coefficient_delta_per_unit_alpha"] == pytest.approx(
+        -0.001
     )
-    assert mod._coefficient_value(plus_text, mod._parse_coefficient_spec("RBC(1,1)")) == pytest.approx(
-        0.1025
+    assert manifest["controls"][2]["coefficient_delta_per_unit_alpha"] == pytest.approx(
+        0.0025
     )
-    assert mod._coefficient_value(minus_text, mod._parse_coefficient_spec("ZBS(1,1)")) == pytest.approx(
-        0.045
+    assert manifest["delta_parameter"] == pytest.approx(
+        (0.005**2 + 0.001**2 + 0.0025**2) ** 0.5
     )
-    assert "write_nonlinear_turbulence_gradient_campaign.py" in manifest[
-        "campaign_command_after_vmec_runs"
-    ]
+    assert mod._coefficient_value(
+        plus_text, mod._parse_coefficient_spec("ZBS(1,1)")
+    ) == pytest.approx(0.055)
+    assert mod._coefficient_value(
+        plus_text, mod._parse_coefficient_spec("ZBS(1,0)")
+    ) == pytest.approx(-0.021)
+    assert mod._coefficient_value(
+        plus_text, mod._parse_coefficient_spec("RBC(1,1)")
+    ) == pytest.approx(0.1025)
+    assert mod._coefficient_value(
+        minus_text, mod._parse_coefficient_spec("ZBS(1,1)")
+    ) == pytest.approx(0.045)
+    assert (
+        "write_nonlinear_turbulence_gradient_campaign.py"
+        in manifest["campaign_command_after_vmec_runs"]
+    )
     assert "--delta-parameter" in manifest["campaign_command_after_vmec_runs"]
 
 
-def test_profile_direction_writer_rejects_ambiguous_or_unusable_controls(tmp_path: Path) -> None:
+def test_profile_direction_writer_rejects_ambiguous_or_unusable_controls(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "input.final"
     baseline.write_text(_input_text(), encoding="utf-8")

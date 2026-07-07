@@ -27,20 +27,26 @@ from spectraxgk.validation.nonlinear_transport.optimization_guard import (  # no
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 
 
-DEFAULT_OPTIMIZATION_ARTIFACT = ROOT / "docs/_static/stellarator_itg_optimization_comparison.json"
+DEFAULT_OPTIMIZATION_ARTIFACT = (
+    ROOT / "docs/_static/stellarator_itg_optimization_comparison.json"
+)
 DEFAULT_REDUCED_ARTIFACTS = (
     ROOT / "docs/_static/nonlinear_window_fd_audit.json",
     ROOT / "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
 )
 DEFAULT_REPLICATED_ENSEMBLES = (
-    ROOT / "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
-    ROOT / "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
-    ROOT / "docs/_static/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout_ensemble_gate.json",
+    ROOT
+    / "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+    ROOT
+    / "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+    ROOT
+    / "docs/_static/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout_ensemble_gate.json",
 )
 DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES = (
     ROOT
     / "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
-    ROOT / "docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json",
+    ROOT
+    / "docs/_static/vmec_qa_t1500_replicates/growth_from_strict_baseline_t1500_ensemble_gate.json",
     ROOT
     / "docs/_static/vmec_qa_t1500_replicates/quasilinear_from_strict_baseline_t1500_ensemble_gate.json",
     ROOT
@@ -81,7 +87,9 @@ def _write_csv(report: dict[str, Any], path: Path) -> None:
     for gate in report["gates"]:
         rows.append(
             {
-                "group": "safety" if gate["metric"] in report["safety_gate"]["requirements"] else "",
+                "group": "safety"
+                if gate["metric"] in report["safety_gate"]["requirements"]
+                else "",
                 "metric": gate["metric"],
                 "passed": gate["passed"],
                 "detail": gate["detail"],
@@ -127,7 +135,9 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
         color=["#2563eb", "#f97316", "#7c3aed"],
         alpha=0.88,
     )
-    axs[1].axhline(report["config"]["min_replicated_ensembles"], color="#2563eb", ls=":", lw=1.5)
+    axs[1].axhline(
+        report["config"]["min_replicated_ensembles"], color="#2563eb", ls=":", lw=1.5
+    )
     axs[1].axhline(
         report["config"]["min_optimized_equilibrium_ensembles"],
         color="#f97316",
@@ -171,18 +181,28 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
         if report["production_nonlinear_optimization_promoted"]
         else "production blocked; release-safe scoped evidence"
     )
-    fig.suptitle(f"Production nonlinear turbulent-flux optimization guard: {status}", fontsize=13, fontweight="bold")
+    fig.suptitle(
+        f"Production nonlinear turbulent-flux optimization guard: {status}",
+        fontsize=13,
+        fontweight="bold",
+    )
     fig.savefig(path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--optimization-artifact", type=Path, default=DEFAULT_OPTIMIZATION_ARTIFACT)
+    parser.add_argument(
+        "--optimization-artifact", type=Path, default=DEFAULT_OPTIMIZATION_ARTIFACT
+    )
     parser.add_argument("--reduced-artifact", action="append", type=Path, default=[])
     parser.add_argument("--replicated-ensemble", action="append", type=Path, default=[])
-    parser.add_argument("--optimized-equilibrium-ensemble", action="append", type=Path, default=[])
-    parser.add_argument("--matched-optimized-audit", action="append", type=Path, default=[])
+    parser.add_argument(
+        "--optimized-equilibrium-ensemble", action="append", type=Path, default=[]
+    )
+    parser.add_argument(
+        "--matched-optimized-audit", action="append", type=Path, default=[]
+    )
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT_JSON)
     parser.add_argument("--out-png", type=Path, default=DEFAULT_OUT_PNG)
     parser.add_argument("--out-pdf", type=Path)
@@ -193,8 +213,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-combined-sem-rel", type=float, default=0.25)
     parser.add_argument("--min-optimized-equilibrium-ensembles", type=int, default=3)
     parser.add_argument("--min-matched-optimized-audits", type=int, default=3)
-    parser.add_argument("--min-matched-optimized-relative-reduction", type=float, default=0.02)
-    parser.add_argument("--min-matched-optimized-uncertainty-sigma", type=float, default=1.0)
+    parser.add_argument(
+        "--min-matched-optimized-relative-reduction", type=float, default=0.02
+    )
+    parser.add_argument(
+        "--min-matched-optimized-uncertainty-sigma", type=float, default=1.0
+    )
     parser.add_argument(
         "--allow-missing-optimized-equilibrium-transport",
         action="store_true",
@@ -221,11 +245,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     reduced_paths = list(args.reduced_artifact) or list(DEFAULT_REDUCED_ARTIFACTS)
-    replicated_paths = list(args.replicated_ensemble) or list(DEFAULT_REPLICATED_ENSEMBLES)
+    replicated_paths = list(args.replicated_ensemble) or list(
+        DEFAULT_REPLICATED_ENSEMBLES
+    )
     optimized_paths = list(args.optimized_equilibrium_ensemble) or list(
         DEFAULT_OPTIMIZED_EQUILIBRIUM_ENSEMBLES
     )
-    matched_paths = list(args.matched_optimized_audit) or list(DEFAULT_MATCHED_OPTIMIZED_AUDITS)
+    matched_paths = list(args.matched_optimized_audit) or list(
+        DEFAULT_MATCHED_OPTIMIZED_AUDITS
+    )
     cfg = ProductionNonlinearOptimizationGuardConfig(
         min_replicated_ensembles=args.min_replicated_ensembles,
         min_reports_per_ensemble=args.min_reports_per_ensemble,
@@ -248,16 +276,30 @@ def main(argv: list[str] | None = None) -> int:
         config=cfg,
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out_json.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     if args.out_png is not None:
         _write_plot(report, args.out_png)
     if args.out_pdf is not None:
         _write_plot(report, args.out_pdf)
     _write_csv(report, args.out_csv or args.out_json.with_suffix(".csv"))
-    print(json.dumps({"safe_to_release": report["safe_to_release"], "promoted": report["production_nonlinear_optimization_promoted"], "summary": report["summary"]}, indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            {
+                "safe_to_release": report["safe_to_release"],
+                "promoted": report["production_nonlinear_optimization_promoted"],
+                "summary": report["summary"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
     if args.fail_on_unsafe and not bool(report["safe_to_release"]):
         return 1
-    if args.fail_on_unpromoted and not bool(report["production_nonlinear_optimization_promoted"]):
+    if args.fail_on_unpromoted and not bool(
+        report["production_nonlinear_optimization_promoted"]
+    ):
         return 1
     return 0
 

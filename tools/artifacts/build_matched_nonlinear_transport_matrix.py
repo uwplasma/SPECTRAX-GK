@@ -31,7 +31,7 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from tools.write_external_vmec_holdout_configs import (  # noqa: E402
+from tools.campaigns.write_external_vmec_holdout_configs import (  # noqa: E402
     _parse_grid,
     _parse_horizons,
     write_configs,

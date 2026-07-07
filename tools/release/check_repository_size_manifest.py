@@ -40,14 +40,22 @@ def _load_manifest(path: Path) -> dict[str, Any]:
         max_bytes = item.get("max_bytes")
         reason = item.get("reason")
         if not isinstance(item_path, str) or not item_path:
-            raise ValueError(f"{path} allowed_large_files[{idx}].path must be a non-empty string")
+            raise ValueError(
+                f"{path} allowed_large_files[{idx}].path must be a non-empty string"
+            )
         if item_path in paths:
-            raise ValueError(f"{path} lists duplicate allowed_large_files path {item_path!r}")
+            raise ValueError(
+                f"{path} lists duplicate allowed_large_files path {item_path!r}"
+            )
         paths.add(item_path)
         if not isinstance(max_bytes, int) or max_bytes <= 0:
-            raise ValueError(f"{path} allowed_large_files[{idx}].max_bytes must be a positive integer")
+            raise ValueError(
+                f"{path} allowed_large_files[{idx}].max_bytes must be a positive integer"
+            )
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError(f"{path} allowed_large_files[{idx}].reason must be a non-empty string")
+            raise ValueError(
+                f"{path} allowed_large_files[{idx}].reason must be a non-empty string"
+            )
     return data
 
 
@@ -79,7 +87,9 @@ def check_repository_size_manifest(
 
     tracked = {row["path"]: int(row["bytes"]) for row in audit["largest_tracked_files"]}
     if len(tracked) < int(audit["tracked_file_count"]):
-        for row in build_repository_size_report(root_path, top_n=int(audit["tracked_file_count"]))["largest_tracked_files"]:
+        for row in build_repository_size_report(
+            root_path, top_n=int(audit["tracked_file_count"])
+        )["largest_tracked_files"]:
             tracked[row["path"]] = int(row["bytes"])
 
     for path, item in allowed.items():
@@ -87,12 +97,16 @@ def check_repository_size_manifest(
             failures.append(f"allowed large file {path!r} is not tracked")
             continue
         if tracked[path] > int(item["max_bytes"]):
-            failures.append(f"{path} has {tracked[path]} bytes, exceeding allowed max_bytes={item['max_bytes']}")
+            failures.append(
+                f"{path} has {tracked[path]} bytes, exceeding allowed max_bytes={item['max_bytes']}"
+            )
 
     threshold = int(policy["max_unlisted_tracked_file_bytes"])
     unlisted_large = [
         {"path": path, "bytes": size}
-        for path, size in sorted(tracked.items(), key=lambda item: item[1], reverse=True)
+        for path, size in sorted(
+            tracked.items(), key=lambda item: item[1], reverse=True
+        )
         if size > threshold and path not in allowed
     ]
     for item in unlisted_large:
@@ -119,7 +133,11 @@ def check_repository_size_manifest(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(ROOT), help="Repository root to check.")
-    parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST), help="Repository size manifest TOML.")
+    parser.add_argument(
+        "--manifest",
+        default=str(DEFAULT_MANIFEST),
+        help="Repository size manifest TOML.",
+    )
     parser.add_argument("--json-out", help="Optional JSON output path.")
     return parser
 

@@ -118,7 +118,7 @@ def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> N
     assert not any(name.startswith("stellarator_itg_") for name in names)
     assert "_stellarator_itg_plotting.py" not in names
     assert "compare_stellarator_itg_optimizations.py" not in names
-    assert (Path(__file__).resolve().parents[1] / "tools" / "vmec_jax_qa_low_turbulence_optimization.py").exists()
+    assert (Path(__file__).resolve().parents[1] / "campaigns" / "vmec_jax_qa_low_turbulence_optimization.py").exists()
 
 
 def test_public_optimization_examples_keep_editable_constant_style() -> None:

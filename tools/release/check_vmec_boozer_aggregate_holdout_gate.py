@@ -12,8 +12,12 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_AGGREGATE_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_objective_gate.json"
-DEFAULT_LINE_SEARCH_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_line_search_gate.json"
+DEFAULT_AGGREGATE_ARTIFACT = (
+    ROOT / "docs/_static/vmec_boozer_aggregate_objective_gate.json"
+)
+DEFAULT_LINE_SEARCH_ARTIFACT = (
+    ROOT / "docs/_static/vmec_boozer_aggregate_line_search_gate.json"
+)
 DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS: tuple[Path, ...] = ()
 
 NON_PROMOTABLE_CLAIM_MARKERS = (
@@ -63,7 +67,9 @@ def _claim_scope_blocks_promotion(payload: dict[str, Any]) -> list[str]:
         str(payload.get(key, ""))
         for key in ("claim_level", "claim_scope", "notes", "next_action")
     ).lower()
-    blockers = [marker for marker in NON_PROMOTABLE_CLAIM_MARKERS if marker in claim_text]
+    blockers = [
+        marker for marker in NON_PROMOTABLE_CLAIM_MARKERS if marker in claim_text
+    ]
     if payload.get("transport_average_gate") is False:
         blockers.append("transport_average_gate_false")
     return sorted(set(blockers))
@@ -124,13 +130,17 @@ def _has_heldout_surface_or_field_line(
     alpha_atol: float,
 ) -> tuple[bool, str]:
     training_surfaces = {sample.get("surface_index") for sample in training_samples}
-    training_alphas = [alpha for sample in training_samples if (alpha := _alpha(sample)) is not None]
+    training_alphas = [
+        alpha for sample in training_samples if (alpha := _alpha(sample)) is not None
+    ]
     for sample in holdout_samples:
         surface = sample.get("surface_index")
         if surface is not None and surface not in training_surfaces:
             return True, f"held-out surface_index={surface}"
         alpha = _alpha(sample)
-        if alpha is not None and all(abs(alpha - item) > alpha_atol for item in training_alphas):
+        if alpha is not None and all(
+            abs(alpha - item) > alpha_atol for item in training_alphas
+        ):
             return True, f"held-out field-line alpha={alpha:.16g}"
     return False, "no passed holdout sample changes surface_index or field-line alpha"
 
@@ -144,7 +154,9 @@ def check_vmec_boozer_aggregate_holdout_gate(
     aggregate_artifact: str | Path = DEFAULT_AGGREGATE_ARTIFACT,
     line_search_artifact: str | Path = DEFAULT_LINE_SEARCH_ARTIFACT,
     holdout_artifacts: tuple[str | Path, ...] = (),
-    nonlinear_ensemble_artifacts: tuple[str | Path, ...] = DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS,
+    nonlinear_ensemble_artifacts: tuple[
+        str | Path, ...
+    ] = DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS,
     alpha_atol: float = 1.0e-12,
 ) -> dict[str, Any]:
     """Return a JSON-ready promotion gate for aggregate optimization artifacts."""
@@ -154,7 +166,9 @@ def check_vmec_boozer_aggregate_holdout_gate(
     aggregate = _load_json_object(aggregate_path)
     line_search = _load_json_object(line_search_path)
     training_samples = _samples(aggregate)
-    line_search_same_samples = bool(training_samples) and _sample_set(aggregate) == _sample_set(line_search)
+    line_search_same_samples = bool(training_samples) and _sample_set(
+        aggregate
+    ) == _sample_set(line_search)
 
     holdout_rows: list[dict[str, Any]] = []
     qualifying_holdout_reasons: list[str] = []
@@ -269,11 +283,19 @@ def check_vmec_boozer_aggregate_holdout_gate(
         "gates": gates,
         "training_sample_summary": {
             "n_samples": len(training_samples),
-            "surfaces": sorted({str(sample.get("surface_index")) for sample in training_samples}),
-            "alphas": sorted(
-                {f"{alpha:.16g}" for sample in training_samples if (alpha := _alpha(sample)) is not None}
+            "surfaces": sorted(
+                {str(sample.get("surface_index")) for sample in training_samples}
             ),
-            "selected_ky_indices": sorted({str(sample.get("selected_ky_index")) for sample in training_samples}),
+            "alphas": sorted(
+                {
+                    f"{alpha:.16g}"
+                    for sample in training_samples
+                    if (alpha := _alpha(sample)) is not None
+                }
+            ),
+            "selected_ky_indices": sorted(
+                {str(sample.get("selected_ky_index")) for sample in training_samples}
+            ),
         },
         "holdout_artifacts": holdout_rows,
         "nonlinear_ensemble_artifacts": nonlinear_ensemble_rows,
@@ -289,10 +311,16 @@ def check_vmec_boozer_aggregate_holdout_gate(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--aggregate-artifact", type=Path, default=DEFAULT_AGGREGATE_ARTIFACT)
-    parser.add_argument("--line-search-artifact", type=Path, default=DEFAULT_LINE_SEARCH_ARTIFACT)
+    parser.add_argument(
+        "--aggregate-artifact", type=Path, default=DEFAULT_AGGREGATE_ARTIFACT
+    )
+    parser.add_argument(
+        "--line-search-artifact", type=Path, default=DEFAULT_LINE_SEARCH_ARTIFACT
+    )
     parser.add_argument("--holdout-artifact", action="append", type=Path, default=[])
-    parser.add_argument("--nonlinear-ensemble-artifact", action="append", type=Path, default=[])
+    parser.add_argument(
+        "--nonlinear-ensemble-artifact", action="append", type=Path, default=[]
+    )
     parser.add_argument("--alpha-atol", type=float, default=1.0e-12)
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(

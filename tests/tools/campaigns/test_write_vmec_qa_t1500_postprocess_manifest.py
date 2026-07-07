@@ -10,9 +10,12 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "campaigns"
         / "write_vmec_qa_t1500_postprocess_manifest.py"
     )
-    spec = importlib.util.spec_from_file_location("write_vmec_qa_t1500_postprocess_manifest", path)
+    spec = importlib.util.spec_from_file_location(
+        "write_vmec_qa_t1500_postprocess_manifest", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -37,15 +40,20 @@ def test_manifest_contains_fail_closed_case_and_comparison_commands() -> None:
     ql = manifest["case_commands"][1]
     assert ql["case"] == "quasilinear"
     assert "vmec_qa_full_sweep_quasilinear_from_strict_baseline" in ql["outputs"][0]
-    assert ql["output_gate_json"] == "docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
+    assert (
+        ql["output_gate_json"]
+        == "docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
+    )
     assert "--min-window-samples 80" in ql["check_outputs_command"]
-    assert "--json-out docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql[
-        "check_outputs_command"
-    ]
+    assert (
+        "--json-out docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
+        in ql["check_outputs_command"]
+    )
     assert "compact_replicate_ensemble_bundle.py" in ql["compact_bundle_command"]
-    assert "--output-gate-json docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql[
-        "compact_bundle_command"
-    ]
+    assert (
+        "--output-gate-json docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
+        in ql["compact_bundle_command"]
+    )
     assert "office:/work/audits" in ql["compact_bundle_command"]
     comparisons = manifest["comparison_commands"]
     assert len(comparisons) == 1

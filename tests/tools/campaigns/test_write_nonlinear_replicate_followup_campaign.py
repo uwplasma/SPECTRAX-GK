@@ -7,11 +7,13 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_nonlinear_replicate_followup_campaign.py"
+SCRIPT = ROOT / "tools" / "campaigns" / "write_nonlinear_replicate_followup_campaign.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_nonlinear_replicate_followup_campaign", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_nonlinear_replicate_followup_campaign", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -105,12 +107,16 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
             },
             "plus_delta": {
                 "ensemble_json": "docs/_static/case_plus_delta_replicates/case_plus_delta_t10_ensemble_gate.json",
-                "expected_outputs": ["old_seed31.out.nc", "old_seed32.out.nc", "old_dt0p04.out.nc"],
+                "expected_outputs": [
+                    "old_seed31.out.nc",
+                    "old_seed32.out.nc",
+                    "old_dt0p04.out.nc",
+                ],
                 "direct_full_horizon_launch_commands": [
                     f"python3 -m spectraxgk.cli run-runtime-nonlinear --config {path} --steps 1 --no-progress"
                     for path in configs.values()
-                ]
-            }
+                ],
+            },
         },
     }
     spread = {
@@ -148,12 +154,24 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
         "seed33_dt0p05",
     ]
     assert all(Path(row["path"]).exists() for row in written)
-    assert "run-runtime-nonlinear" in payload["written_configs_by_state"]["plus_delta"][
-        "direct_full_horizon_launch_commands"
-    ][0]
+    assert (
+        "run-runtime-nonlinear"
+        in payload["written_configs_by_state"]["plus_delta"][
+            "direct_full_horizon_launch_commands"
+        ][0]
+    )
     postprocess = payload["postprocess_commands_by_state"]["plus_delta"]
     assert len(postprocess["all_expected_outputs"]) == 6
     assert "check_nonlinear_runtime_outputs.py" in postprocess["output_gate_command"]
-    assert "build_external_vmec_replicate_ensemble.py" in postprocess["build_ensemble_command"]
-    assert "summarize_nonlinear_replicate_spread.py" in postprocess["replicate_spread_command"]
-    assert "build_nonlinear_turbulence_gradient_fd_gate.py" in postprocess["central_fd_command"]
+    assert (
+        "build_external_vmec_replicate_ensemble.py"
+        in postprocess["build_ensemble_command"]
+    )
+    assert (
+        "summarize_nonlinear_replicate_spread.py"
+        in postprocess["replicate_spread_command"]
+    )
+    assert (
+        "build_nonlinear_turbulence_gradient_fd_gate.py"
+        in postprocess["central_fd_command"]
+    )

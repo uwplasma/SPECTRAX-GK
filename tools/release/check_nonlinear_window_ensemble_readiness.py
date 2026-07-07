@@ -102,14 +102,23 @@ def _nested_search(payload: dict[str, Any], aliases: tuple[str, ...]) -> Any | N
         for key in aliases:
             if key in current and current[key] not in (None, ""):
                 return current[key]
-        for key in ("variant", "metadata", "run", "simulation", "config", "nonlinear_config"):
+        for key in (
+            "variant",
+            "metadata",
+            "run",
+            "simulation",
+            "config",
+            "nonlinear_config",
+        ):
             nested = current.get(key)
             if isinstance(nested, dict):
                 queue.append(nested)
     return None
 
 
-def _variant_from_summary(summary: dict[str, Any], summary_path: Path) -> dict[str, Any]:
+def _variant_from_summary(
+    summary: dict[str, Any], summary_path: Path
+) -> dict[str, Any]:
     text = summary_path.stem.lower()
     variant: dict[str, Any] = {}
     for axis, aliases in VARIANT_KEY_ALIASES.items():
@@ -135,7 +144,9 @@ def _summary_case(summary: dict[str, Any], path: Path) -> str:
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -169,7 +180,9 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "case": _summary_case(summary, summary_path),
                 "summary_artifact": _repo_relative(summary_path),
-                "source_artifact": _repo_relative(report["provenance"]["source_artifact"]),
+                "source_artifact": _repo_relative(
+                    report["provenance"]["source_artifact"]
+                ),
                 "convergence_report_artifact": _repo_relative(report_path),
                 "variant": _variant_from_summary(summary, summary_path),
                 "report": report,

@@ -141,7 +141,7 @@ def test_ql_seed_screen_tracks_gate_blockers_and_validation_errors() -> None:
 
 
 def test_design_nonlinear_gradient_ql_seed_screen_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = ROOT / "tools" / "design_nonlinear_gradient_ql_seed_screen.py"
+    path = ROOT / "campaigns" / "design_nonlinear_gradient_ql_seed_screen.py"
     spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_ql_seed_screen", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)

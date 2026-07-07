@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.write_optimized_equilibrium_transport_configs import main
+from tools.campaigns.write_optimized_equilibrium_transport_configs import main
 
 
 def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) -> None:
@@ -51,7 +51,10 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
 
     manifest = json.loads((out_dir / "run_manifest.json").read_text(encoding="utf-8"))
     assert manifest["kind"] == "external_vmec_holdout_config_manifest"
-    assert manifest["claim_level"] == "optimized_equilibrium_transport_launch_plan_not_simulation_claim"
+    assert (
+        manifest["claim_level"]
+        == "optimized_equilibrium_transport_launch_plan_not_simulation_claim"
+    )
     assert len(manifest["configs"]) == 6
     assert len(manifest["launch_commands"]) == 6
     assert len(manifest["direct_full_horizon_launch_commands"]) == 6
@@ -67,9 +70,9 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
         "tprim": 4.0,
         "vmec_file": str(vmec),
     }
-    first_config = (out_dir / "optimized_equilibrium_test_nonlinear_t1_n8_seed31.toml").read_text(
-        encoding="utf-8"
-    )
+    first_config = (
+        out_dir / "optimized_equilibrium_test_nonlinear_t1_n8_seed31.toml"
+    ).read_text(encoding="utf-8")
     assert "torflux = 0.78" in first_config
     assert "alpha = 0.7" in first_config
     assert "npol = 1.5" in first_config
@@ -78,9 +81,15 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
     assert "nu = 0.02" in first_config
 
     contract = manifest["promotion_contract"]
-    assert contract["claim_level"] == "optimized_equilibrium_replicated_transport_window_launch_contract_not_promotion"
+    assert (
+        contract["claim_level"]
+        == "optimized_equilibrium_replicated_transport_window_launch_contract_not_promotion"
+    )
     assert len(contract["expected_outputs"]) == 3
-    assert all("optimized_equilibrium_test_nonlinear_t2_n8" in path for path in contract["expected_outputs"])
+    assert all(
+        "optimized_equilibrium_test_nonlinear_t2_n8" in path
+        for path in contract["expected_outputs"]
+    )
     assert contract["build_ensemble_command"].startswith(
         "python3 tools/artifacts/build_external_vmec_replicate_ensemble.py"
     )
@@ -91,8 +100,13 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
         "seed31": 4,
         "seed32": 4,
     }
-    assert any("--steps 8" in command for command in contract["direct_full_horizon_launch_commands"])
-    assert contract["output_gate_command"].startswith("python3 tools/release/check_nonlinear_runtime_outputs.py")
+    assert any(
+        "--steps 8" in command
+        for command in contract["direct_full_horizon_launch_commands"]
+    )
+    assert contract["output_gate_command"].startswith(
+        "python3 tools/release/check_nonlinear_runtime_outputs.py"
+    )
     assert "--tmin 1 --tmax 2" in contract["output_gate_command"]
     assert "--min-window-samples 80" in contract["output_gate_command"]
     assert "restart-ladder segments" in contract["restart_ladder_note"]
@@ -102,7 +116,9 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
     assert "--optimized-equilibrium-ensemble" in contract["run_guard_command"]
 
 
-def test_strict_qa_t1500_contract_exposes_true_full_horizon_commands(tmp_path: Path) -> None:
+def test_strict_qa_t1500_contract_exposes_true_full_horizon_commands(
+    tmp_path: Path,
+) -> None:
     """Guard against launching a final restart segment from t=0 as a t1500 audit."""
 
     vmec = tmp_path / "wout_strict_qa.nc"
@@ -140,7 +156,11 @@ def test_strict_qa_t1500_contract_exposes_true_full_horizon_commands(tmp_path: P
     )
 
     manifest = json.loads((out_dir / "run_manifest.json").read_text(encoding="utf-8"))
-    t1500_segments = [command for command in manifest["launch_commands"] if "_nonlinear_t1500_" in command]
+    t1500_segments = [
+        command
+        for command in manifest["launch_commands"]
+        if "_nonlinear_t1500_" in command
+    ]
     t1500_direct = [
         command
         for command in manifest["direct_full_horizon_launch_commands"]

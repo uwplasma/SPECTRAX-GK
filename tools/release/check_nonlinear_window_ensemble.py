@@ -26,7 +26,12 @@ from spectraxgk.validation.quasilinear.window_ensemble import (  # noqa: E402
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("reports", nargs="+", type=Path, help="Nonlinear-window convergence JSON reports.")
+    parser.add_argument(
+        "reports",
+        nargs="+",
+        type=Path,
+        help="Nonlinear-window convergence JSON reports.",
+    )
     parser.add_argument("--out-json", type=Path, required=True)
     parser.add_argument("--out-png", type=Path)
     parser.add_argument("--case", default="nonlinear_window_ensemble")
@@ -63,7 +68,12 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
 
     rows = list(report["rows"])
     labels = [str(row["case"]) for row in rows]
-    means = np.asarray([np.nan if row["late_mean"] is None else float(row["late_mean"]) for row in rows])
+    means = np.asarray(
+        [
+            np.nan if row["late_mean"] is None else float(row["late_mean"])
+            for row in rows
+        ]
+    )
     sem = np.asarray([0.0 if row["sem"] is None else float(row["sem"]) for row in rows])
     ensemble_mean = report["statistics"]["ensemble_mean"]
     passed = bool(report["passed"])
@@ -75,7 +85,9 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     colors = ["#0f766e" if bool(row["promotion_ready"]) else "#b91c1c" for row in rows]
     ax.bar(x, means, yerr=sem, capsize=4, color=colors, alpha=0.88)
     if ensemble_mean is not None:
-        ax.axhline(float(ensemble_mean), color="0.2", lw=1.3, ls="--", label="ensemble mean")
+        ax.axhline(
+            float(ensemble_mean), color="0.2", lw=1.3, ls="--", label="ensemble mean"
+        )
     ax.set_xticks(x, labels, rotation=20, ha="right")
     ax.set_ylabel("late-window mean")
     status = "passed" if passed else "failed closed"
@@ -102,7 +114,9 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out_json.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     if args.out_png is not None:
         _write_png(summary, args.out_png)
     print(json.dumps(summary["gate_report"], indent=2, sort_keys=True))

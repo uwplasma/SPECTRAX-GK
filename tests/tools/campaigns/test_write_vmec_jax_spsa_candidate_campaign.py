@@ -9,8 +9,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_jax_spsa_candidate_campaign.py"
-spec = importlib.util.spec_from_file_location("write_vmec_jax_spsa_candidate_campaign", SCRIPT)
+SCRIPT = ROOT / "tools" / "campaigns" / "write_vmec_jax_spsa_candidate_campaign.py"
+spec = importlib.util.spec_from_file_location(
+    "write_vmec_jax_spsa_candidate_campaign", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -69,21 +71,35 @@ def test_spsa_candidate_campaign_writes_plus_minus_common_random_number_commands
     first = payload["pairs"][0]
     assert set(first["states"]) == {"plus", "minus"}
     assert first["states"]["plus"]["input"].endswith("iter_000/plus/input.final")
-    plus_text = (out_dir / "iter_000" / "plus" / "input.final").read_text(encoding="utf-8")
-    minus_text = (out_dir / "iter_000" / "minus" / "input.final").read_text(encoding="utf-8")
+    plus_text = (out_dir / "iter_000" / "plus" / "input.final").read_text(
+        encoding="utf-8"
+    )
+    minus_text = (out_dir / "iter_000" / "minus" / "input.final").read_text(
+        encoding="utf-8"
+    )
     assert plus_text != minus_text
     assert "RBC(1,1)" in plus_text
     metric_command = first["states"]["plus"]["metric_eval_command"]
     metric_parts = shlex.split(metric_command)
-    assert metric_parts[:2] == ["python3", "tools/evaluate_vmec_jax_spectrax_transport_metric.py"]
-    assert metric_parts[metric_parts.index("--transport-kind") + 1] == "nonlinear_window_heat_flux"
+    assert metric_parts[:2] == [
+        "python3",
+        "tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py",
+    ]
+    assert (
+        metric_parts[metric_parts.index("--transport-kind") + 1]
+        == "nonlinear_window_heat_flux"
+    )
     assert metric_parts[metric_parts.index("--mboz") + 1] == "21"
     audit_command = first["states"]["plus"]["nonlinear_audit_command"]
     assert "--seed-variant 41 --seed-variant 42" in audit_command
     assert "--window-tmin 1100 --window-tmax 1500" in audit_command
     assert "dJ/dx_i" in first["gradient_estimator"]["RBC(1,1)"]
-    manifest = json.loads((out_dir / "vmec_jax_spsa_candidate_manifest.json").read_text(encoding="utf-8"))
-    assert manifest["claim_scope"].startswith("SPSA common-random-number candidate generation")
+    manifest = json.loads(
+        (out_dir / "vmec_jax_spsa_candidate_manifest.json").read_text(encoding="utf-8")
+    )
+    assert manifest["claim_scope"].startswith(
+        "SPSA common-random-number candidate generation"
+    )
 
 
 def test_spsa_candidate_campaign_cli_writes_manifest(tmp_path: Path) -> None:

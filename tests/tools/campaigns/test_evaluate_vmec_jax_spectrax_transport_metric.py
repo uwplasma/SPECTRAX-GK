@@ -15,8 +15,10 @@ from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "evaluate_vmec_jax_spectrax_transport_metric.py"
-spec = importlib.util.spec_from_file_location("evaluate_vmec_jax_spectrax_transport_metric", SCRIPT)
+SCRIPT = ROOT / "tools" / "campaigns" / "evaluate_vmec_jax_spectrax_transport_metric.py"
+spec = importlib.util.spec_from_file_location(
+    "evaluate_vmec_jax_spectrax_transport_metric", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -78,7 +80,9 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
     json.dumps(mod._json_safe(report), allow_nan=False)
 
 
-def test_sample_statistics_from_state_reports_weighted_reduced_spread(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_sample_statistics_from_state_reports_weighted_reduced_spread(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     samples = StellaratorITGSampleSet(
         surfaces=(0.45, 0.64),
         alphas=(0.0,),
@@ -94,13 +98,21 @@ def test_sample_statistics_from_state_reports_weighted_reduced_spread(monkeypatc
         n_hermite=1,
     )
     table = np.zeros((2, 1, 2, len(SOLVER_OBJECTIVE_NAMES)))
-    table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray([[[1.0, 2.0]], [[3.0, 4.0]]])
+    table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray(
+        [[[1.0, 2.0]], [[3.0, 4.0]]]
+    )
     monkeypatch.setattr(
         mod,
         "_static_grid_options_from_ky_values",
-        lambda ky_values, *, min_ny: {"selected_ky_indices": (1, 2), "ny": 6, "ly": 2.0},
+        lambda ky_values, *, min_ny: {
+            "selected_ky_indices": (1, 2),
+            "ny": 6,
+            "ly": 2.0,
+        },
     )
-    monkeypatch.setattr(mod, "_transport_feature_table_from_state", lambda *args, **kwargs: table)
+    monkeypatch.setattr(
+        mod, "_transport_feature_table_from_state", lambda *args, **kwargs: table
+    )
 
     stats = mod.sample_statistics_from_state(
         ctx=SimpleNamespace(static=object(), indata=object()),
@@ -166,8 +178,12 @@ def test_objective_table_exposes_all_quasilinear_landscape_methods() -> None:
     table = np.zeros((1, 1, 2, len(SOLVER_OBJECTIVE_NAMES)))
     table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray([[[0.2, -0.3]]])
     table[..., SOLVER_OBJECTIVE_NAMES.index("kperp_eff2")] = np.asarray([[[0.5, 2.0]]])
-    table[..., SOLVER_OBJECTIVE_NAMES.index("linear_heat_flux_weight")] = np.asarray([[[10.0, 20.0]]])
-    table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")] = np.asarray([[[4.0, 5.0]]])
+    table[..., SOLVER_OBJECTIVE_NAMES.index("linear_heat_flux_weight")] = np.asarray(
+        [[[10.0, 20.0]]]
+    )
+    table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")] = (
+        np.asarray([[[4.0, 5.0]]])
+    )
 
     linear_weight = mod._objective_table_from_feature_table(
         table,

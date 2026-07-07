@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from tools.write_external_vmec_holdout_configs import (
+from tools.campaigns.write_external_vmec_holdout_configs import (
     _parse_grid,
     _parse_horizons,
     _parse_seed_dt_variant,
@@ -29,7 +29,14 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     )
     assert len(written) == 6
     assert [item.steps for item in written] == [4, 4, 2, 2, 2, 2]
-    assert [item.restart_if_exists for item in written] == [False, False, True, True, True, True]
+    assert [item.restart_if_exists for item in written] == [
+        False,
+        False,
+        True,
+        True,
+        True,
+        True,
+    ]
 
     first_config = written[0].path.read_text(encoding="utf-8")
     assert 'vmec_file = "../wout_fixture.nc"' in first_config
@@ -63,10 +70,17 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert payload["configs"][2]["steps"] == 2
     assert payload["configs"][2]["direct_full_horizon_steps"] == 6
     assert payload["segment_step_counts"]["candidate_nonlinear_t1p5_n8"] == 2
-    assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t1p5_n8"] == 6
+    assert (
+        payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t1p5_n8"] == 6
+    )
     assert payload["direct_full_horizon_step_counts"]["candidate_nonlinear_t2_n10"] == 8
-    assert payload["launch_commands"][0].startswith("PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0}")
-    assert "python3 -m spectraxgk.cli run-runtime-nonlinear" in payload["launch_commands"][0]
+    assert payload["launch_commands"][0].startswith(
+        "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0}"
+    )
+    assert (
+        "python3 -m spectraxgk.cli run-runtime-nonlinear"
+        in payload["launch_commands"][0]
+    )
     assert payload["direct_full_horizon_launch_commands"][0].startswith(
         "PYTHONPATH=src CUDA_VISIBLE_DEVICES=${DEVICE:-0}"
     )
@@ -91,7 +105,9 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert "candidate_nonlinear_t1p5_n8.big.nc" in restart_guarded
     assert "skip_existing_note" in payload
     staged_script = tmp_path / "runs" / payload["staged_ladder_skip_existing_script"]
-    direct_script = tmp_path / "runs" / payload["direct_full_horizon_skip_existing_script"]
+    direct_script = (
+        tmp_path / "runs" / payload["direct_full_horizon_skip_existing_script"]
+    )
     assert staged_script.exists()
     assert direct_script.exists()
     assert staged_script.stat().st_mode & 0o111
@@ -130,7 +146,9 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
     )
 
     assert len(written) == 10
-    labels = [item.variant.label if item.variant is not None else "" for item in written]
+    labels = [
+        item.variant.label if item.variant is not None else "" for item in written
+    ]
     assert labels == [
         "seed31",
         "seed31",
@@ -169,21 +187,46 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
 
     manifest = write_manifest(tmp_path / "runs", written)
     payload = json.loads(manifest.read_text(encoding="utf-8"))
-    assert all("run-runtime-nonlinear" in command for command in payload["launch_commands"])
+    assert all(
+        "run-runtime-nonlinear" in command for command in payload["launch_commands"]
+    )
     assert all("--steps" in command for command in payload["launch_commands"])
-    assert all("run-runtime-nonlinear" in command for command in payload["direct_full_horizon_launch_commands"])
+    assert all(
+        "run-runtime-nonlinear" in command
+        for command in payload["direct_full_horizon_launch_commands"]
+    )
     assert "--steps 8" in payload["direct_full_horizon_launch_commands"][1]
-    assert any("--steps 16" in command for command in payload["direct_full_horizon_launch_commands"])
-    assert payload["direct_full_horizon_step_counts"]["replicate_nonlinear_t2_n8_dt0p125"] == 16
+    assert any(
+        "--steps 16" in command
+        for command in payload["direct_full_horizon_launch_commands"]
+    )
+    assert (
+        payload["direct_full_horizon_step_counts"]["replicate_nonlinear_t2_n8_dt0p125"]
+        == 16
+    )
     assert payload["segment_step_counts"]["replicate_nonlinear_t2_n8_dt0p125"] == 8
     assert len(payload["restart_seed_commands"]) == 5
     assert "replicate_nonlinear_t1_n8_seed31" in payload["restart_seed_commands"][0]
     assert "replicate_nonlinear_t2_n8_seed31" in payload["restart_seed_commands"][0]
-    assert "replicate_nonlinear_t1_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
-    assert "replicate_nonlinear_t2_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
+    assert (
+        "replicate_nonlinear_t1_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
+    )
+    assert (
+        "replicate_nonlinear_t2_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
+    )
     variants = [item["variant"] for item in payload["configs"]]
-    assert variants[0] == {"axis": "seed", "label": "seed31", "seed": 31, "timestep": 0.25}
-    assert variants[-1] == {"axis": "seed_timestep", "label": "seed31_dt0p2", "seed": 31, "timestep": 0.2}
+    assert variants[0] == {
+        "axis": "seed",
+        "label": "seed31",
+        "seed": 31,
+        "timestep": 0.25,
+    }
+    assert variants[-1] == {
+        "axis": "seed_timestep",
+        "label": "seed31_dt0p2",
+        "seed": 31,
+        "timestep": 0.2,
+    }
 
 
 def test_seed_dt_variant_parser_rejects_bad_inputs() -> None:
@@ -196,7 +239,9 @@ def test_seed_dt_variant_parser_rejects_bad_inputs() -> None:
         _parse_seed_dt_variant("31:0")
 
 
-def test_write_external_vmec_holdout_configs_timestep_only_metadata(tmp_path: Path) -> None:
+def test_write_external_vmec_holdout_configs_timestep_only_metadata(
+    tmp_path: Path,
+) -> None:
     vmec_file = tmp_path / "wout_fixture.nc"
     vmec_file.write_text("placeholder", encoding="utf-8")
 
@@ -227,7 +272,12 @@ def test_write_external_vmec_holdout_configs_timestep_only_metadata(tmp_path: Pa
     assert "replicate_nonlinear_t1_n8_dt0p125" in payload["restart_seed_commands"][-1]
     assert "replicate_nonlinear_t2_n8_dt0p125" in payload["restart_seed_commands"][-1]
     variants = [item["variant"] for item in payload["configs"]]
-    assert variants[-1] == {"axis": "timestep", "label": "dt0p125", "seed": 22, "timestep": 0.125}
+    assert variants[-1] == {
+        "axis": "timestep",
+        "label": "dt0p125",
+        "seed": 22,
+        "timestep": 0.125,
+    }
 
 
 def test_write_external_vmec_holdout_configs_exposes_repair_protocol_knobs(

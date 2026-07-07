@@ -9,11 +9,18 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "write_vmec_asymmetric_state_to_input_mapping_campaign.py"
+SCRIPT = (
+    ROOT
+    / "tools"
+    / "campaigns"
+    / "write_vmec_asymmetric_state_to_input_mapping_campaign.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("write_vmec_asymmetric_state_to_input_mapping_campaign", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "write_vmec_asymmetric_state_to_input_mapping_campaign", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -58,7 +65,9 @@ def _input_text() -> str:
 """
 
 
-def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(tmp_path: Path) -> None:
+def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(
+    tmp_path: Path,
+) -> None:
     pytest.importorskip("vmec_jax")
     mod = _load_tool_module()
     ql_path = tmp_path / "ql_seed_screen.json"
@@ -114,7 +123,9 @@ def test_asymmetric_campaign_writes_lasym_true_inserted_coefficients(tmp_path: P
         "RBS(1,1)",
         "ZBC(1,1)",
     ]
-    assert all(row["inserted_missing_coefficient"] for row in payload["input_directions"])
+    assert all(
+        row["inserted_missing_coefficient"] for row in payload["input_directions"]
+    )
     assert "LASYM = .TRUE." in rbs_baseline
     assert "RBS(1,1) = 0.0000000000000000E+00" in rbs_baseline
     assert "ZBC(1,1) = 1.0000000000000000E-03" in zbc_plus

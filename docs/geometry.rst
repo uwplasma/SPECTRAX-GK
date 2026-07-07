@@ -330,7 +330,7 @@ claim is admitted. The boundary-chain executable exposes the same check via:
 .. code-block:: bash
 
    PYTHONPATH=src:tools:$VMEC_JAX_ROOT \
-     python tools/probe_vmec_jax_boundary_chain.py \
+     python tools/campaigns/audit_vmec_jax_boundary_chain.py \
        --input path/to/input.final \
        --out-json tools_out/vmec_boundary_chain_probe.json \
        --index 28 --step 2e-5 \

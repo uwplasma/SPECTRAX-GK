@@ -9,11 +9,13 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "run_nonlinear_gradient_direct_campaign.py"
+SCRIPT = ROOT / "tools" / "campaigns" / "run_nonlinear_gradient_direct_campaign.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("run_nonlinear_gradient_direct_campaign", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "run_nonlinear_gradient_direct_campaign", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -89,7 +91,10 @@ def test_collect_direct_tasks_accepts_external_vmec_manifest_and_env_prefixes() 
         ("external_vmec", "custom_t350_n80.out.nc"),
         ("external_vmec", "custom_t350_n64.out.nc"),
     ]
-    assert tasks[0].output == ROOT / "tools_out/external/recorded_outputs/custom_t350_n80.out.nc"
+    assert (
+        tasks[0].output
+        == ROOT / "tools_out/external/recorded_outputs/custom_t350_n80.out.nc"
+    )
     argv, env = mod._split_command_env(tasks[0].command)
     assert argv[:3] == ["python3", "-m", "spectraxgk.cli"]
     assert env["PYTHONPATH"] == "src"
@@ -99,13 +104,17 @@ def test_collect_direct_tasks_accepts_external_vmec_manifest_and_env_prefixes() 
 def test_collect_direct_tasks_filters_external_vmec_labels() -> None:
     mod = _load_tool_module()
 
-    tasks = mod.collect_direct_tasks(_external_vmec_manifest(), labels={"case_t350_n64"})
+    tasks = mod.collect_direct_tasks(
+        _external_vmec_manifest(), labels={"case_t350_n64"}
+    )
 
     assert len(tasks) == 1
     assert tasks[0].state == "external_vmec"
     assert tasks[0].label == "custom_t350_n64.out.nc"
 
-    tasks = mod.collect_direct_tasks(_external_vmec_manifest(), labels={"custom_t350_n64"})
+    tasks = mod.collect_direct_tasks(
+        _external_vmec_manifest(), labels={"custom_t350_n64"}
+    )
 
     assert len(tasks) == 1
     assert tasks[0].state == "external_vmec"
@@ -125,7 +134,9 @@ def test_collect_direct_tasks_filters_states_and_labels() -> None:
     assert tasks[0].label == "b_t900_dt0p04.out.nc"
 
 
-def test_direct_campaign_dry_run_assigns_gpus(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_direct_campaign_dry_run_assigns_gpus(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     mod = _load_tool_module()
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(_manifest()), encoding="utf-8")
@@ -140,7 +151,9 @@ def test_direct_campaign_dry_run_assigns_gpus(tmp_path: Path, capsys: pytest.Cap
     assert "[dry-run gpu=1 state=minus_delta]" in out
 
 
-def test_direct_campaign_dry_run_assigns_external_vmec_gpus(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_direct_campaign_dry_run_assigns_external_vmec_gpus(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     mod = _load_tool_module()
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(_external_vmec_manifest()), encoding="utf-8")
@@ -166,7 +179,9 @@ def test_config_parser_rejects_commands_without_config() -> None:
     mod = _load_tool_module()
 
     with pytest.raises(ValueError, match="--config"):
-        mod._config_from_command("python3 -m spectraxgk.cli run-runtime-nonlinear --steps 3")
+        mod._config_from_command(
+            "python3 -m spectraxgk.cli run-runtime-nonlinear --steps 3"
+        )
 
 
 def test_status_writer_records_initial_running_campaign(tmp_path: Path) -> None:

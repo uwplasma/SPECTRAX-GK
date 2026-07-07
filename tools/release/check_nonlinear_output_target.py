@@ -76,7 +76,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.out_json is not None:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
-        args.out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.out_json.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     if not args.quiet:
         print(json.dumps(report, indent=2, sort_keys=True))
     return 0 if bool(report["target_time_confirmed"]) else 1

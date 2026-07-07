@@ -501,7 +501,7 @@ optimizer residuals.
 
 .. code-block:: bash
 
-   python tools/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 
 For a paper-facing constraints-only baseline that uses the same simple seed,
 ESS scaling, and max-mode-5 objective recipe but tighter admission tolerances,
@@ -509,7 +509,7 @@ run:
 
 .. code-block:: bash
 
-   python tools/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
      --strict-upstream-qa-baseline --solver-device gpu \
      --outdir tools_out/vmec_jax_qa_strict_baseline
 

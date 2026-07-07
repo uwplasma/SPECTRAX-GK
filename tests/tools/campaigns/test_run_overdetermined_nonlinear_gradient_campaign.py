@@ -9,11 +9,15 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "run_overdetermined_nonlinear_gradient_campaign.py"
+SCRIPT = (
+    ROOT / "tools" / "campaigns" / "run_overdetermined_nonlinear_gradient_campaign.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("run_overdetermined_nonlinear_gradient_campaign", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "run_overdetermined_nonlinear_gradient_campaign", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -73,7 +77,9 @@ def _overdetermined_manifest(tmp_path: Path) -> Path:
     return path
 
 
-def test_collect_overdetermined_tasks_preserves_control_and_state_order(tmp_path: Path) -> None:
+def test_collect_overdetermined_tasks_preserves_control_and_state_order(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     manifest = mod.load_overdetermined_manifest(_overdetermined_manifest(tmp_path))
 
@@ -87,11 +93,24 @@ def test_collect_overdetermined_tasks_preserves_control_and_state_order(tmp_path
     ]
 
 
-def test_overdetermined_runner_filters_and_dry_runs(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_overdetermined_runner_filters_and_dry_runs(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     mod = _load_tool_module()
     manifest_path = _overdetermined_manifest(tmp_path)
 
-    rc = mod.main([str(manifest_path), "--control", "zbs_1_1", "--gpu", "0", "--gpu", "1", "--dry-run"])
+    rc = mod.main(
+        [
+            str(manifest_path),
+            "--control",
+            "zbs_1_1",
+            "--gpu",
+            "0",
+            "--gpu",
+            "1",
+            "--dry-run",
+        ]
+    )
 
     out = capsys.readouterr().out
     assert rc == 0

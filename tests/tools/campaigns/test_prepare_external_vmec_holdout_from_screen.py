@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from tools.prepare_external_vmec_holdout_from_screen import (
+from tools.campaigns.prepare_external_vmec_holdout_from_screen import (
     _default_case_slug,
     _read_screen,
     resolve_vmec_file,
@@ -33,7 +33,9 @@ def test_select_candidate_skips_excluded_cases(tmp_path: Path) -> None:
     screen = tmp_path / "screen.csv"
     _write_screen(screen)
     rows = _read_screen(screen)
-    selected = select_candidate(rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"})
+    selected = select_candidate(
+        rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"}
+    )
     assert selected.case == "ITERModel_reference_nc"
     assert selected.best_gamma == pytest.approx(0.088737)
     assert _default_case_slug(selected.case) == "ITERModel_reference"
@@ -44,7 +46,14 @@ def test_select_candidate_raises_when_no_unstable_cases_remain(tmp_path: Path) -
     _write_screen(screen)
     rows = _read_screen(screen)
     with pytest.raises(ValueError, match="no finite unstable candidate"):
-        select_candidate(rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc", "ITERModel_reference_nc"})
+        select_candidate(
+            rows,
+            excluded_cases={
+                "DSHAPE_nc",
+                "circular_tokamak_nc",
+                "ITERModel_reference_nc",
+            },
+        )
 
 
 def test_resolve_vmec_file_uses_search_roots(tmp_path: Path) -> None:
@@ -52,7 +61,9 @@ def test_resolve_vmec_file_uses_search_roots(tmp_path: Path) -> None:
     root.mkdir()
     target = root / "wout_ITERModel_reference.nc"
     target.write_text("fixture", encoding="utf-8")
-    resolved = resolve_vmec_file("/remote/wout_ITERModel_reference.nc", search_roots=[root])
+    resolved = resolve_vmec_file(
+        "/remote/wout_ITERModel_reference.nc", search_roots=[root]
+    )
     assert resolved == target
 
 
@@ -60,7 +71,9 @@ def test_write_selection_summary_serializes_choice(tmp_path: Path) -> None:
     screen = tmp_path / "screen.csv"
     _write_screen(screen)
     rows = _read_screen(screen)
-    selected = select_candidate(rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"})
+    selected = select_candidate(
+        rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"}
+    )
     generated = [tmp_path / "cfg_a.toml", tmp_path / "cfg_b.toml"]
     summary = write_selection_summary(
         tmp_path,

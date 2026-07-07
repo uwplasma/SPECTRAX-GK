@@ -128,8 +128,7 @@ def nonlinear_window_stats_promotion_ready(
             failures.append(f"missing/non-finite window.{field}")
     raw_transient_fraction = window.get("transient_fraction", 0.0)
     has_declared_cutoff = _finite_number(window.get("input_tmin")) or (
-        _finite_number(raw_transient_fraction)
-        and float(raw_transient_fraction) > 0.0
+        _finite_number(raw_transient_fraction) and float(raw_transient_fraction) > 0.0
     )
     if not has_declared_cutoff:
         failures.append("missing declared transient cutoff policy")
@@ -140,6 +139,8 @@ def nonlinear_window_stats_promotion_ready(
     if not isinstance(gate_report, dict) or not bool(gate_report.get("passed", False)):
         failures.append("missing passed gate_report")
     return not failures, failures
+
+
 SCOPED_NON_ABSOLUTE_MARKERS = (
     "calibration_dataset",
     "model_development",
@@ -544,13 +545,10 @@ def _has_non_absolute_json_scope(data: dict[str, Any]) -> bool:
     notes = str(data.get("notes", ""))
     promotion = data.get("promotion_gate")
     promotion_text = json.dumps(promotion, sort_keys=True) if promotion else ""
-    return (
-        claim != PROMOTED_CLAIM
-        and (
-            not bool(data.get("passed", True))
-            or _has_scope_marker(
-                f"{claim} {notes} {promotion_text}", SCOPED_NON_ABSOLUTE_MARKERS
-            )
+    return claim != PROMOTED_CLAIM and (
+        not bool(data.get("passed", True))
+        or _has_scope_marker(
+            f"{claim} {notes} {promotion_text}", SCOPED_NON_ABSOLUTE_MARKERS
         )
     )
 
@@ -623,7 +621,9 @@ def _audit_failed_baseline_contract(
             and _finite_number(
                 metrics.get("baseline_linear_weight_mean_abs_relative_error")
             )
-            and _finite_number(metrics.get("null_training_mean_mean_abs_relative_error"))
+            and _finite_number(
+                metrics.get("null_training_mean_mean_abs_relative_error")
+            )
             and _finite_number(metrics.get("shape_aware_mean_abs_relative_error")),
             (
                 f"shape={metrics.get('shape_aware_mean_abs_relative_error')} "
@@ -648,9 +648,8 @@ def _audit_failed_baseline_contract(
             and isinstance(data.get("null_training_mean_baseline"), dict)
             and _finite_number(linear_weight.get("mean_abs_relative_error"))
             and _finite_number(spectral.get("mean_abs_relative_error"))
-            and float(spectral["mean_abs_relative_error"]) > float(
-                promotion.get("transport_mean_relative_error_gate", 0.35)
-            )
+            and float(spectral["mean_abs_relative_error"])
+            > float(promotion.get("transport_mean_relative_error_gate", 0.35))
             and "spectral_envelope_ridge" not in accepted,
             (
                 f"accepted={accepted} "
@@ -730,21 +729,23 @@ def _audit_failed_baseline_contract(
         return (
             data.get("passed") is False
             and data.get("accepted_candidates", []) == []
-            and "required_candidate_transport_error" in promotion_gate.get("blockers", [])
+            and "required_candidate_transport_error"
+            in promotion_gate.get("blockers", [])
             and _finite_number(
                 data.get("metrics", {}).get("linear_weight_mean_abs_relative_error")
                 if isinstance(data.get("metrics"), dict)
                 else None
             )
             and _finite_number(
-                data.get("metrics", {}).get("null_training_mean_mean_abs_relative_error")
+                data.get("metrics", {}).get(
+                    "null_training_mean_mean_abs_relative_error"
+                )
                 if isinstance(data.get("metrics"), dict)
                 else None
             )
             and _gate_metric_passed(data, "absolute_flux_not_promoted")
             and all(
-                isinstance(report, dict)
-                and report.get("claim_level") != PROMOTED_CLAIM
+                isinstance(report, dict) and report.get("claim_level") != PROMOTED_CLAIM
                 for report in reports
             ),
             (
@@ -823,7 +824,8 @@ def _audit_failed_baseline_contract(
         )
         scoped_screening_pass = (
             gates.get("accepted_screening_models") == ["spectral_envelope_ridge"]
-            and gates.get("accepted_holdout_screening_models") == ["spectral_envelope_ridge"]
+            and gates.get("accepted_holdout_screening_models")
+            == ["spectral_envelope_ridge"]
             and gates.get("holdout_screening_correlation_passed") is True
             and spectral.get("screening_gate_passed") is True
             and spectral.get("holdout_screening_gate_passed") is True
@@ -842,7 +844,8 @@ def _audit_failed_baseline_contract(
             and _finite_number(spectral.get("spearman"))
             and _finite_number(spectral.get("holdout_spearman"))
             and float(spectral["spearman"]) < float(gates.get("spearman_gate", 0.75))
-            and float(spectral["holdout_spearman"]) < float(gates.get("spearman_gate", 0.75))
+            and float(spectral["holdout_spearman"])
+            < float(gates.get("spearman_gate", 0.75))
         )
         return (
             no_absolute_promotion and (scoped_screening_pass or fail_closed_screening),
@@ -872,8 +875,10 @@ def _audit_failed_baseline_contract(
         screening_fail_closed = (
             screening.get("screening_correlation_passed") is False
             and screening.get("holdout_screening_correlation_passed") is False
-            and "full_portfolio_screening_correlation_passed" in screening_reqs.get("blockers", [])
-            and "heldout_screening_correlation_passed" in screening_reqs.get("blockers", [])
+            and "full_portfolio_screening_correlation_passed"
+            in screening_reqs.get("blockers", [])
+            and "heldout_screening_correlation_passed"
+            in screening_reqs.get("blockers", [])
         )
         return (
             promotion.get("passed") is False
@@ -955,7 +960,9 @@ def _audit_manuscript_figures(
             if png_pos >= 0
             else ""
         )
-        index_mentions_json = rel_json in index_text or "json" in nearby_index_text.lower()
+        index_mentions_json = (
+            rel_json in index_text or "json" in nearby_index_text.lower()
+        )
         gates.append(
             _gate(
                 f"ql_figure_index_mentions_png:{rel_base}",
@@ -967,7 +974,9 @@ def _audit_manuscript_figures(
             _gate(
                 f"ql_figure_index_mentions_json_sidecar:{rel_base}",
                 index_mentions_json,
-                rel_json if rel_json in index_text else "nearby index text mentions JSON companion",
+                rel_json
+                if rel_json in index_text
+                else "nearby index text mentions JSON companion",
             )
         )
 

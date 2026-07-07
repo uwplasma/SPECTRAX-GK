@@ -320,7 +320,7 @@ if WRITE_LONG_NONLINEAR_AUDIT_CONFIGS:
         audit_out = NONLINEAR_AUDIT_OUT_DIR / state_label
         command = [
             sys.executable,
-            str(SPECTRAX_ROOT / "tools" / "write_optimized_equilibrium_transport_configs.py"),
+            str(SPECTRAX_ROOT / "campaigns" / "write_optimized_equilibrium_transport_configs.py"),
             "--vmec-file",
             str(wout_path),
             "--case",

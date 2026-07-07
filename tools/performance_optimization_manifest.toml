@@ -218,7 +218,7 @@ priority = "medium"
 platforms = ["multi_cpu", "multi_gpu"]
 cases = ["linear-scans", "ensemble-uq", "autodiff-sensitivities", "nonlinear-pilot"]
 profiling_tools = [
-  "tools/run_device_parity_gate.py",
+  "tools/campaigns/run_device_parity_gate.py",
   "tools/artifacts/plot_scaling_speedup.py",
   "tools/generate_parallel_ky_scan_gate.py",
   "tools/generate_logical_cpu_parallel_scan_gate.py",

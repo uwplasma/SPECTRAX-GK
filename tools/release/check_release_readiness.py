@@ -94,7 +94,9 @@ REQUIRED_STATIC_ARTIFACTS = (
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
-OPTIMIZATION_STATUS_ARTIFACT = "docs/_static/vmec_jax_qa_transport_optimization_status.json"
+OPTIMIZATION_STATUS_ARTIFACT = (
+    "docs/_static/vmec_jax_qa_transport_optimization_status.json"
+)
 REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "qa_baseline_gate_passed": True,
     "quasilinear_model_selection_passed": False,
@@ -182,7 +184,9 @@ def _read_json(path: Path) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         raise ReleaseReadinessError(f"invalid JSON in required file: {path}") from exc
     if not isinstance(payload, dict):
-        raise ReleaseReadinessError(f"required JSON file must contain an object: {path}")
+        raise ReleaseReadinessError(
+            f"required JSON file must contain an object: {path}"
+        )
     return payload
 
 
@@ -204,7 +208,9 @@ def _is_deferred_lane(lane: dict[str, Any]) -> bool:
 
 
 def _recomputed_active_summary(lanes: list[Any]) -> dict[str, Any]:
-    active = [lane for lane in lanes if isinstance(lane, dict) and not _is_deferred_lane(lane)]
+    active = [
+        lane for lane in lanes if isinstance(lane, dict) and not _is_deferred_lane(lane)
+    ]
     closed = [
         lane
         for lane in active
@@ -262,7 +268,9 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
     duplicate_labels: set[str] = set()
     for row in prelaunch_gates:
         if not isinstance(row, dict):
-            failures.append({"label": None, "reason": "prelaunch row must be an object"})
+            failures.append(
+                {"label": None, "reason": "prelaunch row must be an object"}
+            )
             continue
         label = row.get("label")
         if not isinstance(label, str) or not label:
@@ -280,7 +288,9 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
         label = str(contract["label"])
         row = rows_by_label.get(label)
         if row is None:
-            failures.append({"label": label, "reason": "missing required prelaunch gate"})
+            failures.append(
+                {"label": label, "reason": "missing required prelaunch gate"}
+            )
             continue
         if row.get("passed") is not True:
             failures.append(
@@ -319,7 +329,9 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
                 }
             )
         blockers = row.get("blockers")
-        if not isinstance(blockers, list) or not all(isinstance(item, str) for item in blockers):
+        if not isinstance(blockers, list) or not all(
+            isinstance(item, str) for item in blockers
+        ):
             failures.append(
                 {
                     "label": label,
@@ -347,7 +359,9 @@ def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]
                 }
             )
         sample_count = row.get("sample_count")
-        if not isinstance(sample_count, (int, float)) or float(sample_count) < float(contract["min_sample_count"]):
+        if not isinstance(sample_count, (int, float)) or float(sample_count) < float(
+            contract["min_sample_count"]
+        ):
             failures.append(
                 {
                     "label": label,
@@ -408,10 +422,14 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
     payload = _read_json(root / OPTIMIZATION_STATUS_ARTIFACT)
     summary = payload.get("summary")
     if not isinstance(summary, dict):
-        raise ReleaseReadinessError(f"{OPTIMIZATION_STATUS_ARTIFACT} missing summary object")
+        raise ReleaseReadinessError(
+            f"{OPTIMIZATION_STATUS_ARTIFACT} missing summary object"
+        )
     prelaunch_gates = payload.get("prelaunch_gates")
     if not isinstance(prelaunch_gates, list):
-        raise ReleaseReadinessError(f"{OPTIMIZATION_STATUS_ARTIFACT} missing prelaunch_gates list")
+        raise ReleaseReadinessError(
+            f"{OPTIMIZATION_STATUS_ARTIFACT} missing prelaunch_gates list"
+        )
 
     failed_flags = []
     for key, expected in REQUIRED_OPTIMIZATION_STATUS_FLAGS.items():
@@ -444,7 +462,9 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
         )
     else:
         missing_claim_blockers = [
-            blocker for blocker in REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS if blocker not in claim_blockers
+            blocker
+            for blocker in REQUIRED_OPTIMIZATION_CLAIM_BLOCKERS
+            if blocker not in claim_blockers
         ]
         if missing_claim_blockers:
             failed_flags.append(
@@ -522,12 +542,16 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     codecov_text = _read(root / "codecov.yml")
     missing_codecov = _missing_snippets(codecov_text, REQUIRED_CODECOV_SNIPPETS)
     if missing_codecov:
-        failures.append(f"codecov.yml missing wide-coverage status policy: {missing_codecov}")
+        failures.append(
+            f"codecov.yml missing wide-coverage status policy: {missing_codecov}"
+        )
 
     release_text = _read(root / ".github" / "workflows" / "release.yml")
     missing_release = _missing_snippets(release_text, REQUIRED_RELEASE_SNIPPETS)
     if missing_release:
-        failures.append(f"release.yml missing publish/version checks: {missing_release}")
+        failures.append(
+            f"release.yml missing publish/version checks: {missing_release}"
+        )
 
     readme_text = _read(root / "README.md")
     missing_readme = _missing_snippets(readme_text, REQUIRED_README_SNIPPETS)
@@ -538,7 +562,9 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         path for path in REQUIRED_STATIC_ARTIFACTS if not (root / path).exists()
     ]
     if missing_artifacts:
-        failures.append(f"missing required docs/static release artifacts: {missing_artifacts}")
+        failures.append(
+            f"missing required docs/static release artifacts: {missing_artifacts}"
+        )
 
     try:
         technical_status = _technical_release_status(root)

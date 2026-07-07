@@ -23,7 +23,11 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.gates import evaluate_scalar_gate, gate_report, gate_report_to_dict  # noqa: E402
+from spectraxgk.validation.gates import (
+    evaluate_scalar_gate,
+    gate_report,
+    gate_report_to_dict,
+)  # noqa: E402
 
 
 DEFAULT_OUT = ROOT / "docs" / "_static" / "external_vmec_high_grid_admission_gate.json"
@@ -61,7 +65,9 @@ def _load_json(path: Path, *, expected_kind: str | None = None) -> dict[str, Any
     if not isinstance(payload, dict):
         raise ValueError(f"{path} does not contain a JSON object")
     if expected_kind is not None and payload.get("kind") != expected_kind:
-        raise ValueError(f"{path} has kind {payload.get('kind')!r}; expected {expected_kind!r}")
+        raise ValueError(
+            f"{path} has kind {payload.get('kind')!r}; expected {expected_kind!r}"
+        )
     return payload
 
 
@@ -92,7 +98,9 @@ def _threshold(payload: dict[str, Any], key: str, default: float) -> float:
     return float(default)
 
 
-def _metric(payload: dict[str, Any], path: tuple[str, ...], default: float = float("inf")) -> float:
+def _metric(
+    payload: dict[str, Any], path: tuple[str, ...], default: float = float("inf")
+) -> float:
     item: Any = payload
     for key in path:
         if not isinstance(item, dict) or key not in item:
@@ -131,41 +139,70 @@ def build_high_grid_admission_payload(
     if value_floor < 0.0:
         raise ValueError("value_floor must be non-negative")
 
-    allowed_failures = set(allowed_full_grid_failures or DEFAULT_ALLOWED_FULL_GRID_FAILURES)
-    full_grid = _load_json(full_grid_gate_path, expected_kind="external_vmec_nonlinear_grid_convergence_gate")
+    allowed_failures = set(
+        allowed_full_grid_failures or DEFAULT_ALLOWED_FULL_GRID_FAILURES
+    )
+    full_grid = _load_json(
+        full_grid_gate_path,
+        expected_kind="external_vmec_nonlinear_grid_convergence_gate",
+    )
     high_grid_gates = [
         _load_json(path, expected_kind="external_vmec_nonlinear_grid_convergence_gate")
         for path in high_grid_gate_paths
     ]
-    time_horizon = _load_json(time_horizon_gate_path, expected_kind="external_vmec_time_horizon_gate")
+    time_horizon = _load_json(
+        time_horizon_gate_path, expected_kind="external_vmec_time_horizon_gate"
+    )
     replicate = _load_json(replicate_ensemble_path)
-    if replicate.get("kind") not in {"nonlinear_window_ensemble_report", "nonlinear_window_ensemble_gate"}:
-        raise ValueError(f"{replicate_ensemble_path} is not a nonlinear-window ensemble gate")
+    if replicate.get("kind") not in {
+        "nonlinear_window_ensemble_report",
+        "nonlinear_window_ensemble_gate",
+    }:
+        raise ValueError(
+            f"{replicate_ensemble_path} is not a nonlinear-window ensemble gate"
+        )
 
     full_labels = set(_grid_labels(full_grid))
     missing_excluded = sorted(set(excluded_grid_labels) - full_labels)
     missing_retained = sorted(set(retained_grid_labels) - full_labels)
     unexpected_full_failures = sorted(_failed_metrics(full_grid) - allowed_failures)
-    high_grid_failed_count = sum(0 if bool(gate.get("passed", False)) else 1 for gate in high_grid_gates)
+    high_grid_failed_count = sum(
+        0 if bool(gate.get("passed", False)) else 1 for gate in high_grid_gates
+    )
     high_grid_label_mismatch_count = sum(
-        0 if set(_grid_labels(gate)) == set(retained_grid_labels) else 1 for gate in high_grid_gates
+        0 if set(_grid_labels(gate)) == set(retained_grid_labels) else 1
+        for gate in high_grid_gates
     )
 
     max_high_grid_common_diff = max(
-        _metric(gate, ("common_window", "max_pairwise_heat_flux_symmetric_relative_difference"))
+        _metric(
+            gate,
+            ("common_window", "max_pairwise_heat_flux_symmetric_relative_difference"),
+        )
         for gate in high_grid_gates
     )
     max_high_grid_least_diff = max(
-        _metric(gate, ("least_windows", "max_pairwise_heat_flux_symmetric_relative_difference"))
+        _metric(
+            gate,
+            ("least_windows", "max_pairwise_heat_flux_symmetric_relative_difference"),
+        )
         for gate in high_grid_gates
     )
     max_pairwise_threshold = min(
-        _threshold(gate, "max_pairwise_relative_difference", DEFAULT_MAX_PAIRWISE_RELATIVE_DIFFERENCE)
+        _threshold(
+            gate,
+            "max_pairwise_relative_difference",
+            DEFAULT_MAX_PAIRWISE_RELATIVE_DIFFERENCE,
+        )
         for gate in high_grid_gates
     )
 
-    horizon_common_change = _metric(time_horizon, ("common_window_time_horizon_relative_change",))
-    horizon_least_change = _metric(time_horizon, ("least_window_time_horizon_relative_change",))
+    horizon_common_change = _metric(
+        time_horizon, ("common_window_time_horizon_relative_change",)
+    )
+    horizon_least_change = _metric(
+        time_horizon, ("least_window_time_horizon_relative_change",)
+    )
     horizon_threshold = _threshold(
         time_horizon,
         "max_relative_change",
@@ -183,8 +220,12 @@ def build_high_grid_admission_payload(
     ensemble_mean = float(statistics.get("ensemble_mean", float("nan")))
     mean_rel_spread = float(statistics.get("mean_rel_spread", float("inf")))
     combined_sem_rel = float(statistics.get("combined_sem_rel", float("inf")))
-    spread_threshold = float(config.get("max_mean_rel_spread", DEFAULT_MAX_MEAN_REL_SPREAD))
-    sem_threshold = float(config.get("max_combined_sem_rel", DEFAULT_MAX_COMBINED_SEM_REL))
+    spread_threshold = float(
+        config.get("max_mean_rel_spread", DEFAULT_MAX_MEAN_REL_SPREAD)
+    )
+    sem_threshold = float(
+        config.get("max_combined_sem_rel", DEFAULT_MAX_COMBINED_SEM_REL)
+    )
 
     gates = [
         evaluate_scalar_gate(
@@ -326,7 +367,9 @@ def build_high_grid_admission_payload(
         ),
         evaluate_scalar_gate(
             "nonzero_transport_mean_floor",
-            0.0 if math.isfinite(ensemble_mean) and abs(ensemble_mean) >= value_floor else 1.0,
+            0.0
+            if math.isfinite(ensemble_mean) and abs(ensemble_mean) >= value_floor
+            else 1.0,
             0.0,
             atol=0.0,
             rtol=0.0,
@@ -354,7 +397,9 @@ def build_high_grid_admission_payload(
             ),
             "inputs": {
                 "full_grid_gate": _repo_relative_path(full_grid_gate_path),
-                "high_grid_gates": [_repo_relative_path(path) for path in high_grid_gate_paths],
+                "high_grid_gates": [
+                    _repo_relative_path(path) for path in high_grid_gate_paths
+                ],
                 "time_horizon_gate": _repo_relative_path(time_horizon_gate_path),
                 "replicate_ensemble_gate": _repo_relative_path(replicate_ensemble_path),
             },
@@ -364,7 +409,9 @@ def build_high_grid_admission_payload(
                 "allowed_full_grid_failure_metrics": sorted(allowed_failures),
                 "min_replicates": int(min_replicates),
                 "value_floor": float(value_floor),
-                "calibration_use": "eligible_as_scoped_high_grid_holdout" if passed else "blocked",
+                "calibration_use": "eligible_as_scoped_high_grid_holdout"
+                if passed
+                else "blocked",
                 "restrictions": [
                     "do not describe as full n48/n64/n80 convergence",
                     "do not use for universal absolute-flux promotion without separate calibration gates",
@@ -465,8 +512,17 @@ def main(argv: list[str] | None = None) -> int:
         value_floor=args.value_floor,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
-    print(json.dumps({"out": _repo_relative_path(args.out), "passed": payload["passed"]}, indent=2, sort_keys=True))
+    args.out.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
+            {"out": _repo_relative_path(args.out), "passed": payload["passed"]},
+            indent=2,
+            sort_keys=True,
+        )
+    )
     return 0 if payload["passed"] else 1
 
 

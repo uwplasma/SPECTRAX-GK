@@ -24,8 +24,12 @@ from spectraxgk.objectives.portfolio_artifacts import (  # noqa: E402
 )
 
 
-DEFAULT_ROW_ARTIFACT = ROOT / "docs" / "_static" / "vmec_boozer_multi_point_objective_gate.json"
-DEFAULT_GRADIENT_ARTIFACT = ROOT / "docs" / "_static" / "vmec_boozer_quasilinear_gradient_gate.json"
+DEFAULT_ROW_ARTIFACT = (
+    ROOT / "docs" / "_static" / "vmec_boozer_multi_point_objective_gate.json"
+)
+DEFAULT_GRADIENT_ARTIFACT = (
+    ROOT / "docs" / "_static" / "vmec_boozer_quasilinear_gradient_gate.json"
+)
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_boozer_reduced_portfolio_guard.json"
 
 
@@ -53,7 +57,9 @@ def _read_json(path: Path) -> dict[str, Any]:
 def build_vmec_boozer_reduced_portfolio_guard_payload(
     *,
     row_artifact: str | Path = DEFAULT_ROW_ARTIFACT,
-    gradient_artifacts: list[str | Path] | tuple[str | Path, ...] = (DEFAULT_GRADIENT_ARTIFACT,),
+    gradient_artifacts: list[str | Path] | tuple[str | Path, ...] = (
+        DEFAULT_GRADIENT_ARTIFACT,
+    ),
     min_alphas: int = 2,
     min_ky: int = 2,
     min_objectives: int = 1,
@@ -94,7 +100,10 @@ def write_vmec_boozer_reduced_portfolio_guard_artifact(
 
     out_path = Path(out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_path.write_text(
+        json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return str(out_path)
 
 

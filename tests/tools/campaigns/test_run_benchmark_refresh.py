@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.run_benchmark_refresh import _load_manifest, _select_jobs
+from tools.campaigns.run_benchmark_refresh import _load_manifest, _select_jobs
 
 ROOT = Path(__file__).resolve().parents[3]
 

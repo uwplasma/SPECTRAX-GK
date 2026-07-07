@@ -15,7 +15,7 @@ from spectraxgk.validation.stellarator.candidate_gate import build_solved_vmec_c
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DRIVER = ROOT / "tools" / "vmec_jax_qa_low_turbulence_optimization.py"
+DRIVER = ROOT / "campaigns" / "vmec_jax_qa_low_turbulence_optimization.py"
 
 
 def _load_driver():

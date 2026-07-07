@@ -7,8 +7,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "finalize_nonlinear_transport_matrix_release.py"
-spec = importlib.util.spec_from_file_location("finalize_nonlinear_transport_matrix_release", SCRIPT)
+SCRIPT = ROOT / "tools" / "campaigns" / "finalize_nonlinear_transport_matrix_release.py"
+spec = importlib.util.spec_from_file_location(
+    "finalize_nonlinear_transport_matrix_release", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -28,7 +30,9 @@ def _write_png_stub(path: Path) -> Path:
     return path
 
 
-def test_finalize_imports_passing_portfolio_without_dashboard_regeneration(tmp_path: Path) -> None:
+def test_finalize_imports_passing_portfolio_without_dashboard_regeneration(
+    tmp_path: Path,
+) -> None:
     portfolio = _write_json(
         tmp_path / "portfolio.json",
         {
@@ -60,9 +64,9 @@ def test_finalize_imports_passing_portfolio_without_dashboard_regeneration(tmp_p
     assert (docs_static / "nonlinear_transport_matrix_portfolio.json").exists()
     assert (docs_static / "projected_0p001_matrix_report.json").exists()
     saved = json.loads(
-        (docs_static / "nonlinear_transport_matrix_release_finalization.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            docs_static / "nonlinear_transport_matrix_release_finalization.json"
+        ).read_text(encoding="utf-8")
     )
     assert saved["kind"] == "nonlinear_transport_matrix_release_finalization"
     assert saved["selected_family"] == "projected_0p001"
@@ -128,8 +132,8 @@ def test_finalize_cli_smoke(tmp_path: Path) -> None:
 
     assert rc == 0
     payload = json.loads(
-        (docs_static / "nonlinear_transport_matrix_release_finalization.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            docs_static / "nonlinear_transport_matrix_release_finalization.json"
+        ).read_text(encoding="utf-8")
     )
     assert payload["selected_family"] == "accepted_qa_ess"

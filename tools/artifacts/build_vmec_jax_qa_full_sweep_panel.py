@@ -578,7 +578,7 @@ def _nonlinear_audit_command(
     token = _audit_case_token(case_id)
     out_dir = ROOT / "tools_out" / "vmec_qa_full_sweep_nonlinear_audits" / token
     return (
-        "python3 tools/write_optimized_equilibrium_transport_configs.py "
+        "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py "
         f"--vmec-file {_repo_relative(wout_path)} "
         f"--case {token} "
         f"--out-dir {_repo_relative(out_dir)} "

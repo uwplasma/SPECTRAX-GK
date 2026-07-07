@@ -9,7 +9,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "run_nonlinear_gradient_manifest_postprocess.py"
+SCRIPT = ROOT / "tools" / "campaigns" / "run_nonlinear_gradient_manifest_postprocess.py"
 
 
 def _load_tool_module():
@@ -139,5 +139,7 @@ def test_load_manifest_rejects_wrong_kind(tmp_path: Path) -> None:
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps({"kind": "other"}), encoding="utf-8")
 
-    with pytest.raises(ValueError, match="nonlinear_turbulence_gradient_campaign_manifest"):
+    with pytest.raises(
+        ValueError, match="nonlinear_turbulence_gradient_campaign_manifest"
+    ):
         mod.load_manifest(manifest_path)

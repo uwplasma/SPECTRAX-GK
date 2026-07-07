@@ -18,7 +18,17 @@ from pathlib import Path
 from typing import Iterable
 
 ROOT_MARKERS = ("pyproject.toml", ".git")
-TEXT_SUFFIXES = {".py", ".toml", ".rst", ".md", ".yml", ".yaml", ".json", ".csv", ".txt"}
+TEXT_SUFFIXES = {
+    ".py",
+    ".toml",
+    ".rst",
+    ".md",
+    ".yml",
+    ".yaml",
+    ".json",
+    ".csv",
+    ".txt",
+}
 
 
 @dataclass(frozen=True)
@@ -65,7 +75,11 @@ def _area(rel: Path) -> str:
     if len(rel.parts) == 1:
         return "root"
     if rel.parts[0] == "src" and len(rel.parts) > 2 and rel.parts[1] == "spectraxgk":
-        return "src/spectraxgk" if len(rel.parts) == 3 else f"src/spectraxgk/{rel.parts[2]}"
+        return (
+            "src/spectraxgk"
+            if len(rel.parts) == 3
+            else f"src/spectraxgk/{rel.parts[2]}"
+        )
     if rel.parts[0] in {"tests", "tools", "examples", "benchmarks", "docs"}:
         return rel.parts[0] if len(rel.parts) == 1 else f"{rel.parts[0]}/{rel.parts[1]}"
     return rel.parts[0]
@@ -84,29 +98,74 @@ def _role_and_action(rel: Path) -> tuple[str, str, str]:
                 "move-or-shrink",
                 "candidate for benchmarks/, tools/campaigns/, tests/validation, or small metric facade",
             )
-        return "promoted library code", "keep-and-consolidate", "must preserve public behavior and JAX contracts"
+        return (
+            "promoted library code",
+            "keep-and-consolidate",
+            "must preserve public behavior and JAX contracts",
+        )
 
     if parts[0] == "tests":
         if len(parts) == 2:
-            return "flat test", "move-or-merge", "root-level tests should move into domain folders"
-        return "organized test", "keep-or-merge", "keep coverage while reducing one-file-per-wrapper tests"
+            return (
+                "flat test",
+                "move-or-merge",
+                "root-level tests should move into domain folders",
+            )
+        return (
+            "organized test",
+            "keep-or-merge",
+            "keep coverage while reducing one-file-per-wrapper tests",
+        )
 
     if parts[0] == "tools":
         if name == "README.md":
             return "tool documentation", "keep", "documents maintenance-tool ownership"
         if len(parts) == 2 and rel.suffix == ".py":
             if stem.startswith(("probe_", "debug_")):
-                return "probe/debug tool", "delete-or-move-out-of-main", "not a maintained release entry point"
+                return (
+                    "probe/debug tool",
+                    "delete-or-move-out-of-main",
+                    "not a maintained release entry point",
+                )
             if stem.startswith(("compare_", "generate_gx_")):
-                return "comparison utility", "move", "belongs under tools/comparison if still current"
+                return (
+                    "comparison utility",
+                    "move",
+                    "belongs under tools/comparison if still current",
+                )
             if stem.startswith(("profile_", "benchmark_")):
-                return "profiling/performance tool", "move", "belongs under tools/profiling or benchmarks"
-            if stem.startswith(("build_", "plot_", "make_", "digitize_", "derive_", "compress_")):
-                return "artifact builder", "move-or-merge", "belongs under tools/artifacts if output is referenced"
+                return (
+                    "profiling/performance tool",
+                    "move",
+                    "belongs under tools/profiling or benchmarks",
+                )
+            if stem.startswith(
+                ("build_", "plot_", "make_", "digitize_", "derive_", "compress_")
+            ):
+                return (
+                    "artifact builder",
+                    "move-or-merge",
+                    "belongs under tools/artifacts if output is referenced",
+                )
             if stem.startswith(("check_", "audit_", "run_tests", "run_wide_coverage")):
                 return "release gate", "move", "belongs under tools/release"
-            if stem.startswith(("write_", "run_", "postprocess_", "prepare_", "finalize_", "import_", "rank_", "design_")):
-                return "campaign helper", "move-or-delete", "keep only if documented active campaign"
+            if stem.startswith(
+                (
+                    "write_",
+                    "run_",
+                    "postprocess_",
+                    "prepare_",
+                    "finalize_",
+                    "import_",
+                    "rank_",
+                    "design_",
+                )
+            ):
+                return (
+                    "campaign helper",
+                    "move-or-delete",
+                    "keep only if documented active campaign",
+                )
             return "flat maintenance tool", "classify", "needs owner review"
         if len(parts) > 2:
             folder = parts[1]
@@ -121,7 +180,11 @@ def _role_and_action(rel: Path) -> tuple[str, str, str]:
         return "tool support file", "keep-or-review", "non-python tool asset"
 
     if parts[0] == "examples":
-        return "public example", "keep-or-scope", "must be runnable or explicitly marked long/manual"
+        return (
+            "public example",
+            "keep-or-scope",
+            "must be runnable or explicitly marked long/manual",
+        )
 
     if parts[0] == "benchmarks":
         if parts[1:2] == ("results",):
@@ -130,10 +193,17 @@ def _role_and_action(rel: Path) -> tuple[str, str, str]:
 
     if parts[0] == "docs":
         if len(parts) > 1 and parts[1] == "_static":
-            return "docs artifact", "keep-if-referenced", "delete stale generated companions"
+            return (
+                "docs artifact",
+                "keep-if-referenced",
+                "delete stale generated companions",
+            )
         return "documentation", "keep-current", "must match promoted claims and layout"
 
-    if parts[0] in {".github", "pyproject.toml", "uv.lock"} or path in {"pyproject.toml", "uv.lock"}:
+    if parts[0] in {".github", "pyproject.toml", "uv.lock"} or path in {
+        "pyproject.toml",
+        "uv.lock",
+    }:
         return "project infrastructure", "keep", "release/build/CI infrastructure"
 
     return "repository support", "keep-or-review", "classify during consolidation"
@@ -165,14 +235,22 @@ def build_inventory(root: Path) -> list[InventoryRow]:
 
 def _write_json(rows: Iterable[InventoryRow], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps([asdict(row) for row in rows], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps([asdict(row) for row in rows], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _write_csv(rows: Iterable[InventoryRow], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     rows = list(rows)
     with out.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(asdict(rows[0]).keys()) if rows else list(InventoryRow.__annotations__))
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=list(asdict(rows[0]).keys())
+            if rows
+            else list(InventoryRow.__annotations__),
+        )
         writer.writeheader()
         for row in rows:
             writer.writerow(asdict(row))
@@ -189,10 +267,17 @@ def _summary(rows: Iterable[InventoryRow]) -> dict[str, dict[str, int]]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root or any path inside it.")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="Repository root or any path inside it.",
+    )
     parser.add_argument("--json-out", type=Path, help="Write full inventory JSON.")
     parser.add_argument("--csv-out", type=Path, help="Write full inventory CSV.")
-    parser.add_argument("--summary-json-out", type=Path, help="Write action summary JSON.")
+    parser.add_argument(
+        "--summary-json-out", type=Path, help="Write action summary JSON."
+    )
     return parser
 
 
@@ -207,8 +292,14 @@ def main() -> int:
     summary = _summary(rows)
     if args.summary_json_out:
         args.summary_json_out.parent.mkdir(parents=True, exist_ok=True)
-        args.summary_json_out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"tracked_files": len(rows), "actions": summary}, indent=2, sort_keys=True))
+        args.summary_json_out.write_text(
+            json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    print(
+        json.dumps(
+            {"tracked_files": len(rows), "actions": summary}, indent=2, sort_keys=True
+        )
+    )
     return 0
 
 

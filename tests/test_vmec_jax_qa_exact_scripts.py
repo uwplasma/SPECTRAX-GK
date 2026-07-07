@@ -76,7 +76,7 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     assert "python examples/optimization/QA_optimization_nonlinear_ITG.py" in examples_readme
     assert "python examples/optimization/QA_nonlinear_ITG_matched_audit.py" in examples_readme
     assert "python examples/optimization/QA_nonlinear_ITG_transport_matrix.py" in examples_readme
-    assert "python tools/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
+    assert "python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
     assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" not in examples_readme
 
 
@@ -244,7 +244,7 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
             assert "scalar_trust" in text, path
             assert "custom-VJP" in text or "custom VJP" in text, path
             assert "not a transport-optimization success claim" in normalized, path
-            assert "tools/finalize_nonlinear_transport_matrix_release.py" in text, path
+            assert "tools/campaigns/finalize_nonlinear_transport_matrix_release.py" in text, path
 
 
 def test_optimization_examples_document_user_customization_knobs() -> None:

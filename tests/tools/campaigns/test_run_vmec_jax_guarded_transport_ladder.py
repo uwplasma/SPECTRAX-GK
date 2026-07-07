@@ -7,8 +7,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "run_vmec_jax_guarded_transport_ladder.py"
-spec = importlib.util.spec_from_file_location("run_vmec_jax_guarded_transport_ladder", SCRIPT)
+SCRIPT = ROOT / "tools" / "campaigns" / "run_vmec_jax_guarded_transport_ladder.py"
+spec = importlib.util.spec_from_file_location(
+    "run_vmec_jax_guarded_transport_ladder", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -16,7 +18,9 @@ sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
-def _write_candidate(root: Path, *, passed: bool, objective: float, qs: float = 0.02) -> None:
+def _write_candidate(
+    root: Path, *, passed: bool, objective: float, qs: float = 0.02
+) -> None:
     root.mkdir(parents=True, exist_ok=True)
     (root / "history.json").write_text(
         json.dumps(
@@ -46,7 +50,9 @@ def _write_candidate(root: Path, *, passed: bool, objective: float, qs: float = 
     )
 
 
-def test_select_promoted_candidate_uses_largest_passing_transport_weight(tmp_path: Path) -> None:
+def test_select_promoted_candidate_uses_largest_passing_transport_weight(
+    tmp_path: Path,
+) -> None:
     baseline = tmp_path / "baseline"
     low = tmp_path / "low"
     high = tmp_path / "high"
@@ -70,7 +76,9 @@ def test_select_promoted_candidate_uses_largest_passing_transport_weight(tmp_pat
     assert selected["transport_weight"] == 0.005
 
 
-def test_select_promoted_candidate_requires_transport_improvement(tmp_path: Path) -> None:
+def test_select_promoted_candidate_requires_transport_improvement(
+    tmp_path: Path,
+) -> None:
     baseline = tmp_path / "baseline"
     worse = tmp_path / "worse"
     _write_candidate(baseline, passed=True, objective=0.04)
@@ -121,7 +129,9 @@ def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
     assert payload["promoted_candidate"]["baseline"] is True
 
 
-def test_guarded_ladder_can_disable_profile_floor_for_strict_mean_iota_baseline(tmp_path: Path) -> None:
+def test_guarded_ladder_can_disable_profile_floor_for_strict_mean_iota_baseline(
+    tmp_path: Path,
+) -> None:
     constraints = tmp_path / "constraints"
     _write_candidate(constraints, passed=True, objective=0.03)
     (constraints / "input.final").write_text("! vmec restart\n", encoding="utf-8")
@@ -156,7 +166,9 @@ def test_guarded_ladder_can_disable_profile_floor_for_strict_mean_iota_baseline(
     assert command.count("--disable-iota-profile-floor") == 1
 
 
-def test_guarded_ladder_uses_explicit_baseline_transport_metric_for_constraints_only_history(tmp_path: Path) -> None:
+def test_guarded_ladder_uses_explicit_baseline_transport_metric_for_constraints_only_history(
+    tmp_path: Path,
+) -> None:
     constraints = tmp_path / "constraints"
     _write_candidate(constraints, passed=True, objective=99.0)
     (constraints / "input.final").write_text("! vmec restart\n", encoding="utf-8")
@@ -200,7 +212,9 @@ def test_guarded_ladder_uses_explicit_baseline_transport_metric_for_constraints_
     assert baseline["objective_final"] == 99.0
     assert baseline["transport_metric_final"] == 0.08
     assert baseline["transport_metric_kind"] == "nonlinear_window_heat_flux"
-    assert admitted_baseline["transport_metric"]["source"] == "transport_objective_final"
+    assert (
+        admitted_baseline["transport_metric"]["source"] == "transport_objective_final"
+    )
     assert admitted_baseline["transport_metric"]["uses_total_objective_proxy"] is False
 
 
@@ -264,7 +278,11 @@ def test_candidate_summary_keeps_reconstructed_gate_advisory_by_default(
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(mod, "_load_wout_iota_profiles", lambda _root: ([0.0, 0.411, 0.414], [0.412, 0.414]))
+    monkeypatch.setattr(
+        mod,
+        "_load_wout_iota_profiles",
+        lambda _root: ([0.0, 0.411, 0.414], [0.412, 0.414]),
+    )
 
     summary = mod.candidate_summary(
         constraints,
@@ -304,7 +322,11 @@ def test_candidate_summary_can_allow_reconstructed_gate_for_exploration(
         encoding="utf-8",
     )
 
-    monkeypatch.setattr(mod, "_load_wout_iota_profiles", lambda _root: ([0.0, 0.411, 0.414], [0.412, 0.414]))
+    monkeypatch.setattr(
+        mod,
+        "_load_wout_iota_profiles",
+        lambda _root: ([0.0, 0.411, 0.414], [0.412, 0.414]),
+    )
 
     summary = mod.candidate_summary(
         constraints,

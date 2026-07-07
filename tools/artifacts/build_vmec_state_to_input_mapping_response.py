@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.write_vmec_boundary_perturbation_inputs import _json_clean  # noqa: E402
+from tools.campaigns.write_vmec_boundary_perturbation_inputs import _json_clean  # noqa: E402
 
 
 DEFAULT_OUT_PREFIX = (

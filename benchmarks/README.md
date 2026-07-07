@@ -31,5 +31,5 @@ simulation directories:
 
 ```bash
 python tools/make_benchmark_atlas.py
-python tools/run_benchmark_refresh.py --list
+python tools/campaigns/run_benchmark_refresh.py --list
 ```

@@ -169,7 +169,7 @@ After the portfolio gate passes, finalize the release-facing docs and status
 panels with the fail-closed wrapper:
 
 ```bash
-python tools/finalize_nonlinear_transport_matrix_release.py \
+python tools/campaigns/finalize_nonlinear_transport_matrix_release.py \
   --portfolio-json tools_out/nonlinear_transport_matrix_portfolio.json \
   --portfolio-figure tools_out/nonlinear_transport_matrix_portfolio.png \
   --matrix-report-json selected_family=tools_out/selected_matrix/artifacts/selected_matrix_report.json \
@@ -196,13 +196,13 @@ solved-WOUT admission gates, and bounded optimizer-budget checks live under
 `tools/` so the examples remain close to VMEC-JAX `QA_optimization.py`:
 
 ```bash
-python tools/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 ```
 
 A typical constraints-only branch is:
 
 ```bash
-python tools/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
   --constraints-only \
   --use-simple-seed \
   --max-mode 5 \
@@ -216,7 +216,7 @@ python tools/vmec_jax_qa_low_turbulence_optimization.py \
 For paper-facing sweeps, prefer the strict upstream baseline preset:
 
 ```bash
-python tools/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
   --strict-upstream-qa-baseline \
   --solver-device gpu \
   --outdir runs/qa_baseline_strict_upstream
@@ -234,7 +234,7 @@ For optimizer-comparison campaigns, generate commands from one manifest rather
 than by hand-editing launch scripts:
 
 ```bash
-python tools/write_vmec_jax_optimizer_comparison_manifest.py \
+python tools/campaigns/write_vmec_jax_optimizer_comparison_manifest.py \
   --campaign-root tools_out/vmec_jax_qa_optimizer_comparison_campaign \
   --out-json docs/_static/vmec_jax_qa_optimizer_comparison_manifest.json
 ```
@@ -256,7 +256,7 @@ against this stricter WOUT.
 A transport-aware branch should start from a solved baseline and use a small transport weight:
 
 ```bash
-python tools/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/campaigns/vmec_jax_qa_low_turbulence_optimization.py \
   --use-simple-seed \
   --max-mode 5 \
   --min-vmec-mode 7 \

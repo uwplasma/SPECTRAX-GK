@@ -254,7 +254,7 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(
 
     command = row["recommended_nonlinear_audit_command"]
     assert command.startswith(
-        "python3 tools/write_optimized_equilibrium_transport_configs.py"
+        "python3 tools/campaigns/write_optimized_equilibrium_transport_configs.py"
     )
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--horizons 700,1100,1500" in command
