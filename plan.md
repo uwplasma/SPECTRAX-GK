@@ -251,46 +251,54 @@ ambiguity, not just move files.
 ## Latest Complexity Audit And Consolidation Decisions
 
 Audited on 2026-07-07 after commit
-`1aa584b2 Consolidate VMEC aggregate artifact tests`:
+`71d0f2de Consolidate VMEC Boozer artifact tests`:
 
-- Branches are not the complexity problem: only `main`/`origin/main` exist.
-  Stale detached worktree metadata was pruned.
-- The git object pack is still about 133 MiB after earlier history cleanup.
-  No tracked file is above 1 MiB; the remaining clone size is mostly historical
-  packed objects plus many small tracked docs/static artifacts.
-- Ignored local noise is large but not release-blocking: `.venv`,
-  `tools_out`, `outputs`, caches, docs build products, and generated VMEC
-  `wout_*.nc` files are ignored and should stay untracked.
-- The installable source still has 351 Python files. The largest structural
-  offender is `src/spectraxgk/validation` with 88 installable files.
-- The test tree now has 303 Python files after adding the shared
-  `tests/support/paths.py` helper. The flat `tests/` root is closed except for
-  the required `conftest.py`; the final runtime/executable aggregate tests now
-  live under `tests/integration/runtime`.
-- `tools/` has 260 Python scripts after adding purpose-folder package
-  initializers. The flat top-level `tools/` problem is closed: only
-  `tools/__init__.py` remains there.
-- The current tool folders are `tools/artifacts` with 126 scripts,
-  `tools/campaigns` with 48 scripts, `tools/comparison` with 34 scripts,
-  `tools/profiling` with 22 scripts, and `tools/release` with 29 scripts;
-  performance benchmark drivers now live under `benchmarks/performance`. The
-  next tool move should merge duplicated builders/status tools within those
-  purpose folders rather than adding new folders.
-- `benchmarks/` is already at the root and is small: 12 Python files. It should
-  stay as the canonical lightweight benchmark-driver layer, not absorb raw
-  results or long campaign histories.
-- `examples/` has 42 Python files. The main risk is not count, but scope:
-  theory/demo and optimization scripts must be clearly marked as promoted,
-  pedagogical, benchmark, or long-run research.
-- `docs/code_structure.rst` still mirrors the migration history and is too
-  verbose. It should become a concise developer guide after the file moves,
-  not an archival list of every split file.
-- Keyword scans show that remaining `probe`, `synthetic`, `legacy`, and
-  comparison-code terms are concentrated in documentation, tools/artifacts,
-  tests/tools, and validation campaign code rather than current solver kernels.
-  They should be audited by owner: keep explicit benchmark/comparison terms,
-  preserve only scoped pedagogical synthetic references, and remove terms that
-  describe retired implementation paths.
+- Branch and PR hygiene is clean. This clone has only `main` and `origin/main`;
+  obsolete experimental PRs #4, #5, and #6 remain closed; PR #7 is merged. The
+  current CI run for `71d0f2de` is queued and earlier runs were cancelled by
+  newer pushes, so the next check is to inspect that run after more work rather
+  than polling continuously.
+- The active topology is `src/spectraxgk`: 351 Python files,
+  `tests`: 255 Python files, `tools`: 260 Python files, `examples`: 42 Python
+  files, and `benchmarks`: 12 Python files. The recent artifact-test
+  consolidations reduced `tests/tools/artifacts` from 94 to 35 files while
+  preserving focused artifact gates.
+- `docs/_static` is the largest tracked data footprint by count and size:
+  1,572 tracked files and about 36.4 MiB, mostly compressed PNG/JSON/CSV
+  validation artifacts. This is acceptable for release size, but every retained
+  artifact must be referenced by README/docs or a release/artifact manifest.
+- No tracked raw NetCDF, HDF5, pickle, or large generated outputs are present.
+  The only tracked binary array bundles are the two small reference-mode NPZ
+  files under `docs/_static/reference_modes`.
+- The largest structural source offender is still
+  `src/spectraxgk/validation`: 88 installable Python files and about 17k lines.
+  It mixes benchmark branch policies, nonlinear-gradient campaigns,
+  quasilinear ledgers, and stellarator campaign gates with the runtime package.
+- The largest test-maintenance offenders are
+  `tests/integration/runtime/test_runtime_runner.py` at about 4.2k lines,
+  `tests/validation/benchmarks/test_benchmarks_runner_branches.py` at about
+  3.0k lines, plus several 1.3k-2.3k line aggregate tests. The problem is now
+  not flat roots, but giant historical-branch files and one-family-per-script
+  preservation.
+- The largest tool-maintenance offenders remain `tools/artifacts` with
+  126 scripts, `tools/campaigns` with 48 scripts, `tools/comparison` with
+  34 scripts, `tools/profiling` with 22 scripts, and `tools/release` with
+  29 scripts. The next tool work should merge duplicate builders/checkers
+  inside these folders, not create more folders.
+- `benchmarks/` is already correctly at the root and small. It should stay as
+  the lightweight benchmark-driver layer; long campaign launchers and generated
+  outputs should not move into it.
+- Keyword scans show that `probe`, `pilot`, `synthetic`, `reduced`, `legacy`,
+  and comparison-code terms are concentrated in docs, examples, tests/tools,
+  `tools/artifacts`, `tools/campaigns`, and `src/spectraxgk/validation`.
+  Current solver kernels are less affected, which means cleanup should focus on
+  claims, examples, campaign scaffolding, and validation packaging first.
+- Current profiler manifests identify the real performance-risk zones as
+  cold-start compilation, linear cache construction, linear RHS kernels,
+  nonlinear bracket/field-solve/full-RHS throughput, diagnostic
+  materialization, VMEC/Boozer sampling and conversion, and nonlinear domain
+  decomposition communication. No new speedup claim should be made without
+  fresh profiler and numerical-identity evidence.
 
 Decision rules from this audit:
 
@@ -307,22 +315,33 @@ Decision rules from this audit:
    comparison utility.
 6. If a feature is not promoted, validated, documented, and tested, it should
    not stay in the main runtime path.
+7. If a refactor would only make fewer but much larger files, reject it. The
+   intended outcome is fewer concepts, fewer duplicated policies, fewer public
+   aliases, and clearer domain ownership.
 
 Immediate execution sequence from this audited state:
 
-1. Collapse `tests/tools/artifacts` and `tools/artifacts` by capability. The
-   first target is the VMEC, quasilinear, nonlinear, W7-X, and parallel/status
-   builder families, because they account for most one-file-per-script sprawl.
+1. Finish artifact-test and artifact-tool consolidation down to capability
+   families. The next target is to get `tests/tools/artifacts` below 30 by
+   merging the remaining small single-builder tests, then start merging
+   `tools/artifacts` builders with repeated schemas into manifest-driven
+   builders.
 2. Split or parametrize the two largest historical branch tests:
    `tests/integration/runtime/test_runtime_runner.py` and
-   `tests/validation/benchmarks/test_benchmarks_runner_branches.py`.
-3. Use the repository inventory to delete or move no-owner probe, pilot,
-   reduced, synthetic, and candidate scripts whose only role is historical
-   campaign scaffolding.
-4. Start validation-out-of-package only after the next tool/test consolidation
-   tranche, so import rewrites are not repeated across hundreds of tests.
-5. Rebuild `docs/code_structure.rst` and `docs/architecture_refactor_plan.rst`
-   from the new ownership map once the first validation-out-of-package move
+   `tests/validation/benchmarks/test_benchmarks_runner_branches.py`. The split
+   should produce behavior contracts, not more case-history files.
+3. Start validation-out-of-package with `src/spectraxgk/validation/benchmarks`.
+   Move benchmark harnesses to root `benchmarks/` or tests, and keep only
+   reusable diagnostics in `src`.
+4. Audit `docs/_static` references and delete unreferenced pilot/probe artifacts
+   before adding new figures.
+5. Rename comparison-code terminology in source/tests where it is not an
+   explicit benchmark/comparison context.
+6. Only after topology and ownership shrink, run profiler-backed hot-path
+   refactors: default demo latency, linear cache/RHS, nonlinear RHS/bracket,
+   diagnostic streaming, and VMEC/Boozer in-memory geometry.
+7. Rebuild `docs/code_structure.rst` and `docs/architecture_refactor_plan.rst`
+   as concise developer guides after the first validation-out-of-package move
    lands.
 
 ## Final Consolidation Model
