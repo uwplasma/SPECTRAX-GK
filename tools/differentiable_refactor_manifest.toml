@@ -1070,7 +1070,7 @@ moved_exports = [
   "build_boundary_chain_collection_summary",
   "build_boundary_chain_summary",
 ]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_vmec_misc_artifact_reports.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1085,7 +1085,7 @@ moved_exports = [
   "_collection_row",
   "_empty_boundary_chain_counts",
 ]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_build_vmec_jax_boundary_chain_collection.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_boundary_chain.py", "tests/tools/artifacts/test_vmec_misc_artifact_reports.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

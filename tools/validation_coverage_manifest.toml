@@ -1180,7 +1180,7 @@ fast_tests = [
   "tests/unit/nonlinear/test_nonlinear_replicate_followup.py",
   "tests/tools/campaigns/test_write_nonlinear_replicate_followup_campaign.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
-  "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",
+  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json",
@@ -1279,7 +1279,7 @@ fast_tests = [
   "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
-  "tests/tools/artifacts/test_build_external_vmec_replicate_ensemble.py",
+  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
   "tests/tools/campaigns/test_prepare_external_vmec_holdout_from_screen.py",
 ]
 artifact_paths = [
@@ -2285,12 +2285,11 @@ fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
   "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
   "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
-  "tests/tools/artifacts/test_build_vmec_state_to_input_mapping_response.py",
+  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
   "tests/tools/campaigns/test_write_vmec_boundary_perturbation_inputs.py",
   "tests/tools/campaigns/test_write_vmec_state_to_input_mapping_campaign.py",
   "tests/tools/campaigns/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py",
   "tests/tools/campaigns/test_write_vmec_state_control_short_bracket_launch.py",
-  "tests/tools/artifacts/test_build_vmec_state_control_bracket_sweep_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
