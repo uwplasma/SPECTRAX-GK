@@ -52,9 +52,132 @@ deleted from `main` or moved to a draft experiment branch/PR.
   release decisions stay in `tools/release`, and installable validation
   packages disappear.
 
+### 2026-07-07 Final Topology Audit And Refactor Direction
+
+This audit supersedes older count snapshots below where they conflict.
+
+Current tracked state after the latest consolidation:
+
+- Branches: only `main` and `origin/main`. There are no obsolete local or remote
+  branches to prune in this checkout. Future experiments should live in one
+  draft PR until the full refactor plan is complete, not in multiple active
+  branches.
+- Tracked files: 2,526. Tracked generated Python cache files: 0. Tracked NetCDF
+  files: 0. The local large files visible in simple filesystem scans are ignored
+  cache/build/output directories, not tracked release content.
+- Tracked docs/static evidence: 1,572 files and about 34.7 MiB. This is useful
+  publication/validation evidence, but it must be pruned by reference graph:
+  keep only README/docs/release-manifest referenced figures, compact JSON
+  summaries, and benchmark evidence that backs a current claim.
+- Root `benchmarks/`: 12 Python files and about 1.6k LOC. This is already a
+  clear reproducibility layer and should stay at the repository root. Do not
+  merge it into `tools/` or `examples/`.
+- Installed package: 291 Python files and about 101.3k LOC. The main blockers
+  are `validation/benchmarks` (15 files), `objectives` (41 files),
+  `geometry_backends` (18 files), dual `terms`/`operators` ownership, and
+  large runtime/artifact facades.
+- Tests: 243 Python files and about 96.7k LOC. The blocker is not coverage; it
+  is one-file-per-tool and monkeypatch-heavy historical branch testing. The
+  largest targets are runtime integration, benchmark branch tests, artifact
+  tool tests, and comparison-tool tests.
+- Tools: 247 Python files and about 100.7k LOC. Tool folders are conceptually
+  right (`artifacts`, `campaigns`, `comparison`, `profiling`, `release`), but
+  each still has too many single-panel, single-campaign, or single-status entry
+  points.
+
+External design anchors for the refactor:
+
+- JAX kernels must stay pure-function-first: all differentiable state passes in
+  arguments and returns values; side effects belong in CLI, tool, and artifact
+  layers. See the JAX sharp-bits guidance on pure functions:
+  https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html
+- Avoid shape-changing branches inside hot JIT paths. Static configuration,
+  pytrees, and fixed-shape batch policies should own branch selection before a
+  compiled kernel is called. See JAX control-flow and pytree guidance:
+  https://docs.jax.dev/en/latest/control-flow.html and
+  https://docs.jax.dev/en/latest/pytrees.html
+- Compile latency is a real user-facing performance cost. The CLI can use
+  non-differentiable progress/reporting paths, persistent compilation cache, and
+  ahead-of-time lowering where useful; Python APIs should expose differentiable
+  kernels and objective functions without printing or writing files. See:
+  https://docs.jax.dev/en/latest/persistent_compilation_cache.html
+- Developer workflows should be task-family based, not script-count based. The
+  Scientific Python development guide recommends explicit task runners for
+  recurring docs/tests/release tasks:
+  https://learn.scientific-python.org/development/guides/tasks/
+
+Final package target layout:
+
+| Domain | Target role | File-count target | Consolidation rule |
+| --- | --- | ---: | --- |
+| `core` | grids, species, normalizations, typed state | 6-8 | small stable dataclasses and shape contracts only |
+| `geometry` | Miller, VMEC, Boozer, field-line and differentiable geometry providers | 12-16 | absorb `geometry_backends`; keep provider facades, merge tiny backend shards |
+| `operators` | linear/nonlinear RHS kernels, fields, brackets, gyroaverages, dissipation | 14-18 | either absorb `terms` or make `terms` a documented mathematical API, not both |
+| `solvers` | time stepping, Krylov/eigen, explicit/IMEX policies | 14-18 | keep solver policy separate from physics kernels; no benchmark branch logic |
+| `diagnostics` | growth/frequency, transport windows, QL calibration, validation gates | 14-18 | reusable metrics only; campaign-specific ledgers move to tools/docs artifacts |
+| `objectives` | differentiable linear, QL, nonlinear-window, VMEC/Boozer, zonal objectives | 12-18 | merge tiny `vmec_*`, `qa_*`, and portfolio shards by objective family |
+| `parallel` | independent-work batching and validated decomposition kernels | 5-8 | only identity-gated production paths, no experimental speedup wrappers |
+| `workflows` | runtime orchestration, TOML, plotting, restart, public executable flow | 8-12 | non-differentiable side effects stay here, not in kernels/objectives |
+| `artifacts` | NetCDF, plotting, restart, documented output contracts | 8-12 | merge by artifact type; no one-file-per-output-section helpers |
+| `benchmarks` facade | documented public benchmark API only | 1-3 | no installable `validation.benchmarks` package behind it |
+
+Final test layout:
+
+| Test domain | Target | Consolidation rule |
+| --- | ---: | --- |
+| `tests/unit` | 35-45 files | one file per stable domain contract, not per helper module |
+| `tests/integration/runtime` | 5-7 files | config, progress, execution, artifacts, restart, plotting |
+| `tests/validation` | 15-20 files | physics gates and benchmark contracts; no mirror of source package topology |
+| `tests/tools` | 10-15 files | artifact, campaign, comparison, profiling, release family tests |
+| `tests/release` | 5-8 files | architecture, coverage, docs/static, package build, release guardrails |
+
+Final tool layout:
+
+| Tool family | Target form | Keep/delete rule |
+| --- | --- | --- |
+| `tools/artifacts` | one artifact driver plus family-specific plot/table modules | keep only builders referenced by README/docs/release manifests |
+| `tools/campaigns` | manifest writers and campaign launchers for active documented campaigns | delete or move stale probes, fallback launchers, and old campaign scaffolds |
+| `tools/comparison` | explicit external-code comparison utilities | comparison-code names are allowed here only |
+| `tools/profiling` | profilers tied to performance manifest metrics | no speed claim without profiler artifact and identity/physics gate |
+| `tools/release` | CI/release guard commands | keep fail-closed gates, merge repeated JSON/status checks |
+
+Performance bottlenecks to address only after ownership cleanup:
+
+1. Quickstart compile latency and default-run progress output.
+2. Linear cache construction and linear RHS repeated setup.
+3. Nonlinear bracket/RHS kernels and field solves.
+4. Diagnostic materialization and NetCDF/restart IO.
+5. VMEC/Boozer conversion and geometry interpolation.
+6. Nonlinear domain-decomposition communication.
+
+Each performance claim must include an equivalent-workload before/after timing,
+memory measurement where practical, and a numerical-identity or physics gate.
+
+Execution order for the remaining refactor:
+
+1. Finish benchmark-validation exit: move public benchmark runners behind
+   `spectraxgk.benchmarks`, move internal case workflows to root `benchmarks`
+   or tests, delete `src/spectraxgk/validation`.
+2. Contract benchmark and runtime tests: replace monkeypatch-string forests with
+   reusable fake runner contracts, keeping the same physics and branch gates.
+3. Merge tool script forests by family: start with artifact builders, then
+   campaign writers, then release status gates.
+4. Prune docs/static artifacts by reference graph: referenced claim evidence
+   stays; stale pilot/probe/reduced-window companions are removed or moved to
+   release assets.
+5. Merge `geometry_backends` into `geometry` and update API/docs/tests in the
+   same commit.
+6. Resolve `terms` versus `operators`: either rename `terms` to explicit
+   `operators` ownership or keep `terms` as a documented mathematical API and
+   remove duplicate operator entry points.
+7. Collapse `objectives` by objective family, preserving differentiability
+   gates and VMEC/Boozer finite-difference checks.
+8. Run profiler-backed performance tranches only after the owning code path is
+   stable.
+
 ### 2026-07-07 Re-Audit Decisions
 
-The latest inventory pass after the profiler consolidation found 2,527 tracked
+The latest inventory pass after the profiler consolidation found 2,526 tracked
 files. No tracked byte-size problem remains: the largest tracked file is below
 1 MiB, and generated caches/build trees are ignored. The remaining problem is
 maintainer complexity, not clone size.
@@ -657,7 +780,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 69 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Tool-family sprawl | 259 scripts, with 125 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
+| Tool-family sprawl | 247 scripts, with 122 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
 | Test-family sprawl | 246 files, including runtime and benchmark branch monoliths plus one-file-per-tool wrappers | Merge by physical contract and shared fixtures; parametrize tool-family tests | Lower navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
