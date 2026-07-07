@@ -2567,3 +2567,18 @@ following:
   added package replaces hidden complexity inside a monolithic facade. Next
   benchmark-refactor tranche should move one complete case family behind the
   facade rather than adding ad hoc helper modules.
+
+- 2026-07-07: checked the nonlinear transport matrix lane while office SSH was
+  unavailable. Local docs only contain strict negative broad-promotion evidence:
+  accepted QA/ESS is recorded from office as 9/18 passed samples with 9.18%
+  mean reduction but fails the current broad all-sample pass-fraction policy;
+  projected 1e-3 and 5e-4 reports are early failed. Generated one ignored
+  target-aware fallback matrix launch package at
+  `tools_out/nonlinear_transport_matrix_targeted/projected_0p001_targeted/`
+  using the local strict QA baseline and projected-weight-1e-3 VMEC files. The
+  package covers 18 surface/field-line/ky samples, 108 final-horizon outputs,
+  `t=[1100,1500]`, final-time target checks, lock files, and two GPU split
+  scripts. The target-time progress checker correctly reports 0/108 confirmed
+  outputs until office runs the scripts. Do not promote this lane or import a
+  portfolio artifact until the actual matrix report is fetched/regenerated and
+  passes the configured policy.
