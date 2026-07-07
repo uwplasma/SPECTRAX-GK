@@ -68,9 +68,9 @@ The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
 longer the main problem. The current blockers are installable validation
 campaign code and flat maintenance namespaces:
 
-- 340 Python source files under ``src/spectraxgk`` after moving holdout
-  admission policy into release tooling.
-- 72 Python files under ``src/spectraxgk/validation``.
+- 338 Python source files under ``src/spectraxgk`` after removing the
+  quasilinear validation subpackage.
+- 69 Python files under ``src/spectraxgk/validation``.
 - 246 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and the first artifact-gate families were

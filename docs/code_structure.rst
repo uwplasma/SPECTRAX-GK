@@ -852,10 +852,9 @@ schemas, spectrum integration, train/holdout scale fitting, nonlinear-window
 CSV/NetCDF ingestion, and report writing behind one diagnostics owner.
 Late-window transport gates live in ``spectraxgk.diagnostics.transport_windows``.
 The public validation API re-exports user-facing helpers while
-campaign launch and artifact-building policy stays in ``tools``. Model-selection
-status construction keeps scoped candidate-skill gates and absolute-flux claim
-guardrails in ``validation/quasilinear/model_selection.py``, with input
-normalization in ``validation/quasilinear/model_selection_inputs.py``.
+campaign launch and artifact-building policy stays in ``tools``. Model-selection status construction keeps scoped candidate-skill gates,
+input normalization, optimized-equilibrium audit summaries, and absolute-flux
+claim guardrails in ``diagnostics/quasilinear_model_selection.py``.
 
 VMEC-JAX transport admission gates are split into focused policy,
 sample-coverage, nonlinear-audit, and candidate-selection modules:

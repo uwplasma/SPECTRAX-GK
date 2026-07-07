@@ -448,11 +448,11 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core
   linear-state quasilinear transport weights and differentiable saturation
   objectives while ``spectraxgk.quasilinear`` remains the stable public facade.
-  ``spectraxgk.validation.quasilinear.model_selection`` owns the scoped
+  ``spectraxgk.diagnostics.quasilinear_model_selection`` owns the scoped
   model-selection claim ledger, with candidate-skill gates, absolute-flux
   overclaim guardrails, optional optimized-equilibrium audit gates, and final
   ledger assembly staged separately from the input-normalization helpers in
-  ``spectraxgk.validation.quasilinear.model_selection_inputs``.
+  ``spectraxgk.diagnostics.quasilinear_model_selection``.
   ``spectraxgk.diagnostics.transport_windows`` owns late-window
   nonlinear transport convergence reports, staged as validated window
   selection, finite-sample counts, drift/terminal-window statistics,

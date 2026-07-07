@@ -1215,7 +1215,7 @@ Quasilinear Nonlinear-Window Gates
 Quasilinear Model Selection
 ---------------------------
 
-.. automodule:: spectraxgk.validation.quasilinear.model_selection
+.. automodule:: spectraxgk.diagnostics.quasilinear_model_selection
    :members:
 
 Solver Eigen Objectives

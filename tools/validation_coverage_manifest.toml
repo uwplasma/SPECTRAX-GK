@@ -29,7 +29,6 @@ excluded_modules = [
   "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.validation.nonlinear_gradient.__init__",
   "spectraxgk.validation.nonlinear_transport.__init__",
-  "spectraxgk.validation.quasilinear.__init__",
   "spectraxgk.validation.stellarator.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
@@ -1195,8 +1194,7 @@ module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
   "spectraxgk.diagnostics.quasilinear_transport",
-  "spectraxgk.validation.quasilinear.model_selection",
-  "spectraxgk.validation.quasilinear.model_selection_inputs",
+  "spectraxgk.diagnostics.quasilinear_model_selection",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"

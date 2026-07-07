@@ -9,12 +9,12 @@ from typing import Any
 
 import pytest
 
-from spectraxgk.validation.quasilinear import model_selection_inputs
-from spectraxgk.validation.quasilinear.model_selection import (
+from spectraxgk.diagnostics import quasilinear_model_selection as model_selection_inputs
+from spectraxgk.diagnostics.quasilinear_model_selection import (
     build_quasilinear_model_selection_status,
     build_quasilinear_model_selection_status_from_paths,
 )
-from spectraxgk.validation.quasilinear.model_selection_inputs import (
+from spectraxgk.diagnostics.quasilinear_model_selection import (
     _required_candidate_metrics,
 )
 
