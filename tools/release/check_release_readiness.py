@@ -18,7 +18,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.check_release_version import validate_release_version
+try:
+    from .check_release_version import validate_release_version
+except ImportError:  # pragma: no cover - direct script execution
+    from check_release_version import validate_release_version
 
 REQUIRED_CI_SNIPPETS = (
     "wide-coverage-shards",
@@ -29,7 +32,7 @@ REQUIRED_CI_SNIPPETS = (
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/release/check_package_architecture_manifest.py",
-    "tools/check_performance_optimization_manifest.py",
+    "tools/release/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
     "tools/check_vmec_boozer_differentiability_claim.py",
     "tools/build_parallelization_completion_status.py",
@@ -45,11 +48,11 @@ REQUIRED_CODECOV_SNIPPETS = (
 REQUIRED_RELEASE_SNIPPETS = (
     "name: Release",
     "gh-action-pypi-publish",
-    "tools/check_release_version.py",
+    "tools/release/check_release_version.py",
     "tools/release/check_repository_size_manifest.py",
-    "tools/check_release_artifact_manifest.py",
+    "tools/release/check_release_artifact_manifest.py",
     "tools/release/check_package_architecture_manifest.py",
-    "tools/check_performance_optimization_manifest.py",
+    "tools/release/check_performance_optimization_manifest.py",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_quasilinear_promotion_guardrails.py",
     "tools/check_vmec_boozer_differentiability_claim.py",

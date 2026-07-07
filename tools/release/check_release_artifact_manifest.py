@@ -12,7 +12,7 @@ import tomllib
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = ROOT / "tools/release_artifact_manifest.toml"
 VALID_ACTIONS = {"keep_in_repo", "keep_preview_in_repo", "move_to_release"}
 

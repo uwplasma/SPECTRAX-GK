@@ -17,7 +17,7 @@ except ModuleNotFoundError:  # pragma: no cover
     import tomli as tomllib  # type: ignore[no-redef]
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE_VERSION = ROOT / "src" / "spectraxgk" / "_version.py"
 PYPROJECT = ROOT / "pyproject.toml"
 VERSION_RE = re.compile(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]\s*$")

@@ -8,7 +8,7 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[2] / "tools" / "check_performance_optimization_manifest.py"
+    path = Path(__file__).resolve().parents[2] / "tools" / "release" / "check_performance_optimization_manifest.py"
     spec = importlib.util.spec_from_file_location("check_performance_optimization_manifest", path)
     assert spec is not None
     assert spec.loader is not None

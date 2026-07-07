@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.check_release_version import (
+from tools.release.check_release_version import (
     ReleaseVersionError,
     default_tag_from_github_env,
     normalize_tag,
