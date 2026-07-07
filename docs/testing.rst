@@ -37,6 +37,11 @@ into ``unit``, ``integration``, ``validation``, ``tools``, ``release``, or
 ``support`` according to the contract they protect. Do not add new flat
 ``tests/test_*.py`` files, and do not add one-file-per-script wrappers when a
 parametrized family test can protect the same artifact or tool contract.
+The active refactor target is to reduce the tracked test tree from roughly 240
+Python files to fewer than 150 near-term and fewer than 100 in the final
+layout. Deleting a shallow compatibility test is acceptable when the underlying
+legacy behavior has been removed; weakening physics, numerical, artifact, or
+release gates is not.
 
 The refactor branch also carries a machine-readable validation/coverage
 manifest at ``tools/validation_coverage_manifest.toml``. It is checked by

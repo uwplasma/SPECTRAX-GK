@@ -65,29 +65,30 @@ modules unless they are deliberate public facades tracked in the migration
 manifest.
 
 The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
-longer the main problem. The current blockers are installable validation
-campaign code and flat maintenance namespaces:
+longer the main problem. The current blockers are source/test/tool sprawl,
+oversized facades, and ambiguous ownership between benchmark, tool, validation,
+and campaign code:
 
-- 275 Python source files under ``src/spectraxgk`` after removing the
+- 277 Python source files under ``src/spectraxgk`` after removing the
   installable validation package.
 - 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
-- 246 Python test files, including the shared ``tests/support/paths.py`` helper;
+- 243 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and the first artifact-gate families were
   consolidated.
-- 259 Python tool scripts, with only ``tools/__init__.py`` left at the flat
+- 247 Python tool scripts, with only ``tools/__init__.py`` left at the flat
   top level after release, comparison, artifact, campaign, profiling,
   benchmark, generator, compression-helper, reference-helper, diagnostic, and
   VMEC-helper moves.
-- no tracked files above 1 MB and no tracked ``__pycache__`` / ``.pyc`` /
+- no tracked files above 2 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 
 The next refactor should therefore delete, merge, or move non-promoted code
-before adding new modules. In particular, validation campaigns should leave the
-installable package, tool scripts should consolidate inside their
+before adding new modules. In particular, ``spectraxgk.benchmarks`` should
+shrink to a small public facade, tool scripts should consolidate inside their
 purpose-specific folders, one-file-per-tool tests should become parametrized
-family tests, and retired/non-promoted or synthetic workflows should not remain
-on ``main`` unless they are promoted and documented.
+family tests, and retired/non-promoted workflows should not remain on ``main``
+unless they are promoted and documented.
 
 Current Consolidation Decision
 ------------------------------

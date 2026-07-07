@@ -52,6 +52,77 @@ deleted from `main` or moved to a draft experiment branch/PR.
   release decisions stay in `tools/release`, and installable validation
   packages disappear.
 
+### 2026-07-07 Simplification Reset
+
+The previous refactor tranches successfully removed the installable validation
+package, but they also left too many small source, test, and tool files. From
+this point forward, the default action is **merge, delete, or move out of the
+installable package**, not split into more modules.
+
+Current tracked audit:
+
+| Area | Current tracked state | Main issue | Next action |
+| --- | ---: | --- | --- |
+| Branches | `main`, `origin/main` only | no branch cleanup needed | keep experiments in one draft PR, not on `main` |
+| Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
+| Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
+| Tests | 243 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
+| Tools | 247 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
+| Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
+
+Near-term implementation rule:
+
+- A source refactor tranche must reduce the total installed source file count or
+  remove a larger obsolete source path. New internal modules are allowed only
+  when they replace multiple existing files or isolate a measured JIT/performance
+  boundary.
+- A test refactor tranche must reduce test file count or test LOC while keeping
+  the same physics, numerical, release, and coverage gates.
+- A tool refactor tranche must replace multiple one-off scripts with a family
+  command or manifest-driven entry point.
+- Benchmark/comparison references to other codes are allowed only in
+  `benchmarks/`, `tools/comparison/`, `tests/tools/comparison/`, benchmark docs,
+  and explicitly labeled comparison figures/tables. Current naming blockers to
+  classify are `tools/campaigns/run_gx_linear_stress_matrix.py`,
+  `tools/gx_etg_ky25.in`, and `tools/gx_etg_runtime_ky15.in`.
+
+Authoritative domain consolidation:
+
+| Domain | Keep | Merge/delete/move |
+| --- | --- | --- |
+| `benchmarks/` root | runnable benchmark drivers and compact TOML inputs | raw outputs, branch-policy implementation, duplicate test wrappers |
+| `spectraxgk.benchmarks` | small public facade and stable result contracts | case-family branch histories, long policy ladders, comparison-code details |
+| `tools/artifacts` | one artifact-driver family plus reusable plot/table helpers | one-file-per-panel builders not referenced by docs or release manifests |
+| `tools/campaigns` | active long-run campaign launch/postprocess commands | stale fallback launchers, completed probes, comparison-code launchers |
+| `tests/tools` | one file per tool family contract | one file per command parser when behavior is table-driven |
+| `tests/validation` | physics gates, benchmark contracts, and accepted tolerance ledgers | source-topology mirrors and monkeypatch forests for deleted legacy paths |
+| `geometry` | all Miller/VMEC/Boozer providers and differentiability checks | separate `geometry_backends` namespace after imports are migrated |
+| `operators` | linear/nonlinear RHS kernels, fields, brackets, gyroaverages, collisions, dissipation | duplicate `terms` ownership unless kept as a documented mathematical API |
+| `objectives` | differentiable objective families for linear, QL, nonlinear-window, VMEC/Boozer, zonal | tiny `vmec_*` and portfolio shards that only wrap another family owner |
+
+Refactor order that minimizes risk:
+
+1. **Benchmark facade shrink:** keep only stable API/result contracts in
+   `spectraxgk.benchmarks`; move case implementation policies into root
+   benchmark drivers or delete unsupported branch history. This targets the
+   13,211-line file without adding a larger source package forest.
+2. **Test tree collapse:** introduce shared fake-runner fixtures and convert the
+   largest runtime/benchmark/tool tests into parametrized family contracts.
+3. **Tool command consolidation:** create manifest-driven artifact/campaign
+   command families, then delete single-panel or stale fallback scripts that are
+   not referenced by current docs/readme/release manifests.
+4. **Geometry namespace merge:** move `geometry_backends` implementation under
+   `geometry`, preserving geometry parity and AD/FD gates.
+5. **Operator ownership cleanup:** remove dual `terms`/`operators` ambiguity by
+   choosing one public mathematical-kernel namespace and updating docs/tests.
+6. **Objective family merge:** consolidate VMEC/Boozer, line-search, FD,
+   gradient-gate, and portfolio wrappers into fewer objective-family modules.
+7. **Performance pass:** only after ownership cleanup, profile quickstart,
+   linear scan setup/RHS, nonlinear RHS/bracket/field solve, diagnostics IO, and
+   VMEC/Boozer transforms; each speed claim needs before/after timing, memory
+   where practical, and numerical/physics identity gates.
+
 ### Repository Role Model
 
 The repository should have one obvious destination for every retained file. If a
@@ -167,7 +238,7 @@ Current tracked state after the latest consolidation:
 - Root `benchmarks/`: 12 Python files and about 1.6k LOC. This is already a
   clear reproducibility layer and should stay at the repository root. Do not
   merge it into `tools/` or `examples/`.
-- Installed package: 275 Python files and about 100.2k LOC. The main blockers
+- Installed package: 277 Python files and about 100.4k LOC. The main blockers
   are now the oversized benchmark facade, `objectives` (41 files),
   `geometry_backends` (18 files), dual `terms`/`operators` ownership, and
   large runtime/artifact facades.
@@ -2325,38 +2396,36 @@ Exit gates:
 
 ## Immediate Next Steps
 
-1. Continue moving validation out of the installable package:
-   - keep `validation.nonlinear_gradient`, `validation.nonlinear_transport`,
-     and `validation.stellarator` closed; do not recreate installable campaign
-     packages for those lanes;
-   - update manifests, docs, and tests in the same commit for each family.
-2. Stage `validation.benchmarks` behind a smaller public benchmark facade:
-   - define the supported `spectraxgk.benchmarks` API explicitly;
-   - keep benchmark metrics only where reusable;
-   - move case-specific branch histories and long-run policies to root
-     `benchmarks/` or `tests/validation/benchmarks`.
-3. Collapse artifact tooling and tests by family:
-   - VMEC/Boozer, quasilinear, nonlinear transport, W7-X/zonal,
-     benchmark/runtime, release-status/readiness, and generic plotting builders
-     each get one manifest-driven entry point;
-   - target `tools/artifacts` below 80 and `tests/tools/artifacts` below 20 in
-     the next two tool tranches.
-4. Collapse the biggest tests without weakening assertions:
-   - split `test_runtime_runner.py` by runtime contracts: config, progress,
-     output, linear execution, nonlinear execution, restart, and plotting;
-   - split `test_benchmarks_runner_branches.py` into shared fixtures plus
-     parametrized setup/fit/branch/scan policy tests;
-   - merge one-wrapper tool tests into family tests.
-5. Run a docs/static and examples deletion audit:
-   - delete stale docs artifacts not referenced by README/docs/manifests;
-   - remove or move pilot/probe/reduced/synthetic examples that are not
-     promoted workflows;
-   - keep root `benchmarks/` small and documented.
-6. After topology is smaller, collapse source domains and profile hot paths:
-   - merge `terms` into `operators`, `geometry_backends` into `geometry`, and
-     runtime/artifact IO into a smaller IO surface;
-   - profile linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics
-     streaming, and VMEC/Boozer in-memory differentiable geometry;
+1. Shrink `spectraxgk.benchmarks` without adding another source forest:
+   - define the stable facade API/result contracts;
+   - move benchmark-only case workflows to root `benchmarks/` drivers or delete
+     unsupported historical branch paths;
+   - update benchmark tests to patch stable contracts instead of facade globals.
+2. Collapse the biggest tests without weakening assertions:
+   - replace repeated runtime, benchmark, artifact, and comparison monkeypatch
+     tests with shared fake-runner fixtures and parametrized contract tables;
+   - remove tests that only preserve deleted legacy behavior.
+3. Collapse artifact and campaign tools by family:
+   - replace one-file-per-panel and one-file-per-status scripts with
+     manifest-driven family commands;
+   - classify or move the current comparison-code naming blockers:
+     `tools/campaigns/run_gx_linear_stress_matrix.py`, `tools/gx_etg_ky25.in`,
+     and `tools/gx_etg_runtime_ky15.in`.
+4. Run a docs/static and examples deletion audit:
+   - keep only README/docs/release-manifest referenced evidence;
+   - remove stale pilot/probe/reduced-window companions from `main`;
+   - document root `benchmarks/` results without storing raw long-run output.
+5. Collapse source domains after the benchmark/test/tool tranches:
+   - merge `geometry_backends` into `geometry`;
+   - resolve `terms` versus `operators` into one obvious mathematical-kernel
+     ownership model;
+   - merge tiny objective-family wrappers while preserving AD/FD and physics
+     gates.
+6. Profile and optimize only after the owning modules are stable:
+   - quickstart compile/progress path;
+   - linear cache/RHS setup;
+   - nonlinear RHS/bracket/field solve;
+   - diagnostics IO and VMEC/Boozer transforms;
    - every performance change needs before/after profiler artifacts and
      numerical identity or physics gates.
 

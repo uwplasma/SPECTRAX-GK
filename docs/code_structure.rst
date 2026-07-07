@@ -10,15 +10,33 @@ keeping the boundary between public APIs and internal implementation modules
 explicit.
 
 The long-term consolidation target is documented in
-:doc:`architecture_refactor_plan`. New refactor work should move implementation
-into domain packages such as ``operators``, ``solvers``, ``objectives``,
-``parallel``, ``diagnostics``, ``workflows``, and ``artifacts`` instead of
-adding more root-level ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``,
-``quasilinear_*``, or ``benchmark_*`` modules. The ``validation`` package is a
-temporary compatibility and metrics surface during the consolidation; campaign
-and benchmark-branch implementation should move to root ``benchmarks``,
-``tools``, or ``tests/validation`` rather than deeper installable validation
-subpackages.
+:doc:`architecture_refactor_plan`. New refactor work should reduce package
+surface area by merging, deleting, or moving code out of the installable
+package. Add a new module only when it replaces multiple existing files or
+isolates a measured JAX compilation/performance boundary. Domain packages such
+as ``operators``, ``solvers``, ``objectives``, ``parallel``, ``diagnostics``,
+``workflows``, and ``artifacts`` are preferred over more root-level
+``runtime_*``, ``nonlinear_*``, ``vmec_*``, ``quasilinear_*``, or
+``benchmark_*`` modules. Validation and campaign implementation should not live
+in the installable package; reusable metrics belong in ``diagnostics`` and
+long-run orchestration belongs in ``tools`` or root ``benchmarks``.
+
+Repository Roles
+----------------
+
+The repository uses four non-source-code areas with distinct jobs:
+
+- ``examples/`` contains small, copyable user workflows.
+- ``benchmarks/`` contains reproducible benchmark drivers and compact benchmark
+  inputs that researchers can run directly.
+- ``tools/`` contains maintainer commands for artifacts, campaigns,
+  comparisons, profiling, and releases.
+- ``tests/`` contains automated gates that CI can run without relying on raw
+  generated outputs.
+
+Files that do not fit one of those roles should be deleted from ``main`` or
+moved to a draft experiment branch. Benchmark or comparison references to other
+codes are allowed only in explicit benchmark/comparison contexts.
 
 Public API vs Internal Modules
 ------------------------------
@@ -106,8 +124,9 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``cli.py``
 5. **benchmark and validation tooling**
    - ``spectraxgk.benchmarks``
-   - ``benchmarks.py``
-   - ``tools/*.py``
+   - root ``benchmarks/`` drivers
+   - purpose-specific ``tools/`` commands
+   - ``tests/validation`` physics and benchmark gates
 
 Physics / Numerics / IO Map
 ---------------------------
