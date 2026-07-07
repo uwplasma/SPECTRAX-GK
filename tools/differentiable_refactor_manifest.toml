@@ -3139,7 +3139,7 @@ moved_exports = [
   "phase_align_eigenfunction",
   "save_eigenfunction_reference_bundle",
 ]
-fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_generate_w7x_reference_overlay.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_w7x_artifact_panels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

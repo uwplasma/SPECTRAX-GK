@@ -664,9 +664,8 @@ fast_tests = [
   "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
   "tests/unit/operators/test_terms_assembly.py",
   "tests/tools/artifacts/test_plot_nonlinear_window_statistics.py",
-  "tests/tools/artifacts/test_plot_w7x_fluctuation_spectrum_panel.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
   "tests/tools/artifacts/test_build_tem_branch_parity_audit.py",
-  "tests/tools/artifacts/test_build_w7x_tem_extension_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1597,10 +1596,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/validation/physics_gates/test_zonal_validation.py",
   "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
-  "tests/tools/artifacts/test_generate_w7x_zonal_response_panel.py",
-  "tests/tools/artifacts/test_plot_w7x_zonal_closure_ladder.py",
-  "tests/tools/artifacts/test_plot_w7x_zonal_state_convention_audit.py",
-  "tests/tools/artifacts/test_plot_w7x_zonal_recurrence_sweep.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
   "tests/tools/artifacts/test_build_open_research_lane_status.py",
 ]
 artifact_paths = [
