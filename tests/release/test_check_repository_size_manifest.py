@@ -10,7 +10,7 @@ import textwrap
 
 
 def _load_tool_module(name: str):
-    tools_dir = Path(__file__).resolve().parents[2] / "tools"
+    tools_dir = Path(__file__).resolve().parents[2] / "tools" / "release"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)

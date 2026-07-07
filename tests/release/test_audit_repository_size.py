@@ -9,7 +9,7 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[2] / "tools" / "audit_repository_size.py"
+    path = Path(__file__).resolve().parents[2] / "tools" / "release" / "audit_repository_size.py"
     spec = importlib.util.spec_from_file_location("audit_repository_size", path)
     assert spec is not None
     assert spec.loader is not None

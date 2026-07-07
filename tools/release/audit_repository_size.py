@@ -11,7 +11,7 @@ import subprocess
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LOCAL_ARTIFACT_ROOTS = (
     ".git",
     ".venv",

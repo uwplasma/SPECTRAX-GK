@@ -10,7 +10,10 @@ import sys
 import tomllib
 from typing import Any
 
-from audit_repository_size import ROOT, build_repository_size_report
+try:
+    from .audit_repository_size import ROOT, build_repository_size_report
+except ImportError:  # pragma: no cover - direct script execution
+    from audit_repository_size import ROOT, build_repository_size_report
 
 
 DEFAULT_MANIFEST = ROOT / "tools/repository_size_manifest.toml"

@@ -77,7 +77,7 @@ coverage:
     (root / ".github" / "workflows" / "release.yml").write_text(
         "name: Release\n"
         "tools/check_release_version.py\n"
-        "tools/check_repository_size_manifest.py\n"
+        "tools/release/check_repository_size_manifest.py\n"
         "tools/check_release_artifact_manifest.py\n"
         "tools/check_package_architecture_manifest.py\n"
         "tools/check_performance_optimization_manifest.py\n"

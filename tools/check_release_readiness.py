@@ -46,7 +46,7 @@ REQUIRED_RELEASE_SNIPPETS = (
     "name: Release",
     "gh-action-pypi-publish",
     "tools/check_release_version.py",
-    "tools/check_repository_size_manifest.py",
+    "tools/release/check_repository_size_manifest.py",
     "tools/check_release_artifact_manifest.py",
     "tools/check_package_architecture_manifest.py",
     "tools/check_performance_optimization_manifest.py",

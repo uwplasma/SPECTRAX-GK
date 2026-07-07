@@ -1018,8 +1018,8 @@ Use the non-destructive audit helper before release cleanups:
 
 .. code-block:: bash
 
-   python tools/audit_repository_size.py --top 30
-   python tools/check_repository_size_manifest.py
+   python tools/release/audit_repository_size.py --top 30
+   python tools/release/check_repository_size_manifest.py
    python tools/check_release_artifact_manifest.py
 
 The report separates tracked file size from ignored local artifact roots such
