@@ -18,7 +18,7 @@
     "spectraxgk.operators.nonlinear.collisions",
     "spectraxgk.operators.nonlinear.projection",
     "spectraxgk.quasilinear",
-    "spectraxgk.validation.quasilinear.calibration_core",
+    "spectraxgk.diagnostics.quasilinear_calibration",
     "spectraxgk.diagnostics.transport_windows",
     "spectraxgk.benchmarks",
     "spectraxgk.diagnostics.core",
@@ -88,8 +88,8 @@
   "n_excluded_modules": 25,
   "n_high_priority_open": 83,
   "n_modules": 106,
-  "n_owned_modules": 212,
-  "n_package_modules": 343,
+  "n_owned_modules": 210,
+  "n_package_modules": 341,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -163,6 +163,9 @@
       "spectraxgk.diagnostics.resolved",
       "spectraxgk.diagnostics.transport",
       "spectraxgk.diagnostics.weights"
+    ],
+    "spectraxgk.diagnostics.quasilinear_calibration": [
+      "spectraxgk.validation.quasilinear.holdout_admission"
     ],
     "spectraxgk.diagnostics.transport_windows": [],
     "spectraxgk.diagnostics.validation_gates": [],
@@ -415,11 +418,6 @@
     "spectraxgk.validation.nonlinear_gradient.followup_variance": [],
     "spectraxgk.validation.nonlinear_transport.replicate_diagnostics": [],
     "spectraxgk.validation.nonlinear_transport.replicate_followup": [],
-    "spectraxgk.validation.quasilinear.calibration_core": [
-      "spectraxgk.validation.quasilinear.calibration_io",
-      "spectraxgk.validation.quasilinear.calibration_spectrum",
-      "spectraxgk.validation.quasilinear.holdout_admission"
-    ],
     "spectraxgk.workflows.cases": [
       "spectraxgk.workflows.demo",
       "spectraxgk.workflows.linear",
@@ -876,15 +874,15 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.validation.quasilinear.calibration_core",
+      "module": "spectraxgk.diagnostics.quasilinear_calibration",
       "n_artifacts": 31,
       "n_fast_tests": 10,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 3,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/validation/quasilinear/calibration_core.py",
+      "path": "src/spectraxgk/diagnostics/quasilinear_calibration.py",
       "status": "active"
     },
     {

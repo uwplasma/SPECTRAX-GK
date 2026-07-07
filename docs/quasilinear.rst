@@ -407,11 +407,9 @@ Implementation map
      - :mod:`spectraxgk.workflows.runtime.config`, :mod:`spectraxgk.workflows.runtime.toml`
      - ``[quasilinear]`` configuration and round-trip serialization
    * - Calibration reports
-     - :mod:`spectraxgk.validation.quasilinear.calibration_core`,
-       :mod:`spectraxgk.validation.quasilinear.calibration_io`, and
-       :mod:`spectraxgk.validation.quasilinear.calibration_spectrum`
-     - train/holdout/audit schemas, nonlinear-window ingestion, scale fitting,
-       and report scoring
+     - :mod:`spectraxgk.diagnostics.quasilinear_calibration`
+     - train/holdout/audit schemas, spectrum integration, nonlinear-window
+       ingestion, scale fitting, and report scoring
    * - Plotting tools
      - ``tools/artifacts/plot_quasilinear_spectrum.py`` and
        ``tools/artifacts/plot_quasilinear_calibration.py``
@@ -589,9 +587,9 @@ quasilinear derivation and saturation-rule validation philosophy in
 Calibration reports
 -------------------
 
-Calibration artifacts should use ``spectraxgk.validation.quasilinear.calibration_core``
-and ``spectraxgk.validation.quasilinear.calibration_io`` so
-training, holdout, and audit points carry the same schema. A report is promoted
+Calibration artifacts should use
+``spectraxgk.diagnostics.quasilinear_calibration`` so training, holdout, and
+audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error

@@ -1201,14 +1201,7 @@ Quasilinear Transport Diagnostics
 Quasilinear Calibration
 -----------------------
 
-.. automodule:: spectraxgk.validation.quasilinear.calibration_core
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.validation.quasilinear.calibration_spectrum
-   :members:
-
-.. automodule:: spectraxgk.validation.quasilinear.calibration_io
+.. automodule:: spectraxgk.diagnostics.quasilinear_calibration
    :members:
    :private-members:
 

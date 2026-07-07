@@ -12,19 +12,19 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.validation.quasilinear.calibration_io as qlc
-from spectraxgk.validation.quasilinear.calibration_core import (
+import spectraxgk.diagnostics.quasilinear_calibration as qlc
+from spectraxgk.diagnostics.quasilinear_calibration import (
     QuasilinearCalibrationPoint,
     apply_heat_flux_scale,
     fit_train_heat_flux_scale,
     quasilinear_calibration_report,
 )
-from spectraxgk.validation.quasilinear.calibration_io import (
+from spectraxgk.diagnostics.quasilinear_calibration import (
     calibration_point_from_nonlinear_window_summary,
     calibration_point_from_spectrum_and_nonlinear_window,
     write_quasilinear_calibration_report,
 )
-from spectraxgk.validation.quasilinear.calibration_spectrum import (
+from spectraxgk.diagnostics.quasilinear_calibration import (
     integrated_quasilinear_flux_from_spectrum,
 )
 from spectraxgk.diagnostics.transport_windows import (

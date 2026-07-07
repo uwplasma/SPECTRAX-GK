@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
 from spectraxgk.parallel import independent_map  # noqa: E402
-from spectraxgk.validation.quasilinear.calibration_io import (
+from spectraxgk.diagnostics.quasilinear_calibration import (
     calibration_point_from_nonlinear_window_summary,
 )  # noqa: E402
 from spectraxgk.quasilinear import saturation_amplitude2  # noqa: E402

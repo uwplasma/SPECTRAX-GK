@@ -846,13 +846,13 @@ Family-specific branch tests now patch the
 family owner modules directly, and examples/downstream scripts keep importing
 through ``spectraxgk.benchmarks``.
 
-Quasilinear calibration is split into ``calibration_core`` for
-train/holdout reports and scale fitting, ``calibration_spectrum`` for spectral
-integration, and ``calibration_io`` for nonlinear-window CSV/NetCDF ingestion.
-Quasilinear calibration and late-window validation now import directly from the
-focused ``validation/quasilinear/calibration_*`` and
-``validation/quasilinear/window_*`` owner modules; the public
-``spectraxgk.validation`` API re-exports user-facing helpers. Model-selection
+Quasilinear calibration now lives in
+``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point
+schemas, spectrum integration, train/holdout scale fitting, nonlinear-window
+CSV/NetCDF ingestion, and report writing behind one diagnostics owner.
+Late-window transport gates live in ``spectraxgk.diagnostics.transport_windows``.
+The public validation API re-exports user-facing helpers while
+campaign launch and artifact-building policy stays in ``tools``. Model-selection
 status construction keeps scoped candidate-skill gates and absolute-flux claim
 guardrails in ``validation/quasilinear/model_selection.py``, with input
 normalization in ``validation/quasilinear/model_selection_inputs.py``.
