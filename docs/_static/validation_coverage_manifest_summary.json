@@ -79,8 +79,8 @@
   "n_excluded_modules": 21,
   "n_high_priority_open": 74,
   "n_modules": 96,
-  "n_owned_modules": 189,
-  "n_package_modules": 306,
+  "n_owned_modules": 188,
+  "n_package_modules": 305,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -113,7 +113,6 @@
     "spectraxgk.benchmarks": [
       "spectraxgk.validation.benchmarks.harness",
       "spectraxgk.validation.benchmarks.harness_scan",
-      "spectraxgk.validation.benchmarks.batching",
       "spectraxgk.validation.benchmarks.cyclone_linear",
       "spectraxgk.validation.benchmarks.cyclone_linear_paths",
       "spectraxgk.validation.benchmarks.cyclone_scan",
@@ -851,7 +850,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 26,
+      "n_owned_modules": 25,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",

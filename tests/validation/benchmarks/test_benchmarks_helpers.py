@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics.analysis import ModeSelection
-from spectraxgk.validation.benchmarks.batching import (
+from spectraxgk.validation.benchmarks.scan import (
     _is_array_like,
     _iter_ky_batches,
     _resolve_streaming_window,

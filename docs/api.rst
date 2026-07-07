@@ -568,13 +568,6 @@ Benchmark Initialization
 Benchmark Fit Signals
 ---------------------
 
-Benchmark Batching
-------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.batching
-   :members:
-   :private-members:
-
 Benchmark Solver Policies
 -------------------------
 

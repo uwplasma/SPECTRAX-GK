@@ -434,8 +434,8 @@ Phase 1: introduce protocols and containers
   and CSV loaders. ``spectraxgk.validation.benchmarks.species`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic
-  normalization policies, ``spectraxgk.validation.benchmarks.batching`` owns scan batching
-  and streaming windows, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
+  normalization policies, ``spectraxgk.validation.benchmarks.scan`` owns scan batching, streaming windows,
+  scan-window policy, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
   branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``,
   ``spectraxgk.validation.benchmarks.cyclone_scan``,
   ``spectraxgk.validation.benchmarks.kbm_beta``,

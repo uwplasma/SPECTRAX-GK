@@ -696,7 +696,7 @@ Benchmark initial conditions and reference data live in
 construction and reference hypercollision/end-damping policy live in
 ``spectraxgk.validation.benchmarks.species``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``; scan batching and
 solver-selection policies live in
-``spectraxgk.validation.benchmarks.batching``, and
+``spectraxgk.validation.benchmarks.scan``; solver-selection policies live in
 ``spectraxgk.validation.benchmarks.solver_policy``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are
 moved. KBM beta-scan, single-point, and ky-scan implementations live in
