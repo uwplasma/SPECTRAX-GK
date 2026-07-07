@@ -4,10 +4,10 @@ Architecture Refactor Plan
 Purpose
 -------
 
-This plan resets the refactor direction for SPECTRAX-GK. The recent
-behavior-preserving extractions reduced several large files, but they also
-created too many root-level modules with prefix-based names. That makes the code
-harder to navigate, harder to teach, harder to extend, and harder to test.
+This page is the authoritative refactor plan companion for SPECTRAX-GK. The
+recent behavior-preserving extractions reduced several large files, but they
+also created too many root-level modules with prefix-based names. That makes the
+code harder to navigate, harder to teach, harder to extend, and harder to test.
 
 The new target is a small set of domain packages with stable public facades,
 private implementation modules, explicit contracts, and tests that mirror the
