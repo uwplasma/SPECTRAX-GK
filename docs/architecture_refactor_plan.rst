@@ -71,8 +71,10 @@ campaign code and flat maintenance namespaces:
 - 351 Python source files under ``src/spectraxgk`` after retiring the
   non-promoted reduced cETG runtime path.
 - 88 Python files under ``src/spectraxgk/validation``.
-- 321 Python test files, including the shared ``tests/support/paths.py`` helper;
-  only ``conftest.py`` still lives directly under ``tests``.
+- 303 Python test files, including the shared ``tests/support/paths.py`` helper;
+  only ``conftest.py`` still lives directly under ``tests`` after the flat
+  runtime/executable tests and the first artifact-gate families were
+  consolidated.
 - 260 Python tool scripts, with only ``tools/__init__.py`` left at the flat
   top level after release, comparison, artifact, campaign, profiling,
   benchmark, generator, compression-helper, reference-helper, diagnostic, and
@@ -80,12 +82,12 @@ campaign code and flat maintenance namespaces:
 - no tracked files above 1 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 
-The next refactor should therefore delete or move non-promoted code before
-adding new modules. In particular, validation campaigns should leave the
-installable package, tool scripts should move into purpose-specific folders,
-remaining flat tests should be reorganized by domain, and retired/non-promoted
-or synthetic workflows should not remain on ``main`` unless they are promoted
-and documented.
+The next refactor should therefore delete, merge, or move non-promoted code
+before adding new modules. In particular, validation campaigns should leave the
+installable package, tool scripts should consolidate inside their
+purpose-specific folders, one-file-per-tool tests should become parametrized
+family tests, and retired/non-promoted or synthetic workflows should not remain
+on ``main`` unless they are promoted and documented.
 
 External Design Guidance
 ------------------------

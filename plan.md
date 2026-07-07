@@ -18,13 +18,14 @@ preserving validated solver behavior and public user workflows.
 
 Last audited: 2026-07-07 on `main`.
 
-- Audited baseline head: `8676b62d Move performance benchmarks out of tools`,
-  plus the in-progress compression-helper relocation recorded below.
+- Audited baseline head for the current topology plan:
+  `1aa584b2 Consolidate VMEC aggregate artifact tests`.
 - Latest reachable release tag at the audit: `v1.6.10`; the audited baseline
   was three commits after that tag.
 - Git state at audit: clean `main`, tracking `origin/main`.
 - Latest GitHub release workflow and PyPI publish for `v1.6.10` passed. CI for
-  the post-release refactor commits must be rechecked before the next tag.
+  the post-release refactor commits must be rechecked before the next tag; the
+  `1aa584b2` CI run was in progress at the latest audit.
 - Active local/remote branches: only `main` and `origin/main`.
 - Stale detached worktree metadata for old local investigations was pruned on
   2026-07-07; the only remaining worktree is this `main` checkout.
@@ -45,6 +46,12 @@ Last audited: 2026-07-07 on `main`.
   `keep-and-consolidate`, and 39 active-campaign/probe files as
   `move-or-delete`. That inventory is now the source of truth for each
   deletion or move tranche.
+- The refreshed repository inventory after `1aa584b2` classifies 88 files as
+  `move-or-shrink`, 561 files as `keep-or-merge`, 268 files as
+  `keep-and-consolidate`, 82 files as `keep-or-scope`, and 26 files as
+  `keep-or-review`. The 88 `move-or-shrink` files are the validation package;
+  the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
+  consolidation queue.
 - Source-package Python file counts by domain:
   - `validation`: 88 files.
   - `objectives`: 38 files.
@@ -244,8 +251,8 @@ ambiguity, not just move files.
 
 ## Latest Complexity Audit And Consolidation Decisions
 
-Audited on 2026-07-07 after commit `8676b62d`, including the current
-compression-helper move before it is committed:
+Audited on 2026-07-07 after commit
+`1aa584b2 Consolidate VMEC aggregate artifact tests`:
 
 - Branches are not the complexity problem: only `main`/`origin/main` exist.
   Stale detached worktree metadata was pruned.
@@ -279,6 +286,12 @@ compression-helper move before it is committed:
 - `docs/code_structure.rst` still mirrors the migration history and is too
   verbose. It should become a concise developer guide after the file moves,
   not an archival list of every split file.
+- Keyword scans show that remaining `probe`, `synthetic`, `legacy`, and
+  comparison-code terms are concentrated in documentation, tools/artifacts,
+  tests/tools, and validation campaign code rather than current solver kernels.
+  They should be audited by owner: keep explicit benchmark/comparison terms,
+  preserve only scoped pedagogical synthetic references, and remove terms that
+  describe retired implementation paths.
 
 Decision rules from this audit:
 
@@ -298,19 +311,20 @@ Decision rules from this audit:
 
 Immediate execution sequence from this audited state:
 
-1. Commit the final flat-test closure tranche after targeted runtime/executable
-   tests, architecture, release-readiness, repository-size, and ruff gates pass.
-2. Collapse `tests/tools/artifacts` and `tools/artifacts` by capability. The
+1. Collapse `tests/tools/artifacts` and `tools/artifacts` by capability. The
    first target is the VMEC, quasilinear, nonlinear, W7-X, and parallel/status
    builder families, because they account for most one-file-per-script sprawl.
-3. Split or parametrize the two largest historical branch tests:
+2. Split or parametrize the two largest historical branch tests:
    `tests/integration/runtime/test_runtime_runner.py` and
    `tests/validation/benchmarks/test_benchmarks_runner_branches.py`.
-4. Use the repository inventory to delete or move no-owner probe, pilot,
+3. Use the repository inventory to delete or move no-owner probe, pilot,
    reduced, synthetic, and candidate scripts whose only role is historical
    campaign scaffolding.
-5. Start validation-out-of-package only after the tool/test path churn is
-   complete, so import rewrites are not repeated.
+4. Start validation-out-of-package only after the next tool/test consolidation
+   tranche, so import rewrites are not repeated across hundreds of tests.
+5. Rebuild `docs/code_structure.rst` and `docs/architecture_refactor_plan.rst`
+   from the new ownership map once the first validation-out-of-package move
+   lands.
 
 ## Final Consolidation Model
 
@@ -1323,9 +1337,7 @@ Exit gates:
 
 ## Immediate Next Steps
 
-1. Commit the final root-test move once the bounded checks listed in the
-   progress log pass locally.
-2. Collapse artifact tooling and tests by family:
+1. Collapse artifact tooling and tests by family:
    - merge the `build_vmec*` scripts/tests into one VMEC artifact builder with
      manifest-selected modes;
    - merge `plot_quasilinear*` scripts/tests into one quasilinear plotting
@@ -1336,7 +1348,7 @@ Exit gates:
      physics-panel builders;
    - target `tools/artifacts` below 80 and `tests/tools/artifacts` below 35
      before moving source validation code.
-3. Collapse the biggest tests without weakening assertions:
+2. Collapse the biggest tests without weakening assertions:
    - split `test_runtime_runner.py` into parametrized runtime contracts for
      config, progress, output, linear execution, nonlinear execution, restart,
      and plotting;
@@ -1344,20 +1356,20 @@ Exit gates:
      plus parametrized case-family branch tests;
    - move repeated mock objects into shared fixtures and remove tests that only
      preserve deleted legacy behavior.
-4. Use `tools/release/inventory_repository.py` before every deletion tranche:
+3. Use `tools/release/inventory_repository.py` before every deletion tranche:
    - delete stale docs/static artifacts not referenced by README/docs/manifests;
    - delete or move one-off probe/pilot/candidate/status builders with no
      current owner;
    - remove remaining tutorial/docs language for retired or non-promoted
      reduced/synthetic paths.
-5. Move validation out of the installable package:
+4. Move validation out of the installable package:
    - migrate `validation.benchmarks` behind root `benchmarks/` drivers or the
      `spectraxgk.benchmarks` facade only where still public;
    - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and
      quasilinear holdout builders out of `src` unless they are reusable physics
      metrics;
    - keep only small reusable gate/metric helpers in package code.
-6. After topology is smaller, profile and refactor hot paths:
+5. After topology is smaller, profile and refactor hot paths:
    linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
    and VMEC/Boozer in-memory differentiable geometry. Each performance change
    needs a before/after profiler artifact and numerical identity or physics
