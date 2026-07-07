@@ -10,7 +10,7 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "compare_w7x_zonal_reference.py"
+    path = Path(__file__).resolve().parents[3] / "tools" / "comparison" / "compare_w7x_zonal_reference.py"
     spec = importlib.util.spec_from_file_location("compare_w7x_zonal_reference", path)
     assert spec is not None
     assert spec.loader is not None

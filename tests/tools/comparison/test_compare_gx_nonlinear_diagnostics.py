@@ -92,7 +92,7 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     _write_minimal_gx_nc(gx_path)
     _write_minimal_spectrax_csv(sp_path)
 
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_diagnostics as mod
@@ -150,7 +150,7 @@ def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(tmp_path: Pa
     gx_path = tmp_path / "gx.out.nc"
     _write_minimal_gx_nc(gx_path)
 
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_diagnostics as mod
@@ -174,7 +174,7 @@ def test_compare_gx_nonlinear_diagnostics_loads_spectrax_out_nc(tmp_path: Path) 
     spectrax_path = tmp_path / "spectrax.out.nc"
     _write_minimal_spectrax_nc(spectrax_path)
 
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_diagnostics as mod
@@ -194,7 +194,7 @@ def test_compare_gx_nonlinear_diagnostics_loads_spectrax_out_nc(tmp_path: Path) 
 
 
 def test_compare_gx_nonlinear_diagnostics_interp_summary() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_diagnostics as mod
@@ -214,7 +214,7 @@ def test_compare_gx_nonlinear_diagnostics_interp_summary() -> None:
 
 
 def test_compare_gx_nonlinear_diagnostics_apply_time_window() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_diagnostics as mod

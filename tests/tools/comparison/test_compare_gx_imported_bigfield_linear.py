@@ -6,7 +6,7 @@ import sys
 import jax.numpy as jnp
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
 from compare_gx_imported_bigfield_linear import (
     _growth_rate_from_signal_sparse,

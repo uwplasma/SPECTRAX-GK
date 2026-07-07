@@ -12,7 +12,7 @@ import pytest
 
 
 def test_compare_gx_kbm_parser_defaults_hl_dims_to_gx_contract() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -25,7 +25,7 @@ def test_compare_gx_kbm_parser_defaults_hl_dims_to_gx_contract() -> None:
 
 
 def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -58,7 +58,7 @@ def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkey
 
 
 def test_compare_gx_kbm_checkpoints_partial_rows(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -82,7 +82,7 @@ def test_compare_gx_kbm_checkpoints_partial_rows(tmp_path: Path) -> None:
 
 
 def test_compare_gx_kbm_continuation_score_prefers_overlap() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -114,7 +114,7 @@ def test_compare_gx_kbm_continuation_score_prefers_overlap() -> None:
 
 
 def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -166,7 +166,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
 
 
 def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -212,7 +212,7 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch)
 
 
 def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -259,7 +259,7 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
 
 
 def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -306,7 +306,7 @@ def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> Non
 
 
 def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -379,7 +379,7 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypat
 def test_compare_gx_kbm_run_candidate_cached_loads_saved_trajectory(
     monkeypatch, tmp_path: Path
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -444,7 +444,7 @@ def test_compare_gx_kbm_run_candidate_cached_loads_saved_trajectory(
 
 
 def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -487,7 +487,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
 
 
 def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_series() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -521,7 +521,7 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_se
 
 
 def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -573,7 +573,7 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
 
 
 def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -624,7 +624,7 @@ def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch)
 
 
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -671,7 +671,7 @@ def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) 
 
 
 def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -692,7 +692,7 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
 
 
 def test_compare_gx_kbm_loads_gx_input_contract(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -740,7 +740,7 @@ fprim = [0.8, 0.8]
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -777,7 +777,7 @@ def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
 
 
 def test_compare_gx_kbm_candidate_row_captures_fit_window() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -803,7 +803,7 @@ def test_compare_gx_kbm_candidate_row_captures_fit_window() -> None:
 
 
 def test_compare_gx_kbm_branch_gate_report_from_rows() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -836,7 +836,7 @@ def test_compare_gx_kbm_branch_gate_report_from_rows() -> None:
 
 
 def test_compare_gx_kbm_parse_candidate_spec_supports_mode_override() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -851,7 +851,7 @@ def test_compare_gx_kbm_parse_candidate_spec_supports_mode_override() -> None:
 
 
 def test_compare_gx_kbm_parse_candidate_spec_without_override() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -866,7 +866,7 @@ def test_compare_gx_kbm_parse_candidate_spec_without_override() -> None:
 
 
 def test_compare_gx_kbm_loads_npz_reference(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod
@@ -911,7 +911,7 @@ def test_compare_gx_kbm_loads_npz_reference(tmp_path: Path) -> None:
 
 
 def test_compare_gx_kbm_npz_zero_geometry_scalars_fall_back_to_defaults(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_kbm as mod

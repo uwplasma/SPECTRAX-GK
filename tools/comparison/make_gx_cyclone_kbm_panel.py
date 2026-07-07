@@ -13,7 +13,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 
 try:
-    from tools.make_gx_summary_panel import STATIC, _autocrop_image, _resolve
+    from tools.comparison.make_gx_summary_panel import STATIC, _autocrop_image, _resolve
 except ModuleNotFoundError:  # Allows PYTHONPATH=tools execution in tests.
     from make_gx_summary_panel import STATIC, _autocrop_image, _resolve
 

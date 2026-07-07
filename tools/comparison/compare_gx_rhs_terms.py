@@ -52,7 +52,7 @@ from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.core.species import build_linear_params
 
-from tools.compare_gx_imported_linear import (
+from tools.comparison.compare_gx_imported_linear import (
     _load_gx_input_contract,
     _read_gx_output_bool,
     _resolve_imported_boundary,

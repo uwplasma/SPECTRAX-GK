@@ -28,7 +28,7 @@ from spectraxgk.terms.config import TermConfig
 
 
 def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_rhs_terms as mod
@@ -85,7 +85,7 @@ def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> No
 
 
 def test_compare_gx_rhs_terms_parser_defaults_to_dump_metadata() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_rhs_terms as mod
@@ -101,7 +101,7 @@ def test_compare_gx_rhs_terms_parser_defaults_to_dump_metadata() -> None:
 
 
 def test_compare_gx_rhs_terms_parser_accepts_runtime_config() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_rhs_terms as mod
@@ -117,7 +117,7 @@ def test_compare_gx_rhs_terms_parser_accepts_runtime_config() -> None:
 
 
 def test_compare_gx_rhs_terms_parser_accepts_imported_geometry_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_rhs_terms as mod
@@ -143,7 +143,7 @@ def test_compare_gx_rhs_terms_parser_accepts_imported_geometry_args() -> None:
 
 
 def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_rhs_terms as mod

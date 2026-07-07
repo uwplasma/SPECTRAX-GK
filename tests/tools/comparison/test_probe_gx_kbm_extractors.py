@@ -14,7 +14,7 @@ from spectraxgk.config import GridConfig
 
 
 def _load_module():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import probe_gx_kbm_extractors as mod

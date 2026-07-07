@@ -9,7 +9,7 @@ import numpy as np
 from netCDF4 import Dataset
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
 from compare_gx_secondary import _load_gx_modes, _load_gx_readme_targets, _load_gx_time_max, build_parser
 

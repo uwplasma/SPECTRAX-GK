@@ -10,7 +10,7 @@ import numpy as np
 
 
 def test_compare_gx_nonlinear_terms_parser_accepts_runtime_config() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod
@@ -38,7 +38,7 @@ def test_compare_gx_nonlinear_terms_parser_accepts_runtime_config() -> None:
 
 
 def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod
@@ -89,7 +89,7 @@ def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> 
 
 
 def test_pick_species_dump_prefers_species_suffix(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod
@@ -107,7 +107,7 @@ def test_pick_species_dump_prefers_species_suffix(tmp_path: Path) -> None:
 
 
 def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod
@@ -127,7 +127,7 @@ def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> No
 
 
 def test_resolve_dealias_mask_rebuilds_to_compared_shape() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod
@@ -140,7 +140,7 @@ def test_resolve_dealias_mask_rebuilds_to_compared_shape() -> None:
 
 
 def test_synth_positive_and_full_ky_rebuild_dump_grid() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_terms as mod

@@ -42,7 +42,7 @@ from spectraxgk.terms.nonlinear import (
     _laguerre_to_grid,
     nonlinear_em_components,
 )
-from tools.compare_gx_rhs_terms import _infer_y0
+from tools.comparison.compare_gx_rhs_terms import _infer_y0
 
 
 def _slice_species_params(

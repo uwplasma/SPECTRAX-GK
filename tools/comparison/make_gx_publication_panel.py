@@ -10,7 +10,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
 try:
-    from tools.make_gx_summary_panel import (
+    from tools.comparison.make_gx_summary_panel import (
         STATIC,
         _autocrop_image,
         _load_imported_linear,

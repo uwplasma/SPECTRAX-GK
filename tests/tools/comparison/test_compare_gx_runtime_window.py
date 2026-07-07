@@ -11,7 +11,7 @@ from netCDF4 import Dataset
 
 
 def test_compare_gx_runtime_window_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_window as mod
@@ -42,7 +42,7 @@ def test_compare_gx_runtime_window_parser_requires_core_args() -> None:
 
 
 def test_compare_gx_runtime_window_parser_accepts_optional_ky_and_steps() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_window as mod
@@ -73,7 +73,7 @@ def test_compare_gx_runtime_window_parser_accepts_optional_ky_and_steps() -> Non
 
 
 def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_window as mod

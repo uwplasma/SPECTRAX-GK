@@ -31,7 +31,7 @@ def test_compare_gx_nonlinear_loads_restart_csv(tmp_path: Path) -> None:
         comments="",
     )
 
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear as mod
@@ -51,7 +51,7 @@ def test_compare_gx_nonlinear_loads_restart_csv(tmp_path: Path) -> None:
 
 
 def test_compare_gx_nonlinear_late_stats_handle_decorrelated_saturated_traces() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear as mod
@@ -73,7 +73,7 @@ def test_compare_gx_nonlinear_late_stats_handle_decorrelated_saturated_traces() 
 
 
 def test_compare_gx_nonlinear_window_mask_tolerates_runtime_time_roundoff() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear as mod

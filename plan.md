@@ -18,7 +18,8 @@ preserving validated solver behavior and public user workflows.
 
 Last audited: 2026-07-07 on `main`.
 
-- Audited baseline head: `8fa2332c Retire reduced cETG runtime path`.
+- Audited baseline head: `4ddfeb3f Move remaining check gates under release tools`,
+  plus the in-progress comparison-tool relocation recorded below.
 - Latest reachable release tag at the audit: `v1.6.10`; the audited baseline
   was three commits after that tag.
 - Git state at audit: clean `main`, tracking `origin/main`.
@@ -28,14 +29,20 @@ Last audited: 2026-07-07 on `main`.
 - Stale detached worktree metadata for old local investigations was pruned on
   2026-07-07; the only remaining worktree is this `main` checkout.
 - Closed obsolete experimental PRs remain closed: #4, #5, and #6.
-- Tracked repository size is acceptable for now; no tracked file is above 1 MB.
-  The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`.
-- Current tracked file counts:
+- Tracked repository size is acceptable for now; no tracked file is above 2 MB.
+  The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
+  at about 0.94 MiB.
+- Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 262 Python files after adding the inventory tool and deleting three unreferenced historical tools.
+  - `tools`: 263 Python files after adding purpose-folder package initializers while moving flat tools.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
+- The repository inventory classifies 88 installable validation files as
+  `move-or-shrink`, 239 tool files as `move-or-merge`, 268 files as
+  `keep-and-consolidate`, and 39 active-campaign/probe files as
+  `move-or-delete`. That inventory is now the source of truth for each
+  deletion or move tranche.
 - Source-package Python file counts by domain:
   - `validation`: 88 files.
   - `objectives`: 38 files.
@@ -76,7 +83,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 262 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 263 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -101,7 +108,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 235 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 204 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -116,6 +123,98 @@ The plan is deliberately deletion-first:
 3. Collapse tests and tools by family before changing solver internals.
 4. Refactor hot kernels only behind profiler and identity gates.
 5. Update docs/readme only after the file layout and claims are true.
+
+## Repository Ownership Map
+
+This ownership map is the rule for deciding whether a file stays in `main`,
+moves, merges, or is deleted. If a file does not fit one of these roles, it
+should not remain in the release branch.
+
+| Location | Owner role | What belongs there | What does not belong there |
+| --- | --- | --- | --- |
+| `src/spectraxgk/core` | Data contracts | Grids, species, velocity basis, typed contracts, small extension points | Campaign policy, plotting, file-system workflows |
+| `src/spectraxgk/geometry` | Geometry API | Analytic, Miller, VMEC/Boozer, differentiable geometry contracts, in-memory JAX adapters | Long-run validation reports or one-off VMEC campaigns |
+| `src/spectraxgk/operators` | Physics operators | Linear/nonlinear RHS kernels, field solve pieces, dissipation, gyroaverages | Runtime orchestration, benchmark policies |
+| `src/spectraxgk/solvers` | Numerical methods | Explicit/IMEX/time policies, eigensolvers, Krylov methods, differentiable solve wrappers | Case-specific benchmark branches |
+| `src/spectraxgk/diagnostics` | Physics observables | Growth/frequency windows, transport, free-energy, quasilinear formulas, statistics | Publication-panel builders |
+| `src/spectraxgk/objectives` | Differentiable objectives | Pure JAX objective functions, FD/AD checks, line-search utilities | Subprocess runs, plotting, local campaign launchers |
+| `src/spectraxgk/parallel` | Parallel execution | Independent-work batching, identity-gated decompositions, device utilities | Performance claims without profiler artifacts |
+| `src/spectraxgk/workflows` | User workflows | TOML/runtime/executable orchestration, progress output, plotting command routing | Validation campaign code that is not a user workflow |
+| `benchmarks/` | Benchmark drivers | Small reproducible benchmark entry points and manifests | Raw outputs, long campaign trees, figures, one-off tools |
+| `examples/` | User education | Runnable scripts that teach the promoted API and physics | Release machinery, hidden campaign postprocessing |
+| `tools/release` | CI/release gates | Deterministic checks used by CI or release readiness | Plot generation or exploratory campaign logic |
+| `tools/comparison` | External-code comparisons | Explicit parity/reference utilities and benchmark-only external-code names | Runtime library conventions or general helper names |
+| `tools/artifacts` | Figure/table builders | README/docs/manuscript figure generators with stable inputs | Long simulation launchers or raw campaign outputs |
+| `tools/campaigns` | Active long-run campaigns | Launch/postprocess scripts for current documented campaigns | Stale probes, old fallback launchers, accepted artifacts |
+| `tools/profiling` | Reproducible profiling | CPU/GPU profiler reproducers, Perfetto/XLA dump drivers | Unsupported speedup claims |
+| `tests/unit` | Small correctness tests | Fast physics/numerics/unit checks with shared fixtures | End-to-end executable runs or one-test-per-tool wrappers |
+| `tests/integration` | User workflows | Executable, runtime, plotting, artifact, example integration tests | Long research campaigns |
+| `tests/validation` | Literature gates | Physics gates, convergence checks, benchmark comparisons, promotion guards | Smoke tests without physical assertions |
+| `tests/tools` | Maintenance tooling | Parametrized tests for release/artifact/campaign/comparison/profiling tools | Hundreds of one-file-per-script tests |
+
+## Finite Refactor Execution Plan
+
+The refactor should now proceed in six bounded waves. Each wave must reduce
+ambiguity, not just move files.
+
+1. **Tools ownership and deletion wave.**
+   - Finish moving explicit comparison utilities to `tools/comparison`.
+   - Move figure/table builders to `tools/artifacts`.
+   - Move active launch/postprocess scripts to `tools/campaigns`.
+   - Move profiler reproducers to `tools/profiling`.
+   - Delete or move out of `main` probes and local-only scripts unless docs,
+     tests, or release manifests prove they are active.
+   - Replace case-specific duplicate builders with manifest-driven commands
+     where the only differences are case name, paths, or plotted labels.
+
+2. **Test topology wave.**
+   - Move the 139 flat root tests into `tests/unit`, `tests/integration`, and
+     `tests/validation`.
+   - Merge one-file-per-script tool tests into family suites under
+     `tests/tools/{release,artifacts,campaigns,comparison,profiling}`.
+   - Keep 95% package-wide coverage by replacing duplicated tests with
+     parameterization and shared physical fixtures, not by deleting coverage.
+   - Enforce the local fast shard under five minutes; long nonlinear and GPU
+     campaigns remain explicit validation jobs.
+
+3. **Validation-out-of-package wave.**
+   - Empty `src/spectraxgk/validation` except for at most a tiny stable metrics
+     facade if still needed by users.
+   - Move benchmark runners to root `benchmarks/` or `tools/campaigns`.
+   - Move promotion/admission policies that are release checks to
+     `tools/release` or `tests/validation`.
+   - Keep literature-anchored metrics in `src/spectraxgk/diagnostics` only when
+     they are reusable physics observables rather than campaign policy.
+
+4. **Source simplification wave.**
+   - Merge small or prefix-driven modules into domain files with physical names.
+   - Keep public facades small and stable: `linear`, `nonlinear`,
+     `quasilinear`, `geometry`, `objectives`, `parallel`, `runtime`, and
+     `artifacts`.
+   - Remove backward-compatible aliases for retired behavior unless they are
+     necessary for the documented executable or Python API.
+   - Continue renaming comparison-code terminology to physical/numerical names
+     except inside `tools/comparison`, comparison tests, and benchmark docs.
+
+5. **Performance and differentiability wave.**
+   - Define a small set of stable JIT boundaries for linear RHS, nonlinear RHS,
+     field solve, diagnostics reduction, and geometry sampling.
+   - Keep differentiable Python objectives pure and in-memory; keep executable
+     progress/plotting/file I/O outside differentiated code.
+   - For each optimization, add identity gates first, then profiler artifacts,
+     then performance claims.
+   - Focus first on cold-start/default-demo latency, linear cache reuse,
+     nonlinear diagnostic streaming, and avoiding shape-changing wrappers.
+
+6. **Docs, README, and release wave.**
+   - Rebuild `docs/code_structure.rst` as a concise developer map rather than
+     a migration diary.
+   - Keep `benchmarks/`, `examples/`, and `tools/` roles explicit in README and
+     docs.
+   - Remove docs/static artifacts that are not referenced by README/docs or
+     release manifests.
+   - Run fast package tests, coverage gate, docs build, package build, release
+     checks, repository-size check, and architecture manifest before tagging.
 
 ## Latest Complexity Audit And Consolidation Decisions
 
@@ -135,7 +234,7 @@ Audited on 2026-07-07 after commit `8fa2332c`:
   biggest root files are historical aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
-- `tools/` still has 235 flat Python scripts. Prefix families show the actual
+- `tools/` still has 204 flat Python scripts. Prefix families show the actual
   consolidation route: 57 `build_*`, 33 `plot_*`, 25 `check_*`, 25
   `compare_*`, 25 `generate_*`, 20 `profile_*`, 16 `write_*`, and 15 `run_*`
   scripts. These should become manifest-driven families, not hundreds of
@@ -955,6 +1054,13 @@ Exit gates:
   nonlinear-gradient checkers. Command strings, docs, tests, workflow snippets,
   and tracked JSON metadata now reference the new paths. Total tool count stayed
   at 262, and flat root tool scripts dropped from 248 to 235.
+
+- 2026-07-07: moved thirty-one explicit external-comparison/reference utilities
+  into `tools/comparison/`, including `compare_*`, `generate_gx_*`,
+  `make_gx_*`, and `probe_gx_*` scripts. Tests, docs, command strings, and
+  sibling imports now use `tools/comparison/...` or `tools.comparison.*`. Total
+  tool count increased by one package initializer to 263, and flat root tool
+  scripts dropped from 235 to 204.
 
 ## Immediate Next Steps
 

@@ -2,7 +2,7 @@
 """Plot windowed nonlinear GX/SPECTRAX-GK diagnostic agreement.
 
 This script consumes the tracked ``nonlinear_*_gate_summary.json`` files
-written by ``tools/compare_gx_nonlinear_diagnostics.py`` and turns their
+written by ``tools/comparison/compare_gx_nonlinear_diagnostics.py`` and turns their
 windowed mismatch statistics into a manuscript-facing summary panel. It does
 not rerun simulations; it visualizes the frozen release-window gate metadata.
 """

@@ -11,7 +11,7 @@ from netCDF4 import Dataset
 
 
 def test_compare_gx_runtime_diag_state_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_diag_state as mod
@@ -41,7 +41,7 @@ def test_compare_gx_runtime_diag_state_parser_requires_core_args() -> None:
 def test_compare_gx_runtime_diag_state_builds_positive_ky_grid_and_writes_csv(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_diag_state as mod

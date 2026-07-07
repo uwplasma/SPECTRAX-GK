@@ -8,7 +8,7 @@ import pytest
 
 
 def _load_tool():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_nonlinear_rk4_stage as mod

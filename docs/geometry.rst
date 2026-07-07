@@ -606,7 +606,7 @@ on the exact dumped GX state: ``kperp2``, ``fluxfac``, ``phi``, ``Wg``,
 
 Two user-facing entry points now exercise that bridge:
 
-- ``tools/generate_gx_vmec_eik.py --config ...`` generates a compatible
+- ``tools/comparison/generate_gx_vmec_eik.py --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
 - ``tools/generate_miller_eik.py --config ...`` generates a compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.

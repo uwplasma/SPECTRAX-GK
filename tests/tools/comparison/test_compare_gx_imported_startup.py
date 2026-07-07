@@ -11,7 +11,7 @@ from netCDF4 import Dataset
 
 
 def test_compare_gx_imported_startup_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_imported_startup as mod
@@ -42,7 +42,7 @@ def test_compare_gx_imported_startup_parser_requires_core_args() -> None:
 
 
 def test_compare_gx_imported_startup_prefers_rhs_terms_dump_layout(tmp_path: Path) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_imported_startup as mod
@@ -65,7 +65,7 @@ def test_compare_gx_imported_startup_prefers_rhs_terms_dump_layout(tmp_path: Pat
 def test_compare_gx_imported_startup_builds_full_grid_before_slicing(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_imported_startup as mod
@@ -161,7 +161,7 @@ def test_compare_gx_imported_startup_builds_full_grid_before_slicing(
 def test_compare_gx_imported_startup_uses_slab_geometry_contract(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_imported_startup as mod

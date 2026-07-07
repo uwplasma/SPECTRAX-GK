@@ -6,9 +6,9 @@ used on local laptops and remote machines without hardcoding office-only paths
 into the repo.
 
 It wraps:
-- tools/compare_gx_runtime_startup.py
-- tools/compare_gx_runtime_diag_state.py
-- tools/compare_gx_runtime_window.py
+- tools/comparison/compare_gx_runtime_startup.py
+- tools/comparison/compare_gx_runtime_diag_state.py
+- tools/comparison/compare_gx_runtime_window.py
 """
 
 from __future__ import annotations

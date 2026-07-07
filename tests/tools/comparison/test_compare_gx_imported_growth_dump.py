@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
 from compare_gx_imported_growth_dump import (
     _expand_gx_restart_state_to_full_positive_ky,

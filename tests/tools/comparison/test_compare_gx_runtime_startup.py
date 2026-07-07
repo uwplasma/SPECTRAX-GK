@@ -11,7 +11,7 @@ from netCDF4 import Dataset
 
 
 def test_compare_gx_runtime_startup_select_ky_block_slices_third_to_last_axis() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_startup as mod
@@ -26,7 +26,7 @@ def test_compare_gx_runtime_startup_select_ky_block_slices_third_to_last_axis() 
 
 
 def test_compare_gx_runtime_startup_infers_full_ny_from_positive_ky() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_startup as mod
@@ -37,7 +37,7 @@ def test_compare_gx_runtime_startup_infers_full_ny_from_positive_ky() -> None:
 
 
 def test_compare_gx_runtime_startup_parser_requires_core_args() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_startup as mod
@@ -67,7 +67,7 @@ def test_compare_gx_runtime_startup_parser_requires_core_args() -> None:
 def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
     tmp_path: Path, monkeypatch
 ) -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
         import compare_gx_runtime_startup as mod

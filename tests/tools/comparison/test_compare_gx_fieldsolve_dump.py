@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from tools.compare_gx_fieldsolve_dump import _load_complex_packed_fields
+from tools.comparison.compare_gx_fieldsolve_dump import _load_complex_packed_fields
 
 
 def test_load_complex_packed_fields_infers_two_block_layout(tmp_path) -> None:

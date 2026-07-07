@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 from typing import Any
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "comparison"))
 
 import compare_gx_imported_linear as imported_linear
 

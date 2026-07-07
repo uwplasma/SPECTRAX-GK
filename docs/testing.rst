@@ -249,7 +249,7 @@ frozen finite GX raw-mode bundle when a matching ``.big.nc`` file is supplied
 and writes ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png``
 plus JSON/CSV companions. The current artifact passes with overlap
 ``0.9999999994`` and relative ``L^2`` mismatch ``3.33e-5``.
-``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
+``tools/comparison/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric. The summary
 writer now accepts case/source labels, explicit ``tmin/tmax`` windows, and
@@ -269,7 +269,7 @@ artifact lives at ``docs/_static/cyclone_resolution_observed_order.json`` and
 ``docs/_static/cyclone_resolution_observed_order.png``. It uses an office/GPU
 ``ky=0.30`` time-path sweep through ``(Nl,Nm)=(4,8),(6,12),(12,24),(16,32)``
 with ``tmax=150`` and passes the strict pairwise-order and final-error gates.
-``tools/compare_gx_kbm.py --branch-summary-json`` wires that convention into
+``tools/comparison/compare_gx_kbm.py --branch-summary-json`` wires that convention into
 the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
 jumps and successive eigenfunction-overlap continuity for the selected branch.
 ``tools/generate_kbm_branch_gate_summary.py`` provides the corresponding
@@ -939,7 +939,7 @@ The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``,
 ``docs/_static/w7x_zonal_reference_digitized.json``, and
 ``docs/_static/w7x_zonal_reference_digitized.png``. The comparison contract is
-implemented in ``tools/compare_w7x_zonal_reference.py`` and materialized at
+implemented in ``tools/comparison/compare_w7x_zonal_reference.py`` and materialized at
 ``docs/_static/w7x_zonal_reference_compare.png`` with JSON metadata in
 ``docs/_static/w7x_zonal_reference_compare.json``. The current long-window
 artifact passes the time-coverage gate for all four wavelengths, but the
@@ -1396,10 +1396,10 @@ published benchmarks and trend tests:
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
 - **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
   streaming and linear-kernel RHS components against GX for a single Cyclone
-  state (see ``tools/dump_rhs_terms.py`` and ``tools/compare_gx_rhs_terms.py``).
+  state (see ``tools/dump_rhs_terms.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
 - **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
-  ``tools/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders
+  ``tools/comparison/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders
   with ``nl_apar.bin``/``nl_bpar.bin`` and can infer shape metadata when
   ``rhs_terms_shape.txt`` is absent.
 - **ETG linear instability**: verify that growth rates remain positive across
@@ -1470,7 +1470,7 @@ artifacts, use:
 
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_imported_linear_targeted_audit.py`` (generic per-``ky`` targeted imported-linear wrapper)
-- ``tools/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
+- ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/plot_w7x_exact_state_audit.py`` (no-rerun W7-X exact-state convention audit panel)
