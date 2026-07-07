@@ -127,36 +127,13 @@ moved_exports = [
 fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.reference"
-source_path = "src/spectraxgk/validation/benchmarks/reference.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark result containers, reference-table loaders, and reference comparison records"
-moved_exports = [
-  "CycloneComparison",
-  "CycloneReference",
-  "CycloneRunResult",
-  "CycloneScanResult",
-  "LinearRunResult",
-  "LinearScanResult",
-  "_load_reference_with_header",
-  "compare_cyclone_to_reference",
-  "load_cyclone_reference",
-  "load_cyclone_reference_kinetic",
-  "load_etg_reference",
-  "load_kbm_reference",
-  "load_tem_reference",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.species"
 source_path = "src/spectraxgk/validation/benchmarks/species.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "benchmark species-to-LinearParams construction and reference hypercollision/end-damping policy"
+responsibility = "benchmark species-to-LinearParams builders, reference hypercollision constants, and linked-boundary damping policy"
 moved_exports = [
   "REFERENCE_DAMP_ENDS_AMP",
   "REFERENCE_DAMP_ENDS_WIDTHFRAC",
@@ -170,22 +147,7 @@ moved_exports = [
   "_reference_hypercollision_power",
   "_two_species_params",
 ]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_linear_paths"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear_paths.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone_linear"
-status = "active"
-responsibility = "Cyclone single-ky Krylov seed/branch policy plus time-integration and fit-selection policy"
-moved_exports = [
-  "run_cyclone_krylov_path",
-  "run_cyclone_time_path",
-  "sync_path_hooks",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

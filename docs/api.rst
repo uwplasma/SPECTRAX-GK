@@ -565,16 +565,6 @@ Benchmark Initialization
    :members:
    :private-members:
 
-Benchmark Fit Signals
----------------------
-
-Benchmark Reference Data
-------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.reference
-   :members:
-   :private-members:
-
 Benchmark Species Policies
 --------------------------
 

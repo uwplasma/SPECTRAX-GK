@@ -430,7 +430,7 @@ Phase 1: introduce protocols and containers
   live directly in ``spectraxgk.config`` so the stable public import location is
   also the physical owner for those dataclasses.
   ``spectraxgk.validation.benchmarks.initialization`` owns benchmark initial-condition
-  construction and ``spectraxgk.validation.benchmarks.reference`` owns reference containers
+  construction and ``spectraxgk.validation.benchmarks.defaults`` owns reference containers
   and CSV loaders. ``spectraxgk.validation.benchmarks.species`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic

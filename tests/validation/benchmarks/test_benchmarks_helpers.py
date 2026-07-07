@@ -23,7 +23,7 @@ from spectraxgk.validation.benchmarks.initialization import (
     _build_initial_condition,
     _kinetic_reference_init_cfg,
 )
-from spectraxgk.validation.benchmarks.reference import (
+from spectraxgk.validation.benchmarks.defaults import (
     CycloneReference,
     CycloneRunResult,
     _load_reference_with_header,
@@ -159,7 +159,7 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
             return data_dir / parts[-1]
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.reference.resources.files",
+        "spectraxgk.validation.benchmarks.defaults.resources.files",
         lambda _pkg: FakeFiles(),
     )
     ref = _load_reference_with_header("demo.csv")
