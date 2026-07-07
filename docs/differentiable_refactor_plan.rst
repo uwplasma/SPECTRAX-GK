@@ -453,7 +453,7 @@ Phase 1: introduce protocols and containers
   overclaim guardrails, optional optimized-equilibrium audit gates, and final
   ledger assembly staged separately from the input-normalization helpers in
   ``spectraxgk.validation.quasilinear.model_selection_inputs``.
-  ``spectraxgk.validation.quasilinear.window_statistics`` owns late-window
+  ``spectraxgk.diagnostics.transport_windows`` owns late-window
   nonlinear transport convergence reports, staged as validated window
   selection, finite-sample counts, drift/terminal-window statistics,
   block/bootstrap uncertainty, and final gate-report assembly.

@@ -596,7 +596,7 @@ to ``calibrated_absolute_flux`` only when it contains at least one training
 point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
-``spectraxgk.validation.quasilinear.window_statistics`` or
+``spectraxgk.diagnostics.transport_windows`` or
 ``tools/release/check_nonlinear_window_convergence.py`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
@@ -606,7 +606,7 @@ from an uncalibrated
 saturation rule.
 
 Replicated nonlinear windows should additionally be checked with
-``spectraxgk.validation.quasilinear.window_ensemble.nonlinear_window_ensemble_report`` before they
+``spectraxgk.diagnostics.transport_windows.nonlinear_window_ensemble_report`` before they
 are used as seed, initial-condition, or timestep-robust transport evidence.
 The ensemble gate consumes already-built nonlinear-window convergence reports,
 requires each input window to be promotion-ready by default, and checks the

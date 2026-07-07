@@ -27,10 +27,10 @@ from spectraxgk.validation.quasilinear.calibration_io import (
 from spectraxgk.validation.quasilinear.calibration_spectrum import (
     integrated_quasilinear_flux_from_spectrum,
 )
-from spectraxgk.validation.quasilinear.window_config import (
+from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
 )
-from spectraxgk.validation.quasilinear.window_statistics import (
+from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
 )
 

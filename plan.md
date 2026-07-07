@@ -34,21 +34,21 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 347 Python files after moving shared validation helpers out of the package runtime surface.
+  - `src/spectraxgk`: 343 Python files after consolidating nonlinear transport-window diagnostics into `diagnostics.transport_windows`.
   - `tests`: 246 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 259 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
-- The repository inventory classifies 81 installable validation files as
+- The repository inventory classifies 76 installable validation files as
   `move-or-shrink`, 503 files as `keep-or-merge`, 268 files as
   `keep-and-consolidate`, 82 files as `keep-or-scope`, and 26 files as
-  `keep-or-review`. The 81 `move-or-shrink` files are the validation package;
+  `keep-or-review`. The 76 `move-or-shrink` files are the validation package;
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
   consolidation queue.
 - Source-package Python file counts by domain:
-  - `validation`: 81 files.
+  - `validation`: 76 files.
   - `objectives`: 39 files.
   - `operators`: 34 files.
   - `solvers`: 34 files.
@@ -57,7 +57,7 @@ Last audited: 2026-07-07 on `main`.
   - `terms`: 21 files.
   - `artifacts`: 18 files.
   - `geometry_backends`: 18 files.
-  - `diagnostics`: 18 files.
+  - `diagnostics`: 19 files.
   - `parallel`: 12 files.
   - `api`: 11 files.
   - root facades: 9 files.
@@ -84,7 +84,7 @@ Latest focused audit for this tranche:
 - The remaining code-size problem is family sprawl:
   - `tests/tools/artifacts`: 26 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
   - `tools/artifacts`: 125 figure/table/status/gate builders.
-  - `src/spectraxgk/validation`: 81 installable validation/campaign files.
+  - `src/spectraxgk/validation`: 76 installable validation/campaign files.
   - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
     mostly preserving historical runtime branches in one file.
   - `tests/validation/benchmarks/test_benchmarks_runner_branches.py`: about
@@ -108,12 +108,12 @@ boundary problem: package code, validation campaigns, artifact builders,
 profilers, benchmark drivers, and historical branch tests are all treated as if
 they were equally central to the runtime library.
 
-Current measured topology after `4b57ef41`:
+Current measured topology after `76a4ad5e` plus the nonlinear-window consolidation tranche:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 347 Python files, about 106.2k LOC | installable package still contains validation campaigns and many public/internal facades |
-| `src/spectraxgk/validation` | 81 Python files, about 30.6k LOC | campaign, benchmark, nonlinear-gradient, quasilinear, and stellarator validation policy is installed as runtime code |
+| `src/spectraxgk` | 343 Python files, about 106.1k LOC | installable package still contains validation campaigns and many public/internal facades |
+| `src/spectraxgk/validation` | 76 Python files, about 29.3k LOC | campaign, benchmark, nonlinear-gradient, remaining quasilinear, and stellarator validation policy is installed as runtime code |
 | `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
 | `tools` | 259 Python scripts, about 98.7k LOC | many scripts differ by case labels, artifact names, or campaign paths |
 | `tools/artifacts` | 125 Python scripts, about 52.8k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
@@ -257,11 +257,11 @@ usable codebase.
 
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 347 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
+| Installable source Python files | 343 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 246 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
 | Tool Python files | 259 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
-| `src/spectraxgk/validation` package | 81 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| `src/spectraxgk/validation` package | 76 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
 | Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
 | Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
@@ -283,7 +283,7 @@ The highest-impact reductions are now clear:
 
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
-| Validation in `src` | 81 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
+| Validation in `src` | 76 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
 | Tool-family sprawl | 259 scripts, with 125 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
 | Test-family sprawl | 246 files, including runtime and benchmark branch monoliths plus one-file-per-tool wrappers | Merge by physical contract and shared fixtures; parametrize tool-family tests | Lower navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
@@ -404,7 +404,7 @@ Audited on 2026-07-07 after commit
   current CI run for `4b57ef41` is in progress and earlier runs were cancelled by
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
-- The active topology is `src/spectraxgk`: 347 Python files,
+- The active topology is `src/spectraxgk`: 343 Python files,
   `tests`: 246 Python files, `tools`: 259 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
   consolidations reduced `tests/tools/artifacts` from 94 to 26 files while
@@ -417,7 +417,7 @@ Audited on 2026-07-07 after commit
   The only tracked binary array bundles are the two small reference-mode NPZ
   files under `docs/_static/reference_modes`.
 - The largest structural source offender is still
-  `src/spectraxgk/validation`: 81 installable Python files and about 30.6k
+  `src/spectraxgk/validation`: 76 installable Python files and about 29.3k
   Python lines.
   It mixes benchmark branch policies, nonlinear-gradient campaigns,
   quasilinear ledgers, and stellarator campaign gates with the runtime package.
@@ -544,7 +544,7 @@ files.
 4. **Move validation campaigns out of the installable package.** Keep reusable
    physics metrics in `diagnostics` or a tiny `validation` facade; move campaign
    launchers, report builders, and holdout ledgers to `benchmarks`, `tools`, or
-   `tests/validation`. Target: `src/spectraxgk/validation` from 81 files to at
+   `tests/validation`. Target: `src/spectraxgk/validation` from 76 files to at
    most 5.
 5. **Consolidate source domains after imports settle.** Merge `terms` into
    `operators` where appropriate, combine `geometry_backends` into `geometry`,
@@ -928,7 +928,7 @@ Suggested target file budget:
 
 ## Source Consolidation Plan
 
-Current problem: `src/spectraxgk` has 347 Python files, and 81 are validation
+Current problem: `src/spectraxgk` has 343 Python files, and 76 are validation
 modules. The package contains too much campaign and validation machinery.
 
 Target: at most 100 Python files in `src/spectraxgk`.
@@ -1685,3 +1685,13 @@ following:
 - Fast local tests, release gates, docs build, package build, and CI pass.
 - Runtime/memory and speedup claims are backed by fresh profiler artifacts and
   numerical identity or physics gates.
+
+- 2026-07-07: consolidated nonlinear transport-window diagnostics from five
+  quasilinear validation modules into
+  `src/spectraxgk/diagnostics/transport_windows.py`: configuration contracts,
+  late-window statistics, CSV/summary readers, promotion-readiness checks, and
+  replicated ensemble gates now share one diagnostics owner. Deleted
+  `validation/quasilinear/window_config.py`, `window_statistics.py`,
+  `window_io.py`, `window_promotion.py`, and `window_ensemble.py`. Source
+  Python files dropped from 347 to 343, installable validation files dropped
+  from 81 to 76, and tool/test file counts stayed flat.

@@ -12,21 +12,21 @@ import sys
 import numpy as np
 import pytest
 
-from spectraxgk.validation.quasilinear.window_config import (
+from spectraxgk.diagnostics.transport_windows import (
     NonlinearWindowConvergenceConfig,
     NonlinearWindowEnsembleConfig,
 )
-from spectraxgk.validation.quasilinear.window_io import (
+from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_from_csv,
     nonlinear_window_convergence_from_summary,
 )
-from spectraxgk.validation.quasilinear.window_statistics import (
+from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
 )
-from spectraxgk.validation.quasilinear.window_ensemble import (
+from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_ensemble_report,
 )
-from spectraxgk.validation.quasilinear.window_promotion import (
+from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_stats_promotion_ready,
 )
 
