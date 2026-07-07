@@ -891,7 +891,7 @@ fast_tests = [
   "tests/unit/parallel/test_nonlinear_parallel.py",
   "tests/unit/parallel/test_nonlinear_domain_parallel.py",
   "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
-  "tests/tools/artifacts/test_build_parallelization_completion_status.py",
+  "tests/tools/artifacts/test_status_readiness_artifacts.py",
   "tests/tools/profiling/test_profile_nonlinear_sharding.py",
 ]
 artifact_paths = [
@@ -1597,7 +1597,7 @@ fast_tests = [
   "tests/validation/physics_gates/test_zonal_validation.py",
   "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
   "tests/tools/artifacts/test_w7x_artifact_panels.py",
-  "tests/tools/artifacts/test_build_open_research_lane_status.py",
+  "tests/tools/artifacts/test_status_readiness_artifacts.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.json",
@@ -4033,9 +4033,7 @@ fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
   "tests/integration/examples/test_autodiff_demo.py",
   "tests/integration/examples/test_autodiff_twomode_demo.py",
-  "tests/tools/artifacts/test_build_manuscript_readiness_status.py",
-  "tests/tools/artifacts/test_build_pre_manuscript_closure_status.py",
-  "tests/tools/artifacts/test_build_pre_manuscript_closure_runbook.py",
+  "tests/tools/artifacts/test_status_readiness_artifacts.py",
   "tests/tools/comparison/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
