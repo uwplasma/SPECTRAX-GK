@@ -627,9 +627,6 @@ Benchmarking
    :members:
    :no-index:
 
-.. automodule:: spectraxgk.validation.benchmarks.harness_eigenfunctions
-   :members:
-
 .. automodule:: spectraxgk.validation.benchmarks.harness_timeseries
    :members:
    :private-members:

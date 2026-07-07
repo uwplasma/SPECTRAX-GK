@@ -703,14 +703,19 @@ module = "spectraxgk.diagnostics.modes"
 source_path = "src/spectraxgk/diagnostics/modes.py"
 facade_module = "spectraxgk.diagnostics.analysis"
 status = "active"
-responsibility = "mode selection, complex mode time-series extraction, density moments, and eigenfunction extraction"
+responsibility = "mode selection, complex mode time-series extraction, density moments, eigenfunction extraction, phase alignment, comparison metrics, and reference-bundle IO"
 moved_exports = [
   "ModeSelection",
   "ModeSelectionBatch",
+  "compare_eigenfunctions",
   "density_moment",
   "extract_eigenfunction",
   "extract_mode",
   "extract_mode_time_series",
+  "load_eigenfunction_reference_bundle",
+  "normalize_eigenfunction",
+  "phase_align_eigenfunction",
+  "save_eigenfunction_reference_bundle",
   "select_ky_index",
 ]
 fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
@@ -2794,22 +2799,6 @@ moved_exports = [
   "write_scan_runtime_command_outputs",
 ]
 fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.harness_eigenfunctions"
-source_path = "src/spectraxgk/validation/benchmarks/harness_eigenfunctions.py"
-facade_module = "spectraxgk.validation.benchmarks.harness"
-status = "active"
-responsibility = "benchmark eigenfunction normalization, global phase alignment, comparison metrics, and reference bundle IO"
-moved_exports = [
-  "compare_eigenfunctions",
-  "load_eigenfunction_reference_bundle",
-  "normalize_eigenfunction",
-  "phase_align_eigenfunction",
-  "save_eigenfunction_reference_bundle",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_w7x_artifact_panels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
