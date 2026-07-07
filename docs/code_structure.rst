@@ -722,7 +722,7 @@ non-Diffrax time-config and no-config integration, with stride resolution kept
 explicit before fitting; Diffrax-streaming samples read the same
 ``ScanFitWindowPolicy`` for their resolved fit window. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
-``spectraxgk.validation.benchmarks.kbm_linear_paths`` while retaining geometry
+``spectraxgk.validation.benchmarks.kbm_linear`` while retaining geometry
 setup, state/cache construction, saved/configured trajectory integration,
 saved-signal fitting, and result packaging through focused helper seams in the
 public owner. The public beta runner still owns per-beta setup and time/diffrax

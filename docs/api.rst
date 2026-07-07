@@ -604,10 +604,6 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.kbm_linear
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kbm_linear_paths
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.validation.benchmarks.kbm_scan
    :members:
 
