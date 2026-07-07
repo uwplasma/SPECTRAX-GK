@@ -631,10 +631,6 @@ Benchmarking
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.benchmarks.harness_zonal_metrics
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.validation.benchmarks.harness_scan
    :members:
 

@@ -1316,7 +1316,6 @@ owned_modules = [
   "spectraxgk.validation.benchmarks.harness",
   "spectraxgk.validation.benchmarks.harness_metrics",
   "spectraxgk.validation.benchmarks.harness_scan",
-  "spectraxgk.validation.benchmarks.harness_zonal_metrics",
   "spectraxgk.validation.benchmarks.batching",
   "spectraxgk.validation.benchmarks.cyclone_linear",
   "spectraxgk.validation.benchmarks.cyclone_linear_paths",

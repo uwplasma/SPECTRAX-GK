@@ -8,7 +8,7 @@ import pytest
 import spectraxgk
 import spectraxgk.validation.benchmarks.harness as benchmark_harness
 import spectraxgk.validation.benchmarks.harness_metrics as benchmark_harness_metrics
-import spectraxgk.validation.benchmarks.harness_zonal_metrics as benchmark_zonal_metrics
+import spectraxgk.diagnostics.zonal_validation as benchmark_zonal_metrics
 from spectraxgk.diagnostics.validation_gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,

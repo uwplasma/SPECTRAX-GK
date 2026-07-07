@@ -2831,22 +2831,6 @@ fast_tests = [
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.harness_zonal_metrics"
-source_path = "src/spectraxgk/validation/benchmarks/harness_zonal_metrics.py"
-facade_module = "spectraxgk.validation.benchmarks.harness_metrics"
-status = "active"
-responsibility = "zonal-flow residual, GAM frequency, and damping metric extraction"
-moved_exports = [
-  "zonal_flow_response_metrics",
-]
-fast_tests = [
-  "tests/validation/physics_gates/test_validation_gates.py",
-  "tests/tools/artifacts/test_generate_miller_zonal_response_panel.py",
-  "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
-]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/testing.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.harness_scan"
 source_path = "src/spectraxgk/validation/benchmarks/harness_scan.py"
 facade_module = "spectraxgk.validation.benchmarks.harness"
