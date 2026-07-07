@@ -14,10 +14,10 @@ def _load_tool_module():
         Path(__file__).resolve().parents[3]
         / "tools"
         / "artifacts"
-        / "generate_miller_zonal_response_pilot.py"
+        / "generate_miller_zonal_response_panel.py"
     )
     spec = importlib.util.spec_from_file_location(
-        "generate_miller_zonal_response_pilot", path
+        "generate_miller_zonal_response_panel", path
     )
     assert spec is not None
     assert spec.loader is not None
@@ -26,7 +26,7 @@ def _load_tool_module():
     return module
 
 
-def test_generate_miller_zonal_response_pilot_main(tmp_path, monkeypatch) -> None:
+def test_generate_miller_zonal_response_panel_main(tmp_path, monkeypatch) -> None:
     mod = _load_tool_module()
 
     config = tmp_path / "pilot.toml"

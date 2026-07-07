@@ -3996,7 +3996,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
-  "tests/tools/artifacts/test_generate_miller_zonal_response_pilot.py",
+  "tests/tools/artifacts/test_generate_miller_zonal_response_panel.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.png",

@@ -1597,7 +1597,7 @@ def test_convergence_gate_fails_large_grid_shift(tmp_path: Path) -> None:
 
 # Nonlinear feasibility pilot assertions
 def test_window_summaries_track_late_slope() -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_pilot")
+    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
     t = np.linspace(0.0, 10.0, 11)
     heat = 2.0 + 0.1 * t
     wphi = 1.0 + 0.05 * t
@@ -1612,7 +1612,7 @@ def test_window_summaries_track_late_slope() -> None:
 
 
 def test_write_pilot_panel_writes_replayable_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_pilot")
+    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
     t = np.linspace(0.0, 20.0, 21)
     trace = {
         "t": t,
@@ -1640,7 +1640,7 @@ def test_write_pilot_panel_writes_replayable_artifacts(tmp_path: Path) -> None:
 
 
 def test_window_summaries_validate_inputs() -> None:
-    mod = load_artifact_tool("plot_nonlinear_feasibility_pilot")
+    mod = load_artifact_tool("plot_nonlinear_feasibility_panel")
     with pytest.raises(ValueError, match="same length"):
         mod.window_summaries([0, 1, 2], [1, 2], [1, 2, 3])
     with pytest.raises(ValueError, match="at least three samples"):

@@ -1420,6 +1420,14 @@ Exit gates:
   keeps the active comparison audit in the explicit comparison-tool namespace
   while removing a misleading experimental/probe filename from `main`.
 
+- 2026-07-07: renamed the active zonal-response and nonlinear-feasibility
+  artifact builders from pilot-oriented tool filenames to
+  `tools/artifacts/generate_miller_zonal_response_panel.py` and
+  `tools/artifacts/plot_nonlinear_feasibility_panel.py`. Generated artifact
+  filenames and payload kinds remain scoped where they intentionally describe
+  open feasibility evidence, but the executable tool names now reflect the
+  maintained panel-builder role.
+
 ## Immediate Next Steps
 
 1. Collapse artifact tooling and tests by family:

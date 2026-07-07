@@ -219,7 +219,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/artifacts/plot_zonal_flow_response.py``
 - ``tools/artifacts/plot_zonal_flow_response_from_output.py``
-- ``tools/artifacts/generate_miller_zonal_response_pilot.py``
+- ``tools/artifacts/generate_miller_zonal_response_panel.py``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
 - ``tools/artifacts/plot_w7x_zonal_contract_audit.py``
 - ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py``
@@ -236,7 +236,7 @@ observable, reference, absolute/relative tolerance, and pass/fail convention.
 The companion coverage manifest should be updated when a new gate helper,
 artifact script, or refactor extraction changes module ownership or test
 responsibility.
-``tools/artifacts/generate_miller_zonal_response_pilot.py`` now writes the first such
+``tools/artifacts/generate_miller_zonal_response_panel.py`` now writes the first such
 gate report into its JSON metadata for the residual, GAM frequency, and signed
 GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 ``tools/artifacts/generate_kbm_reference_overlay.py`` writes the same gate structure for
@@ -289,7 +289,7 @@ to remain documented without being treated as release blockers.
 manuscript-facing statistics panel for the nonlinear GX comparison gates by
 plotting the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` values from
 those same tracked JSON summaries.
-``tools/artifacts/plot_nonlinear_feasibility_pilot.py`` is the analogous tool for new
+``tools/artifacts/plot_nonlinear_feasibility_panel.py`` is the analogous tool for new
 finite nonlinear pilots that do not yet have a reference comparison or
 production-resolution convergence gate. It writes PNG/PDF/JSON/CSV artifacts
 with explicit ``claim_level`` and ``promotion_gate.passed = false`` metadata,
@@ -871,7 +871,7 @@ observable for the final paper lane.
 
 The first case-specific shaped-Miller pilot for this lane is now reproducible
 through ``benchmarks/runtime_miller_zonal_response.toml`` and
-``tools/artifacts/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
+``tools/artifacts/generate_miller_zonal_response_panel.py``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 ``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses

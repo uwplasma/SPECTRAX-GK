@@ -96,7 +96,7 @@ def window_summaries(
 
 
 def load_trace_from_gx_netcdf(path: str | Path) -> dict[str, np.ndarray]:
-    """Load the scalar trace needed for a nonlinear pilot panel."""
+    """Load the scalar trace needed for a nonlinear feasibility panel."""
 
     diag = load_nonlinear_netcdf_diagnostics(path)
     return {
@@ -108,7 +108,7 @@ def load_trace_from_gx_netcdf(path: str | Path) -> dict[str, np.ndarray]:
 
 
 def write_trace_csv(path: str | Path, trace: dict[str, np.ndarray]) -> None:
-    """Write scalar nonlinear pilot traces to CSV."""
+    """Write scalar nonlinear feasibility traces to CSV."""
 
     out_path = Path(path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -221,7 +221,7 @@ def write_pilot_panel(
         f"relative slope/time: {float(chosen['heat_flux_relative_slope_per_time']):.3g}",
         "",
         "Interpretation:",
-        "finite long pilot; not promoted unless",
+        "finite long feasibility run; not promoted unless",
         "a saturated-window gate is defined and passed.",
     ]
     ax_text.text(
@@ -261,7 +261,7 @@ def write_pilot_panel(
         "least_trending_window": chosen,
         "promotion_gate": {
             "passed": False,
-            "reason": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+            "reason": "feasibility panel only; no external nonlinear transport acceptance gate is defined",
         },
     }
     json_path.write_text(

@@ -67,7 +67,7 @@ def _parse_args() -> argparse.Namespace:
         "--config",
         type=Path,
         default=ROOT / "benchmarks" / "runtime_miller_zonal_response.toml",
-        help="Runtime TOML for the shaped-Miller zonal-response pilot.",
+        help="Runtime TOML for the shaped-Miller zonal-response panel.",
     )
     parser.add_argument(
         "--out-bundle",
@@ -123,7 +123,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--reuse-output",
         action="store_true",
-        help="Reuse an existing out.nc bundle instead of rerunning the pilot.",
+        help="Reuse an existing out.nc bundle instead of rerunning the panel source simulation.",
     )
     return parser.parse_args()
 
@@ -197,7 +197,7 @@ def main() -> int:
     )
     if np.iscomplexobj(series.values):
         raise ValueError(
-            "signed zonal pilot plotting requires a real-valued phase-aligned trace"
+            "signed zonal-response plotting requires a real-valued phase-aligned trace"
         )
 
     metrics = zonal_flow_response_metrics(
