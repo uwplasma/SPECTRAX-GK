@@ -16,7 +16,7 @@ import pytest
 
 import spectraxgk
 import spectraxgk.objectives.stellarator as so
-from spectraxgk.validation.autodiff import autodiff_finite_difference_report
+from spectraxgk.objectives.autodiff_validation import autodiff_finite_difference_report
 from spectraxgk.objectives.stellarator import (
     OBSERVABLE_NAMES,
     PARAMETER_NAMES,

@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.validation.autodiff as adv
-import spectraxgk.validation.autodiff_finite_difference as afd
-from spectraxgk.validation.autodiff import (
+import spectraxgk.objectives.autodiff_validation as adv
+import spectraxgk.objectives.autodiff_validation as afd
+from spectraxgk.objectives.autodiff_validation import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,
