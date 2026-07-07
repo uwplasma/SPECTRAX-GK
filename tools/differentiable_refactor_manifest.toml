@@ -1834,7 +1834,7 @@ target_packages = [
 public_facade = "spectraxgk.benchmarks"
 line_target = 800
 status = "planned"
-existing_fast_tests = ["tests/validation/benchmarks/test_benchmarks.py", "tests/validation/benchmarks/test_benchmark_scan.py"]
+existing_fast_tests = ["tests/validation/benchmarks/test_benchmarks.py", "tests/validation/benchmarks/test_benchmark_contracts.py"]
 planned_tests = [
   "case-family import identity tests",
   "reference-data schema tests",
@@ -2312,7 +2312,7 @@ moved_exports = [
   "hypercollisions_contribution",
   "hyperdiffusion_contribution",
 ]
-fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/validation/benchmarks/test_gx_consistency.py", "tests/unit/operators/test_terms_assembly.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/validation/benchmarks/test_benchmark_contracts.py", "tests/unit/operators/test_terms_assembly.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

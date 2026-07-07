@@ -1383,7 +1383,7 @@ numerics_contracts = [
   "fixed-shape ky batching is disabled for array-valued per-point controls",
 ]
 fast_tests = [
-  "tests/validation/benchmarks/test_benchmark_scan.py",
+  "tests/validation/benchmarks/test_benchmark_contracts.py",
   "tests/validation/benchmarks/test_benchmarks_helpers.py",
 ]
 artifact_paths = [
