@@ -151,10 +151,10 @@ Benchmark extraction plan:
    classes. Private underscored helpers currently re-exported through
    `spectraxgk.benchmarks` are not a compatibility target unless a public doc or
    example uses them.
-2. **Move case config dataclasses out of validation.** `config.py` must not
-   import `spectraxgk.validation.benchmarks.case_configs`. Move those dataclasses
-   into `config.py` or a small physically named config owner, then re-export
-   through `spectraxgk.benchmarks`.
+2. **Completed: move case config dataclasses out of validation.** `config.py`
+   now owns the Cyclone, ETG, kinetic-electron, KBM, and TEM benchmark presets
+   directly, and `spectraxgk.benchmarks` re-exports them from that physical
+   owner.
 3. **Move reusable diagnostics out of benchmarks.** Time-series loading,
    late-window fitting, eigenfunction comparison, observed-order checks,
    branch-continuity metrics, and zonal-response metrics move to
@@ -266,7 +266,7 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 312 Python files after extracting nonlinear-gradient, nonlinear-transport, and stellarator validation subpackages.
+  - `src/spectraxgk`: 311 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, and benchmark case presets.
   - `tests`: 246 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 248 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, and deletion of obsolete unreferenced tool scripts.
@@ -279,7 +279,7 @@ Last audited: 2026-07-07 on `main`.
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
   consolidation queue.
 - Source-package Python file counts by domain:
-  - `validation`: 37 files.
+  - `validation`: 36 files.
   - `objectives`: 41 files.
   - `operators`: 34 files.
   - `solvers`: 34 files.
@@ -344,8 +344,8 @@ nonlinear-transport, quasilinear, and stellarator validation families:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 312 Python files, about 101.8k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
-| `src/spectraxgk/validation` | 37 Python files, about 17.4k LOC | benchmark validation policy is still installed as runtime code |
+| `src/spectraxgk` | 311 Python files, about 101.8k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
+| `src/spectraxgk/validation` | 36 Python files, about 17.1k LOC | benchmark validation policy is still installed as runtime code |
 | `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
 | `tools` | 248 Python scripts, about 100.8k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
 | `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
@@ -481,7 +481,7 @@ migration map:
 
 | Validation family | Files / LOC | Current role | Target owner |
 | --- | ---: | --- | --- |
-| `validation.benchmarks` | 35 files, about 17.4k LOC | benchmark case runners, fit policy, branch ladders, and the current implementation behind `spectraxgk.benchmarks` | small public `spectraxgk.benchmarks` facade plus root `benchmarks/` drivers and `tests/validation/benchmarks` policy tests |
+| `validation.benchmarks` | 35 files, about 17.1k LOC | benchmark case runners, fit policy, branch ladders, and the current implementation behind `spectraxgk.benchmarks` | small public `spectraxgk.benchmarks` facade plus root `benchmarks/` drivers and `tests/validation/benchmarks` policy tests |
 | `validation.nonlinear_gradient` | closed | evidence and gate diagnostics consolidated into `diagnostics.nonlinear_gradient_evidence`; follow-up/campaign planning consolidated into `tools/campaigns/nonlinear_gradient_followup.py`; one obsolete Cyclone campaign helper deleted to keep tool count non-regressing | keep closed; do not recreate an installable nonlinear-gradient validation package |
 | quasilinear validation family | closed | all reusable diagnostics moved to `diagnostics`; holdout admission moved to release tooling | keep closed; do not recreate an installable quasilinear validation package |
 | `validation.stellarator` | closed | candidate gates moved to `objectives.vmec_candidate_admission`; transport admission policy and sample coverage moved to `objectives.vmec_transport_admission`; nonlinear transport report diagnostics moved to `diagnostics.stellarator_transport_reports` | keep closed; do not recreate an installable stellarator validation package |
@@ -1924,6 +1924,13 @@ Exit gates:
   compatibility target, move benchmark config/diagnostic helpers to physical
   owners, and only then delete `src/spectraxgk/validation/benchmarks`.
 
+- 2026-07-07: started benchmark-family extraction by moving benchmark case
+  presets out of `src/spectraxgk/validation/benchmarks/case_configs.py`.
+  `spectraxgk.config` now directly owns Cyclone, ETG, kinetic-electron, KBM,
+  and TEM preset dataclasses; the validation case-config module was deleted.
+  Current counts: `src/spectraxgk` 311 Python files,
+  `src/spectraxgk/validation` 36, and `validation/benchmarks` 35.
+
 ## Immediate Next Steps
 
 1. Continue moving validation out of the installable package:
@@ -1933,7 +1940,7 @@ Exit gates:
    - update manifests, docs, and tests in the same commit for each family.
 2. Stage `validation.benchmarks` behind a smaller public benchmark facade:
    - define the supported `spectraxgk.benchmarks` API explicitly;
-   - keep benchmark metrics and case configs only where reusable;
+   - keep benchmark metrics only where reusable;
    - move case-specific branch histories and long-run policies to root
      `benchmarks/` or `tests/validation/benchmarks`.
 3. Collapse artifact tooling and tests by family:

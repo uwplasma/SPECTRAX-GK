@@ -426,10 +426,9 @@ Phase 1: introduce protocols and containers
   reports, and artifact schemas. Avoid behavior changes. The first Phase-1
   tranche now lives in ``spectraxgk.core.contracts`` and
   ``spectraxgk.core.extension_points``. The first behavior-preserving
-  benchmark split also lives in this phase:
-  ``spectraxgk.validation.benchmarks.case_configs`` owns benchmark-family
-  case presets while ``spectraxgk.config`` remains the stable public import
-  location for those dataclasses.
+  benchmark split also lives in this phase. Benchmark-family case presets now
+  live directly in ``spectraxgk.config`` so the stable public import location is
+  also the physical owner for those dataclasses.
   ``spectraxgk.validation.benchmarks.initialization`` owns benchmark initial-condition
   construction and ``spectraxgk.validation.benchmarks.reference`` owns reference containers
   and CSV loaders. ``spectraxgk.validation.benchmarks.species`` owns benchmark

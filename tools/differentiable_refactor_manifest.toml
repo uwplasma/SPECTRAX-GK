@@ -370,11 +370,11 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.case_configs"
-source_path = "src/spectraxgk/validation/benchmarks/case_configs.py"
+module = "spectraxgk.config"
+source_path = "src/spectraxgk/config.py"
 facade_module = "spectraxgk.config"
-status = "active"
-responsibility = "benchmark-family case presets for Cyclone, ETG, KBM, TEM, and kinetic-electron validation operating points"
+status = "closed"
+responsibility = "benchmark-family case presets for Cyclone, ETG, KBM, TEM, and kinetic-electron operating points"
 moved_exports = [
   "CycloneBaseCase",
   "ETGBaseCase",
@@ -387,7 +387,7 @@ moved_exports = [
   "TEMModelConfig",
 ]
 fast_tests = ["tests/unit/core/test_config.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/inputs.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kbm_scan"
