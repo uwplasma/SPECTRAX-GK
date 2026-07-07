@@ -35,9 +35,9 @@ Last audited: 2026-07-07 on `main`.
   at about 0.94 MiB.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
-  - `tests`: 247 Python files, including the shared `tests/support/paths.py`
+  - `tests`: 246 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
-  - `tools`: 260 Python files after purpose-folder moves and deletion of
+  - `tools`: 259 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
@@ -87,8 +87,8 @@ Latest focused audit for this tranche:
 - Flat topology is no longer the blocker: `tests/` has zero flat `test_*.py`
   files, and `tools/` has zero flat scripts except `tools/__init__.py`.
 - The remaining code-size problem is family sprawl:
-  - `tests/tools/artifacts`: 27 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
-  - `tools/artifacts`: 126 figure/table/status/gate builders.
+  - `tests/tools/artifacts`: 26 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
+  - `tools/artifacts`: 125 figure/table/status/gate builders.
   - `src/spectraxgk/validation`: 88 installable validation/campaign files.
   - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
     mostly preserving historical runtime branches in one file.
@@ -114,8 +114,8 @@ usable codebase.
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 247 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 260 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Test Python files | 246 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Tool Python files | 259 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -259,7 +259,7 @@ Audited on 2026-07-07 after commit
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
 - The active topology is `src/spectraxgk`: 351 Python files,
-  `tests`: 247 Python files, `tools`: 260 Python files, `examples`: 42 Python
+  `tests`: 246 Python files, `tools`: 259 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
   consolidations reduced `tests/tools/artifacts` from 94 to 27 files while
   preserving focused artifact gates.
@@ -659,7 +659,7 @@ Specific first candidate:
 
 ## Test Consolidation Plan
 
-Current problem: `tests/` has 247 Python files after adding a shared path
+Current problem: `tests/` has 246 Python files after adding a shared path
 helper and consolidating the first parallel identity artifact-gate family. The
 root now has only `conftest.py`. `tests/tools` still has many
 one-file-per-script tests and must keep consolidating by tool family instead of
@@ -718,7 +718,7 @@ Suggested target file budget:
 
 ## Tool Consolidation Plan
 
-Current problem: `tools/` has 260 Python scripts. The flat root has been closed
+Current problem: `tools/` has 259 Python scripts. The flat root has been closed
 down to `tools/__init__.py` after release, comparison, artifact, campaign,
 profiling, benchmark, generator, compression-helper, reference-helper,
 diagnostic, and VMEC-helper moves. The remaining problem is duplication inside
@@ -1298,10 +1298,8 @@ Exit gates:
   dropped from 266 to 262, and flat root tool scripts dropped from 20 to 16.
 
 - 2026-07-07: moved three documentation/release image compression helpers into
-  `tools/artifacts/`. CI and artifact tests now call
-  `tools/artifacts/compress_docs_previews.py` and
-  `tools/artifacts/compress_release_previews.py`. Tool Python files stayed at
-  262, and flat root tool scripts dropped from 16 to 13.
+  `tools/artifacts/`. CI and artifact tests originally called separate docs
+  and release preview compressors.
 
 - 2026-07-07: closed the remaining flat-tool tranche. Artifact/reference
   helpers now live under `tools/artifacts`, RHS/ky diagnostics under
@@ -1427,6 +1425,15 @@ Exit gates:
   filenames and payload kinds remain scoped where they intentionally describe
   open feasibility evidence, but the executable tool names now reflect the
   maintained panel-builder role.
+
+- 2026-07-07: merged duplicated documentation and release PNG preview
+  compressors into `tools/artifacts/compress_previews.py` and consolidated
+  their tests into `tests/tools/artifacts/test_compress_previews.py`. The
+  unified tool supports `--mode docs` and `--mode release`, keeps manifest
+  skip/target behavior explicit, and removes one tool script plus one test
+  wrapper. Tool Python files dropped from 260 to 259, tests from 247 to 246,
+  `tools/artifacts` from 126 to 125, and `tests/tools/artifacts` from 27 to
+  26 files.
 
 ## Immediate Next Steps
 
