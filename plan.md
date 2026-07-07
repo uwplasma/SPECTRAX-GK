@@ -35,7 +35,7 @@ Last audited: 2026-07-07 on `main`.
   at about 0.94 MiB.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
-  - `tests`: 255 Python files, including the shared `tests/support/paths.py`
+  - `tests`: 247 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 260 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
@@ -87,7 +87,7 @@ Latest focused audit for this tranche:
 - Flat topology is no longer the blocker: `tests/` has zero flat `test_*.py`
   files, and `tools/` has zero flat scripts except `tools/__init__.py`.
 - The remaining code-size problem is family sprawl:
-  - `tests/tools/artifacts`: 35 artifact-family tests after the parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
+  - `tests/tools/artifacts`: 27 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
   - `tools/artifacts`: 126 figure/table/status/gate builders.
   - `src/spectraxgk/validation`: 88 installable validation/campaign files.
   - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
@@ -114,7 +114,7 @@ usable codebase.
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 255 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Test Python files | 247 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
 | Tool Python files | 260 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
@@ -259,9 +259,9 @@ Audited on 2026-07-07 after commit
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
 - The active topology is `src/spectraxgk`: 351 Python files,
-  `tests`: 255 Python files, `tools`: 260 Python files, `examples`: 42 Python
+  `tests`: 247 Python files, `tools`: 260 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
-  consolidations reduced `tests/tools/artifacts` from 94 to 35 files while
+  consolidations reduced `tests/tools/artifacts` from 94 to 27 files while
   preserving focused artifact gates.
 - `docs/_static` is the largest tracked data footprint by count and size:
   1,572 tracked files and about 36.4 MiB, mostly compressed PNG/JSON/CSV
@@ -322,9 +322,8 @@ Decision rules from this audit:
 Immediate execution sequence from this audited state:
 
 1. Finish artifact-test and artifact-tool consolidation down to capability
-   families. The next target is to get `tests/tools/artifacts` below 30 by
-   merging the remaining small single-builder tests, then start merging
-   `tools/artifacts` builders with repeated schemas into manifest-driven
+   families. The next target is to keep `tests/tools/artifacts` below 30 while
+   moving repeated artifact schemas into manifest-driven `tools/artifacts`
    builders.
 2. Split or parametrize the two largest historical branch tests:
    `tests/integration/runtime/test_runtime_runner.py` and
@@ -660,7 +659,7 @@ Specific first candidate:
 
 ## Test Consolidation Plan
 
-Current problem: `tests/` has 255 Python files after adding a shared path
+Current problem: `tests/` has 247 Python files after adding a shared path
 helper and consolidating the first parallel identity artifact-gate family. The
 root now has only `conftest.py`. `tests/tools` still has many
 one-file-per-script tests and must keep consolidating by tool family instead of
@@ -1407,6 +1406,14 @@ Exit gates:
   production holdout promotion/fail-closed assertions. Test Python files dropped
   from 259 to 255, and `tests/tools/artifacts` dropped from 39 to 35 files.
 
+- 2026-07-07: consolidated nine linear-validation artifact tests into
+  `tests/tools/artifacts/test_linear_validation_artifact_reports.py`. The suite
+  preserves QI branch-refinement gates, TEM branch-audit reports, imported-linear
+  last-value tables, W7-X zonal reference digitization, linear-RHS zero-norm
+  window gates, KBM branch/eigenfunction artifacts, observed-order gates, and
+  validation-gate index assertions. Test Python files dropped from 255 to 247,
+  and `tests/tools/artifacts` dropped from 35 to 27 files.
+
 ## Immediate Next Steps
 
 1. Collapse artifact tooling and tests by family:
@@ -1418,7 +1425,7 @@ Exit gates:
      tests have been centralized and tool-level mode boundaries are clear;
    - merge remaining W7-X/zonal/status tools into a small set of documented
      status and physics-panel builders after the tests are already centralized;
-   - target `tools/artifacts` below 80 and `tests/tools/artifacts` below 35
+   - target `tools/artifacts` below 80 and keep `tests/tools/artifacts` below 30
      before moving source validation code.
 2. Collapse the biggest tests without weakening assertions:
    - split `test_runtime_runner.py` into parametrized runtime contracts for

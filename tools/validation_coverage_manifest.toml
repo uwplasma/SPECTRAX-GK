@@ -336,7 +336,7 @@ fast_tests = [
   "tests/unit/linear/test_linear_helpers_extra.py",
   "tests/unit/operators/test_terms_assembly.py",
   "tests/unit/operators/test_terms_fields.py",
-  "tests/tools/artifacts/test_generate_observed_order_gate.py",
+  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -665,7 +665,7 @@ fast_tests = [
   "tests/unit/operators/test_terms_assembly.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/tools/artifacts/test_w7x_artifact_panels.py",
-  "tests/tools/artifacts/test_build_tem_branch_parity_audit.py",
+  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -1561,9 +1561,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/validation/physics_gates/test_validation_gates.py",
-  "tests/tools/artifacts/test_make_validation_gate_index.py",
-  "tests/tools/artifacts/test_generate_observed_order_gate.py",
-  "tests/tools/artifacts/test_generate_kbm_branch_gate_summary.py",
+  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",

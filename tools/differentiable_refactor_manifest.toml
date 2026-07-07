@@ -351,7 +351,7 @@ responsibility = "KBM single-ky setup, state/cache construction, saved-time inte
 moved_exports = [
   "run_kbm_linear",
 ]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_kbm_reference_overlay.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_linear_validation_artifact_reports.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
