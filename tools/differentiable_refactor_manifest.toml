@@ -231,18 +231,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.kinetic_scan"
-source_path = "src/spectraxgk/validation/benchmarks/kinetic_scan.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "kinetic-electron ky-scan runner with focused setup, batch-state construction, streaming-fit, sampled-fit, time-config, and Krylov branch helpers"
-moved_exports = [
-  "run_kinetic_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.tem"
 source_path = "src/spectraxgk/validation/benchmarks/tem.py"
 facade_module = "spectraxgk.benchmarks"

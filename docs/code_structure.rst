@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -753,7 +753,7 @@ dispatching to density diagnostics, configured ``phi``, or explicit ``phi``
 integration, so those saved-time branches cannot drift. TEM scan streaming
 also resolves its fit window through the same ``ScanFitWindowPolicy`` used by
 saved-time scan fitting.
-Kinetic-electron single-ky ITG/TEM runner ownership has moved into the public ``spectraxgk.benchmarks`` facade, while the remaining kinetic ky-scan workflow still lives in ``spectraxgk.validation.benchmarks.kinetic_scan`` until the benchmark-validation exit is complete. The single-ky owner keeps setup normalization, species-index validation, selected-state construction, Krylov solving, configured and unconfigured time-history integration, sampled-signal fitting, and result packing beside the public API. The kinetic scan owner keeps public setup and result packaging local while delegating setup normalization, batch-state construction, Krylov fitting, Diffrax streaming fitting, saved/configured trajectory integration, and sampled-signal fitting to focused private helpers in the same module.
+Kinetic-electron ITG/TEM single-ky and ky-scan runner ownership has moved into the public ``spectraxgk.benchmarks`` facade. The kinetic owner keeps setup normalization, species-index validation, selected-state construction, Krylov solving, configured and unconfigured time-history integration, streaming and sampled-signal fitting, scan batching, and result packing beside the public ``run_kinetic_linear`` and ``run_kinetic_scan`` APIs.
 The kinetic scan path carries separate run-options, fit-options, and output
 containers through a single batch router, keeping Krylov, Diffrax streaming, and
 sampled-history branches testable without changing the public scan signature.

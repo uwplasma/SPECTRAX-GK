@@ -587,9 +587,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.etg_scan
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kinetic_scan
-   :members:
-
 .. automodule:: spectraxgk.validation.benchmarks.tem
    :members:
 
