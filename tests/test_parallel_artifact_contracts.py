@@ -27,7 +27,7 @@ def _load_toml(path: Path) -> dict:
 
 
 def _load_parallel_checker():
-    path = ROOT / "tools" / "check_parallel_scaling_artifacts.py"
+    path = ROOT / "tools" / "release" / "check_parallel_scaling_artifacts.py"
     spec = importlib.util.spec_from_file_location(
         "check_parallel_scaling_artifacts", path
     )

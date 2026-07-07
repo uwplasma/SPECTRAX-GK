@@ -65,7 +65,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("nonlinear sharding scoped diagnostic", "docs/_static/nonlinear_sharding_strong_scaling_large.json", "not a production speedup claim"),
         EvidenceCheck("nonlinear domain identity gate", "docs/_static/nonlinear_domain_parallel_identity_gate.json", "no production routing or speedup claim"),
         EvidenceCheck("nonlinear spectral communication gate", "docs/_static/nonlinear_spectral_communication_identity_gate.json", "no production routing or speedup claim"),
-        EvidenceCheck("parallel artifact checker", "tools/check_parallel_scaling_artifacts.py", "FAMILIES"),
+        EvidenceCheck("parallel artifact checker", "tools/release/check_parallel_scaling_artifacts.py", "FAMILIES"),
     ),
     "refactor_modularity": (
         EvidenceCheck("architecture refactor plan", "docs/architecture_refactor_plan.rst", "authoritative refactor plan"),

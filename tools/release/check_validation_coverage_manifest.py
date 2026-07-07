@@ -21,7 +21,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
     import tomli as tomllib  # type: ignore[no-redef]
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "validation_coverage_manifest.toml"
 
 ALLOWED_STATUSES = {"closed", "active", "open", "planned"}

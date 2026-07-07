@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "docs" / "_static" / "vmec_boozer_differentiability_claim_guard.json"
 
 DEFAULT_PARITY_MATRIX = "docs/_static/vmec_boozer_parity_matrix.json"

@@ -633,7 +633,7 @@ Traceability For Refactors
 --------------------------
 
 Refactor work is tracked in ``tools/validation_coverage_manifest.toml``. The
-manifest is checked by ``tools/check_validation_coverage_manifest.py`` and
+manifest is checked by ``tools/release/check_validation_coverage_manifest.py`` and
 requires every high-priority module to name its source path, owning lane,
 reference anchors, physics and numerics contracts, fast tests, artifacts, and
 next coverage tests. Update it whenever a source extraction changes module
@@ -668,7 +668,7 @@ manifest row, so large modules cannot be hidden under another owner's
 The authoritative target package layout, naming policy, and conflict-resolution
 rules live in :doc:`architecture_refactor_plan`. The executable migration ledger
 is ``tools/differentiable_refactor_manifest.toml``, checked by
-``tools/check_differentiable_refactor_manifest.py``. See
+``tools/release/check_differentiable_refactor_manifest.py``. See
 :doc:`differentiable_refactor_plan` for differentiability contracts, extension
 points, active manifest rows, and physics/autodiff/parity gates. If this page or
 the manifest conflicts with :doc:`architecture_refactor_plan`, update the

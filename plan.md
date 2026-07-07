@@ -101,7 +101,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 254 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 248 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -135,7 +135,7 @@ Audited on 2026-07-07 after commit `8fa2332c`:
   biggest root files are historical aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
-- `tools/` still has 254 flat Python scripts. Prefix families show the actual
+- `tools/` still has 248 flat Python scripts. Prefix families show the actual
   consolidation route: 57 `build_*`, 33 `plot_*`, 25 `check_*`, 25
   `compare_*`, 25 `generate_*`, 20 `profile_*`, 16 `write_*`, and 15 `run_*`
   scripts. These should become manifest-driven families, not hundreds of
@@ -938,6 +938,16 @@ Exit gates:
   `check_performance_optimization_manifest.py`. CI, release workflows, docs,
   tests, and release-readiness snippets now use the new paths. Total tool count
   stayed at 262, and flat root tool scripts dropped from 257 to 254.
+
+- 2026-07-07: moved six release/claim-validation gates into `tools/release/`:
+  `check_differentiable_refactor_manifest.py`,
+  `check_validation_coverage_manifest.py`, `check_parallel_scaling_artifacts.py`,
+  `check_quasilinear_calibration_inputs.py`,
+  `check_quasilinear_promotion_guardrails.py`, and
+  `check_vmec_boozer_differentiability_claim.py`. CI, release workflow, docs,
+  tests, manifest references, and release-readiness snippets now use the new
+  paths. Total tool count stayed at 262, and flat root tool scripts dropped
+  from 254 to 248.
 
 ## Immediate Next Steps
 

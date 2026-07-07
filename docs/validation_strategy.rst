@@ -13,7 +13,7 @@ autodiff/performance guarantee.
 
 The machine-readable manifest lives at
 ``tools/validation_coverage_manifest.toml`` and is checked by
-``tools/check_validation_coverage_manifest.py``. Each critical module entry
+``tools/release/check_validation_coverage_manifest.py``. Each critical module entry
 records:
 
 - the source file and owning refactor lane;
@@ -47,13 +47,13 @@ Run:
 
 .. code-block:: bash
 
-   python tools/check_validation_coverage_manifest.py
+   python tools/release/check_validation_coverage_manifest.py
 
 For CI or release bookkeeping, write a JSON summary:
 
 .. code-block:: bash
 
-   python tools/check_validation_coverage_manifest.py \
+   python tools/release/check_validation_coverage_manifest.py \
      --out-json docs/_static/validation_coverage_manifest_summary.json
 
 The wide-coverage CI job attaches measured coverage from the combined Cobertura
@@ -61,7 +61,7 @@ report:
 
 .. code-block:: bash
 
-   python tools/check_validation_coverage_manifest.py \
+   python tools/release/check_validation_coverage_manifest.py \
      --coverage-xml coverage-wide.xml \
      --enforce-package-coverage \
      --out-json docs/_static/validation_coverage_manifest_summary.json

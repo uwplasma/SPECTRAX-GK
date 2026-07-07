@@ -8,7 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "check_differentiable_refactor_manifest.py"
+    path = REPO_ROOT / "tools" / "release" / "check_differentiable_refactor_manifest.py"
     spec = importlib.util.spec_from_file_location(
         "check_differentiable_refactor_manifest", path
     )

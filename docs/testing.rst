@@ -34,7 +34,7 @@ lanes so local tests remain fast enough for routine development.
 
 The refactor branch also carries a machine-readable validation/coverage
 manifest at ``tools/validation_coverage_manifest.toml``. It is checked by
-``tools/check_validation_coverage_manifest.py`` and maps each critical module
+``tools/release/check_validation_coverage_manifest.py`` and maps each critical module
 to reference anchors, physics contracts, numerical contracts, fast tests,
 tracked artifacts, and next tests. This is the working guardrail for reaching
 95% package-wide coverage without adding shallow tests that do not validate the
@@ -839,7 +839,7 @@ writes a case-local ``panel.png`` and the final ladder command writes
 office runs from overwriting the frozen documentation figure before the
 candidate passes the residual, late-envelope, and moment-tail screens.
 
-``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
+``tools/release/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
 requires every non-audit nonlinear artifact to match a passed nonlinear gate.
 This makes validation provenance executable: finite-but-unconverged pilots can
@@ -848,7 +848,7 @@ optimization data. The public CI runs this audit during the docs/packaging
 job, and the fast test suite checks the current tracked train/holdout reports
 against the same gate index.
 
-``tools/check_quasilinear_promotion_guardrails.py`` is the higher-level
+``tools/release/check_quasilinear_promotion_guardrails.py`` is the higher-level
 absolute-flux promotion guard. It scans the tracked quasilinear reports plus
 the claim-scope docs, fails if a promoted report lacks train/holdout points,
 finite nonlinear window statistics, a passed holdout gate, or calibration

@@ -24,7 +24,7 @@ from spectraxgk.validation.quasilinear.holdout_admission import (  # noqa: E402
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GATE_GLOB = str(ROOT / "docs" / "_static" / "**" / "*.json")
 DEFAULT_JSON = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.json"
 DEFAULT_PNG = ROOT / "docs" / "_static" / "quasilinear_validated_calibration_inputs.png"

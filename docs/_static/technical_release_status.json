@@ -192,7 +192,7 @@
           "exists": true,
           "name": "parallel artifact checker",
           "passed": true,
-          "path": "tools/check_parallel_scaling_artifacts.py",
+          "path": "tools/release/check_parallel_scaling_artifacts.py",
           "required": true,
           "snippet": "FAMILIES"
         }

@@ -675,7 +675,7 @@ non-finite, or dimensionally ambiguous data.
 
 Train and holdout points must also be tied to a passed nonlinear validation
 gate before they can be used in calibration. The audit tool
-``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
+``tools/release/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
 each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
 passes for the current Cyclone, Cyclone Miller, HSX, W7-X, D-shaped
 external-VMEC, ITERModel, up-down asymmetric, circular, high-grid-admitted
@@ -685,7 +685,7 @@ matched through explicit high-grid admission gates rather than through failed
 coarse-grid pilots. The same audit would still fail if an exploratory or
 non-converged pilot such as the older CTH-like feasibility trace were inserted
 directly as a train/holdout point.
-The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
+The companion audit ``tools/release/check_quasilinear_promotion_guardrails.py`` is the
 metadata promotion guard: it requires finite nonlinear window means and
 standard deviations, train/holdout artifact provenance, passed held-out gates
 before ``calibrated_absolute_flux`` promotion, and explicit documentation scope

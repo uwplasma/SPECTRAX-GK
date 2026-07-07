@@ -14,6 +14,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
+        / "release"
         / "check_quasilinear_promotion_guardrails.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -613,7 +614,7 @@ def test_guardrail_script_runs_before_editable_install(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
             sys.executable,
-            "tools/check_quasilinear_promotion_guardrails.py",
+            "tools/release/check_quasilinear_promotion_guardrails.py",
             "--out-json",
             str(out),
         ],

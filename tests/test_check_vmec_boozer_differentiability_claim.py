@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.check_vmec_boozer_differentiability_claim import (
+from tools.release.check_vmec_boozer_differentiability_claim import (
     build_vmec_boozer_differentiability_claim_guard,
 )
 

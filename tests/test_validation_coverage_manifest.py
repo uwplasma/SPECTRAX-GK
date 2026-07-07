@@ -11,6 +11,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
+        / "release"
         / "check_validation_coverage_manifest.py"
     )
     spec = importlib.util.spec_from_file_location(

@@ -18,7 +18,7 @@ PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
 
 
 def _load_tool_module():
-    path = ROOT / "tools" / "check_validation_coverage_manifest.py"
+    path = ROOT / "tools" / "release" / "check_validation_coverage_manifest.py"
     spec = importlib.util.spec_from_file_location("check_validation_coverage_manifest_refactor", path)
     assert spec is not None
     assert spec.loader is not None

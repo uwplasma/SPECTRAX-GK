@@ -41,11 +41,11 @@ spectrax-gk = "spectraxgk.cli:main"
                 "--coverage-xml coverage-wide.xml",
                 "--enforce-package-coverage",
                 "codecov/codecov-action",
-                "tools/check_parallel_scaling_artifacts.py",
+                "tools/release/check_parallel_scaling_artifacts.py",
                 "tools/release/check_package_architecture_manifest.py",
                 "tools/release/check_performance_optimization_manifest.py",
-                "tools/check_quasilinear_promotion_guardrails.py",
-                "tools/check_vmec_boozer_differentiability_claim.py",
+                "tools/release/check_quasilinear_promotion_guardrails.py",
+                "tools/release/check_vmec_boozer_differentiability_claim.py",
                 "tools/build_parallelization_completion_status.py",
                 "tools/build_technical_release_status.py",
                 "tools/release/check_release_readiness.py",
@@ -81,9 +81,9 @@ coverage:
         "tools/release/check_release_artifact_manifest.py\n"
         "tools/release/check_package_architecture_manifest.py\n"
         "tools/release/check_performance_optimization_manifest.py\n"
-        "tools/check_parallel_scaling_artifacts.py\n"
-        "tools/check_quasilinear_promotion_guardrails.py\n"
-        "tools/check_vmec_boozer_differentiability_claim.py\n"
+        "tools/release/check_parallel_scaling_artifacts.py\n"
+        "tools/release/check_quasilinear_promotion_guardrails.py\n"
+        "tools/release/check_vmec_boozer_differentiability_claim.py\n"
         "tools/build_parallelization_completion_status.py\n"
         "tools/build_technical_release_status.py\n"
         "tools/release/check_release_readiness.py\n"

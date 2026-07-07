@@ -9,7 +9,7 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[2] / "tools" / "check_quasilinear_calibration_inputs.py"
+    path = Path(__file__).resolve().parents[2] / "tools" / "release" / "check_quasilinear_calibration_inputs.py"
     spec = importlib.util.spec_from_file_location("check_quasilinear_calibration_inputs", path)
     assert spec is not None
     assert spec.loader is not None
