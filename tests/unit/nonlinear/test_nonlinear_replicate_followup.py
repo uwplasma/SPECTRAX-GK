@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from spectraxgk.validation.nonlinear_transport.replicate_followup import (
+from tools.campaigns.nonlinear_replicate_followup import (
     NonlinearReplicateFollowupConfig,
     nonlinear_replicate_followup_plan,
 )

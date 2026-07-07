@@ -412,25 +412,22 @@ Completed extractions:
   The top-level
   ``spectraxgk.objectives`` API re-exports the portfolio helpers directly from
   these owner modules.
-- production nonlinear turbulent-flux optimization guardrails are split into
-  scope/policy helpers (``validation/nonlinear_transport/optimization_policy.py``),
-  replicated transport report extractors
-  (``validation/nonlinear_transport/optimization_reports.py``), and the public
-  promotion facade (``validation/nonlinear_transport/optimization_guard.py``).
-  The facade now stages optimization-scope normalization, artifact-row
-  classification, safety gates, promotion gates, evidence-gap accounting, and
-  summary assembly as separate helpers so release-safety and production-claim
-  promotion remain auditable; the guard report keeps artifact maps, row groups,
-  gate status, and final payload packing separate so release safety and
-  production promotion cannot be conflated. Replicate-spread follow-up planning in
-  ``validation/nonlinear_transport/replicate_followup.py`` separates report
+- production nonlinear turbulent-flux optimization guardrails now live in
+  ``diagnostics/nonlinear_transport_optimization.py``. The diagnostics owner
+  stages optimization-scope normalization, reduced-artifact scope checks,
+  replicated long-window transport extraction, matched baseline-to-optimized
+  audit gates, safety gates, promotion gates, evidence-gap accounting, and
+  summary assembly so release safety and production-claim promotion cannot be
+  conflated. Replicate-spread diagnostics now live in
+  ``diagnostics/nonlinear_replicates.py`` and stage ensemble row normalization,
+  high/low variant selection, state classification, replicate-row packing, and
+  summary assembly so seed/timestep spread decisions are testable without
+  rerunning nonlinear simulations. Follow-up launch planning is not runtime
+  package functionality; it lives in
+  ``tools/campaigns/nonlinear_replicate_followup.py``, where report
   normalization, classification-specific cross-run selection, dedupe/limits,
-  state-plan packing, and config serialization so GPU follow-up campaigns stay
-  deterministic and reviewable. Replicate-spread diagnostics in
-  ``validation/nonlinear_transport/replicate_diagnostics.py`` stage ensemble
-  row normalization, high/low variant selection, state classification,
-  replicate-row packing, and summary assembly so seed/timestep spread decisions
-  are testable without rerunning nonlinear simulations.
+  state-plan packing, and config serialization keep GPU follow-up campaigns
+  deterministic and reviewable.
 - quasilinear nonlinear-window convergence metadata is split into focused
   config, statistics, CSV/summary IO, promotion-readiness, and ensemble-gate
   modules under ``validation/quasilinear/window_*.py``. The public

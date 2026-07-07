@@ -9,7 +9,7 @@ from support.paths import REPO_ROOT
 import pytest
 
 import spectraxgk
-from spectraxgk.validation.nonlinear_transport.optimization_guard import (
+from spectraxgk.diagnostics.nonlinear_transport_optimization import (
     ProductionNonlinearOptimizationGuardConfig,
     matched_optimized_transport_report,
     optimized_equilibrium_transport_report,

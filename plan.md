@@ -153,21 +153,20 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 322 Python files after extracting the nonlinear-gradient validation subpackage.
+  - `src/spectraxgk`: 318 Python files after extracting nonlinear-gradient and nonlinear-transport validation subpackages.
   - `tests`: 246 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
-  - `tools`: 259 Python files after purpose-folder moves and deletion of
-    two unowned probe scripts.
+  - `tools`: 248 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, and deletion of obsolete unreferenced tool scripts.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
-- The repository inventory classifies 52 installable validation files as
-  `move-or-shrink`, 503 files as `keep-or-merge`, 274 files as
-  `keep-and-consolidate`, 82 files as `keep-or-scope`, and 26 files as
-  `keep-or-review`. The 52 `move-or-shrink` files are the validation package;
+- The repository inventory classifies 46 installable validation files as
+  `move-or-shrink`, with the broader test/tool/doc-artifact inventory still
+  in the `keep-or-merge` and `keep-and-consolidate` queues. The 46
+  `move-or-shrink` files are the remaining validation package;
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
   consolidation queue.
 - Source-package Python file counts by domain:
-  - `validation`: 52 files.
+  - `validation`: 46 files.
   - `objectives`: 39 files.
   - `operators`: 34 files.
   - `solvers`: 34 files.
@@ -176,7 +175,7 @@ Last audited: 2026-07-07 on `main`.
   - `terms`: 16 files.
   - `artifacts`: 18 files.
   - `geometry_backends`: 18 files.
-  - `diagnostics`: 22 files.
+  - `diagnostics`: 24 files.
   - `parallel`: 12 files.
   - `api`: 11 files.
   - root facades: 9 files.
@@ -202,8 +201,8 @@ Latest focused audit for this tranche:
   files, and `tools/` has zero flat scripts except `tools/__init__.py`.
 - The remaining code-size problem is family sprawl:
   - `tests/tools/artifacts`: 26 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
-  - `tools/artifacts`: 125 figure/table/status/gate builders.
-- `src/spectraxgk/validation`: 52 installable validation/campaign files.
+  - `tools/artifacts`: 122 figure/table/status/gate builders after deleting unreferenced nonlinear-parallel/compression scripts.
+- `src/spectraxgk/validation`: 46 installable validation/campaign files.
   - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
     mostly preserving historical runtime branches in one file.
   - `tests/validation/benchmarks/test_benchmarks_runner_branches.py`: about
@@ -231,11 +230,11 @@ Current measured topology after removing the quasilinear validation subpackage:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 322 Python files, about 102.3k LOC | installable package still contains benchmark, nonlinear-transport, stellarator, and shared validation policy plus many public/internal facades |
-| `src/spectraxgk/validation` | 52 Python files, about 21.4k LOC | benchmark, nonlinear-transport, stellarator, and remaining shared validation policy is still installed as runtime code |
+| `src/spectraxgk` | 318 Python files, about 101.9k LOC | installable package still contains benchmark and stellarator validation policy plus many public/internal facades |
+| `src/spectraxgk/validation` | 46 Python files, about 19.5k LOC | benchmark and stellarator validation policy is still installed as runtime code |
 | `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
-| `tools` | 259 Python scripts, about 98.7k LOC | many scripts differ by case labels, artifact names, or campaign paths |
-| `tools/artifacts` | 125 Python scripts, about 52.8k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
+| `tools` | 248 Python scripts, about 100.8k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
+| `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
 | `benchmarks` | 12 Python files, about 1.6k LOC | already small; keep as root-level reproducible benchmark entry points |
 | `examples` | 42 Python files, about 6.2k LOC | keep only promoted pedagogical workflows; move long campaigns and reduced scaffolds out |
 
@@ -372,7 +371,7 @@ migration map:
 | `validation.nonlinear_gradient` | closed | evidence and gate diagnostics consolidated into `diagnostics.nonlinear_gradient_evidence`; follow-up/campaign planning consolidated into `tools/campaigns/nonlinear_gradient_followup.py`; one obsolete Cyclone campaign helper deleted to keep tool count non-regressing | keep closed; do not recreate an installable nonlinear-gradient validation package |
 | quasilinear validation family | closed | all reusable diagnostics moved to `diagnostics`; holdout admission moved to release tooling | keep closed; do not recreate an installable quasilinear validation package |
 | `validation.stellarator` | 8 files, about 2.1k LOC | VMEC/Boozer transport campaign gates and candidate selection | campaign launch/postprocess to `tools/campaigns`; reusable objective admission metrics to `objectives` or `diagnostics` |
-| `validation.nonlinear_transport` | 5 files, about 1.9k LOC | nonlinear transport optimization reports and replicate diagnostics | diagnostics metrics to `diagnostics`; production-promotion policy to `tools/release` and validation tests |
+| `validation.nonlinear_transport` | closed | optimization promotion diagnostics consolidated into `diagnostics.nonlinear_transport_optimization`; replicate-spread diagnostics consolidated into `diagnostics.nonlinear_replicates`; follow-up launch planning moved to `tools/campaigns/nonlinear_replicate_followup.py` | keep closed; do not recreate an installable nonlinear-transport validation package |
 | shared validation metrics | 7 files, about 2.3k LOC | autodiff covariance checks, finite-difference helpers, gate reports/types, zonal summaries, external-holdout ledgers | tiny `validation` facade only for stable public metrics, with most reusable math moved to `diagnostics`/`objectives` |
 
 Staged extraction order:
@@ -411,11 +410,11 @@ usable codebase.
 
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 322 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
+| Installable source Python files | 318 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 246 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 259 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 248 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
-| `src/spectraxgk/validation` package | 52 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| `src/spectraxgk/validation` package | 46 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
 | Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
 | Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
@@ -1782,15 +1781,25 @@ Exit gates:
   `tests/README.md` defines how to add or merge tests without increasing
   file-count and maintenance debt.
 
+
+- 2026-07-07: extracted `validation.nonlinear_transport` from the installable
+  package. Production nonlinear optimization promotion diagnostics now live in
+  `spectraxgk.diagnostics.nonlinear_transport_optimization`; replicated
+  transport-window spread diagnostics live in
+  `spectraxgk.diagnostics.nonlinear_replicates`; targeted seed/timestep
+  follow-up planning lives in `tools/campaigns/nonlinear_replicate_followup.py`.
+  Deleted twelve zero-reference obsolete tool/probe scripts from artifact,
+  comparison, and profiling folders. Current counts: `src/spectraxgk` 318
+  Python files, `src/spectraxgk/validation` 46, `tools` 248.
+
 ## Immediate Next Steps
 
 1. Continue moving validation out of the installable package:
-   - extract `validation.nonlinear_transport` production-promotion policy into
-     diagnostics/release tooling and move campaign/report orchestration out of
-     `src`;
    - extract `validation.stellarator` campaign selection/prelaunch logic into
      tools or objectives, keeping only reusable admission metrics in package
      code;
+   - keep `validation.nonlinear_gradient` and `validation.nonlinear_transport`
+     closed; do not recreate installable campaign packages for those lanes;
    - update manifests, docs, and tests in the same commit for each family.
 2. Stage `validation.benchmarks` behind a smaller public benchmark facade:
    - define the supported `spectraxgk.benchmarks` API explicitly;

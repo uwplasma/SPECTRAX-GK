@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from spectraxgk.validation.nonlinear_transport.replicate_diagnostics import (
+from spectraxgk.diagnostics.nonlinear_replicates import (
     nonlinear_replicate_spread_report,
 )
 

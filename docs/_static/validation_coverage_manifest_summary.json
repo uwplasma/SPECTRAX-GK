@@ -53,6 +53,7 @@
     "spectraxgk.objectives.vmec_boozer",
     "spectraxgk.objectives.vmec_boozer_fd",
     "spectraxgk.objectives.vmec_boozer_line_search",
+    "spectraxgk.diagnostics.nonlinear_transport_optimization",
     "spectraxgk.objectives.solver_gradients",
     "spectraxgk.objectives.qa_low_turbulence",
     "spectraxgk.objectives.qa_low_turbulence_contracts",
@@ -72,11 +73,11 @@
     "spectraxgk.parallel.decomposition"
   ],
   "n_direct_modules": 93,
-  "n_excluded_modules": 23,
-  "n_high_priority_open": 70,
+  "n_excluded_modules": 22,
+  "n_high_priority_open": 71,
   "n_modules": 93,
-  "n_owned_modules": 206,
-  "n_package_modules": 322,
+  "n_owned_modules": 203,
+  "n_package_modules": 318,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -152,6 +153,8 @@
       "spectraxgk.diagnostics.weights"
     ],
     "spectraxgk.diagnostics.nonlinear_gradient_evidence": [],
+    "spectraxgk.diagnostics.nonlinear_replicates": [],
+    "spectraxgk.diagnostics.nonlinear_transport_optimization": [],
     "spectraxgk.diagnostics.quasilinear_calibration": [],
     "spectraxgk.diagnostics.transport_windows": [],
     "spectraxgk.diagnostics.validation_gates": [],
@@ -258,9 +261,6 @@
       "spectraxgk.objectives.stellarator",
       "spectraxgk.objectives.stellarator_contracts",
       "spectraxgk.objectives.stellarator_reduced",
-      "spectraxgk.validation.nonlinear_transport.optimization_guard",
-      "spectraxgk.validation.nonlinear_transport.optimization_policy",
-      "spectraxgk.validation.nonlinear_transport.optimization_reports",
       "spectraxgk.validation.stellarator.candidate_gate",
       "spectraxgk.validation.stellarator.transport_audit",
       "spectraxgk.validation.stellarator.transport_campaign",
@@ -384,8 +384,6 @@
       "spectraxgk.diagnostics.normalization"
     ],
     "spectraxgk.validation.benchmarks.scan": [],
-    "spectraxgk.validation.nonlinear_transport.replicate_diagnostics": [],
-    "spectraxgk.validation.nonlinear_transport.replicate_followup": [],
     "spectraxgk.workflows.cases": [
       "spectraxgk.workflows.demo",
       "spectraxgk.workflows.linear",
@@ -800,7 +798,7 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.validation.nonlinear_transport.replicate_diagnostics",
+      "module": "spectraxgk.diagnostics.nonlinear_replicates",
       "n_artifacts": 2,
       "n_fast_tests": 2,
       "n_next_tests": 2,
@@ -808,21 +806,7 @@
       "n_owned_modules": 0,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/validation/nonlinear_transport/replicate_diagnostics.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "medium",
-      "coverage_target_percent": 95.0,
-      "module": "spectraxgk.validation.nonlinear_transport.replicate_followup",
-      "n_artifacts": 1,
-      "n_fast_tests": 4,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/validation/nonlinear_transport/replicate_followup.py",
+      "path": "src/spectraxgk/diagnostics/nonlinear_replicates.py",
       "status": "active"
     },
     {
@@ -1388,12 +1372,26 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
+      "module": "spectraxgk.diagnostics.nonlinear_transport_optimization",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/diagnostics/nonlinear_transport_optimization.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
       "module": "spectraxgk.objectives.solver_gradients",
       "n_artifacts": 109,
       "n_fast_tests": 14,
       "n_next_tests": 5,
       "n_numerics_contracts": 10,
-      "n_owned_modules": 21,
+      "n_owned_modules": 18,
       "n_physics_contracts": 9,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/objectives/solver_gradients.py",

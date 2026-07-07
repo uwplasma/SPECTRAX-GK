@@ -27,7 +27,6 @@ excluded_modules = [
   "spectraxgk.utils.__init__",
   "spectraxgk.validation.__init__",
   "spectraxgk.validation.benchmarks.__init__",
-  "spectraxgk.validation.nonlinear_transport.__init__",
   "spectraxgk.validation.stellarator.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
@@ -1124,8 +1123,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.nonlinear_transport.replicate_diagnostics"
-path = "src/spectraxgk/validation/nonlinear_transport/replicate_diagnostics.py"
+module = "spectraxgk.diagnostics.nonlinear_replicates"
+path = "src/spectraxgk/diagnostics/nonlinear_replicates.py"
 owner_lane = "replicated nonlinear-window spread diagnosis before follow-up GPU campaigns"
 status = "active"
 coverage_priority = "medium"
@@ -1153,39 +1152,6 @@ artifact_paths = [
 next_tests = [
   "add paired-replicate sign-stability classification once another matched long-window gradient campaign finishes",
   "connect spread-diagnostic recommendations to the nonlinear-gradient campaign planner",
-]
-
-[[modules]]
-module = "spectraxgk.validation.nonlinear_transport.replicate_followup"
-path = "src/spectraxgk/validation/nonlinear_transport/replicate_followup.py"
-owner_lane = "targeted seed/timestep follow-up planning for blocked nonlinear-gradient campaigns"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "paired seed/timestep nonlinear transport windows for production turbulence-gradient audits",
-  "fail-closed finite-difference evidence contracts before spending additional GPU time",
-]
-physics_contracts = [
-  "mixed seed/timestep replicate spread is resolved by crossed variants before rerunning central finite differences",
-  "follow-up artifacts remain launch plans and cannot promote nonlinear-gradient physics claims without completed output/window gates",
-]
-numerics_contracts = [
-  "follow-up selection deduplicates seed/timestep pairs and preserves finite timestep values",
-  "missing seed/timestep metadata keeps the campaign blocked instead of fabricating run labels",
-]
-fast_tests = [
-  "tests/unit/nonlinear/test_nonlinear_replicate_followup.py",
-  "tests/tools/campaigns/test_write_nonlinear_replicate_followup_campaign.py",
-  "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
-  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
-]
-artifact_paths = [
-  "docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json",
-]
-next_tests = [
-  "after the targeted plus-state outputs finish, add a regression fixture for a passing crossed-replicate ensemble",
-  "add direct paired-seed finite-difference ranking once a second profile direction has complete long-window runs",
 ]
 
 [[modules]]
@@ -2662,6 +2628,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.diagnostics.nonlinear_transport_optimization"
+path = "src/spectraxgk/diagnostics/nonlinear_transport_optimization.py"
+owner_lane = "production nonlinear transport optimization claim diagnostics"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "long post-transient nonlinear heat-flux windows before turbulent-transport optimization claims",
+  "replicated seed and timestep audits for nonlinear turbulent-flux optimization evidence",
+]
+physics_contracts = [
+  "reduced and startup nonlinear-window artifacts cannot promote production turbulent-flux optimization claims",
+  "production nonlinear optimization requires long post-transient optimized-equilibrium transport windows and matched baseline-to-optimized audits",
+]
+numerics_contracts = [
+  "transport means must be finite and above the configured value floor before qualifying",
+  "matched optimized audits require positive relative reduction and uncertainty separation under explicit thresholds",
+]
+fast_tests = [
+  "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
+]
+artifact_paths = [
+  "docs/_static/production_nonlinear_optimization_guard.json",
+  "docs/_static/production_nonlinear_optimization_guard.png",
+]
+next_tests = [
+  "add a second negative matched-audit fixture where optimized and baseline windows pass but uncertainty separation fails",
+  "add a fixture for a promoted optimized-equilibrium audit once three independent long-window positive reductions exist",
+]
+
+[[modules]]
 module = "spectraxgk.objectives.solver_gradients"
 path = "src/spectraxgk/objectives/solver_gradients.py"
 owned_modules = [
@@ -2670,9 +2667,6 @@ owned_modules = [
   "spectraxgk.objectives.stellarator",
   "spectraxgk.objectives.stellarator_contracts",
   "spectraxgk.objectives.stellarator_reduced",
-  "spectraxgk.validation.nonlinear_transport.optimization_guard",
-  "spectraxgk.validation.nonlinear_transport.optimization_policy",
-  "spectraxgk.validation.nonlinear_transport.optimization_reports",
   "spectraxgk.validation.stellarator.candidate_gate",
   "spectraxgk.validation.stellarator.transport_audit",
   "spectraxgk.validation.stellarator.transport_campaign",

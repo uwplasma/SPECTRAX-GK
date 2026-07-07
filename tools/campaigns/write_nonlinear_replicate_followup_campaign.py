@@ -24,7 +24,7 @@ tomllib: Any = importlib.import_module(
     "tomllib" if sys.version_info >= (3, 11) else "tomli"
 )
 
-from spectraxgk.validation.nonlinear_transport.replicate_followup import (  # noqa: E402
+from tools.campaigns.nonlinear_replicate_followup import (  # noqa: E402
     NonlinearReplicateFollowupConfig,
     nonlinear_replicate_followup_plan,
 )

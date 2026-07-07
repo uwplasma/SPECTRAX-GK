@@ -1,16 +1,11 @@
-"""Follow-up planning for nonlinear replicate-spread blockers.
-
-The planner consumes the replicate-spread diagnostic and already-known variant
-metadata, then selects the smallest cross checks needed to separate seed
-variability from timestep sensitivity.
-"""
+"""Campaign follow-up planning for nonlinear replicate-spread blockers."""
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 import math
-
 
 @dataclass(frozen=True)
 class NonlinearReplicateFollowupConfig:

@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.nonlinear_transport.replicate_diagnostics import (  # noqa: E402
+from spectraxgk.diagnostics.nonlinear_replicates import (  # noqa: E402
     NonlinearReplicateSpreadConfig,
     nonlinear_replicate_spread_report,
 )
