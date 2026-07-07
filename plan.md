@@ -299,7 +299,7 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 297 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, and benchmark scan/mode orchestration.
+  - `src/spectraxgk`: 296 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, and benchmark scan/mode orchestration.
   - `tests`: 243 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 248 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, and deletion of obsolete unreferenced tool scripts.
@@ -706,7 +706,7 @@ Audited on 2026-07-07 after commit
   current CI run for `4b57ef41` is in progress and earlier runs were cancelled by
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
-- The active topology is `src/spectraxgk`: 297 Python files,
+- The active topology is `src/spectraxgk`: 296 Python files,
   `tests`: 243 Python files, `tools`: 259 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
   consolidations reduced `tests/tools/artifacts` from 94 to 26 files while
@@ -2141,3 +2141,5 @@ following:
 - 2026-07-07: folded Cyclone scan explicit-time reselection, Krylov branch-following, and trace-seed helpers into `src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py`, deleting `cyclone_scan_explicit.py`, `cyclone_scan_krylov.py`, and `cyclone_scan_seed.py`. Cyclone scan validation now has one patchable branch-policy owner while preserving the public `spectraxgk.benchmarks` API. Source Python files dropped to 297, installable validation files to 22, and validation benchmark files to 21.
 
 - 2026-07-07: consolidated small benchmark contract tests into `tests/validation/benchmarks/test_benchmark_contracts.py`, deleting the separate scan-policy, results-manifest, runtime-memory, and reference-consistency test files. Benchmark validation coverage is unchanged, but the benchmark test folder is smaller and CI now points at the consolidated contract shard. Test Python files dropped to 243.
+
+- 2026-07-07: folded `src/spectraxgk/validation/benchmarks/cyclone_linear_paths.py` into `cyclone_linear.py` and removed the hook-sync compatibility layer. Cyclone single-mode Krylov and time-integration policies now live with the runner that owns their patchable numerical hooks. Source Python files dropped to 296, installable validation files to 21, and validation benchmark files to 20.

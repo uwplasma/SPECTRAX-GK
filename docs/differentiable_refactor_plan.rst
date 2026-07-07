@@ -226,7 +226,7 @@ High-Risk Module Split Plan
   while preserving the existing module-level monkeypatch hooks.
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
   policy for auto-signal and direct-signal fits in
-  ``validation.benchmarks.cyclone_linear_paths``. Cyclone scan time branches
+  ``validation.benchmarks.cyclone_linear``. Cyclone scan time branches
   now keep batch construction, per-batch time-configuration resolution,
   Diffrax streaming fits, saved/configured trajectory integration, and per-ky
   fit/appending policy in focused helpers inside
