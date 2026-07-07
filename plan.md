@@ -116,6 +116,120 @@ deleted from `main` or moved to a draft experiment branch/PR.
 | 8 | Run profiler-backed performance tranches | before/after profiler artifacts and identity/physics gates |
 | 9 | Final docs/readme/release pass | release checks, package build, docs build, CI green |
 
+### Benchmark, Tool, And Test Consolidation Design
+
+This is the detailed implementation plan for the remaining topology blocker.
+The intent is not to keep moving files around; the intent is to remove
+unpromoted code paths, preserve the small public API, and make each directory
+mean one thing.
+
+Directory roles:
+
+- `src/spectraxgk`: installed runtime, numerics, diagnostics, objectives,
+  plotting, and the small public benchmark facade. It must not contain campaign
+  launchers, historical branch ladders, one-off comparison scripts, or long-run
+  policy matrices.
+- `benchmarks`: root-level reproducible benchmark drivers and manifests that a
+  developer or reviewer can run from a clone. These are not imported by the
+  runtime package and do not contain raw outputs.
+- `tools`: developer/release executables only. A tool either builds documented
+  artifacts, launches an explicit campaign, profiles a workload, compares
+  against an external code, or checks release gates. One-off status/probe
+  scripts are deleted or moved to a draft experiment branch.
+- `tests`: assertions only. Tests should be grouped by contract and parametrized;
+  they should not mirror every tool filename or preserve retired private helper
+  behavior.
+- `examples`: promoted user workflows only. Long campaigns, reduced scaffolds,
+  and unpublished probes are removed from `main` or moved to root benchmark/tool
+  workflows.
+
+Benchmark extraction plan:
+
+1. **Freeze the public benchmark API.** Keep `spectraxgk.benchmarks` as the only
+   supported installed benchmark import. The stable API is result containers,
+   reference loaders, promoted `run_*` benchmark runners, and documented config
+   classes. Private underscored helpers currently re-exported through
+   `spectraxgk.benchmarks` are not a compatibility target unless a public doc or
+   example uses them.
+2. **Move case config dataclasses out of validation.** `config.py` must not
+   import `spectraxgk.validation.benchmarks.case_configs`. Move those dataclasses
+   into `config.py` or a small physically named config owner, then re-export
+   through `spectraxgk.benchmarks`.
+3. **Move reusable diagnostics out of benchmarks.** Time-series loading,
+   late-window fitting, eigenfunction comparison, observed-order checks,
+   branch-continuity metrics, and zonal-response metrics move to
+   `diagnostics`. Public wrappers can remain in `spectraxgk.benchmarks` only
+   where documented.
+4. **Collapse branch-history modules.** Case-specific branch modules such as
+   `*_paths`, `*_branches`, `*_explicit`, `*_krylov`, and seed-selection helpers
+   are either folded into one parametrized root benchmark driver or removed if
+   they only preserve historical private branches. Tests should assert the
+   supported branch policy, not patch dozens of private hooks.
+5. **Keep package runners small.** Promoted installed runners should call the
+   shared solver/config/diagnostic APIs directly. If a runner needs a long
+   campaign matrix, that matrix belongs in root `benchmarks` or `tools/campaigns`
+   and the package runner should expose only a simple documented workload.
+6. **Remove `src/spectraxgk/validation/benchmarks`.** After the facade imports
+   no validation modules, delete the package and update API docs, architecture
+   docs, release manifests, and stale import scans in the same commit.
+
+Benchmark tranche gates:
+
+- `pytest -q tests/validation/benchmarks tests/unit/diagnostics tests/integration/runtime/test_cli.py --maxfail=1`
+- `python tools/release/check_validation_coverage_manifest.py --out-json docs/_static/validation_coverage_manifest_summary.json`
+- `python tools/release/check_differentiable_refactor_manifest.py --out-json /tmp/spectrax_diff_benchmark_snapshot.json`
+- `python tools/release/check_package_architecture_manifest.py --out-json /tmp/spectrax_arch_benchmark_snapshot.json`
+- stale import scan for `spectraxgk.validation.benchmarks`
+- public import smoke for `spectraxgk.benchmarks` and `spectraxgk.api.benchmarks`
+
+Test consolidation plan:
+
+1. Split `tests/integration/runtime/test_runtime_runner.py` by runtime contract:
+   config parsing, progress/live output, linear execution, nonlinear execution,
+   restart, artifacts, and plotting. Delete assertions for legacy behavior that
+   the current executable no longer supports.
+2. Replace `tests/validation/benchmarks/test_benchmarks_runner_branches.py`
+   with parametrized setup, fit, branch-policy, scan-policy, and reference-loader
+   tests. Patching private functions is allowed only for true dependency
+   isolation; it should not define the API.
+3. Merge one-wrapper artifact tests by family: benchmark/runtime, nonlinear
+   transport, quasilinear, VMEC/Boozer, W7-X/zonal, release status/readiness, and
+   generic plotting.
+4. Keep coverage physics-driven: late-window growth/frequency, observed-order
+   convergence, eigenfunction phase alignment, nonlinear transport windows,
+   quasilinear calibration/screening, differentiable geometry gradients, and
+   serial-vs-parallel identity gates remain explicit.
+
+Tool consolidation plan:
+
+1. Reduce `tools/artifacts` from one-script-per-panel to manifest-driven
+   builders. Target families are benchmark atlas/runtime, quasilinear model
+   development, nonlinear transport, VMEC/Boozer optimization, W7-X/zonal,
+   readiness/status, and generic plotting.
+2. Keep comparison-code scripts only in `tools/comparison` and only when they
+   are actively used for benchmark comparisons. No comparison-code terminology
+   should appear in core source names except in explicit benchmark/comparison
+   context.
+3. Keep profiling tools only if they produce profiler-backed timing/memory
+   artifacts for an equivalent workload. Delete stale profiling wrappers that
+   duplicate current profiling entry points.
+4. Every retained tool gets one test owner or one documented manual/office gate.
+
+Performance simplification plan:
+
+1. Do not optimize around validation scaffolding. Finish ownership cleanup first
+   so profiles measure runtime kernels, not campaign/report overhead.
+2. Profile these hot paths with CPU and GPU separately before claiming speedups:
+   JIT/startup latency, linear cache/RHS, nonlinear field solve and Poisson
+   bracket, diagnostics materialization, NetCDF/restart IO, VMEC/Boozer
+   conversion, and nonlinear decomposition communication.
+3. Prefer simplifications that reduce allocations and Python dispatch: fewer
+   transient pytrees, cached geometry/operator data, fused nonlinear bracket
+   paths, optional diagnostic thinning, and bounded live-output formatting.
+4. Require numerical-identity and physics gates before any speed claim:
+   serial-vs-parallel identity, conserved/diagnostic window agreement, runtime,
+   memory, and profiler artifact for the same workload.
+
 ### Success Metrics
 
 - `src/spectraxgk`: <=100 Python files, with `spectraxgk.validation` removed or
@@ -1801,6 +1915,14 @@ Exit gates:
   `spectraxgk.diagnostics.stellarator_transport_reports`. Current counts:
   `src/spectraxgk` 312 Python files and `src/spectraxgk/validation` 37, leaving
   benchmark validation as the only remaining installable validation family.
+
+- 2026-07-07: completed a benchmark/tool/test consolidation audit after the
+  stellarator extraction. The remaining installed benchmark-validation family is
+  36 files and about 17.4k LOC; root `benchmarks/` is small at 12 Python files
+  and about 1.6k LOC. The next tranche must first freeze the
+  `spectraxgk.benchmarks` public API, remove private helper re-exports as a
+  compatibility target, move benchmark config/diagnostic helpers to physical
+  owners, and only then delete `src/spectraxgk/validation/benchmarks`.
 
 ## Immediate Next Steps
 
