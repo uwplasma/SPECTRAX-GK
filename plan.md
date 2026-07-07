@@ -98,7 +98,7 @@ These targets are intentionally aggressive but realistic:
 
 | Area | Current audit | Release target | How to get there |
 | --- | ---: | ---: | --- |
-| Installed source files | 283 | <= 150 near term, <= 100 final | delete `validation`, merge tiny geometry/objective/operator shards, remove legacy facades |
+| Installed source files | 281 | <= 150 near term, <= 100 final | delete `validation`, merge tiny geometry/objective/operator shards, remove legacy facades |
 | Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
 | Test files | 243 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
@@ -157,7 +157,7 @@ Current tracked state after the latest consolidation:
   branches to prune in this checkout. Future experiments should live in one
   draft PR until the full refactor plan is complete, not in multiple active
   branches.
-- Tracked files: 2,526. Tracked generated Python cache files: 0. Tracked NetCDF
+- Tracked files: 2,516. Tracked generated Python cache files: 0. Tracked NetCDF
   files: 0. The local large files visible in simple filesystem scans are ignored
   cache/build/output directories, not tracked release content.
 - Tracked docs/static evidence: 1,572 files and about 34.7 MiB. This is useful
@@ -167,8 +167,8 @@ Current tracked state after the latest consolidation:
 - Root `benchmarks/`: 12 Python files and about 1.6k LOC. This is already a
   clear reproducibility layer and should stay at the repository root. Do not
   merge it into `tools/` or `examples/`.
-- Installed package: 283 Python files and about 100.9k LOC. The main blockers
-  are `validation/benchmarks` (7 files), `objectives` (41 files),
+- Installed package: 281 Python files and about 100.8k LOC. The main blockers
+  are `validation/benchmarks` (5 files), `objectives` (41 files),
   `geometry_backends` (18 files), dual `terms`/`operators` ownership, and
   large runtime/artifact facades.
 - Tests: 243 Python files and about 96.7k LOC. The blocker is not coverage; it
@@ -587,20 +587,20 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 283 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, benchmark scan/mode orchestration, benchmark scan-window policy, the secondary slab workflow, benchmark scan/eigenfunction harness helpers, the KBM fixed-beta ky-scan wrapper, and the kinetic-electron, ETG, and TEM benchmark runners.
+  - `src/spectraxgk`: 281 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, benchmark scan/mode orchestration, benchmark scan-window policy, the secondary slab workflow, benchmark scan/eigenfunction harness helpers, the KBM fixed-beta ky-scan wrapper, and the kinetic-electron, ETG, KBM, and TEM benchmark runners.
   - `tests`: 243 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 247 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, deletion of obsolete unreferenced tool scripts, and consolidation of the device-z RHS profiler into the transport-window profiler.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
-- The repository inventory now leaves 8 installable validation files as
+- The repository inventory now leaves 6 installable validation files as
   `move-or-shrink`, with the broader test/tool/doc-artifact inventory still
-  in the `keep-or-merge` and `keep-and-consolidate` queues. The 8
+  in the `keep-or-merge` and `keep-and-consolidate` queues. The 6
   `move-or-shrink` files are the remaining benchmark-validation package;
   the broader `keep-or-merge` bucket is the main test/tool/doc-artifact
   consolidation queue.
 - Source-package Python file counts by domain:
-  - `validation`: 8 files.
+  - `validation`: 6 files.
   - `objectives`: 41 files.
   - `operators`: 34 files.
   - `solvers`: 34 files.
@@ -667,8 +667,8 @@ window diagnostics, and benchmark zonal-response metrics:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 283 Python files, about 100.9k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
-| `src/spectraxgk/validation` | 8 Python files, about 8.6k LOC | benchmark validation policy is still installed as runtime code |
+| `src/spectraxgk` | 281 Python files, about 100.8k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
+| `src/spectraxgk/validation` | 6 Python files, about 5.5k LOC | benchmark validation policy is still installed as runtime code |
 | `tests` | 243 Python files, about 96.7k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
 | `tools` | 247 Python scripts, about 100.7k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
 | `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
@@ -994,7 +994,7 @@ Audited on 2026-07-07 after commit
   current CI run for `4b57ef41` is in progress and earlier runs were cancelled by
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
-- The active topology is `src/spectraxgk`: 283 Python files,
+- The active topology is `src/spectraxgk`: 281 Python files,
   `tests`: 243 Python files, `tools`: 247 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
   consolidations reduced `tests/tools/artifacts` from 94 to 26 files while
@@ -2457,6 +2457,15 @@ following:
   validation benchmark files to 7. Focused py_compile, ruff, validation
   coverage, differentiable-refactor, public facade smoke, and bounded
   benchmark-validation shard checks passed for this tranche.
+
+
+- 2026-07-07: folded the KBM single-ky and fixed-beta benchmark runners into
+  the public `spectraxgk.benchmarks` facade and deleted their installable
+  validation modules. KBM explicit-time diagnostics, saved-time fits,
+  multi-target Krylov branch selection, continuation policy, per-beta sample
+  construction, and `run_kbm_linear`/`run_kbm_beta_scan` now live beside the
+  public `run_kbm_scan` wrapper. Source Python files dropped to 281,
+  installable validation files to 6, and validation benchmark files to 5.
 
 - 2026-07-07: folded the ETG single-ky and ky-scan benchmark runners into
   the public `spectraxgk.benchmarks` facade and deleted their installable

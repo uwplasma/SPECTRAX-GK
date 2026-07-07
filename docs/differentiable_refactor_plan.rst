@@ -183,9 +183,9 @@ High-Risk Module Split Plan
   Keep ``spectraxgk.benchmarks`` as the public facade. Required gates: Cyclone,
   ETG, KBM, TEM, W7-X/HSX where applicable, and branch-continuity policies.
   KBM beta scans now keep the public runner in
-  ``validation.benchmarks.kbm_beta`` while explicit-time diagnostics fallback
+  ``spectraxgk.benchmarks`` while explicit-time diagnostics fallback
   and multi-target Krylov branch selection live in
-  ``validation.benchmarks.kbm_beta`` with patchable hooks for
+  ``spectraxgk.benchmarks`` with patchable hooks for
   benchmark tests. That owner now uses one forwarded-key policy for
   multi-target and continuation/shifted Krylov solves, and it shares the
   scan fit-window policy between explicit-time fallback fits, saved-time
@@ -207,7 +207,7 @@ High-Risk Module Split Plan
   configured-time versus fixed-time trajectory integration, automatic signal
   selection, and saved-signal fitting in focused helpers while explicit-time
   diagnostics and single/multi-target Krylov paths stay in
-  ``validation.benchmarks.kbm_linear``.
+  ``spectraxgk.benchmarks``.
   TEM scan paths keep the same public/focused-owner split, with one
   forwarded-key policy for dominant-eigenpair Krylov configuration in
   ``spectraxgk.benchmarks``. TEM single-ky saved-time fits share
@@ -435,11 +435,9 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic
   normalization policies, ``spectraxgk.validation.benchmarks.defaults`` owns scan batching, streaming windows,
   scan-window policy, and ``spectraxgk.validation.benchmarks.defaults`` owns
-  Krylov defaults plus branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``,
-  ``spectraxgk.validation.benchmarks.cyclone_scan``,
-  ``spectraxgk.validation.benchmarks.kbm_beta``,
-  ``spectraxgk.validation.benchmarks.kbm_linear``,
-  ``spectraxgk.benchmarks`` owns the kinetic-electron, ETG, and TEM benchmark implementations directly while remaining the public
+  Krylov defaults plus branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``
+  and ``spectraxgk.validation.benchmarks.cyclone_scan`` remain temporary Cyclone validation owners, while
+  ``spectraxgk.benchmarks`` owns the kinetic-electron, ETG, KBM, and TEM benchmark implementations directly as the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core

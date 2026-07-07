@@ -574,13 +574,6 @@ Benchmark Defaults
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.benchmarks.kbm_beta
-   :members:
-
-
-.. automodule:: spectraxgk.validation.benchmarks.kbm_linear
-   :members:
-
 Validation Gates
 ----------------
 

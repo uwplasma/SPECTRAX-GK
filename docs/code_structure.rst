@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -698,12 +698,8 @@ batching, and scan-window policy live in
 diagnostic growth-rate normalization live in
 ``spectraxgk.diagnostics.growth_rates``. Import-identity tests pin the old helper
 symbols to their consolidated owners before larger benchmark-family runners are
-moved. KBM beta-scan, single-point, and ky-scan implementations live in
-``spectraxgk.validation.benchmarks.kbm_beta``,
-``spectraxgk.validation.benchmarks.kbm_linear``, and
-``spectraxgk.benchmarks`` and are re-exported through
-``spectraxgk.benchmarks``, while
-``spectraxgk.validation.benchmarks.kbm_beta`` owns the explicit-time
+moved. KBM beta-scan, single-point, and ky-scan implementations now live in
+the public ``spectraxgk.benchmarks`` owner, which also owns the explicit-time
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
 runner. Its beta-scan Krylov path shares one forwarded-key policy for
 multi-target branch selection and continuation/shifted solves, so target and
@@ -718,7 +714,7 @@ non-Diffrax time-config and no-config integration, with stride resolution kept
 explicit before fitting; Diffrax-streaming samples read the same
 ``ScanFitWindowPolicy`` for their resolved fit window. The single-point runner delegates
 explicit-time diagnostics and single/multi-target Krylov branch selection to
-``spectraxgk.validation.benchmarks.kbm_linear`` while retaining geometry
+``spectraxgk.benchmarks`` while retaining geometry
 setup, state/cache construction, saved/configured trajectory integration,
 saved-signal fitting, and result packaging through focused helper seams in the
 public owner. The public beta runner still owns per-beta setup and time/diffrax
