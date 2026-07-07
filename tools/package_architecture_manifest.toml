@@ -51,7 +51,7 @@ name = "installable_source_python_files"
 path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
-baseline = 357
+baseline = 351
 target = 100
 
 [[topology_policy.counts]]
@@ -59,7 +59,7 @@ name = "test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = true
-baseline = 322
+baseline = 320
 target = 99
 
 [[topology_policy.counts]]
@@ -67,7 +67,7 @@ name = "tool_python_files"
 path = "tools"
 pattern = "*.py"
 recursive = true
-baseline = 265
+baseline = 264
 target = 99
 
 [[topology_policy.counts]]
@@ -83,7 +83,7 @@ name = "flat_test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = false
-baseline = 141
+baseline = 139
 target = 1
 
 [[topology_policy.counts]]
@@ -91,5 +91,5 @@ name = "flat_tool_python_files"
 path = "tools"
 pattern = "*.py"
 recursive = false
-baseline = 265
+baseline = 264
 target = 0

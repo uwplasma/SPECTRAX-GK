@@ -14,7 +14,6 @@ PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
     "spectraxgk.geometry",
     "spectraxgk.operators",
     "spectraxgk.operators.linear",
-    "spectraxgk.terms.reduced",
 }
 
 

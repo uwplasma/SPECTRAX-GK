@@ -386,14 +386,9 @@ High-Risk Module Split Plan
   now delegate to ``spectraxgk.workflows.named_cases``; and runtime linear,
   scan, nonlinear, and saved-output plotting executable command bodies now delegate to
   ``spectraxgk.workflows.runtime.commands`` so parser dispatch stays separate from
-  simulation, plotting, path override, and artifact side effects. The cETG
-  reduced-model linear and nonlinear runtime paths now delegate to
-  ``spectraxgk.workflows.reduced_models`` through injected runtime dependencies
-  so reduced-model execution is separated from the full-GK runtime facade
-  without breaking existing monkeypatch seams. The cETG nonlinear diagnostic
-  integrator keeps its explicit Euler/RK/SSPx3/K10 method ladder in a private
-  step-policy helper so the scan loop owns only timestep, diagnostic, progress,
-  and output-packing concerns.
+  simulation, plotting, path override, and artifact side effects.
+  Non-promoted reduced-model runtime paths have been retired from main, so
+  this facade now covers the maintained full-GK executable workflows only.
   Required gates: default-run behavior, ``--plot`` behavior, TOML provenance,
   restart/output schema, and public import contracts.
 

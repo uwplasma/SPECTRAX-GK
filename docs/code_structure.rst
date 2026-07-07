@@ -97,7 +97,6 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/nonlinear.py``
    - ``workflows/cases.py``
    - ``workflows/demo.py``
-   - ``workflows/reduced_models.py``
    - ``cli.py``
 5. **benchmark and validation tooling**
    - ``validation/benchmarks/harness.py``
@@ -122,9 +121,6 @@ Physics / Numerics / IO Map
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py`` facade plus ``terms/assembly_*`` owner modules
      - manufactured solutions, observed-order, eigenfunction and branch tests; cache-builder tests cover staged grid, geometry, twist-shift, gyro/moment, drift, and linked-boundary packing
-   * - Reduced models
-     - ``terms/reduced/__init__.py``, ``terms/reduced/cetg_model.py``, ``terms/reduced/cetg_state.py``, ``terms/reduced/cetg_rhs.py``, and ``terms/reduced/cetg_integrator.py``
-     - reduced-model contract validation, state projection, field solve, RHS, explicit step-policy, adaptive timestep, and diagnostic tests
    * - Solver objectives and eigen-AD gates
      - ``solver_objective_gradients.py`` facade, ``objectives/solver_vmec.py``, ``objectives/solver_gradient_reports.py``, ``objectives/gradient_gates.py``, ``objectives/vmec_boozer_gradients.py``, ``objectives/vmec_boozer_context.py``, ``objectives/core.py``, ``objectives/eigen.py``, ``objectives/sampling.py``, ``objectives/portfolio_contracts.py``, ``objectives/portfolio_sensitivity.py``, ``objectives/portfolio_artifacts.py``, ``objectives/geometry.py``, ``objectives/nonlinear_window.py``, ``objectives/stellarator.py``, ``objectives/stellarator_tables.py``, ``objectives/stellarator_residuals.py``, ``objectives/stellarator_contracts.py``, ``objectives/stellarator_reduced.py``, ``objectives/qa_low_turbulence.py``, ``objectives/qa_low_turbulence_contracts.py``, ``objectives/qa_low_turbulence_model.py``, ``objectives/qa_low_turbulence_residuals.py``, ``objectives/qa_low_turbulence_optimizer.py``, ``objectives/qa_low_turbulence_artifacts.py``, ``objectives/vmec_state.py``, ``objectives/vmec_transport.py``, ``objectives/vmec_transport_config.py``, ``objectives/vmec_transport_tables.py``, ``objectives/vmec_transport_branch.py``, ``objectives/vmec_boozer.py``, ``objectives/vmec_boozer_fd.py``, ``objectives/vmec_boozer_line_search.py``
      - core linear/quasilinear observables, implicit eigenpair VJP, branch-locality, sampling-axis, shared solver-ready linear context for gradient gates, solver-ready and VMEC/Boozer gradient gates, VMEC/Boozer context/feature extraction, reduced nonlinear-window metrics, stellarator ITG table/residual gates, reduced QA low-turbulence model/residual/artifact gates, VMEC transport objective adapters, staged VMEC growth-branch locality setup/sample evaluation/report packing, VMEC-state coefficient helpers, and finite-difference line-search tests
@@ -135,8 +131,8 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts_domain.py``, ``operators/nonlinear/parallel_contracts_spectral.py``, ``operators/nonlinear/parallel_contracts_strategy.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_state.py``, ``operators/nonlinear/spectral_layout.py``, ``operators/nonlinear/spectral_work_models.py``, ``operators/nonlinear/spectral_brackets.py``, ``operators/nonlinear/spectral_tolerances.py``, ``operators/nonlinear/spectral_identity_reports.py``, ``operators/nonlinear/spectral_identity_rhs.py``, ``operators/nonlinear/spectral_identity_integrator.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, domain/spectral/strategy contracts, spectral state/layout/work-model/bracket/tolerance helpers, logical spectral reports/RHS/integrator gates, device-z routing gates with explicit RHS and transport-trace/report policies, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``workflows/reduced_models.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, reduced-model workflows, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``cli.py``
+     - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
      - top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
@@ -323,13 +319,6 @@ Completed extractions:
   ``spectraxgk.runtime`` facade and monkeypatch seams.
 - full-GK executable nonlinear runtime workflow:
   ``workflows/nonlinear.py``
-- executable reduced-model runtime workflows:
-  ``workflows/reduced_models.py``. The cETG linear, fixed-step nonlinear, and
-  adaptive-chunk nonlinear paths share one explicit-integrator option payload,
-  keeping timestep, CFL, selected-mode, compressed-FFT, and diagnostic-stride
-  forwarding aligned. The cETG fixed-step and adaptive nonlinear branches also
-  share one runtime-result packer, so selected-mode metadata, optional final
-  state return, and diagnostics-disabled field summaries cannot drift.
 - shared plot style plus runtime-output, benchmark/scan, diagnostic, and
   zonal-response figure families:
   ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``,
@@ -690,13 +679,6 @@ The first behavior-preserving contract modules are ``spectraxgk.core.contracts``
 and ``spectraxgk.core.extension_points``. They introduce typed refactor,
 validation-gate, differentiability, and extension-point protocols without
 moving solver kernels or changing public numerical behavior.
-
-Reduced cETG integration keeps one owner module,
-``spectraxgk.terms.reduced.cetg_integrator``, but separates the public
-integrator into explicit method validation, startup projection, scan-context
-construction, JAX scan stepping/progress wrapping, diagnostic-series sampling,
-and ``SimulationDiagnostics`` packaging stages. This keeps the reduced-model
-workflow easy to audit without adding another file for a small model.
 
 Runtime command dispatch now keeps parser construction in ``spectraxgk.cli``,
 with parser registration split by command family, and moves runtime linear,

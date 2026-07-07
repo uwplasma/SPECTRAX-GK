@@ -297,7 +297,6 @@ Executable usage
   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
    spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
-   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
 
 For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
 you explicitly want a capped step count. The executable now preserves ``steps = None``
@@ -385,11 +384,10 @@ Notable runtime-only keys:
 
 * ``[collisions] damp_ends_amp`` / ``damp_ends_widthfrac``: reference-compatible end
   damping defaults are ``0.1`` and ``0.125``.
-* ``[physics] reduced_model``: explicit physics-family selector for benchmark
-  inputs that are not full gyrokinetics. The default is ``"gyrokinetic"``.
-  ``"cetg"`` and ``"krehm"`` are accepted as explicit boundary markers, but
-  the runtime currently raises ``NotImplementedError`` for them instead of
-  silently routing those inputs through the wrong full-GK equations.
+* ``[physics] reduced_model``: physics-family selector for runtime inputs.
+  The maintained runtime supports full gyrokinetics via ``"gyrokinetic"``
+  and its full-GK aliases. Non-promoted reduced-model values fail closed with
+  ``NotImplementedError`` instead of silently routing through the wrong equations.
 * ``[collisions] damp_ends_scale_by_dt``: opt-in per-step damping-rate scaling
   for controlled reproduction studies. The reference-compatible default is ``false`` because
   ``damp_ends_amp`` is already a per-unit-time damping rate.

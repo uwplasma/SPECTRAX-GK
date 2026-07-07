@@ -99,13 +99,9 @@ The slab overrides are:
 - with ``zero_shat = true``, the slab metric becomes ``gds2 = 1``,
   ``gds21 = 0``, ``gds22 = 1`` and the effective solver shear is zero
 
-That contract is now locked by unit tests so future secondary/cETG work is
-built on stable geometry semantics.
-It does not mean both benchmarks are solved already: ``secondary`` is a
-geometry-plus-runtime parity problem, while collisional ETG is a dedicated
-reduced model with its own solver/RHS path. The slab backend is the correct
-prerequisite for both, but only ``secondary`` sits on the generic-runtime
-parity path today.
+That contract is now locked by unit tests so future secondary or slab
+full-GK work is built on stable geometry semantics. The retired reduced
+collisional-ETG path is no longer part of the maintained runtime.
 
 Geometry Data Contract
 ----------------------

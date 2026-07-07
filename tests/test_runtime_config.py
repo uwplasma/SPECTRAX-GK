@@ -641,27 +641,6 @@ def test_secondary_slab_example_toml_loads() -> None:
     assert cfg.physics.adiabatic_electrons is True
 
 
-def test_cetg_reference_example_toml_loads() -> None:
-    path = (
-        Path(__file__).resolve().parents[1]
-        / "examples"
-        / "nonlinear"
-        / "axisymmetric"
-        / "runtime_cetg_reference.toml"
-    )
-
-    cfg, data = load_runtime_from_toml(path)
-
-    assert isinstance(data, dict)
-    assert cfg.geometry.model == "slab"
-    assert cfg.physics.reduced_model == "cetg"
-    assert cfg.physics.adiabatic_ions is True
-    assert cfg.physics.adiabatic_electrons is False
-    assert cfg.physics.tau_fac == pytest.approx(1.0)
-    assert cfg.physics.z_ion == pytest.approx(1.0)
-    assert cfg.expert.dealias_kz is True
-
-
 def test_load_runtime_from_toml_accepts_desc_eik_geometry_alias(tmp_path: Path) -> None:
     toml = """
 [geometry]

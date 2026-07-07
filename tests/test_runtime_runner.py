@@ -365,18 +365,17 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
     cetg = replace(
         _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="cetg")
     )
-    assert startup._resolve_runtime_hl_dims(cetg, Nl=None, Nm=None) == (2, 1)
-    with pytest.raises(ValueError, match="cETG"):
-        startup._resolve_runtime_hl_dims(cetg, Nl=3, Nm=1)
-    with pytest.raises(NotImplementedError, match="cetg"):
+    with pytest.raises(NotImplementedError, match="not supported"):
+        startup._resolve_runtime_hl_dims(cetg, Nl=None, Nm=None)
+    with pytest.raises(NotImplementedError, match="not supported"):
         startup._require_full_gk_runtime_model(cetg)
 
     krehm = replace(
         _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="krehm")
     )
-    with pytest.raises(NotImplementedError, match="krehm"):
+    with pytest.raises(NotImplementedError, match="not supported"):
         startup._resolve_runtime_hl_dims(krehm, Nl=None, Nm=None)
-    with pytest.raises(NotImplementedError, match="krehm"):
+    with pytest.raises(NotImplementedError, match="not supported"):
         startup._require_full_gk_runtime_model(krehm)
 
     unknown = replace(
@@ -971,112 +970,6 @@ def test_runtime_linear_auto_solver_falls_back_to_krylov(
     assert any("falling back to Krylov solve" in msg for msg in status)
 
 
-def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import spectraxgk.runtime as runtime
-
-    base = _base_runtime_cfg()
-    cfg = replace(base, physics=replace(base.physics, reduced_model="cetg"))
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-
-    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(
-        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
-    )
-    monkeypatch.setattr(
-        runtime,
-        "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-    )
-    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(
-        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
-    )
-    monkeypatch.setattr(
-        runtime,
-        "integrate_cetg_explicit_diagnostics_state",
-        lambda *args, **kwargs: (
-            np.asarray([0.1, 0.2, 0.3]),
-            type(
-                "Diag",
-                (),
-                {
-                    "t": np.asarray([0.1, 0.2, 0.3]),
-                    "phi_mode_t": np.asarray([1.0 + 0.0j, 1.2 + 0.1j, 1.4 + 0.2j]),
-                    "gamma_t": np.asarray([0.1, 0.2, 0.3]),
-                    "omega_t": np.asarray([-0.1, -0.2, -0.3]),
-                },
-            )(),
-            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-            FieldState(
-                phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64),
-                apar=None,
-                bpar=None,
-            ),
-        ),
-    )
-    monkeypatch.setattr(
-        runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.1, 0.3)
-    )
-
-    out = run_runtime_linear(
-        cfg,
-        ky_target=0.1,
-        Nl=2,
-        Nm=1,
-        solver="time",
-        dt=0.1,
-        steps=3,
-        return_state=True,
-    )
-
-    assert out.gamma == pytest.approx(0.25)
-    assert out.omega == pytest.approx(-0.12)
-    assert out.state is not None
-    assert out.fit_signal_used == "phi"
-
-    with pytest.raises(NotImplementedError):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="krylov")
-
-
-def test_runtime_linear_cetg_validates_solver_and_time_inputs(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import spectraxgk.runtime as runtime
-
-    base = _base_runtime_cfg()
-    cfg = replace(base, physics=replace(base.physics, reduced_model="cetg"))
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    grid = build_spectral_grid(cfg.grid)
-
-    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(
-        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
-    )
-    monkeypatch.setattr(
-        runtime,
-        "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-    )
-    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
-    monkeypatch.setattr(
-        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
-    )
-
-    with pytest.raises(ValueError):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="mystery")
-    with pytest.raises(ValueError, match="dt must be > 0"):
-        run_runtime_linear(
-            cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.0, steps=2
-        )
-    with pytest.raises(ValueError, match="steps must be >= 1"):
-        run_runtime_linear(
-            cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.1, steps=0
-        )
-
-
 def test_runtime_nonlinear_smoke() -> None:
     cfg = replace(
         _base_runtime_cfg(),
@@ -1090,146 +983,6 @@ def test_runtime_nonlinear_smoke() -> None:
     )
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
-
-
-def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import spectraxgk.runtime as runtime
-
-    base = _base_runtime_cfg()
-    cfg = replace(
-        base,
-        physics=replace(base.physics, reduced_model="cetg", nonlinear=True),
-    )
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-
-    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(
-        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
-    )
-    monkeypatch.setattr(
-        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0)
-    )
-    monkeypatch.setattr(
-        runtime,
-        "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
-    )
-    monkeypatch.setattr(
-        runtime, "build_runtime_term_config", lambda *args, **kwargs: object()
-    )
-    monkeypatch.setattr(
-        runtime,
-        "integrate_cetg_explicit_diagnostics_state",
-        lambda *args, **kwargs: (
-            np.asarray([0.1, 0.2]),
-            type("Diag", (), {"t": np.asarray([0.1, 0.2])})(),
-            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-            FieldState(
-                phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64),
-                apar=None,
-                bpar=None,
-            ),
-        ),
-    )
-
-    out = run_runtime_nonlinear(
-        cfg,
-        ky_target=0.1,
-        Nl=2,
-        Nm=1,
-        dt=0.1,
-        steps=2,
-        diagnostics=False,
-        return_state=True,
-    )
-
-    assert out.diagnostics is None
-    assert out.state is not None
-    assert out.phi2 is not None
-
-
-def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import spectraxgk.runtime as runtime
-
-    base = _base_runtime_cfg()
-    cfg = replace(
-        base,
-        physics=replace(base.physics, reduced_model="cetg", nonlinear=True),
-        time=replace(base.time, fixed_dt=False, t_max=0.25, dt=0.1),
-    )
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    calls = {"n": 0}
-
-    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
-    monkeypatch.setattr(
-        runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None
-    )
-    monkeypatch.setattr(
-        runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0)
-    )
-    monkeypatch.setattr(
-        runtime,
-        "_build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        runtime, "build_cetg_model_params", lambda *args, **kwargs: object()
-    )
-    monkeypatch.setattr(
-        runtime, "build_runtime_term_config", lambda *args, **kwargs: object()
-    )
-    input_means: list[float] = []
-
-    def _fake_integrator(*args, **kwargs):
-        calls["n"] += 1
-        input_means.append(float(np.mean(np.real(np.asarray(args[0])))))
-        t = np.asarray([0.15], dtype=float)
-        diag = SimulationDiagnostics(
-            t=t,
-            dt_t=t,
-            dt_mean=0.15,
-            gamma_t=np.asarray([0.0]),
-            omega_t=np.asarray([0.0]),
-            Wg_t=np.asarray([0.0]),
-            Wphi_t=np.asarray([0.0]),
-            Wapar_t=np.asarray([0.0]),
-            heat_flux_t=np.asarray([0.0]),
-            particle_flux_t=np.asarray([0.0]),
-            energy_t=np.asarray([0.0]),
-        )
-        fields = FieldState(
-            phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None
-        )
-        return t, diag, np.asarray(args[0]) + 1.0, fields
-
-    monkeypatch.setattr(
-        runtime, "integrate_cetg_explicit_diagnostics_state", _fake_integrator
-    )
-
-    out = run_runtime_nonlinear(
-        cfg,
-        ky_target=0.1,
-        Nl=2,
-        Nm=1,
-        diagnostics=False,
-        return_state=True,
-    )
-
-    assert calls["n"] >= 2
-    assert input_means[1] > input_means[0] + 0.5
-    assert out.diagnostics is None
-    assert out.state is not None
-    assert float(np.mean(np.real(np.asarray(out.state)))) >= 2.0
-    assert out.phi2 is not None
 
 
 def test_runtime_nonlinear_diagnostics_stride() -> None:
@@ -3015,25 +2768,6 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(
     assert np.isfinite(out.omega)
 
 
-def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
-    cfg_path = (
-        Path(__file__).resolve().parents[1]
-        / "examples"
-        / "nonlinear"
-        / "axisymmetric"
-        / "runtime_cetg_reference.toml"
-    )
-    cfg, _ = load_runtime_from_toml(cfg_path)
-
-    out = run_runtime_nonlinear(
-        cfg, ky_target=1.0 / 6.366, kx_target=0.0, steps=2, sample_stride=1
-    )
-
-    assert out.diagnostics is not None
-    assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
-    assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
-
-
 def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     cfg_path = (
         Path(__file__).resolve().parents[1]
@@ -3618,7 +3352,7 @@ def test_runtime_centered_glibc_random_pairs_match_glibc_reference() -> None:
 
 def test_runtime_periodic_zp_from_grid_uses_discrete_period_not_endpoint_span() -> None:
     cfg, _data = load_runtime_from_toml(
-        "examples/nonlinear/axisymmetric/runtime_cetg_reference.toml"
+        "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml"
     )
     geom = build_runtime_geometry(cfg)
     grid = build_spectral_grid(apply_geometry_grid_defaults(geom, cfg.grid))

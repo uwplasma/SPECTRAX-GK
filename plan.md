@@ -29,10 +29,10 @@ Last audited: 2026-07-07 on `main`.
 - Tracked repository size is acceptable for now; no tracked file is above 1 MB.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`.
 - Current tracked file counts:
-  - `src/spectraxgk`: 362 tracked files, 357 Python files, about 109k lines.
-  - `tests`: 322 Python files, about 94k lines.
-  - `tools`: 282 tracked files, 265 Python files, about 101k lines.
-  - `examples`: 83 tracked files, 43 Python files, about 10k lines.
+  - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
+  - `tests`: 320 Python files after deleting cETG/reduced-model tests.
+  - `tools`: 264 Python files after deleting the reduced-model parser tool.
+  - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
 - Source-package Python file counts by domain:
   - `validation`: 88 files.
@@ -849,33 +849,34 @@ Exit gates:
   no longer required permanent package domains, and updated the validation
   coverage manifest checker to accept nested `tests/**/test_*.py` fast tests
   after the test-tree folderization.
+- 2026-07-07: retired the non-promoted reduced cETG runtime path from `main`.
+  Deleted `src/spectraxgk/terms/reduced/`,
+  `src/spectraxgk/workflows/reduced_models.py`, the cETG runtime example,
+  the reduced-model parser tool, and cETG/reduced-model tests. Runtime
+  `physics.reduced_model` values outside full-GK aliases now fail closed with a
+  clear unsupported-model error. Source Python files dropped from 357 to 351,
+  test Python files from 322 to 320, tool Python files from 265 to 264, flat
+  test files from 141 to 139, and flat tool scripts from 265 to 264.
 
 ## Immediate Next Steps
 
-1. Complete the cETG retirement tranche:
-   - delete or move the reduced-model source path, examples, parser tool, and
-     tests;
-   - keep a clear unsupported `physics.reduced_model` runtime error if the
-     TOML field remains;
-   - remove cETG from README/docs/API references;
-   - run focused runtime/config/import checks and update topology baselines.
-2. Collapse the remaining flat tests:
+1. Collapse the remaining flat tests:
    - move physics/unit tests into `tests/unit/*`;
    - move runtime/executable tests into `tests/integration/runtime`;
    - merge tool tests by family instead of one test file per tool script.
-3. Move `tools/` into purpose folders and delete more probes:
+2. Move `tools/` into purpose folders and delete more probes:
    - release gates to `tools/release`;
    - publication/readme builders to `tools/artifacts`;
    - external-comparison utilities to `tools/comparison`;
    - profiler reproducers to `tools/profiling`;
    - active long-run launchers to `tools/campaigns`.
-4. Start the validation-out-of-package move:
+3. Start the validation-out-of-package move:
    - migrate `validation.benchmarks` behind root `benchmarks/` drivers or
      `spectraxgk.benchmarks` facade only where still public;
    - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and
      quasilinear holdout builders out of installable source unless they are
      reusable metrics.
-5. Only after the topology is smaller, profile and refactor the hot paths:
+4. Only after the topology is smaller, profile and refactor the hot paths:
    linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
    and VMEC/Boozer in-memory differentiable geometry.
 

@@ -427,26 +427,6 @@ Nonlinear Term Assembly
    :members:
    :private-members:
 
-Reduced cETG Model
-------------------
-
-.. automodule:: spectraxgk.terms.reduced
-
-.. automodule:: spectraxgk.terms.reduced.cetg_model
-   :members:
-
-.. automodule:: spectraxgk.terms.reduced.cetg_state
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.terms.reduced.cetg_rhs
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.terms.reduced.cetg_integrator
-   :members:
-   :private-members:
-
 Nonlinear Explicit Step
 -----------------------
 
@@ -1041,13 +1021,6 @@ Runtime Config
 
 .. automodule:: spectraxgk.workflows.runtime.config
    :members:
-
-Reduced-Model Workflows
------------------------
-
-.. automodule:: spectraxgk.workflows.reduced_models
-   :members:
-   :private-members:
 
 Runtime Startup
 ---------------

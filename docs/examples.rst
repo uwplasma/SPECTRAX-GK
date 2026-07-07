@@ -20,7 +20,6 @@ Tokamak cases
 
    python examples/linear/axisymmetric/cyclone_runtime_linear.py
    python examples/nonlinear/axisymmetric/cyclone_runtime_nonlinear.py --steps 200
-   python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000
    python examples/linear/axisymmetric/etg_runtime_linear.py
    python examples/linear/axisymmetric/kaw_runtime_linear.py
    python examples/linear/axisymmetric/kbm_runtime_linear.py
@@ -615,17 +614,6 @@ The staged helper runs the linear seed, writes a restart state in the runtime
 binary layout, and then launches the nonlinear follow-up with the matching
 restart and fixed-mode controls used in the tracked secondary benchmark.
 
-Reduced-model runtime
----------------------
-
-.. code-block:: bash
-
-   python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000
-   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 1000
-
-The reduced collisional slab ETG workflow uses the dedicated cETG runtime
-solver rather than the full-GK field solve path.
-
 Full-GK ETG nonlinear pilot
 ---------------------------
 
@@ -634,8 +622,7 @@ Full-GK ETG nonlinear pilot
    python examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py --steps 200
    JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml --steps 200
 
-This is the full-GK two-species ETG nonlinear pilot lane. It is intentionally
-separate from the reduced cETG workflow. The shipped contract now matches the
-audited GX short-window startup path: ``Lx = 1.25`` for the linked ETG box and
+This is the full-GK two-species ETG nonlinear pilot lane. The shipped
+contract now matches the audited short-window startup path: ``Lx = 1.25`` for the linked ETG box and
 ``gaussian_init = true`` with ``init_single = false`` because GX reads
 ``init_single`` from its ``[Expert]`` section, not from ``[Initialization]``.

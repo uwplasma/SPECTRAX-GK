@@ -1480,9 +1480,9 @@ artifacts, use:
 
 The current full-GK nonlinear ETG lane is now explicitly tracked as a pilot
 runtime contract via
-``examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml``. That lane is
-separate from the reduced ``cETG`` solver and should be used for future
-GX-backed nonlinear ETG parity work.
+``examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml``. Reduced
+collisional-ETG runtime paths have been retired from ``main``; future ETG
+parity work should use the maintained full-GK runtime.
 
 For ETG nonlinear audit runs, use dense short-window overrides first:
 
