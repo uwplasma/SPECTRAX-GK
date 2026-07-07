@@ -538,6 +538,11 @@ moved_exports = [
   "nonlinear_window_gate_report",
   "observed_order_gate_report",
   "zonal_response_gate_report",
+  "branch_continuity_metrics",
+  "estimate_observed_order",
+  "late_time_linear_metrics",
+  "nonlinear_heat_flux_convergence_metrics",
+  "windowed_nonlinear_metrics",
 ]
 fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
@@ -2809,26 +2814,6 @@ moved_exports = [
 fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.harness_metrics"
-source_path = "src/spectraxgk/validation/benchmarks/harness_metrics.py"
-facade_module = "spectraxgk.validation.benchmarks.harness"
-status = "active"
-responsibility = "late-time linear, nonlinear transport-window, heat-flux convergence, observed-order, and branch-continuity metric extraction"
-moved_exports = [
-  "branch_continuity_metrics",
-  "estimate_observed_order",
-  "late_time_linear_metrics",
-  "nonlinear_heat_flux_convergence_metrics",
-  "windowed_nonlinear_metrics",
-]
-fast_tests = [
-  "tests/validation/benchmarks/test_benchmarking.py",
-  "tests/integration/runtime/test_runtime_runner.py",
-  "tests/integration/runtime/test_runtime_helpers.py",
-  "tests/unit/operators/test_terms_integrators.py",
-]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.harness_scan"

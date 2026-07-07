@@ -157,9 +157,9 @@ Benchmark extraction plan:
    owner.
 3. **Move reusable diagnostics out of benchmarks.** Time-series loading,
    late-window fitting, eigenfunction comparison, observed-order checks,
-   branch-continuity metrics, and zonal-response metrics move to
-   `diagnostics`. Public wrappers can remain in `spectraxgk.benchmarks` only
-   where documented.
+   branch-continuity metrics, heat-flux convergence, nonlinear-window metrics,
+   and zonal-response metrics now live in `diagnostics`. Public wrappers can
+   remain in `spectraxgk.benchmarks` only where documented.
 4. **Collapse branch-history modules.** Case-specific branch modules such as
    `*_paths`, `*_branches`, `*_explicit`, `*_krylov`, and seed-selection helpers
    are either folded into one parametrized root benchmark driver or removed if
@@ -266,7 +266,7 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 308 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, and benchmark zonal-response metrics.
+  - `src/spectraxgk`: 307 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, and benchmark trace/window metrics.
   - `tests`: 246 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 248 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, and deletion of obsolete unreferenced tool scripts.
@@ -315,7 +315,7 @@ Latest focused audit for this tranche:
 - The remaining code-size problem is family sprawl:
   - `tests/tools/artifacts`: 26 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
   - `tools/artifacts`: 122 figure/table/status/gate builders after deleting unreferenced nonlinear-parallel/compression scripts.
-- `src/spectraxgk/validation`: 33 installable benchmark-validation files.
+- `src/spectraxgk/validation`: 32 installable benchmark-validation files.
   - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
     mostly preserving historical runtime branches in one file.
   - `tests/validation/benchmarks/test_benchmarks_runner_branches.py`: about
@@ -346,8 +346,8 @@ window diagnostics, and benchmark zonal-response metrics:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 308 Python files, about 101.7k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
-| `src/spectraxgk/validation` | 33 Python files, about 16.1k LOC | benchmark validation policy is still installed as runtime code |
+| `src/spectraxgk` | 307 Python files, about 101.7k LOC | installable package still contains benchmark validation policy plus many public/internal facades |
+| `src/spectraxgk/validation` | 32 Python files, about 16.1k LOC | benchmark validation policy is still installed as runtime code |
 | `tests` | 246 Python files, about 97.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
 | `tools` | 248 Python scripts, about 100.8k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
 | `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
@@ -483,7 +483,7 @@ migration map:
 
 | Validation family | Files / LOC | Current role | Target owner |
 | --- | ---: | --- | --- |
-| `validation.benchmarks` | 32 files, about 16.1k LOC | benchmark case runners, fit policy, branch ladders, and the current implementation behind `spectraxgk.benchmarks` | small public `spectraxgk.benchmarks` facade plus root `benchmarks/` drivers and `tests/validation/benchmarks` policy tests |
+| `validation.benchmarks` | 31 files, about 16.1k LOC | benchmark case runners, fit policy, branch ladders, and the current implementation behind `spectraxgk.benchmarks` | small public `spectraxgk.benchmarks` facade plus root `benchmarks/` drivers and `tests/validation/benchmarks` policy tests |
 | `validation.nonlinear_gradient` | closed | evidence and gate diagnostics consolidated into `diagnostics.nonlinear_gradient_evidence`; follow-up/campaign planning consolidated into `tools/campaigns/nonlinear_gradient_followup.py`; one obsolete Cyclone campaign helper deleted to keep tool count non-regressing | keep closed; do not recreate an installable nonlinear-gradient validation package |
 | quasilinear validation family | closed | all reusable diagnostics moved to `diagnostics`; holdout admission moved to release tooling | keep closed; do not recreate an installable quasilinear validation package |
 | `validation.stellarator` | closed | candidate gates moved to `objectives.vmec_candidate_admission`; transport admission policy and sample coverage moved to `objectives.vmec_transport_admission`; nonlinear transport report diagnostics moved to `diagnostics.stellarator_transport_reports` | keep closed; do not recreate an installable stellarator validation package |
@@ -530,7 +530,7 @@ usable codebase.
 | Test Python files | 246 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
 | Tool Python files | 248 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
-| `src/spectraxgk/validation` package | 33 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| `src/spectraxgk/validation` package | 32 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
 | Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
 | Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
@@ -1954,6 +1954,13 @@ Exit gates:
   `diagnostics/zonal_validation.py`, reusing the existing zonal-validation
   owner. Current counts: `src/spectraxgk` 308 Python files,
   `src/spectraxgk/validation` 33, and `validation/benchmarks` 32.
+
+- 2026-07-07: moved late-time linear, nonlinear-window, heat-flux
+  convergence, observed-order, and branch-continuity metric extraction into
+  `diagnostics/validation_gates.py`, deleting the old benchmark trace-metrics
+  helper. The public benchmark facade still preserves documented imports and
+  monkeypatch seams. Current counts: `src/spectraxgk` 307 Python files,
+  `src/spectraxgk/validation` 32, and `validation/benchmarks` 31.
 
 ## Immediate Next Steps
 

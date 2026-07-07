@@ -7,7 +7,7 @@ import pytest
 
 import spectraxgk
 import spectraxgk.validation.benchmarks.harness as benchmark_harness
-import spectraxgk.validation.benchmarks.harness_metrics as benchmark_harness_metrics
+import spectraxgk.diagnostics.validation_gates as benchmark_gate_metrics
 import spectraxgk.diagnostics.zonal_validation as benchmark_zonal_metrics
 from spectraxgk.diagnostics.validation_gates import (
     BranchContinuationMetrics,
@@ -50,10 +50,10 @@ def test_validation_gate_primitives_are_public_and_available_to_benchmark_harnes
 ):
     assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
     assert benchmark_harness.evaluate_scalar_gate is evaluate_scalar_gate
-    assert (
-        benchmark_harness_metrics.zonal_flow_response_metrics
-        is benchmark_zonal_metrics.zonal_flow_response_metrics
+    metrics = benchmark_harness.zonal_flow_response_metrics(
+        np.linspace(0.0, 2.0, 8), np.linspace(1.0, 0.6, 8)
     )
+    assert isinstance(metrics, ZonalFlowResponseMetrics)
     assert benchmark_harness.observed_order_gate_report is observed_order_gate_report
     assert (
         benchmark_harness.branch_continuity_gate_report is branch_continuity_gate_report
