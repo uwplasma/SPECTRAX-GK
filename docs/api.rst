@@ -568,10 +568,6 @@ Benchmark Initialization
 Benchmark Fit Signals
 ---------------------
 
-.. automodule:: spectraxgk.validation.benchmarks.fit_signals
-   :members:
-   :private-members:
-
 Benchmark Batching
 ------------------
 

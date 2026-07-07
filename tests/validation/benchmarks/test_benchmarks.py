@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import jax.numpy as jnp
 
-import spectraxgk.validation.benchmarks.fit_signals as benchmark_fit_signals
+import spectraxgk.diagnostics.growth_rates as growth_rate_diagnostics
 import spectraxgk.validation.benchmarks.kbm_beta as benchmark_kbm_beta
 import spectraxgk.validation.benchmarks.kbm_linear as benchmark_kbm_linear
 import spectraxgk.validation.benchmarks.kinetic_linear as benchmark_kinetic
@@ -214,7 +214,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
         assert method == "z_index"
         return valid if arr is density else invalid
 
-    monkeypatch.setattr(benchmark_fit_signals, "extract_mode_time_series", fake_extract)
+    monkeypatch.setattr(growth_rate_diagnostics, "extract_mode_time_series", fake_extract)
     np.testing.assert_allclose(
         benchmarks._select_fit_signal(
             phi, density, sel, fit_signal="phi", mode_method="z_index"
@@ -237,7 +237,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
         return invalid if arr is density else valid
 
     monkeypatch.setattr(
-        benchmark_fit_signals, "extract_mode_time_series", fake_density_invalid
+        growth_rate_diagnostics, "extract_mode_time_series", fake_density_invalid
     )
     np.testing.assert_allclose(
         benchmarks._select_fit_signal(
@@ -247,7 +247,7 @@ def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "extract_mode_time_series",
         lambda *_args, **_kwargs: invalid,
     )
@@ -292,14 +292,14 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     signal = np.exp(0.1 * t)
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad window")),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.0, 0.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (np.nan, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
@@ -308,7 +308,7 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     assert score == -np.inf
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (-0.1, 1.0, 0.0, 1.0, 1.0, 1.0),
     )
@@ -319,14 +319,14 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     )
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.1, 1.0, 0.0, 1.0, 0.7, 1.0),
     )
     assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.1, 1.0, -np.inf)
 
     monkeypatch.setattr(
-        benchmark_fit_signals,
+        growth_rate_diagnostics,
         "fit_growth_rate_auto_with_stats",
         lambda *_args, **_kwargs: (0.2, 1.0, 0.0, 1.0, 0.9, 0.5),
     )

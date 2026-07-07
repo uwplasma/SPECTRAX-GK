@@ -43,14 +43,7 @@ def test_differentiable_refactor_manifest_is_well_formed() -> None:
     )
     assert "spectraxgk.validation.benchmarks.species" in summary["phase1_split_modules"]
     assert (
-        "spectraxgk.validation.benchmarks.fit_signals"
-        in summary["phase1_split_modules"]
-    )
-    assert (
-        "spectraxgk.validation.benchmarks.batching" in summary["phase1_split_modules"]
-    )
-    assert (
-        "spectraxgk.validation.benchmarks.solver_policy"
+        "spectraxgk.diagnostics.growth_rates"
         in summary["phase1_split_modules"]
     )
     assert "spectraxgk.geometry.backend_discovery" in summary["phase1_split_modules"]

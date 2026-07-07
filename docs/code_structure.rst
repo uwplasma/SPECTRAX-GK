@@ -694,8 +694,8 @@ Benchmark initial conditions and reference data live in
 ``spectraxgk.validation.benchmarks.initialization`` and
 ``spectraxgk.validation.benchmarks.reference``. Benchmark species-to-``LinearParams``
 construction and reference hypercollision/end-damping policy live in
-``spectraxgk.validation.benchmarks.species``. Fit-signal selection, scan batching, and
-solver-selection policies live in ``spectraxgk.validation.benchmarks.fit_signals``,
+``spectraxgk.validation.benchmarks.species``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``; scan batching and
+solver-selection policies live in
 ``spectraxgk.validation.benchmarks.batching``, and
 ``spectraxgk.validation.benchmarks.solver_policy``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are

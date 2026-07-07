@@ -79,8 +79,8 @@
   "n_excluded_modules": 21,
   "n_high_priority_open": 74,
   "n_modules": 96,
-  "n_owned_modules": 190,
-  "n_package_modules": 307,
+  "n_owned_modules": 189,
+  "n_package_modules": 306,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -124,7 +124,6 @@
       "spectraxgk.validation.benchmarks.etg_linear",
       "spectraxgk.validation.benchmarks.etg_scan",
       "spectraxgk.validation.benchmarks.etg_scan_paths",
-      "spectraxgk.validation.benchmarks.fit_signals",
       "spectraxgk.validation.benchmarks.initialization",
       "spectraxgk.validation.benchmarks.kbm_beta",
       "spectraxgk.validation.benchmarks.kbm_beta_solver_paths",
@@ -852,7 +851,7 @@
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 27,
+      "n_owned_modules": 26,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",

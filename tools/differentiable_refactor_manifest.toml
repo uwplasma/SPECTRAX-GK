@@ -173,63 +173,6 @@ moved_exports = [
 fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.fit_signals"
-source_path = "src/spectraxgk/validation/benchmarks/fit_signals.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark fit-signal, mode-extraction, auto-window scoring, and diagnostic-normalization policies"
-moved_exports = [
-  "_extract_mode_only_signal",
-  "_normalize_growth_rate",
-  "_score_fit_signal_auto",
-  "_select_fit_signal",
-  "_select_fit_signal_auto",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.batching"
-source_path = "src/spectraxgk/validation/benchmarks/batching.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark scan batching and streaming-window helper policies"
-moved_exports = [
-  "_is_array_like",
-  "_iter_ky_batches",
-  "_resolve_streaming_window",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmark_scan.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.solver_policy"
-source_path = "src/spectraxgk/validation/benchmarks/solver_policy.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "benchmark solver-selection, KBM branch policy, and mode-index helpers"
-moved_exports = [
-  "KBM_EXPLICIT_SOLVER_LOCK",
-  "KBM_EXPLICIT_SOLVER_LOCK_TOL",
-  "_kbm_use_multi_target_krylov",
-  "_midplane_index",
-  "select_kbm_solver_auto",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_helpers.py", "tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_linear"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_linear.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "Cyclone single-ky linear benchmark setup, parameter construction, solver fallback orchestration, and public result packaging"
-moved_exports = [
-  "run_cyclone_linear",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/unit/operators/test_full_operator.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.cyclone_linear_paths"
@@ -739,7 +682,7 @@ module = "spectraxgk.diagnostics.growth_rates"
 source_path = "src/spectraxgk/diagnostics/growth_rates.py"
 facade_module = "spectraxgk.diagnostics.analysis"
 status = "active"
-responsibility = "public growth-diagnostic facade and automatic fit orchestration over focused fitting, window-selection, and mode-series owners"
+responsibility = "public growth-rate/frequency facade, auto-window fits, fit-signal selection, mode-only trace extraction, and diagnostic growth-rate normalization"
 moved_exports = [
   "_log_amp_phase",
   "fit_growth_rate",
@@ -750,6 +693,13 @@ moved_exports = [
   "select_fit_window",
   "select_fit_window_loglinear",
   "windowed_growth_rate_from_omega_series",
+  "_AutoFitSignalOptions",
+  "_FitSignalCandidate",
+  "_extract_mode_only_signal",
+  "_normalize_growth_rate",
+  "_score_fit_signal_auto",
+  "_select_fit_signal",
+  "_select_fit_signal_auto",
 ]
 fast_tests = ["tests/unit/diagnostics/test_analysis.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
