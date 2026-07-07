@@ -507,14 +507,22 @@ module = "spectraxgk.diagnostics.validation_gates"
 source_path = "src/spectraxgk/diagnostics/validation_gates.py"
 facade_module = "spectraxgk.diagnostics"
 status = "active"
-responsibility = "JSON-ready metric containers, scalar tolerance evaluation, serialization, and physics/numerics gate-report builders"
+responsibility = "JSON-ready metric containers, diagnostic time-series artifact loading, time-window helpers, scalar tolerance evaluation, serialization, and physics/numerics gate-report builders"
 moved_exports = [
+  "_analytic_signal",
+  "_explicit_time_window",
+  "_leading_window",
+  "_tail_stats",
+  "_tail_window",
   "BranchContinuationMetrics",
   "DiagnosticTimeSeries",
   "EigenfunctionComparisonMetrics",
   "EigenfunctionReferenceBundle",
   "GateReport",
   "LateTimeLinearMetrics",
+  "infer_triple_dealiased_ny",
+  "late_time_window",
+  "load_diagnostic_time_series",
   "NonlinearHeatFluxConvergenceMetrics",
   "NonlinearWindowMetrics",
   "ObservedOrderMetrics",
@@ -2799,25 +2807,6 @@ moved_exports = [
   "write_scan_runtime_command_outputs",
 ]
 fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.harness_timeseries"
-source_path = "src/spectraxgk/validation/benchmarks/harness_timeseries.py"
-facade_module = "spectraxgk.validation.benchmarks.harness"
-status = "active"
-responsibility = "NetCDF diagnostic time-series loading, late/leading/explicit window helpers, analytic-signal construction, and real-FFT ky-grid inference"
-moved_exports = [
-  "_analytic_signal",
-  "_explicit_time_window",
-  "_leading_window",
-  "_tail_stats",
-  "_tail_window",
-  "infer_triple_dealiased_ny",
-  "late_time_window",
-  "load_diagnostic_time_series",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
