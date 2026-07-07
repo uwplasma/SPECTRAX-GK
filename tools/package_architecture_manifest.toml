@@ -33,11 +33,6 @@ required_domain_packages = [
   "spectraxgk.solvers.nonlinear",
   "spectraxgk.solvers.time",
   "spectraxgk.validation",
-  "spectraxgk.validation.benchmarks",
-  "spectraxgk.validation.nonlinear_gradient",
-  "spectraxgk.validation.nonlinear_transport",
-  "spectraxgk.validation.quasilinear",
-  "spectraxgk.validation.stellarator",
   "spectraxgk.workflows",
   "spectraxgk.workflows.runtime",
 ]

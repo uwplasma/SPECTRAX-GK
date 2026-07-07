@@ -62,6 +62,24 @@ navigation cost inside domain packages and should not add more root-level prefix
 modules unless they are deliberate public facades tracked in the migration
 manifest.
 
+The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
+longer the main problem. The current blockers are installable validation
+campaign code and flat maintenance namespaces:
+
+- 357 Python source files under ``src/spectraxgk``.
+- 88 Python files under ``src/spectraxgk/validation``.
+- 322 Python test files, of which 141 still live directly under ``tests``.
+- 265 Python tool scripts, all still directly under ``tools``.
+- no tracked files above 1 MB and no tracked ``__pycache__`` / ``.pyc`` /
+  ``.DS_Store`` files.
+
+The next refactor should therefore delete or move non-promoted code before
+adding new modules. In particular, validation campaigns should leave the
+installable package, tool scripts should move into purpose-specific folders,
+remaining flat tests should be reorganized by domain, and legacy reduced-model
+or synthetic workflows should not remain on ``main`` unless they are promoted
+and documented.
+
 External Design Guidance
 ------------------------
 

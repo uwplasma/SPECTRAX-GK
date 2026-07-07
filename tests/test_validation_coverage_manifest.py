@@ -255,7 +255,7 @@ def test_validation_manifest_rejects_directory_fast_test(tmp_path: Path) -> None
         mod.REPO_ROOT = old_root
 
 
-def test_validation_manifest_rejects_nested_fast_test_not_seen_by_wide_gate(
+def test_validation_manifest_accepts_nested_fast_test_seen_by_wide_gate(
     tmp_path: Path,
 ) -> None:
     mod = _load_tool_module()
@@ -277,8 +277,8 @@ def test_validation_manifest_rejects_nested_fast_test_not_seen_by_wide_gate(
     old_root = mod.REPO_ROOT
     try:
         mod.REPO_ROOT = tmp_path
-        with pytest.raises(ValueError, match="discoverable by run_wide_coverage_gate"):
-            mod.validate_manifest(mod.load_manifest(manifest))
+        summary = mod.validate_manifest(mod.load_manifest(manifest))
+        assert summary["n_modules"] == 1
     finally:
         mod.REPO_ROOT = old_root
 
@@ -303,7 +303,7 @@ def test_validation_manifest_rejects_non_pytest_fast_test_name(tmp_path: Path) -
     old_root = mod.REPO_ROOT
     try:
         mod.REPO_ROOT = tmp_path
-        with pytest.raises(ValueError, match="top-level tests/test_\\*.py"):
+        with pytest.raises(ValueError, match=r"tests/\*\*/test_\*\.py"):
             mod.validate_manifest(mod.load_manifest(manifest))
     finally:
         mod.REPO_ROOT = old_root

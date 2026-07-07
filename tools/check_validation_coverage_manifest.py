@@ -67,7 +67,7 @@ def _coverage_filename_to_module(filename: str) -> str | None:
 
 
 def _validate_fast_test_path(resolved: Path, raw: str, module: str) -> None:
-    """Require manifest fast tests to be discoverable by the wide coverage gate."""
+    """Require manifest fast tests to be discoverable by pytest."""
 
     tests_root = (REPO_ROOT / "tests").resolve()
     if not resolved.exists():
@@ -78,14 +78,10 @@ def _validate_fast_test_path(resolved: Path, raw: str, module: str) -> None:
         rel = resolved.relative_to(tests_root)
     except ValueError as exc:
         raise ValueError(f"{module}: fast test must live under tests/: {raw}") from exc
-    if (
-        rel.parent != Path(".")
-        or not rel.name.startswith("test_")
-        or rel.suffix != ".py"
-    ):
+    if not rel.name.startswith("test_") or rel.suffix != ".py":
         raise ValueError(
-            f"{module}: fast test must be a top-level tests/test_*.py file "
-            f"discoverable by run_wide_coverage_gate.py: {raw}"
+            f"{module}: fast test must be a tests/**/test_*.py file "
+            f"discoverable by pytest and run_wide_coverage_gate.py: {raw}"
         )
 
 
