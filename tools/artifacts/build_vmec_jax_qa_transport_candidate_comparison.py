@@ -22,7 +22,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from spectraxgk.artifacts.plotting import set_plot_style  # type: ignore[import-untyped] # noqa: E402
-from spectraxgk.validation.stellarator.candidate_gate import (  # type: ignore[import-untyped] # noqa: E402
+from spectraxgk.objectives.vmec_candidate_admission import (  # type: ignore[import-untyped] # noqa: E402
     build_solved_vmec_candidate_gate,
 )
 

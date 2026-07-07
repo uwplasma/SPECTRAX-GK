@@ -827,25 +827,20 @@ campaign launch and artifact-building policy stays in ``tools``. Model-selection
 input normalization, optimized-equilibrium audit summaries, and absolute-flux
 claim guardrails in ``diagnostics/quasilinear_model_selection.py``.
 
-VMEC-JAX transport admission gates are split into focused policy,
-sample-coverage, nonlinear-audit, and candidate-selection modules:
-``spectraxgk.validation.stellarator.transport_policies``,
-``spectraxgk.validation.stellarator.transport_samples``,
-``transport_landscape``, ``transport_prelaunch``, ``transport_campaign``,
-``transport_audit`` nonlinear report owners, and
-``spectraxgk.validation.stellarator.transport_selection``. Nonlinear campaign
-admission stages reduced-prelaunch gates, objective-sample coverage,
-cross-sample dispersion, landscape admission, selected-candidate thresholds,
-and final campaign-only report packing separately; the prelaunch report itself
-keeps reduced-metric thresholds, failed-transfer safety factors, deterministic
-cross-sample dispersion, sample coverage, gates, and next-action selection as
-separate stages. Solved-equilibrium
-candidate admission in ``validation.stellarator.candidate_gate`` shares
-private aspect, iota, profile, and pass/fail helpers so optimizer-state and
-authoritative-WOUT gates keep identical JSON schema and threshold semantics.
-The public
+VMEC-JAX candidate and transport admission gates now have explicit owners.
+``spectraxgk.objectives.vmec_candidate_admission`` owns solved-equilibrium,
+authoritative-WOUT, and WOUT-reproducibility candidate gates. It keeps aspect,
+iota, iota-profile, quasisymmetry, and pass/fail helpers together so optimizer
+state and WOUT gates share one JSON schema and threshold semantics.
+``spectraxgk.objectives.vmec_transport_admission`` owns transport-admission
+policy dataclasses, reduced transport metric selection, multi-surface/
+field-line/``k_y`` sample coverage, and promoted transport-candidate selection.
+``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
+nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
+next-campaign admission, and matched nonlinear audit redesign. The public
 ``spectraxgk.validation`` API re-exports user-facing admission helpers directly
-from these owners.
+from these owners, while the old installable stellarator-validation subpackage has
+been removed.
 
 The first differentiable-geometry split keeps
 ``spectraxgk.geometry.differentiable`` as the public facade while

@@ -27,14 +27,14 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.validation.stellarator.candidate_gate import (
+from spectraxgk.objectives.vmec_candidate_admission import (
     build_solved_vmec_candidate_gate,
 )  # type: ignore[import-untyped] # noqa: E402
-from spectraxgk.validation.stellarator.transport_policies import (  # type: ignore[import-untyped] # noqa: E402
+from spectraxgk.objectives.vmec_transport_admission import (  # type: ignore[import-untyped] # noqa: E402
     DEFAULT_TRANSPORT_METRIC_KEYS,
     VMECJAXTransportAdmissionPolicy,
 )
-from spectraxgk.validation.stellarator.transport_selection import (  # type: ignore[import-untyped] # noqa: E402
+from spectraxgk.objectives.vmec_transport_admission import (  # type: ignore[import-untyped] # noqa: E402
     build_transport_admission_report,
 )
 

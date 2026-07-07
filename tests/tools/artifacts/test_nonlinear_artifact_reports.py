@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import pytest
 
-from spectraxgk.validation.stellarator.transport_policies import (
+from spectraxgk.objectives.vmec_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
     VMECJAXReducedPrelaunchPolicy,

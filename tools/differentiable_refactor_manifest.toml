@@ -1916,96 +1916,33 @@ fast_tests = ["tests/unit/solvers/test_nonlinear_imex.py", "tests/unit/nonlinear
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_policies"
-source_path = "src/spectraxgk/validation/stellarator/transport_policies.py"
+module = "spectraxgk.objectives.vmec_candidate_admission"
+source_path = "src/spectraxgk/objectives/vmec_candidate_admission.py"
 facade_module = "spectraxgk.api.validation"
 status = "active"
-responsibility = "VMEC-JAX transport admission policy dataclasses and finite-float helper"
-moved_exports = [
-  "DEFAULT_TRANSPORT_METRIC_KEYS",
-  "VMECJAXNonlinearAuditPolicy",
-  "VMECJAXNonlinearCampaignPolicy",
-  "VMECJAXReducedPrelaunchPolicy",
-  "VMECJAXTransportAdmissionPolicy",
-]
+responsibility = "VMEC-JAX solved-equilibrium candidate admission, authoritative-WOUT checks, iota-profile extraction, and WOUT reproducibility gates"
+moved_exports = ["build_authoritative_wout_candidate_gate", "build_solved_vmec_candidate_gate", "build_wout_reproducibility_gate", "final_iota_profiles_from_vmec_result"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_candidate_gate.py", "tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.objectives.vmec_transport_admission"
+source_path = "src/spectraxgk/objectives/vmec_transport_admission.py"
+facade_module = "spectraxgk.api.validation"
+status = "active"
+responsibility = "VMEC-JAX transport admission policy dataclasses, sample-coverage gates, candidate transport metrics, and promoted transport-candidate selection"
+moved_exports = ["DEFAULT_TRANSPORT_METRIC_KEYS", "VMECJAXNonlinearAuditPolicy", "VMECJAXNonlinearCampaignPolicy", "VMECJAXReducedPrelaunchPolicy", "VMECJAXTransportAdmissionPolicy", "build_transport_admission_report", "candidate_transport_metric", "select_admitted_transport_candidate", "transport_objective_sample_summary"]
 fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_samples"
-source_path = "src/spectraxgk/validation/stellarator/transport_samples.py"
+module = "spectraxgk.diagnostics.stellarator_transport_reports"
+source_path = "src/spectraxgk/diagnostics/stellarator_transport_reports.py"
 facade_module = "spectraxgk.api.validation"
 status = "active"
-responsibility = "transport metric selection and multi-surface/field-line/ky sample coverage gates"
-moved_exports = [
-  "candidate_transport_metric",
-  "transport_objective_sample_summary",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_landscape"
-source_path = "src/spectraxgk/validation/stellarator/transport_landscape.py"
-facade_module = "spectraxgk.api.validation"
-status = "active"
-responsibility = "replicated nonlinear landscape uncertainty and candidate-admission reports"
-moved_exports = [
-  "_ensemble_blockers",
-  "_ensemble_statistics",
-  "build_nonlinear_landscape_admission_report",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_prelaunch"
-source_path = "src/spectraxgk/validation/stellarator/transport_prelaunch.py"
-facade_module = "spectraxgk.api.validation"
-status = "active"
-responsibility = "reduced-objective prelaunch gates before expensive nonlinear transport audits"
-moved_exports = [
-  "_sample_statistics_summary",
-  "build_reduced_nonlinear_audit_prelaunch_report",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_campaign"
-source_path = "src/spectraxgk/validation/stellarator/transport_campaign.py"
-facade_module = "spectraxgk.api.validation"
-status = "active"
-responsibility = "next-campaign admission gates combining reduced, cross-sample, and replicated landscape evidence"
-moved_exports = [
-  "build_nonlinear_campaign_admission_report",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_audit"
-source_path = "src/spectraxgk/validation/stellarator/transport_audit.py"
-facade_module = "spectraxgk.api.validation"
-status = "active"
-responsibility = "matched nonlinear audit redesign gates for turbulent-flux optimization evidence"
-moved_exports = [
-  "build_nonlinear_audit_redesign_report",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_build_transport_audit_redesign_report.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.stellarator.transport_selection"
-source_path = "src/spectraxgk/validation/stellarator/transport_selection.py"
-facade_module = "spectraxgk.api.validation"
-status = "active"
-responsibility = "candidate physical-gate blockers, relative-improvement scoring, and promoted transport-candidate selection"
-moved_exports = [
-  "build_transport_admission_report",
-  "select_admitted_transport_candidate",
-]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py"]
+responsibility = "replicated nonlinear landscape admission, reduced prelaunch gates, campaign admission gates, and matched nonlinear audit redesign reports"
+moved_exports = ["build_nonlinear_audit_redesign_report", "build_nonlinear_campaign_admission_report", "build_nonlinear_landscape_admission_report", "build_reduced_nonlinear_audit_prelaunch_report"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py", "tests/tools/artifacts/test_build_transport_audit_redesign_report.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

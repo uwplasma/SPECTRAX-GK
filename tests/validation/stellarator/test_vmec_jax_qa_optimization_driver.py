@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-from spectraxgk.validation.stellarator.candidate_gate import (
+from spectraxgk.objectives.vmec_candidate_admission import (
     build_solved_vmec_candidate_gate,
 )
 

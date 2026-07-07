@@ -35,7 +35,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
-from spectraxgk.validation.stellarator.candidate_gate import (  # noqa: E402
+from spectraxgk.objectives.vmec_candidate_admission import (  # noqa: E402
     build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,

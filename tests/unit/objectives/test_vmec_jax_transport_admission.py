@@ -3,33 +3,33 @@ from __future__ import annotations
 import json
 
 import spectraxgk
-import spectraxgk.validation.stellarator.transport_audit as transport_audit
-import spectraxgk.validation.stellarator.transport_campaign as transport_campaign
-import spectraxgk.validation.stellarator.transport_landscape as transport_landscape
-import spectraxgk.validation.stellarator.transport_prelaunch as transport_prelaunch
-from spectraxgk.validation.stellarator.transport_audit import (
+import spectraxgk.diagnostics.stellarator_transport_reports as transport_audit
+import spectraxgk.diagnostics.stellarator_transport_reports as transport_campaign
+import spectraxgk.diagnostics.stellarator_transport_reports as transport_landscape
+import spectraxgk.diagnostics.stellarator_transport_reports as transport_prelaunch
+from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_audit_redesign_report,
 )
-from spectraxgk.validation.stellarator.transport_campaign import (
+from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_campaign_admission_report,
 )
-from spectraxgk.validation.stellarator.transport_landscape import (
+from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_nonlinear_landscape_admission_report,
 )
-from spectraxgk.validation.stellarator.transport_policies import (
+from spectraxgk.objectives.vmec_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
     VMECJAXReducedPrelaunchPolicy,
     VMECJAXTransportAdmissionPolicy,
 )
-from spectraxgk.validation.stellarator.transport_prelaunch import (
+from spectraxgk.diagnostics.stellarator_transport_reports import (
     build_reduced_nonlinear_audit_prelaunch_report,
 )
-from spectraxgk.validation.stellarator.transport_samples import (
+from spectraxgk.objectives.vmec_transport_admission import (
     candidate_transport_metric,
     transport_objective_sample_summary,
 )
-from spectraxgk.validation.stellarator.transport_selection import (
+from spectraxgk.objectives.vmec_transport_admission import (
     build_transport_admission_report,
     select_admitted_transport_candidate,
 )

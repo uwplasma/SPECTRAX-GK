@@ -1282,30 +1282,14 @@ VMEC-JAX Transport Branch Gates
 VMEC-JAX Transport Admission
 ----------------------------
 
-.. automodule:: spectraxgk.validation.stellarator.transport_policies
-   :members:
-
-.. automodule:: spectraxgk.validation.stellarator.transport_samples
+.. automodule:: spectraxgk.objectives.vmec_transport_admission
    :members:
    :private-members:
 
-.. automodule:: spectraxgk.validation.stellarator.transport_landscape
-   :members:
-   :private-members:
+Stellarator Transport Reports
+-----------------------------
 
-.. automodule:: spectraxgk.validation.stellarator.transport_prelaunch
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.validation.stellarator.transport_campaign
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.validation.stellarator.transport_audit
-   :members:
-   :private-members:
-
-.. automodule:: spectraxgk.validation.stellarator.transport_selection
+.. automodule:: spectraxgk.diagnostics.stellarator_transport_reports
    :members:
    :private-members:
 
@@ -1330,7 +1314,7 @@ VMEC-JAX Transport Line Search
 VMEC-JAX Candidate Gates
 ------------------------
 
-.. automodule:: spectraxgk.validation.stellarator.candidate_gate
+.. automodule:: spectraxgk.objectives.vmec_candidate_admission
    :members:
 
 Stellarator ITG Objectives
