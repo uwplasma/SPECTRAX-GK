@@ -432,7 +432,7 @@ The companion state-window gate is generated with:
 
 .. code-block:: bash
 
-   python tools/gate_linear_rhs_zero_norm_state_window.py \
+   python tools/artifacts/gate_linear_rhs_zero_norm_state_window.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --ky 0.3 \
      --Nl 4 \
@@ -546,7 +546,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_parallel_ky_scan_gate.py
+   python tools/artifacts/generate_parallel_ky_scan_gate.py
 
 This gate runs the same linear solver serially and with fixed-shape
 ``k_y`` batching, checks ``gamma`` and ``omega`` numerical identity, and
@@ -568,7 +568,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+   python tools/artifacts/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
 
 The tracked artifact used two logical CPU devices and passed the identity gate:
 ``max_gamma_rel_error=6.7e-8``, ``max_ql_rel_error=1.1e-7``, and
@@ -711,7 +711,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+   python tools/artifacts/generate_hermite_exchange_gate.py --logical-devices 2
 
 The tracked artifact passes with zero reported lower/upper neighbor error. It
 only validates the communication primitive. Promoting nonlinear velocity-space
@@ -731,7 +731,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_field_reduce_gate.py --logical-devices 2
 
 The tracked artifact passes with ``max_abs_error=3.9e-6`` under an absolute
 tolerance of ``1e-5``. This tolerance reflects expected float32 roundoff from a
@@ -751,7 +751,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_field_reduce_gate.py --logical-devices 2
 
 The tracked artifact passes exactly on the current single-species periodic
 gate with ``phi_norm=1.68e-1`` and zero reported absolute/relative error. This
@@ -772,7 +772,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+   python tools/artifacts/generate_hermite_streaming_ladder_gate.py --logical-devices 2
 
 The tracked artifact passes with zero ladder error and records an accompanying
 Hermite field-reduction error of ``1.9e-6``. This closes the communication and
@@ -792,7 +792,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_drift_gate.py --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.21e-1`` and zero reported
 absolute/relative error for the mirror, curvature/grad-B, and combined drift
@@ -816,7 +816,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.68e-1`` and zero reported
 absolute/relative error against the production diamagnetic-only linear RHS.
@@ -838,7 +838,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+   python tools/artifacts/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
 
 The tracked artifact passes with zero reported absolute and relative error.
 This is still a linear streaming microkernel gate, not a full linear RHS or
@@ -857,7 +857,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_streaming_gate.py --logical-devices 2
 
 The tracked artifact passes with ``max_abs_error=9.7e-7``,
 ``max_rel_error=5.6e-7``, and ``phi_norm=0``. This closes a streaming-only
@@ -886,7 +886,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.34e-1``,
 ``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
@@ -907,7 +907,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.68e-1``,
 ``max_abs_error=1.5e-7``, ``max_rel_error=3.7e-7``, and zero reported
@@ -1048,7 +1048,7 @@ each device count gets a clean JAX runtime:
 
    python tools/artifacts/plot_nonlinear_sharding_strong_scaling.py
 
-   python tools/generate_nonlinear_sharding_production_gate.py
+   python tools/artifacts/generate_nonlinear_sharding_production_gate.py
 
 .. image:: _static/nonlinear_sharding_strong_scaling_large.png
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
@@ -1097,7 +1097,7 @@ once with spectral brackets, then compares end-of-run scalar diagnostics.
 
 .. code-block:: bash
 
-   python tools/gate_laguerre_nonlinear_modes.py \
+   python tools/artifacts/gate_laguerre_nonlinear_modes.py \
      --case cyclone --case kbm --case w7x --case hsx \
      --out-json docs/_static/laguerre_mode_gate.json \
      --out-csv docs/_static/laguerre_mode_gate.csv \
@@ -1108,7 +1108,7 @@ GPU-specific output paths, for example:
 
 .. code-block:: bash
 
-   python tools/gate_laguerre_nonlinear_modes.py \
+   python tools/artifacts/gate_laguerre_nonlinear_modes.py \
      --case cyclone --case kbm --case w7x --case hsx \
      --out-json docs/_static/laguerre_mode_gate_gpu.json \
      --out-csv docs/_static/laguerre_mode_gate_gpu.csv \

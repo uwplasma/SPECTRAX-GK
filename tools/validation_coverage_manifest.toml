@@ -336,7 +336,7 @@ fast_tests = [
   "tests/test_linear_helpers_extra.py",
   "tests/test_terms_assembly.py",
   "tests/test_terms_fields.py",
-  "tests/tools/generators/test_generate_observed_order_gate.py",
+  "tests/tools/artifacts/test_generate_observed_order_gate.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -1569,8 +1569,8 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_validation_gates.py",
   "tests/tools/artifacts/test_make_validation_gate_index.py",
-  "tests/tools/generators/test_generate_observed_order_gate.py",
-  "tests/tools/generators/test_generate_kbm_branch_gate_summary.py",
+  "tests/tools/artifacts/test_generate_observed_order_gate.py",
+  "tests/tools/artifacts/test_generate_kbm_branch_gate_summary.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -1603,7 +1603,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_zonal_validation.py",
   "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
-  "tests/tools/generators/test_generate_w7x_zonal_response_panel.py",
+  "tests/tools/artifacts/test_generate_w7x_zonal_response_panel.py",
   "tests/tools/artifacts/test_plot_w7x_zonal_closure_ladder.py",
   "tests/tools/artifacts/test_plot_w7x_zonal_state_convention_audit.py",
   "tests/tools/artifacts/test_plot_w7x_zonal_recurrence_sweep.py",
@@ -2241,7 +2241,7 @@ fast_tests = [
   "tests/test_sharding.py",
   "tests/test_sharded_integrators.py",
   "tests/test_parallel.py",
-  "tests/tools/generators/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
   "tests/test_velocity_sharding.py",
 ]
 artifact_paths = [
@@ -3813,7 +3813,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_parallel.py",
-  "tests/tools/generators/test_generate_parallel_ky_scan_gate.py",
+  "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_ky_scan_gate.json",
@@ -4018,7 +4018,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
-  "tests/tools/generators/test_generate_miller_zonal_response_pilot.py",
+  "tests/tools/artifacts/test_generate_miller_zonal_response_pilot.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.png",

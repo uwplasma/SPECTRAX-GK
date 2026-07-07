@@ -608,7 +608,7 @@ Two user-facing entry points now exercise that bridge:
 
 - ``tools/comparison/generate_gx_vmec_eik.py --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
-- ``tools/generate_miller_eik.py --config ...`` generates a compatible
+- ``tools/artifacts/generate_miller_eik.py --config ...`` generates a compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear

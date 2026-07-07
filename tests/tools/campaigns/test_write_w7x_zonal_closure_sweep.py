@@ -73,5 +73,5 @@ def test_w7x_zonal_closure_sweep_manifest_writes_json(tmp_path: Path) -> None:
     assert loaded["cases"][0]["slug"] == "baseline"
     assert loaded["cases"][0]["panel_png"].endswith("baseline/panel.png")
     assert loaded["launch_commands"][0].startswith(
-        "python3 tools/generate_w7x_zonal_response_panel.py"
+        "python3 tools/artifacts/generate_w7x_zonal_response_panel.py"
     )

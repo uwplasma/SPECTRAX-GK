@@ -21,7 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.generate_linear_rhs_electrostatic_slices_gate import build_problem  # noqa: E402
+from tools.artifacts.generate_linear_rhs_electrostatic_slices_gate import build_problem  # noqa: E402
 
 DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "linear_rhs_parallel_slices_profile"
 

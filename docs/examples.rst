@@ -159,7 +159,7 @@ For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
 
 .. code-block:: bash
 
-   python tools/generate_parallel_ky_scan_gate.py
+   python tools/artifacts/generate_parallel_ky_scan_gate.py
 
 .. figure:: _static/parallel_ky_scan_gate.png
    :alt: SPECTRAX-GK ky-batch parallelization identity gate
@@ -174,7 +174,7 @@ outputs, run:
 
 .. code-block:: bash
 
-   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+   python tools/artifacts/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
 
 .. figure:: _static/logical_cpu_parallel_scan_gate.png
    :alt: SPECTRAX-GK logical CPU parallel scan identity gate
@@ -189,7 +189,7 @@ the Hermite ghost exchange:
 
 .. code-block:: bash
 
-   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+   python tools/artifacts/generate_hermite_exchange_gate.py --logical-devices 2
 
 .. figure:: _static/hermite_exchange_gate.png
    :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
@@ -203,7 +203,7 @@ The paired field-reduction gate is:
 
 .. code-block:: bash
 
-   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_field_reduce_gate.py --logical-devices 2
 
 .. figure:: _static/velocity_field_reduce_gate.png
    :alt: SPECTRAX-GK velocity field-reduction identity gate
@@ -217,7 +217,7 @@ The first production-field-solve reduction gate is:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_field_reduce_gate.py --logical-devices 2
 
 .. figure:: _static/electrostatic_field_reduce_gate.png
    :alt: SPECTRAX-GK electrostatic field-reduction identity gate
@@ -230,7 +230,7 @@ The Hermite streaming-ladder coefficient gate is:
 
 .. code-block:: bash
 
-   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+   python tools/artifacts/generate_hermite_streaming_ladder_gate.py --logical-devices 2
 
 .. figure:: _static/hermite_streaming_ladder_gate.png
    :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
@@ -245,7 +245,7 @@ The first electrostatic drift-slice gate is:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_drift_gate.py --logical-devices 2
 
 .. figure:: _static/electrostatic_drift_gate.png
    :alt: SPECTRAX-GK electrostatic drift-slice identity gate
@@ -259,7 +259,7 @@ The matching electrostatic diamagnetic-drive gate is:
 
 .. code-block:: bash
 
-   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
 
 .. figure:: _static/electrostatic_diamagnetic_gate.png
    :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
@@ -274,7 +274,7 @@ The periodic streaming microkernel gate adds that field-line derivative:
 
 .. code-block:: bash
 
-   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+   python tools/artifacts/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
 
 .. figure:: _static/periodic_streaming_microkernel_gate.png
    :alt: SPECTRAX-GK periodic streaming microkernel identity gate
@@ -289,7 +289,7 @@ linear-RHS call graph with every non-streaming contribution disabled:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_streaming_gate.py --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_gate.png
    :alt: SPECTRAX-GK streaming-only linear RHS identity gate
@@ -304,7 +304,7 @@ With a nonzero electrostatic response, use:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_electrostatic_gate.png
    :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
@@ -319,7 +319,7 @@ For the composed electrostatic linear-slices backend, use:
 
 .. code-block:: bash
 
-   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
 
 .. figure:: _static/linear_rhs_electrostatic_slices_gate.png
    :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
@@ -435,7 +435,7 @@ Miller inputs when the external helper scripts are available:
    python tools/comparison/generate_gx_vmec_eik.py \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
-   python tools/generate_miller_eik.py \
+   python tools/artifacts/generate_miller_eik.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers

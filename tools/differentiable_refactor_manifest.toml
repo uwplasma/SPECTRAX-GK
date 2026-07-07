@@ -254,7 +254,7 @@ responsibility = "Cyclone ky-scan runner setup and batched time integration behi
 moved_exports = [
   "run_cyclone_scan",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/generators/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -351,7 +351,7 @@ responsibility = "KBM single-ky setup, state/cache construction, saved-time inte
 moved_exports = [
   "run_kbm_linear",
 ]
-fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/generators/test_generate_kbm_reference_overlay.py"]
+fast_tests = ["tests/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_generate_kbm_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3139,7 +3139,7 @@ moved_exports = [
   "phase_align_eigenfunction",
   "save_eigenfunction_reference_bundle",
 ]
-fast_tests = ["tests/test_benchmarking.py", "tests/tools/generators/test_generate_w7x_reference_overlay.py"]
+fast_tests = ["tests/test_benchmarking.py", "tests/tools/artifacts/test_generate_w7x_reference_overlay.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3193,7 +3193,7 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_validation_gates.py",
-  "tests/tools/generators/test_generate_miller_zonal_response_pilot.py",
+  "tests/tools/artifacts/test_generate_miller_zonal_response_pilot.py",
   "tests/tools/artifacts/test_plot_zonal_flow_response_from_output.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/testing.rst"]
@@ -3241,8 +3241,8 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/tools/generators/test_generate_hermite_exchange_gate.py",
-  "tests/tools/generators/test_generate_velocity_field_reduce_gate.py",
+  "tests/tools/artifacts/test_generate_hermite_exchange_gate.py",
+  "tests/tools/artifacts/test_generate_velocity_field_reduce_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3264,7 +3264,7 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/tools/generators/test_generate_periodic_streaming_microkernel_gate.py",
+  "tests/tools/artifacts/test_generate_periodic_streaming_microkernel_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3282,8 +3282,8 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/test_velocity_sharding.py",
-  "tests/tools/generators/test_generate_electrostatic_field_reduce_gate.py",
-  "tests/tools/generators/test_generate_electrostatic_diamagnetic_gate.py",
+  "tests/tools/artifacts/test_generate_electrostatic_field_reduce_gate.py",
+  "tests/tools/artifacts/test_generate_electrostatic_diamagnetic_gate.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -3900,7 +3900,7 @@ moved_exports = [
   "pad_to_multiple",
   "split_evenly",
 ]
-fast_tests = ["tests/test_parallel.py", "tests/tools/generators/test_generate_parallel_ky_scan_gate.py"]
+fast_tests = ["tests/test_parallel.py", "tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

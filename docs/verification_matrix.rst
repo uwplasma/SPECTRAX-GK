@@ -95,7 +95,7 @@ Tokamak Linear
      - residual level, damping rate, GAM envelope
      - Merlo et al. + analytical Rosenbluth-Hinton estimates where applicable
      - Open
-     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/generate_miller_zonal_response_pilot.py`` using Merlo Case-III Table-III parameters, an initial density perturbation, a common pre-recurrence fit window ``t≈30``, separate positive/negative-extrema damping fits, and a Hilbert-phase frequency extraction on that same window. It gives ``residual≈0.192`` against a paper-scale target of about ``0.19``, ``ω_GAM R0 / v_i≈2.20`` against a figure read-off near ``2.24``, and ``γ_GAM R0 / v_i≈-0.176`` against a figure read-off near ``-0.17``. The remaining explicit follow-up item is the later finite-moment recurrence rather than the benchmark-scale Merlo gate
+     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/artifacts/generate_miller_zonal_response_pilot.py`` using Merlo Case-III Table-III parameters, an initial density perturbation, a common pre-recurrence fit window ``t≈30``, separate positive/negative-extrema damping fits, and a Hilbert-phase frequency extraction on that same window. It gives ``residual≈0.192`` against a paper-scale target of about ``0.19``, ``ω_GAM R0 / v_i≈2.20`` against a figure read-off near ``2.24``, and ``γ_GAM R0 / v_i≈-0.176`` against a figure read-off near ``-0.17``. The remaining explicit follow-up item is the later finite-moment recurrence rather than the benchmark-scale Merlo gate
 
 Frozen artifact paths for the currently closed tokamak linear lanes:
 
@@ -111,7 +111,7 @@ Closed raw-overlay diagnostic artifacts for the KBM lane:
 - ``docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv``
 - ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
 - ``docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json``
-- ``tools/generate_kbm_reference_overlay.py``
+- ``tools/artifacts/generate_kbm_reference_overlay.py``
 
 The refreshed bounded-cost extraction produces normalized overlap
 ``0.999985`` and relative ``L^2`` mismatch ``0.00721`` against the frozen GX
@@ -126,7 +126,7 @@ observed-order gates for resolution or velocity-space convergence, and
 branch-continuity gates for adjacent ``gamma``/``omega`` jumps and successive
 eigenfunction overlap when overlap data are available. The tracked KBM
 candidate table now has a no-rerun summary path through
-``tools/generate_kbm_branch_gate_summary.py`` and
+``tools/artifacts/generate_kbm_branch_gate_summary.py`` and
 ``docs/_static/kbm_branch_gate_summary.json``. That summary now uses the
 continuity-first selected branch and passes the strict checks:
 ``max_rel_gamma_jump ~= 0.388``, ``max_rel_omega_jump ~= 0.320``, and no
@@ -134,7 +134,7 @@ successive-overlap deficit.
 
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic
-``tools/generate_observed_order_gate.py`` path now records this policy in JSON.
+``tools/artifacts/generate_observed_order_gate.py`` path now records this policy in JSON.
 The tracked Cyclone velocity-space convergence artifact
 ``docs/_static/cyclone_resolution_observed_order.json`` is closed on an
 office/GPU ``ky=0.30`` time-path sweep with all pairwise orders positive,
@@ -182,7 +182,7 @@ Stellarator Linear
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature
      - Open; time coverage closed, residual and late-envelope gates open
-     - a case-specific runtime/tool path exists through ``benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/generate_w7x_zonal_response_panel.py``. The runtime now supports the paper-facing ``init_field="phi"`` Gaussian potential initializer and writes both the older volume-weighted ``Phi_zonal_mode_kxt`` diagnostic and the W7-X line-average ``Phi_zonal_line_kxt`` observable. The frozen VMEC-backed artifact now lives at ``docs/_static/w7x_zonal_response_panel.png`` with metadata in ``docs/_static/w7x_zonal_response_panel.json`` and replayable traces in ``docs/_static/w7x_zonal_response_panel.traces.csv``; it uses line-first normalization, following the paper text. The stella/GENE Fig. 11 reference traces and inset residuals are digitized by ``tools/digitize_w7x_zonal_reference.py`` into ``docs/_static/w7x_zonal_reference_digitized.csv`` and ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``. ``tools/comparison/compare_w7x_zonal_reference.py`` writes the residual/time-coverage/envelope artifact ``docs/_static/w7x_zonal_reference_compare.json`` and can now replay the comparison from the tracked combined trace CSV. ``tools/artifacts/plot_w7x_zonal_contract_audit.py`` writes ``docs/_static/w7x_zonal_contract_audit.png`` as a publication-facing open-lane diagnostic, ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py`` writes ``docs/_static/w7x_zonal_moment_tail_audit.png`` to track the velocity-space recurrence / moment-tail hypothesis, ``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` writes ``docs/_static/w7x_zonal_closure_ladder_kx070.png`` to compare bounded closure attempts at ``k_x rho_i=0.07``, ``tools/artifacts/plot_w7x_zonal_state_convention_audit.py`` writes ``docs/_static/w7x_zonal_state_convention_audit.png`` to close the initializer/observable convention layer, and ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py`` writes ``docs/_static/w7x_zonal_recurrence_sweep_kx070.png`` to separate moment-resolution and closure-source effects. The current SPECTRAX artifact enforces the intended test-4 ``k_x rho_i`` values ``[0.05, 0.07, 0.10, 0.30]`` with a periodic radial box for the ``k_y=0`` zonal run and reaches ``t≈3460`` for ``k_x rho_i=0.05`` and ``t≈1980`` for the other three wavelengths. Under the paper-facing normalization, residuals fail at ``k_x rho_i=0.07``, ``0.10``, and ``0.30`` and late envelopes fail for all wavelengths. The state-level audit closes the convention question with Gaussian-profile relative ``L2`` error ``1.85e-6`` and helper/manual observable agreement near ``2e-16``. The bounded recurrence sweep shows that ``Nl=12,Nm=48`` has the best no-closure trace error on ``t v_t/a <= 100`` and that constant-source closure suppresses the final Hermite tail but worsens the trace error. The remaining closure step is therefore a physical velocity-space recurrence / damping fix rather than a documentation or normalization change
+     - a case-specific runtime/tool path exists through ``benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/artifacts/generate_w7x_zonal_response_panel.py``. The runtime now supports the paper-facing ``init_field="phi"`` Gaussian potential initializer and writes both the older volume-weighted ``Phi_zonal_mode_kxt`` diagnostic and the W7-X line-average ``Phi_zonal_line_kxt`` observable. The frozen VMEC-backed artifact now lives at ``docs/_static/w7x_zonal_response_panel.png`` with metadata in ``docs/_static/w7x_zonal_response_panel.json`` and replayable traces in ``docs/_static/w7x_zonal_response_panel.traces.csv``; it uses line-first normalization, following the paper text. The stella/GENE Fig. 11 reference traces and inset residuals are digitized by ``tools/digitize_w7x_zonal_reference.py`` into ``docs/_static/w7x_zonal_reference_digitized.csv`` and ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``. ``tools/comparison/compare_w7x_zonal_reference.py`` writes the residual/time-coverage/envelope artifact ``docs/_static/w7x_zonal_reference_compare.json`` and can now replay the comparison from the tracked combined trace CSV. ``tools/artifacts/plot_w7x_zonal_contract_audit.py`` writes ``docs/_static/w7x_zonal_contract_audit.png`` as a publication-facing open-lane diagnostic, ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py`` writes ``docs/_static/w7x_zonal_moment_tail_audit.png`` to track the velocity-space recurrence / moment-tail hypothesis, ``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` writes ``docs/_static/w7x_zonal_closure_ladder_kx070.png`` to compare bounded closure attempts at ``k_x rho_i=0.07``, ``tools/artifacts/plot_w7x_zonal_state_convention_audit.py`` writes ``docs/_static/w7x_zonal_state_convention_audit.png`` to close the initializer/observable convention layer, and ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py`` writes ``docs/_static/w7x_zonal_recurrence_sweep_kx070.png`` to separate moment-resolution and closure-source effects. The current SPECTRAX artifact enforces the intended test-4 ``k_x rho_i`` values ``[0.05, 0.07, 0.10, 0.30]`` with a periodic radial box for the ``k_y=0`` zonal run and reaches ``t≈3460`` for ``k_x rho_i=0.05`` and ``t≈1980`` for the other three wavelengths. Under the paper-facing normalization, residuals fail at ``k_x rho_i=0.07``, ``0.10``, and ``0.30`` and late envelopes fail for all wavelengths. The state-level audit closes the convention question with Gaussian-profile relative ``L2`` error ``1.85e-6`` and helper/manual observable agreement near ``2e-16``. The bounded recurrence sweep shows that ``Nl=12,Nm=48`` has the best no-closure trace error on ``t v_t/a <= 100`` and that constant-source closure suppresses the final Hermite tail but worsens the trace error. The remaining closure step is therefore a physical velocity-space recurrence / damping fix rather than a documentation or normalization change
    * - W7-X fluctuation spectra
      - resolved ``k_y`` spectra, ``k_x``-``k_y`` fluctuation power, and temporal spectra
      - W7-X nonlinear gate plus Doppler-reflectometry comparison conventions
@@ -218,7 +218,7 @@ from ``docs/_static/hsx_linear_t2_lastvalue.csv`` because the final
 ``(gamma, omega)`` values are much tighter than the whole-window average.
 
 The W7-X raw eigenfunction overlay is now closed at ``k_y rho_i = 0.3`` using
-``tools/generate_w7x_reference_overlay.py``. The frozen GX bundle was refreshed
+``tools/artifacts/generate_w7x_reference_overlay.py``. The frozen GX bundle was refreshed
 from the finite ``t≈2`` raw field history because the older bundle source
 contained non-finite late-time fields. The matched imported-geometry
 SPECTRAX-GK extraction uses the validated ``z_index`` diagnostic contract and

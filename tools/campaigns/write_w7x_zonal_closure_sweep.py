@@ -164,7 +164,7 @@ def _command_for_case(
     panel_png = out_dir / "panel.png"
     cmd = [
         "python3",
-        "tools/generate_w7x_zonal_response_panel.py",
+        "tools/artifacts/generate_w7x_zonal_response_panel.py",
         "--config",
         _repo_relative(config),
         "--out-dir",

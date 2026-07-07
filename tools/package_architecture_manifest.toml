@@ -91,5 +91,5 @@ name = "flat_tool_python_files"
 path = "tools"
 pattern = "*.py"
 recursive = false
-baseline = 45
+baseline = 20
 target = 0
