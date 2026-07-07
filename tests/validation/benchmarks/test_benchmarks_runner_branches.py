@@ -80,6 +80,8 @@ def _fake_initial_condition(grid, *args, **kwargs):
 
 
 def _benchmark_module_attr(module: str, attr: str) -> str:
+    if module == "kinetic_linear":
+        return f"spectraxgk.benchmarks.{attr}"
     return f"spectraxgk.validation.benchmarks.{module}.{attr}"
 
 
@@ -1818,15 +1820,15 @@ def test_run_kinetic_scan_rejects_invalid_batch_and_species_indices() -> None:
 
 def test_run_kinetic_linear_rejects_invalid_species_indices(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.select_ky_grid",
+        "spectraxgk.benchmarks.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kinetic_linear.SAlphaGeometry.from_config",
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
     )
     params = SimpleNamespace(rho_star=1.0)

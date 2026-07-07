@@ -233,7 +233,7 @@ High-Risk Module Split Plan
   ``validation.benchmarks.cyclone_scan_branches``.
   Kinetic-electron single-ky saved-time fitting shares one automatic-fit
   keyword policy for primary auto-window and invalid-window fallback fits in
-  ``validation.benchmarks.kinetic_linear``. Kinetic-electron ky scans keep the
+  ``spectraxgk.benchmarks``. Kinetic-electron ky scans keep the
   stable public owner ``validation.benchmarks.kinetic_scan`` while setup
   normalization, batch-state construction, Krylov fitting, Diffrax streaming
   fitting, configured trajectory integration, and sampled-signal fitting are
@@ -441,7 +441,7 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.kbm_beta``,
   ``spectraxgk.validation.benchmarks.kbm_linear``,
   ``spectraxgk.benchmarks``, ``spectraxgk.validation.benchmarks.tem``,
-  ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
+  ``spectraxgk.benchmarks`` owns the kinetic-electron single-run implementation directly, ``spectraxgk.validation.benchmarks.kinetic_scan`` still owns the kinetic-electron scan implementation, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core

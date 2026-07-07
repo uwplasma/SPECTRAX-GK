@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import spectraxgk.diagnostics.growth_rates as growth_rate_diagnostics
 import spectraxgk.validation.benchmarks.kbm_beta as benchmark_kbm_beta
 import spectraxgk.validation.benchmarks.kbm_linear as benchmark_kbm_linear
-import spectraxgk.validation.benchmarks.kinetic_linear as benchmark_kinetic
+import spectraxgk.benchmarks as benchmark_kinetic
 import spectraxgk.validation.benchmarks.tem as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.diagnostics.analysis import fit_growth_rate
