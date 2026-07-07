@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -757,15 +757,12 @@ Kinetic-electron ITG/TEM single-ky and ky-scan runner ownership has moved into t
 The kinetic scan path carries separate run-options, fit-options, and output
 containers through a single batch router, keeping Krylov, Diffrax streaming, and
 sampled-history branches testable without changing the public scan signature.
-ETG single-point and scan implementations live in
-``spectraxgk.validation.benchmarks.etg_linear`` and
-``spectraxgk.validation.benchmarks.etg_scan`` and are re-exported through
-``spectraxgk.benchmarks``. The scan runner keeps geometry/species setup,
+ETG single-point and scan implementations now live directly in
+``spectraxgk.benchmarks``. The ETG owner keeps geometry/species setup,
 electrostatic term defaults, fit-window policy construction, ky-batch state
-construction, and per-batch result packaging in focused local helpers while delegating
-Krylov continuation, streaming fit, saved-signal integration, and fallback
-fit/appending policy inside ``spectraxgk.validation.benchmarks.etg_scan``
-for solver-path details.
+construction, Krylov continuation, streaming fit, saved-signal integration,
+fallback fitting, and per-batch result packaging beside the documented
+``run_etg_linear`` and ``run_etg_scan`` APIs.
 ETG single-point and scan Krylov paths share one forwarded-key policy, with
 scan continuation overrides applied explicitly for carried shifts. The ETG
 single-point saved-time direct-fit path also shares one automatic-fit keyword

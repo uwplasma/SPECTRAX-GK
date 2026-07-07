@@ -199,38 +199,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.etg_linear"
-source_path = "src/spectraxgk/validation/benchmarks/etg_linear.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "ETG single-ky linear benchmark setup, Krylov/time-path orchestration, streaming density branch, and fit-window policy"
-moved_exports = [
-  "_build_etg_linear_setup",
-  "_default_etg_params",
-  "_default_etg_terms",
-  "_etg_linear_result",
-  "_fit_etg_time_trace",
-  "_resolve_etg_time_config",
-  "_run_etg_krylov_path",
-  "_valid_etg_growth",
-  "run_etg_linear",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.etg_scan"
-source_path = "src/spectraxgk/validation/benchmarks/etg_scan.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "ETG ky-scan setup, batching, parameter construction, and public result packaging"
-moved_exports = [
-  "run_etg_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_make_cyclone_assets.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.tem"
 source_path = "src/spectraxgk/validation/benchmarks/tem.py"
 facade_module = "spectraxgk.benchmarks"
@@ -1738,8 +1706,6 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
-  "spectraxgk.validation.benchmarks.etg_linear",
-  "spectraxgk.validation.benchmarks.etg_scan",
   "spectraxgk.validation.benchmarks.tem",
   "spectraxgk.validation.reference_data",
   "spectraxgk.validation.fit_policies",

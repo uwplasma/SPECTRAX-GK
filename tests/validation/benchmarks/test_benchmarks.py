@@ -2100,7 +2100,7 @@ def test_etg_scan_with_params():
 
 def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
     from types import SimpleNamespace
-    import spectraxgk.validation.benchmarks.etg_linear as benchmark_etg_linear
+    import spectraxgk.benchmarks as benchmark_etg_linear
 
     captured = {}
 
@@ -2138,7 +2138,7 @@ def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
-    import spectraxgk.validation.benchmarks.etg_scan as benchmark_etg_scan
+    import spectraxgk.benchmarks as benchmark_etg_scan
 
     captured = {}
 
@@ -2177,7 +2177,7 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
 
 
 def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
-    import spectraxgk.validation.benchmarks.etg_scan as benchmark_etg_scan
+    import spectraxgk.benchmarks as benchmark_etg_scan
 
     calls: list[dict[str, object]] = []
 

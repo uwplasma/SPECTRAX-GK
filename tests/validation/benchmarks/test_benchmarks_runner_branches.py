@@ -80,7 +80,7 @@ def _fake_initial_condition(grid, *args, **kwargs):
 
 
 def _benchmark_module_attr(module: str, attr: str) -> str:
-    if module in {"kinetic_linear", "kinetic_scan"}:
+    if module in {"etg_linear", "etg_scan", "kinetic_linear", "kinetic_scan"}:
         return f"spectraxgk.benchmarks.{attr}"
     return f"spectraxgk.validation.benchmarks.{module}.{attr}"
 
@@ -2143,42 +2143,42 @@ def test_run_etg_scan_auto_solver_uses_time_with_zero_reference_fallback(
         time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.2, sample_stride=1),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.select_ky_grid",
+        "spectraxgk.benchmarks.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.SAlphaGeometry.from_config",
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._build_initial_condition",
+        "spectraxgk.benchmarks._build_initial_condition",
         lambda *args, **kwargs: np.zeros((1, 2, 2, 1, 1, 3), dtype=np.complex64),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_linear_cache",
+        "spectraxgk.benchmarks.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.integrate_linear",
+        "spectraxgk.benchmarks.integrate_linear",
         lambda *args, **kwargs: (
             np.zeros((2, 1, 2, 2, 1, 1, 3), dtype=np.complex64),
             np.ones((2, 1, 1, 3), dtype=np.complex64),
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.fit_growth_rate",
+        "spectraxgk.benchmarks.fit_growth_rate",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("forced fallback")),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.fit_growth_rate_auto",
+        "spectraxgk.benchmarks.fit_growth_rate_auto",
         lambda *args, **kwargs: (0.18, -0.06, 0.0, 0.2),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._normalize_growth_rate",
+        "spectraxgk.benchmarks._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -2216,30 +2216,30 @@ def test_run_etg_scan_diffrax_streaming_density_batch(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.select_ky_grid", _select_grid_dynamic
+        "spectraxgk.benchmarks.select_ky_grid", _select_grid_dynamic
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.SAlphaGeometry.from_config",
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._build_initial_condition",
+        "spectraxgk.benchmarks._build_initial_condition",
         _fake_initial_condition,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_linear_cache",
+        "spectraxgk.benchmarks.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._resolve_streaming_window",
+        "spectraxgk.benchmarks._resolve_streaming_window",
         lambda *args, **kwargs: (0.0, 0.2),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.integrate_linear_diffrax_streaming",
+        "spectraxgk.benchmarks.integrate_linear_diffrax_streaming",
         lambda *args, **kwargs: (
             np.zeros((2, 1, 2, 2, 1, 3), dtype=np.complex64),
             np.array([0.23, 0.27]),
@@ -2247,7 +2247,7 @@ def test_run_etg_scan_diffrax_streaming_density_batch(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._normalize_growth_rate",
+        "spectraxgk.benchmarks._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 
@@ -2276,27 +2276,27 @@ def test_run_etg_scan_time_config_auto_signal_fallback_to_krylov(monkeypatch) ->
         time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.2, sample_stride=1),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_spectral_grid",
+        "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.select_ky_grid",
+        "spectraxgk.benchmarks.select_ky_grid",
         lambda grid, idx: _grid_sel(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.SAlphaGeometry.from_config",
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._build_initial_condition",
+        "spectraxgk.benchmarks._build_initial_condition",
         _fake_initial_condition,
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.build_linear_cache",
+        "spectraxgk.benchmarks.build_linear_cache",
         lambda *args, **kwargs: SimpleNamespace(),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.integrate_linear_from_config",
+        "spectraxgk.benchmarks.integrate_linear_from_config",
         lambda *args, **kwargs: (
             np.zeros((2, 1, 2, 2, 1, 1, 3), dtype=np.complex64),
             (
@@ -2306,7 +2306,7 @@ def test_run_etg_scan_time_config_auto_signal_fallback_to_krylov(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._select_fit_signal_auto",
+        "spectraxgk.benchmarks._select_fit_signal_auto",
         lambda *args, **kwargs: (
             np.ones(2, dtype=np.complex64),
             "density",
@@ -2315,11 +2315,11 @@ def test_run_etg_scan_time_config_auto_signal_fallback_to_krylov(monkeypatch) ->
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan.run_etg_linear",
+        "spectraxgk.benchmarks.run_etg_linear",
         lambda *args, **kwargs: SimpleNamespace(gamma=0.39, omega=-0.21),
     )
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.etg_scan._normalize_growth_rate",
+        "spectraxgk.benchmarks._normalize_growth_rate",
         lambda g, o, params, norm: (g, o),
     )
 

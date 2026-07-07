@@ -217,11 +217,10 @@ High-Risk Module Split Plan
   resolves its fit window through the same ``ScanFitWindowPolicy`` used by
   saved-time scan fitting.
   ETG single-point and scan Krylov paths now share one forwarded-key policy in
-  ``validation.benchmarks.etg_linear`` and
-  ``validation.benchmarks.etg_scan``, with continuation-specific shift
-  overrides layered on top for scan branches. ETG single-point saved-time
-  direct fits share the same primary/fallback automatic-fit keyword policy, and
-  the single-point runner now keeps setup, Krylov result packing,
+  ``spectraxgk.benchmarks``, with continuation-specific shift overrides
+  layered on top for scan branches. ETG single-point saved-time direct fits
+  share the same primary/fallback automatic-fit keyword policy, and the
+  single-point runner now keeps setup, Krylov result packing,
   time-configuration resolution, and saved-trace fitting in focused helpers
   while preserving the existing module-level monkeypatch hooks.
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
@@ -441,7 +440,7 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.kbm_beta``,
   ``spectraxgk.validation.benchmarks.kbm_linear``,
   ``spectraxgk.benchmarks``, ``spectraxgk.validation.benchmarks.tem``,
-  ``spectraxgk.benchmarks`` owns the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
+  ``spectraxgk.benchmarks`` owns the kinetic-electron and ETG single-run and scan implementations directly while remaining the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
   ``spectraxgk.diagnostics.quasilinear_transport`` owns the core

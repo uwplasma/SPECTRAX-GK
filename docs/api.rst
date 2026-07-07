@@ -581,12 +581,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.kbm_linear
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.etg_linear
-   :members:
-
-.. automodule:: spectraxgk.validation.benchmarks.etg_scan
-   :members:
-
 .. automodule:: spectraxgk.validation.benchmarks.tem
    :members:
 
