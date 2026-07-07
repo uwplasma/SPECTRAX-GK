@@ -16,7 +16,7 @@ from spectraxgk.validation.quasilinear.window_statistics import (
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "check_nonlinear_window_ensemble.py"
+    path = Path(__file__).resolve().parents[1] / "tools" / "release" / "check_nonlinear_window_ensemble.py"
     spec = importlib.util.spec_from_file_location("check_nonlinear_window_ensemble", path)
     assert spec is not None
     assert spec.loader is not None

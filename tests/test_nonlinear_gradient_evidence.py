@@ -40,7 +40,7 @@ from spectraxgk.validation.quasilinear.window_statistics import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_nonlinear_turbulence_gradient_evidence.py"
+SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_turbulence_gradient_evidence.py"
 FD_SCRIPT = ROOT / "tools" / "build_nonlinear_turbulence_gradient_fd_gate.py"
 CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign.py"
 RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py"

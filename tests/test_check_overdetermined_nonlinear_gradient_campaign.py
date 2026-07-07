@@ -9,7 +9,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_overdetermined_nonlinear_gradient_campaign.py"
+SCRIPT = ROOT / "tools" / "release" / "check_overdetermined_nonlinear_gradient_campaign.py"
 
 
 def _load_tool_module():

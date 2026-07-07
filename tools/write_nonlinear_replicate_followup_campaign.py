@@ -258,7 +258,7 @@ def _postprocess_commands(
             "all_expected_outputs": all_outputs,
             "output_gate_json": _repo_relative(output_gate_json),
             "output_gate_command": (
-                "python3 tools/check_nonlinear_runtime_outputs.py "
+                "python3 tools/release/check_nonlinear_runtime_outputs.py "
                 + " ".join(all_outputs)
                 + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
                 + " --min-window-samples 80 --min-abs-window-mean 1e-4"
@@ -303,7 +303,7 @@ def _postprocess_commands(
                 f"--out-prefix {_repo_relative(fd_prefix)} --fail-on-blocked"
             )
             row["evidence_check_command"] = (
-                "python3 tools/check_nonlinear_turbulence_gradient_evidence.py "
+                "python3 tools/release/check_nonlinear_turbulence_gradient_evidence.py "
                 f"--gradient-artifact {_repo_relative(fd_prefix.with_suffix('.json'))} "
                 f"--window-artifact {baseline_json} --window-artifact {row['ensemble_json']} "
                 f"--window-artifact {minus_json} --json-out {_repo_relative(evidence_json)} "

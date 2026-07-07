@@ -301,7 +301,7 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
-- ``tools/check_nonlinear_window_convergence.py`` and
+- ``tools/release/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.validation.quasilinear.window_statistics`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
@@ -311,9 +311,9 @@ Quasilinear model-selection state:
   the next guardrail for replicated windows: seed, initial-condition, timestep,
   or restart variants must have individually passed late-window reports and
   mutually consistent late means before a nonlinear turbulent-flux optimization
-  artifact can claim robustness. ``tools/check_nonlinear_window_ensemble.py``
+  artifact can claim robustness. ``tools/release/check_nonlinear_window_ensemble.py``
   is the tracked artifact wrapper for this gate.
-- ``tools/check_nonlinear_window_ensemble_readiness.py`` converts tracked
+- ``tools/release/check_nonlinear_window_ensemble_readiness.py`` converts tracked
   transport-window summaries into explicit convergence-report JSON files and a
   readiness manifest. The older global
   ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` remains a
@@ -323,13 +323,13 @@ Quasilinear model-selection state:
   cases. The QH VMEC/Boozer held-out surface/field-line campaign and the
   selected optimized-equilibrium audit now also pass their local seed/timestep
   ensemble gates.
-- ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
+- ``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
   before any optimized-equilibrium production nonlinear heat-flux claim can be
   promoted. Single-window convergence reports remain necessary but insufficient
   for that claim level.
-- ``tools/check_production_nonlinear_optimization_guard.py`` is the explicit
+- ``tools/release/check_production_nonlinear_optimization_guard.py`` is the explicit
   production nonlinear turbulent-flux optimization guard. Its tracked artifact,
   ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
   safety because reduced/startup estimators are blocked and three long
@@ -349,7 +349,7 @@ Quasilinear model-selection state:
   with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
   SEM separation. This is a scoped finite-transform VMEC campaign comparison,
   not a broad multi-surface stellarator optimization claim.
-- ``tools/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
+- ``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
@@ -421,7 +421,7 @@ Quasilinear model-selection state:
   ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
-- ``tools/check_overdetermined_nonlinear_gradient_campaign.py`` and
+- ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` and
   ``tools/run_overdetermined_nonlinear_gradient_campaign.py`` make that
   launch contract executable. The current status artifact,
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,

@@ -451,7 +451,7 @@ gate.
        ``docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json``,
        ``docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, and
-       ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
+       ``tools/release/check_vmec_boozer_aggregate_holdout_gate.py``
      - Closed for VMEC/Boozer held-out plumbing; open for broad production
        nonlinear optimization claims
      - aggregate finite-difference and line-search artifacts pass on the same

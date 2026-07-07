@@ -1222,7 +1222,7 @@ every output gate, ensemble gate, matched comparison, and the aggregate matrix
 report. A broad optimization claim is allowed only when that aggregate report
 passes; otherwise the candidate remains single-point or diagnostic evidence.
 If several candidate families are available, the final release decision is made
-by ``tools/check_nonlinear_transport_matrix_portfolio.py``. It consumes one or
+by ``tools/release/check_nonlinear_transport_matrix_portfolio.py``. It consumes one or
 more aggregate matrix reports, selects the passing family with the largest mean
 heat-flux reduction, and records strict ``t=1500`` growth/QL/nonlinear-window
 matched comparisons only as excluded negative-transfer evidence.
@@ -1700,7 +1700,7 @@ count:
 
 .. code-block:: bash
 
-   python tools/check_nonlinear_transport_matrix_portfolio.py \
+   python tools/release/check_nonlinear_transport_matrix_portfolio.py \
      --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
      --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
      --excluded-comparison strict_growth=docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json \
@@ -1831,12 +1831,12 @@ at least one separate passed validation artifact whose sample metadata covers a
 held-out ``surface_index`` or field-line ``alpha``. A held-out ``k_y`` point
 alone is useful spectrum coverage, but it is not sufficient for the
 surface/field-line generalization gate. The repository-level check
-``tools/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
+``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
 frozen artifacts: it accepts the aggregate FD and line-search artifacts as
 necessary optimizer-plumbing evidence, then blocks promotion until independent
 surface/field-line holdout evidence is supplied. It also requires a passed
 replicated nonlinear-window ensemble artifact from
-``tools/check_nonlinear_window_ensemble.py`` before any optimized-equilibrium
+``tools/release/check_nonlinear_window_ensemble.py`` before any optimized-equilibrium
 production nonlinear heat-flux claim can be made. The ensemble requirement is
 deliberately separate from the single-window convergence rule: a single
 post-transient mean can establish a candidate window, but seed/timestep/restart
@@ -2031,7 +2031,7 @@ finite difference on a deterministic nonlinear row fixture.
    optimization claim.
 
 The corresponding real-artifact guard is
-``tools/check_vmec_boozer_reduced_portfolio_guard.py``. It consumes the tracked
+``tools/release/check_vmec_boozer_reduced_portfolio_guard.py``. It consumes the tracked
 multi-alpha VMEC/Boozer aggregate-objective JSON plus a VMEC/Boozer AD/FD
 gradient JSON, rebuilds a backend-free reducer table from the real rows, and
 fails closed unless the artifact has VMEC/Boozer provenance, at least two
@@ -2041,7 +2041,7 @@ non-production nonlinear claim boundary.
 
 .. code-block:: bash
 
-   python tools/check_vmec_boozer_reduced_portfolio_guard.py
+   python tools/release/check_vmec_boozer_reduced_portfolio_guard.py
 
 The tracked guard lives at
 ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` and passes on the QH
@@ -2492,7 +2492,7 @@ the following pass:
    claims. The current multi-point VMEC/Boozer aggregate API closes the
    software plumbing for this gate, but the manuscript claim remains bounded
    until the corresponding aggregate artifacts pass on the selected
-   equilibria. ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` is the
+   equilibria. ``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` is the
    artifact-level promotion check for this boundary: aggregate finite-difference
    and line-search artifacts must pass on the same training sample set, and at
    least one independent passed validation artifact must cover a held-out
@@ -3110,7 +3110,7 @@ diagnostic-only paired-replicate finite-difference rows. Those rows diagnose
 weak or sign-changing stochastic responses; they are not production gates and
 do not relax the uncertainty, asymmetry, response, or conditioning thresholds.
 The resulting JSON is then supplied to
-``tools/check_nonlinear_turbulence_gradient_evidence.py`` together with the
+``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` together with the
 three ensemble artifacts; only that paired long-window workflow can promote a
 nonlinear turbulence-gradient claim.
 ``tools/write_nonlinear_turbulence_gradient_campaign.py`` writes the matching

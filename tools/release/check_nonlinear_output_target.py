@@ -9,17 +9,24 @@ from pathlib import Path
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from tools.check_matched_nonlinear_transport_matrix_progress import (  # noqa: E402
-    _bundle_paths,
-    _read_output_tmax,
-    _repo_relative,
-)
+try:
+    from .check_matched_nonlinear_transport_matrix_progress import (
+        _bundle_paths,
+        _read_output_tmax,
+        _repo_relative,
+    )
+except ImportError:  # pragma: no cover - direct script execution
+    from check_matched_nonlinear_transport_matrix_progress import (
+        _bundle_paths,
+        _read_output_tmax,
+        _repo_relative,
+    )
 
 
 def build_report(

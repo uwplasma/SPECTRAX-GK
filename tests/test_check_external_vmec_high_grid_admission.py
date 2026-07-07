@@ -9,7 +9,7 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "check_external_vmec_high_grid_admission.py"
+    path = Path(__file__).resolve().parents[1] / "tools" / "release" / "check_external_vmec_high_grid_admission.py"
     spec = importlib.util.spec_from_file_location("check_external_vmec_high_grid_admission", path)
     assert spec is not None
     assert spec.loader is not None

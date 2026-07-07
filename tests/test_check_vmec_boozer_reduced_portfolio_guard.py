@@ -13,7 +13,7 @@ from spectraxgk.objectives.portfolio_artifacts import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_vmec_boozer_reduced_portfolio_guard.py"
+SCRIPT = ROOT / "tools" / "release" / "check_vmec_boozer_reduced_portfolio_guard.py"
 spec = importlib.util.spec_from_file_location("check_vmec_boozer_reduced_portfolio_guard", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None

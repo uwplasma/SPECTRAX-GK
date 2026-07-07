@@ -108,7 +108,7 @@ def _promotion_commands(
     )
     output_gate_json = f"{case}_output_gate.json"
     output_gate_command = (
-        "python3 tools/check_nonlinear_runtime_outputs.py "
+        "python3 tools/release/check_nonlinear_runtime_outputs.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
         + " --min-window-samples 80 --min-abs-window-mean 0.0001"
@@ -117,7 +117,7 @@ def _promotion_commands(
     guard_json = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.json"
     guard_png = ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.png"
     run_guard = (
-        "python3 tools/check_production_nonlinear_optimization_guard.py "
+        "python3 tools/release/check_production_nonlinear_optimization_guard.py "
         f"--optimized-equilibrium-ensemble {_repo_relative(ensemble_dir / ensemble_json)} "
         f"--out-json {_repo_relative(guard_json)} "
         f"--out-png {_repo_relative(guard_png)} "

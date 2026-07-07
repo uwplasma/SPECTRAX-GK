@@ -7,7 +7,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_matched_nonlinear_transport_matrix_progress.py"
+SCRIPT = ROOT / "tools" / "release" / "check_matched_nonlinear_transport_matrix_progress.py"
 spec = importlib.util.spec_from_file_location("check_matched_nonlinear_transport_matrix_progress", SCRIPT)
 assert spec is not None
 assert spec.loader is not None

@@ -18,7 +18,7 @@ from spectraxgk.validation.nonlinear_transport.optimization_guard import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_production_nonlinear_optimization_guard.py"
+SCRIPT = ROOT / "tools" / "release" / "check_production_nonlinear_optimization_guard.py"
 
 
 def _tool_module():

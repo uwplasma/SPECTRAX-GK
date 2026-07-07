@@ -11,7 +11,7 @@ import sys
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_AGGREGATE_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_objective_gate.json"
 DEFAULT_LINE_SEARCH_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_line_search_gate.json"
 DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS: tuple[Path, ...] = ()

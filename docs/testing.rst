@@ -95,7 +95,7 @@ Nonlinear matrix release gates
 Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
 ``tools/build_matched_nonlinear_transport_matrix.py`` writes the long-window
-matched matrix, ``tools/check_nonlinear_transport_matrix_portfolio.py`` selects
+matched matrix, ``tools/release/check_nonlinear_transport_matrix_portfolio.py`` selects
 only a passing family, and ``tools/import_nonlinear_transport_matrix_portfolio.py``
 refuses blocked portfolios. The current tracked max-mode-5 campaign is negative
 evidence: accepted QA/ESS passed only ``9/18`` samples, projected weight
@@ -314,7 +314,7 @@ horizons. The gate is deliberately necessary-only: even a passing
 time-horizon figure writes ``promotion_gate.passed = false`` until independent
 replicate, seed, timestep, and admission-policy evidence exists.
 
-``tools/check_external_vmec_high_grid_admission.py`` is the final scoped
+``tools/release/check_external_vmec_high_grid_admission.py`` is the final scoped
 exception gate for the rare case where the full grid ladder fails only because
 the lowest grid is not converged. It requires the failed full-grid JSON sidecar
 to contain only common/least grid-difference failures, requires the retained
@@ -354,7 +354,7 @@ production nonlinear optimization evidence lane the same generator also accepts
 ``[metadata]`` blocks and variant-specific filenames so seed and timestep
 replicate windows can be launched on the office GPUs, extracted with the same
 transport-window protocol, and checked by
-``tools/check_nonlinear_window_ensemble_readiness.py`` before any
+``tools/release/check_nonlinear_window_ensemble_readiness.py`` before any
 absolute-flux or turbulent-flux optimization wording can be considered.
 For external-VMEC replicate campaigns,
 ``tools/build_external_vmec_replicate_ensemble.py`` is the reproducible
@@ -368,13 +368,13 @@ failed points must remain visible in the final plot rather than terminating a
 multi-point campaign; it must not be used to promote a nonlinear transport
 claim.
 Before those files enter the ensemble builder, run
-``tools/check_nonlinear_runtime_outputs.py`` on every produced ``*.out.nc``.
+``tools/release/check_nonlinear_runtime_outputs.py`` on every produced ``*.out.nc``.
 That gate verifies the grouped NetCDF contains ``Grids/time`` and the requested
 heat-flux diagnostic, checks finite monotone time samples, enforces optional
 ``tmin/tmax`` coverage, and fails closed for restart-only or metadata-only
 artifacts. It is the first campaign-level smoke check after a long office GPU
 batch exits with ``rc=0``.
-``tools/check_production_nonlinear_optimization_guard.py`` then consumes those
+``tools/release/check_production_nonlinear_optimization_guard.py`` then consumes those
 replicated long-window ensembles together with the reduced optimization and
 startup finite-difference artifacts. It is the fail-closed check that allows
 release-safe scoped wording while blocking production nonlinear turbulent-flux
@@ -440,7 +440,7 @@ For future perturbation refreshes, keep each coefficient/amplitude in a
 distinct artifact slug such as
 ``docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``.
 Do not promote new prose until
-``tools/check_nonlinear_turbulence_gradient_evidence.py`` reports
+``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` reports
 ``passed = true`` and the JSON sidecar sets
 ``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
 as a bounded production-candidate finite-difference audit, not as a nonlinear
@@ -486,7 +486,7 @@ perturbation manifests from one baseline input, records the per-control
 nonlinear campaign commands, and writes the final candidate-ranking command.
 The tracked QA/ESS profile-gradient launch plan is
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
-Use ``tools/check_overdetermined_nonlinear_gradient_campaign.py`` to turn that
+Use ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` to turn that
 multi-control launch plan into a machine-readable status artifact and
 ``tools/run_overdetermined_nonlinear_gradient_campaign.py`` to run all nested
 long-window tasks through one shared CPU/GPU worker queue. The checker must
@@ -746,7 +746,7 @@ optimization companion for that final audit. Given a concrete post-optimization
 ladder on the release ``n64`` grid, two seed replicates, one timestep
 replicate, restart-copy commands, and the exact
 ``tools/build_external_vmec_replicate_ensemble.py`` plus
-``tools/check_production_nonlinear_optimization_guard.py`` commands needed
+``tools/release/check_production_nonlinear_optimization_guard.py`` commands needed
 after the runs finish. This wrapper is a launch contract only: a new production
 optimization claim should not be counted until the generated ``t=[350,700]``
 ensemble actually passes finite-flux, running-window, block/SEM,
@@ -764,7 +764,7 @@ For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
 ``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
 scripts; they contain only final-horizon direct commands, not the intermediate
 restart-ladder horizons. Their skip-existing policy calls
-``tools/check_nonlinear_output_target.py`` for each final output, so rerunning
+``tools/release/check_nonlinear_output_target.py`` for each final output, so rerunning
 after an interruption skips only bundles whose recorded time reaches the target
 within the generated time-step tolerance; partial checkpoint bundles are rerun.
 Newly generated final-horizon scripts also guard each output with a per-output
@@ -772,7 +772,7 @@ Newly generated final-horizon scripts also guard each output with a per-output
 matrices use split workers or be relaunched safely without two workers writing
 the same ``*.out.nc``/``*.big.nc``/``*.restart.nc`` bundle at once.
 Use
-``tools/check_matched_nonlinear_transport_matrix_progress.py`` before
+``tools/release/check_matched_nonlinear_transport_matrix_progress.py`` before
 postprocessing: it reads the manifest, verifies the expected NetCDF bundle
 files, and separately checks that the recorded ``Grids/time`` reaches the
 final target. This prevents a checkpoint bundle at, for example, ``t≈800``
@@ -783,7 +783,7 @@ reduction are insufficient. This is the required gate before changing scoped
 single-point optimization evidence into a broad multi-surface turbulent-flux
 optimization claim.
 
-``tools/check_nonlinear_transport_matrix_portfolio.py`` is the final selector
+``tools/release/check_nonlinear_transport_matrix_portfolio.py`` is the final selector
 when several candidate families have been audited. It consumes one or more
 aggregate matrix reports, chooses only a passing broad matrix family, and
 records strict ``t=1500`` growth/QL/nonlinear-window matched comparisons as

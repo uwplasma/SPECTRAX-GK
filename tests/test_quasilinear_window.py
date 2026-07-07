@@ -33,6 +33,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
+        / "release"
         / "check_nonlinear_window_convergence.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -335,7 +336,7 @@ def test_nonlinear_window_script_imports_before_editable_install() -> None:
     completed = subprocess.run(
         [
             sys.executable,
-            "tools/check_nonlinear_window_convergence.py",
+            "tools/release/check_nonlinear_window_convergence.py",
             "--help",
         ],
         cwd=root,

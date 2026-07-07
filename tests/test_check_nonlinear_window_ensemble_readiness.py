@@ -12,6 +12,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
+        / "release"
         / "check_nonlinear_window_ensemble_readiness.py"
     )
     spec = importlib.util.spec_from_file_location(

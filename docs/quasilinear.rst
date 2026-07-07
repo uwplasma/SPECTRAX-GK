@@ -597,7 +597,7 @@ point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
 ``spectraxgk.validation.quasilinear.window_statistics`` or
-``tools/check_nonlinear_window_convergence.py`` and records the transient
+``tools/release/check_nonlinear_window_convergence.py`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
 ``calibration_dataset`` or ``training_or_audit_only``. This keeps README, docs,
@@ -614,7 +614,7 @@ relative spread of late-window means plus the combined SEM across replicates.
 This is the lightweight metadata gate that lets the validation ladder state
 that several long nonlinear runs agree; it is not a substitute for actually
 running those long nonlinear simulations. The command-line artifact wrapper is
-``tools/check_nonlinear_window_ensemble.py``; it reads multiple window JSON
+``tools/release/check_nonlinear_window_ensemble.py``; it reads multiple window JSON
 reports and writes a JSON report plus an optional PNG summary for documentation
 or manuscript audit trails. For external-VMEC replicate campaigns the
 end-to-end extraction wrapper is
@@ -1608,7 +1608,7 @@ the case is admissible. The next promotion step is replicated nonlinear
 transport evidence: use ``--seed-variant`` for distinct randomized initial
 conditions and ``--dt-variant`` for fixed-step sensitivity checks. The generated
 TOMLs carry explicit seed/timestep metadata so
-``tools/check_nonlinear_window_ensemble_readiness.py`` can fail closed until
+``tools/release/check_nonlinear_window_ensemble_readiness.py`` can fail closed until
 each admitted case has at least two passed seed and timestep windows.
 
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
@@ -1871,7 +1871,7 @@ around ``10.5``/``9.9``. The retained high-grid pair passes at ``t=250`` and
 ``0.018``/``0.019``; and the restart-continued ``n80`` seed/timestep ensemble
 passes on ``t=[350,700]`` with mean heat flux ``9.60``, mean-relative spread
 ``0.041``, and combined SEM/mean ``0.052``. The dedicated
-``tools/check_external_vmec_high_grid_admission.py`` gate therefore admits
+``tools/release/check_external_vmec_high_grid_admission.py`` gate therefore admits
 CTH-like as a scoped high-grid holdout while explicitly excluding any full
 ``n48/n64/n80`` convergence claim. The shaped-tokamak-pressure repair uses the
 same admission policy: full-grid failure is retained as a coarse-grid warning,

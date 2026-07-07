@@ -114,7 +114,7 @@ def build_postprocess_commands(
             " ".join(
                 [
                     "python3",
-                    "tools/check_overdetermined_nonlinear_gradient_campaign.py",
+                    "tools/release/check_overdetermined_nonlinear_gradient_campaign.py",
                     shlex.quote(_repo_path(manifest_path)),
                     "--out-json",
                     shlex.quote(_repo_path(final_status)),

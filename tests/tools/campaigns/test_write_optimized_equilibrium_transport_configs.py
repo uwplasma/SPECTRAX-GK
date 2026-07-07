@@ -92,12 +92,12 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
         "seed32": 4,
     }
     assert any("--steps 8" in command for command in contract["direct_full_horizon_launch_commands"])
-    assert contract["output_gate_command"].startswith("python3 tools/check_nonlinear_runtime_outputs.py")
+    assert contract["output_gate_command"].startswith("python3 tools/release/check_nonlinear_runtime_outputs.py")
     assert "--tmin 1 --tmax 2" in contract["output_gate_command"]
     assert "--min-window-samples 80" in contract["output_gate_command"]
     assert "restart-ladder segments" in contract["restart_ladder_note"]
     assert contract["run_guard_command"].startswith(
-        "python3 tools/check_production_nonlinear_optimization_guard.py"
+        "python3 tools/release/check_production_nonlinear_optimization_guard.py"
     )
     assert "--optimized-equilibrium-ensemble" in contract["run_guard_command"]
 

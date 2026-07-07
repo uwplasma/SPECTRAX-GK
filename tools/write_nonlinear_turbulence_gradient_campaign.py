@@ -184,7 +184,7 @@ def _state_ensemble_command(
     )
     output_gate_json = f"{case}_{state}_t{_horizon_label(tmax)}_output_gate.json"
     output_gate_command = (
-        f"{PYTHON_CMD} tools/check_nonlinear_runtime_outputs.py "
+        f"{PYTHON_CMD} tools/release/check_nonlinear_runtime_outputs.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --min-samples {int(output_min_samples)} --tmin {tmin:.12g} --tmax {tmax:.12g}"
         + f" --min-window-samples {int(output_min_window_samples)}"
@@ -233,7 +233,7 @@ def _promotion_contract(
         "--fail-on-blocked"
     )
     evidence_command = (
-        f"{PYTHON_CMD} tools/check_nonlinear_turbulence_gradient_evidence.py "
+        f"{PYTHON_CMD} tools/release/check_nonlinear_turbulence_gradient_evidence.py "
         f"--gradient-artifact {_repo_relative(fd_json)} "
         f"--window-artifact {state_commands['baseline']['ensemble_json']} "
         f"--window-artifact {state_commands['plus_delta']['ensemble_json']} "

@@ -181,7 +181,7 @@ def _final_horizon_direct_commands(
         output_base = _bundle_base(item.output_path)
         time_tolerance = max(1.0e-9, 2.0 * float(item.dt))
         target_check = (
-            "PYTHONPATH=src python3 tools/check_nonlinear_output_target.py "
+            "PYTHONPATH=src python3 tools/release/check_nonlinear_output_target.py "
             f"--output {item.output_path.as_posix()} "
             f"--target-time {float(item.horizon):.12g} "
             f"--time-tolerance {time_tolerance:.12g} --quiet"
@@ -298,7 +298,7 @@ def _state_postprocess_commands(
     paths = _ensemble_paths(artifact_dir, case)
     outputs_raw = _quote_paths(outputs)
     output_gate = (
-        "python3 tools/check_nonlinear_runtime_outputs.py "
+        "python3 tools/release/check_nonlinear_runtime_outputs.py "
         f"{outputs_raw} --min-samples {int(min_samples)} --tmin {tmin:.12g} --tmax {tmax:.12g} "
         f"--min-window-samples {int(min_window_samples)} --min-abs-window-mean 0.0001 "
         f"--json-out {paths['output_gate'].as_posix()}"

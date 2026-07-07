@@ -144,7 +144,7 @@ def _case_commands(case: QAAuditCase, *, run_root: str, netcdf_root: str) -> dic
     ensemble_dir = "docs/_static/vmec_qa_t1500_replicates"
     ensemble = _repo_relative(case.ensemble_json)
     check_command = (
-        f"{PYTHON} tools/check_nonlinear_runtime_outputs.py "
+        f"{PYTHON} tools/release/check_nonlinear_runtime_outputs.py "
         + " ".join(outputs)
         + " --min-samples 200 --tmin 1100 --tmax 1500"
         + " --min-window-samples 80 --min-abs-window-mean 0.0001"

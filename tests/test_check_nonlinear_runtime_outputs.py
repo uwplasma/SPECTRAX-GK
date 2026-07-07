@@ -8,7 +8,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "check_nonlinear_runtime_outputs.py"
+SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_outputs.py"
 
 
 def _load_tool_module():

@@ -91,7 +91,7 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert "_nonlinear_t20_" in final_script
     assert "_nonlinear_t10_" not in final_script
     assert "--steps 200" in final_script
-    assert "tools/check_nonlinear_output_target.py" in final_script
+    assert "tools/release/check_nonlinear_output_target.py" in final_script
     assert "flock -n 9" in final_script
     assert "lock_dir=${lock_file}.d" in final_script
     assert "skip-locked" in final_script

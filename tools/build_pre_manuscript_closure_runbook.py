@@ -255,7 +255,7 @@ def _vmec_boozer_holdout_transport_commands(
     holdout_json = artifact_dir / f"{case}_production_holdout.json"
     output_gate_json = artifact_dir / f"{case}_output_gate.json"
     output_gate_command = (
-        "python3 tools/check_nonlinear_runtime_outputs.py "
+        "python3 tools/release/check_nonlinear_runtime_outputs.py "
         + " ".join(path.as_posix() for path in outputs)
         + " --min-samples 200 --tmin 350 --tmax 700 --min-window-samples 80 "
         f"--min-abs-window-mean 0.0001 --json-out {output_gate_json.as_posix()}"
@@ -278,7 +278,7 @@ def _vmec_boozer_holdout_transport_commands(
         f"--case {case} --out {holdout_json.as_posix()}"
     )
     promotion_gate_command = (
-        "python3 tools/check_vmec_boozer_aggregate_holdout_gate.py "
+        "python3 tools/release/check_vmec_boozer_aggregate_holdout_gate.py "
         "--holdout-artifact docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json "
         "--holdout-artifact docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json "
         f"--holdout-artifact {holdout_json.as_posix()} "
