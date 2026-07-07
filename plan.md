@@ -206,6 +206,49 @@ If the answer is no, the file leaves `main`. If the answer is yes but the file
 duplicates another file's policy, merge it. If the answer is yes but the file is
 installed campaign machinery, move it out of `src`.
 
+### Validation Package Exit Plan
+
+The validation package is the largest installable-code blocker. A fresh
+import-aware scan, excluding generated `docs/_build` files, gives this staged
+migration map:
+
+| Validation family | Files / LOC | Current role | Target owner |
+| --- | ---: | --- | --- |
+| `validation.benchmarks` | 35 files, about 17.4k LOC | benchmark case runners, fit policy, branch ladders, and the current implementation behind `spectraxgk.benchmarks` | small public `spectraxgk.benchmarks` facade plus root `benchmarks/` drivers and `tests/validation/benchmarks` policy tests |
+| `validation.nonlinear_gradient` | 16 files, about 6.0k LOC | campaign evidence, follow-up design, and candidate-ranking reports | `tools/campaigns` for campaign design/postprocess; reusable metrics to `diagnostics` or `objectives` only if promoted |
+| `validation.quasilinear` | 11 files, about 3.2k LOC | nonlinear-window statistics, calibration reports, model-selection and promotion guards | reusable window/transport statistics to `diagnostics`; promotion and calibration policy to `tools/release` and `tests/validation/quasilinear` |
+| `validation.stellarator` | 8 files, about 2.1k LOC | VMEC/Boozer transport campaign gates and candidate selection | campaign launch/postprocess to `tools/campaigns`; reusable objective admission metrics to `objectives` or `diagnostics` |
+| `validation.nonlinear_transport` | 5 files, about 1.9k LOC | nonlinear transport optimization reports and replicate diagnostics | diagnostics metrics to `diagnostics`; production-promotion policy to `tools/release` and validation tests |
+| shared validation metrics | 7 files, about 2.3k LOC | autodiff covariance checks, finite-difference helpers, gate reports/types, zonal summaries, external-holdout ledgers | tiny `validation` facade only for stable public metrics, with most reusable math moved to `diagnostics`/`objectives` |
+
+Staged extraction order:
+
+1. **Shared metrics first.** Move `gate_types`, `gate_reports`, `gates`,
+   `autodiff`, `autodiff_finite_difference`, and `zonal` into physically named
+   `diagnostics.validation`, `diagnostics.zonal`, or `objectives.autodiff`
+   owners. Keep a tiny compatibility facade only for documented user imports.
+2. **Quasilinear and nonlinear-window metrics.** Move pure window statistics
+   and calibration math into `diagnostics.transport_windows` and
+   `diagnostics.quasilinear_validation`; move promotion/checker policy to
+   `tools/release`.
+3. **Nonlinear transport and stellarator campaign policy.** Move campaign
+   selection, prelaunch, and follow-up report code to `tools/campaigns` or
+   `tests/validation`; keep only promoted objective/diagnostic math in package
+   code.
+4. **Benchmark family.** Define the stable public `spectraxgk.benchmarks`
+   surface, then move case-specific branch histories and long benchmark-policy
+   implementations into root `benchmarks/` and validation tests. This is last
+   because the public facade currently depends on these modules.
+5. **Delete the validation package as a campaign namespace.** When all importers
+   use canonical owners, leave at most `src/spectraxgk/validation/__init__.py`
+   and a small stable facade, or remove the package entirely in the next major
+   API cleanup.
+
+Each family move must update `docs/api.rst`, `docs/code_structure.rst`,
+`tools/validation_coverage_manifest.toml`, direct importer tests, and release
+checks in the same commit. Do not add new files to `src/spectraxgk/validation`
+during this process.
+
 ## Hard Targets For The Refactor
 
 These targets are release gates for this refactor. They are intentionally strict
