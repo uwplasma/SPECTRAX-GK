@@ -9,10 +9,10 @@ import sys
 
 import pytest
 
-from spectraxgk.validation.nonlinear_gradient.followup_core import (
+from tools.campaigns.nonlinear_gradient_followup import (
     NonlinearGradientQLSeedScreenConfig,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_ql_seed import (
+from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_ql_seed_screen_report,
 )
 

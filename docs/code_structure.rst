@@ -558,57 +558,31 @@ Completed extractions:
   ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
   API or import focused developer helpers from the domain packages.
-- nonlinear turbulence-gradient follow-up shared configs, JSON parsing, and
+- nonlinear turbulence-gradient follow-up shared configs, JSON parsing,
   candidate design, composite-control, matched-replicate, QL-seed,
-  state-runbook, and variance-reduction/control-variate report helpers:
-  ``validation/nonlinear_gradient/followup_core.py``,
-  ``validation/nonlinear_gradient/followup_candidate.py``,
-  ``validation/nonlinear_gradient/followup_composite.py``,
-  ``validation/nonlinear_gradient/followup_plan.py``,
-  ``validation/nonlinear_gradient/followup_ql_seed.py``,
-  ``validation/nonlinear_gradient/followup_state_runbook.py``,
-  ``validation/nonlinear_gradient/followup_variance.py``. Variance-reduction,
+  state-runbook, and variance-reduction/control-variate report helpers now live
+  in ``tools/campaigns/nonlinear_gradient_followup.py``. They are campaign
+  planning tools, not runtime package functionality. Variance-reduction,
   control-mean campaign, and control-mean gate reports share one
   control-variate candidate parsing/ranking policy and stage paired-label
   extraction, control-candidate construction, uncertainty propagation,
   campaign sizing, independent-control pairing, and report packing so noisy
-  follow-up campaign decisions stay deterministic. QL-seed screening now
-  separates artifact context, objective-gate metrics, blocker ordering, primary
-  control grouping, sign-consistency admission, and report summaries so
-  nonlinear-gradient control selection remains deterministic before spending
-  nonlinear GPU runs. State-control runbooks stage QL-screen validation, mapping
-  lookup, mapping-quality gates, launch-fragment packing, and report summaries
-  so VMEC-state controls only become nonlinear launch inputs after an explicit
-  conditioned mapping. Matched-replicate follow-up planning is staged
-  as config validation, artifact metric extraction, scalar gate classification,
-  replicate-count estimation, planned-run annotation, candidate grouping, and
-  report packing so campaign actions remain fail-closed and auditable. Candidate
-  campaign design now separates artifact metrics, scalar gate status, bracket
-  and replicate-count estimates, action/recommendation selection, payload
-  packing, and summary grouping so the nonlinear turbulent-flux optimization
-  evidence lane can be audited without reading one monolithic decision routine.
+  follow-up campaign decisions stay deterministic. QL-seed screening,
+  state-control runbooks, matched-replicate follow-up planning, and candidate
+  campaign design are all staged inside that single tools owner so they do not
+  re-enter ``src/spectraxgk/validation``.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central
   finite-difference report assembly, candidate/bracket screening reports, and
-  production evidence-gap report orchestration:
-  ``validation/nonlinear_gradient/evidence_core.py``,
-  ``validation/nonlinear_gradient/evidence_classification.py``,
-  ``validation/nonlinear_gradient/evidence_windows.py``,
-  ``validation/nonlinear_gradient/evidence_fd.py``,
-  ``validation/nonlinear_gradient/evidence_screening.py``,
-  ``validation/nonlinear_gradient/evidence_gap.py``. The central
-  finite-difference gate is staged as matched-window normalization,
-  transport-response extraction, uncertainty propagation, source/window
-  quality gates, gradient-resolution gates, and JSON-ready report packing.
-  Candidate ranking is staged as artifact classification, conditioning metric
-  extraction, normalized margin scoring, pass/fail group construction,
-  recommendation selection, and JSON-ready report packing, keeping
-  nonlinear-gradient promotion guardrails explicit. Evidence-gap reporting now
-  separates input normalization, production-candidate detection, failed-gate
-  extraction, missing-evidence rows, finite-difference audit contracts, campaign
-  run requirements, and final payload assembly so production nonlinear-gradient
-  promotion remains fail-closed and reviewable.
+  production evidence-gap report orchestration now live in
+  ``diagnostics/nonlinear_gradient_evidence.py``. The central finite-difference
+  gate is staged as matched-window normalization, transport-response
+  extraction, uncertainty propagation, source/window quality gates,
+  gradient-resolution gates, and JSON-ready report packing. Candidate ranking
+  and evidence-gap reporting remain fail-closed so production
+  nonlinear-gradient promotion cannot be inferred from startup, pilot, reduced,
+  or single-window artifacts.
 - runtime artifact read/write, generic I/O helpers, linear/quasilinear
   artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema

@@ -544,94 +544,17 @@ Production Nonlinear Optimization Guard
    :members:
    :private-members:
 
-Nonlinear Gradient Follow-Up Core
----------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_core
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up Variance
--------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_variance
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up Candidate Design
----------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_candidate
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up Composite Controls
------------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_composite
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up Matched Plans
-------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_plan
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up QL Seed Screens
---------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_ql_seed
-   :members:
-   :private-members:
-
-Nonlinear Gradient Follow-Up State Runbooks
--------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.followup_state_runbook
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Core
---------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_core
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Classification
-------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_classification
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Windows
------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_windows
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Finite Difference
----------------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_fd
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Screening
--------------------------------------
-
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_screening
-   :members:
-   :private-members:
-
-Nonlinear Gradient Evidence Gap Reports
+Nonlinear Gradient Evidence Diagnostics
 ---------------------------------------
 
-.. automodule:: spectraxgk.validation.nonlinear_gradient.evidence_gap
+.. automodule:: spectraxgk.diagnostics.nonlinear_gradient_evidence
+   :members:
+   :private-members:
+
+Nonlinear Gradient Campaign Follow-Up Tools
+-------------------------------------------
+
+.. automodule:: tools.campaigns.nonlinear_gradient_followup
    :members:
    :private-members:
 

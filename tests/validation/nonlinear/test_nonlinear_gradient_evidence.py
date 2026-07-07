@@ -10,16 +10,16 @@ import sys
 import numpy as np
 import pytest
 
-import spectraxgk.validation.nonlinear_gradient.evidence as evidence
-import spectraxgk.validation.nonlinear_gradient.evidence_brackets as evidence_brackets
-import spectraxgk.validation.nonlinear_gradient.evidence_classification as evidence_classification
-import spectraxgk.validation.nonlinear_gradient.evidence_core as evidence_core
-import spectraxgk.validation.nonlinear_gradient.evidence_fd as evidence_fd
-import spectraxgk.validation.nonlinear_gradient.evidence_gap as evidence_gap
-import spectraxgk.validation.nonlinear_gradient.evidence_scoring as evidence_scoring
-import spectraxgk.validation.nonlinear_gradient.evidence_screening as evidence_screening
-import spectraxgk.validation.nonlinear_gradient.evidence_windows as evidence_windows
-from spectraxgk.validation.nonlinear_gradient.evidence import (
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_brackets
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_classification
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_core
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_fd
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_gap
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_scoring
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_screening
+import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_windows
+from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
     NonlinearTurbulenceGradientFiniteDifferenceConfig,

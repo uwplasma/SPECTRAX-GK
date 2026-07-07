@@ -9,13 +9,13 @@ import sys
 
 import pytest
 
-from spectraxgk.validation.nonlinear_gradient.followup_candidate import (
+from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_candidate_design_report,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_composite import (
+from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_composite_control_report,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_core import (
+from tools.campaigns.nonlinear_gradient_followup import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
     NonlinearGradientControlMeanGateConfig,
@@ -23,10 +23,10 @@ from spectraxgk.validation.nonlinear_gradient.followup_core import (
     NonlinearGradientFollowupConfig,
     NonlinearGradientVarianceReductionConfig,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_plan import (
+from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_followup_plan,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_variance import (
+from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_control_mean_gate,
     nonlinear_gradient_control_variate_campaign_plan,
     nonlinear_gradient_variance_reduction_plan,

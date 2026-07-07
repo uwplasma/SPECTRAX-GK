@@ -11,14 +11,16 @@ import sys
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.nonlinear_gradient.evidence import load_json_artifact  # noqa: E402
-from spectraxgk.validation.nonlinear_gradient.followup_core import (  # noqa: E402
+from spectraxgk.diagnostics.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
+from tools.campaigns.nonlinear_gradient_followup import (  # noqa: E402
     NonlinearGradientVarianceReductionConfig,
 )
-from spectraxgk.validation.nonlinear_gradient.followup_variance import (  # noqa: E402
+from tools.campaigns.nonlinear_gradient_followup import (  # noqa: E402
     nonlinear_gradient_variance_reduction_plan,
 )
 
