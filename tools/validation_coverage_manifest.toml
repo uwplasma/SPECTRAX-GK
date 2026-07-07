@@ -1569,8 +1569,8 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.zonal"
-path = "src/spectraxgk/validation/zonal.py"
+module = "spectraxgk.diagnostics.zonal_validation"
+path = "src/spectraxgk/diagnostics/zonal_validation.py"
 owner_lane = "W7-X/Miller zonal-response trace normalization, reference loading, and tails"
 status = "active"
 coverage_priority = "high"

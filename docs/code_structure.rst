@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``validation/benchmarks/case_configs.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``diagnostics/validation_gates.py``, ``validation/zonal.py``
+     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``validation/benchmarks/case_configs.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -358,7 +358,7 @@ Completed extractions:
   ``ZonalFlowResponseMetrics`` packing, keeping Rosenbluth-Hinton/GAM
   conventions explicit.
 - zonal-response reference/trace normalization helpers:
-  ``validation/zonal.py``
+  ``diagnostics/zonal_validation.py``
 - dominant-eigenvalue custom VJP and branch-locality diagnostics:
   ``objectives/eigen.py``
 - core solver-objective constants plus value-level linear/quasilinear

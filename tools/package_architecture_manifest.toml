@@ -75,7 +75,7 @@ name = "installable_validation_python_files"
 path = "src/spectraxgk/validation"
 pattern = "*.py"
 recursive = true
-baseline = 83
+baseline = 82
 target = 5
 
 [[topology_policy.counts]]

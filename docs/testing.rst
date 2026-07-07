@@ -220,8 +220,8 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.diagnostics.validation_gates.linear_metrics_gate_report`
 - :func:`spectraxgk.diagnostics.validation_gates.nonlinear_window_gate_report`
 - :func:`spectraxgk.diagnostics.validation_gates.zonal_response_gate_report`
-- :func:`spectraxgk.validation.zonal.reference_residual_table`
-- :func:`spectraxgk.validation.zonal.tail_trace_metrics`
+- :func:`spectraxgk.diagnostics.zonal_validation.reference_residual_table`
+- :func:`spectraxgk.diagnostics.zonal_validation.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
 - ``tools/artifacts/plot_zonal_flow_response.py``
 - ``tools/artifacts/plot_zonal_flow_response_from_output.py``

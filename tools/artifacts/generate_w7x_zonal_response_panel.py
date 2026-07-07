@@ -21,7 +21,7 @@ from spectraxgk.validation.benchmarks.harness import (
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.workflows.runtime.artifacts import run_runtime_nonlinear_with_artifacts
-from spectraxgk.validation.zonal import kx_token
+from spectraxgk.diagnostics.zonal_validation import kx_token
 
 ROOT = Path(__file__).resolve().parents[2]
 

@@ -887,7 +887,7 @@ Sharded Integrators
 Zonal Validation
 ----------------
 
-.. automodule:: spectraxgk.validation.zonal
+.. automodule:: spectraxgk.diagnostics.zonal_validation
    :members:
 
 Zonal Flow Objectives

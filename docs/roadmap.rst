@@ -274,7 +274,7 @@ Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
 The configured wide-coverage job enforces ``95%`` package-wide coverage. Some
 individual modules can still sit below ``95%`` because the gate is package-wide;
-notably ``nonlinear.py`` and ``validation/zonal.py`` remain useful targets for
+notably ``nonlinear.py`` and ``diagnostics/zonal_validation.py`` remain useful targets for
 future targeted physics tests.
 
 .. image:: _static/manuscript_readiness_status.png
