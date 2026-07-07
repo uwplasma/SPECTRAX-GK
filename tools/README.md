@@ -17,16 +17,17 @@ roles:
 - `campaigns`: documented long-run launch or postprocess helpers that are still
   part of an active validation or optimization lane.
 
-Top-level `tools/*.py` is a temporary migration area. New scripts should not be
-added there. Existing flat scripts should be classified as follows:
+Top-level `tools/*.py` is closed except for `tools/__init__.py`. New scripts
+must be added to a purpose folder below. The former flat scripts were classified
+as follows:
 
 | Current kind | Destination |
 | --- | --- |
 | `generate_*` artifact/gate refreshers | `tools/artifacts/` if they write reviewed docs/readme artifacts; `tools/release/` only if CI/release calls them as gates. |
 | `benchmark_*` reproducibility drivers | `benchmarks/` when user-facing and small; `tools/profiling/` when they are engineering profilers. |
-| `make_figures.py`, `make_tables.py`, `make_benchmark_atlas.py` | manifest-driven builders under `tools/artifacts/` after docs commands are updated. |
-| `digitize_*`, `derive_*` reference helpers | `tools/artifacts/` or `tools/comparison/`, depending on whether the output is a docs artifact or external-reference comparison. |
-| diagnostic probes such as `ky_diagnostics.py` | `tools/comparison/` only if actively used for parity work; otherwise remove from `main`. |
+| `make_figures.py`, `make_tables.py`, `make_benchmark_atlas.py` | moved to `tools/artifacts/`. |
+| `digitize_*`, `derive_*` reference helpers | moved to `tools/artifacts/`. |
+| diagnostic probes such as `ky_diagnostics.py` | active comparison diagnostics moved to `tools/comparison/`; unowned probes removed from `main`. |
 
 The former top-level `compress_*` helpers have already moved to
 `tools/artifacts/` because they build or optimize reviewed documentation and

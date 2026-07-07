@@ -13,7 +13,7 @@ class _DummyFigure:
 def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
         ky=np.array([0.1, 0.2, 0.55]),
@@ -74,7 +74,7 @@ def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
 def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_figures as make_figures
+    import tools.artifacts.make_figures as make_figures
 
     ref = make_figures.LinearScanResult(
         ky=np.array([0.1, 0.2, 0.55]),
@@ -127,7 +127,7 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(
 def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
     monkeypatch,
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
         ky=np.array([0.1, 0.2]),
@@ -169,7 +169,7 @@ def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
 
 
 def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     Nl, Nm, tmax = make_tables._gx_balanced_policy(0.05)
     assert (Nl, Nm, tmax) == (16, 8, 320.0)
@@ -183,7 +183,7 @@ def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
 def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
     monkeypatch,
 ) -> None:
-    import tools.make_figures as make_figures
+    import tools.artifacts.make_figures as make_figures
 
     ref = make_figures.LinearScanResult(
         ky=np.array([0.1, 0.2]),
@@ -226,7 +226,7 @@ def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
 def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(
     monkeypatch,
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
         ky=np.array([10.0, 20.0]),
@@ -261,7 +261,7 @@ def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(
 
 
 def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     called: dict[str, object] = {}
 
@@ -311,7 +311,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
 
 
 def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
-    import tools.make_figures as make_figures
+    import tools.artifacts.make_figures as make_figures
 
     called: dict[str, object] = {}
 
@@ -368,7 +368,7 @@ def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
 def test_run_etg_figures_prefers_existing_mismatch_csv(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_figures as make_figures
+    import tools.artifacts.make_figures as make_figures
 
     mismatch = tmp_path / "etg_mismatch_table.csv"
     mismatch.write_text(
@@ -406,7 +406,7 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(
 def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(
     monkeypatch,
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     cfg = make_tables.CycloneBaseCase()
 
@@ -483,7 +483,7 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(
 def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(
     tmp_path: Path,
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     csv_path = tmp_path / "kbm_gx_mismatch.csv"
     csv_path.write_text(
@@ -511,7 +511,7 @@ def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(
 def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
     tmp_path: Path,
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     csv_path = tmp_path / "kbm_gx_mismatch.csv"
     csv_path.write_text(
@@ -546,7 +546,7 @@ def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
 def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     (tmp_path / "kbm_gx_mismatch.csv").write_text(
         "\n".join(
@@ -587,7 +587,7 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
 def test_run_tem_tables_restores_fixed_late_window_contract(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     called: dict[str, object] = {}
 
@@ -624,7 +624,7 @@ def test_run_tem_tables_restores_fixed_late_window_contract(
 def test_run_kinetic_tables_restores_fixed_krylov_contract(
     monkeypatch, tmp_path: Path
 ) -> None:
-    import tools.make_tables as make_tables
+    import tools.artifacts.make_tables as make_tables
 
     called: dict[str, object] = {}
     ky = np.array([0.2, 0.3], dtype=float)

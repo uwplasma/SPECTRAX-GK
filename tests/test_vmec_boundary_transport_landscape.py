@@ -17,8 +17,10 @@ from tools.artifacts.build_vmec_boundary_transport_landscape import (
     _write_scan_inputs,
     build_parser,
 )
-from tools.patch_vmec_jax_wout_metadata import patch_wout
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import _parse_coefficient_spec
+from tools.campaigns.patch_vmec_jax_wout_metadata import patch_wout
+from tools.campaigns.write_vmec_boundary_perturbation_inputs import (
+    _parse_coefficient_spec,
+)
 
 
 def _coefficient_value(text: str, name: str) -> float:
@@ -28,7 +30,9 @@ def _coefficient_value(text: str, name: str) -> float:
     return float(match.group(1))
 
 
-def test_landscape_scan_inputs_patch_selected_boundary_coefficient(tmp_path: Path) -> None:
+def test_landscape_scan_inputs_patch_selected_boundary_coefficient(
+    tmp_path: Path,
+) -> None:
     baseline = tmp_path / "input.final"
     baseline.write_text(
         "\n".join(
@@ -62,7 +66,9 @@ def test_landscape_scan_inputs_patch_selected_boundary_coefficient(tmp_path: Pat
     assert all("ZBS(0,1) = 1.0000000000000000E-01" in text for text in patched)
 
 
-def test_landscape_scan_inputs_use_reference_amplitude_for_zero_coefficient(tmp_path: Path) -> None:
+def test_landscape_scan_inputs_use_reference_amplitude_for_zero_coefficient(
+    tmp_path: Path,
+) -> None:
     baseline = tmp_path / "input.final"
     baseline.write_text(
         "\n".join(
@@ -136,7 +142,9 @@ def test_default_nonlinear_landscape_launch_uses_post_transient_window() -> None
     assert args.nonlinear_grid == "n64:64:64:40:40"
 
 
-def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: Path) -> None:
+def test_reuse_reduced_metrics_validates_sample_set_and_point_values(
+    tmp_path: Path,
+) -> None:
     baseline = tmp_path / "input.final"
     baseline.write_text(
         "\n".join(
@@ -211,7 +219,9 @@ def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: P
         raise AssertionError("mismatched sample set was accepted")
 
 
-def test_load_nonlinear_ensemble_preserves_uncertainty_and_pass_flag(tmp_path: Path) -> None:
+def test_load_nonlinear_ensemble_preserves_uncertainty_and_pass_flag(
+    tmp_path: Path,
+) -> None:
     sidecar = tmp_path / "candidate_ensemble_gate.json"
     sidecar.write_text(
         """

@@ -13,10 +13,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spectraxgk.validation.benchmarks.harness import evaluate_scalar_gate, gate_report, gate_report_to_dict
+from spectraxgk.validation.benchmarks.harness import (
+    evaluate_scalar_gate,
+    gate_report,
+    gate_report_to_dict,
+)
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 STATIC = ROOT / "docs" / "_static"
 
 REF_COLOR = "#111827"
@@ -172,13 +176,23 @@ def _plot_overlay_case(
     _style_axis(ax_gamma)
     _style_axis(ax_omega)
 
-    ax_gamma.plot(x, gamma_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference")
-    ax_gamma.plot(x, gamma_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK")
-    ax_gamma.set_title(title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax_gamma.plot(
+        x, gamma_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference"
+    )
+    ax_gamma.plot(
+        x, gamma_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK"
+    )
+    ax_gamma.set_title(
+        title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold"
+    )
     ax_gamma.set_ylabel(r"Growth rate $\gamma$")
 
-    ax_omega.plot(x, omega_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference")
-    ax_omega.plot(x, omega_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK")
+    ax_omega.plot(
+        x, omega_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference"
+    )
+    ax_omega.plot(
+        x, omega_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK"
+    )
     ax_omega.set_ylabel(r"Frequency $\omega$")
     ax_omega.set_xlabel(x_label)
 
@@ -201,7 +215,11 @@ def _plot_overlay_case(
         ha="left",
         fontsize=NOTE_SIZE,
         color=TEXT_COLOR,
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.25",
+        },
     )
 
 
@@ -233,7 +251,11 @@ def _plot_kaw_case(ax_gamma: plt.Axes, ax_omega: plt.Axes, df: pd.DataFrame) -> 
         ha="left",
         fontsize=NOTE_SIZE,
         color=TEXT_COLOR,
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.25",
+        },
     )
 
 
@@ -278,7 +300,11 @@ def _plot_exact_growth_case(
         ha="left",
         fontsize=NOTE_SIZE,
         color=TEXT_COLOR,
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.25",
+        },
     )
 
 
@@ -297,7 +323,9 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
     scan = pd.read_csv(assets["cyclone_scan"]).sort_values("ky")
     rhostar = pd.read_csv(assets["cyclone_rhostar"]).sort_values("rho_star")
 
-    fig, axes = plt.subplots(1, 2, figsize=(PANEL_WIDTH, CONVERGENCE_HEIGHT), constrained_layout=True)
+    fig, axes = plt.subplots(
+        1, 2, figsize=(PANEL_WIDTH, CONVERGENCE_HEIGHT), constrained_layout=True
+    )
     ax_scan, ax_rho = axes
 
     _style_axis(ax_scan)
@@ -317,7 +345,12 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
         linewidth=2.2,
         label=r"$\Delta \omega$",
     )
-    ax_scan.set_title("Cyclone Resolution Convergence", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax_scan.set_title(
+        "Cyclone Resolution Convergence",
+        fontsize=TILE_TITLE_SIZE,
+        color=TITLE_COLOR,
+        fontweight="bold",
+    )
     ax_scan.set_xlabel(r"$k_y \rho_i$")
     ax_scan.set_ylabel("relative change")
     ax_scan.legend(frameon=False, fontsize=LEGEND_SIZE, loc="upper left")
@@ -330,7 +363,11 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
         color=TEXT_COLOR,
         ha="left",
         va="bottom",
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.25",
+        },
     )
 
     _style_axis(ax_rho)
@@ -352,7 +389,12 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
         label=r"$\omega/\omega_{\rho_\star=1}$",
     )
     ax_rho.axhline(1.0, color=REF_COLOR, linewidth=1.4, linestyle=":")
-    ax_rho.set_title(r"Cyclone $\rho_\star$ Sensitivity", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax_rho.set_title(
+        r"Cyclone $\rho_\star$ Sensitivity",
+        fontsize=TILE_TITLE_SIZE,
+        color=TITLE_COLOR,
+        fontweight="bold",
+    )
     ax_rho.set_xlabel(r"$\rho_\star / \rho_{\star,\mathrm{bench}}$")
     ax_rho.set_ylabel("normalized response")
     ax_rho.legend(frameon=False, fontsize=LEGEND_SIZE, loc="upper left")
@@ -365,10 +407,18 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
         color=TEXT_COLOR,
         ha="left",
         va="bottom",
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.25",
+        },
     )
 
-    fig.suptitle("Representative Convergence and Sensitivity Checks", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig.suptitle(
+        "Representative Convergence and Sensitivity Checks",
+        fontsize=SUPTITLE_SIZE,
+        fontweight="bold",
+    )
     _save(fig, path)
 
 
@@ -414,7 +464,9 @@ def _build_imported_linear_panel(path: Path, assets: dict[str, Path]) -> None:
     miller = pd.read_csv(assets["miller"]).sort_values("ky")
     kaw = pd.read_csv(assets["kaw"]).sort_values("ky")
 
-    fig, axes = plt.subplots(2, 4, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True)
+    fig, axes = plt.subplots(
+        2, 4, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True
+    )
 
     _plot_overlay_case(
         axes[0, 0],
@@ -464,7 +516,11 @@ def _build_imported_linear_panel(path: Path, assets: dict[str, Path]) -> None:
         bbox_to_anchor=(0.5, 1.03),
         fontsize=LEGEND_SIZE,
     )
-    fig.suptitle("Imported Geometry and Exact-Diagnostic Linear Benchmarks", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig.suptitle(
+        "Imported Geometry and Exact-Diagnostic Linear Benchmarks",
+        fontsize=SUPTITLE_SIZE,
+        fontweight="bold",
+    )
     _save(fig, path)
 
 
@@ -473,7 +529,9 @@ def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
     tem = pd.read_csv(assets["tem"]).sort_values("ky")
     miller = pd.read_csv(assets["miller"]).sort_values("ky")
 
-    fig, axes = plt.subplots(2, 3, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True)
+    fig, axes = plt.subplots(
+        2, 3, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True
+    )
     _plot_overlay_case(
         axes[0, 0],
         axes[1, 0],
@@ -520,7 +578,9 @@ def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
         bbox_to_anchor=(0.5, 1.03),
         fontsize=LEGEND_SIZE,
     )
-    fig.suptitle("Extended Linear Stress Matrix", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig.suptitle(
+        "Extended Linear Stress Matrix", fontsize=SUPTITLE_SIZE, fontweight="bold"
+    )
     _save(fig, path)
 
 
@@ -542,12 +602,66 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
         return fig.add_subplot(sub[0]), fig.add_subplot(sub[1])
 
     cases = [
-        ("Cyclone ITG", cyclone, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$k_y \rho_i$"),
-        ("ETG", etg, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$k_y \rho_i$"),
-        ("KBM", kbm, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$\beta$"),
-        ("W7-X VMEC", w7x, "ky", "gamma_ref_last", "gamma_last", "omega_ref_last", "omega_last", r"$k_y \rho_i$"),
-        ("HSX VMEC", hsx, "ky", "gamma_ref_last", "gamma_last", "omega_ref_last", "omega_last", r"$k_y \rho_i$"),
-        ("Cyclone Miller", miller, "ky", "gamma_gx", "gamma", "omega_gx", "omega", r"$k_y \rho_i$"),
+        (
+            "Cyclone ITG",
+            cyclone,
+            "ky",
+            "gamma_ref",
+            "gamma_spectrax",
+            "omega_ref",
+            "omega_spectrax",
+            r"$k_y \rho_i$",
+        ),
+        (
+            "ETG",
+            etg,
+            "ky",
+            "gamma_ref",
+            "gamma_spectrax",
+            "omega_ref",
+            "omega_spectrax",
+            r"$k_y \rho_i$",
+        ),
+        (
+            "KBM",
+            kbm,
+            "ky",
+            "gamma_ref",
+            "gamma_spectrax",
+            "omega_ref",
+            "omega_spectrax",
+            r"$\beta$",
+        ),
+        (
+            "W7-X VMEC",
+            w7x,
+            "ky",
+            "gamma_ref_last",
+            "gamma_last",
+            "omega_ref_last",
+            "omega_last",
+            r"$k_y \rho_i$",
+        ),
+        (
+            "HSX VMEC",
+            hsx,
+            "ky",
+            "gamma_ref_last",
+            "gamma_last",
+            "omega_ref_last",
+            "omega_last",
+            r"$k_y \rho_i$",
+        ),
+        (
+            "Cyclone Miller",
+            miller,
+            "ky",
+            "gamma_gx",
+            "gamma",
+            "omega_gx",
+            "omega",
+            r"$k_y \rho_i$",
+        ),
     ]
 
     for idx, (title, df, xcol, gref, gsp, oref, osp, xlabel) in enumerate(cases):
@@ -582,7 +696,12 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
         rel_omega="rel_omega_sp_vs_gx_dump",
     )
 
-    fig.suptitle("Linear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold", y=1.03)
+    fig.suptitle(
+        "Linear Benchmark Master Panel",
+        fontsize=SUPTITLE_SIZE,
+        fontweight="bold",
+        y=1.03,
+    )
     _save(fig, path)
 
 
@@ -614,7 +733,11 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
             ha="left",
             fontsize=14,
             color=TITLE_COLOR,
-            bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
+            bbox={
+                "facecolor": "white",
+                "edgecolor": "#cbd5e1",
+                "boxstyle": "round,pad=0.2",
+            },
         )
 
     ax_miller = fig.add_subplot(outer[2, :])
@@ -628,9 +751,18 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
         ha="left",
         fontsize=14,
         color=TITLE_COLOR,
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
+        bbox={
+            "facecolor": "white",
+            "edgecolor": "#cbd5e1",
+            "boxstyle": "round,pad=0.2",
+        },
     )
-    fig.suptitle("Nonlinear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold", y=1.02)
+    fig.suptitle(
+        "Nonlinear Benchmark Master Panel",
+        fontsize=SUPTITLE_SIZE,
+        fontweight="bold",
+        y=1.02,
+    )
     _save(fig, path)
 
 
@@ -652,7 +784,12 @@ def _build_readme_panel(
         ax = fig.add_subplot(gs[idx, 0])
         _image_tile_plain(ax, image)
 
-    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 1, fontweight="bold", y=0.998)
+    fig.suptitle(
+        "SPECTRAX-GK Benchmark and Convergence Atlas",
+        fontsize=SUPTITLE_SIZE + 1,
+        fontweight="bold",
+        y=0.998,
+    )
     fig.subplots_adjust(top=0.985, bottom=0.015, left=0.02, right=0.98)
     _save(fig, path)
 

@@ -1540,7 +1540,7 @@ for the current strict-baseline ``[-75%, +75%]`` figure.
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar
 summary fields such as ``Aminor_p`` can be zero. The helper
-:download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
+:download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
 fills positive scalar metadata from the LCFS Fourier boundary without changing
 the equilibrium Fourier coefficients. This patch is a runtime-EIK compatibility
 step, not a geometry optimization result.
@@ -1555,7 +1555,7 @@ Implementation Map
 - Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/artifacts/build_nonlinear_landscape_admission_report.py>`
 - Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/artifacts/build_reduced_nonlinear_audit_prelaunch_report.py>`
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/artifacts/build_nonlinear_campaign_admission_report.py>`
-- VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
+- VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.

@@ -48,7 +48,7 @@ Regenerate the atlas figures with:
 
 .. code-block:: bash
 
-   python tools/make_benchmark_atlas.py
+   python tools/artifacts/make_benchmark_atlas.py
 
 The atlas builder now reads its inputs from
 ``tools/benchmark_atlas_manifest.toml`` and writes a machine-readable summary to
@@ -75,19 +75,19 @@ duplicating large run products. The current tracked result set is:
    * - Core linear benchmark atlas
      - ``docs/_static/benchmark_core_linear_atlas.png``
      - headline linear validation atlas
-     - ``python tools/make_benchmark_atlas.py``
+     - ``python tools/artifacts/make_benchmark_atlas.py``
    * - Core nonlinear benchmark atlas
      - ``docs/_static/benchmark_core_nonlinear_atlas.png``
      - headline nonlinear validation atlas
-     - ``python tools/make_benchmark_atlas.py``
+     - ``python tools/artifacts/make_benchmark_atlas.py``
    * - README benchmark summary panel
      - ``docs/_static/benchmark_readme_panel.png``
      - compact publication-facing benchmark summary
-     - ``python tools/make_benchmark_atlas.py``
+     - ``python tools/artifacts/make_benchmark_atlas.py``
    * - Extended linear stress matrix
      - ``docs/_static/benchmark_extended_linear_panel.png``
      - stress and provisional lanes, not headline validation claims
-     - ``python tools/make_benchmark_atlas.py``
+     - ``python tools/artifacts/make_benchmark_atlas.py``
    * - Runtime and memory comparison
      - ``docs/_static/runtime_memory_benchmark.png``
      - tracked wall-time and memory comparison rows
@@ -103,7 +103,7 @@ duplicating large run products. The current tracked result set is:
    * - Core linear atlas inputs
      - ``tools/benchmark_atlas_manifest.toml``
      - manifest of small tracked benchmark inputs
-     - ``python tools/make_benchmark_atlas.py``
+     - ``python tools/artifacts/make_benchmark_atlas.py``
 
 This keeps the repository light: ``benchmarks/`` stores only drivers and
 pointers, ``docs/_static`` stores reviewed compact figures/tables, and raw

@@ -30,6 +30,6 @@ The full atlas is built from tracked CSV/JSON assets rather than large transient
 simulation directories:
 
 ```bash
-python tools/make_benchmark_atlas.py
+python tools/artifacts/make_benchmark_atlas.py
 python tools/campaigns/run_benchmark_refresh.py --list
 ```

@@ -15,8 +15,8 @@ Step 4 delivered:
 ### Commands run
 
 ```bash
-python tools/make_tables.py --case all --no-progress
-python tools/make_figures.py --case all --no-progress
+python tools/artifacts/make_tables.py --case all --no-progress
+python tools/artifacts/make_figures.py --case all --no-progress
 pytest -q --maxfail=1 --disable-warnings
 mypy src/spectraxgk
 python -m sphinx -W -b html docs docs/_build/html

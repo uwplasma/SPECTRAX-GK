@@ -17,7 +17,7 @@ cat benchmarks/results/manifest.toml
 Regenerate the compact atlas and runtime-memory panel from the repository root:
 
 ```bash
-python tools/make_benchmark_atlas.py
+python tools/artifacts/make_benchmark_atlas.py
 python benchmarks/performance/benchmark_runtime_memory.py \
   --summary-glob docs/_static/runtime_memory_summary_ship_refresh.json \
   --csv-out docs/_static/runtime_memory_results_ship_refresh.csv \

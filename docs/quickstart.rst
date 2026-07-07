@@ -174,4 +174,4 @@ Figure generation
 
 .. code-block:: bash
 
-   PYTHONPATH=src python tools/make_benchmark_atlas.py
+   PYTHONPATH=src python tools/artifacts/make_benchmark_atlas.py

@@ -7,7 +7,10 @@ from pathlib import Path
 
 def _load_tool_module():
     path = (
-        Path(__file__).resolve().parents[3] / "tools" / "make_validation_gate_index.py"
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "make_validation_gate_index.py"
     )
     spec = importlib.util.spec_from_file_location("make_validation_gate_index", path)
     assert spec is not None

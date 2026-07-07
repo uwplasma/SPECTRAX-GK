@@ -35,7 +35,8 @@ Last audited: 2026-07-07 on `main`.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 262 Python files after moving performance benchmark drivers to `benchmarks/performance`.
+  - `tools`: 260 Python files after purpose-folder moves and deletion of
+    two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
 - The repository inventory classifies 88 installable validation files as
@@ -83,7 +84,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 262 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 260 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -235,16 +236,15 @@ compression-helper move before it is committed:
   biggest root files are historical aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
-- `tools/` has 262 Python scripts after adding purpose-folder package
-  initializers. The remaining top-level `tools/` problem is now 13 flat scripts,
-  including `__init__.py`: table/figure/reference, diagnostic, and VMEC
-  metadata helpers.
-- The current tool folders are `tools/artifacts` with 119 scripts,
-  `tools/campaigns` with 47 scripts, `tools/comparison` with 32 scripts,
+- `tools/` has 260 Python scripts after adding purpose-folder package
+  initializers. The flat top-level `tools/` problem is closed: only
+  `tools/__init__.py` remains there.
+- The current tool folders are `tools/artifacts` with 126 scripts,
+  `tools/campaigns` with 48 scripts, `tools/comparison` with 34 scripts,
   `tools/profiling` with 22 scripts, and `tools/release` with 29 scripts;
   performance benchmark drivers now live under `benchmarks/performance`. The
-  next move should classify the remaining generators as artifact builders,
-  release gates, benchmark drivers, or deletions.
+  next tool move should merge duplicated builders/status tools within those
+  purpose folders rather than adding new folders.
 - `benchmarks/` is already at the root and is small: 12 Python files. It should
   stay as the canonical lightweight benchmark-driver layer, not absorb raw
   results or long campaign histories.
@@ -273,19 +273,11 @@ Decision rules from this audit:
 
 Immediate execution sequence from this audited state:
 
-1. Commit the compression-helper move after the local architecture, ruff,
-   release-readiness, size, and targeted artifact-test gates pass.
-2. Move the remaining figure/table/reference helpers into `tools/artifacts`
-   and update manifests, docs, and tests to call the new paths.
-3. Move `dump_rhs_terms.py` to `tools/comparison` if it remains an active parity
-   diagnostic, and delete or quarantine no-owner probes (`ky_diagnostics.py`,
-   `etg_eigenspectrum.py`, stale resolution sweeps) after one final reference
-   check.
-4. Move or delete `patch_vmec_jax_wout_metadata.py` based on whether it remains
-   part of the documented VMEC-JAX workflow.
-5. Collapse tool tests by family before moving more source code. The goal is
+1. Commit the flat-tool closure tranche after targeted artifact/comparison
+   tests, architecture, release-readiness, repository-size, and ruff gates pass.
+2. Collapse tool tests by family before moving more source code. The goal is
    fewer tests with stronger parametrization, not weaker assertions.
-6. Start validation-out-of-package only after the tool/test path churn is
+3. Start validation-out-of-package only after the tool/test path churn is
    complete, so import rewrites are not repeated.
 
 ## Final Consolidation Model
@@ -324,10 +316,11 @@ files.
 
 ### Planned High-Impact Tranches
 
-1. **Finish flat-tool cleanup.** Move seven artifact/reference helpers to
-   `tools/artifacts`, move one active RHS diagnostic to `tools/comparison`, and
-   delete/quarantine three no-reference probes unless final checks find an
-   owner. Target: zero flat tool scripts except `tools/__init__.py`.
+1. **Finish flat-tool cleanup.** Completed in this tranche: artifact/reference
+   helpers moved to `tools/artifacts`, active RHS/ky diagnostics moved to
+   `tools/comparison`, the VMEC metadata patcher moved to `tools/campaigns`,
+   and two no-owner probes left `main`. Target achieved: zero flat tool scripts
+   except `tools/__init__.py`.
 2. **Collapse tools by capability.** Merge duplicated artifact/status builders
    into manifest-driven builders where only case names, labels, or output paths
    differ. Target: `tools/` below 180 scripts before source moves, then below
@@ -660,10 +653,12 @@ Suggested target file budget:
 
 ## Tool Consolidation Plan
 
-Current problem: `tools/` has 262 Python scripts, and the flat root has already
-dropped to 13 scripts after the release, comparison, artifact, campaign,
-profiling, benchmark, generator, and compression-helper moves. The remaining
-problem is classification and consolidation, not only mechanical moves.
+Current problem: `tools/` has 260 Python scripts. The flat root has been closed
+down to `tools/__init__.py` after release, comparison, artifact, campaign,
+profiling, benchmark, generator, compression-helper, reference-helper,
+diagnostic, and VMEC-helper moves. The remaining problem is duplication inside
+purpose folders, especially artifact/status builders and one-tool-one-test
+coverage.
 
 Target: fewer than 100 Python tool scripts, organized by purpose.
 
@@ -694,23 +689,19 @@ Delete or move out of `main`:
 - Launch writers for blocked/deferred campaigns.
 - Any script whose generated artifact is no longer tracked or referenced.
 
-The remaining flat-tool disposition is:
+Flat-tool audit outcome:
 
-- `make_figures.py`, `make_tables.py`, and `make_benchmark_atlas.py`: merge
-  into manifest-driven artifact builders or keep temporarily as compatibility
-  entry points until docs scripts are updated.
+| Family | Outcome |
+| --- | --- |
+| `make_*`, `derive_*`, `digitize_*` builders | Moved to `tools/artifacts`; docs, manifests, and tests now use artifact paths. |
+| RHS/ky diagnostic helpers | Moved to `tools/comparison` because comparison tests still exercise them. |
+| VMEC metadata patch helper | Moved to `tools/campaigns` because it supports the documented VMEC-JAX workflow. |
+| no-reference probes | `cyclone_resolution_sweep.py` and `etg_eigenspectrum.py` deleted from `main`. |
 
-Current flat-tool audit:
-
-| Family | Current files | Decision |
-| --- | ---: | --- |
-| `make_*`, `derive_*`, `digitize_*` builders | 7 | Move to `tools/artifacts` or `tools/comparison` and merge duplicated table/figure policy. |
-| diagnostic helpers | 4 | Move `dump_rhs_terms.py` to `tools/comparison` if still used for parity diagnostics; delete or quarantine no-reference probes such as `ky_diagnostics.py`, `etg_eigenspectrum.py`, and stale resolution sweeps unless docs/tests prove ownership. |
-| VMEC metadata patch helper | 1 | Move to `tools/campaigns` or a geometry utility only if it remains part of documented VMEC-JAX workflows; otherwise quarantine. |
-
-The next tool tranche should reduce flat root scripts from 13 to fewer than 10
-without changing solver behavior. The follow-up tranche should merge duplicate
-artifact builders and drive total tool scripts below 100.
+The next tool tranche should merge duplicate builders and status tools inside
+`tools/artifacts` and collapse one-tool-one-test files. The target is to drive
+total tool scripts below 180 before validation code moves, then below 100 before
+release.
 
 Suggested target file budget:
 
@@ -1247,29 +1238,30 @@ Exit gates:
   `tools/artifacts/compress_release_previews.py`. Tool Python files stayed at
   262, and flat root tool scripts dropped from 16 to 13.
 
+- 2026-07-07: closed the remaining flat-tool tranche. Artifact/reference
+  helpers now live under `tools/artifacts`, RHS/ky diagnostics under
+  `tools/comparison`, and the VMEC-JAX WOUT metadata patch helper under
+  `tools/campaigns`. Deleted the unowned `cyclone_resolution_sweep.py` and
+  `etg_eigenspectrum.py` probes from `main`. Tool Python files dropped from
+  262 to 260, and flat root tool scripts dropped from 13 to 1
+  (`tools/__init__.py`).
+
 ## Immediate Next Steps
 
 1. Use the repository inventory to make the next deletions safe:
    - delete stale docs/static artifacts not referenced by README/docs/manifests;
    - delete or move one-off probes and status builders with no current owner;
    - remove remaining tutorial/docs language for retired reduced-model paths.
-2. Finish purpose-folderizing `tools/`:
-   - figure/table/reference builders to `tools/artifacts`;
-   - parity diagnostics to `tools/comparison`;
-   - VMEC metadata helpers to `tools/campaigns`, `tools/artifacts`, or deletion
-     depending on documented ownership;
-   - no-reference probes such as `ky_diagnostics.py`, `etg_eigenspectrum.py`,
-     and stale resolution sweeps to deletion or an experiment branch.
-3. Collapse the remaining flat tests:
+2. Collapse the remaining flat tests:
    - move physics/unit tests into `tests/unit/*`;
    - move runtime/executable tests into `tests/integration/runtime`;
    - merge tool tests by family instead of one test file per tool script.
-4. Consolidate tool families after flat scripts are gone:
+3. Consolidate tool families after flat scripts are gone:
    - merge duplicate builders and status tools into manifest-driven artifact
      builders;
    - merge one-tool-one-test files into parametrized family tests;
    - keep only documented active campaign launchers.
-5. Start the validation-out-of-package move:
+4. Start the validation-out-of-package move:
    - migrate `validation.benchmarks` behind root `benchmarks/` drivers or
      `spectraxgk.benchmarks` facade only where still public;
    - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and

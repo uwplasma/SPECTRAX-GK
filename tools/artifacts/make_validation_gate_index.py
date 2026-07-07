@@ -20,7 +20,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_GLOB = str(REPO_ROOT / "docs" / "_static" / "**" / "*.json")
 DEFAULT_JSON = REPO_ROOT / "docs" / "_static" / "validation_gate_index.json"
 DEFAULT_CSV = REPO_ROOT / "docs" / "_static" / "validation_gate_index.csv"
@@ -101,7 +101,11 @@ def _report_entries(path: Path, data: dict[str, object]) -> list[dict[str, objec
     if isinstance(extra, list):
         reports.extend(item for item in extra if isinstance(item, dict))
     promotion_gate = data.get("promotion_gate")
-    if data.get("gate_index_include") is True and not reports and isinstance(promotion_gate, dict):
+    if (
+        data.get("gate_index_include") is True
+        and not reports
+        and isinstance(promotion_gate, dict)
+    ):
         reports.append(
             {
                 "case": data.get("case", path.stem),
@@ -196,8 +200,16 @@ def write_index_plot(rows: list[dict[str, object]], out_png: Path) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Aggregate JSON validation gate reports.")
-    parser.add_argument("--glob", action="append", dest="patterns", default=None, help="JSON glob to scan.")
+    parser = argparse.ArgumentParser(
+        description="Aggregate JSON validation gate reports."
+    )
+    parser.add_argument(
+        "--glob",
+        action="append",
+        dest="patterns",
+        default=None,
+        help="JSON glob to scan.",
+    )
     parser.add_argument("--out-json", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_CSV)
     parser.add_argument("--out-png", type=Path, default=DEFAULT_PNG)
@@ -210,7 +222,9 @@ def main(argv: list[str] | None = None) -> int:
     patterns = args.patterns or [DEFAULT_GLOB]
     index = build_index(patterns)
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(index, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    args.out_json.write_text(
+        json.dumps(index, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    )
     rows = list(index["reports"])
     pd.DataFrame(rows).to_csv(args.out_csv, index=False)
     if not args.no_plot:

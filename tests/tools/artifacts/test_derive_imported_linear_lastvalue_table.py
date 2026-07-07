@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools"))
-
-from derive_imported_linear_lastvalue_table import _build_lastvalue_table, _load_scan
+from tools.artifacts.derive_imported_linear_lastvalue_table import (
+    _build_lastvalue_table,
+    _load_scan,
+)
 
 
 def test_build_lastvalue_table_converts_scan_columns() -> None:

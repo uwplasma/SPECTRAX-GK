@@ -36,15 +36,23 @@ def _build_lastvalue_table(df: pd.DataFrame) -> pd.DataFrame:
             "omega_gx": df["omega_ref_last"].astype(float),
         }
     )
-    out["rel_gamma"] = (out["gamma"] - out["gamma_gx"]) / out["gamma_gx"].where(out["gamma_gx"] != 0.0)
-    out["rel_omega"] = (out["omega"] - out["omega_gx"]) / out["omega_gx"].where(out["omega_gx"] != 0.0)
+    out["rel_gamma"] = (out["gamma"] - out["gamma_gx"]) / out["gamma_gx"].where(
+        out["gamma_gx"] != 0.0
+    )
+    out["rel_omega"] = (out["omega"] - out["omega_gx"]) / out["omega_gx"].where(
+        out["omega_gx"] != 0.0
+    )
     return out.sort_values("ky").reset_index(drop=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scan", type=Path, required=True, help="Imported-linear scan CSV.")
-    parser.add_argument("--out", type=Path, required=True, help="Legacy last-value mismatch CSV.")
+    parser.add_argument(
+        "--scan", type=Path, required=True, help="Imported-linear scan CSV."
+    )
+    parser.add_argument(
+        "--out", type=Path, required=True, help="Legacy last-value mismatch CSV."
+    )
     return parser
 
 

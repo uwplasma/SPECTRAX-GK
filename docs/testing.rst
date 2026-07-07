@@ -277,7 +277,7 @@ no-rerun artifact path: it reads the existing selected KBM candidate table and
 writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
 schema. The current continuity-first selected branch passes the adjacent
 growth/frequency jump and successive-overlap gates.
-``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
+``tools/artifacts/make_validation_gate_index.py`` scans tracked JSON metadata and writes
 ``docs/_static/validation_gate_index.json``, ``.csv``, ``.png``, and ``.pdf`` so the docs
 always have one compact pass/open view of the currently materialized release
 validation gates. The current JSON index has ``17/18`` tracked reports passing,
@@ -932,7 +932,7 @@ per-``k_x`` directories. It is a long-window run: ``k_x rho_i=0.05`` reaches
 paper-faithful line-first normalization, the late residuals are about
 ``0.0189``, ``0.137``, ``0.0938``, and ``0.526`` for ``k_x rho_i = 0.05``,
 ``0.07``, ``0.10``, and ``0.30``.
-``tools/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
+``tools/artifacts/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
 main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
 The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized.csv``,
@@ -1396,7 +1396,7 @@ published benchmarks and trend tests:
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
 - **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
   streaming and linear-kernel RHS components against GX for a single Cyclone
-  state (see ``tools/dump_rhs_terms.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
+  state (see ``tools/comparison/dump_rhs_terms.py`` and ``tools/comparison/compare_gx_rhs_terms.py``).
 - **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
   ``tools/comparison/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders

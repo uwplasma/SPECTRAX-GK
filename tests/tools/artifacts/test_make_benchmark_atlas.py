@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from tools.make_benchmark_atlas import (
+from tools.artifacts.make_benchmark_atlas import (
     _atlas_manifest_path,
     _build_convergence_gate_reports,
     _load_manifest,

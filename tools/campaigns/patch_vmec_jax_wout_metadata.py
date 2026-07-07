@@ -58,7 +58,9 @@ def _estimate_lcfs_metadata(ds: Dataset, *, ntheta: int, nphi: int) -> dict[str,
     }
 
 
-def patch_wout(path: Path, *, ntheta: int = 128, nphi: int = 128, force: bool = False) -> dict[str, Any]:
+def patch_wout(
+    path: Path, *, ntheta: int = 128, nphi: int = 128, force: bool = False
+) -> dict[str, Any]:
     """Patch one WOUT file in place and return a JSON-safe report."""
 
     with Dataset(path, "r+") as ds:
@@ -102,13 +104,17 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     reports = [
-        patch_wout(path, ntheta=int(args.ntheta), nphi=int(args.nphi), force=bool(args.force))
+        patch_wout(
+            path, ntheta=int(args.ntheta), nphi=int(args.nphi), force=bool(args.force)
+        )
         for path in args.wout
     ]
     payload = {"kind": "vmec_jax_wout_metadata_patch_report", "reports": reports}
     if args.out_json is not None:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
-        args.out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        args.out_json.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 

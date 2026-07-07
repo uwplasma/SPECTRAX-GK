@@ -59,7 +59,9 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 nperiod=args.nperiod,
             )
         )
-        geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
         params = LinearParams(
             R_over_Ln=cfg.model.R_over_Ln,
             R_over_LTi=cfg.model.R_over_LTi,
@@ -73,9 +75,18 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             damp_ends_widthfrac=0.0,
         )
         params = _apply_reference_hypercollisions(params, nhermite=args.Nm)
-        return cfg, params, 0, CYCLONE_OMEGA_D_SCALE, CYCLONE_OMEGA_STAR_SCALE, CYCLONE_RHO_STAR
+        return (
+            cfg,
+            params,
+            0,
+            CYCLONE_OMEGA_D_SCALE,
+            CYCLONE_OMEGA_STAR_SCALE,
+            CYCLONE_RHO_STAR,
+        )
     if case == "etg":
-        model = ETGModelConfig(R_over_LTe=args.R_over_LTe, adiabatic_ions=args.adiabatic_ions)
+        model = ETGModelConfig(
+            R_over_LTe=args.R_over_LTe, adiabatic_ions=args.adiabatic_ions
+        )
         cfg = ETGBaseCase(
             grid=GridConfig(
                 Nx=args.Nx,
@@ -90,7 +101,9 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             ),
             model=model,
         )
-        geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
         if args.adiabatic_ions:
             params = _electron_only_params(
                 cfg.model,
@@ -115,7 +128,14 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 nhermite=args.Nm,
             )
             init_species_index = 1
-        return cfg, params, init_species_index, ETG_OMEGA_D_SCALE, ETG_OMEGA_STAR_SCALE, ETG_RHO_STAR
+        return (
+            cfg,
+            params,
+            init_species_index,
+            ETG_OMEGA_D_SCALE,
+            ETG_OMEGA_STAR_SCALE,
+            ETG_RHO_STAR,
+        )
     if case == "kinetic":
         cfg = KineticElectronBaseCase(
             grid=GridConfig(
@@ -130,7 +150,9 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 nperiod=args.nperiod,
             )
         )
-        geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
@@ -141,7 +163,14 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             damp_ends_widthfrac=0.0,
             nhermite=args.Nm,
         )
-        return cfg, params, 1, KINETIC_OMEGA_D_SCALE, KINETIC_OMEGA_STAR_SCALE, KINETIC_RHO_STAR
+        return (
+            cfg,
+            params,
+            1,
+            KINETIC_OMEGA_D_SCALE,
+            KINETIC_OMEGA_STAR_SCALE,
+            KINETIC_RHO_STAR,
+        )
     if case == "tem":
         cfg = TEMBaseCase(
             grid=GridConfig(
@@ -156,7 +185,9 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 nperiod=args.nperiod,
             )
         )
-        geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
@@ -182,7 +213,9 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 nperiod=args.nperiod,
             )
         )
-        geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+        geom = SAlphaGeometry.from_config(
+            replace(cfg.geometry, drift_scale=args.drift_scale)
+        )
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
@@ -223,7 +256,9 @@ def _build_seed_state(
         return np.asarray(G0_single, dtype=np.complex64)
     if init_species_index < 0 or init_species_index >= ns:
         raise ValueError("init_species_index out of range for multi-species seed")
-    G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0 = np.zeros(
+        (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+    )
     G0[int(init_species_index)] = np.asarray(G0_single, dtype=np.complex64)
     return G0
 
@@ -250,7 +285,9 @@ def main() -> None:
     args = parser.parse_args()
 
     cfg, params, _init_species_index, *_ = _case_config(args.case, args)
-    geom = SAlphaGeometry.from_config(replace(cfg.geometry, drift_scale=args.drift_scale))
+    geom = SAlphaGeometry.from_config(
+        replace(cfg.geometry, drift_scale=args.drift_scale)
+    )
     grid_full = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     grid = select_ky_grid(grid_full, ky_index)
@@ -266,7 +303,9 @@ def main() -> None:
     )
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     term_cfg = TermConfig()
-    rhs_total, fields, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
+    rhs_total, fields, contrib = assemble_rhs_terms_cached(
+        G0, cache, params, terms=term_cfg
+    )
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)

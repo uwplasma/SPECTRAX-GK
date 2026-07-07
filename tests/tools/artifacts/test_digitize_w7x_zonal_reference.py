@@ -14,6 +14,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "artifacts"
         / "digitize_w7x_zonal_reference.py"
     )
     spec = importlib.util.spec_from_file_location("digitize_w7x_zonal_reference", path)

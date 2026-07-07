@@ -9,11 +9,13 @@ from PIL import Image
 from skimage.color import rgb2hsv
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "src" / "spectraxgk" / "data"
 
 
-def _curve_from_mask(mask: np.ndarray, x0: int, x1: int, y0: int, y1: int) -> np.ndarray:
+def _curve_from_mask(
+    mask: np.ndarray, x0: int, x1: int, y0: int, y1: int
+) -> np.ndarray:
     curve = []
     for x in range(x0, x1):
         ys = np.where(mask[y0:y1, x])[0]
@@ -78,7 +80,9 @@ def _detect_horizontal_lines(
     counts = mask.sum(axis=1)
     rows = np.where(counts > frac * (x1 - x0))[0]
     if rows.size == 0:
-        raise RuntimeError("Unable to detect horizontal axis lines for ETG digitization")
+        raise RuntimeError(
+            "Unable to detect horizontal axis lines for ETG digitization"
+        )
     ranges = _cluster_ranges(rows)
     return y0 + ranges[0][0], y0 + ranges[-1][0]
 
@@ -119,9 +123,15 @@ def digitize_etg(fig_path: Path, out_path: Path) -> None:
     y_top_guess0, y_top_guess1 = 700, 900
     y_bot_guess0, y_bot_guess1 = 940, 1130
 
-    x_left, x_right = _detect_vertical_lines(gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1)
-    yt0, yt1 = _detect_horizontal_lines(gray, x0_guess, x1_guess, y_top_guess0, y_top_guess1)
-    yb0, yb1 = _detect_horizontal_lines(gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1)
+    x_left, x_right = _detect_vertical_lines(
+        gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1
+    )
+    yt0, yt1 = _detect_horizontal_lines(
+        gray, x0_guess, x1_guess, y_top_guess0, y_top_guess1
+    )
+    yb0, yb1 = _detect_horizontal_lines(
+        gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1
+    )
 
     curve_top = _curve_from_mask(blue, x_left, x_right + 1, yt0, yt1)
     curve_bot = _curve_from_mask(blue, x_left, x_right + 1, yb0, yb1)
@@ -130,8 +140,12 @@ def digitize_etg(fig_path: Path, out_path: Path) -> None:
     y_gamma_min, y_gamma_max = 0.0, 10.0
     y_omega_min, y_omega_max = -40.0, 0.0
 
-    x_top, y_top = _map_curve(curve_top, x_left, x_right, yt0, yt1, x_min, x_max, y_gamma_min, y_gamma_max)
-    x_bot, y_bot = _map_curve(curve_bot, x_left, x_right, yb0, yb1, x_min, x_max, y_omega_min, y_omega_max)
+    x_top, y_top = _map_curve(
+        curve_top, x_left, x_right, yt0, yt1, x_min, x_max, y_gamma_min, y_gamma_max
+    )
+    x_bot, y_bot = _map_curve(
+        curve_bot, x_left, x_right, yb0, yb1, x_min, x_max, y_omega_min, y_omega_max
+    )
 
     ky = np.array([5, 10, 15, 20, 25, 30, 35, 40, 45, 50], dtype=float)
     order = np.argsort(x_top)

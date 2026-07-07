@@ -35,7 +35,11 @@ def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> No
     finally:
         sys.path.remove(str(tools_dir))
 
-    cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=8, nperiod=2))
+    cfg = KBMBaseCase(
+        grid=GridConfig(
+            Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=8, nperiod=2
+        )
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = _two_species_params(
         cfg.model,
@@ -64,8 +68,12 @@ def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> No
     G_j = jnp.asarray(G)
 
     term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0, bpar=0.0)
-    rhs_total, fields_ref, contrib_ref = assemble_rhs_terms_cached(G_j, cache, params, terms=term_cfg)
-    fields = compute_fields_cached(G_j, cache, params, terms=term_cfg, use_custom_vjp=False)
+    rhs_total, fields_ref, contrib_ref = assemble_rhs_terms_cached(
+        G_j, cache, params, terms=term_cfg
+    )
+    fields = compute_fields_cached(
+        G_j, cache, params, terms=term_cfg, use_custom_vjp=False
+    )
     fields_manual, contrib_manual = mod._manual_linear_contributions_from_fields(
         G_j,
         cache,
@@ -73,13 +81,24 @@ def test_manual_linear_contributions_match_assembly_for_multispecies_kbm() -> No
         term_cfg,
         phi=np.asarray(fields.phi),
         apar=np.asarray(fields.apar),
-        bpar=np.asarray(fields.bpar if fields.bpar is not None else np.zeros_like(fields.phi)),
+        bpar=np.asarray(
+            fields.bpar if fields.bpar is not None else np.zeros_like(fields.phi)
+        ),
     )
 
     assert np.allclose(np.asarray(fields_manual.phi), np.asarray(fields_ref.phi))
     assert np.allclose(np.asarray(fields_manual.apar), np.asarray(fields_ref.apar))
-    for key in ("streaming", "mirror", "curvature", "gradb", "diamagnetic", "collisions"):
-        assert np.allclose(np.asarray(contrib_manual[key]), np.asarray(contrib_ref[key]))
+    for key in (
+        "streaming",
+        "mirror",
+        "curvature",
+        "gradb",
+        "diamagnetic",
+        "collisions",
+    ):
+        assert np.allclose(
+            np.asarray(contrib_manual[key]), np.asarray(contrib_ref[key])
+        )
     contrib_sum = sum(np.asarray(contrib_manual[key]) for key in contrib_manual)
     assert np.allclose(contrib_sum, np.asarray(rhs_total))
 
@@ -110,7 +129,14 @@ def test_compare_gx_rhs_terms_parser_accepts_runtime_config() -> None:
 
     parser = mod.build_parser()
     args = parser.parse_args(
-        ["--gx-dir", "/tmp/gx", "--gx-out", "/tmp/gx.out.nc", "--config", "/tmp/runtime.toml"]
+        [
+            "--gx-dir",
+            "/tmp/gx",
+            "--gx-out",
+            "/tmp/gx.out.nc",
+            "--config",
+            "/tmp/runtime.toml",
+        ]
     )
 
     assert args.config == Path("/tmp/runtime.toml")
@@ -142,7 +168,9 @@ def test_compare_gx_rhs_terms_parser_accepts_imported_geometry_args() -> None:
     assert args.geometry_file == Path("/tmp/geom.nc")
 
 
-def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypatch) -> None:
+def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(
+    monkeypatch,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -150,7 +178,9 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypat
     finally:
         sys.path.remove(str(tools_dir))
 
-    cfg = type("Cfg", (), {"grid": type("Grid", (), {"Nx": 8, "Ny": 8, "Nz": 8, "y0": None})()})()
+    cfg = type(
+        "Cfg", (), {"grid": type("Grid", (), {"Nx": 8, "Ny": 8, "Nz": 8, "y0": None})()}
+    )()
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(mod, "load_runtime_from_toml", lambda _path: (cfg, None))
@@ -165,10 +195,16 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypat
         return "geom"
 
     monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
-    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
-    grid_obj = type("GridObj", (), {"ky": np.array([0.0, 0.2, -0.2]), "kx": np.array([0.0])})()
+    monkeypatch.setattr(
+        mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid
+    )
+    grid_obj = type(
+        "GridObj", (), {"ky": np.array([0.0, 0.2, -0.2]), "kx": np.array([0.0])}
+    )()
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
-    monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")
+    monkeypatch.setattr(
+        mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params"
+    )
     monkeypatch.setattr(
         mod,
         "build_runtime_term_config",
@@ -197,7 +233,9 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypat
     assert term_cfg.end_damping == 0.0
 
 
-def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Path) -> None:
+def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(
+    tmp_path: Path,
+) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -212,15 +250,27 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Pa
         root.createVariable("theta", "f8", ("z",))[:] = theta
         root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
         root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
-        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(
+            sampled.gds21_profile
+        )
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(
+            sampled.gds22_profile
+        )
         root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
         root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.cv0_profile
+        )
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(
+            sampled.gb0_profile
+        )
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(
+            sampled.jacobian_profile
+        )
         root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
-        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta.size, sampled.gradpar_value
+        )
         root.createVariable("q", "f8", ())[:] = sampled.q
         root.createVariable("shat", "f8", ())[:] = sampled.s_hat
         root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
@@ -253,12 +303,7 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Pa
 
 
 def test_ky_diagnostics_build_problem_seeds_multispecies_tem() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import ky_diagnostics as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+    from tools.comparison import ky_diagnostics as mod
 
     _cfg, grid, _geom, params, _terms, G0 = mod._build_problem("tem", 0.3, None, 4, 6)
 
@@ -269,12 +314,7 @@ def test_ky_diagnostics_build_problem_seeds_multispecies_tem() -> None:
 
 
 def test_dump_rhs_terms_seed_state_handles_multispecies_tem() -> None:
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
-    sys.path.insert(0, str(tools_dir))
-    try:
-        import dump_rhs_terms as mod
-    finally:
-        sys.path.remove(str(tools_dir))
+    from tools.comparison import dump_rhs_terms as mod
 
     args = type(
         "Args",

@@ -10,7 +10,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
@@ -75,7 +75,9 @@ from spectraxgk.terms.config import TermConfig
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run multi-method diagnostics for a single ky.")
+    parser = argparse.ArgumentParser(
+        description="Run multi-method diagnostics for a single ky."
+    )
     parser.add_argument(
         "--case",
         required=True,
@@ -315,7 +317,9 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
     if ns == 1:
         G0 = G0_single
     else:
-        G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+        G0 = np.zeros(
+            (ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64
+        )
         G0[int(init_species_index)] = np.asarray(G0_single, dtype=np.complex64)
     return cfg, grid, geom, params, terms, G0
 
@@ -344,7 +348,9 @@ def _plot_timeseries(
     if dens_energy is not None:
         ax[0].plot(t, dens_energy, label=r"$|n|^2$")
     if window is not None:
-        ax[0].axvspan(window[0], window[1], color="orange", alpha=0.25, label="fit window")
+        ax[0].axvspan(
+            window[0], window[1], color="orange", alpha=0.25, label="fit window"
+        )
     ax[0].set_ylabel("energy")
     ax[0].legend(loc="best")
 
@@ -473,12 +479,14 @@ def _run_time_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
-        phi_t_np,
-        t,
-        sel,
-        navg_fraction=navg_fraction,
-        mode_method="z_index",
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = (
+        instantaneous_growth_rate_from_phi(
+            phi_t_np,
+            t,
+            sel,
+            navg_fraction=navg_fraction,
+            mode_method="z_index",
+        )
     )
 
     best = phi_fit if phi_fit["r2_log"] >= dens_fit["r2_log"] else dens_fit
@@ -509,7 +517,9 @@ def _run_time_method(
     np.save(outdir / f"{prefix}_gx_t.npy", gx_t)
     np.save(outdir / f"{prefix}_eigenfunction.npy", eigen)
 
-    _plot_timeseries(outdir, prefix, t, phi_energy, dens_energy, (best["tmin"], best["tmax"]), ref)
+    _plot_timeseries(
+        outdir, prefix, t, phi_energy, dens_energy, (best["tmin"], best["tmax"]), ref
+    )
     _plot_eigenfunction(outdir, prefix, np.asarray(grid.z), eigen)
 
     summary = {
@@ -588,12 +598,14 @@ def _run_diffrax_method(
     phi_fit = _fit_signal(t, phi_signal, **fit_cfg)
     dens_fit = _fit_signal(t, dens_signal, **fit_cfg)
 
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = instantaneous_growth_rate_from_phi(
-        phi_t_np,
-        t,
-        sel,
-        navg_fraction=navg_fraction,
-        mode_method="z_index",
+    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, gx_t = (
+        instantaneous_growth_rate_from_phi(
+            phi_t_np,
+            t,
+            sel,
+            navg_fraction=navg_fraction,
+            mode_method="z_index",
+        )
     )
 
     best = phi_fit if phi_fit["r2_log"] >= dens_fit["r2_log"] else dens_fit
@@ -623,7 +635,9 @@ def _run_diffrax_method(
     np.save(outdir / f"{prefix}_gx_t.npy", gx_t)
     np.save(outdir / f"{prefix}_eigenfunction.npy", eigen)
 
-    _plot_timeseries(outdir, prefix, t, phi_energy, dens_energy, (best["tmin"], best["tmax"]), ref)
+    _plot_timeseries(
+        outdir, prefix, t, phi_energy, dens_energy, (best["tmin"], best["tmax"]), ref
+    )
     _plot_eigenfunction(outdir, prefix, np.asarray(grid.z), eigen)
 
     summary = {
@@ -655,7 +669,9 @@ def _run_krylov_method(
 ):
     krylov_cfg = KrylovConfig(method=label.replace("krylov-", ""))
     if G0.ndim != 5:
-        raise ValueError("Expected G0 shape (Nl, Nm, Ny, Nx, Nz) for Krylov diagnostics")
+        raise ValueError(
+            "Expected G0 shape (Nl, Nm, Ny, Nx, Nz) for Krylov diagnostics"
+        )
     Nl, Nm = G0.shape[0], G0.shape[1]
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
     eig, vec = dominant_eigenpair(
@@ -666,8 +682,8 @@ def _run_krylov_method(
         krylov_dim=krylov_cfg.krylov_dim,
         restarts=krylov_cfg.restarts,
         omega_min_factor=krylov_cfg.omega_min_factor,
-            omega_target_factor=krylov_cfg.omega_target_factor,
-            omega_cap_factor=krylov_cfg.omega_cap_factor,
+        omega_target_factor=krylov_cfg.omega_target_factor,
+        omega_cap_factor=krylov_cfg.omega_cap_factor,
         method=krylov_cfg.method,
         power_iters=krylov_cfg.power_iters,
         power_dt=krylov_cfg.power_dt,
@@ -695,7 +711,9 @@ def _run_krylov_method(
     phi = compute_fields_cached(vec, cache, params, terms=term_cfg).phi
     phi_t_np = np.asarray(phi)[None, ...]
     t = np.array([0.0])
-    sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(np.asarray(grid.z)))
+    sel = ModeSelection(
+        ky_index=0, kx_index=0, z_index=_midplane_index(np.asarray(grid.z))
+    )
     eigen = extract_eigenfunction(
         phi_t_np,
         t,
@@ -731,7 +749,11 @@ def main() -> None:
     )
 
     ky = float(grid.ky[0])
-    z_index = args.z_index if args.z_index is not None else _midplane_index(np.asarray(grid.z))
+    z_index = (
+        args.z_index
+        if args.z_index is not None
+        else _midplane_index(np.asarray(grid.z))
+    )
     mode_method = args.mode_method
     if mode_method not in {"z_index", "max", "project"}:
         mode_method = "z_index"

@@ -10,10 +10,10 @@
 pytest -q --maxfail=1 --disable-warnings
 mypy src/spectraxgk
 python -m sphinx -W -b html docs docs/_build/html
-python tools/make_tables.py --case cyclone --no-progress
-python tools/make_tables.py --case etg --no-progress
-python tools/make_figures.py --case cyclone --no-progress
-python tools/make_figures.py --case etg --no-progress
+python tools/artifacts/make_tables.py --case cyclone --no-progress
+python tools/artifacts/make_tables.py --case etg --no-progress
+python tools/artifacts/make_figures.py --case cyclone --no-progress
+python tools/artifacts/make_figures.py --case etg --no-progress
 ```
 
 ### Artifact checksums (SHA-256)
