@@ -169,13 +169,11 @@ the stable public facade for examples and runtime workflows, while
 ``diagnostics.growth_fit``, ``diagnostics.growth_windows``, and
 ``diagnostics.growth_series`` own least-squares fitting, automatic fit-window
 selection, and resolved mode-series diagnostics.
-Validation gates also follow this facade/owner split:
-``validation.gates`` remains the public import point, while
-``validation.gate_types`` owns frozen metric/result containers and
-``validation.gate_reports`` owns scalar tolerance evaluation, JSON
-serialization, and physics/numerics report builders. Upper-limit gate
-semantics for convergence, mismatch, deficit, and branch-jump thresholds are
-centralized there instead of repeated in each report builder.
+Validation gates now live in one physical diagnostics owner:
+``diagnostics.validation_gates`` owns frozen metric/result containers, scalar
+tolerance evaluation, JSON serialization, and physics/numerics report builders.
+Upper-limit gate semantics for convergence, mismatch, deficit, and branch-jump
+thresholds are centralized there instead of repeated in each report builder.
 
 High-Risk Module Split Plan
 ---------------------------

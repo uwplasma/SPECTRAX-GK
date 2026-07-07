@@ -68,9 +68,9 @@ The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
 longer the main problem. The current blockers are installable validation
 campaign code and flat maintenance namespaces:
 
-- 351 Python source files under ``src/spectraxgk`` after retiring the
-  non-promoted reduced cETG runtime path.
-- 88 Python files under ``src/spectraxgk/validation``.
+- 349 Python source files under ``src/spectraxgk`` after moving validation-gate
+  helpers into the diagnostics package.
+- 85 Python files under ``src/spectraxgk/validation``.
 - 246 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and the first artifact-gate families were
@@ -528,7 +528,7 @@ the module owns. They should not encode the migration history.
      - ``geometry/vmec`` or ``geometry/differentiable``
      - ``bridge``, ``boundary``, ``flux_tube``, ``sensitivity``
    * - ``solver_vmec_boozer_*``
-     - ``objectives`` or ``geometry/boozer`` or ``validation/gates``
+     - ``objectives`` or ``geometry/boozer`` or ``diagnostics/validation_gates``
      - ``geometry_objectives``, ``boozer_bridge``, ``gradient_gates``
    * - ``quasilinear_*``
      - ``objectives/quasilinear`` or ``validation/calibration``

@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``validation/benchmarks/case_configs.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``validation/gates.py`` facade plus ``validation/gate_types.py`` and ``validation/gate_reports.py``, ``validation/zonal.py``
+     - ``validation/benchmarks/harness.py``, ``validation/benchmarks/harness_eigenfunctions.py``, ``validation/benchmarks/harness_timeseries.py``, ``validation/benchmarks/harness_metrics.py``, ``validation/benchmarks/harness_zonal_metrics.py``, ``validation/benchmarks/harness_scan.py``, ``validation/benchmarks/case_configs.py``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py`` plus ``validation/benchmarks/tem_paths.py``, ``diagnostics/validation_gates.py``, ``validation/zonal.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -332,11 +332,10 @@ Completed extractions:
   ``artifacts/zonal_plots.py``. The public ``artifacts.plotting`` module
   remains a stable import facade for examples and user scripts.
 - validation gate dataclasses and JSON-ready gate helpers:
-  ``validation/gates.py`` facade with metric containers in
-  ``validation/gate_types.py`` and scalar/report policies in
-  ``validation/gate_reports.py``. Report builders share one private
-  upper-limit scalar-gate policy for convergence, mismatch, deficit, and
-  branch-jump thresholds so tolerance semantics remain auditable.
+  ``diagnostics/validation_gates.py`` owns metric containers, scalar
+  tolerance evaluation, JSON serialization, and report builders. One private
+  upper-limit scalar-gate policy is shared for convergence, mismatch, deficit,
+  and branch-jump thresholds so tolerance semantics remain auditable.
 - autodiff validation helpers:
   ``validation/autodiff.py`` facade with finite-difference Jacobian and
   Gauss-Newton covariance helpers in ``validation/autodiff_finite_difference.py``.

@@ -9,7 +9,7 @@ import spectraxgk
 import spectraxgk.validation.benchmarks.harness as benchmark_harness
 import spectraxgk.validation.benchmarks.harness_metrics as benchmark_harness_metrics
 import spectraxgk.validation.benchmarks.harness_zonal_metrics as benchmark_zonal_metrics
-from spectraxgk.validation.gates import (
+from spectraxgk.diagnostics.validation_gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,
     GateReport,
@@ -33,9 +33,9 @@ from spectraxgk.validation.gates import (
 
 
 def test_validation_gate_facade_points_to_focused_modules() -> None:
-    import spectraxgk.validation.gate_reports as gate_reports
-    import spectraxgk.validation.gate_types as gate_types
-    import spectraxgk.validation.gates as gates
+    import spectraxgk.diagnostics.validation_gates as gate_reports
+    import spectraxgk.diagnostics.validation_gates as gate_types
+    import spectraxgk.diagnostics.validation_gates as gates
 
     assert gates.LateTimeLinearMetrics is gate_types.LateTimeLinearMetrics
     assert gates.NonlinearWindowMetrics is gate_types.NonlinearWindowMetrics

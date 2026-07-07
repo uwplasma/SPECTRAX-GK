@@ -19,7 +19,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.artifacts.plotting import set_plot_style  # noqa: E402
-from spectraxgk.validation.gates import (
+from spectraxgk.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,

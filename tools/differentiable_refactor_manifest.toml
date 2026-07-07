@@ -503,11 +503,11 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.gates"
-source_path = "src/spectraxgk/validation/gates.py"
-facade_module = "spectraxgk.validation"
+module = "spectraxgk.diagnostics.validation_gates"
+source_path = "src/spectraxgk/diagnostics/validation_gates.py"
+facade_module = "spectraxgk.diagnostics"
 status = "active"
-responsibility = "public validation-gate facade preserving benchmark and manuscript artifact imports"
+responsibility = "JSON-ready metric containers, scalar tolerance evaluation, serialization, and physics/numerics gate-report builders"
 moved_exports = [
   "BranchContinuationMetrics",
   "DiagnosticTimeSeries",
@@ -520,49 +520,6 @@ moved_exports = [
   "ObservedOrderMetrics",
   "ScalarGateResult",
   "ZonalFlowResponseMetrics",
-  "branch_continuity_gate_report",
-  "eigenfunction_gate_report",
-  "evaluate_scalar_gate",
-  "gate_report",
-  "gate_report_to_dict",
-  "linear_metrics_gate_report",
-  "nonlinear_heat_flux_convergence_gate_report",
-  "nonlinear_window_gate_report",
-  "observed_order_gate_report",
-  "zonal_response_gate_report",
-]
-fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.gate_types"
-source_path = "src/spectraxgk/validation/gate_types.py"
-facade_module = "spectraxgk.validation.gates"
-status = "active"
-responsibility = "frozen metric/result dataclasses for linear, nonlinear, eigenfunction, zonal, convergence, and branch-continuity gates"
-moved_exports = [
-  "BranchContinuationMetrics",
-  "DiagnosticTimeSeries",
-  "EigenfunctionComparisonMetrics",
-  "EigenfunctionReferenceBundle",
-  "GateReport",
-  "LateTimeLinearMetrics",
-  "NonlinearHeatFluxConvergenceMetrics",
-  "NonlinearWindowMetrics",
-  "ObservedOrderMetrics",
-  "ScalarGateResult",
-  "ZonalFlowResponseMetrics",
-]
-fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.gate_reports"
-source_path = "src/spectraxgk/validation/gate_reports.py"
-facade_module = "spectraxgk.validation.gates"
-status = "active"
-responsibility = "scalar tolerance evaluation, JSON serialization, and physics/numerics gate-report builders"
-moved_exports = [
   "branch_continuity_gate_report",
   "eigenfunction_gate_report",
   "evaluate_scalar_gate",

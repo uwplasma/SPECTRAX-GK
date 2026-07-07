@@ -1537,16 +1537,12 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.gates"
-path = "src/spectraxgk/validation/gates.py"
+module = "spectraxgk.diagnostics.validation_gates"
+path = "src/spectraxgk/diagnostics/validation_gates.py"
 owner_lane = "JSON-ready acceptance metrics for linear, nonlinear, eigenfunction, and response gates"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 98.0
-owned_modules = [
-  "spectraxgk.validation.gate_types",
-  "spectraxgk.validation.gate_reports",
-]
 reference_anchors = [
   "Merlo shaped-tokamak zonal response and Rosenbluth-Hinton/GAM conventions",
   "W7-X stella/GENE zonal-flow and linear benchmark gate structure",

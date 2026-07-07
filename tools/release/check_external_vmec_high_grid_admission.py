@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.validation.gates import (
+from spectraxgk.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,

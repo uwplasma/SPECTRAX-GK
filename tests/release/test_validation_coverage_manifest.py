@@ -78,7 +78,7 @@ def test_repository_validation_manifest_is_well_formed() -> None:
     rows = {row["module"]: row for row in summary["rows"]}
     assert rows["spectraxgk.linear"]["coverage_target_percent"] == 95.0
     assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
-    assert rows["spectraxgk.validation.gates"]["n_physics_contracts"] >= 2
+    assert rows["spectraxgk.diagnostics.validation_gates"]["n_physics_contracts"] >= 2
     assert (
         rows["spectraxgk.objectives.gradient_gates"]["coverage_target_percent"] == 95.0
     )

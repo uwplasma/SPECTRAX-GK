@@ -213,13 +213,13 @@ The first reusable tooling for this lane now exists:
 
 - :func:`spectraxgk.validation.benchmarks.harness.zonal_flow_response_metrics`
 - :func:`spectraxgk.validation.benchmarks.harness.load_diagnostic_time_series`
-- :func:`spectraxgk.validation.gates.evaluate_scalar_gate`
-- :func:`spectraxgk.validation.gates.observed_order_gate_report`
-- :func:`spectraxgk.validation.gates.branch_continuity_gate_report`
-- :func:`spectraxgk.validation.gates.eigenfunction_gate_report`
-- :func:`spectraxgk.validation.gates.linear_metrics_gate_report`
-- :func:`spectraxgk.validation.gates.nonlinear_window_gate_report`
-- :func:`spectraxgk.validation.gates.zonal_response_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.evaluate_scalar_gate`
+- :func:`spectraxgk.diagnostics.validation_gates.observed_order_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.branch_continuity_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.eigenfunction_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.linear_metrics_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.nonlinear_window_gate_report`
+- :func:`spectraxgk.diagnostics.validation_gates.zonal_response_gate_report`
 - :func:`spectraxgk.validation.zonal.reference_residual_table`
 - :func:`spectraxgk.validation.zonal.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
