@@ -72,7 +72,9 @@ campaign code and flat maintenance namespaces:
   non-promoted reduced cETG runtime path.
 - 88 Python files under ``src/spectraxgk/validation``.
 - 320 Python test files, of which 139 still live directly under ``tests``.
-- 264 Python tool scripts, all still directly under ``tools``.
+- 262 Python tool scripts, with 13 flat top-level scripts left under
+  ``tools`` after release, comparison, artifact, campaign, profiling,
+  benchmark, generator, and compression-helper moves.
 - no tracked files above 1 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 

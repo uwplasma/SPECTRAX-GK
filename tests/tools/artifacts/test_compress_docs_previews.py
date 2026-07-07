@@ -10,7 +10,12 @@ from PIL import Image
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "compress_docs_previews.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "compress_docs_previews.py"
+    )
     spec = importlib.util.spec_from_file_location("compress_docs_previews", path)
     assert spec is not None
     assert spec.loader is not None

@@ -6,6 +6,7 @@ it converts RGBA/RGB PNGs to an indexed 256-colour PNG only when the
 candidate is smaller and the pixel-space RMSE/max-channel-difference gates
 pass. The script prints a CSV report so release-size changes are auditable.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -88,18 +89,43 @@ def compress_one(
         saved = 0
         saved_percent = 0.0
         action = "skipped"
-    return Result(str(path), before, after, saved, saved_percent, rmse, channel_diff, action)
+    return Result(
+        str(path), before, after, saved, saved_percent, rmse, channel_diff, action
+    )
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("paths", nargs="*", type=Path, help="PNG files to compress; defaults to tracked PNGs")
-    parser.add_argument("--colors", type=int, default=256, help="Indexed PNG palette size")
-    parser.add_argument("--max-rmse", type=float, default=3.0, help="Maximum RGBA pixel RMSE")
-    parser.add_argument("--max-channel-diff", type=int, default=80, help="Maximum per-channel pixel difference")
-    parser.add_argument("--min-saving-percent", type=float, default=2.0, help="Minimum file-size saving to rewrite")
-    parser.add_argument("--dry-run", action="store_true", help="Report without modifying files")
-    parser.add_argument("--report", type=Path, default=None, help="Optional CSV report path")
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        type=Path,
+        help="PNG files to compress; defaults to tracked PNGs",
+    )
+    parser.add_argument(
+        "--colors", type=int, default=256, help="Indexed PNG palette size"
+    )
+    parser.add_argument(
+        "--max-rmse", type=float, default=3.0, help="Maximum RGBA pixel RMSE"
+    )
+    parser.add_argument(
+        "--max-channel-diff",
+        type=int,
+        default=80,
+        help="Maximum per-channel pixel difference",
+    )
+    parser.add_argument(
+        "--min-saving-percent",
+        type=float,
+        default=2.0,
+        help="Minimum file-size saving to rewrite",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Report without modifying files"
+    )
+    parser.add_argument(
+        "--report", type=Path, default=None, help="Optional CSV report path"
+    )
     return parser.parse_args()
 
 
@@ -120,7 +146,9 @@ def main() -> int:
 
     total_before = sum(result.before for result in results)
     total_after = sum(result.after for result in results)
-    changed = sum(1 for result in results if result.action in {"compressed", "would_compress"})
+    changed = sum(
+        1 for result in results if result.action in {"compressed", "would_compress"}
+    )
     print(
         f"PNG compression: {changed}/{len(results)} files, "
         f"{total_before / 1024 / 1024:.2f} -> {total_after / 1024 / 1024:.2f} MiB, "

@@ -16,7 +16,7 @@ from typing import Any
 from PIL import Image
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_STATIC_DIR = ROOT / "docs" / "_static"
 DEFAULT_RELEASE_MANIFEST = ROOT / "tools" / "release_artifact_manifest.toml"
 
@@ -29,7 +29,9 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def release_manifest_paths(manifest: str | Path = DEFAULT_RELEASE_MANIFEST) -> set[Path]:
+def release_manifest_paths(
+    manifest: str | Path = DEFAULT_RELEASE_MANIFEST,
+) -> set[Path]:
     """Return repo-relative paths pinned by the release-artifact manifest."""
 
     path = Path(manifest)
@@ -45,7 +47,9 @@ def release_manifest_paths(manifest: str | Path = DEFAULT_RELEASE_MANIFEST) -> s
     return paths
 
 
-def compress_png_preview(path: str | Path, *, max_width: int = 1800, colors: int = 192, dry_run: bool = False) -> dict[str, Any]:
+def compress_png_preview(
+    path: str | Path, *, max_width: int = 1800, colors: int = 192, dry_run: bool = False
+) -> dict[str, Any]:
     """Compress one PNG preview and return a JSON-ready report."""
 
     target = Path(path)
@@ -68,7 +72,13 @@ def compress_png_preview(path: str | Path, *, max_width: int = 1800, colors: int
         "dry_run": dry_run,
     }
     if dry_run:
-        report.update({"after_size_bytes": before_size, "after_sha256": before_sha, "saved_bytes": 0})
+        report.update(
+            {
+                "after_size_bytes": before_size,
+                "after_sha256": before_sha,
+                "saved_bytes": 0,
+            }
+        )
         return report
     original_bytes = target.read_bytes()
     palette = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
@@ -101,7 +111,9 @@ def compress_docs_previews(
     """Compress large docs PNG previews, skipping release-manifest paths by default."""
 
     static = Path(static_dir)
-    manifest_rel = release_manifest_paths(manifest) if not include_manifest_paths else set()
+    manifest_rel = (
+        release_manifest_paths(manifest) if not include_manifest_paths else set()
+    )
     reports = []
     for path in sorted(static.glob("*.png")):
         if path.stat().st_size < min_bytes:
@@ -122,7 +134,9 @@ def compress_docs_previews(
                 }
             )
             continue
-        report = compress_png_preview(path, max_width=max_width, colors=colors, dry_run=dry_run)
+        report = compress_png_preview(
+            path, max_width=max_width, colors=colors, dry_run=dry_run
+        )
         report["skipped"] = False
         reports.append(report)
     return reports
@@ -130,12 +144,36 @@ def compress_docs_previews(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--static-dir", default=str(DEFAULT_STATIC_DIR), help="docs/_static directory to scan.")
-    parser.add_argument("--manifest", default=str(DEFAULT_RELEASE_MANIFEST), help="Release manifest paths to skip by default.")
-    parser.add_argument("--min-bytes", type=int, default=300_000, help="Only compress PNGs at or above this size.")
-    parser.add_argument("--max-width", type=int, default=1800, help="Maximum preview width in pixels.")
-    parser.add_argument("--colors", type=int, default=192, help="Palette colors for compressed previews.")
-    parser.add_argument("--dry-run", action="store_true", help="Report candidate previews without modifying files.")
+    parser.add_argument(
+        "--static-dir",
+        default=str(DEFAULT_STATIC_DIR),
+        help="docs/_static directory to scan.",
+    )
+    parser.add_argument(
+        "--manifest",
+        default=str(DEFAULT_RELEASE_MANIFEST),
+        help="Release manifest paths to skip by default.",
+    )
+    parser.add_argument(
+        "--min-bytes",
+        type=int,
+        default=300_000,
+        help="Only compress PNGs at or above this size.",
+    )
+    parser.add_argument(
+        "--max-width", type=int, default=1800, help="Maximum preview width in pixels."
+    )
+    parser.add_argument(
+        "--colors",
+        type=int,
+        default=192,
+        help="Palette colors for compressed previews.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report candidate previews without modifying files.",
+    )
     parser.add_argument(
         "--include-release-manifest-paths",
         action="store_true",
