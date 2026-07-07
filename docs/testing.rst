@@ -1172,10 +1172,10 @@ tests:
   diagnostic contracts: Hermitian real-FFT projection, signed-mode masks,
   explicit Runge-Kutta variants, fixed-mode frequency extraction, collision
   splitting, and IMEX nonlinear terms.
-- ``tests/test_runtime_config.py`` and ``tests/test_runtime_runner.py`` verify
+- ``tests/integration/runtime/test_runtime_config.py`` and ``tests/integration/runtime/test_runtime_runner.py`` verify
   unified runtime TOML loading and case-agnostic linear runs (Cyclone/ETG/KBM)
   through the same solver path.
-- ``tests/test_runtime_config.py`` also locks the public nonlinear stellarator
+- ``tests/integration/runtime/test_runtime_config.py`` also locks the public nonlinear stellarator
   runtime contract, including the absence of adaptive-step truncation caps and
   the presence of default ``tools_out/...`` artifact paths for W7-X and HSX.
 

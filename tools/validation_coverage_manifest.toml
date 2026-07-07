@@ -158,9 +158,9 @@ numerics_contracts = [
   "nonfinite diagnostic chunks abort artifact generation instead of silently writing corrupt panels",
 ]
 fast_tests = [
-  "tests/test_runtime_config.py",
+  "tests/integration/runtime/test_runtime_config.py",
   "tests/integration/runtime/test_runtime_helpers.py",
-  "tests/test_runtime_runner.py",
+  "tests/integration/runtime/test_runtime_runner.py",
   "tests/integration/runtime/test_runtime_artifacts.py",
   "tests/integration/runtime/test_restart.py",
 ]
@@ -269,8 +269,8 @@ numerics_contracts = [
   "dependency injection preserves runtime monkeypatch seams used by regression tests",
 ]
 fast_tests = [
-  "tests/test_runtime_runner.py",
-  "tests/test_runtime_config.py",
+  "tests/integration/runtime/test_runtime_runner.py",
+  "tests/integration/runtime/test_runtime_config.py",
 ]
 artifact_paths = [
   "examples/linear/axisymmetric/runtime_cyclone.toml",
@@ -1868,8 +1868,8 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/integration/runtime/test_runtime_artifacts.py",
-  "tests/test_runtime_runner.py",
-  "tests/test_cli.py",
+  "tests/integration/runtime/test_runtime_runner.py",
+  "tests/integration/runtime/test_cli.py",
   "tests/unit/diagnostics/test_plotting.py",
 ]
 artifact_paths = [

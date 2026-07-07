@@ -72,8 +72,7 @@ campaign code and flat maintenance namespaces:
   non-promoted reduced cETG runtime path.
 - 88 Python files under ``src/spectraxgk/validation``.
 - 321 Python test files, including the shared ``tests/support/paths.py`` helper;
-  only ``conftest.py`` plus three runtime/executable tests still live directly
-  under ``tests``.
+  only ``conftest.py`` still lives directly under ``tests``.
 - 260 Python tool scripts, with only ``tools/__init__.py`` left at the flat
   top level after release, comparison, artifact, campaign, profiling,
   benchmark, generator, compression-helper, reference-helper, diagnostic, and

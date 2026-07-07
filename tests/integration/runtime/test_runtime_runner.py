@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+
+from support.paths import REPO_ROOT
 from types import SimpleNamespace
 
 import jax.numpy as jnp
@@ -2661,11 +2663,7 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
 
 
 def test_runtime_linear_secondary_slab_example_runs() -> None:
-    cfg_path = (
-        Path(__file__).resolve().parents[1]
-        / "benchmarks"
-        / "runtime_secondary_slab.toml"
-    )
+    cfg_path = REPO_ROOT / "benchmarks" / "runtime_secondary_slab.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
     out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="explicit_time")
@@ -2770,7 +2768,7 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(
 
 def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     cfg_path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "axisymmetric"
@@ -3669,7 +3667,8 @@ def test_run_linear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
@@ -3823,7 +3822,8 @@ def test_run_nonlinear_case_uses_toml_output_path(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(
         "spectraxgk.workflows.runtime.artifacts.run_runtime_nonlinear_with_artifacts",
@@ -3861,7 +3861,8 @@ def test_run_linear_case_without_output_path_prints_summary_only(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
 
@@ -3896,7 +3897,8 @@ def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
         )
 
     monkeypatch.setattr(
-        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml", fake_load_runtime_from_toml
+        "spectraxgk.workflows.runtime.toml.load_runtime_from_toml",
+        fake_load_runtime_from_toml,
     )
     monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
 

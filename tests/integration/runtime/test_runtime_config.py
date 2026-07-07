@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+
+from support.paths import REPO_ROOT
 import sys
 
 import pytest
@@ -274,9 +276,7 @@ def test_runtime_parallel_config_validates_values() -> None:
 
 
 def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
-    cfg_dir = (
-        Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric"
-    )
+    cfg_dir = REPO_ROOT / "examples" / "nonlinear" / "axisymmetric"
     paths = [
         cfg_dir / "runtime_kbm_nonlinear.toml",
         cfg_dir / "runtime_kbm_nonlinear_seed.toml",
@@ -291,9 +291,7 @@ def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
 
 
 def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -> None:
-    cfg_dir = (
-        Path(__file__).resolve().parents[1] / "examples" / "linear" / "axisymmetric"
-    )
+    cfg_dir = REPO_ROOT / "examples" / "linear" / "axisymmetric"
     expected = {
         "cyclone.toml": (1.0, 2.0, 1.0, 0.0),
         "etg.toml": (1.0, 2.0, 1.0, 0.0),
@@ -311,9 +309,7 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
 
 
 def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> None:
-    cfg_dir = (
-        Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric"
-    )
+    cfg_dir = REPO_ROOT / "examples" / "linear" / "non-axisymmetric"
     for name in (
         "runtime_hsx_linear_quasilinear.toml",
         "runtime_w7x_linear_quasilinear_vmec.toml",
@@ -329,7 +325,7 @@ def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> N
 
 def test_etg_nonlinear_pilot_example_keeps_two_species_full_gk_contract() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "axisymmetric"
@@ -401,7 +397,7 @@ solver = "explicit_time"
 
 def test_w7x_imported_geometry_example_toml_loads() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "linear"
         / "non-axisymmetric"
@@ -424,7 +420,7 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
 
 def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -453,7 +449,7 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
 
 def test_w7x_nonlinear_imported_geometry_builder_keeps_collision_contract() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -469,7 +465,7 @@ def test_w7x_nonlinear_imported_geometry_builder_keeps_collision_contract() -> N
 
 def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -499,7 +495,7 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
 
 def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -527,7 +523,7 @@ def test_hsx_nonlinear_vmec_wrapper_defaults_to_config_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -558,7 +554,7 @@ def test_hsx_nonlinear_vmec_wrapper_defaults_to_config_path(
 
 def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "non-axisymmetric"
@@ -625,11 +621,7 @@ restart_from_file = "../out/run.resume.nc"
 
 
 def test_secondary_slab_example_toml_loads() -> None:
-    path = (
-        Path(__file__).resolve().parents[1]
-        / "benchmarks"
-        / "runtime_secondary_slab.toml"
-    )
+    path = REPO_ROOT / "benchmarks" / "runtime_secondary_slab.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -728,7 +720,7 @@ geometry_helper_python = "python3"
 
 def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
     path = (
-        Path(__file__).resolve().parents[1]
+        REPO_ROOT
         / "examples"
         / "nonlinear"
         / "axisymmetric"
@@ -747,11 +739,7 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
 
 
 def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
-    path = (
-        Path(__file__).resolve().parents[1]
-        / "benchmarks"
-        / "runtime_miller_zonal_response.toml"
-    )
+    path = REPO_ROOT / "benchmarks" / "runtime_miller_zonal_response.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -775,11 +763,7 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
 
 
 def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
-    path = (
-        Path(__file__).resolve().parents[1]
-        / "benchmarks"
-        / "runtime_w7x_zonal_response_vmec.toml"
-    )
+    path = REPO_ROOT / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -787,10 +771,7 @@ def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file == str(
         (
-            Path(__file__).resolve().parents[1]
-            / "examples"
-            / "vmec"
-            / "wout_nfp3_QI_fixed_resolution_final.nc"
+            REPO_ROOT / "examples" / "vmec" / "wout_nfp3_QI_fixed_resolution_final.nc"
         ).resolve()
     )
     assert cfg.geometry.torflux == pytest.approx(0.64)

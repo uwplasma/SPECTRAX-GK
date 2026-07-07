@@ -35,8 +35,7 @@ Last audited: 2026-07-07 on `main`.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 321 Python files, including the shared `tests/support/paths.py`
-    helper; only `conftest.py` plus three runtime/executable tests remain at
-    the flat `tests/` root.
+    helper; only `conftest.py` remains at the flat `tests/` root.
   - `tools`: 260 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
@@ -75,6 +74,29 @@ Last audited: 2026-07-07 on `main`.
   namespaces.
 - The architecture manifest now treats `spectraxgk.validation` as a temporary
   facade, not a permanent family of required installable validation packages.
+
+Latest focused audit for this tranche:
+
+- Flat topology is no longer the blocker: `tests/` has zero flat `test_*.py`
+  files, and `tools/` has zero flat scripts except `tools/__init__.py`.
+- The remaining code-size problem is family sprawl:
+  - `tests/tools/artifacts`: 101 one-file-per-builder tests.
+  - `tools/artifacts`: 126 figure/table/status/gate builders.
+  - `src/spectraxgk/validation`: 88 installable validation/campaign files.
+  - `tests/integration/runtime/test_runtime_runner.py`: about 4.2k lines,
+    mostly preserving historical runtime branches in one file.
+  - `tests/validation/benchmarks/test_benchmarks_runner_branches.py`: about
+    3.0k lines, mostly patching case-specific benchmark branches.
+- `benchmarks/` itself is not bloated. It is small and should stay at the
+  repository root as the lightweight benchmark-driver layer. The confusing part
+  is that benchmark harness and validation campaign code still lives under
+  `src/spectraxgk/validation`.
+- No stale local branches need pruning in this checkout. Obsolete experimental
+  work should be removed from `main` by moving code to a draft experiment PR or
+  deleting it, not by keeping dead branches around.
+- The next 10x simplification cannot come from more micro-splitting. It must
+  come from deleting non-promoted paths, merging parametrizable tools/tests, and
+  moving campaign validation out of the installable package.
 
 ## Hard Targets For The Refactor
 
@@ -235,10 +257,9 @@ compression-helper move before it is committed:
 - The installable source still has 351 Python files. The largest structural
   offender is `src/spectraxgk/validation` with 88 installable files.
 - The test tree now has 321 Python files after adding the shared
-  `tests/support/paths.py` helper. Only four Python files remain at the flat
-  `tests/` root: `conftest.py`, `test_cli.py`, `test_runtime_config.py`, and
-  `test_runtime_runner.py`. The remaining root tests are the runtime/executable
-  aggregate tests that need a dedicated final move.
+  `tests/support/paths.py` helper. The flat `tests/` root is closed except for
+  the required `conftest.py`; the final runtime/executable aggregate tests now
+  live under `tests/integration/runtime`.
 - `tools/` has 260 Python scripts after adding purpose-folder package
   initializers. The flat top-level `tools/` problem is closed: only
   `tools/__init__.py` remains there.
@@ -276,11 +297,18 @@ Decision rules from this audit:
 
 Immediate execution sequence from this audited state:
 
-1. Commit the flat-tool closure tranche after targeted artifact/comparison
+1. Commit the final flat-test closure tranche after targeted runtime/executable
    tests, architecture, release-readiness, repository-size, and ruff gates pass.
-2. Collapse tool tests by family before moving more source code. The goal is
-   fewer tests with stronger parametrization, not weaker assertions.
-3. Start validation-out-of-package only after the tool/test path churn is
+2. Collapse `tests/tools/artifacts` and `tools/artifacts` by capability. The
+   first target is the VMEC, quasilinear, nonlinear, W7-X, and parallel/status
+   builder families, because they account for most one-file-per-script sprawl.
+3. Split or parametrize the two largest historical branch tests:
+   `tests/integration/runtime/test_runtime_runner.py` and
+   `tests/validation/benchmarks/test_benchmarks_runner_branches.py`.
+4. Use the repository inventory to delete or move no-owner probe, pilot,
+   reduced, synthetic, and candidate scripts whose only role is historical
+   campaign scaffolding.
+5. Start validation-out-of-package only after the tool/test path churn is
    complete, so import rewrites are not repeated.
 
 ## Final Consolidation Model
@@ -328,13 +356,12 @@ files.
    into manifest-driven builders where only case names, labels, or output paths
    differ. Target: `tools/` below 180 scripts before source moves, then below
    100 before release.
-3. **Reorganize tests by domain.** Two topology moves relocated 135 tests into
+3. **Reorganize tests by domain.** Three topology moves relocated 138 tests into
    `tests/unit`, `tests/integration`, `tests/validation`, existing tool
-   folders, and `tests/release`. The next move should handle the remaining
-   runtime/executable trio by replacing parent-depth assumptions with shared
-   helpers, then merge one-file-per-script tool tests into parametrized family
-   tests. Target: fewer than 180 tests before validation extraction, then fewer
-   than 100.
+   folders, and `tests/release`. Flat root tests are now closed except for
+   `conftest.py`; the next test move is merging one-file-per-script tool tests
+   into parametrized family tests. Target: fewer than 180 tests before
+   validation extraction, then fewer than 100.
 4. **Move validation campaigns out of the installable package.** Keep reusable
    physics metrics in `diagnostics` or a tiny `validation` facade; move campaign
    launchers, report builders, and holdout ledgers to `benchmarks`, `tools`, or
@@ -601,8 +628,7 @@ Specific first candidate:
 ## Test Consolidation Plan
 
 Current problem: `tests/` has 321 Python files after adding a shared path
-helper. The root now has only four flat Python files: `conftest.py` and the
-three runtime/executable aggregate tests. `tests/tools` still has many
+helper. The root now has only `conftest.py`. `tests/tools` still has many
 one-file-per-script tests and must be consolidated by tool family instead of
 preserving one test file per script.
 
@@ -1270,30 +1296,53 @@ Exit gates:
   4 (`conftest.py` plus `test_cli.py`, `test_runtime_config.py`, and
   `test_runtime_runner.py`).
 
+- 2026-07-07: moved the final runtime/executable root tests
+  (`test_cli.py`, `test_runtime_config.py`, and `test_runtime_runner.py`) into
+  `tests/integration/runtime` and updated CI, docs, and manifests. The flat
+  root test topology target is now met: only `tests/conftest.py` remains at the
+  root.
+
 ## Immediate Next Steps
 
-1. Use the repository inventory to make the next deletions safe:
+1. Commit the final root-test move once the bounded checks listed in the
+   progress log pass locally.
+2. Collapse artifact tooling and tests by family:
+   - merge the `build_vmec*` scripts/tests into one VMEC artifact builder with
+     manifest-selected modes;
+   - merge `plot_quasilinear*` scripts/tests into one quasilinear plotting
+     builder with model/holdout modes;
+   - merge `build_nonlinear*` and `plot_nonlinear*` scripts/tests into one
+     nonlinear audit/artifact builder where only labels and input paths differ;
+   - merge W7-X/zonal/status builders into a small set of documented status and
+     physics-panel builders;
+   - target `tools/artifacts` below 80 and `tests/tools/artifacts` below 35
+     before moving source validation code.
+3. Collapse the biggest tests without weakening assertions:
+   - split `test_runtime_runner.py` into parametrized runtime contracts for
+     config, progress, output, linear execution, nonlinear execution, restart,
+     and plotting;
+   - split `test_benchmarks_runner_branches.py` into common benchmark fixtures
+     plus parametrized case-family branch tests;
+   - move repeated mock objects into shared fixtures and remove tests that only
+     preserve deleted legacy behavior.
+4. Use `tools/release/inventory_repository.py` before every deletion tranche:
    - delete stale docs/static artifacts not referenced by README/docs/manifests;
-   - delete or move one-off probes and status builders with no current owner;
-   - remove remaining tutorial/docs language for retired reduced-model paths.
-2. Collapse the remaining flat tests:
-   - move physics/unit tests into `tests/unit/*`;
-   - move runtime/executable tests into `tests/integration/runtime`;
-   - merge tool tests by family instead of one test file per tool script.
-3. Consolidate tool families after flat scripts are gone:
-   - merge duplicate builders and status tools into manifest-driven artifact
-     builders;
-   - merge one-tool-one-test files into parametrized family tests;
-   - keep only documented active campaign launchers.
-4. Start the validation-out-of-package move:
-   - migrate `validation.benchmarks` behind root `benchmarks/` drivers or
+   - delete or move one-off probe/pilot/candidate/status builders with no
+     current owner;
+   - remove remaining tutorial/docs language for retired or non-promoted
+     reduced/synthetic paths.
+5. Move validation out of the installable package:
+   - migrate `validation.benchmarks` behind root `benchmarks/` drivers or the
      `spectraxgk.benchmarks` facade only where still public;
    - move nonlinear-gradient, nonlinear-transport, stellarator-campaign, and
-     quasilinear holdout builders out of installable source unless they are
-     reusable metrics.
-6. Only after the topology is smaller, profile and refactor the hot paths:
+     quasilinear holdout builders out of `src` unless they are reusable physics
+     metrics;
+   - keep only small reusable gate/metric helpers in package code.
+6. After topology is smaller, profile and refactor hot paths:
    linear cache/RHS, nonlinear RHS/bracket/field solve, diagnostics streaming,
-   and VMEC/Boozer in-memory differentiable geometry.
+   and VMEC/Boozer in-memory differentiable geometry. Each performance change
+   needs a before/after profiler artifact and numerical identity or physics
+   gate.
 
 ## Completion Definition
 

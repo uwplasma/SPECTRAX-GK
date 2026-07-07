@@ -1608,7 +1608,7 @@ moved_exports = [
   "FullNonlinearRuntimeDeps",
   "run_full_nonlinear_runtime",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -1622,7 +1622,7 @@ moved_exports = [
   "FullLinearRuntimeDeps",
   "run_full_linear_runtime",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py", "tests/unit/quasilinear/test_quasilinear.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py", "tests/unit/quasilinear/test_quasilinear.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -1638,7 +1638,7 @@ moved_exports = [
   "run_named_linear_command",
   "scan_named_linear_command",
 ]
-fast_tests = ["tests/test_cli.py"]
+fast_tests = ["tests/integration/runtime/test_cli.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -1654,7 +1654,7 @@ moved_exports = [
   "run_linear_case",
   "run_nonlinear_case",
 ]
-fast_tests = ["tests/test_runtime_runner.py", "tests/test_runtime_config.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_runner.py", "tests/integration/runtime/test_runtime_config.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1681,7 +1681,7 @@ moved_exports = [
   "scan_runtime_linear_command",
   "should_show_progress",
 ]
-fast_tests = ["tests/test_cli.py", "tests/integration/runtime/test_runtime_helpers.py"]
+fast_tests = ["tests/integration/runtime/test_cli.py", "tests/integration/runtime/test_runtime_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1700,7 +1700,7 @@ moved_exports = [
   "default_example_config_path",
   "run_default_linear_demo",
 ]
-fast_tests = ["tests/test_cli.py"]
+fast_tests = ["tests/integration/runtime/test_cli.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2952,7 +2952,7 @@ moved_exports = [
   "finalize_runtime_linear_quasilinear",
   "fit_runtime_linear_diagnostics",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2990,7 +2990,7 @@ moved_exports = [
   "_select_nonlinear_mode_indices",
   "_zero_kx_index",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -3012,7 +3012,7 @@ moved_exports = [
   "_periodic_zp_from_grid",
   "_reshape_netcdf_state",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3025,7 +3025,7 @@ moved_exports = [
   "_as_runtime_species_array",
   "_density_moments_for_target_phi",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3042,7 +3042,7 @@ moved_exports = [
   "run_runtime_linear_impl",
   "run_runtime_nonlinear_impl",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3068,7 +3068,7 @@ moved_exports = [
   "run_runtime_scan_batch",
   "run_runtime_scan_orchestration",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
@@ -3085,7 +3085,7 @@ moved_exports = [
   "run_runtime_scan_batch",
   "run_runtime_scan_orchestration",
 ]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3176,7 +3176,7 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/validation/benchmarks/test_benchmarking.py",
-  "tests/test_runtime_runner.py",
+  "tests/integration/runtime/test_runtime_runner.py",
   "tests/integration/runtime/test_runtime_helpers.py",
   "tests/unit/operators/test_terms_integrators.py",
 ]
@@ -3450,7 +3450,7 @@ target_packages = [
 public_facade = "spectraxgk.runtime"
 line_target = 700
 status = "planned"
-existing_fast_tests = ["tests/test_runtime_config.py", "tests/integration/runtime/test_runtime_helpers.py", "tests/test_runtime_runner.py"]
+existing_fast_tests = ["tests/integration/runtime/test_runtime_config.py", "tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
 planned_tests = [
   "default executable run contract tests",
   "progress/ETA reporter tests",
@@ -3532,7 +3532,7 @@ target_packages = [
 public_facade = "spectraxgk.cli"
 line_target = 500
 status = "planned"
-existing_fast_tests = ["tests/test_cli.py", "tests/test_runtime_runner.py"]
+existing_fast_tests = ["tests/integration/runtime/test_cli.py", "tests/integration/runtime/test_runtime_runner.py"]
 planned_tests = [
   "spectraxgk default-run progress output test",
   "spectraxgk --plot artifact test",
@@ -3958,7 +3958,7 @@ facade_module = "spectraxgk.solvers.linear.integrators"
 status = "active"
 responsibility = "linear fixed-step diagnostic sampling policy for phi, density, Hermite-Laguerre energy, progress, and every-step/strided histories"
 moved_exports = ["integrate_linear_diagnostics"]
-fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/test_runtime_runner.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

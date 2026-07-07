@@ -25,7 +25,7 @@ def test_split_shards_is_round_robin_and_complete() -> None:
 def test_split_shards_isolates_known_high_cost_tests() -> None:
     expensive = [
         Path("tests/unit/solvers/test_diffrax_integrators_core.py"),
-        Path("tests/test_runtime_runner.py"),
+        Path("tests/integration/runtime/test_runtime_runner.py"),
     ]
     files = expensive + [Path(f"tests/test_light_{idx}.py") for idx in range(12)]
     shards = split_shards(files, 4)
