@@ -268,21 +268,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.tem_paths"
-source_path = "src/spectraxgk/validation/benchmarks/tem_paths.py"
-facade_module = "spectraxgk.validation.benchmarks.tem"
-status = "active"
-responsibility = "TEM single-ky Krylov/time-fit policies plus streaming and saved-time scan batch execution through patchable hooks"
-moved_exports = [
-  "TEMPathHooks",
-  "run_tem_krylov_linear_path",
-  "run_tem_scan_batches",
-  "run_tem_time_linear_path",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.validation_gates"
 source_path = "src/spectraxgk/diagnostics/validation_gates.py"
 facade_module = "spectraxgk.diagnostics"

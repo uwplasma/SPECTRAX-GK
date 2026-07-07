@@ -620,9 +620,6 @@ Benchmarking
 .. automodule:: spectraxgk.validation.benchmarks.tem
    :members:
 
-.. automodule:: spectraxgk.validation.benchmarks.tem_paths
-   :members:
-   :private-members:
 
 Validation Gates
 ----------------
