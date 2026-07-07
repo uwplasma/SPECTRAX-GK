@@ -1314,12 +1314,6 @@ Solver VMEC/Boozer Line-Search Gates
    :members:
    :private-members:
 
-External-VMEC Holdout Planning
-------------------------------
-
-.. automodule:: spectraxgk.validation.external_holdout
-   :members:
-
 Parallel Decomposition Contracts
 --------------------------------
 

@@ -1197,7 +1197,6 @@ owned_modules = [
   "spectraxgk.diagnostics.quasilinear_transport",
   "spectraxgk.validation.quasilinear.model_selection",
   "spectraxgk.validation.quasilinear.model_selection_inputs",
-  "spectraxgk.validation.external_holdout",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"

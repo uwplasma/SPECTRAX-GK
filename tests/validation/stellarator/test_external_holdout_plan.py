@@ -8,7 +8,7 @@ from pathlib import Path
 from support.paths import REPO_ROOT
 import sys
 
-from spectraxgk.validation.external_holdout import (
+from tools.artifacts.build_external_vmec_holdout_runbook import (
     ExternalHoldoutScreenRow,
     build_external_holdout_runbook,
     external_vmec_family,
