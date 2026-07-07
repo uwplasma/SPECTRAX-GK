@@ -17,7 +17,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
-from spectraxgk.validation.benchmarks.secondary import (
+from spectraxgk.benchmarks import (
     _embed_linear_seed_on_full_grid,
     _leading_finite_prefix,
     _tail_mean_pair,
@@ -96,7 +96,7 @@ def test_run_secondary_modes_uses_requested_targets(monkeypatch) -> None:
         return _Result()
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_nonlinear", _fake_runner
+        "spectraxgk.benchmarks.run_runtime_nonlinear", _fake_runner
     )
     rows = run_secondary_modes(
         _base_cfg(), modes=((0.0, -0.05), (0.1, 0.05)), Nl=3, Nm=8
@@ -151,7 +151,7 @@ def test_run_secondary_modes_uses_phi_fit_for_gamma_and_tail_for_omega(
             )
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_nonlinear",
+        "spectraxgk.benchmarks.run_runtime_nonlinear",
         lambda *args, **kwargs: _Result(),
     )
     row = run_secondary_modes(
@@ -185,7 +185,7 @@ def test_run_secondary_modes_fits_mode_trace_when_diagnostics_invalid(
             )
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_nonlinear",
+        "spectraxgk.benchmarks.run_runtime_nonlinear",
         lambda *args, **kwargs: _Result(),
     )
     row = run_secondary_modes(
@@ -232,7 +232,7 @@ def test_run_secondary_seed_requires_final_state(monkeypatch, tmp_path: Path) ->
         state = None
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_linear",
+        "spectraxgk.benchmarks.run_runtime_linear",
         lambda *args, **kwargs: _Result(),
     )
     with pytest.raises(RuntimeError):
@@ -246,7 +246,7 @@ def test_run_secondary_modes_requires_diagnostics(monkeypatch) -> None:
         diagnostics = None
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_nonlinear",
+        "spectraxgk.benchmarks.run_runtime_nonlinear",
         lambda *args, **kwargs: _Result(),
     )
     with pytest.raises(RuntimeError):
@@ -273,7 +273,7 @@ def test_run_secondary_modes_uses_tail_when_phi_mode_missing(monkeypatch) -> Non
             )
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.secondary.run_runtime_nonlinear",
+        "spectraxgk.benchmarks.run_runtime_nonlinear",
         lambda *args, **kwargs: _Result(),
     )
     row = run_secondary_modes(

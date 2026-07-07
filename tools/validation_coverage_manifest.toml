@@ -296,7 +296,6 @@ owned_modules = [
   "spectraxgk.solvers.linear.eigen_selection",
   "spectraxgk.solvers.linear.krylov",
   "spectraxgk.solvers.linear.krylov_algorithms",
-  "spectraxgk.validation.benchmarks.secondary",
   "spectraxgk.core.species",
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.assembly_core",

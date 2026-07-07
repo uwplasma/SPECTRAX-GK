@@ -79,8 +79,8 @@
   "n_excluded_modules": 21,
   "n_high_priority_open": 74,
   "n_modules": 95,
-  "n_owned_modules": 175,
-  "n_package_modules": 291,
+  "n_owned_modules": 174,
+  "n_package_modules": 290,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -201,7 +201,6 @@
       "spectraxgk.solvers.linear.eigen_selection",
       "spectraxgk.solvers.linear.krylov",
       "spectraxgk.solvers.linear.krylov_algorithms",
-      "spectraxgk.validation.benchmarks.secondary",
       "spectraxgk.core.species",
       "spectraxgk.terms.assembly",
       "spectraxgk.terms.assembly_core",
@@ -472,7 +471,7 @@
       "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 29,
+      "n_owned_modules": 28,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/linear.py",

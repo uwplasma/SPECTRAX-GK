@@ -564,13 +564,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.defaults
    :members:
 
-Benchmark Secondary Workflow
-----------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.secondary
-   :members:
-   :private-members:
-
 Benchmarking
 ------------
 
