@@ -440,7 +440,7 @@ Phase 1: introduce protocols and containers
   ``spectraxgk.validation.benchmarks.cyclone_scan``,
   ``spectraxgk.validation.benchmarks.kbm_beta``,
   ``spectraxgk.validation.benchmarks.kbm_linear``,
-  ``spectraxgk.validation.benchmarks.kbm_scan``, ``spectraxgk.validation.benchmarks.tem``,
+  ``spectraxgk.benchmarks``, ``spectraxgk.validation.benchmarks.tem``,
   ``spectraxgk.validation.benchmarks.kinetic_linear`` and ``spectraxgk.validation.benchmarks.kinetic_scan`` own the kinetic-electron single-run and scan implementations directly, and ``spectraxgk.validation.benchmarks.etg_linear`` / ``spectraxgk.validation.benchmarks.etg_scan`` own the ETG family runners while ``spectraxgk.benchmarks`` remains the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.

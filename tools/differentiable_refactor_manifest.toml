@@ -187,8 +187,8 @@ fast_tests = ["tests/unit/core/test_config.py", "tests/validation/benchmarks/tes
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/inputs.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.kbm_scan"
-source_path = "src/spectraxgk/validation/benchmarks/kbm_scan.py"
+module = "spectraxgk.benchmarks"
+source_path = "src/spectraxgk/benchmarks.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
 responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays into the beta-scan runner"

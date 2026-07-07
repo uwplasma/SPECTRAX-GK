@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kbm_scan.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``validation/benchmarks/etg_linear.py``, ``validation/benchmarks/etg_scan.py``, ``validation/benchmarks/kbm_beta.py``, ``validation/benchmarks/kbm_linear.py``, ``validation/benchmarks/kinetic_linear.py``, ``validation/benchmarks/kinetic_scan.py``, ``validation/benchmarks/tem.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -701,7 +701,7 @@ symbols to their consolidated owners before larger benchmark-family runners are
 moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.validation.benchmarks.kbm_beta``,
 ``spectraxgk.validation.benchmarks.kbm_linear``, and
-``spectraxgk.validation.benchmarks.kbm_scan`` and are re-exported through
+``spectraxgk.benchmarks`` and are re-exported through
 ``spectraxgk.benchmarks``, while
 ``spectraxgk.validation.benchmarks.kbm_beta`` owns the explicit-time
 diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan

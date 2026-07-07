@@ -1272,7 +1272,7 @@ def test_run_kbm_scan_forwards_per_mode_arrays(monkeypatch) -> None:
         return SimpleNamespace(gamma=np.array([ky + 1.0]), omega=np.array([-ky - 2.0]))
 
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm_scan.run_kbm_beta_scan",
+        "spectraxgk.benchmarks.run_kbm_beta_scan",
         _fake_run_kbm_beta_scan,
     )
 
@@ -1307,7 +1307,7 @@ def test_run_kbm_scan_uses_cfg_beta_and_sequence_pick(monkeypatch) -> None:
 
     cfg = replace(KBMBaseCase(), model=replace(KBMBaseCase().model, beta=2.5e-3))
     monkeypatch.setattr(
-        "spectraxgk.validation.benchmarks.kbm_scan.run_kbm_beta_scan",
+        "spectraxgk.benchmarks.run_kbm_beta_scan",
         _fake_run_kbm_beta_scan,
     )
 
