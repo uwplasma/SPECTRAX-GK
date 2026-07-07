@@ -1414,6 +1414,12 @@ Exit gates:
   validation-gate index assertions. Test Python files dropped from 255 to 247,
   and `tests/tools/artifacts` dropped from 35 to 27 files.
 
+- 2026-07-07: renamed the KBM extractor comparison utility from a probe-oriented
+  name to `tools/comparison/audit_gx_kbm_extractors.py`, with the corresponding
+  test moved to `tests/tools/comparison/test_audit_gx_kbm_extractors.py`. This
+  keeps the active comparison audit in the explicit comparison-tool namespace
+  while removing a misleading experimental/probe filename from `main`.
+
 ## Immediate Next Steps
 
 1. Collapse artifact tooling and tests by family:

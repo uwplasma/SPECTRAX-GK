@@ -1,4 +1,4 @@
-"""Tests for the single-trajectory KBM extractor probe."""
+"""Tests for the single-trajectory KBM extractor audit."""
 
 from __future__ import annotations
 
@@ -17,13 +17,13 @@ def _load_module():
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
-        import probe_gx_kbm_extractors as mod
+        import audit_gx_kbm_extractors as mod
     finally:
         sys.path.remove(str(tools_dir))
     return mod
 
 
-def test_probe_gx_kbm_extractors_save_load_roundtrip(tmp_path: Path) -> None:
+def test_audit_gx_kbm_extractors_save_load_roundtrip(tmp_path: Path) -> None:
     mod = _load_module()
     result = SimpleNamespace(
         t=np.array([0.0, 1.0], dtype=float),
@@ -43,18 +43,18 @@ def test_probe_gx_kbm_extractors_save_load_roundtrip(tmp_path: Path) -> None:
     assert restored.ky == result.ky
 
 
-def test_probe_gx_kbm_extractors_parse_checkpoint_steps() -> None:
+def test_audit_gx_kbm_extractors_parse_checkpoint_steps() -> None:
     mod = _load_module()
     assert mod._parse_checkpoint_steps("", 1200) == [1200]
     assert mod._parse_checkpoint_steps("1200,400,800,800", 10) == [400, 800, 1200]
 
 
-def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
+def test_audit_gx_kbm_extractors_main_reuses_cached_trajectory(
     monkeypatch, tmp_path: Path
 ) -> None:
     mod = _load_module()
     traj_dir = tmp_path / "traj"
-    out = tmp_path / "probe.csv"
+    out = tmp_path / "audit.csv"
     result = SimpleNamespace(
         t=np.array([0.0, 1.0], dtype=float),
         phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 1.0j]]]], dtype=np.complex64),
@@ -131,7 +131,7 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
         sys,
         "argv",
         [
-            "probe_gx_kbm_extractors.py",
+            "audit_gx_kbm_extractors.py",
             "--gx",
             str(tmp_path / "dummy.nc"),
             "--out",

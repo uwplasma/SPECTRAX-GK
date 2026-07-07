@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one GX-time KBM trajectory per ky and score multiple extractors."""
+"""Audit one reference-time KBM trajectory per ky and score multiple extractors."""
 
 from __future__ import annotations
 
@@ -22,7 +22,9 @@ from tools.comparison.compare_gx_kbm import (
 )
 
 
-def _trajectory_path(base_dir: Path, ky_value: float, *, steps: int | None = None) -> Path:
+def _trajectory_path(
+    base_dir: Path, ky_value: float, *, steps: int | None = None
+) -> Path:
     tag = f"{float(ky_value):0.4f}".replace(".", "p")
     suffix = "" if steps is None else f"_steps_{int(steps)}"
     return base_dir / f"kbm_ky_{tag}{suffix}_trajectory.npz"
@@ -53,8 +55,12 @@ def _save_trajectory(path: Path, result) -> Path:
         path,
         t=np.asarray(result.t, dtype=float),
         phi_t=np.asarray(result.phi_t),
-        gamma_t=np.asarray(gamma_t, dtype=float) if gamma_t is not None else np.array([], dtype=float),
-        omega_t=np.asarray(omega_t, dtype=float) if omega_t is not None else np.array([], dtype=float),
+        gamma_t=np.asarray(gamma_t, dtype=float)
+        if gamma_t is not None
+        else np.array([], dtype=float),
+        omega_t=np.asarray(omega_t, dtype=float)
+        if omega_t is not None
+        else np.array([], dtype=float),
         ky=float(result.ky),
         sel_ky=int(result.selection.ky_index),
         sel_kx=int(result.selection.kx_index),
@@ -115,7 +121,12 @@ def _row(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gx", type=Path, required=True, help="Path to GX KBM .out.nc or .npz reference.")
+    parser.add_argument(
+        "--gx",
+        type=Path,
+        required=True,
+        help="Path to GX KBM .out.nc or .npz reference.",
+    )
     parser.add_argument(
         "--gx-big",
         type=Path,
@@ -154,14 +165,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--Rmaj", type=float, default=2.77778)
     parser.add_argument("--sample-stride", type=int, default=1)
     parser.add_argument("--gx-avg-fraction", type=float, default=0.5)
-    parser.add_argument("--ky", type=str, default="", help="Comma-separated ky values to probe.")
+    parser.add_argument(
+        "--ky", type=str, default="", help="Comma-separated ky values to audit."
+    )
     parser.add_argument("--tmin", type=float, default=None)
     parser.add_argument("--tmax", type=float, default=None)
     parser.add_argument(
         "--checkpoint-steps",
         type=str,
         default="",
-        help="Optional comma-separated step horizons. The probe writes rows after each horizon.",
+        help="Optional comma-separated step horizons. The audit writes rows after each horizon.",
     )
     parser.add_argument(
         "--mode-methods",
@@ -174,14 +187,29 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx, nky_full, y0 = _prepare_gx_reference(
+    (
+        gx_time,
+        gx_ky,
+        gx_omega_series,
+        beta,
+        q_gx,
+        shat_gx,
+        eps_gx,
+        rmaj_gx,
+        nky_full,
+        y0,
+    ) = _prepare_gx_reference(
         args.gx,
         ky_arg=str(args.ky),
         y0_fallback=float(args.y0),
     )
     if gx_omega_series.ndim != 3:
         raise ValueError(f"Unexpected GX omega series shape: {gx_omega_series.shape}")
-    nky = int(args.nky) if args.nky is not None else max(int(np.max(np.arange(nky_full) + 1)), nky_full)
+    nky = (
+        int(args.nky)
+        if args.nky is not None
+        else max(int(np.max(np.arange(nky_full) + 1)), nky_full)
+    )
     ny = 3 * (nky - 1) + 1
 
     start = int((1.0 - float(args.gx_avg_fraction)) * gx_omega_series.shape[0])
@@ -201,19 +229,29 @@ def main() -> None:
         nperiod=int(args.nperiod),
         y0=y0,
     )
-    steps = int(args.steps) if args.steps is not None else max(int(np.ceil(float(gx_time[-1]) / float(args.dt))), 1)
+    steps = (
+        int(args.steps)
+        if args.steps is not None
+        else max(int(np.ceil(float(gx_time[-1]) / float(args.dt))), 1)
+    )
     checkpoint_steps = _parse_checkpoint_steps(args.checkpoint_steps, steps)
-    mode_methods = [item.strip() for item in str(args.mode_methods).split(",") if item.strip()]
+    mode_methods = [
+        item.strip() for item in str(args.mode_methods).split(",") if item.strip()
+    ]
     if not mode_methods:
         raise ValueError("No mode methods parsed from --mode-methods")
     traj_dir = args.trajectory_dir or args.out.parent
-    helper_args = SimpleNamespace(tmin=args.tmin, tmax=args.tmax, gx_avg_fraction=float(args.gx_avg_fraction))
+    helper_args = SimpleNamespace(
+        tmin=args.tmin, tmax=args.tmax, gx_avg_fraction=float(args.gx_avg_fraction)
+    )
     grid_full = build_spectral_grid(cfg.grid)
 
     rows: list[dict[str, float | str]] = []
     for i, ky_val in enumerate(gx_ky):
         for step_count in checkpoint_steps:
-            traj_path = _trajectory_path(Path(traj_dir), float(ky_val), steps=step_count)
+            traj_path = _trajectory_path(
+                Path(traj_dir), float(ky_val), steps=step_count
+            )
             if bool(args.reuse_trajectory) and traj_path.exists():
                 result = _load_trajectory(traj_path)
             else:
@@ -238,7 +276,11 @@ def main() -> None:
                 )
                 _save_trajectory(traj_path, result)
 
-            horizon_t = float(np.asarray(result.t, dtype=float)[-1]) if np.asarray(result.t).size else 0.0
+            horizon_t = (
+                float(np.asarray(result.t, dtype=float)[-1])
+                if np.asarray(result.t).size
+                else 0.0
+            )
             for mode_method in mode_methods:
                 scored = _recompute_time_history_growth_on_grid(
                     helper_args,
