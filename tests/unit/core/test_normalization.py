@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-import spectraxgk.validation.benchmarks.defaults as benchmark_defaults
+import spectraxgk.benchmarks as benchmark_defaults
 from spectraxgk import benchmarks
 from spectraxgk.diagnostics.normalization import (
     apply_diagnostic_normalization,

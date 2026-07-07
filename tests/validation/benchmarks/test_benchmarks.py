@@ -695,7 +695,7 @@ def test_cyclone_krylov_smoke():
 
 
 def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
-    import spectraxgk.validation.benchmarks.cyclone_linear as benchmark_cyclone_linear
+    import spectraxgk.benchmarks as benchmark_cyclone_linear
 
     def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
         phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
@@ -751,7 +751,7 @@ def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypa
 def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_reference_growth_unavailable(
     monkeypatch,
 ):
-    import spectraxgk.validation.benchmarks.cyclone_scan as benchmark_cyclone_scan
+    import spectraxgk.benchmarks as benchmark_cyclone_scan
 
     monkeypatch.setattr(
         benchmark_cyclone_scan, "build_linear_cache", lambda *_args, **_kwargs: object()

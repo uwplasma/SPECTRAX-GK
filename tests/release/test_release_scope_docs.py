@@ -69,7 +69,7 @@ FORBIDDEN_PHRASES = (
 COMPARISON_CODE_PATTERN = re.compile(
     r"\bGX\b|\bgx\b|gx_|_gx|GX-reference|comparison-code"
 )
-COMPARISON_ALLOWED_SOURCE_PREFIXES = (Path("src/spectraxgk/validation/benchmarks"),)
+COMPARISON_ALLOWED_SOURCE_PREFIXES: tuple[Path, ...] = ()
 
 
 def test_claim_scope_pages_keep_required_quasilinear_boundaries() -> None:

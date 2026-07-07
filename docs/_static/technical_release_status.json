@@ -384,9 +384,9 @@
           "exists": true,
           "name": "benchmark policy module",
           "passed": true,
-          "path": "src/spectraxgk/validation/benchmarks/defaults.py",
+          "path": "src/spectraxgk/benchmarks.py",
           "required": true,
-          "snippet": null
+          "snippet": "CYCLONE_KRYLOV_DEFAULT"
         },
         {
           "exists": true,

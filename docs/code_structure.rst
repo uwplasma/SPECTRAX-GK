@@ -149,7 +149,7 @@ Physics / Numerics / IO Map
      - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
-     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``validation/benchmarks/cyclone_linear.py``, ``validation/benchmarks/cyclone_scan.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
+     - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
      - late-time/windowed gate tests, eigenfunction reference/phase utilities, diagnostics time-series loading, benchmark case presets, physics metric extraction, scan/eigenmode orchestration, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -570,7 +570,7 @@ Completed extractions:
   follow-up campaign decisions stay deterministic. QL-seed screening,
   state-control runbooks, matched-replicate follow-up planning, and candidate
   campaign design are all staged inside that single tools owner so they do not
-  re-enter ``src/spectraxgk/validation``.
+  re-enter the installable package as validation-campaign code.
 - nonlinear turbulence-gradient evidence scope markers, acceptance config
   dataclasses, JSON-safe parsing, finite-difference conditioning gates,
   artifact classification, replicated window summaries, central
@@ -694,7 +694,7 @@ Benchmark initial conditions, reference containers and CSV loaders, species-to-
 ``LinearParams`` construction, reference hypercollision/end-damping policy,
 normalization constants, Krylov defaults, solver-selection policy, scan
 batching, and scan-window policy live in
-``spectraxgk.validation.benchmarks.defaults``. Fit-signal selection and
+``spectraxgk.benchmarks``. Fit-signal selection and
 diagnostic growth-rate normalization live in
 ``spectraxgk.diagnostics.growth_rates``. Import-identity tests pin the old helper
 symbols to their consolidated owners before larger benchmark-family runners are
@@ -722,15 +722,14 @@ fallback.
 Single-point KBM dispatch now passes one explicit run-options object through
 the explicit-time, Krylov, and saved-time helper paths, keeping solver selection
 separate from the numerical fitting and trajectory code that remains local to
-``kbm_linear``.
+the public benchmark owner.
 ``spectraxgk.benchmarks`` remains the public facade for
 ``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
 ``spectraxgk.benchmarks`` for ``run_tem_linear`` and ``run_tem_scan``.
 The KBM beta-scan owner keeps patchable numerical hooks local while staging
 shared setup, fit-window policy construction, kinetic-species index validation,
 per-beta state/cache construction, solver-path dispatch, Krylov continuation
-updates, and result packing through focused private helpers. The existing
-``kbm_beta`` module remains the owner of explicit-time, Krylov,
+updates, and result packing through focused private helpers. The public benchmark owner remains responsible for explicit-time, Krylov,
 streaming, and saved-time fitting details.
 The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
 policy between primary auto-window fitting and invalid-window fallback fitting,
@@ -771,19 +770,17 @@ private fit-policy object through those stages so ``phi``, density, automatic,
 and reference-window fits cannot silently diverge in their normalization or
 window-selection rules. ETG scan internals carry separate batch and fit context objects through staged streaming, configured-history, unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers, keeping each numerical branch locally auditable.
 Cyclone single-mode and scan implementations now live in
-``spectraxgk.validation.benchmarks.cyclone_linear`` and
-``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through
-``spectraxgk.benchmarks``. The single-mode runner
+``spectraxgk.benchmarks`` and are exposed through the same public facade. The single-mode runner
 keeps public setup and solver fallback orchestration local while staging
 default parameter/term construction, reference-aligned geometry policy,
 fit-signal validation, resolved run setup, time/Krylov dispatch, and
-``CycloneRunResult`` packing into private helpers. It keeps Krylov seeding/branch selection and time-integration fit policy local to ``spectraxgk.validation.benchmarks.cyclone_linear``. The Krylov path separates explicit frequency-seed fitting, primary/reduced seed fallback, shift-target construction, dominant-eigenpair option forwarding, branch-guard selection, field packing, and normalization into named stages. The time path separates runtime-config resolution, reference-aligned explicit integration, configured/unconfigured fixed-step integration, shared automatic-window keyword packing, and saved-trace fitting into named stages. The scan runner delegates
+``CycloneRunResult`` packing into private helpers. It keeps Krylov seeding/branch selection and time-integration fit policy local to ``spectraxgk.benchmarks``. The Krylov path separates explicit frequency-seed fitting, primary/reduced seed fallback, shift-target construction, dominant-eigenpair option forwarding, branch-guard selection, field packing, and normalization into named stages. The time path separates runtime-config resolution, reference-aligned explicit integration, configured/unconfigured fixed-step integration, shared automatic-window keyword packing, and saved-trace fitting into named stages. The scan runner delegates
 Krylov branch-following, reference-aligned explicit-time reselection, and
 standard saved-time/streaming scan execution to
-``spectraxgk.validation.benchmarks.cyclone_scan_branches`` through an explicit
+``spectraxgk.benchmarks`` through an explicit
 hook bundle while keeping scan setup, default species/term policy,
 reference-aligned normalization, fit-window policy packing, ky-batch selection,
-and branch dispatch in focused local helpers. Trace-seed branch initialization, Krylov branch following, and reference-aligned explicit-time reselection now live in ``spectraxgk.validation.benchmarks.cyclone_scan_branches`` so the scan has one patchable branch-policy owner. The Cyclone single-mode time path shares
+and branch dispatch in focused local helpers. Trace-seed branch initialization, Krylov branch following, and reference-aligned explicit-time reselection now live in ``spectraxgk.benchmarks`` so the scan has one patchable branch-policy owner. The Cyclone single-mode time path shares
 one local automatic-fit keyword policy between automatic signal selection and
 direct signal fitting, avoiding drift in late-window fit semantics. The Cyclone
 scan time path now keeps batch construction, per-batch time-configuration
@@ -817,8 +814,8 @@ field-line/``k_y`` sample coverage, and promoted transport-candidate selection.
 ``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
 nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
 next-campaign admission, and matched nonlinear audit redesign. The public
-``spectraxgk.validation`` API re-exports user-facing admission helpers directly
-from these owners, while the old installable stellarator-validation subpackage has
+``spectraxgk.api.validation`` API re-exports user-facing admission helpers directly
+from these owners, while installable validation-campaign subpackages have
 been removed.
 
 The first differentiable-geometry split keeps

@@ -558,22 +558,6 @@ Benchmarks
    :members:
    :no-index:
 
-Benchmark Defaults
-------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.defaults
-   :members:
-
-.. automodule:: spectraxgk.validation.benchmarks.cyclone_linear
-   :members:
-
-.. automodule:: spectraxgk.validation.benchmarks.cyclone_scan
-   :members:
-
-.. automodule:: spectraxgk.validation.benchmarks.cyclone_scan_branches
-   :members:
-   :private-members:
-
 Validation Gates
 ----------------
 

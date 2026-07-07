@@ -32,7 +32,6 @@ required_domain_packages = [
   "spectraxgk.solvers.linear",
   "spectraxgk.solvers.nonlinear",
   "spectraxgk.solvers.time",
-  "spectraxgk.validation",
   "spectraxgk.workflows",
   "spectraxgk.workflows.runtime",
 ]
@@ -70,13 +69,6 @@ recursive = true
 baseline = 259
 target = 99
 
-[[topology_policy.counts]]
-name = "installable_validation_python_files"
-path = "src/spectraxgk/validation"
-pattern = "*.py"
-recursive = true
-baseline = 69
-target = 5
 
 [[topology_policy.counts]]
 name = "flat_test_python_files"

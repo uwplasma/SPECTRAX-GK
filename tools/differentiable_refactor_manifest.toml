@@ -70,7 +70,7 @@ extension_points = ["Diagnostic", "TransportWindow", "SpectrumExtractor", "GateR
 [[architecture_layers]]
 name = "validation"
 responsibility = "literature gates, reference-code comparison adapters, manifests, and benchmark families"
-planned_packages = ["spectraxgk.validation"]
+planned_packages = ["spectraxgk.benchmarks", "spectraxgk.diagnostics"]
 extension_points = ["BenchmarkFamily", "ReferenceAdapter", "PhysicsGate", "ArtifactLedger"]
 
 [[architecture_layers]]
@@ -115,32 +115,6 @@ doc_pages = ["docs/differentiable_refactor_plan.rst", "docs/code_structure.rst"]
 
 
 
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_scan"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan.py"
-facade_module = "spectraxgk.benchmarks"
-status = "active"
-responsibility = "Cyclone ky-scan runner setup and batched time integration behind the public benchmark API"
-moved_exports = [
-  "run_cyclone_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/tools/artifacts/test_parallel_identity_gate_artifacts.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.cyclone_scan_branches"
-source_path = "src/spectraxgk/validation/benchmarks/cyclone_scan_branches.py"
-facade_module = "spectraxgk.validation.benchmarks.cyclone_scan"
-status = "active"
-responsibility = "Cyclone ky-scan branch hook contract, batch setup, reference-aligned explicit-time reselection, streaming fits, saved-history integration, and fit/appending policies"
-moved_exports = [
-  "CycloneScanHooks",
-  "run_explicit_time_cyclone_scan",
-  "run_time_cyclone_scan",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.config"
@@ -1669,8 +1643,8 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
 target_packages = [
-  "spectraxgk.validation.reference_data",
-  "spectraxgk.validation.fit_policies",
+  "spectraxgk.benchmark_data",
+  "spectraxgk.benchmark_policies",
 ]
 public_facade = "spectraxgk.benchmarks"
 line_target = 800

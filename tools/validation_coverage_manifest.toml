@@ -25,8 +25,6 @@ excluded_modules = [
   "spectraxgk.solvers.time.__init__",
   "spectraxgk.terms.__init__",
   "spectraxgk.utils.__init__",
-  "spectraxgk.validation.__init__",
-  "spectraxgk.validation.benchmarks.__init__",
   "spectraxgk.workflows.__init__",
   "spectraxgk.workflows.runtime.__init__",
 ]
@@ -1312,9 +1310,7 @@ next_tests = [
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owned_modules = [
-  "spectraxgk.validation.benchmarks.cyclone_linear",
-  "spectraxgk.validation.benchmarks.cyclone_scan",
-  "spectraxgk.validation.benchmarks.cyclone_scan_branches",
+  "spectraxgk.diagnostics.normalization",
 ]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
@@ -1346,40 +1342,6 @@ artifact_paths = [
 next_tests = [
   "split remaining run execution blocks behind compatibility exports",
   "add manifest-backed tests that every published benchmark figure has a gate source",
-]
-
-[[modules]]
-module = "spectraxgk.validation.benchmarks.defaults"
-path = "src/spectraxgk/validation/benchmarks/defaults.py"
-owned_modules = [
-  "spectraxgk.diagnostics.normalization",
-]
-owner_lane = "normalization constants and Krylov policies for shipped benchmark lanes"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "case-specific normalization contracts for Cyclone, ETG, TEM, kinetic-electron, and KBM benchmarks",
-  "default Krylov branch-following policies used by benchmark scans",
-]
-physics_contracts = [
-  "diagnostic normalization constants follow the canonical case contracts",
-  "case-specific Krylov defaults encode branch-sign and continuation choices explicitly",
-]
-numerics_contracts = [
-  "shift-invert and propagator defaults remain immutable dataclass policies",
-  "reference-aligned kinetic-electron default differs only by documented shift source",
-]
-fast_tests = [
-  "tests/unit/core/test_normalization.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_core_linear_atlas.png",
-  "docs/_static/validation_gate_index.json",
-]
-next_tests = [
-  "add tests that TOML benchmark overrides do not mutate shared default policies",
-  "promote case-default policy documentation into the benchmark atlas manifest",
 ]
 
 [[modules]]

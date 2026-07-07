@@ -37,7 +37,7 @@ from spectraxgk.terms.linear_terms import (
     linked_streaming_contribution,
     streaming_contribution,
 )
-from spectraxgk.validation.benchmarks.defaults import (
+from spectraxgk.benchmarks import (
     ScanFitWindowPolicy,
     apply_auto_fit_scan_policy,
     indexed_float_value,

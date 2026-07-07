@@ -68,9 +68,9 @@ The refreshed topology audit on 2026-07-07 found that root-prefix modules are no
 longer the main problem. The current blockers are installable validation
 campaign code and flat maintenance namespaces:
 
-- 338 Python source files under ``src/spectraxgk`` after removing the
-  quasilinear validation subpackage.
-- 69 Python files under ``src/spectraxgk/validation``.
+- 275 Python source files under ``src/spectraxgk`` after removing the
+  installable validation package.
+- 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
 - 246 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
   runtime/executable tests and the first artifact-gate families were
@@ -116,8 +116,8 @@ The target ownership is:
 This means the next implementation order is:
 
 1. Define the small stable ``spectraxgk.benchmarks`` public surface and move
-   benchmark/campaign implementation out of ``spectraxgk.validation`` in
-   staged tranches.
+   benchmark/campaign implementation out of installable runtime packages and
+   split the large ``spectraxgk.benchmarks`` facade into cleaner owners.
 2. Collapse tool scripts by capability, especially artifact/status builders
    that only differ by labels, case names, or output paths.
 3. Collapse tests by physical contract and shared fixtures, especially the
@@ -534,7 +534,7 @@ the module owns. They should not encode the migration history.
      - ``objectives/quasilinear`` or ``validation/calibration``
      - ``model``, ``calibration``, ``holdouts``, ``window_metrics``
    * - ``benchmark_*``
-     - ``validation/benchmarks``
+     - ``benchmarks`` or ``tools/campaigns``
      - ``cyclone``, ``kbm``, ``stellarator``, ``fit_policy``
    * - ``stellarator_*``
      - ``optimization`` or ``objectives``
@@ -551,7 +551,7 @@ Specific root-level names to stop adding:
 - ``solver_<thing>.py``
 - ``vmec_jax_<thing>.py``
 - ``quasilinear_<thing>.py``
-- ``benchmark_<thing>.py`` outside ``validation/benchmarks``
+- ``benchmark_<thing>.py`` unless it is a documented root benchmark driver
 
 Migration Phases
 ----------------

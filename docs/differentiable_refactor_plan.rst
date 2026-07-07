@@ -225,11 +225,11 @@ High-Risk Module Split Plan
   while preserving the existing module-level monkeypatch hooks.
   Cyclone single-mode time-path fitting now shares one automatic-fit keyword
   policy for auto-signal and direct-signal fits in
-  ``validation.benchmarks.cyclone_linear``. Cyclone scan time branches
+  ``spectraxgk.benchmarks``. Cyclone scan time branches
   now keep batch construction, per-batch time-configuration resolution,
   Diffrax streaming fits, saved/configured trajectory integration, and per-ky
   fit/appending policy in focused helpers inside
-  ``validation.benchmarks.cyclone_scan_branches``.
+  ``spectraxgk.benchmarks``.
   Kinetic-electron single-ky saved-time fitting shares one automatic-fit
   keyword policy for primary auto-window and invalid-window fallback fits in
   ``spectraxgk.benchmarks``. Kinetic-electron ky scans now share that
@@ -428,15 +428,15 @@ Phase 1: introduce protocols and containers
   benchmark split also lives in this phase. Benchmark-family case presets now
   live directly in ``spectraxgk.config`` so the stable public import location is
   also the physical owner for those dataclasses.
-  ``spectraxgk.validation.benchmarks.defaults`` owns benchmark initial-condition
-  construction and ``spectraxgk.validation.benchmarks.defaults`` owns reference containers
-  and CSV loaders. ``spectraxgk.validation.benchmarks.defaults`` owns benchmark
+  ``spectraxgk.benchmarks`` owns benchmark initial-condition
+  construction and ``spectraxgk.benchmarks`` owns reference containers
+  and CSV loaders. ``spectraxgk.benchmarks`` owns benchmark
   species-to-``LinearParams`` construction and reference hypercollision policy,
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic
-  normalization policies, ``spectraxgk.validation.benchmarks.defaults`` owns scan batching, streaming windows,
-  scan-window policy, and ``spectraxgk.validation.benchmarks.defaults`` owns
-  Krylov defaults plus branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``
-  and ``spectraxgk.validation.benchmarks.cyclone_scan`` remain temporary Cyclone validation owners, while
+  normalization policies, ``spectraxgk.benchmarks`` owns scan batching, streaming windows,
+  scan-window policy, and ``spectraxgk.benchmarks`` owns
+  Krylov defaults plus branch-selection policies. ``spectraxgk.benchmarks``
+  and ``spectraxgk.benchmarks`` remain temporary Cyclone validation owners, while
   ``spectraxgk.benchmarks`` owns the kinetic-electron, ETG, KBM, and TEM benchmark implementations directly as the public
   benchmark entry point. The old benchmark helper bridge has been removed;
   runners and tests import focused benchmark modules directly.
