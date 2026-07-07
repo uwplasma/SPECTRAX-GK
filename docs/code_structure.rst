@@ -768,7 +768,7 @@ ETG single-point and scan implementations live in
 electrostatic term defaults, fit-window policy construction, ky-batch state
 construction, and per-batch result packaging in focused local helpers while delegating
 Krylov continuation, streaming fit, saved-signal integration, and fallback
-fit/appending policy to ``spectraxgk.validation.benchmarks.etg_scan_paths``
+fit/appending policy inside ``spectraxgk.validation.benchmarks.etg_scan``
 for solver-path details.
 ETG single-point and scan Krylov paths share one forwarded-key policy, with
 scan continuation overrides applied explicitly for carried shifts. The ETG
@@ -780,10 +780,7 @@ streaming-density fitting, configured/unconfigured saved-history integration,
 and saved-trace fitting into focused helpers. The saved-time path carries one
 private fit-policy object through those stages so ``phi``, density, automatic,
 and reference-window fits cannot silently diverge in their normalization or
-window-selection rules. ETG scan path internals carry separate batch and fit
-context objects through staged streaming, configured-history,
-unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers, keeping
-the scan owner patchable while making each numerical branch locally auditable.
+window-selection rules. ETG scan internals carry separate batch and fit context objects through staged streaming, configured-history, unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers, keeping each numerical branch locally auditable.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.validation.benchmarks.cyclone_linear`` and
 ``spectraxgk.validation.benchmarks.cyclone_scan`` and are re-exported through

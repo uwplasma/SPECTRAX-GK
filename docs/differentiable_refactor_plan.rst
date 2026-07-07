@@ -218,7 +218,7 @@ High-Risk Module Split Plan
   saved-time scan fitting.
   ETG single-point and scan Krylov paths now share one forwarded-key policy in
   ``validation.benchmarks.etg_linear`` and
-  ``validation.benchmarks.etg_scan_paths``, with continuation-specific shift
+  ``validation.benchmarks.etg_scan``, with continuation-specific shift
   overrides layered on top for scan branches. ETG single-point saved-time
   direct fits share the same primary/fallback automatic-fit keyword policy, and
   the single-point runner now keeps setup, Krylov result packing,

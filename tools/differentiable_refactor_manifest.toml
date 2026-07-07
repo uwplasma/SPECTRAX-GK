@@ -262,23 +262,6 @@ fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", 
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.validation.benchmarks.etg_scan_paths"
-source_path = "src/spectraxgk/validation/benchmarks/etg_scan_paths.py"
-facade_module = "spectraxgk.validation.benchmarks.etg_scan"
-status = "active"
-responsibility = "ETG ky-scan Krylov continuation, streaming fit, saved-signal integration, and fallback fit/appending policies"
-moved_exports = [
-  "ETGTimeBatchResult",
-  "append_etg_time_fit_results",
-  "run_etg_krylov_batch",
-  "run_etg_time_batch",
-  "sync_path_hooks",
-]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py", "tests/validation/benchmarks/test_benchmarks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-
-[[phase1_split_modules]]
 module = "spectraxgk.validation.benchmarks.kinetic_linear"
 source_path = "src/spectraxgk/validation/benchmarks/kinetic_linear.py"
 facade_module = "spectraxgk.benchmarks"
