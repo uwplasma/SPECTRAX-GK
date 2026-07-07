@@ -144,7 +144,9 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     assert "NaN" not in summary_path.read_text(encoding="utf-8")
 
 
-def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(tmp_path: Path) -> None:
+def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(
+    tmp_path: Path,
+) -> None:
     pytest.importorskip("netCDF4")
 
     gx_path = tmp_path / "gx.out.nc"

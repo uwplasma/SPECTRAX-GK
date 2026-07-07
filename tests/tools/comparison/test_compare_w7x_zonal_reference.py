@@ -10,7 +10,12 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "comparison" / "compare_w7x_zonal_reference.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "comparison"
+        / "compare_w7x_zonal_reference.py"
+    )
     spec = importlib.util.spec_from_file_location("compare_w7x_zonal_reference", path)
     assert spec is not None
     assert spec.loader is not None
@@ -29,7 +34,14 @@ def _write_reference(tmp_path: Path) -> tuple[Path, Path]:
         for code, offset in (("stella", -0.002), ("GENE", 0.002)):
             residual = 0.1 + kx + offset
             for tv in t:
-                traces.append({"kx_rhoi": kx, "code": code, "t_vti_over_a": tv, "response": residual + np.exp(-tv / 200.0)})
+                traces.append(
+                    {
+                        "kx_rhoi": kx,
+                        "code": code,
+                        "t_vti_over_a": tv,
+                        "response": residual + np.exp(-tv / 200.0),
+                    }
+                )
             residuals.append(
                 {
                     "panel": "x",
@@ -73,7 +85,9 @@ def _write_summary(
     return path
 
 
-def test_w7x_zonal_reference_comparison_passes_closed_synthetic_case(tmp_path: Path) -> None:
+def test_w7x_zonal_reference_comparison_passes_closed_synthetic_case(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     ref_traces, ref_residuals = _write_reference(tmp_path)
     summary = _write_summary(tmp_path)
@@ -106,7 +120,9 @@ def test_w7x_zonal_reference_comparison_fails_short_window(tmp_path: Path) -> No
     assert "time_coverage_kx050" in failed
 
 
-def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: Path) -> None:
+def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     ref_traces, ref_residuals = _write_reference(tmp_path)
     initial_level = 2.0
@@ -116,7 +132,9 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: P
     refs = pd.read_csv(ref_traces)
     combined_rows = []
     for kx, group in refs.groupby("kx_rhoi"):
-        mean_trace = group.pivot_table(index="t_vti_over_a", columns="code", values="response", aggfunc="mean")
+        mean_trace = group.pivot_table(
+            index="t_vti_over_a", columns="code", values="response", aggfunc="mean"
+        )
         mean_trace = mean_trace.sort_index().mean(axis=1)
         token = mod.kx_token(float(kx))
         time_col = "t_reference" if np.isclose(float(kx), 0.05) else "t"

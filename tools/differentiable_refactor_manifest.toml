@@ -590,7 +590,7 @@ moved_exports = [
   "_jax_float_dtype",
   "discover_differentiable_geometry_backends",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -874,7 +874,7 @@ moved_exports = [
   "finite_difference_jacobian",
   "observable_gradient_validation_report",
 ]
-fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -895,7 +895,7 @@ moved_exports = [
   "_radial_derivative_profile",
   "_scalar_parity_metrics",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -917,7 +917,7 @@ moved_exports = [
   "vmec_field_line_tensor_observable_names",
   "vmec_metric_tensor_observable_names",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -930,7 +930,7 @@ moved_exports = [
   "geometry_inverse_design_report",
   "geometry_sensitivity_report",
 ]
-fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -946,7 +946,7 @@ moved_exports = [
   "evaluate_boozer_bmag_on_field_line",
   "vmec_boundary_aspect_sensitivity_report",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -962,7 +962,7 @@ moved_exports = [
   "_perturb_vmec_state",
   "_resolve_vmec_state_indices",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -975,7 +975,7 @@ moved_exports = [
   "_rms_with_floor",
   "_vmec_field_line_sampling_coordinates",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -989,7 +989,7 @@ moved_exports = [
   "vmec_jax_field_line_tensor_sensitivity_report",
   "vmec_jax_metric_tensor_sensitivity_report",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1001,7 +1001,7 @@ responsibility = "vmec_jax state to booz_xform_jax equal-arc core-profile mappin
 moved_exports = [
   "vmec_jax_boozer_equal_arc_core_profiles_from_state",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1018,7 +1018,7 @@ moved_exports = [
   "boozer_coordinate_gradients",
   "evaluate_boozer_field_line_derivatives",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1031,7 +1031,7 @@ moved_exports = [
   "_cached_booz_xform_constants",
   "prewarm_vmec_boozer_equal_arc_cache",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1044,7 +1044,7 @@ moved_exports = [
   "vmec_jax_flux_tube_array_parity_report",
   "vmec_jax_flux_tube_sensitivity_report",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1056,7 +1056,7 @@ responsibility = "direct vmec_jax tensor sampling and conversion into the solver
 moved_exports = [
   "vmec_jax_flux_tube_mapping_from_state",
 ]
-fast_tests = ["tests/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1098,7 +1098,7 @@ moved_exports = [
   "dominant_eigenvalue_branch_locality_report",
   "dominant_real_eigenvalue",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1115,7 +1115,7 @@ moved_exports = [
   "solver_objective_vector_from_geometry",
   "solver_scalar_objective_from_vector",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1134,7 +1134,7 @@ moved_exports = [
   "_surface_index_tuple",
   "_surface_sample_axis",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1151,7 +1151,7 @@ moved_exports = [
   "solver_ready_geometry_mapping",
   "tiny_differentiable_objective_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1163,7 +1163,7 @@ responsibility = "smooth reduced nonlinear-window estimator metrics used by diff
 moved_exports = [
   "_reduced_nonlinear_window_metrics_from_linear_observables",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1176,7 +1176,7 @@ moved_exports = [
   "linear_solver_geometry_gradient_report",
   "solver_objective_branch_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1193,7 +1193,7 @@ moved_exports = [
   "mode21_vmec_boozer_quasilinear_gradient_report",
   "mode21_vmec_boozer_nonlinear_window_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py", "tests/unit/solvers/test_solver_gradient_gate_modules.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1222,7 +1222,7 @@ moved_exports = [
   "_vmec_boozer_state_array",
   "_vmec_boozer_state_parameter_name",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1239,7 +1239,7 @@ moved_exports = [
   "vmec_boozer_aggregate_scalar_objective_from_state",
   "vmec_boozer_scalar_objective_from_state",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1254,7 +1254,7 @@ moved_exports = [
   "vmec_boozer_scalar_objective_finite_difference_report",
   "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1268,7 +1268,7 @@ moved_exports = [
   "vmec_boozer_aggregate_scalar_objective_line_search_report",
   "vmec_boozer_aggregate_line_search_holdout_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1384,9 +1384,9 @@ moved_exports = [
   "_control_variate_candidate",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_nonlinear_gradient_ql_seed_screen.py",
-  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -1402,7 +1402,7 @@ moved_exports = [
   "nonlinear_gradient_control_mean_gate",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
   "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
@@ -1418,7 +1418,7 @@ moved_exports = [
   "_required_replicates_for_scaled_bracket",
   "nonlinear_gradient_candidate_design_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1431,7 +1431,7 @@ moved_exports = [
   "_composite_control_row",
   "nonlinear_gradient_composite_control_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1445,7 +1445,7 @@ moved_exports = [
   "_required_replicates",
   "nonlinear_gradient_followup_plan",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_followup.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_followup.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1460,8 +1460,8 @@ moved_exports = [
   "nonlinear_gradient_ql_seed_screen_report",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -1476,8 +1476,8 @@ moved_exports = [
   "nonlinear_gradient_state_control_runbook_report",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -1501,7 +1501,7 @@ moved_exports = [
   "_artifact_passed",
   "_gradient_conditioning_summary",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1513,7 +1513,7 @@ responsibility = "fail-closed nonlinear turbulence-gradient artifact classificat
 moved_exports = [
   "classify_gradient_artifact",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1526,7 +1526,7 @@ moved_exports = [
   "_ensemble_row",
   "summarize_window_evidence",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1538,7 +1538,7 @@ responsibility = "central finite-difference nonlinear turbulence-gradient report
 moved_exports = [
   "nonlinear_turbulence_gradient_finite_difference_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1550,7 +1550,7 @@ responsibility = "shared normalized evidence-margin scoring helper for nonlinear
 moved_exports = [
   "_metric_margin",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1567,7 +1567,7 @@ moved_exports = [
   "_paired_uncertainty_rel",
   "nonlinear_turbulence_gradient_bracket_sweep_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1581,7 +1581,7 @@ moved_exports = [
   "_metric_margin",
   "nonlinear_turbulence_gradient_candidate_ranking_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1595,7 +1595,7 @@ moved_exports = [
   "nonlinear_turbulence_gradient_evidence_gap_report",
   "nonlinear_turbulence_gradient_evidence_report",
 ]
-fast_tests = ["tests/test_nonlinear_gradient_evidence.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_gradient_evidence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2268,7 +2268,7 @@ moved_exports = [
   "fit_train_heat_flux_scale",
   "quasilinear_calibration_report",
 ]
-fast_tests = ["tests/test_quasilinear_calibration.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_calibration.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2280,7 +2280,7 @@ responsibility = "quasilinear spectrum-column integration into scalar heat-flux 
 moved_exports = [
   "integrated_quasilinear_flux_from_spectrum",
 ]
-fast_tests = ["tests/test_quasilinear_calibration.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_calibration.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -2294,7 +2294,7 @@ moved_exports = [
   "calibration_point_from_spectrum_and_nonlinear_window",
   "write_quasilinear_calibration_report",
 ]
-fast_tests = ["tests/test_quasilinear_calibration.py", "tests/test_quasilinear_promotion_guardrails.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_calibration.py", "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[hotspots]]
@@ -2347,7 +2347,7 @@ target_packages = [
 public_facade = "spectraxgk.geometry.differentiable"
 line_target = 200
 status = "active"
-existing_fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/test_differentiable_geometry_bridge.py"]
+existing_fast_tests = ["tests/unit/geometry/test_differentiable_geometry.py", "tests/unit/objectives/test_differentiable_geometry_bridge.py"]
 planned_tests = [
   "optional-backend discovery without import side effects",
   "sampled geometry PyTree round-trip tests",
@@ -2384,7 +2384,7 @@ target_packages = [
 public_facade = "spectraxgk.operators.nonlinear.parallel"
 line_target = 900
 status = "planned"
-existing_fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/test_parallel_decomposition.py"]
+existing_fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_parallel_decomposition.py"]
 planned_tests = [
   "serial-vs-decomposed RHS identity tests",
   "physical transport-window identity tests",
@@ -2417,7 +2417,7 @@ moved_exports = [
   "stellarator_itg_vmec_boozer_portfolio_objective_from_state",
   "stellarator_itg_vmec_boozer_sample_objective_table_from_state",
 ]
-fast_tests = ["tests/test_stellarator_optimization.py", "tests/unit/objectives/test_stellarator_objective_portfolio.py"]
+fast_tests = ["tests/unit/objectives/test_stellarator_optimization.py", "tests/unit/objectives/test_stellarator_objective_portfolio.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2432,7 +2432,7 @@ moved_exports = [
   "stellarator_itg_objective_residual_vector",
   "stellarator_itg_residual_sensitivity_report",
 ]
-fast_tests = ["tests/test_stellarator_optimization.py"]
+fast_tests = ["tests/unit/objectives/test_stellarator_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2461,7 +2461,7 @@ moved_exports = [
   "QALowTurbulenceConfig",
   "QALowTurbulenceResult",
 ]
-fast_tests = ["tests/test_qa_low_turbulence.py"]
+fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2477,7 +2477,7 @@ moved_exports = [
   "qa_low_turbulence_observables",
   "qa_low_turbulence_window_metrics",
 ]
-fast_tests = ["tests/test_qa_low_turbulence.py"]
+fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2492,7 +2492,7 @@ moved_exports = [
   "qa_low_turbulence_residual_names",
   "qa_low_turbulence_residual_vector",
 ]
-fast_tests = ["tests/test_qa_low_turbulence.py"]
+fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2502,7 +2502,7 @@ facade_module = "spectraxgk.objectives.qa_low_turbulence"
 status = "active"
 responsibility = "Adam optimizer loop and optimization-history row construction for reduced QA low-turbulence designs"
 moved_exports = ["optimize_qa_low_turbulence"]
-fast_tests = ["tests/test_qa_low_turbulence.py"]
+fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2516,7 +2516,7 @@ moved_exports = [
   "reduced_boundary_surface",
   "reduced_lcfs_bmag",
 ]
-fast_tests = ["tests/test_qa_low_turbulence.py"]
+fast_tests = ["tests/validation/stellarator/test_qa_low_turbulence.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2537,7 +2537,7 @@ moved_exports = [
   "vmec_boozer_aggregate_scalar_objective_line_search_report",
   "vmec_boozer_aggregate_line_search_holdout_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2553,7 +2553,7 @@ moved_exports = [
   "mode21_vmec_boozer_quasilinear_gradient_report",
   "mode21_vmec_boozer_nonlinear_window_gradient_report",
 ]
-fast_tests = ["tests/test_solver_objective_gradients.py"]
+fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2570,7 +2570,7 @@ moved_exports = [
   "_pin_current_optional_backend_paths",
   "_reference_wout_from_context",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_objective.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2590,7 +2590,7 @@ moved_exports = [
   "_transport_objective_raw_value_from_state",
   "vmec_jax_transport_objective_from_state",
 ]
-fast_tests = ["tests/test_vmec_jax_transport_objective.py", "tests/unit/objectives/test_vmec_jax_transport_gradient.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_objective.py", "tests/unit/objectives/test_vmec_jax_transport_gradient.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2600,7 +2600,7 @@ facade_module = "spectraxgk.objectives.vmec_transport"
 status = "active"
 responsibility = "VMEC/Boozer final-state dominant-growth branch-locality report across surface, field-line, and ky samples"
 moved_exports = ["vmec_jax_transport_growth_branch_locality_report_from_states"]
-fast_tests = ["tests/test_vmec_jax_transport_objective.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_objective.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[hotspots]]
@@ -2620,7 +2620,7 @@ target_packages = [
 public_facade = "spectraxgk.objectives.solver_gradients"
 line_target = 900
 status = "planned"
-existing_fast_tests = ["tests/test_solver_objective_gradients.py", "tests/test_stellarator_optimization.py"]
+existing_fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py", "tests/unit/objectives/test_stellarator_optimization.py"]
 planned_tests = [
   "eigenvalue branch-locality and spectral-gap tests",
   "JVP/VJP/finite-difference objective consistency tests",
@@ -3298,7 +3298,7 @@ moved_exports = [
   "NonlinearWindowEnsembleConfig",
   "NonlinearWindowEnsembleManifestConfig",
 ]
-fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_window.py", "tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3317,7 +3317,7 @@ moved_exports = [
   "_late_window_bounds",
   "nonlinear_window_convergence_report",
 ]
-fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_calibration.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_window.py", "tests/validation/quasilinear/test_quasilinear_calibration.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3331,7 +3331,7 @@ moved_exports = [
   "nonlinear_window_convergence_from_csv",
   "nonlinear_window_convergence_from_summary",
 ]
-fast_tests = ["tests/test_quasilinear_window.py", "tests/test_check_nonlinear_window_ensemble.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_window.py", "tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3345,7 +3345,7 @@ moved_exports = [
   "_report_sem",
   "nonlinear_window_stats_promotion_ready",
 ]
-fast_tests = ["tests/test_quasilinear_window.py", "tests/test_quasilinear_promotion_guardrails.py"]
+fast_tests = ["tests/validation/quasilinear/test_quasilinear_window.py", "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3358,7 +3358,7 @@ moved_exports = [
   "nonlinear_window_ensemble_artifact_manifest",
   "nonlinear_window_ensemble_report",
 ]
-fast_tests = ["tests/test_check_nonlinear_window_ensemble.py", "tests/test_quasilinear_window.py"]
+fast_tests = ["tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py", "tests/validation/quasilinear/test_quasilinear_window.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3411,8 +3411,8 @@ public_facade = "spectraxgk.api"
 line_target = 250
 status = "closed"
 existing_fast_tests = [
-  "tests/test_stellarator_optimization.py",
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_stellarator_optimization.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/unit/parallel/test_parallel.py",
   "tests/unit/parallel/test_nonlinear_parallel.py",
@@ -3636,7 +3636,7 @@ moved_exports = [
   "internal_vmec_backend_available",
   "write_vmec_eik_netcdf",
 ]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3651,7 +3651,7 @@ moved_exports = [
   "_import_module_with_search_paths",
   "internal_vmec_backend_available",
 ]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3661,7 +3661,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "VMEC imported-geometry period contraction and nonuniform finite-difference helper numerics"
 moved_exports = ["dermv", "nperiod_set"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3693,7 +3693,7 @@ moved_exports = [
   "_hngc_pressure_correction",
   "_flux_surface_hngc_averages",
 ]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3703,7 +3703,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "VMEC/Boozer imported-geometry orchestration: backend fallback, scalar profile sampling, Boozer field-line state assembly, Hegna-Nakajima corrections, metric/drift coefficients, and normalized flux-tube coefficient packaging"
 moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3713,7 +3713,7 @@ facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
 status = "active"
 responsibility = "VMEC/Boozer radial spline construction and imported-equilibrium metadata extraction"
 moved_exports = ["_vmec_splines"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3723,7 +3723,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "VMEC flux-tube boundary cuts, twist/aspect crossing selection, and equal-arc remapping"
 moved_exports = ["_apply_flux_tube_cut", "_equal_arc_remap"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3733,7 +3733,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "VMEC imported-geometry NetCDF writeout and atomic cache replacement"
 moved_exports = ["_write_vmec_eik_netcdf_atomically", "write_vmec_eik_netcdf"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3743,7 +3743,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "high-level VMEC request normalization, betaprim policy, remap orchestration, and EIK output generation"
 moved_exports = ["generate_vmec_eik_internal"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3753,7 +3753,7 @@ facade_module = "spectraxgk.geometry_backends.vmec"
 status = "active"
 responsibility = "lightweight mutable container shared by VMEC imported-geometry assembly modules"
 moved_exports = ["_Struct"]
-fast_tests = ["tests/test_geometry_backend_vmec_helpers.py"]
+fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -3884,7 +3884,7 @@ moved_exports = [
   "ParallelIdentityReport",
   "parallel_identity_report",
 ]
-fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/unit/parallel/test_parallel_artifact_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3918,7 +3918,7 @@ moved_exports = [
   "independent_map_identity_report",
   "independent_worker_metadata",
 ]
-fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/test_parallel_artifact_contracts.py"]
+fast_tests = ["tests/unit/parallel/test_parallel.py", "tests/unit/parallel/test_parallel_artifact_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3968,7 +3968,7 @@ facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
 status = "active"
 responsibility = "production nonlinear optimization guard configuration, artifact claim-scope helpers, and reduced-artifact safety reports"
 moved_exports = ["ProductionNonlinearOptimizationGuardConfig", "optimization_artifact_reduction_scope", "reduced_artifact_scope_report"]
-fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_transport_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -3978,5 +3978,5 @@ facade_module = "spectraxgk.validation.nonlinear_transport.optimization_guard"
 status = "active"
 responsibility = "replicated long-window, optimized-equilibrium, and matched baseline-to-optimized nonlinear transport audit extractors"
 moved_exports = ["matched_optimized_transport_report", "optimized_equilibrium_transport_report", "replicated_transport_ensemble_report"]
-fast_tests = ["tests/test_nonlinear_transport_optimization.py"]
+fast_tests = ["tests/validation/nonlinear/test_nonlinear_transport_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]

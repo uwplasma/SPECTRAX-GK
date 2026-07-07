@@ -66,8 +66,8 @@ numerics_contracts = [
   "object identity for benchmark, objective, parallel, and runtime exports is checked by focused import tests",
 ]
 fast_tests = [
-  "tests/test_stellarator_optimization.py",
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_stellarator_optimization.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/unit/parallel/test_parallel.py",
   "tests/unit/parallel/test_nonlinear_parallel.py",
@@ -409,7 +409,7 @@ fast_tests = [
   "tests/unit/linear/test_linear.py",
   "tests/unit/linear/test_linear_helpers_extra.py",
   "tests/unit/parallel/test_velocity_sharding.py",
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -1229,7 +1229,7 @@ fast_tests = [
   "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/tools/artifacts/test_plot_quasilinear_model_selection_status.py",
   "tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py",
-  "tests/test_external_holdout_plan.py",
+  "tests/validation/stellarator/test_external_holdout_plan.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_cyclone_spectrum.png",
@@ -1278,11 +1278,11 @@ numerics_contracts = [
   "grid-refined late-window means are compared with symmetric relative differences and stationarity gates",
 ]
 fast_tests = [
-  "tests/test_quasilinear_calibration.py",
-  "tests/test_quasilinear_window.py",
-  "tests/test_quasilinear_promotion_guardrails.py",
+  "tests/validation/quasilinear/test_quasilinear_calibration.py",
+  "tests/validation/quasilinear/test_quasilinear_window.py",
+  "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
   "tests/release/test_check_quasilinear_calibration_inputs.py",
-  "tests/test_check_external_vmec_high_grid_admission.py",
+  "tests/validation/stellarator/test_check_external_vmec_high_grid_admission.py",
   "tests/tools/artifacts/test_plot_quasilinear_calibration.py",
   "tests/tools/artifacts/test_plot_external_vmec_nonlinear_convergence_gate.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
@@ -1353,10 +1353,10 @@ numerics_contracts = [
   "NaN late-window samples and undersampled windows fail closed by default",
 ]
 fast_tests = [
-  "tests/test_quasilinear_window.py",
-  "tests/test_quasilinear_calibration.py",
-  "tests/test_quasilinear_promotion_guardrails.py",
-  "tests/test_check_nonlinear_window_ensemble.py",
+  "tests/validation/quasilinear/test_quasilinear_window.py",
+  "tests/validation/quasilinear/test_quasilinear_calibration.py",
+  "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
+  "tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_promotion_guardrails.json",
@@ -1685,8 +1685,8 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_autodiff_validation.py",
-  "tests/test_autodiff_demo.py",
-  "tests/test_autodiff_twomode_demo.py",
+  "tests/integration/examples/test_autodiff_demo.py",
+  "tests/integration/examples/test_autodiff_twomode_demo.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth.png",
@@ -1775,7 +1775,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/geometry/test_geometry_backend_miller_internal.py",
-  "tests/test_geometry_backend_vmec_helpers.py",
+  "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_miller_eik.py",
   "tests/unit/geometry/test_vmec_eik.py",
   "tests/unit/geometry/test_vmec_roundtrip_gate.py",
@@ -1829,9 +1829,9 @@ numerics_contracts = [
   "JAX-traced geometry mappings must preserve autodiff and match central finite differences for geometry observables",
 ]
 fast_tests = [
-  "tests/test_differentiable_geometry_bridge.py",
+  "tests/unit/objectives/test_differentiable_geometry_bridge.py",
   "tests/tools/artifacts/test_build_vmec_boozer_parity_matrix.py",
-  "tests/test_geometry_backend_vmec_helpers.py",
+  "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_vmec_eik.py",
 ]
 artifact_paths = [
@@ -2291,10 +2291,10 @@ numerics_contracts = [
   "single-window and unsupported artifacts fail closed unless replicated ensemble uncertainty gates pass",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
   "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
-  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
   "tests/tools/artifacts/test_build_vmec_state_to_input_mapping_response.py",
   "tests/tools/campaigns/test_write_vmec_boundary_perturbation_inputs.py",
   "tests/tools/campaigns/test_write_vmec_state_to_input_mapping_campaign.py",
@@ -2381,7 +2381,7 @@ numerics_contracts = [
   "finite-difference conditioning summaries require finite response, asymmetry, condition number, and uncertainty metrics before passing",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2412,7 +2412,7 @@ numerics_contracts = [
   "missing or malformed conditioning values fail closed through the shared core metric parser",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2443,7 +2443,7 @@ numerics_contracts = [
   "unsupported or malformed window artifacts fail closed and remain visible in the evidence rows",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2474,7 +2474,7 @@ numerics_contracts = [
   "nonfinite or nonpositive perturbation sizes raise before any report can be promoted",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2510,7 +2510,7 @@ numerics_contracts = [
   "metadata length mismatches, mixed-control sweeps, and missing perturbation amplitudes fail closed with explicit recommendations",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json",
@@ -2542,7 +2542,7 @@ numerics_contracts = [
   "gap reports enumerate failed gradient gates and required central finite-difference metrics before any promotion can be considered",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_evidence.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -2574,9 +2574,9 @@ numerics_contracts = [
   "variance-reduction statistics require enough common samples and fail closed when control or response variance is degenerate",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
-  "tests/test_nonlinear_gradient_ql_seed_screen.py",
-  "tests/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_gradient_next_campaign_design.json",
@@ -2608,7 +2608,7 @@ numerics_contracts = [
   "malformed metadata, failed spread states, and impossible bracket scales produce explicit blockers rather than launch commands",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_gradient_next_campaign_design.json",
@@ -2639,7 +2639,7 @@ numerics_contracts = [
   "coefficient parsing, paired-sign robustness, and finite metric gates all fail closed with row-level blockers",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_gradient_composite_control_design.json",
@@ -2670,7 +2670,7 @@ numerics_contracts = [
   "SEM-based replicate counts respect configured maximum extra replicates per state and fail closed without source replicate metadata",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
@@ -2701,8 +2701,8 @@ numerics_contracts = [
   "primary objective membership and metadata length checks raise or fail closed before producing admitted controls",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_ql_seed_screen.py",
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_ql_seed_screen.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_gradient_ql_seed_screen.json",
@@ -2733,8 +2733,8 @@ numerics_contracts = [
   "failed parent artifacts, missing input controls, and missing mapping rows remain visible as row-level blockers",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_state_control_runbook.py",
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_state_control_runbook.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_gradient_state_control_runbook.json",
@@ -2765,7 +2765,7 @@ numerics_contracts = [
   "combined control-variate uncertainty includes residual SEM and beta-squared control-mean variance before passing gates",
 ]
 fast_tests = [
-  "tests/test_nonlinear_gradient_followup.py",
+  "tests/validation/nonlinear/test_nonlinear_gradient_followup.py",
   "tests/tools/campaigns/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
 ]
 artifact_paths = [
@@ -2799,7 +2799,7 @@ numerics_contracts = [
   "branch gap, slope difference, and finite eigenvalue guards fail closed before optimization promotion",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2831,7 +2831,7 @@ numerics_contracts = [
   "scalar objective aliases map to canonical objective-vector entries with length validation",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2863,7 +2863,7 @@ numerics_contracts = [
   "aggregate weights must be finite, positive-sum, and normalized before objective reduction",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
@@ -2894,7 +2894,7 @@ numerics_contracts = [
   "finite-difference and AD Jacobian rows are compared with explicit absolute and relative tolerances",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2925,7 +2925,7 @@ numerics_contracts = [
   "late-window trend normalization is finite and differentiable for near-zero but positive regularized flux scales",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
@@ -2956,7 +2956,7 @@ numerics_contracts = [
   "solver-ready value evaluators must remain finite and shape-compatible with the solver-objective vector contract",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
   "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
@@ -2987,7 +2987,7 @@ numerics_contracts = [
   "context and feature hooks must be dependency-injected so tests can validate the gradient-gate math without optional geometry backends",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
   "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
@@ -3050,7 +3050,7 @@ numerics_contracts = [
   "coefficient replacement preserves the state pytree/dataclass structure while applying a single indexed perturbation",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -3083,7 +3083,7 @@ numerics_contracts = [
   "weighted reductions normalize finite positive-sum weights before multiplying solver objective rows",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
@@ -3116,7 +3116,7 @@ numerics_contracts = [
   "weighted aggregate reductions must use finite normalized positive-sum weights inherited from the sampling contract",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_objective_gate.json",
@@ -3149,7 +3149,7 @@ numerics_contracts = [
   "holdout audits must recompute initial and final held-out objectives at the accepted coefficient offset",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
@@ -3218,7 +3218,7 @@ numerics_contracts = [
   "optimized-equilibrium nonlinear transport promotion requires seed and timestep long-window replicate audits with finite flux, running-mean stability, block/SEM stability, and bounded ensemble spread",
 ]
 fast_tests = [
-  "tests/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_solver_objective_gradients.py",
   "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
   "tests/tools/artifacts/test_build_vmec_boozer_aggregate_objective_gate.py",
   "tests/tools/artifacts/test_build_vmec_boozer_aggregate_line_search_gate.py",
@@ -3227,19 +3227,19 @@ fast_tests = [
   "tests/tools/artifacts/test_build_vmec_boozer_aggregate_alpha_holdout_gate.py",
   "tests/tools/artifacts/test_build_vmec_boozer_aggregate_surface_holdout_gate.py",
   "tests/tools/artifacts/test_build_vmec_boozer_second_equilibrium_aggregate_gate.py",
-  "tests/test_check_vmec_boozer_aggregate_holdout_gate.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
   "tests/tools/artifacts/test_build_vmec_boozer_gradient_holdout_matrix.py",
   "tests/tools/artifacts/test_build_nonlinear_window_fd_audit.py",
   "tests/tools/artifacts/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/tools/artifacts/test_build_nonlinear_transport_horizon_audit.py",
-  "tests/test_nonlinear_transport_optimization.py",
+  "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
   "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
-  "tests/test_vmec_jax_qa_optimization_driver.py",
+  "tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py",
   "tests/unit/objectives/test_vmec_jax_transport_admission.py",
   "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
   "tests/unit/objectives/test_vmec_jax_transport_line_search.py",
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
   "tests/tools/campaigns/test_write_vmec_jax_projected_transport_line_search_inputs.py",
 ]
 artifact_paths = [
@@ -3383,7 +3383,7 @@ numerics_contracts = [
   "generated JSON/CSV/PNG artifacts stay under repository-size policy and remain reproducible from the builder",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.json",
@@ -3419,7 +3419,7 @@ numerics_contracts = [
   "configuration stores late-window and finite-difference tolerances explicitly",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.json",
@@ -3448,7 +3448,7 @@ numerics_contracts = [
   "late-window metrics provide mean, CV, trend, slope, and start-index diagnostics",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_time_horizon_audit.json",
@@ -3478,7 +3478,7 @@ numerics_contracts = [
   "covariance diagnostics use the same weighted residual map as the optimizer",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.json",
@@ -3507,7 +3507,7 @@ numerics_contracts = [
   "final accepted designs are evaluated by scalar, residual, and observable finite-difference gates",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.summary.csv",
@@ -3536,7 +3536,7 @@ numerics_contracts = [
   "long-window gates fail closed when late-window samples are insufficient or drift exceeds tolerance",
 ]
 fast_tests = [
-  "tests/test_qa_low_turbulence.py",
+  "tests/validation/stellarator/test_qa_low_turbulence.py",
 ]
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.png",
@@ -3626,7 +3626,7 @@ numerics_contracts = [
   "optional backend paths are pinned reproducibly when imported VMEC-JAX/Boozer modules are already active",
 ]
 fast_tests = [
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
@@ -3655,7 +3655,7 @@ numerics_contracts = [
   "surface chunking preserves weighted-mean reductions exactly against unchunked evaluation",
 ]
 fast_tests = [
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
   "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
 ]
 artifact_paths = [
@@ -3686,7 +3686,7 @@ numerics_contracts = [
   "evaluation errors are converted into explicit failed gate rows",
 ]
 fast_tests = [
-  "tests/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -3716,7 +3716,7 @@ numerics_contracts = [
   "portfolio scalar reductions pass AD/FD, conditioning, and covariance gates before promotion",
 ]
 fast_tests = [
-  "tests/test_stellarator_optimization.py",
+  "tests/unit/objectives/test_stellarator_optimization.py",
   "tests/unit/objectives/test_stellarator_objective_portfolio.py",
 ]
 artifact_paths = [
@@ -3748,7 +3748,7 @@ numerics_contracts = [
   "covariance gates require finite singular values, sufficient rank, and bounded condition numbers",
 ]
 fast_tests = [
-  "tests/test_stellarator_optimization.py",
+  "tests/unit/objectives/test_stellarator_optimization.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_itg_optimization_uq.png",
@@ -3778,7 +3778,7 @@ numerics_contracts = [
   "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
 ]
 fast_tests = [
-  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_reduced_portfolio_guard.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
@@ -3880,7 +3880,7 @@ numerics_contracts = [
   "serial reconstruction identity fails closed on missing, duplicate, out-of-range, or out-of-order indices",
 ]
 fast_tests = [
-  "tests/test_parallel_decomposition.py",
+  "tests/unit/parallel/test_parallel_decomposition.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_decomposition_status.json",
@@ -3936,7 +3936,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
-  "tests/test_check_nonlinear_runtime_outputs.py",
+  "tests/validation/nonlinear/test_check_nonlinear_runtime_outputs.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",
@@ -4048,8 +4048,8 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
-  "tests/test_autodiff_demo.py",
-  "tests/test_autodiff_twomode_demo.py",
+  "tests/integration/examples/test_autodiff_demo.py",
+  "tests/integration/examples/test_autodiff_twomode_demo.py",
   "tests/tools/artifacts/test_build_manuscript_readiness_status.py",
   "tests/tools/artifacts/test_build_pre_manuscript_closure_status.py",
   "tests/tools/artifacts/test_build_pre_manuscript_closure_runbook.py",

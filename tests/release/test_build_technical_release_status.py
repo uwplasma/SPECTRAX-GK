@@ -33,7 +33,9 @@ def test_technical_release_status_passes_complete_evidence_tree(tmp_path: Path) 
     assert set(report["lanes"]) == set(LANES)
 
 
-def test_technical_release_status_reports_missing_required_evidence(tmp_path: Path) -> None:
+def test_technical_release_status_reports_missing_required_evidence(
+    tmp_path: Path,
+) -> None:
     _write_minimal_tree(tmp_path)
     (tmp_path / "docs" / "parallelization.rst").unlink()
 
@@ -41,4 +43,6 @@ def test_technical_release_status_reports_missing_required_evidence(tmp_path: Pa
 
     assert report["passed"] is False
     assert report["technical_release_completion_percent"] < 100.0
-    assert any("parallelization_release_surface" in item for item in report["failed_required"])
+    assert any(
+        "parallelization_release_surface" in item for item in report["failed_required"]
+    )

@@ -122,7 +122,9 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
     )
 
     def _unexpected_run(**_kwargs):
-        raise AssertionError("run_kbm_linear should not be called when reusing cached trajectories")
+        raise AssertionError(
+            "run_kbm_linear should not be called when reusing cached trajectories"
+        )
 
     monkeypatch.setattr(mod, "run_kbm_linear", _unexpected_run)
     monkeypatch.setattr(

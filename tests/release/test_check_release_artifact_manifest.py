@@ -10,8 +10,15 @@ import textwrap
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[2] / "tools" / "release" / "check_release_artifact_manifest.py"
-    spec = importlib.util.spec_from_file_location("check_release_artifact_manifest", path)
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "tools"
+        / "release"
+        / "check_release_artifact_manifest.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "check_release_artifact_manifest", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -20,7 +27,9 @@ def _load_tool_module():
     return module
 
 
-def _manifest(tmp_path: Path, *, sha: str, size: int, action: str = "move_to_release") -> Path:
+def _manifest(
+    tmp_path: Path, *, sha: str, size: int, action: str = "move_to_release"
+) -> Path:
     release_fields = (
         '\nrelease_tag = "v-test"\nrelease_url = "https://example.test/download/panel.png"'
         if action == "move_to_release"
@@ -58,7 +67,9 @@ def test_release_artifact_manifest_validates_size_and_sha(tmp_path: Path) -> Non
     mod = _load_tool_module()
     payload = b"panel"
     (tmp_path / "panel.png").write_bytes(payload)
-    manifest = _manifest(tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload))
+    manifest = _manifest(
+        tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload)
+    )
 
     report = mod.check_release_artifact_manifest(root=tmp_path, manifest=manifest)
 
@@ -96,10 +107,14 @@ def test_release_artifact_manifest_fails_on_sha_mismatch(tmp_path: Path) -> None
     assert any("sha256" in failure for failure in report["failures"])
 
 
-def test_release_artifact_manifest_accepts_uploaded_release_asset(tmp_path: Path) -> None:
+def test_release_artifact_manifest_accepts_uploaded_release_asset(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     payload = b"panel"
-    manifest = _manifest(tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload))
+    manifest = _manifest(
+        tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload)
+    )
 
     report = mod.check_release_artifact_manifest(root=tmp_path, manifest=manifest)
 
@@ -110,12 +125,20 @@ def test_release_artifact_manifest_accepts_uploaded_release_asset(tmp_path: Path
     assert report["artifacts"][0]["release_url"].endswith("/panel.png")
 
 
-def test_release_artifact_manifest_requires_url_for_missing_moved_asset(tmp_path: Path) -> None:
+def test_release_artifact_manifest_requires_url_for_missing_moved_asset(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     payload = b"panel"
-    manifest = _manifest(tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload))
+    manifest = _manifest(
+        tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload)
+    )
     text = manifest.read_text(encoding="utf-8")
-    text = "\n".join(line for line in text.splitlines() if not line.startswith(("release_tag", "release_url")))
+    text = "\n".join(
+        line
+        for line in text.splitlines()
+        if not line.startswith(("release_tag", "release_url"))
+    )
     manifest.write_text(text + "\n", encoding="utf-8")
 
     report = mod.check_release_artifact_manifest(root=tmp_path, manifest=manifest)

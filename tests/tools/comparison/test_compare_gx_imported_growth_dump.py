@@ -89,7 +89,9 @@ def test_load_gx_restart_state_transposes_to_spectrax_layout(tmp_path: Path) -> 
         root.createDimension("ri", 2)
         t = root.createVariable("time", "f8", ())
         t.assignValue(3.25)
-        g = root.createVariable("G", "f4", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri"))
+        g = root.createVariable(
+            "G", "f4", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri")
+        )
         raw = np.zeros((1, 3, 2, 5, 1, 4, 2), dtype=np.float32)
         raw[0, 2, 1, 4, 0, 3, 0] = 7.0
         raw[0, 2, 1, 4, 0, 3, 1] = -2.0

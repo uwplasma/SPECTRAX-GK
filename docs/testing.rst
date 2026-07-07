@@ -61,7 +61,7 @@ directly listed, owned by a listed row, or explicitly excluded as package
 plumbing such as ``__init__.py`` or version metadata. This makes source
 extractions fail fast until the coverage owner, fast tests, and next-test debt
 are declared. New manifest tests for this policy should stay cheap and live in
-``tests/test_validation_coverage_manifest.py`` or
+``tests/release/test_validation_coverage_manifest.py`` or
 ``tests/test_refactor_coverage_*.py``.
 
 Manifest paths are intentionally concrete. ``fast_tests`` and
@@ -1208,7 +1208,7 @@ performance claims:
   Both fail closed and carry no production routing or speedup claim.
 - ``tests/tools/artifacts/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
-- ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run
+- ``tests/unit/parallel/test_parallel_artifact_contracts.py`` locks the tracked large-run
   scaling artifacts themselves. It requires the performance and validation
   manifests to list the CPU/GPU split artifacts, verifies serial numerical
   identity for independent ``k_y`` and quasilinear/UQ rows, checks that

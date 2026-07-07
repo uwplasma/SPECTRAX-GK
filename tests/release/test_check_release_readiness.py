@@ -333,7 +333,9 @@ def test_release_readiness_rejects_missing_release_guardrails(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    with pytest.raises(ReleaseReadinessError, match="release.yml missing publish/version checks"):
+    with pytest.raises(
+        ReleaseReadinessError, match="release.yml missing publish/version checks"
+    ):
         check_release_readiness(tmp_path)
 
 

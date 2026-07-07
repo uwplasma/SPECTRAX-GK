@@ -60,10 +60,16 @@ def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> 
         return "geom"
 
     monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
-    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
-    grid_obj = SimpleNamespace(ky=np.array([0.0, 0.2, -0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
+    monkeypatch.setattr(
+        mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid
+    )
+    grid_obj = SimpleNamespace(
+        ky=np.array([0.0, 0.2, -0.2]), kx=np.array([0.0]), z=np.array([0.0, 1.0])
+    )
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
-    monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")
+    monkeypatch.setattr(
+        mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params"
+    )
     monkeypatch.setattr(mod, "build_runtime_term_config", lambda _cfg: "terms")
 
     cfg_use, geom, grid, params, term_cfg = mod._build_runtime_compare_context(
@@ -119,8 +125,12 @@ def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> No
     diag_kx.write_bytes(b"kx")
     diag_ky.write_bytes(b"ky")
 
-    picked_kx = mod._pick_first_existing(tmp_path / "nl_kx.bin", *sorted(tmp_path.glob("diag_state_kx_t*.bin")))
-    picked_ky = mod._pick_first_existing(tmp_path / "nl_ky.bin", *sorted(tmp_path.glob("diag_state_ky_t*.bin")))
+    picked_kx = mod._pick_first_existing(
+        tmp_path / "nl_kx.bin", *sorted(tmp_path.glob("diag_state_kx_t*.bin"))
+    )
+    picked_ky = mod._pick_first_existing(
+        tmp_path / "nl_ky.bin", *sorted(tmp_path.glob("diag_state_ky_t*.bin"))
+    )
 
     assert picked_kx == diag_kx
     assert picked_ky == diag_ky

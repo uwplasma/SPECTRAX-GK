@@ -111,16 +111,29 @@ def test_compare_gx_imported_linear_parser_accepts_project_mode_method() -> None
 
 def test_build_sample_steps_supports_stride_and_early_window() -> None:
     gx_time = np.linspace(0.0, 9.0, 10)
-    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=1, max_samples=None), np.arange(10))
-    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=None), np.arange(0, 10, 2))
-    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=3), np.asarray([0, 2, 4]))
     assert np.array_equal(
-        _build_sample_steps(gx_time, sample_step_stride=2, max_samples=3, sample_window="tail"),
+        _build_sample_steps(gx_time, sample_step_stride=1, max_samples=None),
+        np.arange(10),
+    )
+    assert np.array_equal(
+        _build_sample_steps(gx_time, sample_step_stride=2, max_samples=None),
+        np.arange(0, 10, 2),
+    )
+    assert np.array_equal(
+        _build_sample_steps(gx_time, sample_step_stride=2, max_samples=3),
+        np.asarray([0, 2, 4]),
+    )
+    assert np.array_equal(
+        _build_sample_steps(
+            gx_time, sample_step_stride=2, max_samples=3, sample_window="tail"
+        ),
         np.asarray([4, 6, 8]),
     )
 
 
-def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: Path) -> None:
+def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "run.in"
     path.write_text(
         """
@@ -278,7 +291,9 @@ def test_imported_linear_zero_shat_promotes_to_periodic_boundary() -> None:
     assert _resolve_imported_boundary("linked", zero_shat=False) == "linked"
 
 
-def test_load_gx_input_contract_promotes_near_zero_shear_to_zero_shat(tmp_path: Path) -> None:
+def test_load_gx_input_contract_promotes_near_zero_shear_to_zero_shat(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "kaw_like.in"
     path.write_text(
         """
@@ -309,7 +324,10 @@ scale = 0.125
 
     assert contract.s_hat == pytest.approx(1.0e-8)
     assert contract.zero_shat is True
-    assert _resolve_imported_boundary(contract.boundary, zero_shat=contract.zero_shat) == "periodic"
+    assert (
+        _resolve_imported_boundary(contract.boundary, zero_shat=contract.zero_shat)
+        == "periodic"
+    )
 
 
 def test_load_gx_input_contract_reads_vmec_geometry_contract(tmp_path: Path) -> None:
@@ -423,7 +441,10 @@ def test_gx_has_uniform_linear_dt_ignores_single_truncated_final_interval() -> N
     assert _gx_has_uniform_linear_dt(gx_time, contract) is True
 
 
-@pytest.mark.skipif(not Path(".cache/gx_clean_main/linear/hsx/hsx_linear.in").exists(), reason="Requires local cache file")
+@pytest.mark.skipif(
+    not Path(".cache/gx_clean_main/linear/hsx/hsx_linear.in").exists(),
+    reason="Requires local cache file",
+)
 def test_build_imported_initial_condition_uses_runtime_multikx_startup() -> None:
     class DummyGeom:
         s_hat = 1.0
@@ -519,7 +540,11 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         y0=10.0,
         fapar=0.0,
         fbpar=0.0,
-        species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
+        species=(
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0
+            ),
+        ),
         tau_e=0.0,
         beta=0.0,
         dt=0.1,
@@ -554,7 +579,13 @@ def test_build_imported_linear_terms_honors_em_switches() -> None:
     assert electrostatic.bpar == 0.0
 
     electromagnetic = _build_imported_linear_terms(
-        replace(_dummy_gx_contract(init_single=False), fapar=1.0, fbpar=1.0, hypercollisions=True, hyper=True)
+        replace(
+            _dummy_gx_contract(init_single=False),
+            fapar=1.0,
+            fbpar=1.0,
+            hypercollisions=True,
+            hyper=True,
+        )
     )
     assert electromagnetic.apar == 1.0
     assert electromagnetic.bpar == 1.0
@@ -575,7 +606,9 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         "_build_imported_initial_condition",
         lambda **_: np.zeros((1, 1, 1, 3, 2, 4), dtype=np.complex64),
     )
-    monkeypatch.setattr(imported_linear, "build_linear_cache", lambda *_args, **_kwargs: "cache")
+    monkeypatch.setattr(
+        imported_linear, "build_linear_cache", lambda *_args, **_kwargs: "cache"
+    )
 
     def _fake_integrate(**kwargs):
         captured["grid"] = kwargs["grid"]
@@ -583,7 +616,9 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         captured["ky_index"] = kwargs["ky_index"]
         return tuple(np.zeros(2, dtype=float) for _ in range(6))
 
-    monkeypatch.setattr(imported_linear, "_integrate_target_mode_series", _fake_integrate)
+    monkeypatch.setattr(
+        imported_linear, "_integrate_target_mode_series", _fake_integrate
+    )
 
     _run_single_ky(
         ky_target=0.1,
@@ -592,7 +627,11 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         params=SimpleNamespace(),
         time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
         gx_contract=_dummy_gx_contract(init_single=False),
-        species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
+        species=(
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0
+            ),
+        ),
         Nl=1,
         Nm=1,
         reference_times=np.asarray([0.1, 0.2], dtype=float),
@@ -607,7 +646,9 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
     assert captured["ky_index"] == 1
 
 
-def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypatch) -> None:
+def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(
+    monkeypatch,
+) -> None:
     grid_full = build_spectral_grid(
         GridConfig(
             Nx=4,
@@ -624,9 +665,14 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
     monkeypatch.setattr(
         imported_linear,
         "_build_imported_initial_condition",
-        lambda **_: np.zeros((1, 1, 1, grid_full.ky.size, grid_full.kx.size, grid_full.z.size), dtype=np.complex64),
+        lambda **_: np.zeros(
+            (1, 1, 1, grid_full.ky.size, grid_full.kx.size, grid_full.z.size),
+            dtype=np.complex64,
+        ),
     )
-    monkeypatch.setattr(imported_linear, "build_linear_cache", lambda *_args, **_kwargs: "cache")
+    monkeypatch.setattr(
+        imported_linear, "build_linear_cache", lambda *_args, **_kwargs: "cache"
+    )
 
     def _fake_integrate(**kwargs):
         captured["grid_ky"] = int(kwargs["grid"].ky.size)
@@ -634,7 +680,9 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         captured["ky_index"] = kwargs["ky_index"]
         return tuple(np.zeros(2, dtype=float) for _ in range(6))
 
-    monkeypatch.setattr(imported_linear, "_integrate_target_mode_series", _fake_integrate)
+    monkeypatch.setattr(
+        imported_linear, "_integrate_target_mode_series", _fake_integrate
+    )
 
     _run_single_ky(
         ky_target=float(grid_full.ky[1]),
@@ -643,7 +691,11 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         params=SimpleNamespace(),
         time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
         gx_contract=None,
-        species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
+        species=(
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0
+            ),
+        ),
         Nl=1,
         Nm=1,
         reference_times=np.asarray([0.1, 0.2], dtype=float),
@@ -678,7 +730,9 @@ def test_gx_kyst_fac_mask_cached_uses_positive_half_storage_on_full_ky_grid() ->
     )
 
 
-def test_distribution_free_energy_by_ky_matches_gx_positive_ky_storage_contract() -> None:
+def test_distribution_free_energy_by_ky_matches_gx_positive_ky_storage_contract() -> (
+    None
+):
     cache = SimpleNamespace(
         ky=np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
         kx=np.asarray([0.0], dtype=np.float32),
@@ -687,7 +741,9 @@ def test_distribution_free_energy_by_ky_matches_gx_positive_ky_storage_contract(
     params = SimpleNamespace(density=1.0, temp=1.0)
     vol_fac = jnp.asarray([1.0], dtype=jnp.float32)
     G = jnp.ones((1, 1, 1, 3, 1, 1), dtype=jnp.complex64)
-    Wg = np.asarray(_distribution_free_energy_by_ky(G, cache, params, vol_fac), dtype=float)
+    Wg = np.asarray(
+        _distribution_free_energy_by_ky(G, cache, params, vol_fac), dtype=float
+    )
     assert np.allclose(Wg, np.asarray([0.0, 0.5, 1.0], dtype=float))
 
 
@@ -697,18 +753,42 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
     vmec_contract = replace(_dummy_gx_contract(init_single=False), geo_option="vmec")
     desc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="desc")
     nc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="nc")
-    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None, gx_contract=vmec_contract) == geom
-    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None, gx_contract=vmec_contract) == gx_out
-    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None, gx_contract=desc_contract) == gx_out
-    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None, gx_contract=nc_contract) == geom
+    assert (
+        _resolve_internal_geometry_source(
+            geometry_file=geom, runtime_config=None, gx_contract=vmec_contract
+        )
+        == geom
+    )
+    assert (
+        _resolve_internal_geometry_source(
+            geometry_file=gx_out, runtime_config=None, gx_contract=vmec_contract
+        )
+        == gx_out
+    )
+    assert (
+        _resolve_internal_geometry_source(
+            geometry_file=gx_out, runtime_config=None, gx_contract=desc_contract
+        )
+        == gx_out
+    )
+    assert (
+        _resolve_internal_geometry_source(
+            geometry_file=geom, runtime_config=None, gx_contract=nc_contract
+        )
+        == geom
+    )
 
 
-def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_miller(monkeypatch) -> None:
+def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_miller(
+    monkeypatch,
+) -> None:
     runtime_path = Path("/tmp/runtime_miller.toml")
     captured: dict[str, object] = {}
     cfg = RuntimeConfig(
         grid=GridConfig(boundary="periodic", y0=28.2, ntheta=24, nperiod=1),
-        geometry=GeometryConfig(model="miller", q=1.4, s_hat=0.8, R0=2.77778, R_geo=2.77778),
+        geometry=GeometryConfig(
+            model="miller", q=1.4, s_hat=0.8, R0=2.77778, R_geo=2.77778
+        ),
     )
     gx_contract = replace(
         _dummy_gx_contract(init_single=False),
@@ -719,7 +799,9 @@ def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_mil
     )
     out = Path("/tmp/internal_miller.eiknc.nc").resolve()
 
-    monkeypatch.setattr(imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {}))
+    monkeypatch.setattr(
+        imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {})
+    )
 
     def _fake_generate_runtime_miller_eik(runtime_cfg, *, force):
         captured["boundary"] = runtime_cfg.grid.boundary
@@ -729,7 +811,11 @@ def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_mil
         captured["force"] = force
         return out
 
-    monkeypatch.setattr(imported_linear, "generate_runtime_miller_eik", _fake_generate_runtime_miller_eik)
+    monkeypatch.setattr(
+        imported_linear,
+        "generate_runtime_miller_eik",
+        _fake_generate_runtime_miller_eik,
+    )
 
     resolved = _resolve_internal_geometry_source(
         geometry_file=None,
@@ -747,7 +833,9 @@ def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_mil
     }
 
 
-def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(monkeypatch) -> None:
+def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(
+    monkeypatch,
+) -> None:
     runtime_path = Path("/tmp/runtime_vmec.toml")
     captured: dict[str, object] = {}
     cfg = RuntimeConfig(
@@ -772,7 +860,9 @@ def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(monkeyp
     )
     out = Path("/tmp/internal_vmec.eiknc.nc").resolve()
 
-    monkeypatch.setattr(imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {}))
+    monkeypatch.setattr(
+        imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {})
+    )
 
     def _fake_generate_runtime_vmec_eik(runtime_cfg, *, force):
         captured["boundary"] = runtime_cfg.grid.boundary
@@ -785,7 +875,9 @@ def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(monkeyp
         captured["force"] = force
         return out
 
-    monkeypatch.setattr(imported_linear, "generate_runtime_vmec_eik", _fake_generate_runtime_vmec_eik)
+    monkeypatch.setattr(
+        imported_linear, "generate_runtime_vmec_eik", _fake_generate_runtime_vmec_eik
+    )
 
     resolved = _resolve_internal_geometry_source(
         geometry_file=None,
@@ -806,9 +898,13 @@ def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(monkeyp
     }
 
 
-def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatch) -> None:
+def test_integrate_target_mode_series_collects_requested_sample_count(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
-    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
+    monkeypatch.setattr(
+        imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom
+    )
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",
@@ -833,15 +929,45 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
             jnp.full((2, 2), 2.0, dtype=jnp.float32),
         ),
     )
-    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]))
-    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]))
-    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
-    monkeypatch.setattr(imported_linear, "_linear_frequency_bound", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
+    monkeypatch.setattr(
+        imported_linear,
+        "_distribution_free_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_electrostatic_field_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_magnetic_vector_potential_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_linear_frequency_bound",
+        lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]),
+    )
 
     gamma, omega, Wg, Wphi, Wapar, Phi2 = _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 2, 2, 3), dtype=jnp.complex64),
         grid=SimpleNamespace(dealias_mask=np.ones((2, 2), dtype=bool), z=np.arange(3)),
-        geom=SimpleNamespace(s_hat=0.0, gradpar=lambda: 1.0, metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)), drift_coeffs=lambda theta: (jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta))),
+        geom=SimpleNamespace(
+            s_hat=0.0,
+            gradpar=lambda: 1.0,
+            metric_coeffs=lambda theta: (
+                jnp.ones_like(theta),
+                jnp.zeros_like(theta),
+                jnp.ones_like(theta),
+            ),
+            drift_coeffs=lambda theta: (
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+            ),
+        ),
         cache=SimpleNamespace(jacobian=jnp.ones(3, dtype=jnp.float32)),
         params=SimpleNamespace(),
         time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.21, sample_stride=1, fixed_dt=True),
@@ -861,7 +987,9 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     np.testing.assert_allclose(Phi2, np.zeros(3, dtype=float))
 
 
-def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_max(monkeypatch) -> None:
+def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_max(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
     monkeypatch.setattr(
         imported_linear,
@@ -887,12 +1015,26 @@ def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_
             jnp.asarray([[0.0]], dtype=float),
         ),
     )
-    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(
+        imported_linear,
+        "_distribution_free_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_electrostatic_field_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_magnetic_vector_potential_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0]),
+    )
 
     analytic = SAlphaGeometry.from_config(
-        imported_linear.GeometryConfig(model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=1.0)
+        imported_linear.GeometryConfig(
+            model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=1.0
+        )
     )
     theta_solver = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
     theta_closed = jnp.linspace(-jnp.pi, jnp.pi, 5)
@@ -912,7 +1054,10 @@ def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_
 
     _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 1, 1, 4), dtype=jnp.complex64),
-        grid=SimpleNamespace(dealias_mask=np.ones((1, 1), dtype=bool), z=np.asarray(theta_solver, dtype=float)),
+        grid=SimpleNamespace(
+            dealias_mask=np.ones((1, 1), dtype=bool),
+            z=np.asarray(theta_solver, dtype=float),
+        ),
         geom=geom,
         cache=SimpleNamespace(jacobian=jnp.ones(4, dtype=jnp.float32)),
         params=SimpleNamespace(),
@@ -931,7 +1076,9 @@ def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_
 
 def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
-    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
+    monkeypatch.setattr(
+        imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom
+    )
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",
@@ -958,11 +1105,29 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         captured["dt"] = float(dt_step)
         return jnp.ones((1, 1), dtype=jnp.float32), jnp.ones((1, 1), dtype=jnp.float32)
 
-    monkeypatch.setattr(imported_linear, "_instantaneous_growth_rate_step", _fake_growth)
-    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_linear_frequency_bound", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
+    monkeypatch.setattr(
+        imported_linear, "_instantaneous_growth_rate_step", _fake_growth
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_distribution_free_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([1.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_electrostatic_field_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([1.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_magnetic_vector_potential_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_linear_frequency_bound",
+        lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]),
+    )
 
     _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 1, 1, 1), dtype=jnp.complex64),
@@ -970,7 +1135,11 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         geom=SimpleNamespace(
             s_hat=0.0,
             gradpar=lambda: 1.0,
-            metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)),
+            metric_coeffs=lambda theta: (
+                jnp.ones_like(theta),
+                jnp.zeros_like(theta),
+                jnp.ones_like(theta),
+            ),
             drift_coeffs=lambda theta: (
                 jnp.zeros_like(theta),
                 jnp.zeros_like(theta),
@@ -989,14 +1158,22 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         output_steps=np.asarray([0], dtype=int),
     )
 
-    np.testing.assert_allclose(captured["phi_prev"], np.zeros((1, 1, 1), dtype=np.complex64))
-    np.testing.assert_allclose(captured["phi"], np.full((1, 1, 1), 2.0, dtype=np.complex64))
+    np.testing.assert_allclose(
+        captured["phi_prev"], np.zeros((1, 1, 1), dtype=np.complex64)
+    )
+    np.testing.assert_allclose(
+        captured["phi"], np.full((1, 1, 1), 2.0, dtype=np.complex64)
+    )
     assert np.isclose(float(captured["dt"]), 0.2)
 
 
-def test_integrate_target_mode_series_downsamples_output_without_sparsifying_growth_interval(monkeypatch) -> None:
+def test_integrate_target_mode_series_downsamples_output_without_sparsifying_growth_interval(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
-    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
+    monkeypatch.setattr(
+        imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom
+    )
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",
@@ -1025,11 +1202,29 @@ def test_integrate_target_mode_series_downsamples_output_without_sparsifying_gro
             jnp.full((1, 1), 10.0 * float(n), dtype=jnp.float32),
         )
 
-    monkeypatch.setattr(imported_linear, "_instantaneous_growth_rate_step", _fake_growth)
-    monkeypatch.setattr(imported_linear, "_distribution_free_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_electrostatic_field_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
-    monkeypatch.setattr(imported_linear, "_magnetic_vector_potential_energy_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
-    monkeypatch.setattr(imported_linear, "_linear_frequency_bound", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
+    monkeypatch.setattr(
+        imported_linear, "_instantaneous_growth_rate_step", _fake_growth
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_distribution_free_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([1.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_electrostatic_field_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([1.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_magnetic_vector_potential_energy_by_ky",
+        lambda *_args, **_kwargs: jnp.asarray([0.0]),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_linear_frequency_bound",
+        lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]),
+    )
 
     gamma, omega, *_rest = _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 1, 1, 1), dtype=jnp.complex64),
@@ -1037,7 +1232,11 @@ def test_integrate_target_mode_series_downsamples_output_without_sparsifying_gro
         geom=SimpleNamespace(
             s_hat=0.0,
             gradpar=lambda: 1.0,
-            metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)),
+            metric_coeffs=lambda theta: (
+                jnp.ones_like(theta),
+                jnp.zeros_like(theta),
+                jnp.ones_like(theta),
+            ),
             drift_coeffs=lambda theta: (
                 jnp.zeros_like(theta),
                 jnp.zeros_like(theta),
@@ -1057,8 +1256,12 @@ def test_integrate_target_mode_series_downsamples_output_without_sparsifying_gro
     )
 
     assert len(growth_calls) == 3
-    np.testing.assert_allclose(growth_calls[-1][1], np.full((1, 1, 1), 2.0 + 2.0j, dtype=np.complex64))
-    np.testing.assert_allclose(growth_calls[-1][0], np.full((1, 1, 1), 3.0 + 3.0j, dtype=np.complex64))
+    np.testing.assert_allclose(
+        growth_calls[-1][1], np.full((1, 1, 1), 2.0 + 2.0j, dtype=np.complex64)
+    )
+    np.testing.assert_allclose(
+        growth_calls[-1][0], np.full((1, 1, 1), 3.0 + 3.0j, dtype=np.complex64)
+    )
     assert np.isclose(growth_calls[-1][2], 0.1)
     np.testing.assert_allclose(gamma, np.asarray([3.0], dtype=float))
     np.testing.assert_allclose(omega, np.asarray([30.0], dtype=float))
@@ -1075,4 +1278,6 @@ def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
     )
     assert list(df["ky"]) == [0.1, 0.3]
     saved = np.genfromtxt(out, delimiter=",", names=True)
-    np.testing.assert_allclose(np.asarray(saved["ky"], dtype=float), np.asarray([0.1, 0.3], dtype=float))
+    np.testing.assert_allclose(
+        np.asarray(saved["ky"], dtype=float), np.asarray([0.1, 0.3], dtype=float)
+    )

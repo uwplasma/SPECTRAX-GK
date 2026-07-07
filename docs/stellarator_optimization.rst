@@ -1556,7 +1556,7 @@ Implementation Map
 - Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/artifacts/build_reduced_nonlinear_audit_prelaunch_report.py>`
 - Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/artifacts/build_nonlinear_campaign_admission_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
-- Tests: ``tests/test_qa_low_turbulence.py`` and
+- Tests: ``tests/validation/stellarator/test_qa_low_turbulence.py`` and
   ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
   admission policy tests.
 - Legacy nonlinear landscape admission report from the earlier narrow scan:

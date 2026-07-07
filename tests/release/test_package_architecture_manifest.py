@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from tools.release.check_package_architecture_manifest import validate_architecture_policy
+from tools.release.check_package_architecture_manifest import (
+    validate_architecture_policy,
+)
 
 
 def _manifest(*, allowed: list[str]) -> dict[str, object]:
@@ -24,7 +26,9 @@ def _manifest(*, allowed: list[str]) -> dict[str, object]:
     }
 
 
-def _manifest_with_topology(*, count_path: str, baseline: int, target: int) -> dict[str, object]:
+def _manifest_with_topology(
+    *, count_path: str, baseline: int, target: int
+) -> dict[str, object]:
     data = _manifest(allowed=[])
     data["topology_policy"] = {
         "mode": "no_regression_until_target",

@@ -14,12 +14,12 @@ def test_compare_gx_nonlinear_loads_restart_csv(tmp_path: Path) -> None:
     data = np.column_stack(
         [
             t,
-            np.linspace(0.1, 0.2, 4),   # gamma
-            np.linspace(-0.3, -0.2, 4), # omega
-            np.linspace(1.0, 2.0, 4),   # Wg
-            np.linspace(3.0, 4.0, 4),   # Wphi
-            np.linspace(5.0, 6.0, 4),   # Wapar
-            np.linspace(7.0, 8.0, 4),   # heat flux
+            np.linspace(0.1, 0.2, 4),  # gamma
+            np.linspace(-0.3, -0.2, 4),  # omega
+            np.linspace(1.0, 2.0, 4),  # Wg
+            np.linspace(3.0, 4.0, 4),  # Wphi
+            np.linspace(5.0, 6.0, 4),  # Wapar
+            np.linspace(7.0, 8.0, 4),  # heat flux
             np.linspace(9.0, 10.0, 4),  # particle flux
         ]
     )
@@ -64,7 +64,9 @@ def test_compare_gx_nonlinear_late_stats_handle_decorrelated_saturated_traces() 
     sp = 20.0 + 3.0 * np.sin(0.35 * t_sp)
     gx = 20.0 + 3.0 * np.sin(0.35 * t_gx + phase)
 
-    pointwise = mod._relative_error_window(t_sp, sp, mod._interp(t_sp, t_gx, gx), tmin=20.0)
+    pointwise = mod._relative_error_window(
+        t_sp, sp, mod._interp(t_sp, t_gx, gx), tmin=20.0
+    )
     _, _, stats = mod._stats_relative_errors(t_sp, sp, t_gx, gx, tmin=20.0)
 
     assert pointwise > 0.05

@@ -142,27 +142,49 @@ def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> No
                 ),
                 run=SimpleNamespace(ky=0.1),
                 normalization=SimpleNamespace(flux_scale=1.0, wphi_scale=1.0),
-                init=SimpleNamespace(init_file=None, init_file_scale=1.0, init_file_mode="replace"),
+                init=SimpleNamespace(
+                    init_file=None, init_file_scale=1.0, init_file_mode="replace"
+                ),
             ),
             None,
         ),
     )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
-    monkeypatch.setattr(mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid)
-    grid_full = SimpleNamespace(ky=np.array([0.1]), kx=np.array([0.0]), z=np.array([0.0, 1.0]))
+    monkeypatch.setattr(
+        mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid
+    )
+    grid_full = SimpleNamespace(
+        ky=np.array([0.1]), kx=np.array([0.0]), z=np.array([0.0, 1.0])
+    )
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     monkeypatch.setattr(mod, "select_real_fft_ky_grid", lambda grid, _ky: grid)
-    monkeypatch.setattr(mod, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
-    monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        mod, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom
+    )
+    monkeypatch.setattr(
+        mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object()
+    )
+    monkeypatch.setattr(
+        mod, "build_linear_cache", lambda *_args, **_kwargs: SimpleNamespace()
+    )
     monkeypatch.setattr(mod, "build_runtime_term_config", lambda _cfg: object())
     monkeypatch.setattr(
         mod,
         "_load_real_vector_auto",
-        lambda path: np.array([0.0], dtype=np.float32) if "kx" in path.name else np.array([0.1], dtype=np.float32),
+        lambda path: np.array([0.0], dtype=np.float32)
+        if "kx" in path.name
+        else np.array([0.1], dtype=np.float32),
     )
-    monkeypatch.setattr(mod, "_load_species_state", lambda *_args, **_kwargs: np.ones((1, 1, 1, 1, 1, 2), dtype=np.complex64))
-    monkeypatch.setattr(mod, "_load_field", lambda *_args, **_kwargs: np.ones((1, 1, 2), dtype=np.complex64))
+    monkeypatch.setattr(
+        mod,
+        "_load_species_state",
+        lambda *_args, **_kwargs: np.ones((1, 1, 1, 1, 1, 2), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_load_field",
+        lambda *_args, **_kwargs: np.ones((1, 1, 2), dtype=np.complex64),
+    )
     monkeypatch.setattr(mod, "_maybe_load_field", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         mod,

@@ -34,8 +34,9 @@ Last audited: 2026-07-07 on `main`.
   at about 0.94 MiB.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
-  - `tests`: 320 Python files; 47 files remain at the flat `tests/` root
-    after moving the safe first batch into domain folders.
+  - `tests`: 321 Python files, including the shared `tests/support/paths.py`
+    helper; only `conftest.py` plus three runtime/executable tests remain at
+    the flat `tests/` root.
   - `tools`: 260 Python files after purpose-folder moves and deletion of
     two unowned probe scripts.
   - `examples`: 42 Python files after retiring the cETG example.
@@ -84,7 +85,7 @@ usable codebase.
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Test Python files | 321 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
 | Tool Python files | 260 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
@@ -233,13 +234,11 @@ compression-helper move before it is committed:
   `wout_*.nc` files are ignored and should stay untracked.
 - The installable source still has 351 Python files. The largest structural
   offender is `src/spectraxgk/validation` with 88 installable files.
-- The test tree still has 320 Python files, including 47 flat root files after
-  the first safe topology move. The remaining root files are path-sensitive
-  runtime, executable, benchmark-artifact, nonlinear-gradient, quasilinear,
-  VMEC, and release-manifest tests. The biggest root files are historical
-  aggregate tests such as
-  `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
-  `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
+- The test tree now has 321 Python files after adding the shared
+  `tests/support/paths.py` helper. Only four Python files remain at the flat
+  `tests/` root: `conftest.py`, `test_cli.py`, `test_runtime_config.py`, and
+  `test_runtime_runner.py`. The remaining root tests are the runtime/executable
+  aggregate tests that need a dedicated final move.
 - `tools/` has 260 Python scripts after adding purpose-folder package
   initializers. The flat top-level `tools/` problem is closed: only
   `tools/__init__.py` remains there.
@@ -329,12 +328,13 @@ files.
    into manifest-driven builders where only case names, labels, or output paths
    differ. Target: `tools/` below 180 scripts before source moves, then below
    100 before release.
-3. **Reorganize tests by domain.** The first safe move relocated 92 tests into
-   `tests/unit`, `tests/integration`, `tests/validation`, and existing tool
-   folders. The next move should handle the 46 path-sensitive root tests by
-   replacing parent-depth assumptions with shared repository-root fixtures, then
-   merge one-file-per-script tool tests into parametrized family tests. Target:
-   fewer than 180 tests before validation extraction, then fewer than 100.
+3. **Reorganize tests by domain.** Two topology moves relocated 135 tests into
+   `tests/unit`, `tests/integration`, `tests/validation`, existing tool
+   folders, and `tests/release`. The next move should handle the remaining
+   runtime/executable trio by replacing parent-depth assumptions with shared
+   helpers, then merge one-file-per-script tool tests into parametrized family
+   tests. Target: fewer than 180 tests before validation extraction, then fewer
+   than 100.
 4. **Move validation campaigns out of the installable package.** Keep reusable
    physics metrics in `diagnostics` or a tiny `validation` facade; move campaign
    launchers, report builders, and holdout ledgers to `benchmarks`, `tools`, or
@@ -600,10 +600,9 @@ Specific first candidate:
 
 ## Test Consolidation Plan
 
-Current problem: `tests/` has 320 Python files. The root now has 47 flat Python
-files after moving the safe first batch; those remaining tests carry the
-path-sensitive runtime, executable, benchmark-artifact, nonlinear-gradient,
-quasilinear, VMEC, and release-manifest work. `tests/tools` still has many
+Current problem: `tests/` has 321 Python files after adding a shared path
+helper. The root now has only four flat Python files: `conftest.py` and the
+three runtime/executable aggregate tests. `tests/tools` still has many
 one-file-per-script tests and must be consolidated by tool family instead of
 preserving one test file per script.
 
@@ -1260,6 +1259,16 @@ Exit gates:
   file count stayed at 320, but flat root Python files dropped from 139 to 47.
   The remaining flat tests are path-sensitive and should be moved only after
   replacing parent-depth assumptions with shared fixtures/helpers.
+
+- 2026-07-07: moved the second path-sensitive root-test tranche after adding
+  `tests/support/paths.py` and putting `tests/` on `sys.path` in
+  `tests/conftest.py`. Runtime/example demos, benchmark manifests, release
+  manifests, nonlinear-gradient gates, stellarator/VMEC gates, quasilinear
+  gates, objective tests, VMEC backend helpers, and parallel artifact tests now
+  live under their domain folders. Test Python files increased from 320 to 321
+  because of the shared helper, while flat root Python files dropped from 47 to
+  4 (`conftest.py` plus `test_cli.py`, `test_runtime_config.py`, and
+  `test_runtime_runner.py`).
 
 ## Immediate Next Steps
 

@@ -24,7 +24,9 @@ def test_compare_gx_kbm_parser_defaults_hl_dims_to_gx_contract() -> None:
     assert args.Nm is None
 
 
-def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkeypatch) -> None:
+def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(
+    monkeypatch,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -42,9 +44,13 @@ def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkey
         lambda _path: (gx_time, gx_ky, gx_omega_series, 0.01, 1.4, 0.8, 0.18, 2.77778),
     )
 
-    prepared = mod._prepare_gx_reference(Path("dummy.nc"), ky_arg="0.3", y0_fallback=10.0)
+    prepared = mod._prepare_gx_reference(
+        Path("dummy.nc"), ky_arg="0.3", y0_fallback=10.0
+    )
 
-    gx_time_sel, gx_ky_sel, gx_omega_sel, beta, q, shat, eps, rmaj, nky_full, y0 = prepared
+    gx_time_sel, gx_ky_sel, gx_omega_sel, beta, q, shat, eps, rmaj, nky_full, y0 = (
+        prepared
+    )
     assert np.array_equal(gx_time_sel, gx_time)
     assert np.array_equal(gx_ky_sel, np.array([0.3]))
     assert np.array_equal(gx_omega_sel, gx_omega_series[:, [2], :])
@@ -165,7 +171,9 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
     assert krylov_cfg.shift_selection == "shift"
 
 
-def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch) -> None:
+def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(
+    monkeypatch,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -305,7 +313,9 @@ def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> Non
     assert captured["solver"] == "explicit_time"
 
 
-def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypatch) -> None:
+def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(
+    monkeypatch,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -464,7 +474,9 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
-        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        phi_t=np.array(
+            [[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128
+        ),
         gamma=0.0,
         omega=0.0,
         ky=0.3,
@@ -486,7 +498,9 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
     assert np.array_equal(np.asarray(sampled.phi_t), np.asarray(result.phi_t))
 
 
-def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_series() -> None:
+def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_series() -> (
+    None
+):
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -497,7 +511,9 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_se
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
-        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        phi_t=np.array(
+            [[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128
+        ),
         gamma=0.0,
         omega=0.0,
         ky=0.3,
@@ -546,12 +562,16 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
     monkeypatch.setattr(
         mod,
         "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("unexpected GX ratio fit")
+        ),
     )
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
-        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        phi_t=np.array(
+            [[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128
+        ),
         gamma=0.0,
         omega=0.0,
         ky=0.3,
@@ -572,7 +592,9 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
     assert np.isclose(out.fit_window_tmax, 0.0)
 
 
-def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch) -> None:
+def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(
+    monkeypatch,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
@@ -598,7 +620,9 @@ def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch)
 
     result = LinearRunResult(
         t=np.array([0.0, 1.0, 2.0], dtype=float),
-        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        phi_t=np.array(
+            [[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128
+        ),
         gamma=0.0,
         omega=0.0,
         ky=0.3,
@@ -613,10 +637,16 @@ def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch)
 
     assert calls["method"] == "project"
     assert calls["kwargs"]["window_method"] == "fixed"
-    assert calls["kwargs"]["window_fraction"] == pytest.approx(mod.LATE_PROJECT_WINDOW_FRACTION)
+    assert calls["kwargs"]["window_fraction"] == pytest.approx(
+        mod.LATE_PROJECT_WINDOW_FRACTION
+    )
     assert calls["kwargs"]["min_points"] == mod.LATE_PROJECT_MIN_POINTS
-    assert calls["kwargs"]["start_fraction"] == pytest.approx(mod.LATE_PROJECT_START_FRACTION)
-    assert calls["kwargs"]["growth_weight"] == pytest.approx(mod.LATE_PROJECT_GROWTH_WEIGHT)
+    assert calls["kwargs"]["start_fraction"] == pytest.approx(
+        mod.LATE_PROJECT_START_FRACTION
+    )
+    assert calls["kwargs"]["growth_weight"] == pytest.approx(
+        mod.LATE_PROJECT_GROWTH_WEIGHT
+    )
     assert np.isclose(out.gamma, 0.22)
     assert np.isclose(out.omega, 0.88)
     assert np.isclose(out.fit_window_tmin, 6.0)
@@ -784,7 +814,9 @@ def test_compare_gx_kbm_candidate_row_captures_fit_window() -> None:
     finally:
         sys.path.remove(str(tools_dir))
 
-    result = SimpleNamespace(gamma=0.8, omega=-1.5, fit_window_tmin=6.0, fit_window_tmax=9.6)
+    result = SimpleNamespace(
+        gamma=0.8, omega=-1.5, fit_window_tmin=6.0, fit_window_tmax=9.6
+    )
     row = mod._candidate_row(
         ky=0.3,
         solver="gx_time@project_late",
@@ -910,7 +942,9 @@ def test_compare_gx_kbm_loads_npz_reference(tmp_path: Path) -> None:
     assert np.allclose(mode, np.array([0.5 + 0.0j, 1.0 + 0.0j, 0.5 + 0.0j]))
 
 
-def test_compare_gx_kbm_npz_zero_geometry_scalars_fall_back_to_defaults(tmp_path: Path) -> None:
+def test_compare_gx_kbm_npz_zero_geometry_scalars_fall_back_to_defaults(
+    tmp_path: Path,
+) -> None:
     tools_dir = Path(__file__).resolve().parents[3] / "tools" / "comparison"
     sys.path.insert(0, str(tools_dir))
     try:
