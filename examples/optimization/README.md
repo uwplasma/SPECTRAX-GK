@@ -112,7 +112,7 @@ field-line labels, and three `k_y` values, with seed/timestep replicated
 nonlinear windows over `t=[1100,1500]`:
 
 ```bash
-python tools/build_matched_nonlinear_transport_matrix.py write \
+python tools/artifacts/build_matched_nonlinear_transport_matrix.py write \
   --baseline-vmec-file /path/to/baseline/wout_final.nc \
   --candidate-vmec-file /path/to/candidate/wout_final.nc \
   --baseline-label strict_qa \

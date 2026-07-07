@@ -96,7 +96,7 @@ def _promotion_commands(
     readiness_json = f"{case}_readiness.json"
     ensemble_png = f"{case}_ensemble_gate.png"
     build_ensemble = (
-        "python3 tools/build_external_vmec_replicate_ensemble.py "
+        "python3 tools/artifacts/build_external_vmec_replicate_ensemble.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --out-dir {_repo_relative(ensemble_dir)}"
         + f" --case {case}_replicated_nonlinear_window"

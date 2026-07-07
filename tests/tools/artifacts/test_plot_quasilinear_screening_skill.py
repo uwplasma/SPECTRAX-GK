@@ -8,8 +8,15 @@ from pathlib import Path
 
 
 def _load_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_quasilinear_screening_skill.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_screening_skill", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_quasilinear_screening_skill.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_screening_skill", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -22,7 +29,10 @@ def test_screening_skill_keeps_spectral_envelope_fail_closed() -> None:
     models = {row["model"]: row for row in report["models"]}
 
     assert report["kind"] == "quasilinear_screening_skill"
-    assert report["claim_level"] == "screening_correlation_model_development_not_absolute_flux_promotion"
+    assert (
+        report["claim_level"]
+        == "screening_correlation_model_development_not_absolute_flux_promotion"
+    )
     assert report["gates"]["accepted_screening_models"] == []
     assert report["gates"]["accepted_holdout_screening_models"] == []
     assert report["gates"]["best_screening_model"] == "spectral_envelope_ridge"
@@ -50,7 +60,9 @@ def test_screening_skill_keeps_spectral_envelope_fail_closed() -> None:
 def test_screening_skill_writer_creates_sidecars(tmp_path: Path) -> None:
     module = _load_module()
     report = module.build_report()
-    paths = module.write_figure(report, out=tmp_path / "screening.png", title="test", dpi=80)
+    paths = module.write_figure(
+        report, out=tmp_path / "screening.png", title="test", dpi=80
+    )
 
     for key in ("png", "pdf", "json", "csv"):
         assert Path(paths[key]).exists()

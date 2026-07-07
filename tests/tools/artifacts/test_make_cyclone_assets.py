@@ -10,7 +10,9 @@ class _DummyFigure:
         return None
 
 
-def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(monkeypatch, tmp_path: Path) -> None:
+def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
@@ -26,28 +28,52 @@ def test_make_tables_refresh_minimal_uses_reference_mismatch_scan(monkeypatch, t
         assert np.allclose(scan_ref.ky, [0.1, 0.2])
         assert verbose is False
         assert progress is False
-        return make_tables.LinearScanResult(ky=np.array([0.1, 0.2]), gamma=np.array([0.3, 0.4]), omega=np.array([0.5, 0.6]))
+        return make_tables.LinearScanResult(
+            ky=np.array([0.1, 0.2]),
+            gamma=np.array([0.3, 0.4]),
+            omega=np.array([0.5, 0.6]),
+        )
 
     def fail_gx_scan(*_args, **_kwargs):
-        raise AssertionError("GX-balanced Cyclone scan should not be used for refresh_minimal")
+        raise AssertionError(
+            "GX-balanced Cyclone scan should not be used for refresh_minimal"
+        )
 
     monkeypatch.setattr(make_tables, "ROOT", tmp_path)
     monkeypatch.setattr(make_tables, "load_cyclone_reference", lambda: ref)
-    monkeypatch.setattr(make_tables, "_cyclone_reference_mismatch_scan", fake_reference_scan)
+    monkeypatch.setattr(
+        make_tables, "_cyclone_reference_mismatch_scan", fake_reference_scan
+    )
     monkeypatch.setattr(make_tables, "_cyclone_gx_scan", fail_gx_scan)
     monkeypatch.setattr(
         make_tables,
         "_build_rows",
-        lambda scan, ref_scan: ["ky,gamma,omega", f"{scan.ky[0]},{scan.gamma[0]},{scan.omega[0]}"],
+        lambda scan, ref_scan: [
+            "ky,gamma,omega",
+            f"{scan.ky[0]},{scan.gamma[0]},{scan.omega[0]}",
+        ],
     )
-    monkeypatch.setattr(sys, "argv", ["make_tables.py", "--case", "cyclone", "--refresh-minimal", "--no-progress", "--quiet"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "make_tables.py",
+            "--case",
+            "cyclone",
+            "--refresh-minimal",
+            "--no-progress",
+            "--quiet",
+        ],
+    )
 
     assert make_tables.main() == 0
     assert called == {"helper": "reference", "Ny": 7}
     assert (tmp_path / "docs" / "_static" / "cyclone_mismatch_table.csv").exists()
 
 
-def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(monkeypatch, tmp_path: Path) -> None:
+def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_figures as make_figures
 
     ref = make_figures.LinearScanResult(
@@ -63,24 +89,44 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(monkeypatch,
         assert np.allclose(scan_ref.ky, [0.1, 0.2])
         assert verbose is False
         assert progress is False
-        return make_figures.LinearScanResult(ky=np.array([0.1, 0.2]), gamma=np.array([0.3, 0.4]), omega=np.array([0.5, 0.6]))
+        return make_figures.LinearScanResult(
+            ky=np.array([0.1, 0.2]),
+            gamma=np.array([0.3, 0.4]),
+            omega=np.array([0.5, 0.6]),
+        )
 
     def fail_gx_scan(*_args, **_kwargs):
-        raise AssertionError("GX-balanced Cyclone figure scan should not be used in fallback path")
+        raise AssertionError(
+            "GX-balanced Cyclone figure scan should not be used in fallback path"
+        )
 
     monkeypatch.setattr(make_figures, "ROOT", tmp_path)
     monkeypatch.setattr(make_figures, "load_cyclone_reference", lambda: ref)
-    monkeypatch.setattr(make_figures, "_cyclone_reference_mismatch_scan", fake_reference_scan)
+    monkeypatch.setattr(
+        make_figures, "_cyclone_reference_mismatch_scan", fake_reference_scan
+    )
     monkeypatch.setattr(make_figures, "_cyclone_gx_scan", fail_gx_scan)
-    monkeypatch.setattr(make_figures, "cyclone_reference_figure", lambda _ref: (_DummyFigure(), None))
-    monkeypatch.setattr(make_figures, "cyclone_comparison_figure", lambda _ref, _scan: (_DummyFigure(), None))
-    monkeypatch.setattr(sys, "argv", ["make_figures.py", "--case", "cyclone", "--no-progress", "--quiet"])
+    monkeypatch.setattr(
+        make_figures, "cyclone_reference_figure", lambda _ref: (_DummyFigure(), None)
+    )
+    monkeypatch.setattr(
+        make_figures,
+        "cyclone_comparison_figure",
+        lambda _ref, _scan: (_DummyFigure(), None),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["make_figures.py", "--case", "cyclone", "--no-progress", "--quiet"],
+    )
 
     assert make_figures.main() == 0
     assert called == {"helper": "reference", "Ny": 7}
 
 
-def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(monkeypatch) -> None:
+def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
+    monkeypatch,
+) -> None:
     import tools.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
@@ -99,7 +145,9 @@ def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(mo
         called["dt"] = kwargs["dt"]
         called["time_cfg"] = kwargs["time_cfg"]
         return make_tables.CycloneScanResult(
-            ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
+            ky=np.asarray(ky_values),
+            gamma=np.array([1.0, 2.0]),
+            omega=np.array([3.0, 4.0]),
         )
 
     monkeypatch.setattr(make_tables, "run_cyclone_scan", fake_run_cyclone_scan)
@@ -132,7 +180,9 @@ def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
     assert window["late_penalty"] == 0.0
 
 
-def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(monkeypatch) -> None:
+def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(
+    monkeypatch,
+) -> None:
     import tools.make_figures as make_figures
 
     ref = make_figures.LinearScanResult(
@@ -150,7 +200,9 @@ def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(m
         called["dt"] = kwargs["dt"]
         called["time_cfg"] = kwargs["time_cfg"]
         return make_figures.LinearScanResult(
-            ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
+            ky=np.asarray(ky_values),
+            gamma=np.array([1.0, 2.0]),
+            omega=np.array([3.0, 4.0]),
         )
 
     monkeypatch.setattr(make_figures, "run_cyclone_scan", fake_run_cyclone_scan)
@@ -171,7 +223,9 @@ def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(m
     assert np.allclose(out.gamma, [1.0, 2.0])
 
 
-def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(monkeypatch) -> None:
+def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(
+    monkeypatch,
+) -> None:
     import tools.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
@@ -311,7 +365,9 @@ def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
     assert cfg.model.R_over_Lne == 0.8
 
 
-def test_run_etg_figures_prefers_existing_mismatch_csv(monkeypatch, tmp_path: Path) -> None:
+def test_run_etg_figures_prefers_existing_mismatch_csv(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_figures as make_figures
 
     mismatch = tmp_path / "etg_mismatch_table.csv"
@@ -334,7 +390,9 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(monkeypatch, tmp_path: Pa
     monkeypatch.setattr(
         make_figures,
         "_scan_and_mode",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should reuse mismatch csv")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("should reuse mismatch csv")
+        ),
     )
     monkeypatch.setattr(
         make_figures,
@@ -345,7 +403,9 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(monkeypatch, tmp_path: Pa
     make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
 
 
-def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch) -> None:
+def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(
+    monkeypatch,
+) -> None:
     import tools.make_tables as make_tables
 
     cfg = make_tables.CycloneBaseCase()
@@ -356,22 +416,39 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch)
         type(
             "Geom",
             (),
-            {"from_config": staticmethod(lambda _cfg: type("G", (), {"gradpar": lambda self: 1.0})())},
+            {
+                "from_config": staticmethod(
+                    lambda _cfg: type("G", (), {"gradpar": lambda self: 1.0})()
+                )
+            },
         ),
     )
     monkeypatch.setattr(
         make_tables,
         "build_spectral_grid",
-        lambda _grid: type("Grid", (), {"ky": np.array([0.4]), "z": np.array([0.0, 1.0, 2.0])})(),
+        lambda _grid: type(
+            "Grid", (), {"ky": np.array([0.4]), "z": np.array([0.0, 1.0, 2.0])}
+        )(),
     )
     monkeypatch.setattr(make_tables, "select_ky_index", lambda _ky, _val: 0)
     monkeypatch.setattr(make_tables, "select_ky_grid", lambda grid, _idx: grid)
-    monkeypatch.setattr(make_tables, "_build_initial_condition", lambda *args, **kwargs: jnp.zeros((2, 2), dtype=jnp.complex64))
-    monkeypatch.setattr(make_tables, "build_linear_cache", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        make_tables,
+        "_build_initial_condition",
+        lambda *args, **kwargs: jnp.zeros((2, 2), dtype=jnp.complex64),
+    )
+    monkeypatch.setattr(
+        make_tables, "build_linear_cache", lambda *args, **kwargs: object()
+    )
     monkeypatch.setattr(
         make_tables,
         "integrate_linear_explicit",
-        lambda *args, **kwargs: (np.array([0.0, 1.0]), np.ones((2, 1, 1, 3), dtype=np.complex128), None, None),
+        lambda *args, **kwargs: (
+            np.array([0.0, 1.0]),
+            np.ones((2, 1, 1, 3), dtype=np.complex128),
+            None,
+            None,
+        ),
     )
     methods: list[str] = []
 
@@ -390,14 +467,22 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch)
 
     monkeypatch.setattr(make_tables, "fit_growth_rate_auto", fake_fit)
 
-    scan = make_tables._cyclone_gx_scan(np.array([0.4]), cfg, make_tables.WINDOWS["cyclone"], verbose=False, progress=False)
+    scan = make_tables._cyclone_gx_scan(
+        np.array([0.4]),
+        cfg,
+        make_tables.WINDOWS["cyclone"],
+        verbose=False,
+        progress=False,
+    )
 
     assert methods == ["project", "max"]
     assert np.allclose(scan.gamma, [0.1])
     assert np.allclose(scan.omega, [0.4])
 
 
-def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(tmp_path: Path) -> None:
+def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(
+    tmp_path: Path,
+) -> None:
     import tools.make_tables as make_tables
 
     csv_path = tmp_path / "kbm_gx_mismatch.csv"
@@ -415,12 +500,17 @@ def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(tmp_path: Pa
 
     rows = make_tables._kbm_public_rows_from_gx_mismatch(csv_path)
 
-    assert rows[0] == "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"
+    assert (
+        rows[0]
+        == "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"
+    )
     assert rows[1].startswith("0.100,0.140000,0.660000,0.130000,0.670000,")
     assert rows[2].startswith("0.300,0.220000,1.140000,0.200000,1.270000,")
 
 
-def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(tmp_path: Path) -> None:
+def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
+    tmp_path: Path,
+) -> None:
     import tools.make_tables as make_tables
 
     csv_path = tmp_path / "kbm_gx_mismatch.csv"
@@ -446,12 +536,16 @@ def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(tmp_pa
         encoding="utf-8",
     )
 
-    rows = make_tables._kbm_public_rows_from_gx_mismatch(csv_path, lowky_ckpt_path=ckpt_path)
+    rows = make_tables._kbm_public_rows_from_gx_mismatch(
+        csv_path, lowky_ckpt_path=ckpt_path
+    )
 
     assert rows[1].startswith("0.200,0.300000,0.880000,0.300600,0.998800,")
 
 
-def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkeypatch, tmp_path: Path) -> None:
+def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_tables as make_tables
 
     (tmp_path / "kbm_gx_mismatch.csv").write_text(
@@ -469,7 +563,9 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkey
         make_tables,
         "load_kbm_reference",
         lambda: (_ for _ in ()).throw(
-            AssertionError("load_kbm_reference should not be called when gx mismatch csv exists")
+            AssertionError(
+                "load_kbm_reference should not be called when gx mismatch csv exists"
+            )
         ),
     )
 
@@ -488,7 +584,9 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkey
     assert "0.200,0.300000,0.880000,0.310000,0.890000" in table_text
 
 
-def test_run_tem_tables_restores_fixed_late_window_contract(monkeypatch, tmp_path: Path) -> None:
+def test_run_tem_tables_restores_fixed_late_window_contract(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_tables as make_tables
 
     called: dict[str, object] = {}
@@ -523,7 +621,9 @@ def test_run_tem_tables_restores_fixed_late_window_contract(monkeypatch, tmp_pat
     assert (tmp_path / "tem_mismatch_table.csv").exists()
 
 
-def test_run_kinetic_tables_restores_fixed_krylov_contract(monkeypatch, tmp_path: Path) -> None:
+def test_run_kinetic_tables_restores_fixed_krylov_contract(
+    monkeypatch, tmp_path: Path
+) -> None:
     import tools.make_tables as make_tables
 
     called: dict[str, object] = {}
@@ -547,7 +647,11 @@ def test_run_kinetic_tables_restores_fixed_krylov_contract(monkeypatch, tmp_path
         called["auto_window"] = kwargs["auto_window"]
         return ky, np.array([0.11, 0.22]), np.array([0.33, 0.44])
 
-    monkeypatch.setattr(make_tables, "load_cyclone_reference_kinetic", fake_load_cyclone_reference_kinetic)
+    monkeypatch.setattr(
+        make_tables,
+        "load_cyclone_reference_kinetic",
+        fake_load_cyclone_reference_kinetic,
+    )
     monkeypatch.setattr(make_tables, "_scan_linear_verbose", fake_scan_linear_verbose)
 
     make_tables._run_kinetic_tables(

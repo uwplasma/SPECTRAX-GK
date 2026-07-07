@@ -32,7 +32,7 @@ def _fast_config() -> QALowTurbulenceConfig:
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "build_qa_low_turbulence_comparison.py"
+    path = Path(__file__).resolve().parents[1] / "tools" / "artifacts" / "build_qa_low_turbulence_comparison.py"
     spec = importlib.util.spec_from_file_location("build_qa_low_turbulence_comparison", path)
     assert spec is not None
     assert spec.loader is not None
@@ -46,7 +46,7 @@ def _load_time_horizon_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
-        / "build_qa_low_turbulence_time_horizon_audit.py"
+        / "artifacts" / "build_qa_low_turbulence_time_horizon_audit.py"
     )
     spec = importlib.util.spec_from_file_location(
         "build_qa_low_turbulence_time_horizon_audit",

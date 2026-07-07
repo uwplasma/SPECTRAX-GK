@@ -68,7 +68,7 @@ NONLINEAR_ENSEMBLES: tuple[str, ...] = ()
 
 command = [
     sys.executable,
-    str(SPECTRAX_ROOT / "tools" / "build_vmec_boundary_transport_landscape.py"),
+    str(SPECTRAX_ROOT / "tools" / "artifacts" / "build_vmec_boundary_transport_landscape.py"),
     "--baseline-input",
     str(BASELINE_INPUT),
     "--coefficient",

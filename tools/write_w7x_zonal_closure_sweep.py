@@ -262,7 +262,7 @@ def build_manifest(
     plot_json = out_dir / "w7x_zonal_closure_ladder_full.json"
     plot_csv = out_dir / "w7x_zonal_closure_ladder_full.csv"
     plot_command = (
-        "python3 tools/plot_w7x_zonal_closure_ladder.py "
+        "python3 tools/artifacts/plot_w7x_zonal_closure_ladder.py "
         f"--out-png {_repo_relative(plot_out)} "
         f"--out-json {_repo_relative(plot_json)} "
         f"--out-csv {_repo_relative(plot_csv)} "

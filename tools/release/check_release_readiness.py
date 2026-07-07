@@ -35,8 +35,8 @@ REQUIRED_CI_SNIPPETS = (
     "tools/release/check_performance_optimization_manifest.py",
     "tools/release/check_quasilinear_promotion_guardrails.py",
     "tools/release/check_vmec_boozer_differentiability_claim.py",
-    "tools/build_parallelization_completion_status.py",
-    "tools/build_technical_release_status.py",
+    "tools/artifacts/build_parallelization_completion_status.py",
+    "tools/artifacts/build_technical_release_status.py",
     "tools/release/check_release_readiness.py",
 )
 REQUIRED_CODECOV_SNIPPETS = (
@@ -56,8 +56,8 @@ REQUIRED_RELEASE_SNIPPETS = (
     "tools/release/check_parallel_scaling_artifacts.py",
     "tools/release/check_quasilinear_promotion_guardrails.py",
     "tools/release/check_vmec_boozer_differentiability_claim.py",
-    "tools/build_parallelization_completion_status.py",
-    "tools/build_technical_release_status.py",
+    "tools/artifacts/build_parallelization_completion_status.py",
+    "tools/artifacts/build_technical_release_status.py",
     "tools/release/check_release_readiness.py",
 )
 REQUIRED_README_SNIPPETS = (

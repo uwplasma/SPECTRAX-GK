@@ -6,8 +6,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_nonlinear_transport_horizon_audit.py"
-spec = importlib.util.spec_from_file_location("build_nonlinear_transport_horizon_audit", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_nonlinear_transport_horizon_audit.py"
+spec = importlib.util.spec_from_file_location(
+    "build_nonlinear_transport_horizon_audit", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -56,7 +58,9 @@ def test_classify_record_separates_transport_startup_and_reduced() -> None:
     )
 
 
-def test_production_optimization_blockers_keep_transport_gates_as_prerequisites() -> None:
+def test_production_optimization_blockers_keep_transport_gates_as_prerequisites() -> (
+    None
+):
     transport_record = {
         "gate_passed": True,
         "effective_tmax": 100.0,
@@ -65,7 +69,10 @@ def test_production_optimization_blockers_keep_transport_gates_as_prerequisites(
     blockers = mod.production_optimization_blockers(transport_record)
 
     assert "missing grid-convergence gate for optimized nonlinear objective" in blockers
-    assert "missing timestep-convergence gate for optimized nonlinear objective" in blockers
+    assert (
+        "missing timestep-convergence gate for optimized nonlinear objective"
+        in blockers
+    )
     assert "missing seed/initial-condition uncertainty gate" in blockers
     assert "missing optimized-equilibrium nonlinear audit" in blockers
 
@@ -91,7 +98,9 @@ def test_production_optimization_blockers_keep_transport_gates_as_prerequisites(
     )
 
 
-def test_build_payload_marks_short_fd_audit_outside_transport_scope(tmp_path: Path) -> None:
+def test_build_payload_marks_short_fd_audit_outside_transport_scope(
+    tmp_path: Path,
+) -> None:
     _write_json(
         tmp_path,
         "docs/_static/nonlinear_cyclone_gate_summary.json",
@@ -139,11 +148,18 @@ def test_build_payload_marks_short_fd_audit_outside_transport_scope(tmp_path: Pa
     payload = mod.build_payload(tmp_path)
     rows = {row["case"]: row for row in payload["records"]}
 
-    assert rows["cyclone_nonlinear_long_window"]["status"] == "release_transport_gate_passed"
-    assert rows["cyclone_nonlinear_long_window"][
-        "production_nonlinear_optimization_ready"
-    ] is False
-    assert rows["Compact nonlinear FD startup audit"]["status"] == "short_or_startup_not_transport_average"
+    assert (
+        rows["cyclone_nonlinear_long_window"]["status"]
+        == "release_transport_gate_passed"
+    )
+    assert (
+        rows["cyclone_nonlinear_long_window"]["production_nonlinear_optimization_ready"]
+        is False
+    )
+    assert (
+        rows["Compact nonlinear FD startup audit"]["status"]
+        == "short_or_startup_not_transport_average"
+    )
     assert (
         "missing long post-transient nonlinear transport average"
         in rows["Compact nonlinear FD startup audit"][

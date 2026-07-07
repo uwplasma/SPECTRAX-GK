@@ -359,7 +359,7 @@ writer with:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_boundary_chain_collection.py \
+   python tools/artifacts/build_vmec_jax_boundary_chain_collection.py \
      --probe-json tools_out/latest_vmec_stack/boundary_chain_zs13_h2e5_branch_locality.json \
                   tools_out/latest_vmec_stack/boundary_chain_rc14_h2e5_branch_locality.json \
      --out-json tools_out/latest_vmec_stack/boundary_chain_growth_collection.json
@@ -413,7 +413,7 @@ multi-equilibrium matrix:
 .. code-block:: bash
 
    JAX_ENABLE_X64=1 PYTHONPATH=src \
-     python tools/build_vmec_boozer_parity_matrix.py
+     python tools/artifacts/build_vmec_boozer_parity_matrix.py
 
 It writes ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}``.
 The builder enforces ``mboz,nboz >= 21`` before calling the real optional
@@ -549,7 +549,7 @@ repository:
 .. code-block:: bash
 
    VMEC_JAX_ROOT=/path/to/vmec_jax
-   python tools/plot_vmec_jax_equilibrium_inventory.py \
+   python tools/artifacts/plot_vmec_jax_equilibrium_inventory.py \
      --data-dir "$VMEC_JAX_ROOT/examples/data" \
      --out docs/_static/vmec_jax_equilibrium_inventory.png
 

@@ -11,6 +11,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "artifacts"
         / "plot_quasilinear_model_selection_status.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -173,6 +174,5 @@ def test_model_selection_status_tool_can_require_optimized_equilibrium_audit(
         == "scoped_candidate_with_audited_optimized_equilibrium_evidence_not_universal_absolute_flux"
     )
     assert (
-        payload["absolute_flux_promotion"]["universal_absolute_flux_promoted"]
-        is False
+        payload["absolute_flux_promotion"]["universal_absolute_flux_promoted"] is False
     )

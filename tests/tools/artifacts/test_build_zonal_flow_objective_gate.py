@@ -10,8 +10,15 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "build_zonal_flow_objective_gate.py"
-    spec = importlib.util.spec_from_file_location("build_zonal_flow_objective_gate", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "build_zonal_flow_objective_gate.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_zonal_flow_objective_gate", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -27,7 +34,9 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         writer.writerows(rows)
 
 
-def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(tmp_path: Path) -> None:
+def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     summary = tmp_path / "summary.csv"
     comparison = tmp_path / "compare.csv"
@@ -97,7 +106,9 @@ def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(tmp_path: P
     json.dumps(payload, allow_nan=False)
 
 
-def test_build_zonal_flow_objective_gate_fail_policy_rejects_missing_damping(tmp_path: Path) -> None:
+def test_build_zonal_flow_objective_gate_fail_policy_rejects_missing_damping(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     summary = tmp_path / "summary.csv"
     _write_csv(

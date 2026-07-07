@@ -7,7 +7,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_jax_boundary_chain_collection.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_jax_boundary_chain_collection.py"
 spec = importlib.util.spec_from_file_location(
     "build_vmec_jax_boundary_chain_collection",
     SCRIPT,
@@ -71,7 +71,10 @@ def test_build_collection_payload_counts_growth_branch_status(tmp_path: Path) ->
     payload = mod.build_collection_payload([first, second])
 
     assert payload["finite"] is True
-    assert payload["classification"] == "mixed_exact_fd_consistency_with_branch_sensitive_modes"
+    assert (
+        payload["classification"]
+        == "mixed_exact_fd_consistency_with_branch_sensitive_modes"
+    )
     assert payload["counts"]["n_exact_fd_consistent"] == 1
     assert payload["counts"]["n_growth_branch_locality_checked"] == 2
     assert payload["counts"]["n_growth_branch_locality_passed"] == 1

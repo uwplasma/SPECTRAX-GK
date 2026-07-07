@@ -6,8 +6,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_pre_manuscript_closure_status.py"
-spec = importlib.util.spec_from_file_location("build_pre_manuscript_closure_status", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_pre_manuscript_closure_status.py"
+spec = importlib.util.spec_from_file_location(
+    "build_pre_manuscript_closure_status", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -64,8 +66,14 @@ def _write_all_pass_fixture(root: Path) -> None:
             }
         },
     )
-    _write_json(root, "docs/_static/quasilinear_promotion_guardrails.json", {"passed": True})
-    _write_json(root, "docs/_static/quasilinear_holdout_gap_report.json", {"promotion_gate": {"passed": True, "blockers": []}})
+    _write_json(
+        root, "docs/_static/quasilinear_promotion_guardrails.json", {"passed": True}
+    )
+    _write_json(
+        root,
+        "docs/_static/quasilinear_holdout_gap_report.json",
+        {"promotion_gate": {"passed": True, "blockers": []}},
+    )
     _write_json(
         root,
         "docs/_static/quasilinear_error_anatomy.json",
@@ -73,7 +81,10 @@ def _write_all_pass_fixture(root: Path) -> None:
             "case_count": 12,
             "holdout_count": 10,
             "candidate_mean_abs_relative_error": 0.28,
-            "promotion_gate": {"passed": False, "blockers": ["declared_stress_outliers_deferred"]},
+            "promotion_gate": {
+                "passed": False,
+                "blockers": ["declared_stress_outliers_deferred"],
+            },
             "frozen_ledger_policy": {"additional_holdout_collection_active": False},
             "core_portfolio_gate": {
                 "passed": True,
@@ -92,7 +103,9 @@ def _write_all_pass_fixture(root: Path) -> None:
                 "screening_gate_passed": False,
                 "excluded_cases": [
                     {"case": "solovev_reference_repair_dt002_amp1em5_n48_t250"},
-                    {"case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"},
+                    {
+                        "case": "shaped_tokamak_pressure_external_vmec_t650_high_grid_window"
+                    },
                 ],
             },
         },
@@ -146,9 +159,21 @@ def _write_all_pass_fixture(root: Path) -> None:
             ],
         },
     )
-    _write_json(root, "docs/_static/nonlinear_sharding_production_speedup_gate.json", {"passed": True})
-    _write_json(root, "docs/_static/nonlinear_domain_parallel_identity_gate.json", {"gate": {"identity_passed": True}})
-    _write_json(root, "docs/_static/nonlinear_spectral_communication_identity_gate.json", {"gate": {"identity_passed": True}})
+    _write_json(
+        root,
+        "docs/_static/nonlinear_sharding_production_speedup_gate.json",
+        {"passed": True},
+    )
+    _write_json(
+        root,
+        "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+        {"gate": {"identity_passed": True}},
+    )
+    _write_json(
+        root,
+        "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+        {"gate": {"identity_passed": True}},
+    )
     _write_json(
         root,
         "docs/_static/nonlinear_spectral_domain_routing_profile.json",
@@ -164,14 +189,38 @@ def _write_all_pass_fixture(root: Path) -> None:
             },
         },
     )
-    _write_json(root, "docs/_static/parallel_decomposition_status.json", {"passed": True})
+    _write_json(
+        root, "docs/_static/parallel_decomposition_status.json", {"passed": True}
+    )
 
-    _write_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json", {"passed": True})
-    _write_json(root, "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json", {"passed": True})
-    _write_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json", {"passed": True})
-    _write_json(root, "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json", {"passed": True})
-    _write_json(root, "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json", {"passed": True})
-    _write_json(root, "docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json", {"passed": True})
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+        {"passed": True},
+    )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+        {"passed": True},
+    )
+    _write_json(
+        root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json", {"passed": True}
+    )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json",
+        {"passed": True},
+    )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+        {"passed": True},
+    )
+    _write_json(
+        root,
+        "docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json",
+        {"passed": True},
+    )
     _write_json(
         root,
         "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json",
@@ -192,12 +241,17 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     assert len(lanes) == 4
     assert lanes["Scoped core quasilinear heat-flux diagnostic"]["passed"] is True
     assert lanes["Production nonlinear domain-decomposition speedup"]["passed"] is False
-    broad_lane = lanes["Broad end-to-end nonlinear turbulent-flux stellarator optimization"]
+    broad_lane = lanes[
+        "Broad end-to-end nonlinear turbulent-flux stellarator optimization"
+    ]
     assert broad_lane["passed"] is False
     assert broad_lane["status"] == "partial"
     assert broad_lane["completion_percent"] == 94.0
     assert broad_lane["key_metrics"]["broad_matrix_portfolio_passed"] is False
-    assert "broad_nonlinear_transport_matrix_portfolio_missing_or_failed" in broad_lane["blockers"]
+    assert (
+        "broad_nonlinear_transport_matrix_portfolio_missing_or_failed"
+        in broad_lane["blockers"]
+    )
     ql_lane = lanes["Scoped core quasilinear heat-flux diagnostic"]
     assert ql_lane["status"] == "closed"
     assert ql_lane["completion_percent"] == 100.0
@@ -221,9 +275,13 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     domain_lane = lanes["Production nonlinear domain-decomposition speedup"]
     assert domain_lane["completion_percent"] == 70.0
     assert domain_lane["key_metrics"]["routed_domain_timing_identity_passed"] is True
-    assert domain_lane["key_metrics"]["routed_domain_timing_speedup_gate_passed"] is False
+    assert (
+        domain_lane["key_metrics"]["routed_domain_timing_speedup_gate_passed"] is False
+    )
     assert domain_lane["key_metrics"]["routed_domain_work_model_present"] is True
-    assert domain_lane["key_metrics"]["routed_domain_work_model_speedup_feasible"] is False
+    assert (
+        domain_lane["key_metrics"]["routed_domain_work_model_speedup_feasible"] is False
+    )
 
 
 def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> None:
@@ -235,9 +293,9 @@ def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> Non
     assert payload["summary"]["n_closed"] == 4
     assert payload["summary"]["mean_completion_percent"] == 100.0
     assert all(lane["passed"] for lane in payload["lanes"])
-    vmec_lane = {
-        lane["lane"]: lane for lane in payload["lanes"]
-    }["VMEC/Boozer holdout optimization"]
+    vmec_lane = {lane["lane"]: lane for lane in payload["lanes"]}[
+        "VMEC/Boozer holdout optimization"
+    ]
     assert "closed for the current pre-manuscript gate" in vmec_lane["next_action"]
     assert all(
         "production-scope held-out surface or field-line artifact" not in item

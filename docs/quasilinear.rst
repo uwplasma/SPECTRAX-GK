@@ -183,7 +183,7 @@ Then render the spectrum:
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_spectrum.py \
+   python tools/artifacts/plot_quasilinear_spectrum.py \
      --spectrum tools_out/cyclone_quasilinear_scan.quasilinear_spectrum.csv \
      --out docs/_static/quasilinear_cyclone_spectrum.png
 
@@ -413,8 +413,8 @@ Implementation map
      - train/holdout/audit schemas, nonlinear-window ingestion, scale fitting,
        and report scoring
    * - Plotting tools
-     - ``tools/plot_quasilinear_spectrum.py`` and
-       ``tools/plot_quasilinear_calibration.py``
+     - ``tools/artifacts/plot_quasilinear_spectrum.py`` and
+       ``tools/artifacts/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
      - :mod:`spectraxgk.validation.autodiff`
@@ -618,7 +618,7 @@ running those long nonlinear simulations. The command-line artifact wrapper is
 reports and writes a JSON report plus an optional PNG summary for documentation
 or manuscript audit trails. For external-VMEC replicate campaigns the
 end-to-end extraction wrapper is
-``tools/build_external_vmec_replicate_ensemble.py``: it reads the finished
+``tools/artifacts/build_external_vmec_replicate_ensemble.py``: it reads the finished
 ``*.out.nc`` files, extracts ``Diagnostics/HeatFlux_st`` into trace CSVs,
 writes transport-window summaries, convergence reports, readiness and ensemble
 JSON gates, and generates the publication-facing two-panel trace/uncertainty
@@ -716,7 +716,7 @@ observable.
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_calibration_report.py \
+   python tools/artifacts/build_quasilinear_calibration_report.py \
      --points docs/_static/quasilinear_calibration_points.json \
      --out docs/_static/quasilinear_calibration_report.json \
      --saturation-rule mixing_length
@@ -740,7 +740,7 @@ a nonlinear gate summary:
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_calibration_report.py \
+   python tools/artifacts/build_quasilinear_calibration_report.py \
      --spectrum docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_cyclone_gate_summary.json \
      --split audit \
@@ -750,7 +750,7 @@ a nonlinear gate summary:
      --saturation-rule mixing_length \
      --out docs/_static/quasilinear_cyclone_calibration_audit_report.json
 
-   python tools/plot_quasilinear_calibration.py \
+   python tools/artifacts/plot_quasilinear_calibration.py \
      --report docs/_static/quasilinear_cyclone_calibration_audit_report.json \
      --out docs/_static/quasilinear_cyclone_calibration_audit.png
 
@@ -796,12 +796,12 @@ The report is generated with:
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_calibration_report.py \
+   python tools/artifacts/build_quasilinear_calibration_report.py \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --fit-train-scale \
      --out docs/_static/quasilinear_cyclone_miller_train_holdout_report.json
 
-   python tools/plot_quasilinear_calibration.py \
+   python tools/artifacts/plot_quasilinear_calibration.py \
      --report docs/_static/quasilinear_cyclone_miller_train_holdout_report.json \
      --out docs/_static/quasilinear_cyclone_miller_train_holdout.png
 
@@ -844,7 +844,7 @@ generated with:
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_calibration_report.py \
+   python tools/artifacts/build_quasilinear_calibration_report.py \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_hsx_gate_summary.json \
@@ -855,7 +855,7 @@ generated with:
      --fit-train-scale \
      --out docs/_static/quasilinear_hsx_train_holdout_report.json
 
-   python tools/plot_quasilinear_calibration.py \
+   python tools/artifacts/plot_quasilinear_calibration.py \
      --report docs/_static/quasilinear_hsx_train_holdout_report.json \
      --out docs/_static/quasilinear_hsx_train_holdout.png
 
@@ -910,7 +910,7 @@ window is added to the same train/holdout report with:
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_calibration_report.py \
+   python tools/artifacts/build_quasilinear_calibration_report.py \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_w7x_gate_summary.json \
@@ -974,7 +974,7 @@ stress test; it is not a validated physical saturation rule.
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_saturation_rule_sweep.py \
+   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py \
      --workers 4 \
      --out docs/_static/quasilinear_saturation_rule_sweep.png
 
@@ -1031,7 +1031,7 @@ the other geometries.
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_shape_aware_saturation.py \
+   python tools/artifacts/plot_quasilinear_shape_aware_saturation.py \
      --passed-shape-only \
      --out docs/_static/quasilinear_shape_aware_saturation.png
 
@@ -1072,7 +1072,7 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_candidate_uncertainty.py \
+   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py \
      --workers 4 \
      --out docs/_static/quasilinear_candidate_uncertainty.png
 
@@ -1109,7 +1109,7 @@ refit or promote a new model.
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_error_anatomy.py \
+   python tools/artifacts/build_quasilinear_error_anatomy.py \
      --out docs/_static/quasilinear_error_anatomy.png || true
 
 The command exits nonzero while promotion remains blocked. That is intentional:
@@ -1141,7 +1141,7 @@ fit across a ridge-penalty sweep and records the best admissible setting.
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_candidate_regularization_sweep.py \
+   python tools/artifacts/plot_quasilinear_candidate_regularization_sweep.py \
      --no-pdf \
      --out docs/_static/quasilinear_candidate_regularization_sweep.png || true
 
@@ -1170,7 +1170,7 @@ present status of the QA and QH optimization families.
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_stellarator_usefulness.py \
+   python tools/artifacts/plot_quasilinear_stellarator_usefulness.py \
      --out docs/_static/quasilinear_stellarator_usefulness.png
 
 .. image:: _static/quasilinear_stellarator_usefulness.png
@@ -1216,7 +1216,7 @@ also pass.
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_screening_skill.py \
+   python tools/artifacts/plot_quasilinear_screening_skill.py \
      --out docs/_static/quasilinear_screening_skill.png
 
 .. image:: _static/quasilinear_screening_skill.png
@@ -1265,7 +1265,7 @@ model fit is attempted. It requires:
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_dataset_sufficiency.py \
+   python tools/artifacts/plot_quasilinear_dataset_sufficiency.py \
      --out docs/_static/quasilinear_dataset_sufficiency.png
 
 .. image:: _static/quasilinear_dataset_sufficiency.png
@@ -1296,7 +1296,7 @@ and are we still avoiding an absolute-flux overclaim?
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_model_selection_status.py \
+   python tools/artifacts/plot_quasilinear_model_selection_status.py \
      --optimized-equilibrium-nonlinear-audit docs/_static/production_nonlinear_optimization_guard.json \
      --require-optimized-equilibrium-nonlinear-audit \
      --out docs/_static/quasilinear_model_selection_status.png
@@ -1341,7 +1341,7 @@ data product is needed before absolute-flux promotion can be reconsidered?
 
 .. code-block:: bash
 
-   python tools/build_quasilinear_holdout_gap_report.py \
+   python tools/artifacts/build_quasilinear_holdout_gap_report.py \
      --out docs/_static/quasilinear_holdout_gap_report.png
 
 .. image:: _static/quasilinear_holdout_gap_report.png
@@ -1420,7 +1420,7 @@ gate must pass before a new point can enter the calibration set.
 
 .. code-block:: bash
 
-   python tools/build_external_vmec_holdout_runbook.py \
+   python tools/artifacts/build_external_vmec_holdout_runbook.py \
      --out docs/_static/external_vmec_next_holdout_runbook.png
 
 .. image:: _static/external_vmec_next_holdout_runbook.png
@@ -1443,7 +1443,7 @@ least-window symmetric differences are about ``0.349`` and ``0.367``.
 
 .. code-block:: bash
 
-   python tools/build_external_vmec_holdout_runbook.py \
+   python tools/artifacts/build_external_vmec_holdout_runbook.py \
      --horizons 250,450,700 \
      --grid n64:64:64:40:40 \
      --grid n80:80:80:48:48 \
@@ -1470,7 +1470,7 @@ selection score for follow-up cases:
 .. code-block:: bash
 
    VMEC_JAX_ROOT=/path/to/vmec_jax
-   python tools/plot_vmec_jax_equilibrium_inventory.py \
+   python tools/artifacts/plot_vmec_jax_equilibrium_inventory.py \
      --data-dir "$VMEC_JAX_ROOT/examples/data" \
      --out docs/_static/vmec_jax_equilibrium_inventory.png
 
@@ -1585,7 +1585,7 @@ finite and launchable:
 
 .. code-block:: bash
 
-   python tools/build_vmec_optimization_candidate_screen_gate.py \
+   python tools/artifacts/build_vmec_optimization_candidate_screen_gate.py \
      --spectrum qa_nfp2_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qa_nfp2_mode5_ess_final_scan.quasilinear_spectrum.csv \
      --spectrum qh_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qh_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
      --spectrum qp_nfp3_mode5_ess_final:tools_out/vmec_opt_candidate_cpu_screen_20260611/qp_nfp3_mode5_ess_final_scan.quasilinear_spectrum.csv \
@@ -1910,7 +1910,7 @@ heat-flux-weight distribution is compared with the resolved nonlinear
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_spectrum_shape_gate.py \
+   python tools/artifacts/plot_quasilinear_spectrum_shape_gate.py \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc \
      --out docs/_static/quasilinear_w7x_spectrum_shape_gate.png \
@@ -1937,7 +1937,7 @@ linear heat-flux-weight spectrum against the normalized nonlinear
 
 .. code-block:: bash
 
-   python tools/plot_quasilinear_spectrum_shape_gate.py \
+   python tools/artifacts/plot_quasilinear_spectrum_shape_gate.py \
      --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear tools_out/final_nonlinear_audit/hsx_nonlinear_t50.out.nc \
      --out docs/_static/quasilinear_hsx_spectrum_shape_gate.png \

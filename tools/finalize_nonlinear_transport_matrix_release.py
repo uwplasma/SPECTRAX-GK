@@ -20,9 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools import build_manuscript_readiness_status as manuscript_status  # noqa: E402
-from tools import build_pre_manuscript_closure_runbook as closure_runbook  # noqa: E402
-from tools import build_pre_manuscript_closure_status as closure_status  # noqa: E402
+from tools.artifacts import build_manuscript_readiness_status as manuscript_status  # noqa: E402
+from tools.artifacts import build_pre_manuscript_closure_runbook as closure_runbook  # noqa: E402
+from tools.artifacts import build_pre_manuscript_closure_status as closure_status  # noqa: E402
 from tools.import_nonlinear_transport_matrix_portfolio import (  # noqa: E402
     DEFAULT_DOCS_STATIC,
     import_artifacts,

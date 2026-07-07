@@ -47,7 +47,7 @@
     "max_samples": 8,
     "max_wall_seconds": 120.0
   },
-  "builder": "tools/build_vmec_boozer_multi_point_objective_gate.py",
+  "builder": "tools/artifacts/build_vmec_boozer_multi_point_objective_gate.py",
   "case_name": "nfp4_QH_warm_start",
   "central_derivative": 100788.69008106229,
   "claim_scope": "bounded finite-difference sensitivity of a reduced linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over multiple fixed field-line alphas and/or surfaces; not a nonlinear turbulent transport claim",

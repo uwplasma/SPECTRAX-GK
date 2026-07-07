@@ -9,7 +9,7 @@ import sys
 
 
 def _load_tool_module():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "artifacts"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / "plot_quasilinear_dataset_sufficiency.py"
     spec = importlib.util.spec_from_file_location(

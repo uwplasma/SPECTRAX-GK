@@ -2,7 +2,7 @@
 """Select a promotable broad nonlinear transport matrix from candidate families.
 
 Each input matrix report must come from
-``tools/build_matched_nonlinear_transport_matrix.py report``. This portfolio
+``tools/artifacts/build_matched_nonlinear_transport_matrix.py report``. This portfolio
 gate is intentionally separate from single-point matched audits: a nonlinear
 turbulent-flux optimization family is broadly promotable only if at least one
 candidate report passes the multi-surface, multi-field-line, multi-ky matrix

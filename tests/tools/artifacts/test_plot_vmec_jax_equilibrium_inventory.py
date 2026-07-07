@@ -11,8 +11,15 @@ from netCDF4 import Dataset
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_vmec_jax_equilibrium_inventory.py"
-    spec = importlib.util.spec_from_file_location("plot_vmec_jax_equilibrium_inventory", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_vmec_jax_equilibrium_inventory.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_vmec_jax_equilibrium_inventory", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -51,8 +58,16 @@ def _write_wout(
 
 def test_vmec_jax_inventory_report_and_figure_are_replayable(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    _write_wout(tmp_path / "wout_circular_tokamak.nc", nfp=1, ntor=0, aspect=3.0, iota_edge=0.25)
-    _write_wout(tmp_path / "wout_nfp4_QH_warm_start.nc", nfp=4, ntor=2, aspect=7.0, iota_edge=-1.1)
+    _write_wout(
+        tmp_path / "wout_circular_tokamak.nc", nfp=1, ntor=0, aspect=3.0, iota_edge=0.25
+    )
+    _write_wout(
+        tmp_path / "wout_nfp4_QH_warm_start.nc",
+        nfp=4,
+        ntor=2,
+        aspect=7.0,
+        iota_edge=-1.1,
+    )
 
     report = mod.build_inventory(tmp_path)
     paths = mod.write_inventory_figure(report, out=tmp_path / "inventory.png")
@@ -70,7 +85,13 @@ def test_vmec_jax_inventory_report_and_figure_are_replayable(tmp_path: Path) -> 
 
 def test_vmec_jax_inventory_defers_degenerate_reference_scales(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    _write_wout(tmp_path / "wout_nfp4_QH_warm_start.nc", nfp=4, ntor=2, aspect=7.0, iota_edge=-1.1)
+    _write_wout(
+        tmp_path / "wout_nfp4_QH_warm_start.nc",
+        nfp=4,
+        ntor=2,
+        aspect=7.0,
+        iota_edge=-1.1,
+    )
     _write_wout(
         tmp_path / "wout_LandremanPaul2021_QA_lowres.nc",
         nfp=2,
@@ -83,9 +104,19 @@ def test_vmec_jax_inventory_defers_degenerate_reference_scales(tmp_path: Path) -
     )
 
     report = mod.build_inventory(tmp_path)
-    degenerate = next(row for row in report["rows"] if row["name"] == "wout_LandremanPaul2021_QA_lowres.nc")
+    degenerate = next(
+        row
+        for row in report["rows"]
+        if row["name"] == "wout_LandremanPaul2021_QA_lowres.nc"
+    )
 
     assert degenerate["reference_scale_valid"] is False
-    assert degenerate["geometry_contract_status"] == "deferred_degenerate_vmec_reference_scale"
+    assert (
+        degenerate["geometry_contract_status"]
+        == "deferred_degenerate_vmec_reference_scale"
+    )
     assert degenerate["candidate_score"] == 0.0
-    assert "wout_LandremanPaul2021_QA_lowres.nc" not in report["recommended_next_linear_portfolio"]
+    assert (
+        "wout_LandremanPaul2021_QA_lowres.nc"
+        not in report["recommended_next_linear_portfolio"]
+    )

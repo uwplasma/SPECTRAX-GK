@@ -6,8 +6,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_line_search_gate.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_aggregate_line_search_gate", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_aggregate_line_search_gate.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_aggregate_line_search_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -54,14 +58,18 @@ def test_write_vmec_boozer_aggregate_line_search_artifacts(tmp_path: Path) -> No
     assert "candidate_objective" in Path(paths["csv"]).read_text(encoding="utf-8")
 
 
-def test_vmec_boozer_aggregate_line_search_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
+def test_vmec_boozer_aggregate_line_search_gate_main_uses_report(
+    monkeypatch, tmp_path: Path
+) -> None:
     calls: dict[str, object] = {}
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
         calls.update(kwargs)
         return _payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report
+    )
 
     result = mod.main(
         [

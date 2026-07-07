@@ -9,11 +9,13 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_state_to_input_mapping_response.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_state_to_input_mapping_response.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("build_vmec_state_to_input_mapping_response", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "build_vmec_state_to_input_mapping_response", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -31,8 +33,16 @@ def _controls() -> list[dict[str, object]]:
 
 def _directions() -> list[dict[str, object]]:
     return [
-        {"coefficient": "RBC(1,1)", "coefficient_slug": "rbc_1_1", "delta_parameter": 0.1},
-        {"coefficient": "ZBS(1,1)", "coefficient_slug": "zbs_1_1", "delta_parameter": 0.2},
+        {
+            "coefficient": "RBC(1,1)",
+            "coefficient_slug": "rbc_1_1",
+            "delta_parameter": 0.1,
+        },
+        {
+            "coefficient": "ZBS(1,1)",
+            "coefficient_slug": "zbs_1_1",
+            "delta_parameter": 0.2,
+        },
     ]
 
 
@@ -69,7 +79,9 @@ def test_mapping_report_fails_closed_for_zero_symmetric_response() -> None:
     assert report["jacobian"]["rank"] == 0
     assert report["jacobian"]["condition_number"] is None
     assert "zero_state_response" in report["blockers"]
-    assert all("state_control_not_observed" in row["blockers"] for row in report["controls"])
+    assert all(
+        "state_control_not_observed" in row["blockers"] for row in report["controls"]
+    )
     json.dumps(report, allow_nan=False)
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_transport_audit_redesign_report import main
+from tools.artifacts.build_transport_audit_redesign_report import main
 
 
 def _comparison(path: Path, *, relative_reduction: float, passed: bool) -> None:

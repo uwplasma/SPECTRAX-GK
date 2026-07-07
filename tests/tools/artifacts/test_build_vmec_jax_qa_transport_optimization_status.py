@@ -7,8 +7,12 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_jax_qa_transport_optimization_status.py"
-spec = importlib.util.spec_from_file_location("build_vmec_jax_qa_transport_optimization_status", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_jax_qa_transport_optimization_status.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_jax_qa_transport_optimization_status", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -72,7 +76,9 @@ def _candidate(
                     "checks": {
                         "mean_iota_reproducibility": {
                             "passed": wout_reproducibility_passed,
-                            "absolute_error": 0.0 if wout_reproducibility_passed else 1.5e-3,
+                            "absolute_error": 0.0
+                            if wout_reproducibility_passed
+                            else 1.5e-3,
                             "absolute_tolerance": 5.0e-4,
                         }
                     },
@@ -259,7 +265,9 @@ def _supporting_artifacts(
     }
 
 
-def test_build_payload_separates_gate_failures_from_transport_metrics(tmp_path: Path) -> None:
+def test_build_payload_separates_gate_failures_from_transport_metrics(
+    tmp_path: Path,
+) -> None:
     constraints = tmp_path / "constraints"
     direct = tmp_path / "direct"
     projected_base = tmp_path / "projected_base"
@@ -286,13 +294,24 @@ def test_build_payload_separates_gate_failures_from_transport_metrics(tmp_path: 
     assert payload["summary"]["long_window_nonlinear_audit_passed"] is True
     assert payload["summary"]["nonlinear_prelaunch_policy_ready"] is True
     assert payload["summary"]["negative_reference_blocks_weak_margin"] is True
-    assert payload["summary"]["claim_evidence_level"] == "scoped_matched_replicated_nonlinear_audit"
-    assert "direct_scalar_transport_branch_blocked" in payload["summary"]["claim_promotion_blockers"]
-    assert "projected_transport_metric_not_improved" in payload["summary"]["claim_promotion_blockers"]
+    assert (
+        payload["summary"]["claim_evidence_level"]
+        == "scoped_matched_replicated_nonlinear_audit"
+    )
+    assert (
+        "direct_scalar_transport_branch_blocked"
+        in payload["summary"]["claim_promotion_blockers"]
+    )
+    assert (
+        "projected_transport_metric_not_improved"
+        in payload["summary"]["claim_promotion_blockers"]
+    )
     assert "direct scalar transport" in payload["summary"]["blocked_candidates"]
 
 
-def test_status_plot_and_json_ready_handle_missing_transport_metric(tmp_path: Path) -> None:
+def test_status_plot_and_json_ready_handle_missing_transport_metric(
+    tmp_path: Path,
+) -> None:
     constraints = tmp_path / "constraints"
     direct = tmp_path / "direct"
     projected_base = tmp_path / "projected_base"
@@ -319,7 +338,9 @@ def test_status_plot_and_json_ready_handle_missing_transport_metric(tmp_path: Pa
     json.dumps(cleaned, allow_nan=False)
 
 
-def test_failed_wout_reproducibility_gate_blocks_status_admission(tmp_path: Path) -> None:
+def test_failed_wout_reproducibility_gate_blocks_status_admission(
+    tmp_path: Path,
+) -> None:
     constraints = tmp_path / "constraints"
     direct = tmp_path / "direct"
     projected_base = tmp_path / "projected_base"
@@ -399,7 +420,9 @@ def test_nonlinear_audit_requires_expected_claim_level(tmp_path: Path) -> None:
         direct_transport_dir=direct,
         projected_baseline_dir=projected_base,
         projected_step_dir=projected_step,
-        **_supporting_artifacts(tmp_path, nonlinear_claim_level="startup_window_observable"),
+        **_supporting_artifacts(
+            tmp_path, nonlinear_claim_level="startup_window_observable"
+        ),
     )
     audit = payload["long_window_nonlinear_audit"]
 
@@ -407,11 +430,19 @@ def test_nonlinear_audit_requires_expected_claim_level(tmp_path: Path) -> None:
     assert audit["claim_level_matches_expected"] is False
     assert audit["passed"] is False
     assert payload["summary"]["long_window_nonlinear_audit_passed"] is False
-    assert payload["summary"]["claim_evidence_level"] == "nonlinear_campaign_prelaunch_ready"
-    assert "nonlinear_audit_claim_level_mismatch" in payload["summary"]["claim_promotion_blockers"]
+    assert (
+        payload["summary"]["claim_evidence_level"]
+        == "nonlinear_campaign_prelaunch_ready"
+    )
+    assert (
+        "nonlinear_audit_claim_level_mismatch"
+        in payload["summary"]["claim_promotion_blockers"]
+    )
 
 
-def test_parse_args_accepts_campaign_admission_json(monkeypatch, tmp_path: Path) -> None:
+def test_parse_args_accepts_campaign_admission_json(
+    monkeypatch, tmp_path: Path
+) -> None:
     campaign = tmp_path / "campaign.json"
     monkeypatch.setattr(
         sys,

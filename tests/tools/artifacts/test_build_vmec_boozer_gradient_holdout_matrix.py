@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_gradient_holdout_matrix.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_boozer_gradient_holdout_matrix.py"
 spec = importlib.util.spec_from_file_location(
     "build_vmec_boozer_gradient_holdout_matrix", SCRIPT
 )

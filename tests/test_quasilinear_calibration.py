@@ -37,7 +37,7 @@ def _load_build_tool_module():
     path = (
         Path(__file__).resolve().parents[1]
         / "tools"
-        / "build_quasilinear_calibration_report.py"
+        / "artifacts" / "build_quasilinear_calibration_report.py"
     )
     spec = importlib.util.spec_from_file_location(
         "build_quasilinear_calibration_report", path

@@ -82,7 +82,7 @@ def test_write_optimized_equilibrium_transport_configs_contract(tmp_path: Path) 
     assert len(contract["expected_outputs"]) == 3
     assert all("optimized_equilibrium_test_nonlinear_t2_n8" in path for path in contract["expected_outputs"])
     assert contract["build_ensemble_command"].startswith(
-        "python3 tools/build_external_vmec_replicate_ensemble.py"
+        "python3 tools/artifacts/build_external_vmec_replicate_ensemble.py"
     )
     assert "--tmin 1" in contract["build_ensemble_command"]
     assert "--tmax 2" in contract["build_ensemble_command"]

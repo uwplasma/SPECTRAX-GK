@@ -9,8 +9,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "build_vmec_boozer_nonlinear_window_fd_audit.py"
-    spec = importlib.util.spec_from_file_location("build_vmec_boozer_nonlinear_window_fd_audit", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "build_vmec_boozer_nonlinear_window_fd_audit.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_vmec_boozer_nonlinear_window_fd_audit", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -54,7 +61,9 @@ def _synthetic_run(label: str, perturbation: float, scale: float = 1.0) -> dict:
         "label": label,
         "perturbation": perturbation,
         "geometry_file_name": f"{label}.nc",
-        "geometry_response": mod.geometry_response_metrics(_fake_geom(), _fake_geom(1.0 + abs(perturbation))),
+        "geometry_response": mod.geometry_response_metrics(
+            _fake_geom(), _fake_geom(1.0 + abs(perturbation))
+        ),
         "time": time.tolist(),
         "heat_flux": heat.tolist(),
         "window": mod.late_window_metrics(time, heat, tail_fraction=0.5),
@@ -128,13 +137,18 @@ def test_build_vmec_boozer_audit_payload_blocks_unresolved_geometry() -> None:
     assert payload["gates"]["geometry_perturbation_resolved"] is False
 
 
-def test_main_writes_artifacts_without_running_solver(monkeypatch, tmp_path: Path) -> None:
+def test_main_writes_artifacts_without_running_solver(
+    monkeypatch, tmp_path: Path
+) -> None:
     mod = _load_tool_module()
 
     monkeypatch.setattr(
         mod,
         "_mode21_vmec_boozer_linear_context",
-        lambda **_kwargs: {"parameter_names": ("Rcos_r1_m1",), "geometry_for": lambda _x: _fake_geom()},
+        lambda **_kwargs: {
+            "parameter_names": ("Rcos_r1_m1",),
+            "geometry_for": lambda _x: _fake_geom(),
+        },
     )
 
     def fake_run_vmec_boozer_window(*, label: str, perturbation: float, **_kwargs):

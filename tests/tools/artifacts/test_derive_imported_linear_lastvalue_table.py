@@ -24,7 +24,15 @@ def test_build_lastvalue_table_converts_scan_columns() -> None:
 
     out = _build_lastvalue_table(df)
 
-    assert list(out.columns) == ["ky", "gamma", "omega", "gamma_gx", "omega_gx", "rel_gamma", "rel_omega"]
+    assert list(out.columns) == [
+        "ky",
+        "gamma",
+        "omega",
+        "gamma_gx",
+        "omega_gx",
+        "rel_gamma",
+        "rel_omega",
+    ]
     assert list(out["ky"]) == [0.05, 0.1]
     row = out.iloc[0]
     assert row["gamma"] == pytest.approx(0.012)

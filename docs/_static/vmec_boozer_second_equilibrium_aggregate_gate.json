@@ -4,7 +4,7 @@
     "max_wall_seconds": 300.0,
     "passed": true
   },
-  "builder": "tools/build_vmec_boozer_second_equilibrium_aggregate_gate.py",
+  "builder": "tools/artifacts/build_vmec_boozer_second_equilibrium_aggregate_gate.py",
   "case_name": "li383_low_res",
   "claim_scope": "second-equilibrium reduced aggregate VMEC/Boozer/SPECTRAX-GK finite-difference and one-parameter line-search gate at mboz=nboz>=21; not a nonlinear turbulent transport optimization claim",
   "coverage": {

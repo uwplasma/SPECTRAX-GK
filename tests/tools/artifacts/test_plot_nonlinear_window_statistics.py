@@ -6,8 +6,15 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_nonlinear_window_statistics.py"
-    spec = importlib.util.spec_from_file_location("plot_nonlinear_window_statistics", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_nonlinear_window_statistics.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_nonlinear_window_statistics", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -30,9 +37,24 @@ def _write_summary(
         "gate_mean_rel": 0.10,
         "gate_passed": True,
         "summary": [
-            {"metric": "Wg", "mean_rel_abs": wg, "max_rel_abs": 0.04, "final_rel": 0.01},
-            {"metric": "Wphi", "mean_rel_abs": wphi, "max_rel_abs": 0.05, "final_rel": -0.01},
-            {"metric": "HeatFlux", "mean_rel_abs": heat_flux, "max_rel_abs": 0.09, "final_rel": 0.02},
+            {
+                "metric": "Wg",
+                "mean_rel_abs": wg,
+                "max_rel_abs": 0.04,
+                "final_rel": 0.01,
+            },
+            {
+                "metric": "Wphi",
+                "mean_rel_abs": wphi,
+                "max_rel_abs": 0.05,
+                "final_rel": -0.01,
+            },
+            {
+                "metric": "HeatFlux",
+                "mean_rel_abs": heat_flux,
+                "max_rel_abs": 0.09,
+                "final_rel": 0.02,
+            },
         ],
     }
     if not include:
@@ -40,12 +62,17 @@ def _write_summary(
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def test_load_window_rows_excludes_exploratory_and_uses_repo_relative_paths(tmp_path: Path) -> None:
+def test_load_window_rows_excludes_exploratory_and_uses_repo_relative_paths(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     old_root = mod.ROOT
     mod.ROOT = tmp_path
     try:
-        _write_summary(tmp_path / "nonlinear_cyclone_gate_summary.json", case="cyclone_nonlinear_long_window")
+        _write_summary(
+            tmp_path / "nonlinear_cyclone_gate_summary.json",
+            case="cyclone_nonlinear_long_window",
+        )
         _write_summary(
             tmp_path / "nonlinear_cyclone_short_gate_summary.json",
             case="cyclone_short_nonlinear_window",
@@ -64,8 +91,15 @@ def test_load_window_rows_excludes_exploratory_and_uses_repo_relative_paths(tmp_
 
 def test_plot_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    _write_summary(tmp_path / "nonlinear_cyclone_gate_summary.json", case="cyclone_nonlinear_long_window")
-    _write_summary(tmp_path / "nonlinear_hsx_gate_summary.json", case="hsx_nonlinear_window", heat_flux=0.04)
+    _write_summary(
+        tmp_path / "nonlinear_cyclone_gate_summary.json",
+        case="cyclone_nonlinear_long_window",
+    )
+    _write_summary(
+        tmp_path / "nonlinear_hsx_gate_summary.json",
+        case="hsx_nonlinear_window",
+        heat_flux=0.04,
+    )
     _write_summary(
         tmp_path / "nonlinear_cyclone_short_gate_summary.json",
         case="cyclone_short_nonlinear_window",
@@ -89,7 +123,9 @@ def test_plot_nonlinear_window_statistics_main_writes_artifacts(tmp_path: Path) 
     assert "cyclone_short_nonlinear_window" not in set(meta["cases"])
 
 
-def test_case_specific_window_gates_expose_tighter_release_thresholds(tmp_path: Path) -> None:
+def test_case_specific_window_gates_expose_tighter_release_thresholds(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     _write_summary(
         tmp_path / "nonlinear_kbm_gate_summary.json",
@@ -98,7 +134,11 @@ def test_case_specific_window_gates_expose_tighter_release_thresholds(tmp_path: 
         wg=0.01,
         wphi=0.015,
     )
-    _write_summary(tmp_path / "nonlinear_hsx_gate_summary.json", case="hsx_nonlinear_window", heat_flux=0.049)
+    _write_summary(
+        tmp_path / "nonlinear_hsx_gate_summary.json",
+        case="hsx_nonlinear_window",
+        heat_flux=0.049,
+    )
     _write_summary(
         tmp_path / "nonlinear_cyclone_miller_gate_summary.json",
         case="cyclone_miller_nonlinear_window",
@@ -112,7 +152,9 @@ def test_case_specific_window_gates_expose_tighter_release_thresholds(tmp_path: 
     assert by_case["cyclone_miller_nonlinear_window"] == 0.095
 
     out = tmp_path / "case_gates.json"
-    mod.write_summary_json(rows, out, gate_threshold=0.10, patterns=[str(tmp_path / "*.json")])
+    mod.write_summary_json(
+        rows, out, gate_threshold=0.10, patterns=[str(tmp_path / "*.json")]
+    )
     meta = json.loads(out.read_text(encoding="utf-8"))
     assert meta["case_gate_passed"] == {
         "cyclone_miller_nonlinear_window": True,

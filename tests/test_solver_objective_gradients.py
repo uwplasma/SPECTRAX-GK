@@ -56,7 +56,7 @@ from spectraxgk.objectives.solver_gradients import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "build_solver_objective_gradient_gate.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_solver_objective_gradient_gate.py"
 spec = importlib.util.spec_from_file_location(
     "build_solver_objective_gradient_gate", SCRIPT
 )

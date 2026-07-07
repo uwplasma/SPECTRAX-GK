@@ -64,7 +64,7 @@ Source Map
 - Eval-only reduced transport-admission metric tool:
   :download:`evaluate_vmec_jax_spectrax_transport_metric.py <../tools/evaluate_vmec_jax_spectrax_transport_metric.py>`
 - Optimizer evidence/strategy report builder:
-  :download:`build_qa_optimizer_strategy_report.py <../tools/build_qa_optimizer_strategy_report.py>`
+  :download:`build_qa_optimizer_strategy_report.py <../tools/artifacts/build_qa_optimizer_strategy_report.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
 
@@ -457,7 +457,7 @@ than baseline (``-0.49%``, ``z = -0.19``; ``-0.25%``, ``z = -0.09``).
    and is not promoted.
 
 The parameter-scan example calls
-``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
+``tools/artifacts/build_vmec_boundary_transport_landscape.py`` with top-level constants.
 Its default mode reuses the tracked strict-baseline ``RBC(1,1)`` reduced-metric
 JSON. Set ``EVALUATE_REDUCED = True`` to rerun the deterministic growth and
 explicit quasilinear metrics for a new coefficient scan. Replicated nonlinear
@@ -508,7 +508,7 @@ then build the comparison panel from the real ``history.json`` and
      --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
 
    # Locally, after copying the campaign directory back:
-   python tools/build_vmec_jax_qa_full_sweep_panel.py \
+   python tools/artifacts/build_vmec_jax_qa_full_sweep_panel.py \
      --run-root tools_out/vmec_jax_qa_full_sweep_YYYYMMDD \
      --out docs/_static/vmec_jax_qa_full_sweep_panel.png --pdf
 
@@ -737,8 +737,8 @@ Run the complete comparison with:
 
 .. code-block:: bash
 
-   python tools/build_qa_low_turbulence_comparison.py --pdf
-   python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
+   python tools/artifacts/build_qa_low_turbulence_comparison.py --pdf
+   python tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py --pdf
 
 The command writes:
 
@@ -818,7 +818,7 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_qa_transport_candidate_comparison.py --pdf
+   python tools/artifacts/build_vmec_jax_qa_transport_candidate_comparison.py --pdf
 
 On this development workstation the command uses the local authoritative
 sidecar directories when they are present. In a clean clone those directories
@@ -845,7 +845,7 @@ status, and the long-window nonlinear audit anchor:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_qa_transport_optimization_status.py \
+   python tools/artifacts/build_vmec_jax_qa_transport_optimization_status.py \
      --campaign-admission-json docs/_static/nonlinear_campaign_admission_report.json \
      --pdf
 
@@ -928,7 +928,7 @@ transport weight:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_transport_gradient_diagnostic.py \
+   python tools/artifacts/build_vmec_jax_transport_gradient_diagnostic.py \
      --input runs/qa_constraints_only/input.final \
      --out-json runs/qa_constraints_only/transport_gradient.json \
      --max-mode 5 --min-vmec-mode 7 \
@@ -968,7 +968,7 @@ differences:
 
 .. code-block:: bash
 
-   python tools/build_vmec_jax_transport_gradient_diagnostic.py \
+   python tools/artifacts/build_vmec_jax_transport_gradient_diagnostic.py \
      --input runs/qa_constraints_only/input.final \
      --out-json runs/qa_constraints_only/transport_gradient_fd.json \
      --max-mode 5 --min-vmec-mode 7 \
@@ -1212,7 +1212,7 @@ would be blocked before launching a new expensive nonlinear campaign.
 
 The broad nonlinear turbulent-flux optimization gate is now encoded directly in
 ``examples/optimization/QA_nonlinear_ITG_transport_matrix.py`` and the
-lower-level ``tools/build_matched_nonlinear_transport_matrix.py`` helper. The
+lower-level ``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` helper. The
 example keeps the VMEC-JAX-style top-level-constant workflow: edit the baseline
 and candidate WOUT paths, then run the script to emit the full production
 campaign over ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
@@ -1448,7 +1448,7 @@ Boundary-Coefficient Objective Landscapes
 
 Before launching another optimizer, SPECTRAX-GK now includes a
 boundary-coefficient landscape diagnostic:
-:download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`.
+:download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`.
 It perturbs one VMEC input coefficient, writes the corresponding ``input.*``
 decks, evaluates deterministic reduced transport objectives, and optionally
 overlays true post-transient nonlinear heat-flux points with uncertainty bars. This
@@ -1475,7 +1475,7 @@ coefficient; reduced/startup nonlinear-window metrics are excluded from this
 landscape.  To regenerate the tracked figure without recomputing metrics,
 reuse the stored JSON sidecar::
 
-   python tools/build_vmec_boundary_transport_landscape.py \
+   python tools/artifacts/build_vmec_boundary_transport_landscape.py \
      --baseline-input tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final \
      --coefficient "RBC(1,1)" \
      --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc11_full.json \
@@ -1506,7 +1506,7 @@ reduced metrics.  The shorter windows are retained only as negative convergence
 diagnostics for this landscape protocol.
 For diagnostic landscapes that should show failed post-transient points instead
 of aborting the full scan, build each sidecar with
-``tools/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That
+``tools/artifacts/build_external_vmec_replicate_ensemble.py --allow-failed-gates``.  That
 flag only changes the command exit status; the JSON and plot still mark failed
 readiness or ensemble gates as failed and those points must not be promoted.
 
@@ -1515,7 +1515,7 @@ the nonlinear campaign-admission report should be rebuilt from the matching
 strict-baseline reduced scan and the new replicated nonlinear landscape
 sidecars::
 
-   python tools/build_nonlinear_campaign_admission_report.py \
+   python tools/artifacts/build_nonlinear_campaign_admission_report.py \
      --prelaunch-report path/to/current_prelaunch_gate.json \
      --landscape-admission path/to/current_landscape_admission.json \
      --out-json path/to/current_campaign_admission_report.json \
@@ -1549,12 +1549,12 @@ Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
 - Core reduced model: :mod:`spectraxgk.objectives.qa_low_turbulence`
-- Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
-- Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
-- Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
-- Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/build_nonlinear_landscape_admission_report.py>`
-- Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/build_reduced_nonlinear_audit_prelaunch_report.py>`
-- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/build_nonlinear_campaign_admission_report.py>`
+- Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/artifacts/build_qa_low_turbulence_comparison.py>`
+- Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py>`
+- Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`
+- Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/artifacts/build_nonlinear_landscape_admission_report.py>`
+- Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/artifacts/build_reduced_nonlinear_audit_prelaunch_report.py>`
+- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/artifacts/build_nonlinear_campaign_admission_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
@@ -2016,7 +2016,7 @@ finite difference on a deterministic nonlinear row fixture.
 
 .. code-block:: bash
 
-   python tools/build_stellarator_objective_portfolio_gate.py \
+   python tools/artifacts/build_stellarator_objective_portfolio_gate.py \
      --out docs/_static/stellarator_objective_portfolio_gate.png
 
 .. figure:: _static/stellarator_objective_portfolio_gate.png
@@ -2068,7 +2068,7 @@ Generate the comparison panel with:
 .. code-block:: bash
 
    JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py --workers 3 --finite-difference-workers 2
-   JAX_ENABLE_X64=1 python tools/plot_stellarator_optimization_uq.py
+   JAX_ENABLE_X64=1 python tools/artifacts/plot_stellarator_optimization_uq.py
 
 The ``--workers`` option parallelizes the independent growth-rate,
 quasilinear-flux, and nonlinear-window objective reports while preserving the
@@ -2163,7 +2163,7 @@ The CI-scale gate is:
 .. code-block:: bash
 
    pytest -q tests/test_zonal_objective.py tests/tools/artifacts/test_build_zonal_flow_objective_gate.py
-   python tools/build_zonal_flow_objective_gate.py
+   python tools/artifacts/build_zonal_flow_objective_gate.py
 
 The test exercises the optimization contract that the literature motivates:
 larger residuals and lower damping lower the scalar objective, the
@@ -2171,7 +2171,7 @@ surface/field-line/wavenumber portfolio shape is explicit, and the resulting
 row map passes AD/finite-difference and conditioning checks before optimizer
 use.
 
-``tools/build_zonal_flow_objective_gate.py`` is the artifact bridge from
+``tools/artifacts/build_zonal_flow_objective_gate.py`` is the artifact bridge from
 validated zonal-response outputs to optimizer rows.  It currently emits a
 W7-X diagnostic artifact from ``w7x_zonal_response_panel.csv`` and
 ``w7x_zonal_reference_compare.csv``.  Because the frozen W7-X trace still has
@@ -2732,7 +2732,7 @@ and 15 require replacement, locality repair, or variance reduction. Because
 the newest local ``ZBS(1,0)`` follow-up is plus-state variance limited, the
 planner now recommends paired-seed or control-variate variance reduction
 instead of more same-bracket replicas.
-``tools/build_nonlinear_gradient_variance_reduction_plan.py`` is the concrete
+``tools/artifacts/build_nonlinear_gradient_variance_reduction_plan.py`` is the concrete
 runbook for that recommendation. Applied to the rel7.5 artifact, it finds four
 common plus/minus seed or timestep labels and estimates the paired response
 uncertainty directly from matched differences. The paired estimator is better
@@ -2752,7 +2752,7 @@ to project a combined response uncertainty of ``0.480``. That closes the
 pre-run design question but not the physics claim; the actual runs must still
 pass output, replicated-window, control-mean, and central-response gates.
 The companion
-``tools/build_nonlinear_gradient_control_mean_gate.py`` consumes the post-run
+``tools/artifacts/build_nonlinear_gradient_control_mean_gate.py`` consumes the post-run
 plus/minus ensemble reports and evaluates the full uncertainty budget,
 ``SEM_total^2 = SEM_residual^2 + beta^2 SEM_control_mean^2``. This keeps the
 control-variate path auditable: the sample-centered screen can motivate a
@@ -3098,7 +3098,7 @@ The generated files are still launch artifacts, not evidence: production
 promotion only begins after ``vmec_jax`` has re-equilibrated all three inputs
 and produced distinct ``wout`` files.
 Once the three matched ensembles exist,
-``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
+``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
 artifact builder. It consumes the ``baseline``, ``plus_delta``, and
 ``minus_delta`` replicated ensemble JSON files, computes
 ``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into

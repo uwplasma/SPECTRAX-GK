@@ -11,7 +11,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_parity_matrix.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_boozer_parity_matrix.py"
 
 
 def _load_tool_module():
@@ -58,7 +58,9 @@ def _fake_report(**kwargs: object) -> dict[str, object]:
     }
 
 
-def _fake_artifact_resolver(case_name: str) -> tuple[str | None, str | None, str | None]:
+def _fake_artifact_resolver(
+    case_name: str,
+) -> tuple[str | None, str | None, str | None]:
     if case_name in {"nfp1_QI", "nfp2_QI", "nfp4_QI_finite_beta"}:
         return f"/tmp/input.{case_name}", None, None
     return f"/tmp/input.{case_name}", "/dev/null", None
@@ -168,7 +170,9 @@ def test_qi_seed_robustness_rejects_input_only_variants() -> None:
     payload = mod.build_parity_matrix(
         cases=(),
         qi_variants=(
-            mod.ParityCase("nfp1_QI", "QI input nfp1", "quasi-isodynamic input variant", 8),
+            mod.ParityCase(
+                "nfp1_QI", "QI input nfp1", "quasi-isodynamic input variant", 8
+            ),
         ),
         reporter=_fake_report,
         artifact_resolver=_fake_artifact_resolver,

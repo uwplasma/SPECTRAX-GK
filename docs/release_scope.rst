@@ -343,7 +343,7 @@ Quasilinear model-selection state:
   three matched baseline-to-optimized audits pass with positive
   uncertainty-separated heat-flux reductions. This is scoped candidate
   evidence, not a broad multi-surface nonlinear transport-optimization claim.
-- ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
+- ``tools/artifacts/build_baseline_optimized_nonlinear_audit.py`` now records the matched
   QA no-ESS reference to optimized QA/ESS comparison. The tracked
   ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
   with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
@@ -372,7 +372,7 @@ Quasilinear model-selection state:
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.
-- ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
+- ``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
   long-window promotion builder for that missing evidence. It takes the
   finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
   nonlinear-window ensemble JSON files, computes the central finite-difference

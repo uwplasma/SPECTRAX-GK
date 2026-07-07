@@ -755,7 +755,7 @@ def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
 
 
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = ROOT / "tools" / "build_nonlinear_gradient_variance_reduction_plan.py"
+    path = ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_variance_reduction_plan.py"
     spec = importlib.util.spec_from_file_location(
         "build_nonlinear_gradient_variance_reduction_plan", path
     )
@@ -846,7 +846,7 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
 
 
 def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = ROOT / "tools" / "build_nonlinear_gradient_control_mean_gate.py"
+    path = ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_control_mean_gate.py"
     spec = importlib.util.spec_from_file_location(
         "build_nonlinear_gradient_control_mean_gate", path
     )

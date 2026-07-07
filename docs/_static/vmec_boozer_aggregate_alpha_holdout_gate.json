@@ -1,6 +1,6 @@
 {
   "artifact_kind": "vmec_boozer_aggregate_alpha_holdout_gate",
-  "builder": "tools/build_vmec_boozer_aggregate_alpha_holdout_gate.py",
+  "builder": "tools/artifacts/build_vmec_boozer_aggregate_alpha_holdout_gate.py",
   "case_name": "nfp4_QH_warm_start",
   "claim_scope": "reduced aggregate VMEC/Boozer/SPECTRAX-GK line-search split with a held-out field-line alpha; this is reduced growth/quasilinear objective evidence, not a nonlinear turbulent transport claim",
   "final_delta": -1e-08,

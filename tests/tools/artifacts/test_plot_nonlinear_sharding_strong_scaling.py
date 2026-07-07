@@ -6,8 +6,15 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_nonlinear_sharding_strong_scaling.py"
-    spec = importlib.util.spec_from_file_location("plot_nonlinear_sharding_strong_scaling", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_nonlinear_sharding_strong_scaling.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_nonlinear_sharding_strong_scaling", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -15,7 +22,9 @@ def _load_tool_module():
     return module
 
 
-def test_plot_nonlinear_sharding_strong_scaling_parser_defaults_to_large_inputs() -> None:
+def test_plot_nonlinear_sharding_strong_scaling_parser_defaults_to_large_inputs() -> (
+    None
+):
     mod = _load_tool_module()
 
     args = mod.build_parser().parse_args([])
@@ -24,7 +33,9 @@ def test_plot_nonlinear_sharding_strong_scaling_parser_defaults_to_large_inputs(
     assert args.out_prefix == mod.DEFAULT_PREFIX
 
 
-def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(tmp_path: Path) -> None:
+def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     payload = {
         "backend": "cpu",

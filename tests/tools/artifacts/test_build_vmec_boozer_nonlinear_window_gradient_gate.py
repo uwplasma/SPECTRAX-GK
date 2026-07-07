@@ -8,8 +8,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_nonlinear_window_gradient_gate.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_nonlinear_window_gradient_gate", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_nonlinear_window_gradient_gate.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_nonlinear_window_gradient_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -49,7 +53,11 @@ def _fake_payload() -> dict[str, object]:
 
 
 def test_nonlinear_window_builder_writes_artifacts(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.setattr(mod, "mode21_vmec_boozer_nonlinear_window_gradient_report", lambda **_kwargs: _fake_payload())
+    monkeypatch.setattr(
+        mod,
+        "mode21_vmec_boozer_nonlinear_window_gradient_report",
+        lambda **_kwargs: _fake_payload(),
+    )
 
     out = tmp_path / "vmec_boozer_nonlinear_window_gradient_gate.png"
     assert mod.main(["--out", str(out), "--surface-stencil-width", "3"]) == 0
@@ -61,7 +69,11 @@ def test_nonlinear_window_builder_writes_artifacts(tmp_path: Path, monkeypatch) 
 
 
 def test_nonlinear_window_builder_json_only(capsys, monkeypatch) -> None:
-    monkeypatch.setattr(mod, "mode21_vmec_boozer_nonlinear_window_gradient_report", lambda **_kwargs: _fake_payload())
+    monkeypatch.setattr(
+        mod,
+        "mode21_vmec_boozer_nonlinear_window_gradient_report",
+        lambda **_kwargs: _fake_payload(),
+    )
 
     assert mod.main(["--json-only", "--nonlinear-steps", "12"]) == 0
 

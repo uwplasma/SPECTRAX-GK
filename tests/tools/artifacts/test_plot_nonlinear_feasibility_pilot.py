@@ -12,8 +12,15 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_nonlinear_feasibility_pilot.py"
-    spec = importlib.util.spec_from_file_location("plot_nonlinear_feasibility_pilot", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_nonlinear_feasibility_pilot.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_nonlinear_feasibility_pilot", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)

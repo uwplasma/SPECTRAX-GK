@@ -96,7 +96,7 @@ def compact_ensemble_payload(
             "intermediates under repository-size policy"
         ),
         "regeneration": (
-            "run tools/build_external_vmec_replicate_ensemble.py against the "
+            "run tools/artifacts/build_external_vmec_replicate_ensemble.py against the "
             "NetCDF outputs listed in rows[].source_artifact"
         ),
         "output_gate_json": output_gate_json,

@@ -6,8 +6,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_surface_holdout_gate.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_aggregate_surface_holdout_gate", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_aggregate_surface_holdout_gate.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_aggregate_surface_holdout_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -40,14 +44,18 @@ def _surface_holdout_payload() -> dict[str, object]:
     }
 
 
-def test_build_surface_holdout_payload_uses_default_true_surface_split(monkeypatch) -> None:
+def test_build_surface_holdout_payload_uses_default_true_surface_split(
+    monkeypatch,
+) -> None:
     calls: dict[str, object] = {}
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
         calls.update(kwargs)
         return _surface_holdout_payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     payload = mod.build_vmec_boozer_aggregate_surface_holdout_payload(
         ntheta=4,
@@ -67,11 +75,15 @@ def test_build_surface_holdout_payload_uses_default_true_surface_split(monkeypat
     assert calls["holdout_selected_ky_indices"] == (1, 2)
 
 
-def test_build_surface_holdout_payload_fails_closed_on_execution_error(monkeypatch) -> None:
+def test_build_surface_holdout_payload_fails_closed_on_execution_error(
+    monkeypatch,
+) -> None:
     def fake_report(**_kwargs):  # noqa: ANN003, ANN202
         raise ValueError("surface_index is outside the VMEC metric radial grid")
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     payload = mod.build_vmec_boozer_aggregate_surface_holdout_payload(
         training_surface_indices=(18,),
@@ -85,14 +97,18 @@ def test_build_surface_holdout_payload_fails_closed_on_execution_error(monkeypat
     assert "surface_index" in payload["exception_message"]
 
 
-def test_build_surface_holdout_payload_rejects_non_holdout_surface_split(monkeypatch) -> None:
+def test_build_surface_holdout_payload_rejects_non_holdout_surface_split(
+    monkeypatch,
+) -> None:
     calls: list[object] = []
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
         calls.append(kwargs)
         return _surface_holdout_payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     payload = mod.build_vmec_boozer_aggregate_surface_holdout_payload(
         training_surface_indices=(18,),
@@ -141,7 +157,9 @@ def test_surface_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
         calls.update(kwargs)
         return _surface_holdout_payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     result = mod.main(
         [

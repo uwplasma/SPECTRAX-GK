@@ -6,9 +6,9 @@ from pathlib import Path
 import subprocess
 import sys
 
-from tools.build_parallelization_completion_status import ARTIFACTS
-from tools.build_parallelization_completion_status import build_status
-from tools.build_parallelization_completion_status import write_artifacts
+from tools.artifacts.build_parallelization_completion_status import ARTIFACTS
+from tools.artifacts.build_parallelization_completion_status import build_status
+from tools.artifacts.build_parallelization_completion_status import write_artifacts
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -58,7 +58,9 @@ def _scaling_payload(cpu_speedup: float, gpu_speedup: float) -> dict:
     }
 
 
-def _write_minimal_status_inputs(root: Path, *, cpu_speedup: float, gpu_speedup: float) -> None:
+def _write_minimal_status_inputs(
+    root: Path, *, cpu_speedup: float, gpu_speedup: float
+) -> None:
     independent = _scaling_payload(cpu_speedup, gpu_speedup)
     independent["kind"] = "independent_ky_scan_scaling_combined"
     _write_artifact(root, "independent_ky_scan", independent)
@@ -126,20 +128,32 @@ def test_parallelization_completion_status_closes_production_lanes() -> None:
         == status["independent_ensemble_provenance_gate"]["serial_indices"]
     )
     assert (
-        status["independent_ensemble_provenance_gate"][
-            "exception_metadata_passed"
-        ]
+        status["independent_ensemble_provenance_gate"]["exception_metadata_passed"]
         is True
     )
     lanes = {lane["lane"]: lane for lane in status["lanes"]}
     assert lanes["independent_ky_scan"]["status"] == "production_closed"
-    assert lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"] is True
-    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == ["cpu", "gpu"]
+    assert (
+        lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"]
+        is True
+    )
+    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == [
+        "cpu",
+        "gpu",
+    ]
     assert lanes["independent_ky_scan"]["best_speedups"]["cpu"] >= 5.0
     assert lanes["independent_ky_scan"]["best_speedups"]["gpu"] >= 1.5
     assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
-    assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
-    assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
+    assert (
+        lanes["whole_state_nonlinear_sharding"]["status"]
+        == "diagnostic_closed_not_production"
+    )
+    assert (
+        lanes["whole_state_nonlinear_sharding"]["source_contract"][
+            "claim_separation_passed"
+        ]
+        is True
+    )
     assert production_gate["production_speedup_claim_allowed"] is False
     assert production_gate["status"] == "diagnostic_only"
     assert "gpu_production_speedup_candidate_missing" in production_gate["blockers"]
@@ -152,19 +166,25 @@ def test_parallelization_completion_status_closes_production_lanes() -> None:
     assert "exception metadata" in status["claim_scope"]
 
 
-def test_parallelization_completion_status_rejects_weak_production_speedup(tmp_path: Path) -> None:
+def test_parallelization_completion_status_rejects_weak_production_speedup(
+    tmp_path: Path,
+) -> None:
     _write_minimal_status_inputs(tmp_path, cpu_speedup=4.0, gpu_speedup=1.6)
 
     status = build_status(tmp_path)
 
     assert status["passed"] is False
     assert status["production_completion_percent"] == 0.0
-    assert {lane["status"] for lane in status["lanes"] if lane["claim_level"] == "production_parallelization"} == {
-        "open"
-    }
+    assert {
+        lane["status"]
+        for lane in status["lanes"]
+        if lane["claim_level"] == "production_parallelization"
+    } == {"open"}
 
 
-def test_parallelization_completion_status_rejects_ambiguous_claim_separation(tmp_path: Path) -> None:
+def test_parallelization_completion_status_rejects_ambiguous_claim_separation(
+    tmp_path: Path,
+) -> None:
     _write_minimal_status_inputs(tmp_path, cpu_speedup=6.0, gpu_speedup=1.7)
     path = tmp_path / "docs" / "_static" / ARTIFACTS["whole_state_nonlinear_sharding"]
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -176,10 +196,14 @@ def test_parallelization_completion_status_rejects_ambiguous_claim_separation(tm
     lanes = {lane["lane"]: lane for lane in status["lanes"]}
     assert status["passed"] is False
     assert lanes["whole_state_nonlinear_sharding"]["status"] == "open"
-    assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["missing_scope_phrases"]
+    assert lanes["whole_state_nonlinear_sharding"]["source_contract"][
+        "missing_scope_phrases"
+    ]
 
 
-def test_parallelization_completion_status_writes_json_and_figures(tmp_path: Path) -> None:
+def test_parallelization_completion_status_writes_json_and_figures(
+    tmp_path: Path,
+) -> None:
     _write_minimal_status_inputs(tmp_path, cpu_speedup=6.0, gpu_speedup=1.7)
     status = build_status(tmp_path)
 
@@ -189,7 +213,9 @@ def test_parallelization_completion_status_writes_json_and_figures(tmp_path: Pat
         assert Path(path).exists()
 
 
-def test_parallelization_completion_status_script_runs_without_install(tmp_path: Path) -> None:
+def test_parallelization_completion_status_script_runs_without_install(
+    tmp_path: Path,
+) -> None:
     _write_minimal_status_inputs(tmp_path, cpu_speedup=6.0, gpu_speedup=1.7)
     env = dict(os.environ)
     env["PYTHONPATH"] = ""
@@ -197,7 +223,12 @@ def test_parallelization_completion_status_script_runs_without_install(tmp_path:
     result = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "tools" / "build_parallelization_completion_status.py"),
+            str(
+                ROOT
+                / "tools"
+                / "artifacts"
+                / "build_parallelization_completion_status.py"
+            ),
             "--root",
             str(tmp_path),
             "--out-prefix",

@@ -10,8 +10,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_zonal_flow_response_from_output.py"
-    spec = importlib.util.spec_from_file_location("plot_zonal_flow_response_from_output", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_zonal_flow_response_from_output.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_zonal_flow_response_from_output", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -28,7 +35,9 @@ def test_plot_zonal_flow_response_from_output_main(tmp_path, monkeypatch) -> Non
         grids = ds.createGroup("Grids")
         diag = ds.createGroup("Diagnostics")
         grids.createVariable("time", "f8", ("time",))[:] = np.linspace(0.0, 4.0, 5)
-        diag.createVariable("Phi2_zonal_t", "f8", ("time",))[:] = np.array([1.0, 0.7, 0.55, 0.45, 0.4])
+        diag.createVariable("Phi2_zonal_t", "f8", ("time",))[:] = np.array(
+            [1.0, 0.7, 0.55, 0.45, 0.4]
+        )
 
     out = tmp_path / "zf_from_output.png"
     monkeypatch.setattr(
@@ -55,7 +64,9 @@ def test_plot_zonal_flow_response_from_output_main(tmp_path, monkeypatch) -> Non
     assert "zonal-energy proxy" in meta["notes"]
 
 
-def test_plot_zonal_flow_response_from_output_complex_mode_history(tmp_path, monkeypatch) -> None:
+def test_plot_zonal_flow_response_from_output_complex_mode_history(
+    tmp_path, monkeypatch
+) -> None:
     mod = _load_tool_module()
 
     data_path = tmp_path / "diag.out.nc"

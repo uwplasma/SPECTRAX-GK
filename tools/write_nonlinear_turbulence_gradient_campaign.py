@@ -172,7 +172,7 @@ def _state_ensemble_command(
     readiness_json = f"{case}_{state}_readiness.json"
     ensemble_png = f"{case}_{state}_t{_horizon_label(tmax)}_ensemble_gate.png"
     command = (
-        f"{PYTHON_CMD} tools/build_external_vmec_replicate_ensemble.py "
+        f"{PYTHON_CMD} tools/artifacts/build_external_vmec_replicate_ensemble.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --out-dir {_repo_relative(ensemble_dir)}"
         + f" --case {case}_{state}_replicated_nonlinear_window"
@@ -223,7 +223,7 @@ def _promotion_contract(
     evidence_json = ROOT / "docs" / "_static" / "nonlinear_turbulence_gradient_evidence_status.json"
     gap_json = ROOT / "docs" / "_static" / "nonlinear_turbulence_gradient_evidence_gap_report.json"
     fd_command = (
-        f"{PYTHON_CMD} tools/build_nonlinear_turbulence_gradient_fd_gate.py "
+        f"{PYTHON_CMD} tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py "
         f"--baseline {state_commands['baseline']['ensemble_json']} "
         f"--plus {state_commands['plus_delta']['ensemble_json']} "
         f"--minus {state_commands['minus_delta']['ensemble_json']} "

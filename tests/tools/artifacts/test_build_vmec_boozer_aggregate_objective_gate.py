@@ -9,8 +9,10 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_objective_gate.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_aggregate_objective_gate", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_boozer_aggregate_objective_gate.py"
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_aggregate_objective_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -30,8 +32,18 @@ def _payload() -> dict[str, object]:
         "response_abs": 0.1,
         "curvature_ratio": 0.02,
         "samples": [
-            {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.5},
-            {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.5},
+            {
+                "surface_index": None,
+                "alpha": 0.0,
+                "selected_ky_index": 1,
+                "weight": 0.5,
+            },
+            {
+                "surface_index": None,
+                "alpha": 0.0,
+                "selected_ky_index": 2,
+                "weight": 0.5,
+            },
         ],
         "minus_sample_values": [0.7, 1.0],
         "base_sample_values": [0.8, 1.0],
@@ -61,14 +73,20 @@ def test_write_vmec_boozer_aggregate_objective_artifacts(tmp_path: Path) -> None
     assert "ky_abs_error" in csv_text
 
 
-def test_vmec_boozer_aggregate_objective_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
+def test_vmec_boozer_aggregate_objective_gate_main_uses_report(
+    monkeypatch, tmp_path: Path
+) -> None:
     calls: dict[str, object] = {}
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
         calls.update(kwargs)
         return _payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_finite_difference_report", fake_report)
+    monkeypatch.setattr(
+        mod,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_report,
+    )
 
     result = mod.main(
         [
@@ -100,7 +118,11 @@ def test_vmec_boozer_aggregate_objective_gate_main_maps_physical_ky_values(
         calls.update(kwargs)
         return _payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_finite_difference_report", fake_report)
+    monkeypatch.setattr(
+        mod,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_report,
+    )
 
     result = mod.main(
         [
@@ -130,7 +152,11 @@ def test_vmec_boozer_aggregate_objective_gate_main_forwards_physical_torflux(
         calls.update(kwargs)
         return _payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_finite_difference_report", fake_report)
+    monkeypatch.setattr(
+        mod,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_report,
+    )
 
     result = mod.main(
         [

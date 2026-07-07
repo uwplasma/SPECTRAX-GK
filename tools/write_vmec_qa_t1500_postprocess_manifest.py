@@ -152,7 +152,7 @@ def _case_commands(case: QAAuditCase, *, run_root: str, netcdf_root: str) -> dic
     )
     ensemble_command = (
         'PYTHONPATH="$PWD/src" '
-        f"{PYTHON} tools/build_external_vmec_replicate_ensemble.py "
+        f"{PYTHON} tools/artifacts/build_external_vmec_replicate_ensemble.py "
         + " ".join(outputs)
         + f" --out-dir {ensemble_dir}"
         + f" --case {case.run_dir}_t1500_replicated_nonlinear_window"
@@ -193,7 +193,7 @@ def _comparison_command(
     out_json = Path("docs/_static") / f"{stem}.json"
     out_figure = Path("docs/_static") / f"{stem}.png"
     command = (
-        f"{PYTHON} tools/build_matched_nonlinear_transport_comparison.py"
+        f"{PYTHON} tools/artifacts/build_matched_nonlinear_transport_comparison.py"
         f" --baseline-ensemble {_repo_relative(baseline.ensemble_json)}"
         f" --candidate-ensemble {_repo_relative(candidate.ensemble_json)}"
         f" --case {stem}"

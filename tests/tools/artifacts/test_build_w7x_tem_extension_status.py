@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_w7x_tem_extension_status.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_w7x_tem_extension_status.py"
 spec = importlib.util.spec_from_file_location("build_w7x_tem_extension_status", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -34,18 +34,30 @@ def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    payload = mod.build_status_payload(w7x_spectrum=spectrum, tem_table=tem, tem_audit=tmp_path / "missing.json")
+    payload = mod.build_status_payload(
+        w7x_spectrum=spectrum, tem_table=tem, tem_audit=tmp_path / "missing.json"
+    )
     rows = {row["lane"]: row for row in payload["rows"]}
 
-    assert payload["summary"] == {"n_rows": 4, "n_closed": 1, "n_partial": 0, "n_open": 3}
+    assert payload["summary"] == {
+        "n_rows": 4,
+        "n_closed": 1,
+        "n_partial": 0,
+        "n_open": 3,
+    }
     assert rows["W7-X nonlinear fluctuation spectrum"]["status"] == "closed"
     assert rows["TEM / kinetic-electron linear parity"]["status"] == "open"
-    assert rows["TEM / kinetic-electron linear parity"]["key_metrics"]["max_abs_rel_gamma"] == 0.5
+    assert (
+        rows["TEM / kinetic-electron linear parity"]["key_metrics"]["max_abs_rel_gamma"]
+        == 0.5
+    )
     assert rows["W7-X multi-flux-tube and multi-surface scan"]["status"] == "open"
     assert rows["W7-X kinetic-electron/TEM nonlinear window"]["status"] == "open"
 
 
-def test_w7x_tem_extension_status_prefers_tem_audit_when_available(tmp_path: Path) -> None:
+def test_w7x_tem_extension_status_prefers_tem_audit_when_available(
+    tmp_path: Path,
+) -> None:
     spectrum = tmp_path / "w7x_spectrum.json"
     spectrum.write_text(json.dumps({"source_gate_passed": True}), encoding="utf-8")
     tem = tmp_path / "tem.csv"
@@ -71,8 +83,12 @@ def test_w7x_tem_extension_status_prefers_tem_audit_when_available(tmp_path: Pat
         encoding="utf-8",
     )
 
-    payload = mod.build_status_payload(w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit)
-    row = {row["lane"]: row for row in payload["rows"]}["TEM / kinetic-electron linear parity"]
+    payload = mod.build_status_payload(
+        w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit
+    )
+    row = {row["lane"]: row for row in payload["rows"]}[
+        "TEM / kinetic-electron linear parity"
+    ]
 
     assert row["status"] == "open"
     assert row["primary_artifact"] == "docs/_static/tem_branch_parity_audit.json"
@@ -108,4 +124,9 @@ def test_w7x_tem_extension_status_writes_artifacts(tmp_path: Path) -> None:
 
     for path in paths.values():
         assert Path(path).exists()
-    assert json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))["summary"]["n_open"] == 1
+    assert (
+        json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))["summary"][
+            "n_open"
+        ]
+        == 1
+    )

@@ -7,13 +7,29 @@ import sys
 
 import numpy as np
 
-from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.workflows.runtime.config import RuntimeConfig, RuntimePhysicsConfig, RuntimeSpeciesConfig
+from spectraxgk.config import (
+    GeometryConfig,
+    GridConfig,
+    InitializationConfig,
+    TimeConfig,
+)
+from spectraxgk.workflows.runtime.config import (
+    RuntimeConfig,
+    RuntimePhysicsConfig,
+    RuntimeSpeciesConfig,
+)
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_zonal_state_convention_audit.py"
-    spec = importlib.util.spec_from_file_location("plot_w7x_zonal_state_convention_audit", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_zonal_state_convention_audit.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_w7x_zonal_state_convention_audit", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -24,10 +40,18 @@ def _load_tool_module():
 
 def _cfg() -> RuntimeConfig:
     return RuntimeConfig(
-        grid=GridConfig(Nx=6, Ny=4, Nz=32, Lx=2.0 * np.pi / 0.07, Ly=62.8, boundary="periodic"),
+        grid=GridConfig(
+            Nx=6, Ny=4, Nz=32, Lx=2.0 * np.pi / 0.07, Ly=62.8, boundary="periodic"
+        ),
         time=TimeConfig(t_max=0.1, dt=0.01, method="rk4", use_diffrax=False),
-        geometry=GeometryConfig(model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778),
-        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True),),
+        geometry=GeometryConfig(
+            model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778
+        ),
+        species=(
+            RuntimeSpeciesConfig(
+                name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True
+            ),
+        ),
         init=InitializationConfig(
             init_field="phi",
             init_amp=0.25,
@@ -39,7 +63,9 @@ def _cfg() -> RuntimeConfig:
     )
 
 
-def test_w7x_zonal_state_convention_audit_closes_synthetic_phi_state(tmp_path: Path) -> None:
+def test_w7x_zonal_state_convention_audit_closes_synthetic_phi_state(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     audit = mod.build_state_audit(_cfg(), kx_target=0.07, ky_target=0.0, Nl=2, Nm=2)
 

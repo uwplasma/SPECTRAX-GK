@@ -277,7 +277,7 @@ def test_runbook_blocks_marginal_linear_candidate_from_nonlinear_launch() -> Non
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "build_external_vmec_holdout_runbook.py"
+    path = Path(__file__).resolve().parents[1] / "tools" / "artifacts" / "build_external_vmec_holdout_runbook.py"
     spec = importlib.util.spec_from_file_location("build_external_vmec_holdout_runbook", path)
     assert spec is not None
     assert spec.loader is not None

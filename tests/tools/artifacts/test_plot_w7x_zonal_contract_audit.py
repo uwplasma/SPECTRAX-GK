@@ -10,7 +10,12 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_zonal_contract_audit.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_zonal_contract_audit.py"
+    )
     spec = importlib.util.spec_from_file_location("plot_w7x_zonal_contract_audit", path)
     assert spec is not None
     assert spec.loader is not None
@@ -86,7 +91,14 @@ def _write_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
     compare = tmp_path / "compare.csv"
     pd.DataFrame(reference_trace_rows).to_csv(ref_traces, index=False)
     pd.DataFrame(residual_rows).to_csv(ref_residuals, index=False)
-    pd.DataFrame({"kx_target": [0.05], "residual_level": [0.1], "residual_std": [0.01], "tmax": [20.0]}).to_csv(
+    pd.DataFrame(
+        {
+            "kx_target": [0.05],
+            "residual_level": [0.1],
+            "residual_std": [0.01],
+            "tmax": [20.0],
+        }
+    ).to_csv(
         summary,
         index=False,
     )
@@ -135,4 +147,6 @@ def test_w7x_zonal_contract_audit_rows_and_main(tmp_path: Path) -> None:
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["validation_status"] == "open"
     assert payload["gate_index_include"] is False
-    assert payload["reference_contract"]["normalization"].startswith("line-averaged potential")
+    assert payload["reference_contract"]["normalization"].startswith(
+        "line-averaged potential"
+    )

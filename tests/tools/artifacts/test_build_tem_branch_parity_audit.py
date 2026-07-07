@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_tem_branch_parity_audit.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_tem_branch_parity_audit.py"
 spec = importlib.util.spec_from_file_location("build_tem_branch_parity_audit", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None

@@ -11,7 +11,7 @@ import pytest
 
 
 def _load_tool_module():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "artifacts"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / "plot_quasilinear_candidate_uncertainty.py"
     spec = importlib.util.spec_from_file_location(
@@ -205,7 +205,9 @@ def test_tracked_candidate_uncertainty_sidecar_is_fail_closed_near_miss() -> Non
 
     root = Path(__file__).resolve().parents[3]
     payload = json.loads(
-        (root / "docs/_static/quasilinear_candidate_uncertainty.json").read_text(encoding="utf-8")
+        (root / "docs/_static/quasilinear_candidate_uncertainty.json").read_text(
+            encoding="utf-8"
+        )
     )
     gate = payload["promotion_gate"]
     candidates = payload["candidates"]
@@ -218,7 +220,9 @@ def test_tracked_candidate_uncertainty_sidecar_is_fail_closed_near_miss() -> Non
     assert gate["passed"] is False
     assert gate["accepted_candidates"] == []
     assert spectral["promotion_eligible"] is True
-    assert spectral["mean_abs_relative_error"] > gate["transport_mean_relative_error_gate"]
+    assert (
+        spectral["mean_abs_relative_error"] > gate["transport_mean_relative_error_gate"]
+    )
     assert spectral["mean_abs_relative_error"] < linear["mean_abs_relative_error"]
     assert spectral["mean_abs_relative_error"] < null["mean_abs_relative_error"]
     assert spectral["prediction_interval_coverage"] >= gate["interval_coverage_gate"]

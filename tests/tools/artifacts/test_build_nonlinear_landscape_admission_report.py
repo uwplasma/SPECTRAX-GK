@@ -3,12 +3,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_nonlinear_landscape_admission_report import build_report, main
+from tools.artifacts.build_nonlinear_landscape_admission_report import (
+    build_report,
+    main,
+)
 
-from spectraxgk.validation.stellarator.transport_policies import VMECJAXNonlinearAuditPolicy
+from spectraxgk.validation.stellarator.transport_policies import (
+    VMECJAXNonlinearAuditPolicy,
+)
 
 
-def _ensemble(mean: float, sem: float, *, passed: bool = True, n_reports: int = 3) -> dict:
+def _ensemble(
+    mean: float, sem: float, *, passed: bool = True, n_reports: int = 3
+) -> dict:
     return {
         "kind": "nonlinear_window_ensemble_report",
         "case": f"ensemble_mean_{mean}",
@@ -27,7 +34,9 @@ def _write(path: Path, payload: dict) -> Path:
     return path
 
 
-def test_build_report_selects_best_uncertainty_resolved_candidate(tmp_path: Path) -> None:
+def test_build_report_selects_best_uncertainty_resolved_candidate(
+    tmp_path: Path,
+) -> None:
     baseline = _write(tmp_path / "baseline.json", _ensemble(8.55, 0.12))
     p3 = _write(tmp_path / "p3.json", _ensemble(6.27, 0.04))
     p6 = _write(tmp_path / "p6.json", _ensemble(6.43, 0.04))
@@ -71,4 +80,7 @@ def test_cli_writes_report_and_fails_closed_when_requested(tmp_path: Path) -> No
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["passed"] is False
     assert payload["selected_candidate"] is None
-    assert "insufficient_relative_reduction" in payload["candidates"][0]["admission_blockers"]
+    assert (
+        "insufficient_relative_reduction"
+        in payload["candidates"][0]["admission_blockers"]
+    )

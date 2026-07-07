@@ -7,7 +7,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_baseline_optimized_nonlinear_audit.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_baseline_optimized_nonlinear_audit.py"
 
 
 def _load_tool_module():
@@ -70,10 +70,14 @@ def test_baseline_optimized_audit_writes_json_csv_and_png(tmp_path: Path) -> Non
         encoding="utf-8",
     )
     optimized.write_text(
-        json.dumps(_ensemble_payload(case="optimized_equilibrium_final", mean=12.0, sem=0.2)),
+        json.dumps(
+            _ensemble_payload(case="optimized_equilibrium_final", mean=12.0, sem=0.2)
+        ),
         encoding="utf-8",
     )
-    selected.write_text(json.dumps(_selected_audit_payload(optimized)), encoding="utf-8")
+    selected.write_text(
+        json.dumps(_selected_audit_payload(optimized)), encoding="utf-8"
+    )
     out_json = tmp_path / "audit.json"
     out_csv = tmp_path / "audit.csv"
     out_png = tmp_path / "audit.png"
@@ -108,7 +112,9 @@ def test_baseline_optimized_audit_writes_json_csv_and_png(tmp_path: Path) -> Non
     assert payload["selected_optimized_audit"]["optimized_ensemble_selected"] is True
 
 
-def test_baseline_optimized_audit_fails_closed_when_baseline_missing(tmp_path: Path) -> None:
+def test_baseline_optimized_audit_fails_closed_when_baseline_missing(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     optimized = tmp_path / "optimized.json"
     optimized.write_text(
@@ -116,7 +122,9 @@ def test_baseline_optimized_audit_fails_closed_when_baseline_missing(tmp_path: P
         encoding="utf-8",
     )
     selected = tmp_path / "selected.json"
-    selected.write_text(json.dumps(_selected_audit_payload(optimized)), encoding="utf-8")
+    selected.write_text(
+        json.dumps(_selected_audit_payload(optimized)), encoding="utf-8"
+    )
     out_json = tmp_path / "audit.json"
 
     rc = mod.main(
@@ -140,12 +148,16 @@ def test_baseline_optimized_audit_fails_closed_when_baseline_missing(tmp_path: P
     assert any("missing_baseline.json" in blocker for blocker in payload["blockers"])
 
 
-def test_baseline_optimized_audit_rejects_unselected_optimized_audit(tmp_path: Path) -> None:
+def test_baseline_optimized_audit_rejects_unselected_optimized_audit(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     baseline = tmp_path / "baseline.json"
     optimized = tmp_path / "optimized.json"
     selected = tmp_path / "selected.json"
-    baseline.write_text(json.dumps(_ensemble_payload(case="baseline", mean=20.0)), encoding="utf-8")
+    baseline.write_text(
+        json.dumps(_ensemble_payload(case="baseline", mean=20.0)), encoding="utf-8"
+    )
     optimized.write_text(
         json.dumps(_ensemble_payload(case="optimized_equilibrium_final", mean=12.0)),
         encoding="utf-8",

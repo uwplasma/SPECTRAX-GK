@@ -10,7 +10,9 @@ from PIL import Image
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "compress_release_previews.py"
+    path = (
+        Path(__file__).resolve().parents[3] / "tools" / "compress_release_previews.py"
+    )
     spec = importlib.util.spec_from_file_location("compress_release_previews", path)
     assert spec is not None
     assert spec.loader is not None
@@ -20,7 +22,9 @@ def _load_tool_module():
     return module
 
 
-def test_compress_png_preview_reduces_dimensions_and_reports_hash(tmp_path: Path) -> None:
+def test_compress_png_preview_reduces_dimensions_and_reports_hash(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     path = tmp_path / "panel.png"
     image = Image.new("RGBA", (64, 32), (255, 255, 255, 255))

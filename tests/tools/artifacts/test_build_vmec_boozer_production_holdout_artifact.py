@@ -6,8 +6,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_production_holdout_artifact.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_production_holdout_artifact", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_production_holdout_artifact.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_production_holdout_artifact", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -61,7 +65,10 @@ def test_vmec_boozer_production_holdout_artifact_promotes_only_passed_ensemble(
     assert artifact["passed"] is True
     assert artifact["transport_average_gate"] is True
     assert artifact["promotion_gate"]["blockers"] == []
-    assert artifact["claim_level"] == "production_scope_vmec_boozer_heldout_nonlinear_transport_average"
+    assert (
+        artifact["claim_level"]
+        == "production_scope_vmec_boozer_heldout_nonlinear_transport_average"
+    )
     sample = artifact["samples"][0]
     assert sample["surface"] == 0.78
     assert sample["torflux"] == 0.78
@@ -82,10 +89,14 @@ def test_vmec_boozer_production_holdout_artifact_fails_closed_for_failed_ensembl
     assert artifact["case"] == "explicit_case"
     assert artifact["passed"] is False
     assert artifact["transport_average_gate"] is False
-    assert artifact["promotion_gate"]["blockers"] == ["replicated_nonlinear_window_ensemble_failed"]
+    assert artifact["promotion_gate"]["blockers"] == [
+        "replicated_nonlinear_window_ensemble_failed"
+    ]
 
 
-def test_vmec_boozer_production_holdout_artifact_main_writes_output(tmp_path: Path) -> None:
+def test_vmec_boozer_production_holdout_artifact_main_writes_output(
+    tmp_path: Path,
+) -> None:
     out = tmp_path / "holdout.json"
     result = mod.main(
         [
@@ -100,5 +111,8 @@ def test_vmec_boozer_production_holdout_artifact_main_writes_output(tmp_path: Pa
 
     assert result == 0
     saved = json.loads(out.read_text(encoding="utf-8"))
-    assert saved["kind"] == "vmec_boozer_production_scope_heldout_nonlinear_transport_artifact"
+    assert (
+        saved["kind"]
+        == "vmec_boozer_production_scope_heldout_nonlinear_transport_artifact"
+    )
     assert saved["passed"] is True

@@ -7,8 +7,10 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_jax_qa_full_sweep_panel.py"
-spec = importlib.util.spec_from_file_location("build_vmec_jax_qa_full_sweep_panel", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_vmec_jax_qa_full_sweep_panel.py"
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_jax_qa_full_sweep_panel", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -34,7 +36,11 @@ def _write_case(
         "iota_final": 0.39,
         "qs_initial": 0.2,
         "qs_final": 0.07,
-        "history": [{"objective": 4.0}, {"objective": 2.0}, {"objective": objective_final}],
+        "history": [
+            {"objective": 4.0},
+            {"objective": 2.0},
+            {"objective": objective_final},
+        ],
         "total_wall_time_s": 12.5,
         "success": True,
     }
@@ -47,7 +53,12 @@ def _write_case(
             {
                 "transport_kind": "growth",
                 "constraints_only": False,
-                "sample_set": {"surfaces": [0.64], "alphas": [0.0], "ky_values": [0.3], "n_samples": 1},
+                "sample_set": {
+                    "surfaces": [0.64],
+                    "alphas": [0.0],
+                    "ky_values": [0.3],
+                    "n_samples": 1,
+                },
                 "spectrax_config": {
                     "ntheta": 8,
                     "mboz": 21,
@@ -81,13 +92,21 @@ def _write_case(
         ),
         encoding="utf-8",
     )
-    campaign = root.parent.parent if root.parent.name in {"runs", "runs_onepoint"} else root.parent
-    log_dir = campaign / ("logs_onepoint" if root.parent.name == "runs_onepoint" else "logs")
+    campaign = (
+        root.parent.parent
+        if root.parent.name in {"runs", "runs_onepoint"}
+        else root.parent
+    )
+    log_dir = campaign / (
+        "logs_onepoint" if root.parent.name == "runs_onepoint" else "logs"
+    )
     log_dir.mkdir(parents=True, exist_ok=True)
     lines = [f"[now] START {root.name} gpu=0"]
     if completed:
         lines.append(f"[now] END {root.name} rc=0")
-    (log_dir / f"{root.name}.status").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (log_dir / f"{root.name}.status").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
 
 
 def _write_failed_wout_reproducibility_gate(root: Path) -> None:
@@ -125,7 +144,9 @@ def _write_passed_rerun_wout_admission_gate(root: Path) -> None:
     )
 
 
-def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_path: Path) -> None:
+def test_build_payload_discovers_completed_cases_without_faking_q_traces(
+    tmp_path: Path,
+) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.5)
     _write_case(
@@ -144,7 +165,10 @@ def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_pat
 
     assert payload["summary"]["n_cases"] == 2
     assert payload["summary"]["n_cases_with_nonlinear_q_traces"] == 0
-    assert payload["summary"]["nonlinear_transport_audit_status"] == "pending_for_this_sweep"
+    assert (
+        payload["summary"]["nonlinear_transport_audit_status"]
+        == "pending_for_this_sweep"
+    )
     cases = {case["case_id"]: case for case in payload["cases"]}
     assert cases["growth_scalar_trust"]["history"]["transport_metric_final"] == 0.25
     assert "mean_iota" in cases["growth_scalar_trust"]["gate_blockers"]
@@ -198,7 +222,9 @@ def test_q_trace_csv_is_used_only_when_present(tmp_path: Path) -> None:
     assert row["q_traces"][0]["late_window_tmin"] == 2.0
 
 
-def test_compact_json_payload_keeps_q_trace_stats_without_dense_arrays(tmp_path: Path) -> None:
+def test_compact_json_payload_keeps_q_trace_stats_without_dense_arrays(
+    tmp_path: Path,
+) -> None:
     case = tmp_path / "campaign" / "runs" / "qa_baseline_scipy"
     _write_case(case, objective_final=1.2)
     (case / "audit_heat_flux_trace.csv").write_text(
@@ -216,7 +242,9 @@ def test_compact_json_payload_keeps_q_trace_stats_without_dense_arrays(tmp_path:
     assert "heat_flux" not in trace
 
 
-def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_path: Path) -> None:
+def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(
+    tmp_path: Path,
+) -> None:
     case = tmp_path / "campaign" / "runs" / "nonlinear_window_scalar_trust"
     _write_case(case, objective_final=0.4, transport_metric=0.08)
     (case / "wout_final.nc").write_bytes(b"not-a-real-netcdf-needed-for-command-test")
@@ -225,7 +253,9 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     [row] = payload["cases"]
 
     command = row["recommended_nonlinear_audit_command"]
-    assert command.startswith("python3 tools/write_optimized_equilibrium_transport_configs.py")
+    assert command.startswith(
+        "python3 tools/write_optimized_equilibrium_transport_configs.py"
+    )
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--horizons 700,1100,1500" in command
     assert "--window-tmin 1100 --window-tmax 1500" in command
@@ -233,7 +263,9 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     assert "--dt-variant 0.04" in command
 
 
-def test_strict_full_sweep_audit_status_detects_empty_strict_window(tmp_path: Path) -> None:
+def test_strict_full_sweep_audit_status_detects_empty_strict_window(
+    tmp_path: Path,
+) -> None:
     audit_root = tmp_path / "optimized_equilibrium_replicates"
     audit_root.mkdir()
     for token in ("qa_baseline_scipy", "growth_from_strict_baseline"):
@@ -284,7 +316,9 @@ def test_iota_only_diagnostic_rows_are_audit_command_eligible(tmp_path: Path) ->
     assert row["recommended_nonlinear_audit_command"] is not None
 
 
-def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(tmp_path: Path) -> None:
+def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(
+    tmp_path: Path,
+) -> None:
     case = tmp_path / "campaign" / "runs" / "nonlinear_window_scalar_trust"
     _write_case(case, objective_final=0.4, transport_metric=0.08)
     _write_failed_wout_reproducibility_gate(case)
@@ -300,7 +334,9 @@ def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(tmp_p
     assert "wout_reproducibility:mean_iota_reproducibility" in row["gate_blockers"]
 
 
-def test_authoritative_rerun_wout_gate_selects_rerun_wout_for_audit(tmp_path: Path) -> None:
+def test_authoritative_rerun_wout_gate_selects_rerun_wout_for_audit(
+    tmp_path: Path,
+) -> None:
     case = tmp_path / "campaign" / "runs" / "qa_baseline_scipy"
     _write_case(case, objective_final=0.4, transport_metric=0.08)
     _write_failed_wout_reproducibility_gate(case)
@@ -318,10 +354,14 @@ def test_authoritative_rerun_wout_gate_selects_rerun_wout_for_audit(tmp_path: Pa
     assert row["recommended_nonlinear_audit_command"] is not None
     assert "wout_final_rerun.nc" in row["recommended_nonlinear_audit_command"]
     assert row["gate_blockers"] == []
-    assert row["gate_warnings"] == ["optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"]
+    assert row["gate_warnings"] == [
+        "optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"
+    ]
 
 
-def test_in_progress_wout_is_not_promoted_to_completed_or_audit_ready(tmp_path: Path) -> None:
+def test_in_progress_wout_is_not_promoted_to_completed_or_audit_ready(
+    tmp_path: Path,
+) -> None:
     case = tmp_path / "campaign" / "runs" / "quasilinear_scalar_trust"
     _write_case(case, objective_final=0.9, transport_metric=0.2, completed=False)
     (case / "wout_final.nc").write_bytes(b"partial-output")
@@ -346,13 +386,23 @@ def test_runs_onepoint_root_uses_parent_status_directory(tmp_path: Path) -> None
     assert payload["summary"]["completed_case_ids"] == ["qa_baseline_scipy"]
 
 
-def test_projected_child_without_status_is_complete_when_gate_and_wout_exist(tmp_path: Path) -> None:
-    case = tmp_path / "campaign" / "runs_onepoint" / "projected_guarded_ladder" / "transport_weight_0p0005"
+def test_projected_child_without_status_is_complete_when_gate_and_wout_exist(
+    tmp_path: Path,
+) -> None:
+    case = (
+        tmp_path
+        / "campaign"
+        / "runs_onepoint"
+        / "projected_guarded_ladder"
+        / "transport_weight_0p0005"
+    )
     _write_case(case, objective_final=0.9)
     (case / "wout_final.nc").write_bytes(b"fake-projected-wout")
     # Projected ladder children are tracked by the parent ladder status/log, not
     # by one status file per transport weight.
-    for status in (tmp_path / "campaign" / "logs").glob("transport_weight_0p0005.status"):
+    for status in (tmp_path / "campaign" / "logs").glob(
+        "transport_weight_0p0005.status"
+    ):
         status.unlink()
 
     payload = mod.build_payload(tmp_path / "campaign" / "runs_onepoint")
@@ -366,7 +416,11 @@ def test_projected_child_without_status_is_complete_when_gate_and_wout_exist(tmp
 def test_plot_payload_handles_missing_wouts_and_writes_panel(tmp_path: Path) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.2)
-    _write_case(run_root / "runs" / "nonlinear_window_scalar_trust", objective_final=0.4, transport_metric=0.08)
+    _write_case(
+        run_root / "runs" / "nonlinear_window_scalar_trust",
+        objective_final=0.4,
+        transport_metric=0.08,
+    )
     payload = mod.build_payload(run_root)
     out = tmp_path / "panel.png"
 
@@ -404,11 +458,23 @@ def test_iota_profile_plot_omits_vmec_axis_point() -> None:
         mod.plt.close(fig)
 
 
-def test_payload_records_normalized_optimizer_comparison_metadata(tmp_path: Path) -> None:
+def test_payload_records_normalized_optimizer_comparison_metadata(
+    tmp_path: Path,
+) -> None:
     root = tmp_path / "campaign"
-    _write_case(root / "runs" / "growth_scalar_trust", objective_final=0.8, transport_metric=0.25)
-    _write_case(root / "runs" / "growth_lbfgs_adjoint", objective_final=0.7, transport_metric=0.21)
-    setup = json.loads((root / "runs" / "growth_lbfgs_adjoint" / "setup_summary.json").read_text())
+    _write_case(
+        root / "runs" / "growth_scalar_trust",
+        objective_final=0.8,
+        transport_metric=0.25,
+    )
+    _write_case(
+        root / "runs" / "growth_lbfgs_adjoint",
+        objective_final=0.7,
+        transport_metric=0.21,
+    )
+    setup = json.loads(
+        (root / "runs" / "growth_lbfgs_adjoint" / "setup_summary.json").read_text()
+    )
     setup["optimizer"]["method"] = "lbfgs_adjoint"
     (root / "runs" / "growth_lbfgs_adjoint" / "setup_summary.json").write_text(
         json.dumps(setup),
@@ -419,11 +485,21 @@ def test_payload_records_normalized_optimizer_comparison_metadata(tmp_path: Path
     rows = {row["case_id"]: row for row in payload["cases"]}
 
     assert payload["summary"]["optimizer_methods"] == ["lbfgs_adjoint", "scalar_trust"]
-    assert rows["growth_scalar_trust"]["optimizer_comparison"]["method"] == "scalar_trust"
-    assert rows["growth_lbfgs_adjoint"]["optimizer_comparison"]["method"] == "lbfgs_adjoint"
+    assert (
+        rows["growth_scalar_trust"]["optimizer_comparison"]["method"] == "scalar_trust"
+    )
+    assert (
+        rows["growth_lbfgs_adjoint"]["optimizer_comparison"]["method"]
+        == "lbfgs_adjoint"
+    )
     assert (
         rows["growth_scalar_trust"]["optimizer_comparison"]["comparison_fingerprint"]
-        == rows["growth_lbfgs_adjoint"]["optimizer_comparison"]["comparison_fingerprint"]
+        == rows["growth_lbfgs_adjoint"]["optimizer_comparison"][
+            "comparison_fingerprint"
+        ]
     )
-    assert "methods can be compared directly" in payload["summary"]["optimizer_comparison_policy"]
+    assert (
+        "methods can be compared directly"
+        in payload["summary"]["optimizer_comparison_policy"]
+    )
     assert payload["summary"]["strict_nonlinear_audit_policy"]["window_tmin"] == 1100.0

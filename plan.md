@@ -35,7 +35,7 @@ Last audited: 2026-07-07 on `main`.
 - Current topology counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 263 Python files after adding purpose-folder package initializers while moving flat tools.
+  - `tools`: 264 Python files after adding purpose-folder package initializers while moving flat tools.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
 - The repository inventory classifies 88 installable validation files as
@@ -83,7 +83,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 263 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 264 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -108,7 +108,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 204 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 114 Python scripts in one directory | Move campaign/profiling/generator utilities into purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -1062,16 +1062,26 @@ Exit gates:
   tool count increased by one package initializer to 263, and flat root tool
   scripts dropped from 235 to 204.
 
+- 2026-07-07: moved ninety publication/readme/manuscript artifact builders
+  into `tools/artifacts/`, including root-level `build_*` and `plot_*`
+  scripts. Docs, tracked replay metadata, tests, CI/release commands, and
+  internal imports now use `tools/artifacts/...` or `tools.artifacts.*`. Total
+  tool count increased by one package initializer to 264, and flat root tool
+  scripts dropped from 204 to 114.
+
 ## Immediate Next Steps
 
-1. Generate a repository inventory with classification columns:
-   promoted library, public example, benchmark driver, release gate, artifact
-   builder, profiler, comparison utility, active campaign, test-only helper,
-   docs artifact, retired legacy, or delete.
-2. Use that inventory to make the next deletions safe:
+1. Use the repository inventory to make the next deletions safe:
    - delete stale docs/static artifacts not referenced by README/docs/manifests;
    - delete or move one-off probes and status builders with no current owner;
    - remove remaining tutorial/docs language for retired reduced-model paths.
+2. Finish purpose-folderizing `tools/`:
+   - active launch/postprocess/write/design scripts to `tools/campaigns`;
+   - profiling reproducers to `tools/profiling`;
+   - remaining `generate_*` gates/panels to `tools/generators` or
+     `tools/artifacts`, depending on ownership;
+   - delete `probe_*` scripts that are not referenced by docs, tests, or
+     release manifests.
 3. Collapse the remaining flat tests:
    - move physics/unit tests into `tests/unit/*`;
    - move runtime/executable tests into `tests/integration/runtime`;

@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_matched_nonlinear_transport_comparison import build_comparison, main
+from tools.artifacts.build_matched_nonlinear_transport_comparison import (
+    build_comparison,
+    main,
+)
 
 
 def _ensemble(mean: float, sem: float, *, passed: bool = True) -> dict:
@@ -53,7 +56,9 @@ def test_build_comparison_fails_when_candidate_not_lower_enough(tmp_path: Path) 
     assert report["gates"][-1]["passed"] is False
 
 
-def test_build_comparison_fails_closed_for_missing_ensemble_mean(tmp_path: Path) -> None:
+def test_build_comparison_fails_closed_for_missing_ensemble_mean(
+    tmp_path: Path,
+) -> None:
     report = build_comparison(
         baseline={
             "kind": "nonlinear_window_ensemble_report",
@@ -104,7 +109,9 @@ def test_cli_writes_json_and_figure(tmp_path: Path) -> None:
 
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert payload["passed"] is True
-    assert payload["claim_level"] == "matched_replicated_late_window_transport_comparison"
+    assert (
+        payload["claim_level"] == "matched_replicated_late_window_transport_comparison"
+    )
     assert out_svg.exists()
 
 

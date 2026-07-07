@@ -8,7 +8,12 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_quasilinear_calibration.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_quasilinear_calibration.py"
+    )
     spec = importlib.util.spec_from_file_location("plot_quasilinear_calibration", path)
     assert spec is not None
     assert spec.loader is not None
@@ -38,7 +43,9 @@ def test_plot_quasilinear_calibration_writes_artifacts(tmp_path: Path) -> None:
     report_path = tmp_path / "report.json"
     report_path.write_text(json.dumps(report), encoding="utf-8")
 
-    paths = mod.write_calibration_figure(report_path, out=tmp_path / "calibration.png", title="QL audit")
+    paths = mod.write_calibration_figure(
+        report_path, out=tmp_path / "calibration.png", title="QL audit"
+    )
 
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -48,7 +55,9 @@ def test_plot_quasilinear_calibration_writes_artifacts(tmp_path: Path) -> None:
     assert meta["mean_abs_relative_error"] == 0.9
 
 
-def test_plot_quasilinear_calibration_handles_zero_prediction_on_log_axes(tmp_path: Path) -> None:
+def test_plot_quasilinear_calibration_handles_zero_prediction_on_log_axes(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     report = {
         "kind": "quasilinear_calibration_report",
@@ -76,7 +85,9 @@ def test_plot_quasilinear_calibration_handles_zero_prediction_on_log_axes(tmp_pa
     report_path = tmp_path / "zero_report.json"
     report_path.write_text(json.dumps(report), encoding="utf-8")
 
-    paths = mod.write_calibration_figure(report_path, out=tmp_path / "zero_calibration.png", title="QL audit")
+    paths = mod.write_calibration_figure(
+        report_path, out=tmp_path / "zero_calibration.png", title="QL audit"
+    )
 
     assert Path(paths["png"]).exists()
     meta = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))

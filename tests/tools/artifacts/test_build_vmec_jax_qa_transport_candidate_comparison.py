@@ -10,8 +10,12 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_jax_qa_transport_candidate_comparison.py"
-spec = importlib.util.spec_from_file_location("build_vmec_jax_qa_transport_candidate_comparison", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_jax_qa_transport_candidate_comparison.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_jax_qa_transport_candidate_comparison", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -19,17 +23,31 @@ sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
-def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback() -> None:
-    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(mod.DEFAULT_CONSTRAINTS_DIR)
-    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(mod.DEFAULT_TRANSPORT_DIR)
+def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback() -> (
+    None
+):
+    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(
+        mod.DEFAULT_CONSTRAINTS_DIR
+    )
+    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(
+        mod.DEFAULT_TRANSPORT_DIR
+    )
     assert "vmec_jax_qa_promotion_smoke" not in str(mod.DEFAULT_CONSTRAINTS_DIR)
     assert "vmec_jax_qa_promotion_smoke" not in str(mod.DEFAULT_TRANSPORT_DIR)
-    assert mod.DEFAULT_PAYLOAD_JSON.name == "vmec_jax_qa_transport_candidate_comparison.json"
+    assert (
+        mod.DEFAULT_PAYLOAD_JSON.name
+        == "vmec_jax_qa_transport_candidate_comparison.json"
+    )
 
 
-def test_load_or_build_payload_falls_back_to_tracked_payload_in_clean_clone(tmp_path: Path) -> None:
+def test_load_or_build_payload_falls_back_to_tracked_payload_in_clean_clone(
+    tmp_path: Path,
+) -> None:
     payload_json = tmp_path / "candidate.json"
-    expected = {"kind": "vmec_jax_qa_transport_candidate_comparison", "summary": {"from_payload": True}}
+    expected = {
+        "kind": "vmec_jax_qa_transport_candidate_comparison",
+        "summary": {"from_payload": True},
+    }
     payload_json.write_text(json.dumps(expected), encoding="utf-8")
     args = argparse.Namespace(
         constraints_dir=tmp_path / "missing_constraints",
@@ -146,7 +164,9 @@ def _rerun_wout_admission_gate(root: Path, *, passed: bool) -> None:
         (root / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
 
 
-def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, monkeypatch) -> None:
+def test_payload_admits_only_authoritative_solved_wout_gates(
+    tmp_path: Path, monkeypatch
+) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
     _history(constraints)
@@ -155,31 +175,49 @@ def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, mon
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (
+            np.asarray([0.0, 0.414, 0.427]),
+            np.asarray([0.412, 0.421]),
+        ),
     )
 
     payload = mod.build_payload(constraints, transport)
     branches = {branch["label"]: branch for branch in payload["branches"]}
 
-    assert payload["iota_gate_policy"] == "lower_bound_admission_not_exact_upstream_mean_iota_target"
+    assert (
+        payload["iota_gate_policy"]
+        == "lower_bound_admission_not_exact_upstream_mean_iota_target"
+    )
     assert payload["mean_iota_lower_bound"] == 0.41
     assert payload["iota_profile_floor"] == 0.41
     assert payload["legacy_target_iota_fields_are_lower_bounds"] is True
     assert payload["target_mean_iota"] == payload["mean_iota_lower_bound"]
     assert payload["target_iota_profile_floor"] == payload["iota_profile_floor"]
-    assert branches["QA constraints"]["admitted_for_long_window_nonlinear_audit"] is True
+    assert (
+        branches["QA constraints"]["admitted_for_long_window_nonlinear_audit"] is True
+    )
     assert branches["QA constraints"]["gate_source"] == "solved_wout_gate.json"
     assert branches["QA + SPECTRAX-GK transport"]["gate_reported_passed"] is True
-    assert branches["QA + SPECTRAX-GK transport"]["admitted_for_long_window_nonlinear_audit"] is False
+    assert (
+        branches["QA + SPECTRAX-GK transport"][
+            "admitted_for_long_window_nonlinear_audit"
+        ]
+        is False
+    )
     assert branches["QA + SPECTRAX-GK transport"]["admission_blockers"] == [
         "non_authoritative_reconstructed_gate"
     ]
     assert payload["summary"]["transport_candidate_admitted"] is False
-    assert payload["summary"]["transport_optimization_status"] == "blocked_before_transport_claim"
+    assert (
+        payload["summary"]["transport_optimization_status"]
+        == "blocked_before_transport_claim"
+    )
     assert payload["summary"]["all_branches_passed_solved_wout_gate"] is False
 
 
-def test_payload_admits_transport_candidate_with_authoritative_gate(tmp_path: Path, monkeypatch) -> None:
+def test_payload_admits_transport_candidate_with_authoritative_gate(
+    tmp_path: Path, monkeypatch
+) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
     _history(constraints)
@@ -189,7 +227,10 @@ def test_payload_admits_transport_candidate_with_authoritative_gate(tmp_path: Pa
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (
+            np.asarray([0.0, 0.414, 0.427]),
+            np.asarray([0.412, 0.421]),
+        ),
     )
 
     payload = mod.build_payload(constraints, transport)
@@ -216,7 +257,10 @@ def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candida
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (
+            np.asarray([0.0, 0.414, 0.427]),
+            np.asarray([0.412, 0.421]),
+        ),
     )
 
     payload = mod.build_payload(constraints, transport)
@@ -261,11 +305,15 @@ def test_authoritative_rerun_wout_gate_admits_transport_candidate(
     assert transport_branch["uses_authoritative_rerun_wout"] is True
     assert transport_branch["authoritative_wout"].endswith("wout_final_rerun.nc")
     assert transport_branch["admitted_for_long_window_nonlinear_audit"] is True
-    assert "wout_reproducibility_gate_failed" not in transport_branch["admission_blockers"]
+    assert (
+        "wout_reproducibility_gate_failed" not in transport_branch["admission_blockers"]
+    )
     assert payload["summary"]["transport_candidate_admitted"] is True
 
 
-def test_candidate_comparison_plot_handles_normalized_gate_metrics(tmp_path: Path, monkeypatch) -> None:
+def test_candidate_comparison_plot_handles_normalized_gate_metrics(
+    tmp_path: Path, monkeypatch
+) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
     _history(constraints)
@@ -275,7 +323,10 @@ def test_candidate_comparison_plot_handles_normalized_gate_metrics(tmp_path: Pat
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (
+            np.asarray([0.0, 0.414, 0.427]),
+            np.asarray([0.412, 0.421]),
+        ),
     )
     payload = mod.build_payload(constraints, transport)
     out = tmp_path / "panel.png"

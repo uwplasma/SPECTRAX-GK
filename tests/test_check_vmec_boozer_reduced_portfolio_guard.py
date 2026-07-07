@@ -30,7 +30,7 @@ def _row_artifact() -> dict[str, object]:
     return {
         "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
         "artifact_kind": "vmec_boozer_multi_point_objective_gate",
-        "builder": "tools/build_vmec_boozer_multi_point_objective_gate.py",
+        "builder": "tools/artifacts/build_vmec_boozer_multi_point_objective_gate.py",
         "passed": True,
         "source_scope": "mode21_vmec_boozer_state_multi_point",
         "claim_scope": "real VMEC/Boozer reduced QL rows; not a nonlinear turbulent transport claim",

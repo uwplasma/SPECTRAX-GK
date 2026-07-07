@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from tools.build_technical_release_status import (
+from tools.artifacts.build_technical_release_status import (
     LANES,
     build_technical_release_status,
 )

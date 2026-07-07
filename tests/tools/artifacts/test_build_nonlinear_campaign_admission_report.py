@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_nonlinear_campaign_admission_report import build_report, main
+from tools.artifacts.build_nonlinear_campaign_admission_report import build_report, main
 
-from spectraxgk.validation.stellarator.transport_policies import VMECJAXNonlinearCampaignPolicy
+from spectraxgk.validation.stellarator.transport_policies import (
+    VMECJAXNonlinearCampaignPolicy,
+)
 
 
 def _write(path: Path, payload: dict) -> Path:
@@ -17,7 +19,9 @@ def _prelaunch(*, passed: bool = True, cross_sample: bool = True) -> dict:
     return {
         "kind": "vmec_jax_reduced_nonlinear_audit_prelaunch_report",
         "passed": passed,
-        "blockers": [] if passed else ["insufficient_reduced_margin_for_nonlinear_audit"],
+        "blockers": []
+        if passed
+        else ["insufficient_reduced_margin_for_nonlinear_audit"],
         "objective_sample_summary": {
             "passed": True,
             "sample_count": 18,
@@ -31,7 +35,9 @@ def _prelaunch(*, passed: bool = True, cross_sample: bool = True) -> dict:
     }
 
 
-def _landscape(*, passed: bool = True, reduction: float = 0.266, z_score: float = 18.0) -> dict:
+def _landscape(
+    *, passed: bool = True, reduction: float = 0.266, z_score: float = 18.0
+) -> dict:
     selected = {
         "label": "+3% RBC(0,1)",
         "relative_reduction": reduction,
@@ -47,7 +53,9 @@ def _landscape(*, passed: bool = True, reduction: float = 0.266, z_score: float 
     }
 
 
-def test_campaign_builder_loads_json_and_admits_rbc_like_evidence(tmp_path: Path) -> None:
+def test_campaign_builder_loads_json_and_admits_rbc_like_evidence(
+    tmp_path: Path,
+) -> None:
     prelaunch = _write(tmp_path / "prelaunch.json", _prelaunch())
     landscape = _write(tmp_path / "landscape.json", _landscape())
 
@@ -65,7 +73,9 @@ def test_campaign_builder_loads_json_and_admits_rbc_like_evidence(tmp_path: Path
 
 def test_campaign_cli_writes_blocked_report_and_returns_nonzero(tmp_path: Path) -> None:
     prelaunch = _write(tmp_path / "prelaunch.json", _prelaunch(cross_sample=False))
-    landscape = _write(tmp_path / "landscape.json", _landscape(reduction=0.01, z_score=0.2))
+    landscape = _write(
+        tmp_path / "landscape.json", _landscape(reduction=0.01, z_score=0.2)
+    )
     out = tmp_path / "campaign.json"
 
     rc = main(

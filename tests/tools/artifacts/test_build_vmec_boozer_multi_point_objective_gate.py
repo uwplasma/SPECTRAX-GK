@@ -8,7 +8,9 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_multi_point_objective_gate.py"
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_multi_point_objective_gate.py"
+)
 spec = importlib.util.spec_from_file_location(
     "build_vmec_boozer_multi_point_objective_gate",
     SCRIPT,

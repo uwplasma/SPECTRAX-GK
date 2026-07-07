@@ -7,11 +7,15 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_state_control_bracket_sweep_status.py"
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_state_control_bracket_sweep_status.py"
+)
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("build_vmec_state_control_bracket_sweep_status", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "build_vmec_state_control_bracket_sweep_status", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -20,7 +24,9 @@ def _load_tool_module():
     return module
 
 
-def _gate(path: Path, *, alpha: float, parameter: str, response: float, passed: bool) -> None:
+def _gate(
+    path: Path, *, alpha: float, parameter: str, response: float, passed: bool
+) -> None:
     path.write_text(
         json.dumps(
             {
@@ -53,11 +59,29 @@ def test_build_vmec_state_control_bracket_sweep_status(tmp_path: Path) -> None:
     gate_b = tmp_path / "gate_b.json"
     run_summary = tmp_path / "summary.json"
     out_prefix = tmp_path / "status"
-    _gate(gate_a, alpha=0.003, parameter="state_control_rsin_mid_surface_m1", response=0.004, passed=False)
-    _gate(gate_b, alpha=0.01, parameter="state_control_zcos_mid_surface_m1", response=0.04, passed=True)
-    run_summary.write_text(json.dumps({"successes": 36, "failures": [], "started_at": 1.0, "finished_at": 4.5}))
+    _gate(
+        gate_a,
+        alpha=0.003,
+        parameter="state_control_rsin_mid_surface_m1",
+        response=0.004,
+        passed=False,
+    )
+    _gate(
+        gate_b,
+        alpha=0.01,
+        parameter="state_control_zcos_mid_surface_m1",
+        response=0.04,
+        passed=True,
+    )
+    run_summary.write_text(
+        json.dumps(
+            {"successes": 36, "failures": [], "started_at": 1.0, "finished_at": 4.5}
+        )
+    )
 
-    report = mod.build_bracket_sweep_status([gate_b, gate_a], run_summary=run_summary, out_prefix=out_prefix)
+    report = mod.build_bracket_sweep_status(
+        [gate_b, gate_a], run_summary=run_summary, out_prefix=out_prefix
+    )
 
     assert report["passed"] is False
     assert report["summary"]["central_fd_gates_passed"] == 1

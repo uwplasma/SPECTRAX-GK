@@ -40,7 +40,7 @@
     "next_best_score": 1.098693462935406,
     "source_artifact": "docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.json"
   },
-  "notes": "Run the selected configurations on the large-run host, build a convergence gate with tools/plot_external_vmec_nonlinear_convergence_gate.py, and admit the resulting transport window to quasilinear calibration only if the gate passes and the split is holdout.",
+  "notes": "Run the selected configurations on the large-run host, build a convergence gate with tools/artifacts/plot_external_vmec_nonlinear_convergence_gate.py, and admit the resulting transport window to quasilinear calibration only if the gate passes and the split is holdout.",
   "passed": true,
   "pdf": "docs/_static/external_vmec_next_holdout_runbook.pdf",
   "png": "docs/_static/external_vmec_next_holdout_runbook.png",

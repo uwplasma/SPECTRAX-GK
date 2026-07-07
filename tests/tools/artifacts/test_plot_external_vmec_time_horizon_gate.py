@@ -9,8 +9,15 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_external_vmec_time_horizon_gate.py"
-    spec = importlib.util.spec_from_file_location("plot_external_vmec_time_horizon_gate", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_external_vmec_time_horizon_gate.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_external_vmec_time_horizon_gate", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -19,7 +26,9 @@ def _load_tool_module():
     return module
 
 
-def _write_gate(tmp_path: Path, name: str, means: tuple[float, float], *, passed: bool = True) -> Path:
+def _write_gate(
+    tmp_path: Path, name: str, means: tuple[float, float], *, passed: bool = True
+) -> Path:
     payload = {
         "kind": "external_vmec_nonlinear_grid_convergence_gate",
         "passed": passed,
@@ -58,7 +67,10 @@ def test_time_horizon_gate_passes_for_stable_high_grid_means(tmp_path: Path) -> 
     assert payload["kind"] == "external_vmec_time_horizon_gate"
     assert payload["passed"] is True
     assert payload["promotion_gate"]["passed"] is False
-    assert payload["claim_level"] == "passed_high_grid_time_horizon_candidate_not_replicated_holdout"
+    assert (
+        payload["claim_level"]
+        == "passed_high_grid_time_horizon_candidate_not_replicated_holdout"
+    )
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
     assert Path(paths["csv"]).exists()
@@ -74,9 +86,14 @@ def test_time_horizon_gate_fails_large_horizon_shift(tmp_path: Path) -> None:
         case="synthetic time horizon",
     )
 
-    failed = {gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]}
+    failed = {
+        gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]
+    }
     assert payload["passed"] is False
-    assert payload["claim_level"] == "negative_time_horizon_result_not_transport_validation"
+    assert (
+        payload["claim_level"]
+        == "negative_time_horizon_result_not_transport_validation"
+    )
     assert "common_window_time_horizon_relative_change" in failed
 
 
@@ -90,6 +107,8 @@ def test_time_horizon_gate_fails_when_input_grid_gate_failed(tmp_path: Path) -> 
         case="synthetic time horizon",
     )
 
-    failed = {gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]}
+    failed = {
+        gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]
+    }
     assert payload["passed"] is False
     assert "failed_grid_gate_count" in failed

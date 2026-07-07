@@ -12,6 +12,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "artifacts"
         / "build_quasilinear_holdout_gap_report.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -204,7 +205,9 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
             },
         },
     )
-    pass_gate = [_gate("common_window_max_relative_slope_per_time", 0.001, 0.002, passed=True)]
+    pass_gate = [
+        _gate("common_window_max_relative_slope_per_time", 0.001, 0.002, passed=True)
+    ]
     failed_gate = [
         _gate("common_window_max_relative_slope_per_time", 0.0022, 0.002, passed=False),
         _gate("common_window_max_heat_flux_cv", 0.18, 0.2, passed=True),
@@ -261,48 +264,67 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
     }
 
 
-def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Path) -> None:
+def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     paths = _write_inputs(tmp_path)
     external_gates = [
-        mod._load_external_gate(path) for path in sorted(tmp_path.glob("external_*.json"))
+        mod._load_external_gate(path)
+        for path in sorted(tmp_path.glob("external_*.json"))
     ]
 
     report = mod.build_holdout_gap_report(
-        model_selection=json.loads(paths["model_selection"].read_text(encoding="utf-8")),
+        model_selection=json.loads(
+            paths["model_selection"].read_text(encoding="utf-8")
+        ),
         train_holdout=json.loads(paths["train_holdout"].read_text(encoding="utf-8")),
         window_stats=json.loads(paths["window_stats"].read_text(encoding="utf-8")),
         external_gates=external_gates,
         dataset=json.loads(paths["dataset"].read_text(encoding="utf-8")),
-        screening_skill=json.loads(paths["screening_skill"].read_text(encoding="utf-8")),
+        screening_skill=json.loads(
+            paths["screening_skill"].read_text(encoding="utf-8")
+        ),
     )
 
     assert report["claim_level"] == "holdout_gap_report_no_absolute_flux_promotion"
     assert report["absolute_flux_promoted"] is False
     assert report["promotion_gate"]["passed"] is False
-    assert "absolute_flux_predictor_not_promoted" in report["promotion_gate"]["blockers"]
+    assert (
+        "absolute_flux_predictor_not_promoted" in report["promotion_gate"]["blockers"]
+    )
     assert report["summary"]["n_admitted_holdouts"] == 1
     assert report["summary"]["n_training_references"] == 1
     assert report["admitted_holdouts"][0]["absolute_relative_error"] == 0.5
     assert report["admitted_holdouts"][0]["gate_passed"] is True
-    assert any(row["case"] == "kbm_nonlinear_window" for row in report["excluded_candidates"])
+    assert any(
+        row["case"] == "kbm_nonlinear_window" for row in report["excluded_candidates"]
+    )
     shaped = next(
         row
         for row in report["excluded_candidates"]
-        if row["case"] == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
+        if row["case"]
+        == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
     )
     assert shaped["geometry"] == "shaped_tokamak_external_vmec"
     assert shaped["status"] == "excluded_failed_external_gate"
     audit = next(
         row
         for row in report["excluded_candidates"]
-        if row["case"] == "ITERModel external VMEC independent audit t450 high-grid convergence"
+        if row["case"]
+        == "ITERModel external VMEC independent audit t450 high-grid convergence"
     )
     assert audit["geometry"] == "itermodel_external_vmec"
     assert audit["status"] == "excluded_same_family_training_audit"
     assert audit["eligible_for_next_candidate"] is False
-    assert report["next_best_candidates"][0]["status"] == "training_reference_not_independent_holdout"
-    assert report["next_actual_nonlinear_holdout_needed"]["preferred_family"] == "itermodel_external_vmec"
+    assert (
+        report["next_best_candidates"][0]["status"]
+        == "training_reference_not_independent_holdout"
+    )
+    assert (
+        report["next_actual_nonlinear_holdout_needed"]["preferred_family"]
+        == "itermodel_external_vmec"
+    )
     screening = report["screening_skill_status"]
     assert screening["screening_correlation_passed"] is True
     assert screening["holdout_screening_correlation_passed"] is False
@@ -315,7 +337,10 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
         in report["promotion_gate"]["blockers"]
     )
     nearest = report["next_actual_nonlinear_holdout_needed"]["nearest_tracked_gap"]
-    assert nearest["case"] == "ITERModel external VMEC nonlinear t250 high-grid convergence"
+    assert (
+        nearest["case"]
+        == "ITERModel external VMEC nonlinear t250 high-grid convergence"
+    )
     assert nearest["next_best_score"] == 1.1
     requirements = report["absolute_flux_promotion_requirements"]
     assert requirements["absolute_flux_promoted"] is False
@@ -328,9 +353,7 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
         == 8
     )
     assert (
-        requirements["coverage_gap"][
-            "additional_external_vmec_holdout_families_needed"
-        ]
+        requirements["coverage_gap"]["additional_external_vmec_holdout_families_needed"]
         == 3
     )
     assert (
@@ -347,7 +370,8 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
         "minimum_nonaxisymmetric_external_vmec_holdout_families",
     }.issubset(requirements["blockers"])
     assert any(
-        row["case"] == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
+        row["case"]
+        == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
         for row in requirements["required_nonlinear_cases"]
     )
 
@@ -370,12 +394,16 @@ def test_gap_report_records_raw_passed_qh_gate_with_bad_claim_as_negative_eviden
     external_gates = [mod._load_external_gate(qh_gate)]
 
     report = mod.build_holdout_gap_report(
-        model_selection=json.loads(paths["model_selection"].read_text(encoding="utf-8")),
+        model_selection=json.loads(
+            paths["model_selection"].read_text(encoding="utf-8")
+        ),
         train_holdout=json.loads(paths["train_holdout"].read_text(encoding="utf-8")),
         window_stats=json.loads(paths["window_stats"].read_text(encoding="utf-8")),
         external_gates=external_gates,
         dataset=json.loads(paths["dataset"].read_text(encoding="utf-8")),
-        screening_skill=json.loads(paths["screening_skill"].read_text(encoding="utf-8")),
+        screening_skill=json.loads(
+            paths["screening_skill"].read_text(encoding="utf-8")
+        ),
     )
 
     qh = next(
@@ -433,7 +461,10 @@ def test_gap_report_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert not out.with_suffix(".pdf").exists()
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["absolute_flux_promoted"] is False
-    assert payload["screening_skill_status"]["holdout_screening_correlation_passed"] is False
+    assert (
+        payload["screening_skill_status"]["holdout_screening_correlation_passed"]
+        is False
+    )
     assert (
         payload["absolute_flux_promotion_requirements"]["claim_boundary"]
         .lower()

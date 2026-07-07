@@ -3963,7 +3963,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_plotting.py",
-  "tests/tools/artifacts/test_make_gx_publication_panel.py",
+  "tests/tools/comparison/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -4053,7 +4053,7 @@ fast_tests = [
   "tests/tools/artifacts/test_build_manuscript_readiness_status.py",
   "tests/tools/artifacts/test_build_pre_manuscript_closure_status.py",
   "tests/tools/artifacts/test_build_pre_manuscript_closure_runbook.py",
-  "tests/tools/artifacts/test_make_gx_publication_panel.py",
+  "tests/tools/comparison/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth_summary.json",

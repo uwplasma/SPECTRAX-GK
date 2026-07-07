@@ -14,6 +14,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "artifacts"
         / "plot_quasilinear_saturation_rule_sweep.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -240,4 +241,7 @@ def test_saturation_rule_sweep_records_shape_gate_metadata(tmp_path: Path) -> No
     assert payload["shape_gate_status"] == "passed"
     assert payload["shape_tv_gate"] == pytest.approx(0.2)
     assert payload["shape_cosine_gate"] == pytest.approx(0.95)
-    assert mod._artifact_path(mod.ROOT / "docs/_static/example.json") == "docs/_static/example.json"
+    assert (
+        mod._artifact_path(mod.ROOT / "docs/_static/example.json")
+        == "docs/_static/example.json"
+    )

@@ -94,7 +94,7 @@ Nonlinear matrix release gates
 
 Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
-``tools/build_matched_nonlinear_transport_matrix.py`` writes the long-window
+``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` writes the long-window
 matched matrix, ``tools/release/check_nonlinear_transport_matrix_portfolio.py`` selects
 only a passing family, and ``tools/import_nonlinear_transport_matrix_portfolio.py``
 refuses blocked portfolios. The current tracked max-mode-5 campaign is negative
@@ -217,18 +217,18 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.validation.zonal.reference_residual_table`
 - :func:`spectraxgk.validation.zonal.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
-- ``tools/plot_zonal_flow_response.py``
-- ``tools/plot_zonal_flow_response_from_output.py``
+- ``tools/artifacts/plot_zonal_flow_response.py``
+- ``tools/artifacts/plot_zonal_flow_response_from_output.py``
 - ``tools/generate_miller_zonal_response_pilot.py``
 - ``tools/generate_w7x_zonal_response_panel.py``
-- ``tools/plot_w7x_zonal_contract_audit.py``
-- ``tools/plot_w7x_zonal_moment_tail_audit.py``
-- ``tools/plot_w7x_zonal_closure_ladder.py``
+- ``tools/artifacts/plot_w7x_zonal_contract_audit.py``
+- ``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py``
+- ``tools/artifacts/plot_w7x_zonal_closure_ladder.py``
 - ``tools/write_w7x_zonal_closure_sweep.py``
-- ``tools/plot_w7x_zonal_state_convention_audit.py``
-- ``tools/plot_w7x_zonal_recurrence_sweep.py``
-- ``tools/build_zonal_flow_objective_gate.py``
-- ``tools/plot_w7x_fluctuation_spectrum_panel.py``
+- ``tools/artifacts/plot_w7x_zonal_state_convention_audit.py``
+- ``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py``
+- ``tools/artifacts/build_zonal_flow_objective_gate.py``
+- ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
@@ -285,18 +285,18 @@ with the quasilinear model-selection status intentionally open until a
 candidate passes the strict uncertainty and transport-error gates.
 Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
-``tools/plot_nonlinear_window_statistics.py`` provides the companion
+``tools/artifacts/plot_nonlinear_window_statistics.py`` provides the companion
 manuscript-facing statistics panel for the nonlinear GX comparison gates by
 plotting the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` values from
 those same tracked JSON summaries.
-``tools/plot_nonlinear_feasibility_pilot.py`` is the analogous tool for new
+``tools/artifacts/plot_nonlinear_feasibility_pilot.py`` is the analogous tool for new
 finite nonlinear pilots that do not yet have a reference comparison or
 production-resolution convergence gate. It writes PNG/PDF/JSON/CSV artifacts
 with explicit ``claim_level`` and ``promotion_gate.passed = false`` metadata,
 so exploratory external-VMEC runs can be documented without being promoted to
 transport validation claims.
 
-``tools/plot_external_vmec_nonlinear_convergence_gate.py`` is the promotion
+``tools/artifacts/plot_external_vmec_nonlinear_convergence_gate.py`` is the promotion
 gate for those pilots once at least two grid levels exist. It replays the
 pilot JSON/CSV traces, compares common and least-trending late windows,
 requires enough samples, bounds relative heat-flux trend and coefficient of
@@ -305,7 +305,7 @@ tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
 ``gate_index_include=false`` because it is a research-planning negative result,
 not a release-blocking validation gate.
 
-``tools/plot_external_vmec_time_horizon_gate.py`` is the companion
+``tools/artifacts/plot_external_vmec_time_horizon_gate.py`` is the companion
 time-horizon stability gate for modified-protocol holdout repairs. It consumes
 the JSON outputs from the high-grid convergence gate at several final times,
 requires every input grid gate to pass, and then checks that the high-grid
@@ -357,7 +357,7 @@ transport-window protocol, and checked by
 ``tools/release/check_nonlinear_window_ensemble_readiness.py`` before any
 absolute-flux or turbulent-flux optimization wording can be considered.
 For external-VMEC replicate campaigns,
-``tools/build_external_vmec_replicate_ensemble.py`` is the reproducible
+``tools/artifacts/build_external_vmec_replicate_ensemble.py`` is the reproducible
 NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
 ``*.out.nc`` files, writes the transport-window summaries and convergence
 reports, runs the readiness and ensemble gates, and produces the documentation
@@ -416,7 +416,7 @@ created before the first long nonlinear task exits, with ``status="running"``,
 have immediate machine-readable progress even when no output NetCDF has finished
 yet.
 Then use
-``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
+``tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
 the central finite-difference gradient sidecar and checks response resolution,
 forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
@@ -523,7 +523,7 @@ requiring replacement, locality repair, or variance reduction. Its
 recommendation now prioritizes paired-seed or control-variate variance
 reduction for the current plus-state limiter, while keeping the broader
 nonlinear-gradient claim fail-closed.
-``tools/build_nonlinear_gradient_variance_reduction_plan.py`` is the matching
+``tools/artifacts/build_nonlinear_gradient_variance_reduction_plan.py`` is the matching
 paired-seed/control-variate runbook. It consumes one central-FD artifact,
 matches common plus/minus seed labels, estimates paired response SEM, records
 the limiting replicated-window state, and writes JSON/CSV/PNG/PDF sidecars. The
@@ -546,7 +546,7 @@ about ``0.480``. The tracked post-run campaign now exceeds that pre-run target;
 future use of this result should cite the exact rel7.5 perturbation, the
 ``21``-pair campaign, and the ``t=[600,1100]`` window rather than presenting it
 as a generic nonlinear turbulent-flux optimization result.
-``tools/build_nonlinear_gradient_control_mean_gate.py`` is the matching
+``tools/artifacts/build_nonlinear_gradient_control_mean_gate.py`` is the matching
 post-run gate. It consumes the original variance report plus independent plus
 and minus ensemble reports, estimates the held-out mean of
 ``0.5 * (Q_plus + Q_minus)``, and combines that uncertainty with the screened
@@ -634,7 +634,7 @@ responses, state-to-input Jacobian, condition number, and residual have not
 been extracted yet. The companion tests verify combined VMEC input lines such
 as ``RBC(...), ZBS(...)`` so second-column coefficients are not silently missed.
 
-``tools/build_vmec_state_to_input_mapping_response.py`` consumes the solved
+``tools/artifacts/build_vmec_state_to_input_mapping_response.py`` consumes the solved
 WOUT files from that campaign and writes
 ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.json``. The
 tracked response artifact uses normally terminated ``vmec_jax`` solves with a
@@ -652,7 +652,7 @@ finite-difference steps. The tracked
 ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.json``
 uses four candidate ``RBS/ZBC`` directions. After the twelve generated
 ``vmec_jax`` solves terminated normally,
-``tools/build_vmec_state_to_input_mapping_response.py`` wrote
+``tools/artifacts/build_vmec_state_to_input_mapping_response.py`` wrote
 ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``:
 the measured Jacobian has rank ``2``, condition number about ``1.02``, and no
 mapping blockers, so the runbook can produce explicit short-bracket command
@@ -745,7 +745,7 @@ optimization companion for that final audit. Given a concrete post-optimization
 ``wout*.nc`` file, it writes the ``t=250,350,450,700`` fixed-step nonlinear
 ladder on the release ``n64`` grid, two seed replicates, one timestep
 replicate, restart-copy commands, and the exact
-``tools/build_external_vmec_replicate_ensemble.py`` plus
+``tools/artifacts/build_external_vmec_replicate_ensemble.py`` plus
 ``tools/release/check_production_nonlinear_optimization_guard.py`` commands needed
 after the runs finish. This wrapper is a launch contract only: a new production
 optimization claim should not be counted until the generated ``t=[350,700]``
@@ -754,7 +754,7 @@ replicate-spread, optimized-equilibrium marker, and matched-audit gates. The
 current scoped guard is promoted by three accepted matched audits under the
 explicit ``2%`` long-window reduction policy.
 
-``tools/build_matched_nonlinear_transport_matrix.py`` is the broader
+``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` is the broader
 optimization-claim companion. Its ``write`` subcommand expands one matched
 baseline/candidate WOUT pair into the default paper-facing matrix:
 ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``, and
@@ -811,14 +811,14 @@ excluded or already-audited cases, resolves the chosen VMEC file from the local
 selection summary. This removes another manual step from the external-VMEC
 nonlinear campaign and makes office reruns deterministic.
 
-``tools/build_external_vmec_holdout_runbook.py`` is stricter than a positive
+``tools/artifacts/build_external_vmec_holdout_runbook.py`` is stricter than a positive
 growth-rate sorter. It requires a configurable minimum screened growth rate
 (``gamma >= 0.02`` by default) before writing nonlinear launch commands. This
 keeps near-marginal branches in the manuscript evidence chain as linear/QI
 feasibility data without silently promoting them to expensive nonlinear
 transport holdout campaigns.
 
-``tools/build_qi_branch_refinement_gate.py`` is the focused companion for that
+``tools/artifacts/build_qi_branch_refinement_gate.py`` is the focused companion for that
 near-marginal QI evidence. It checks finite low-``k_y`` branch rows, contiguous
 positive support, optional Krylov consistency, and the same nonlinear-launch
 growth threshold. A failed launch-growth subgate is a useful documented result,
@@ -832,7 +832,7 @@ by operator family: baseline, constant-Hermite, ``|k_z|``-weighted Hermite,
 mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
 The manifest includes the exact
 ``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
-companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
+companion ``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
 the bounded closure audit after the remote runs complete. Each launch command
 writes a case-local ``panel.png`` and the final ladder command writes
 ``w7x_zonal_closure_ladder_full.{png,json,csv}``, preventing exploratory
@@ -981,12 +981,12 @@ low-moment audit reached the digitized windows but flipped the residual sign at
 therefore not restart diagnostic continuity; it is the W7-X zonal damping,
 closure, and velocity-space recurrence behavior under the paper-facing
 line-first normalization.
-``tools/plot_w7x_zonal_contract_audit.py`` turns the same tracked CSV/JSON
+``tools/artifacts/plot_w7x_zonal_contract_audit.py`` turns the same tracked CSV/JSON
 artifacts into ``docs/_static/w7x_zonal_contract_audit.png``. That panel is a
 publication-facing diagnostic of the open mismatch rather than a release gate;
 its JSON metadata has ``gate_index_include=false`` so the validation index does
 not count it as closed.
-``tools/plot_w7x_zonal_moment_tail_audit.py`` adds a no-rerun velocity-space
+``tools/artifacts/plot_w7x_zonal_moment_tail_audit.py`` adds a no-rerun velocity-space
 audit at ``docs/_static/w7x_zonal_moment_tail_audit.png``. It shows that the
 long ``Nl=8``, ``Nm=32`` traces have large late normalized-trace standard
 deviations and non-negligible final high-Hermite/high-Laguerre free-energy
@@ -994,7 +994,7 @@ fractions. The existing ``Nl=16``, ``Nm=64``, ``t≈100`` audit lowers the early
 trace standard deviation but already carries a large high-Hermite tail, so the
 next closure experiment should be a bounded moment/closure or recurrence
 control sweep, not a change to the paper normalization.
-``tools/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
+``tools/artifacts/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
 for ``k_x rho_i=0.07`` in
 ``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
 closure families one knob at a time under the paper-facing initializer and
@@ -1009,7 +1009,7 @@ Laguerre-Hermite closures show the same pattern: strong tail suppression with
 no simultaneous improvement of trace error and late envelope. The ladder is
 therefore a documented negative result for these bounded closure families, not
 a hidden validation setting.
-``tools/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
+``tools/artifacts/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
 initializer and observable convention layer for the same paper-facing setup.
 At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
 potential has relative ``L2`` error ``1.85e-6``, off-target spectral potential
@@ -1019,7 +1019,7 @@ volume-average helper diagnostics agree with manual reductions to about
 volume-weighted level is ``0.28450 init_amp``; that explicit difference is why
 the paper-facing observable must remain ``Phi_zonal_line_kxt`` normalized by
 its first nonzero sample.
-``tools/plot_w7x_zonal_recurrence_sweep.py`` then performs the bounded
+``tools/artifacts/plot_w7x_zonal_recurrence_sweep.py`` then performs the bounded
 recurrence sweep requested for the paper lane without changing initializer or
 normalization conventions. Moment resolution and closure source are varied
 separately at ``k_x rho_i=0.07`` over the common ``t v_t/a <= 100`` window.
@@ -1331,7 +1331,7 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   ``mean_rel_abs(Wg) ~= 3.20e-2``,
   ``mean_rel_abs(Wphi) ~= 3.02e-2``,
   ``mean_rel_abs(HeatFlux) ~= 4.53e-2``.
-- **W7-X fluctuation spectrum**: ``tools/plot_w7x_fluctuation_spectrum_panel.py``
+- **W7-X fluctuation spectrum**: ``tools/artifacts/plot_w7x_fluctuation_spectrum_panel.py``
   reuses the same gated nonlinear NetCDF artifact and writes
   ``docs/_static/w7x_fluctuation_spectrum_panel.{png,pdf,json,csv}``. The JSON
   records the time window, dominant nonzonal ``k_y``, dominant heat-flux
@@ -1339,10 +1339,10 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   simulation diagnostic and explicitly not a Doppler-reflectometry transfer-
   function validation.
 - **W7-X/TEM extension status**:
-  ``tools/build_w7x_tem_extension_status.py`` reads the W7-X fluctuation panel
+  ``tools/artifacts/build_w7x_tem_extension_status.py`` reads the W7-X fluctuation panel
   plus the current TEM branch audit and writes
   ``docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}``. It closes only
-  the simulation-spectrum estimator. ``tools/build_tem_branch_parity_audit.py``
+  the simulation-spectrum estimator. ``tools/artifacts/build_tem_branch_parity_audit.py``
   writes ``docs/_static/tem_branch_parity_audit.{png,pdf,json,csv}`` from the
   tracked TEM mismatch table. TEM linear parity remains open with maximum
   absolute relative growth-rate mismatch about ``4.25``, maximum absolute
@@ -1473,7 +1473,7 @@ artifacts, use:
 - ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
-- ``tools/plot_w7x_exact_state_audit.py`` (no-rerun W7-X exact-state convention audit panel)
+- ``tools/artifacts/plot_w7x_exact_state_audit.py`` (no-rerun W7-X exact-state convention audit panel)
 - ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
 - ``tools/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
 - ``tools/run_vmec_roundtrip_gate.py`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
@@ -1580,7 +1580,7 @@ The current ``office`` exact-state manifest now includes:
 - late dumped-state audits for Cyclone Miller, Cyclone runtime, W7-X, and KBM
 
 The tracked W7-X exact-state convention panel is generated by
-``tools/plot_w7x_exact_state_audit.py`` from the ``office`` W7-X startup and
+``tools/artifacts/plot_w7x_exact_state_audit.py`` from the ``office`` W7-X startup and
 late diagnostic-state dumps. It closes the VMEC geometry, Fourier-grid,
 fieldsolve, and scalar-diagnostic convention layer against GX with a
 ``1e-4`` pointwise relative-error gate: startup ``g_state``/``phi`` are below

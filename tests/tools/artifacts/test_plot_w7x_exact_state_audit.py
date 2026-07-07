@@ -9,7 +9,12 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_exact_state_audit.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_exact_state_audit.py"
+    )
     spec = importlib.util.spec_from_file_location("plot_w7x_exact_state_audit", path)
     assert spec is not None
     assert spec.loader is not None
@@ -74,8 +79,15 @@ def test_w7x_exact_state_audit_parses_and_writes_outputs(tmp_path: Path) -> None
     _write_audit_dir(audit_dir)
 
     rows = mod.build_rows(audit_dir)
-    assert {row["phase"] for row in rows} == {"startup", "late arrays", "late diagnostics"}
-    assert max(float(row["value"]) for row in rows if row["value"] == row["value"]) < 1.0e-6
+    assert {row["phase"] for row in rows} == {
+        "startup",
+        "late arrays",
+        "late diagnostics",
+    }
+    assert (
+        max(float(row["value"]) for row in rows if row["value"] == row["value"])
+        < 1.0e-6
+    )
 
     out_png = tmp_path / "w7x_exact_state_audit.png"
     rc = mod.main(["--audit-dir", str(audit_dir), "--out-png", str(out_png)])

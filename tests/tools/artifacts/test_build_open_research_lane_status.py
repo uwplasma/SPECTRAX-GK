@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_open_research_lane_status.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_open_research_lane_status.py"
 spec = importlib.util.spec_from_file_location("build_open_research_lane_status", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -315,38 +315,32 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "key_metrics"
     ]["open_extension_rows"] == ["TEM / kinetic-electron linear parity"]
     assert (
-        lanes["Scoped core quasilinear model-development diagnostic"][
-            "key_metrics"
-        ]["cth_like_external_vmec_converged"]
+        lanes["Scoped core quasilinear model-development diagnostic"]["key_metrics"][
+            "cth_like_external_vmec_converged"
+        ]
         is False
     )
     assert (
-        lanes["Scoped core quasilinear model-development diagnostic"][
-            "key_metrics"
-        ]["cth_like_external_vmec_high_grid_admitted"]
+        lanes["Scoped core quasilinear model-development diagnostic"]["key_metrics"][
+            "cth_like_external_vmec_high_grid_admitted"
+        ]
         is False
     )
-    holdout_metrics = lanes[
-        "Scoped core quasilinear model-development diagnostic"
-    ]["key_metrics"]
+    holdout_metrics = lanes["Scoped core quasilinear model-development diagnostic"][
+        "key_metrics"
+    ]
     assert holdout_metrics["circular_external_vmec_t250_converged"] is False
     assert holdout_metrics["qh_external_vmec_low_to_mid_grid_converged"] is False
     assert holdout_metrics["qh_external_vmec_mid_to_high_grid_converged"] is False
     assert holdout_metrics["dshape_external_vmec_t250_converged"] is True
     assert holdout_metrics["itermodel_external_vmec_t350_converged"] is True
     assert (
-        holdout_metrics[
-            "variance_reduced_nonlinear_gradient_control_mean_passed"
-        ]
+        holdout_metrics["variance_reduced_nonlinear_gradient_control_mean_passed"]
         is True
     )
+    assert holdout_metrics["variance_reduced_nonlinear_gradient_common_pairs"] == 21
     assert (
-        holdout_metrics["variance_reduced_nonlinear_gradient_common_pairs"]
-        == 21
-    )
-    assert (
-        holdout_metrics["variance_reduced_nonlinear_gradient_uncertainty_rel"]
-        == 0.311
+        holdout_metrics["variance_reduced_nonlinear_gradient_uncertainty_rel"] == 0.311
     )
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
     assert profiler["status"] == "closed"
@@ -364,7 +358,9 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
-def test_build_status_payload_accepts_cth_like_high_grid_admission(tmp_path: Path) -> None:
+def test_build_status_payload_accepts_cth_like_high_grid_admission(
+    tmp_path: Path,
+) -> None:
     """CTH-like can be admitted through the scoped high-grid gate without full-grid convergence."""
 
     _write_json(
@@ -471,15 +467,11 @@ def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> 
         is True
     )
     assert (
-        holdouts["key_metrics"][
-            "variance_reduced_nonlinear_gradient_common_pairs"
-        ]
+        holdouts["key_metrics"]["variance_reduced_nonlinear_gradient_common_pairs"]
         == 21
     )
     assert (
-        holdouts["key_metrics"][
-            "variance_reduced_nonlinear_gradient_uncertainty_rel"
-        ]
+        holdouts["key_metrics"]["variance_reduced_nonlinear_gradient_uncertainty_rel"]
         < 0.5
     )
 

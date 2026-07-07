@@ -43,7 +43,7 @@ SPECTRAX_ROOT = Path(__file__).resolve().parents[2]
 if str(SPECTRAX_ROOT) not in sys.path:
     sys.path.insert(0, str(SPECTRAX_ROOT))
 
-from tools.build_matched_nonlinear_transport_matrix import main as write_matrix  # noqa: E402
+from tools.artifacts.build_matched_nonlinear_transport_matrix import main as write_matrix  # noqa: E402
 
 
 # Replace these with the solved-WOUT files from the strict QA baseline and the

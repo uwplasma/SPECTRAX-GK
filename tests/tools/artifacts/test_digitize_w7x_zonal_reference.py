@@ -11,7 +11,11 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "digitize_w7x_zonal_reference.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "digitize_w7x_zonal_reference.py"
+    )
     spec = importlib.util.spec_from_file_location("digitize_w7x_zonal_reference", path)
     assert spec is not None
     assert spec.loader is not None
@@ -21,20 +25,35 @@ def _load_tool_module():
     return module
 
 
-def _pixel_y(value: float, box: tuple[int, int, int, int], y_range: tuple[float, float]) -> int:
+def _pixel_y(
+    value: float, box: tuple[int, int, int, int], y_range: tuple[float, float]
+) -> int:
     _x0, _x1, y0, y1 = box
     return int(round(y0 + (y_range[1] - value) / (y_range[1] - y_range[0]) * (y1 - y0)))
 
 
 def _synthetic_reference_image(mod) -> Image.Image:
-    image = Image.new("RGB", (mod.EXPECTED_IMAGE_SHAPE[1], mod.EXPECTED_IMAGE_SHAPE[0]), "white")
+    image = Image.new(
+        "RGB", (mod.EXPECTED_IMAGE_SHAPE[1], mod.EXPECTED_IMAGE_SHAPE[0]), "white"
+    )
     draw = ImageDraw.Draw(image)
     for panel in mod.PANEL_CALIBRATIONS:
-        for code, color, value in (("stella", (255, 0, 0), 0.12), ("GENE", (0, 0, 255), 0.18)):
+        for code, color, value in (
+            ("stella", (255, 0, 0), 0.12),
+            ("GENE", (0, 0, 255), 0.18),
+        ):
             y_main = _pixel_y(value, panel.main_box, panel.y_range)
             y_inset = _pixel_y(value, panel.inset_box, panel.inset_y_range)
-            draw.line((panel.main_box[0], y_main, panel.main_box[1], y_main), fill=color, width=5)
-            draw.line((panel.inset_box[0], y_inset, panel.inset_box[1], y_inset), fill=color, width=5)
+            draw.line(
+                (panel.main_box[0], y_main, panel.main_box[1], y_main),
+                fill=color,
+                width=5,
+            )
+            draw.line(
+                (panel.inset_box[0], y_inset, panel.inset_box[1], y_inset),
+                fill=color,
+                width=5,
+            )
     return image
 
 

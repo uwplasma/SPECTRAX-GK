@@ -368,7 +368,7 @@ if WRITE_LONG_NONLINEAR_AUDIT_CONFIGS:
             comparison_png = NONLINEAR_AUDIT_OUT_DIR / "initial_final_matched_nonlinear_audit.png"
             comparison_command = [
                 sys.executable,
-                str(SPECTRAX_ROOT / "tools" / "build_matched_nonlinear_transport_comparison.py"),
+                str(SPECTRAX_ROOT / "tools" / "artifacts" / "build_matched_nonlinear_transport_comparison.py"),
                 "--baseline-ensemble",
                 str(audit_ensembles["initial"]),
                 "--candidate-ensemble",

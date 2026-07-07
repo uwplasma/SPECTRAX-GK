@@ -6,8 +6,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_pre_manuscript_closure_runbook.py"
-spec = importlib.util.spec_from_file_location("build_pre_manuscript_closure_runbook", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_pre_manuscript_closure_runbook.py"
+spec = importlib.util.spec_from_file_location(
+    "build_pre_manuscript_closure_runbook", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -60,7 +62,9 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
         "external.json",
         {"passed": False, "launch_commands": [], "min_launch_gamma": 0.02},
     )
-    optimizer = _write_json(tmp_path, "optimizer.json", {"entries": [{"status": "runnable"}]})
+    optimizer = _write_json(
+        tmp_path, "optimizer.json", {"entries": [{"status": "runnable"}]}
+    )
     ladder = _write_json(tmp_path, "ladder.json", {"commands": [{"returncode": 0}]})
 
     payload = mod.build_runbook_payload(
@@ -79,22 +83,37 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     assert holdout["status"] == "blocked_on_new_linear_screen"
     assert holdout["unscreened_candidates"][0]["name"] == "wout_new_qh.nc"
     assert payload["vmec_boozer_production_scope_artifacts"]["audit_commands"]
-    heldout = payload["vmec_boozer_production_scope_artifacts"]["heldout_transport_commands"]
+    heldout = payload["vmec_boozer_production_scope_artifacts"][
+        "heldout_transport_commands"
+    ]
     assert heldout[0]["transport_sample"]["alpha"] == 1.2
     assert "--torflux 0.78 --alpha 1.2" in heldout[0]["generate_configs_command"]
     assert "check_nonlinear_runtime_outputs.py" in heldout[0]["output_gate_command"]
-    assert "build_external_vmec_replicate_ensemble.py" in heldout[0]["build_ensemble_command"]
+    assert (
+        "build_external_vmec_replicate_ensemble.py"
+        in heldout[0]["build_ensemble_command"]
+    )
     assert (
         "build_vmec_boozer_production_holdout_artifact.py"
         in heldout[0]["build_holdout_artifact_command"]
     )
-    assert "check_vmec_boozer_aggregate_holdout_gate.py" in heldout[0]["promotion_gate_command"]
+    assert (
+        "check_vmec_boozer_aggregate_holdout_gate.py"
+        in heldout[0]["promotion_gate_command"]
+    )
     assert "production_scope_vmec_boozer" in heldout[0]["claim_level"]
-    assert payload["vmec_boozer_production_scope_artifacts"]["office_seed_queue"]["launched"] is True
+    assert (
+        payload["vmec_boozer_production_scope_artifacts"]["office_seed_queue"][
+            "launched"
+        ]
+        is True
+    )
     assert "strict gates" in payload["claim_scope"]
 
 
-def test_pre_manuscript_runbook_reports_launchable_external_holdout(tmp_path: Path) -> None:
+def test_pre_manuscript_runbook_reports_launchable_external_holdout(
+    tmp_path: Path,
+) -> None:
     inventory = _write_json(tmp_path, "inventory.json", {"n_equilibria": 1, "rows": []})
     screen = _write_screen(tmp_path)
     external = _write_json(
@@ -102,9 +121,14 @@ def test_pre_manuscript_runbook_reports_launchable_external_holdout(tmp_path: Pa
         "external.json",
         {
             "passed": True,
-            "launch_commands": ["python tools/write_external_vmec_holdout_configs.py --case solovev"],
+            "launch_commands": [
+                "python tools/write_external_vmec_holdout_configs.py --case solovev"
+            ],
             "min_launch_gamma": 0.02,
-            "selected_new_family_candidate": {"case": "solovev_reference_nc", "best_gamma": 0.094},
+            "selected_new_family_candidate": {
+                "case": "solovev_reference_nc",
+                "best_gamma": 0.094,
+            },
         },
     )
     optimizer = _write_json(tmp_path, "optimizer.json", {"entries": []})
@@ -139,8 +163,13 @@ def test_pre_manuscript_runbook_marks_selected_external_holdout_harvested(
         "external.json",
         {
             "passed": True,
-            "launch_commands": ["python tools/write_external_vmec_holdout_configs.py --case solovev"],
-            "selected_new_family_candidate": {"case": "solovev_reference_nc", "best_gamma": 0.094},
+            "launch_commands": [
+                "python tools/write_external_vmec_holdout_configs.py --case solovev"
+            ],
+            "selected_new_family_candidate": {
+                "case": "solovev_reference_nc",
+                "best_gamma": 0.094,
+            },
         },
     )
     holdout_gap = _write_json(
@@ -203,4 +232,7 @@ def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
     for path in paths.values():
         assert Path(path).exists()
     saved = json.loads((tmp_path / "runbook.json").read_text(encoding="utf-8"))
-    assert saved["external_vmec_holdout_campaign"]["status"] == "blocked_on_new_linear_screen"
+    assert (
+        saved["external_vmec_holdout_campaign"]["status"]
+        == "blocked_on_new_linear_screen"
+    )

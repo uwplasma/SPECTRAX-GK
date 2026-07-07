@@ -6,8 +6,15 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_quasilinear_uq_ensemble_scaling.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_uq_ensemble_scaling", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_quasilinear_uq_ensemble_scaling.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_uq_ensemble_scaling", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)

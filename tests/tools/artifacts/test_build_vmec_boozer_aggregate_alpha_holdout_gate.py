@@ -6,8 +6,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_alpha_holdout_gate.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_aggregate_alpha_holdout_gate", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_boozer_aggregate_alpha_holdout_gate.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_aggregate_alpha_holdout_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -47,7 +51,9 @@ def test_build_alpha_holdout_payload_uses_default_split(monkeypatch) -> None:
         calls.update(kwargs)
         return _holdout_payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     payload = mod.build_vmec_boozer_aggregate_alpha_holdout_payload(
         ntheta=4,
@@ -90,7 +96,9 @@ def test_alpha_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
         calls.update(kwargs)
         return _holdout_payload()
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_line_search_holdout_report", fake_report
+    )
 
     result = mod.main(
         [

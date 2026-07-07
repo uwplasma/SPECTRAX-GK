@@ -3,13 +3,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.build_reduced_nonlinear_audit_prelaunch_report import (
+from tools.artifacts.build_reduced_nonlinear_audit_prelaunch_report import (
     build_metric_report,
     build_report,
     main,
 )
 
-from spectraxgk.validation.stellarator.transport_policies import VMECJAXReducedPrelaunchPolicy
+from spectraxgk.validation.stellarator.transport_policies import (
+    VMECJAXReducedPrelaunchPolicy,
+)
 
 
 def _landscape(path: Path) -> Path:
@@ -27,13 +29,17 @@ def _landscape(path: Path) -> Path:
                         "label": "0",
                         "relative_fraction": 0.0,
                         "coefficient_value": 1.0,
-                        "reduced_metrics": {"nonlinear_window_heat_flux": 0.06558065223919245},
+                        "reduced_metrics": {
+                            "nonlinear_window_heat_flux": 0.06558065223919245
+                        },
                     },
                     {
                         "label": "p0p03",
                         "relative_fraction": 0.03,
                         "coefficient_value": 1.03,
-                        "reduced_metrics": {"nonlinear_window_heat_flux": 0.06251277500404685},
+                        "reduced_metrics": {
+                            "nonlinear_window_heat_flux": 0.06251277500404685
+                        },
                     },
                 ],
             }
@@ -101,4 +107,7 @@ def test_metric_mode_builds_negative_prelaunch_reference() -> None:
     )
 
     assert report["passed"] is False
-    assert report["relative_reduced_reduction"] < report["required_relative_reduced_reduction"]
+    assert (
+        report["relative_reduced_reduction"]
+        < report["required_relative_reduced_reduction"]
+    )

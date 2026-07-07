@@ -8,8 +8,15 @@ from pathlib import Path
 
 
 def _load_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_quasilinear_stellarator_usefulness.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_stellarator_usefulness", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_quasilinear_stellarator_usefulness.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_stellarator_usefulness", path
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -25,7 +32,10 @@ def test_stellarator_usefulness_report_keeps_claim_scoped() -> None:
     assert report["models"]["spectral_envelope_ridge"]["accepted"] is False
     assert report["models"]["spectral_envelope_ridge"]["mean_abs_relative_error"] > 0.35
     assert report["models"]["positive_mixing_length"]["accepted"] is False
-    assert report["models"]["positive_mixing_length"]["holdout_mean_abs_relative_error"] > 1.0
+    assert (
+        report["models"]["positive_mixing_length"]["holdout_mean_abs_relative_error"]
+        > 1.0
+    )
     assert "universal" in report["readme_sentence"]
     assert "rank-screening" in report["readme_sentence"]
     assert "frozen ledger" in report["readme_sentence"]
@@ -68,4 +78,6 @@ def test_stellarator_usefulness_writer_creates_sidecars(tmp_path: Path) -> None:
         assert Path(paths[key]).exists()
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["kind"] == "quasilinear_stellarator_usefulness"
-    assert Path(paths["csv"]).read_text(encoding="utf-8").startswith("case,label,geometry")
+    assert (
+        Path(paths["csv"]).read_text(encoding="utf-8").startswith("case,label,geometry")
+    )

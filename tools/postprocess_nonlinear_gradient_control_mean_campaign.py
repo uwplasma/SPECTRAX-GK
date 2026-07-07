@@ -193,7 +193,7 @@ def _build_state_ensemble(
     ensemble_name = f"{state_prefix}_t{int(round(tmax))}_ensemble_gate.json"
     cmd = [
         sys.executable,
-        str(ROOT / "tools" / "build_external_vmec_replicate_ensemble.py"),
+        str(ROOT / "tools" / "artifacts" / "build_external_vmec_replicate_ensemble.py"),
         *[str(path) for path in outputs],
         "--out-dir",
         str(out_dir),
@@ -323,7 +323,7 @@ def main(argv: list[str] | None = None) -> int:
     gate_prefix = args.out_root / f"{args.case_prefix}_gate"
     gate_cmd = [
         sys.executable,
-        str(ROOT / "tools" / "build_nonlinear_gradient_control_mean_gate.py"),
+        str(ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_control_mean_gate.py"),
         "--variance-report",
         str(args.variance_report),
         "--plus-ensemble",

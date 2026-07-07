@@ -1573,7 +1573,7 @@
       "compact_bundle_policy": {
         "output_gate_json": "docs/_static/external_vmec_shaped_tokamak_pressure_replicates_t650/shaped_tokamak_pressure_reference_t650_n80_seed_timestep_output_gate.json",
         "reason": "avoid committing regenerable per-trace CSV/convergence intermediates under repository-size policy",
-        "regeneration": "rerun tools/build_external_vmec_replicate_ensemble.py against rows[].source_artifact NetCDF outputs",
+        "regeneration": "rerun tools/artifacts/build_external_vmec_replicate_ensemble.py against rows[].source_artifact NetCDF outputs",
         "tracked_bundle": "ensemble JSON, readiness JSON, and output-gate JSON only"
       },
       "comparison": "shaped_tokamak_pressure_n80_t650_seed_timestep_seed_timestep_replicates",

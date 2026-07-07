@@ -9,8 +9,10 @@ import sys
 
 def _load_tool_module():
     root = Path(__file__).resolve().parents[3]
-    path = root / "tools" / "build_quasilinear_error_anatomy.py"
-    spec = importlib.util.spec_from_file_location("build_quasilinear_error_anatomy", path)
+    path = root / "tools" / "artifacts" / "build_quasilinear_error_anatomy.py"
+    spec = importlib.util.spec_from_file_location(
+        "build_quasilinear_error_anatomy", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -25,13 +27,20 @@ def test_error_anatomy_locks_current_fail_closed_residual_story() -> None:
     report = mod.build_error_anatomy_report()
 
     assert report["kind"] == "quasilinear_error_anatomy"
-    assert report["claim_level"] == "model_development_residual_anatomy_not_absolute_flux_promotion"
+    assert (
+        report["claim_level"]
+        == "model_development_residual_anatomy_not_absolute_flux_promotion"
+    )
     assert report["case_count"] == 12
     assert report["holdout_count"] == 10
     assert report["promotion_gate"]["passed"] is False
-    assert "case_residuals_exceed_transport_gate" in report["promotion_gate"]["blockers"]
+    assert (
+        "case_residuals_exceed_transport_gate" in report["promotion_gate"]["blockers"]
+    )
     assert 0.697 < report["candidate_mean_abs_relative_error"] < 0.698
-    assert report["rows"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
+    assert (
+        report["rows"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
+    )
     assert report["rows"][0]["above_transport_gate"] is True
     assert report["rows"][0]["overpredicts"] is True
     groups = {row["geometry_group"]: row for row in report["geometry_group_summary"]}
@@ -41,8 +50,14 @@ def test_error_anatomy_locks_current_fail_closed_residual_story() -> None:
     assert policy["additional_holdout_collection_active"] is False
     assert policy["ledger_case_count"] == 12
     assert "passing scoped core portfolio" in policy["active_next_step"]
-    assert report["dominant_residuals"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
-    assert any("external-axisymmetric residual budget" in item for item in report["model_development_requirements"])
+    assert (
+        report["dominant_residuals"][0]["case"]
+        == "solovev_reference_repair_dt002_amp1em5_n48_t250"
+    )
+    assert any(
+        "external-axisymmetric residual budget" in item
+        for item in report["model_development_requirements"]
+    )
     core = report["core_portfolio_gate"]
     assert core["passed"] is True
     assert core["core_case_count"] == 10
@@ -65,7 +80,7 @@ def test_error_anatomy_cli_writes_sidecars_and_fails_closed(tmp_path: Path) -> N
     completed = subprocess.run(
         [
             sys.executable,
-            str(root / "tools" / "build_quasilinear_error_anatomy.py"),
+            str(root / "tools" / "artifacts" / "build_quasilinear_error_anatomy.py"),
             "--out",
             str(out),
         ],
@@ -82,6 +97,8 @@ def test_error_anatomy_cli_writes_sidecars_and_fails_closed(tmp_path: Path) -> N
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["promotion_gate"]["passed"] is False
     assert payload["core_portfolio_gate"]["passed"] is True
-    assert payload["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    assert (
+        payload["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    )
     csv_text = out.with_suffix(".csv").read_text(encoding="utf-8")
     assert csv_text.startswith("case,label,split,geometry")

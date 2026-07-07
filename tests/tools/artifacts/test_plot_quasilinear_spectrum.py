@@ -10,7 +10,12 @@ import pytest
 
 
 def _load_tool():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_quasilinear_spectrum.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_quasilinear_spectrum.py"
+    )
     spec = importlib.util.spec_from_file_location("plot_quasilinear_spectrum", path)
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
@@ -51,7 +56,9 @@ def test_write_quasilinear_spectrum_figure(tmp_path: Path) -> None:
     _write_spectrum(path)
     out = tmp_path / "ql_spectrum.png"
 
-    paths = mod.write_quasilinear_spectrum_figure(path, out=out, title="Test QL Spectrum")
+    paths = mod.write_quasilinear_spectrum_figure(
+        path, out=out, title="Test QL Spectrum"
+    )
 
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()

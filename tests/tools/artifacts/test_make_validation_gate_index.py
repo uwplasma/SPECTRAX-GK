@@ -6,7 +6,9 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "make_validation_gate_index.py"
+    path = (
+        Path(__file__).resolve().parents[3] / "tools" / "make_validation_gate_index.py"
+    )
     spec = importlib.util.spec_from_file_location("make_validation_gate_index", path)
     assert spec is not None
     assert spec.loader is not None
@@ -95,7 +97,9 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     assert "exploratory_case" not in rows
 
 
-def test_make_validation_gate_index_main_writes_json_csv_and_plot(tmp_path: Path) -> None:
+def test_make_validation_gate_index_main_writes_json_csv_and_plot(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     _write_gate(tmp_path / "gate.json", case="case_a", passed=True)
     out_json = tmp_path / "index.json"

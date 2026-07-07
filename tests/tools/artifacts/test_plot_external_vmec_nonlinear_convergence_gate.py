@@ -12,8 +12,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_external_vmec_nonlinear_convergence_gate.py"
-    spec = importlib.util.spec_from_file_location("plot_external_vmec_nonlinear_convergence_gate", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_external_vmec_nonlinear_convergence_gate.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_external_vmec_nonlinear_convergence_gate", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -66,8 +73,13 @@ def test_convergence_gate_passes_for_flat_nearby_traces(tmp_path: Path) -> None:
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["passed"] is True
     assert payload["promotion_gate"]["passed"] is True
-    assert payload["claim_level"] == "passed_grid_convergence_candidate_for_transport_holdout"
-    assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence passed")
+    assert (
+        payload["claim_level"]
+        == "passed_grid_convergence_candidate_for_transport_holdout"
+    )
+    assert payload["promotion_gate"]["reason"].startswith(
+        "synthetic external VMEC convergence passed"
+    )
     assert payload["gate_report"]["passed"] is True
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -87,10 +99,17 @@ def test_convergence_gate_fails_large_grid_shift(tmp_path: Path) -> None:
     )
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
-    failed = {gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]}
+    failed = {
+        gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]
+    }
     assert payload["passed"] is False
     assert payload["promotion_gate"]["passed"] is False
-    assert payload["claim_level"] == "negative_grid_convergence_result_not_transport_validation"
-    assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence is finite")
+    assert (
+        payload["claim_level"]
+        == "negative_grid_convergence_result_not_transport_validation"
+    )
+    assert payload["promotion_gate"]["reason"].startswith(
+        "synthetic external VMEC convergence is finite"
+    )
     assert "common_window_pairwise_heat_flux_symmetric_relative_difference" in failed
     assert "least_window_pairwise_heat_flux_symmetric_relative_difference" in failed

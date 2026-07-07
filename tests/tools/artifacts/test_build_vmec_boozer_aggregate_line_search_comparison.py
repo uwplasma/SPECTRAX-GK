@@ -6,14 +6,23 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_line_search_comparison.py"
-spec = importlib.util.spec_from_file_location("build_vmec_boozer_aggregate_line_search_comparison", SCRIPT)
+SCRIPT = (
+    ROOT
+    / "tools"
+    / "artifacts"
+    / "build_vmec_boozer_aggregate_line_search_comparison.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_boozer_aggregate_line_search_comparison", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
 
 
-def _line_search_payload(objective: str, derivative: float, initial: float, final: float) -> dict[str, object]:
+def _line_search_payload(
+    objective: str, derivative: float, initial: float, final: float
+) -> dict[str, object]:
     return {
         "kind": "vmec_boozer_aggregate_scalar_objective_line_search_report",
         "passed": True,
@@ -29,8 +38,18 @@ def _line_search_payload(objective: str, derivative: float, initial: float, fina
         "relative_reduction": (initial - final) / initial,
         "stop_reason": "max_steps",
         "samples": [
-            {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.5},
-            {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.5},
+            {
+                "surface_index": None,
+                "alpha": 0.0,
+                "selected_ky_index": 1,
+                "weight": 0.5,
+            },
+            {
+                "surface_index": None,
+                "alpha": 0.0,
+                "selected_ky_index": 2,
+                "weight": 0.5,
+            },
         ],
         "history": [
             {
@@ -102,7 +121,9 @@ def _comparison_payload() -> dict[str, object]:
     }
 
 
-def test_build_vmec_boozer_aggregate_line_search_comparison_report_uses_same_sample_set(monkeypatch) -> None:
+def test_build_vmec_boozer_aggregate_line_search_comparison_report_uses_same_sample_set(
+    monkeypatch,
+) -> None:
     calls: list[dict[str, object]] = []
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
@@ -112,7 +133,9 @@ def test_build_vmec_boozer_aggregate_line_search_comparison_report_uses_same_sam
             return _line_search_payload(objective, 2.0, 0.30, 0.29)
         return _line_search_payload(objective, 5.0, 0.90, 0.88)
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report
+    )
 
     payload = mod.build_vmec_boozer_aggregate_line_search_comparison_report(
         selected_ky_indices=(1, 2),
@@ -130,7 +153,9 @@ def test_build_vmec_boozer_aggregate_line_search_comparison_report_uses_same_sam
     assert all(call["ntheta"] == 4 for call in calls)
 
 
-def test_write_vmec_boozer_aggregate_line_search_comparison_artifacts(tmp_path: Path) -> None:
+def test_write_vmec_boozer_aggregate_line_search_comparison_artifacts(
+    tmp_path: Path,
+) -> None:
     paths = mod.write_vmec_boozer_aggregate_line_search_comparison_artifacts(
         _comparison_payload(),
         out=tmp_path / "comparison.png",
@@ -143,7 +168,9 @@ def test_write_vmec_boozer_aggregate_line_search_comparison_artifacts(tmp_path: 
     assert "initial_update_direction" in Path(paths["csv"]).read_text(encoding="utf-8")
 
 
-def test_vmec_boozer_aggregate_line_search_comparison_main_uses_report(monkeypatch, tmp_path: Path) -> None:
+def test_vmec_boozer_aggregate_line_search_comparison_main_uses_report(
+    monkeypatch, tmp_path: Path
+) -> None:
     calls: list[dict[str, object]] = []
 
     def fake_report(**kwargs):  # noqa: ANN003, ANN202
@@ -151,7 +178,9 @@ def test_vmec_boozer_aggregate_line_search_comparison_main_uses_report(monkeypat
         objective = str(kwargs["objective"])
         return _line_search_payload(objective, 1.0, 1.0, 0.9)
 
-    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report)
+    monkeypatch.setattr(
+        mod, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_report
+    )
 
     result = mod.main(
         [

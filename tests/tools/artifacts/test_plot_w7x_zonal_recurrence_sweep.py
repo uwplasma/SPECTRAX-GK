@@ -11,8 +11,15 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_zonal_recurrence_sweep.py"
-    spec = importlib.util.spec_from_file_location("plot_w7x_zonal_recurrence_sweep", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_zonal_recurrence_sweep.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_w7x_zonal_recurrence_sweep", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -37,7 +44,9 @@ def _write_reference(path: Path, *, kx: float = 0.07) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def _write_output(path: Path, *, kx: float = 0.07, nm: int = 8, nl: int = 4, offset: float = 0.0) -> None:
+def _write_output(
+    path: Path, *, kx: float = 0.07, nm: int = 8, nl: int = 4, offset: float = 0.0
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     t = np.linspace(0.0, 20.0, 21)
     kx_grid = np.array([-kx, 0.0, kx])

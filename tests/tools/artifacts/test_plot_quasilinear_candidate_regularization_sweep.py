@@ -10,7 +10,7 @@ import sys
 
 
 def _load_tool_module():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "artifacts"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / "plot_quasilinear_candidate_regularization_sweep.py"
     spec = importlib.util.spec_from_file_location(
@@ -30,7 +30,10 @@ def test_regularization_sweep_locks_tracked_near_miss() -> None:
     report = mod.score_regularization_sweep(lambdas=(0.1, 0.2, 0.3, 0.5, 0.7, 1.0))
 
     assert report["kind"] == "quasilinear_candidate_regularization_sweep"
-    assert report["claim_level"] == "spectral_envelope_regularization_audit_not_runtime_flux_predictor"
+    assert (
+        report["claim_level"]
+        == "spectral_envelope_regularization_audit_not_runtime_flux_predictor"
+    )
     assert report["case_count"] == 12
     assert report["holdout_count"] == 10
     assert report["best_lambda"] == 0.5
@@ -45,7 +48,9 @@ def test_regularization_sweep_locks_tracked_near_miss() -> None:
     assert len(report["rows"]) == 6
 
 
-def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(tmp_path: Path) -> None:
+def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     report = mod.score_regularization_sweep(lambdas=(0.2, 0.3))
     paths = mod.write_regularization_sweep_figure(
@@ -68,7 +73,12 @@ def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(tmp_path: Pat
     completed = subprocess.run(
         [
             sys.executable,
-            str(root / "tools" / "plot_quasilinear_candidate_regularization_sweep.py"),
+            str(
+                root
+                / "tools"
+                / "artifacts"
+                / "plot_quasilinear_candidate_regularization_sweep.py"
+            ),
             "--out",
             str(tmp_path / "cli_regularization.png"),
             "--lambdas",

@@ -11,10 +11,12 @@ import pytest
 
 
 def _load_tool_module():
-    tools_dir = Path(__file__).resolve().parents[3] / "tools"
+    tools_dir = Path(__file__).resolve().parents[3] / "tools" / "artifacts"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / "plot_quasilinear_shape_aware_saturation.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_shape_aware_saturation", path)
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_shape_aware_saturation", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -79,7 +81,9 @@ def test_fit_power_law_shape_exponent_uses_case_intercepts(tmp_path: Path) -> No
         ("a", (0.2, 0.3, 0.5)),
         ("b", (0.1, 0.3, 0.6)),
     ]:
-        spectrum, summary, shape = _write_case(tmp_path, name, observed=1.0, nonlinear_dist=dist)
+        spectrum, summary, shape = _write_case(
+            tmp_path, name, observed=1.0, nonlinear_dist=dist
+        )
         cases.append(mod.SaturationCase(name, "train", name, spectrum, summary, shape))
 
     fit = mod.fit_power_law_shape_exponent(tuple(cases))
@@ -97,11 +101,17 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
         ("b", 1.2, (0.2, 0.3, 0.5)),
         ("c", 0.8, (0.1, 0.3, 0.6)),
     ]:
-        spectrum, summary, shape = _write_case(tmp_path, name, observed=observed, nonlinear_dist=dist)
-        cases.append(mod.SaturationCase(name, "holdout", name, spectrum, summary, shape))
+        spectrum, summary, shape = _write_case(
+            tmp_path, name, observed=observed, nonlinear_dist=dist
+        )
+        cases.append(
+            mod.SaturationCase(name, "holdout", name, spectrum, summary, shape)
+        )
 
     report = mod.build_shape_aware_saturation_report(tuple(cases))
-    paths = mod.write_shape_aware_saturation_figure(report, out=tmp_path / "shape.png", title="Shape")
+    paths = mod.write_shape_aware_saturation_figure(
+        report, out=tmp_path / "shape.png", title="Shape"
+    )
 
     assert report["kind"] == "quasilinear_shape_aware_saturation_report"
     assert report["input_validation"]["passed"] is True
@@ -111,7 +121,10 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
     assert "shape_aware_all_case_gate_passed" in report["metrics"]
     assert all(row["shape_gate_status"] == "passed" for row in report["cases"])
     assert report["promotion_gate"]["requires_beating_training_mean_null"] is True
-    assert all("null_training_mean_predicted_heat_flux" in row for row in report["leave_one_out"])
+    assert all(
+        "null_training_mean_predicted_heat_flux" in row
+        for row in report["leave_one_out"]
+    )
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
@@ -137,7 +150,9 @@ def test_observed_flux_falls_back_to_tracked_calibration_points(tmp_path: Path) 
 
 def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    spectrum, summary, _shape = _write_case(tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5))
+    spectrum, summary, _shape = _write_case(
+        tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5)
+    )
     case = mod.SaturationCase("a", "train", "a", spectrum, summary, None)
 
     with pytest.raises(ValueError, match="missing a tracked shape-gate"):
@@ -146,7 +161,9 @@ def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
 
 def test_shape_aware_report_rejects_incomplete_shape_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    spectrum, summary, shape = _write_case(tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5))
+    spectrum, summary, shape = _write_case(
+        tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5)
+    )
     payload = json.loads(shape.read_text(encoding="utf-8"))
     payload.pop("tv_gate")
     shape.write_text(json.dumps(payload), encoding="utf-8")

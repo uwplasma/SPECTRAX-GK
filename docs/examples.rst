@@ -536,8 +536,8 @@ development diagnostics only:
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py
    python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py
    python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
-   python tools/build_qa_low_turbulence_comparison.py --pdf
-   python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
+   python tools/artifacts/build_qa_low_turbulence_comparison.py --pdf
+   python tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py --pdf
 
 The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
 row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``

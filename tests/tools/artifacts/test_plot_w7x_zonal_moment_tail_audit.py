@@ -10,8 +10,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_zonal_moment_tail_audit.py"
-    spec = importlib.util.spec_from_file_location("plot_w7x_zonal_moment_tail_audit", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_zonal_moment_tail_audit.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_w7x_zonal_moment_tail_audit", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -20,7 +27,9 @@ def _load_tool_module():
     return module
 
 
-def _write_output(path: Path, *, kx_target: float = 0.07, nm: int = 8, nl: int = 4) -> None:
+def _write_output(
+    path: Path, *, kx_target: float = 0.07, nm: int = 8, nl: int = 4
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     t = np.linspace(0.0, 20.0, 11)
     kx = np.array([-kx_target, 0.0, kx_target])

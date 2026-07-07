@@ -9,8 +9,10 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_matched_nonlinear_transport_matrix.py"
-spec = importlib.util.spec_from_file_location("build_matched_nonlinear_transport_matrix", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_matched_nonlinear_transport_matrix.py"
+spec = importlib.util.spec_from_file_location(
+    "build_matched_nonlinear_transport_matrix", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -66,28 +68,46 @@ def _write_campaign(tmp_path: Path) -> Path:
     return tmp_path / "campaign" / "matched_transport_matrix_manifest.json"
 
 
-def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Path) -> None:
+def test_write_campaign_defaults_to_eighteen_point_transport_matrix(
+    tmp_path: Path,
+) -> None:
     manifest_path = _write_campaign(tmp_path)
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     assert payload["kind"] == "matched_nonlinear_transport_matrix_campaign"
     assert payload["config"]["sample_count"] == 18
-    assert payload["coverage_gate"] == {"min_alphas": 2, "min_ky_values": 3, "min_surfaces": 3, "passed": True}
+    assert payload["coverage_gate"] == {
+        "min_alphas": 2,
+        "min_ky_values": 3,
+        "min_surfaces": 3,
+        "passed": True,
+    }
     assert payload["config"]["surfaces"] == [0.45, 0.64, 0.78]
     assert payload["config"]["alphas"] == [0.0, 0.7853981633974483]
     assert payload["config"]["ky_values"] == [0.1, 0.3, 0.5]
     assert payload["config"]["seed_variants"] == [7]
     assert payload["config"]["dt_variants"] == [0.08]
-    assert payload["config"]["final_horizon_launch_locking"] == "per-output flock with mkdir fallback"
+    assert (
+        payload["config"]["final_horizon_launch_locking"]
+        == "per-output flock with mkdir fallback"
+    )
     assert Path(payload["launch_scripts"]["staged_ladder_skip_existing"]).exists()
     assert Path(payload["launch_scripts"]["postprocess"]).exists()
-    assert Path(payload["launch_scripts"]["final_horizon_direct_skip_existing"]).exists()
+    assert Path(
+        payload["launch_scripts"]["final_horizon_direct_skip_existing"]
+    ).exists()
     assert len(payload["launch_scripts"]["final_horizon_gpu_splits"]) == 2
-    assert all(Path(path).exists() for path in payload["launch_scripts"]["final_horizon_gpu_splits"])
-    assert "build_matched_nonlinear_transport_matrix.py report" in payload["aggregate_report"]["command"]
-    final_script = Path(payload["launch_scripts"]["final_horizon_direct_skip_existing"]).read_text(
-        encoding="utf-8"
+    assert all(
+        Path(path).exists()
+        for path in payload["launch_scripts"]["final_horizon_gpu_splits"]
     )
+    assert (
+        "build_matched_nonlinear_transport_matrix.py report"
+        in payload["aggregate_report"]["command"]
+    )
+    final_script = Path(
+        payload["launch_scripts"]["final_horizon_direct_skip_existing"]
+    ).read_text(encoding="utf-8")
     assert "_nonlinear_t20_" in final_script
     assert "_nonlinear_t10_" not in final_script
     assert "--steps 200" in final_script
@@ -98,9 +118,9 @@ def test_write_campaign_defaults_to_eighteen_point_transport_matrix(tmp_path: Pa
     assert "skip-target-confirmed" in final_script
     assert "skip-target-confirmed-after-lock" in final_script
     assert "skip-existing" not in final_script
-    gpu1_script = Path(payload["launch_scripts"]["final_horizon_gpu_splits"][1]).read_text(
-        encoding="utf-8"
-    )
+    gpu1_script = Path(
+        payload["launch_scripts"]["final_horizon_gpu_splits"][1]
+    ).read_text(encoding="utf-8")
     assert "export DEVICE=1" in gpu1_script
 
     first = payload["samples"][0]
@@ -132,7 +152,10 @@ def test_report_passes_when_all_matrix_comparisons_pass(tmp_path: Path) -> None:
                     "passed": True,
                     "baseline": {"ensemble_mean": 10.0 + 0.1 * index},
                     "candidate": {"ensemble_mean": 9.5 + 0.1 * index},
-                    "statistics": {"relative_reduction": 0.05, "uncertainty_z_score": 3.5},
+                    "statistics": {
+                        "relative_reduction": 0.05,
+                        "uncertainty_z_score": 3.5,
+                    },
                 }
             ),
             encoding="utf-8",

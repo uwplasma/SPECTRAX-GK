@@ -13,6 +13,7 @@ def _load_tool_module():
     path = (
         Path(__file__).resolve().parents[3]
         / "tools"
+        / "artifacts"
         / "build_external_vmec_replicate_ensemble.py"
     )
     spec = importlib.util.spec_from_file_location(
@@ -36,7 +37,9 @@ def _write_output(path: Path, offset: float) -> None:
         grids = root.createGroup("Grids")
         diagnostics = root.createGroup("Diagnostics")
         grids.createVariable("time", "f8", ("time",))[:] = t
-        diagnostics.createVariable("HeatFlux_st", "f8", ("time", "s"))[:, :] = q[:, None]
+        diagnostics.createVariable("HeatFlux_st", "f8", ("time", "s"))[:, :] = q[
+            :, None
+        ]
 
 
 def test_replicate_ensemble_tool_builds_trace_reports_and_plot(tmp_path: Path) -> None:
@@ -83,13 +86,14 @@ def test_replicate_ensemble_tool_builds_trace_reports_and_plot(tmp_path: Path) -
     assert summary["nonlinear_artifact"] == "demo_nonlinear_t100_n64_seed31.out.nc"
     assert len(list(out_dir.glob("*_heat_flux_trace.csv"))) == 3
     assert (out_dir / "replicate_ensemble_gate.png").exists()
-    assert (
-        readiness["observed_artifacts"][0]["source_artifact"]
-        .startswith("docs/_static/demo_replicates/")
+    assert readiness["observed_artifacts"][0]["source_artifact"].startswith(
+        "docs/_static/demo_replicates/"
     )
 
 
-def test_replicate_ensemble_tool_can_collect_failed_diagnostic_points(tmp_path: Path) -> None:
+def test_replicate_ensemble_tool_can_collect_failed_diagnostic_points(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     outputs = [
         tmp_path / "diagnostic_nonlinear_t100_n64_seed31.out.nc",
@@ -164,7 +168,9 @@ def test_replicate_ensemble_tool_handles_requested_window_outside_trace(
     assert rc == 0
     ensemble = json.loads((out_dir / "replicate_ensemble_gate.json").read_text())
     report = json.loads(
-        next((out_dir / "nonlinear_window_convergence_reports").glob("*seed31*")).read_text()
+        next(
+            (out_dir / "nonlinear_window_convergence_reports").glob("*seed31*")
+        ).read_text()
     )
     assert ensemble["passed"] is False
     assert ensemble["statistics"]["n_finite_means"] == 0
@@ -173,7 +179,9 @@ def test_replicate_ensemble_tool_handles_requested_window_outside_trace(
     assert (out_dir / "replicate_ensemble_gate.png").exists()
 
 
-def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(tmp_path: Path) -> None:
+def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     variant = mod._variant_from_path(
         tmp_path / "demo_nonlinear_t100_n64_seed32_dt0p04.out.nc",
@@ -220,8 +228,7 @@ def test_replicate_ensemble_tool_ignores_protocol_dt_in_case_slug(
         baseline_dt=0.02,
     )
     timestep_variant = mod._variant_from_path(
-        tmp_path
-        / "solovev_reference_repair_dt002_amp1em5_n48_dt0p01_gpu.out.nc",
+        tmp_path / "solovev_reference_repair_dt002_amp1em5_n48_dt0p01_gpu.out.nc",
         baseline_seed=22,
         baseline_dt=0.02,
     )

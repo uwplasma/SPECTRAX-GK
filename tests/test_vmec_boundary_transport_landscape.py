@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 from netCDF4 import Dataset
 
-from tools.build_vmec_boundary_transport_landscape import (
+from tools.artifacts.build_vmec_boundary_transport_landscape import (
     DEFAULT_FRACTIONS,
     DEFAULT_KINDS,
     _load_nonlinear_ensemble,

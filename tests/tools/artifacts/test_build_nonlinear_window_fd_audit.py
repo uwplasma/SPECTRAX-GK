@@ -8,8 +8,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "build_nonlinear_window_fd_audit.py"
-    spec = importlib.util.spec_from_file_location("build_nonlinear_window_fd_audit", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "build_nonlinear_window_fd_audit.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_nonlinear_window_fd_audit", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -26,7 +33,9 @@ def _synthetic_run(label: str, tprim: float, scale: float = 1.0) -> dict:
         "random_seed": 22,
         "time": time.tolist(),
         "heat_flux": heat.tolist(),
-        "window": _load_tool_module().late_window_metrics(time, heat, tail_fraction=0.5),
+        "window": _load_tool_module().late_window_metrics(
+            time, heat, tail_fraction=0.5
+        ),
     }
 
 
@@ -98,7 +107,9 @@ def test_build_audit_payload_blocks_unresolved_response() -> None:
     assert payload["gates"]["resolved_fd_response"] is False
 
 
-def test_main_writes_artifacts_without_running_solver(monkeypatch, tmp_path: Path) -> None:
+def test_main_writes_artifacts_without_running_solver(
+    monkeypatch, tmp_path: Path
+) -> None:
     mod = _load_tool_module()
 
     def fake_run_cyclone_window(*, label: str, tprim: float, **_kwargs):
@@ -124,5 +135,8 @@ def test_main_writes_artifacts_without_running_solver(monkeypatch, tmp_path: Pat
     assert out.with_suffix(".csv").exists()
     meta = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert meta["passed"] is True
-    assert meta["claim_level"] == "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average"
+    assert (
+        meta["claim_level"]
+        == "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average"
+    )
     assert meta["transport_average_gate"] is False

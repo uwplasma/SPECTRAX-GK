@@ -12,8 +12,10 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_qa_itg_optimization_readme_panel.py"
-spec = importlib.util.spec_from_file_location("build_qa_itg_optimization_readme_panel", SCRIPT)
+SCRIPT = ROOT / "tools" / "artifacts" / "build_qa_itg_optimization_readme_panel.py"
+spec = importlib.util.spec_from_file_location(
+    "build_qa_itg_optimization_readme_panel", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -57,7 +59,11 @@ def test_readme_panel_builder_treats_missing_optional_transport_artifacts_as_pen
                         "label": "baseline",
                         "reduced_metric_reports": {
                             "growth": {
-                                "payload": {"sample_statistics": {"weighted_standard_error": 0.01}}
+                                "payload": {
+                                    "sample_statistics": {
+                                        "weighted_standard_error": 0.01
+                                    }
+                                }
                             }
                         },
                     }

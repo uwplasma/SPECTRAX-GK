@@ -507,7 +507,7 @@ be replotted with:
 
 .. code-block:: bash
 
-   python tools/plot_scaling_speedup.py
+   python tools/artifacts/plot_scaling_speedup.py
 
 The exploratory distributed-RK2 strong-scaling data is still tracked for
 engineering work, but it is intentionally not presented as a headline
@@ -605,7 +605,7 @@ It is regenerated with:
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_gpu_large
 
-   python tools/plot_independent_ky_scan_scaling.py
+   python tools/artifacts/plot_independent_ky_scan_scaling.py
 
 The May 12, 2026 refresh passes the identity gate with zero reported
 ``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.94x`` on two
@@ -629,7 +629,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/build_parallelization_completion_status.py
+   python tools/artifacts/build_parallelization_completion_status.py
 
 The tracked ``docs/_static/parallelization_completion_status.json`` reports
 ``production_completion_percent = 100`` for independent ``k_y`` scans and
@@ -680,7 +680,7 @@ It is regenerated with:
      --backend gpu --devices 1,2 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
 
-   python tools/plot_quasilinear_uq_ensemble_scaling.py
+   python tools/artifacts/plot_quasilinear_uq_ensemble_scaling.py
 
 The May 10, 2026 ``office`` sweep passes the serial identity gate for both the
 reduced quasilinear proxy and ``gamma``. The CPU run reaches ``1.70x`` on two
@@ -1046,7 +1046,7 @@ each device count gets a clean JAX runtime:
    # Equivalent office two-GPU profile preset with JAX traces enabled.
    python tools/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
 
-   python tools/plot_nonlinear_sharding_strong_scaling.py
+   python tools/artifacts/plot_nonlinear_sharding_strong_scaling.py
 
    python tools/generate_nonlinear_sharding_production_gate.py
 

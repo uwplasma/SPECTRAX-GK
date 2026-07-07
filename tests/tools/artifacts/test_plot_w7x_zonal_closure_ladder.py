@@ -11,7 +11,12 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_w7x_zonal_closure_ladder.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_w7x_zonal_closure_ladder.py"
+    )
     spec = importlib.util.spec_from_file_location("plot_w7x_zonal_closure_ladder", path)
     assert spec is not None
     assert spec.loader is not None

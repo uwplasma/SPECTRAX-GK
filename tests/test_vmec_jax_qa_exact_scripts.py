@@ -296,7 +296,7 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
 
 
 def test_reduced_surface_comparison_is_not_current_primary_optimization_figure() -> None:
-    readiness_source = (ROOT / "tools" / "build_manuscript_readiness_status.py").read_text(
+    readiness_source = (ROOT / "tools" / "artifacts" / "build_manuscript_readiness_status.py").read_text(
         encoding="utf-8"
     )
     examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")

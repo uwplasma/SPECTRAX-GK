@@ -9,8 +9,15 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "plot_stellarator_optimization_uq.py"
-    spec = importlib.util.spec_from_file_location("plot_stellarator_optimization_uq", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "plot_stellarator_optimization_uq.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_stellarator_optimization_uq", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -104,7 +111,10 @@ def test_stellarator_optimization_uq_summary_and_artifacts(tmp_path: Path) -> No
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
     written = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
-    assert written["claim_level"] == "reduced_objective_uq_and_sensitivity_validation_not_full_vmec_gk_optimization"
+    assert (
+        written["claim_level"]
+        == "reduced_objective_uq_and_sensitivity_validation_not_full_vmec_gk_optimization"
+    )
 
 
 def test_stellarator_optimization_uq_rejects_bad_gradient_shape() -> None:

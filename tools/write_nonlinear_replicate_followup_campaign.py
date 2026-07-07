@@ -268,7 +268,7 @@ def _postprocess_commands(
             "readiness_json": _repo_relative(ensemble_dir / readiness_json),
             "ensemble_png": _repo_relative(ensemble_dir / ensemble_png),
             "build_ensemble_command": (
-                "python3 tools/build_external_vmec_replicate_ensemble.py "
+                "python3 tools/artifacts/build_external_vmec_replicate_ensemble.py "
                 + " ".join(all_outputs)
                 + f" --out-dir {_repo_relative(ensemble_dir)}"
                 + f" --case {manifest['case']}_{state}_replicated_nonlinear_window_followup"
@@ -296,7 +296,7 @@ def _postprocess_commands(
                 f"--case {manifest['case']}_{state}_followup_replicate_spread"
             )
             row["central_fd_command"] = (
-                "python3 tools/build_nonlinear_turbulence_gradient_fd_gate.py "
+                "python3 tools/artifacts/build_nonlinear_turbulence_gradient_fd_gate.py "
                 f"--baseline {baseline_json} --plus {row['ensemble_json']} --minus {minus_json} "
                 f"--delta-parameter {float(manifest['delta_parameter']):.12g} "
                 f"--parameter-name {manifest['parameter_name']} "

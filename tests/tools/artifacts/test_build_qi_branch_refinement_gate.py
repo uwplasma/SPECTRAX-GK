@@ -9,8 +9,15 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "build_qi_branch_refinement_gate.py"
-    spec = importlib.util.spec_from_file_location("build_qi_branch_refinement_gate", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "build_qi_branch_refinement_gate.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_qi_branch_refinement_gate", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -43,7 +50,9 @@ def test_qi_branch_refinement_gate_blocks_marginal_branch(tmp_path: Path) -> Non
     assert report["subgates"]["nonlinear_launch_growth"]["passed"] is False
 
 
-def test_qi_branch_refinement_gate_passes_strong_consistent_branch(tmp_path: Path) -> None:
+def test_qi_branch_refinement_gate_passes_strong_consistent_branch(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     spectrum = {
         "ky": np.asarray([0.05, 0.07, 0.095, 0.119, 0.143]),
@@ -80,7 +89,9 @@ def test_qi_branch_refinement_tool_writes_fail_closed_artifacts(tmp_path: Path) 
         encoding="utf-8",
     )
     krylov = tmp_path / "krylov.json"
-    krylov.write_text(json.dumps({"ky": 0.095, "gamma": 0.0019, "omega": -0.054}), encoding="utf-8")
+    krylov.write_text(
+        json.dumps({"ky": 0.095, "gamma": 0.0019, "omega": -0.054}), encoding="utf-8"
+    )
     out = tmp_path / "gate.png"
 
     assert (

@@ -11,8 +11,12 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_vmec_jax_transport_gradient_diagnostic.py"
-spec = importlib.util.spec_from_file_location("build_vmec_jax_transport_gradient_diagnostic", SCRIPT)
+SCRIPT = (
+    ROOT / "tools" / "artifacts" / "build_vmec_jax_transport_gradient_diagnostic.py"
+)
+spec = importlib.util.spec_from_file_location(
+    "build_vmec_jax_transport_gradient_diagnostic", SCRIPT
+)
 assert spec is not None
 assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
@@ -20,7 +24,9 @@ sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
-def test_gradient_diagnostic_defaults_to_multisample_transport_contract(tmp_path: Path) -> None:
+def test_gradient_diagnostic_defaults_to_multisample_transport_contract(
+    tmp_path: Path,
+) -> None:
     args = mod._parse_args(
         [
             "--input",
@@ -40,12 +46,18 @@ def test_gradient_diagnostic_defaults_to_multisample_transport_contract(tmp_path
     assert summary["sample_count"] == 18
 
 
-def test_gradient_diagnostic_fails_closed_for_underresolved_sample_set(tmp_path: Path, monkeypatch) -> None:
+def test_gradient_diagnostic_fails_closed_for_underresolved_sample_set(
+    tmp_path: Path, monkeypatch
+) -> None:
     def unexpected_stage(_args):
-        raise AssertionError("under-resolved sample set should fail before VMEC-JAX stage construction")
+        raise AssertionError(
+            "under-resolved sample set should fail before VMEC-JAX stage construction"
+        )
 
     monkeypatch.setattr(mod, "_build_stage", unexpected_stage)
-    with pytest.raises(ValueError, match="under-resolved transport-gradient sample set"):
+    with pytest.raises(
+        ValueError, match="under-resolved transport-gradient sample set"
+    ):
         mod.main(
             [
                 "--input",
@@ -62,7 +74,9 @@ def test_gradient_diagnostic_fails_closed_for_underresolved_sample_set(tmp_path:
         )
 
 
-def test_gradient_diagnostic_records_sample_coverage(tmp_path: Path, monkeypatch) -> None:
+def test_gradient_diagnostic_records_sample_coverage(
+    tmp_path: Path, monkeypatch
+) -> None:
     fake_stage = SimpleNamespace(specs=[object(), object()], optimizer=object())
 
     def fake_stage_builder(_args):
@@ -76,7 +90,9 @@ def test_gradient_diagnostic_records_sample_coverage(tmp_path: Path, monkeypatch
         }
 
     def fake_write(report, out_json):
-        Path(out_json).write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        Path(out_json).write_text(
+            json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8"
+        )
         return Path(out_json)
 
     monkeypatch.setattr(mod, "_build_stage", fake_stage_builder)
@@ -109,7 +125,9 @@ def test_gradient_diagnostic_fd_consistency_passes_for_matching_reverse_gradient
 
         def residual_fun(self, params):
             params_array = np.asarray(params, dtype=float)
-            return np.asarray([1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+            return np.asarray(
+                [1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float
+            )
 
         def objective_and_gradient_fun(self, params):
             residual = float(self.residual_fun(params)[0])
@@ -170,7 +188,9 @@ def test_gradient_diagnostic_fd_consistency_reports_coefficient_conditioning(
 
         def residual_fun(self, params):
             params_array = np.asarray(params, dtype=float)
-            return np.asarray([1.0 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+            return np.asarray(
+                [1.0 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float
+            )
 
         def objective_and_gradient_fun(self, params):
             residual = float(self.residual_fun(params)[0])
@@ -210,9 +230,7 @@ def test_gradient_diagnostic_fd_consistency_reports_coefficient_conditioning(
     assert rc == 0
     assert fd["passed"] is True
     assert fd["relative_step"] == pytest.approx(0.5)
-    assert fd["conditioning_warnings"] == [
-        "fd_step_exceeds_input_coefficient:RBC(1,1)"
-    ]
+    assert fd["conditioning_warnings"] == ["fd_step_exceeds_input_coefficient:RBC(1,1)"]
     assert rows[0]["coefficient_label"] == "RBC(1,1)"
     assert rows[0]["input_coefficient_value"] == pytest.approx(2.0e-5)
     assert rows[0]["requested_step_to_input_coefficient_abs"] == pytest.approx(5.0)
@@ -232,7 +250,9 @@ def test_gradient_diagnostic_fd_consistency_fails_for_disconnected_reverse_gradi
 
         def residual_fun(self, params):
             params_array = np.asarray(params, dtype=float)
-            return np.asarray([1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+            return np.asarray(
+                [1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float
+            )
 
         def objective_and_gradient_fun(self, params):
             residual = float(self.residual_fun(params)[0])
@@ -326,7 +346,9 @@ def test_gradient_diagnostic_surface_chunking_aggregates_raw_weighted_gradient(
 
     payload = json.loads((tmp_path / "gradient.json").read_text(encoding="utf-8"))
     expected_raw = (1.0 + 3.0 + 5.0) / 3.0
-    expected_raw_gradient = (np.asarray([2.0, 0.0]) + np.asarray([4.0, 0.0]) + np.asarray([6.0, 0.0])) / 3.0
+    expected_raw_gradient = (
+        np.asarray([2.0, 0.0]) + np.asarray([4.0, 0.0]) + np.asarray([6.0, 0.0])
+    ) / 3.0
     expected_residual = np.log1p(expected_raw)
     expected_residual_gradient = expected_raw_gradient / (1.0 + expected_raw)
     expected_cost_gradient = expected_residual * expected_residual_gradient
@@ -335,10 +357,14 @@ def test_gradient_diagnostic_surface_chunking_aggregates_raw_weighted_gradient(
     assert seen_surfaces == [0.45, 0.64, 0.78]
     assert payload["chunked_gradient"]["enabled"] is True
     assert payload["chunked_gradient"]["chunk_count"] == 3
-    assert payload["chunked_gradient"]["raw_weighted_residual"] == pytest.approx(expected_raw)
-    assert payload["chunked_gradient"]["raw_weighted_gradient_norm_l2"] == pytest.approx(
-        np.linalg.norm(expected_raw_gradient)
+    assert payload["chunked_gradient"]["raw_weighted_residual"] == pytest.approx(
+        expected_raw
     )
+    assert payload["chunked_gradient"][
+        "raw_weighted_gradient_norm_l2"
+    ] == pytest.approx(np.linalg.norm(expected_raw_gradient))
     assert payload["residual_norm_l2"] == pytest.approx(expected_residual)
-    assert payload["gradient_norm_l2"] == pytest.approx(np.linalg.norm(expected_cost_gradient))
+    assert payload["gradient_norm_l2"] == pytest.approx(
+        np.linalg.norm(expected_cost_gradient)
+    )
     assert payload["top_gradient_components"][0]["name"] == "rc01"

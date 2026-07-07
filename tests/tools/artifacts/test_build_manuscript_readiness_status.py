@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "build_manuscript_readiness_status.py"
+SCRIPT = ROOT / "tools" / "artifacts" / "build_manuscript_readiness_status.py"
 spec = importlib.util.spec_from_file_location(
     "build_manuscript_readiness_status", SCRIPT
 )
@@ -318,7 +318,9 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "docs/_static/stellarator_itg_optimization_comparison.png"
         in opt_lane["supporting_artifacts"]
     )
-    assert "Do not use the reduced synthetic surface comparison" in opt_lane["next_action"]
+    assert (
+        "Do not use the reduced synthetic surface comparison" in opt_lane["next_action"]
+    )
     assert lanes["Production solver-objective geometry gradients"]["status"] == "closed"
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
@@ -400,9 +402,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     )
     assert (
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json"
-        in lanes["Production solver-objective geometry gradients"][
-            "primary_artifacts"
-        ]
+        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
     )
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][

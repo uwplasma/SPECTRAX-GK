@@ -7,8 +7,15 @@ import sys
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[3] / "tools" / "build_vmec_optimization_candidate_screen_gate.py"
-    spec = importlib.util.spec_from_file_location("build_vmec_optimization_candidate_screen_gate", path)
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "tools"
+        / "artifacts"
+        / "build_vmec_optimization_candidate_screen_gate.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_vmec_optimization_candidate_screen_gate", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -17,13 +24,19 @@ def _load_tool_module():
     return module
 
 
-def _write_spectrum(path: Path, rows: list[tuple[float, float, float, float, float]]) -> None:
+def _write_spectrum(
+    path: Path, rows: list[tuple[float, float, float, float, float]]
+) -> None:
     lines = ["ky,gamma,omega,kperp_eff2,heat_flux_weight_total"]
-    lines.extend(f"{ky},{gamma},{omega},{kperp},{heat}" for ky, gamma, omega, kperp, heat in rows)
+    lines.extend(
+        f"{ky},{gamma},{omega},{kperp},{heat}" for ky, gamma, omega, kperp, heat in rows
+    )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(tmp_path: Path) -> None:
+def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     spectrum = tmp_path / "bad.csv"
     _write_spectrum(
@@ -43,7 +56,9 @@ def test_candidate_screen_rejects_nonpositive_kperp_even_with_large_growth(tmp_p
     assert row["max_gamma"] == 1.2
 
 
-def test_candidate_screen_accepts_positive_metric_launch_candidate(tmp_path: Path) -> None:
+def test_candidate_screen_accepts_positive_metric_launch_candidate(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     spectrum = tmp_path / "good.csv"
     _write_spectrum(

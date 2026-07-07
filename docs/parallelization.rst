@@ -121,7 +121,7 @@ Regenerate the closure status after refreshing any scaling artifact:
 
 .. code-block:: bash
 
-   python tools/build_parallelization_completion_status.py
+   python tools/artifacts/build_parallelization_completion_status.py
 
 The lower-level decomposition-contract status is generated separately. It is
 useful when editing orchestration code because it checks deterministic shard
@@ -130,7 +130,7 @@ rerunning large profiles.
 
 .. code-block:: bash
 
-   python tools/build_parallel_decomposition_status.py
+   python tools/artifacts/build_parallel_decomposition_status.py
 
 .. image:: _static/parallel_decomposition_status.png
    :alt: Parallel decomposition contract status
