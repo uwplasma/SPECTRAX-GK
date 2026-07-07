@@ -564,13 +564,6 @@ Benchmark Defaults
 .. automodule:: spectraxgk.validation.benchmarks.defaults
    :members:
 
-Benchmark Scan Policies
------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.scan
-   :members:
-   :private-members:
-
 Benchmark Secondary Workflow
 ----------------------------
 

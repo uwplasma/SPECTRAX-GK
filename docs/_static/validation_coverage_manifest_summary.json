@@ -75,12 +75,12 @@
     "spectraxgk.parallel.__init__",
     "spectraxgk.parallel.decomposition"
   ],
-  "n_direct_modules": 96,
+  "n_direct_modules": 95,
   "n_excluded_modules": 21,
   "n_high_priority_open": 74,
-  "n_modules": 96,
+  "n_modules": 95,
   "n_owned_modules": 175,
-  "n_package_modules": 292,
+  "n_package_modules": 291,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -361,7 +361,6 @@
     "spectraxgk.validation.benchmarks.defaults": [
       "spectraxgk.diagnostics.normalization"
     ],
-    "spectraxgk.validation.benchmarks.scan": [],
     "spectraxgk.workflows.cases": [
       "spectraxgk.workflows.demo",
       "spectraxgk.workflows.linear",
@@ -841,20 +840,6 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmarks.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "medium",
-      "coverage_target_percent": 95.0,
-      "module": "spectraxgk.validation.benchmarks.scan",
-      "n_artifacts": 2,
-      "n_fast_tests": 2,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 2,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/validation/benchmarks/scan.py",
       "status": "active"
     },
     {

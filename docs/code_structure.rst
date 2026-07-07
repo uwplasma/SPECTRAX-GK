@@ -690,18 +690,14 @@ one long branch.
 The benchmark helper split now uses focused domain modules directly.
 Benchmark case presets live directly in ``spectraxgk.config`` so user-facing
 configuration objects do not depend on the temporary validation package.
-Benchmark initial conditions, reference data containers, CSV loaders, species
-parameter policy, normalization constants, Krylov defaults, and solver-selection
-policy live in ``spectraxgk.validation.benchmarks.defaults``. Reference data containers,
-CSV loaders, normalization constants, Krylov defaults, and solver-selection
-policy live in ``spectraxgk.validation.benchmarks.defaults``. Benchmark species-to-``LinearParams`` construction, reference
-hypercollision/end-damping policy, reference containers, normalization constants,
-Krylov defaults, and solver-selection policy live in
-``spectraxgk.validation.benchmarks.defaults``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``. Scan batching and
-scan-window policies live in ``spectraxgk.validation.benchmarks.scan``. Benchmark
-solver-selection policies live with Krylov defaults in
-``spectraxgk.validation.benchmarks.defaults``. Import-identity tests pin the old
-helper symbols to the new modules before larger benchmark-family runners are
+Benchmark initial conditions, reference containers and CSV loaders, species-to-
+``LinearParams`` construction, reference hypercollision/end-damping policy,
+normalization constants, Krylov defaults, solver-selection policy, scan
+batching, and scan-window policy live in
+``spectraxgk.validation.benchmarks.defaults``. Fit-signal selection and
+diagnostic growth-rate normalization live in
+``spectraxgk.diagnostics.growth_rates``. Import-identity tests pin the old helper
+symbols to their consolidated owners before larger benchmark-family runners are
 moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.validation.benchmarks.kbm_beta``,
 ``spectraxgk.validation.benchmarks.kbm_linear``, and

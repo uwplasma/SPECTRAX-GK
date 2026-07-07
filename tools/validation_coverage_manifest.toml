@@ -1359,38 +1359,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.validation.benchmarks.scan"
-path = "src/spectraxgk/validation/benchmarks/scan.py"
-owner_lane = "pure benchmark scan-window, batching, and fit-signal policies"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "Cyclone, ETG, TEM, kinetic-electron, and KBM scan runner contracts",
-  "benchmark fit-window policies used by release atlas generation",
-]
-physics_contracts = [
-  "fit-signal selectors preserve phi/density ambiguity explicitly",
-  "mode-only scan saves use direct extraction methods instead of projection-only policies",
-]
-numerics_contracts = [
-  "explicit fit windows fall back to auto windows when undersampled",
-  "fixed-shape ky batching is disabled for array-valued per-point controls",
-]
-fast_tests = [
-  "tests/validation/benchmarks/test_benchmark_contracts.py",
-  "tests/validation/benchmarks/test_benchmarks_helpers.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_core_linear_atlas.png",
-  "docs/_static/validation_gate_index.json",
-]
-next_tests = [
-  "add branch-level parity fixtures for every scan runner wrapper",
-  "move benchmark figure manifest policy after solver orchestration is smaller",
-]
-
-[[modules]]
 module = "spectraxgk.validation.benchmarks.defaults"
 path = "src/spectraxgk/validation/benchmarks/defaults.py"
 owned_modules = [

@@ -244,7 +244,7 @@ Benchmark runner internals
 
 The public benchmark surface remains ``spectraxgk.benchmarks``. Shared
 scan policies that are easy to test without launching a solver live in
-``spectraxgk.validation.benchmarks.scan``: fit-signal key validation, mode-only extraction
+``spectraxgk.validation.benchmarks.defaults``: fit-signal key validation, mode-only extraction
 coercion, explicit-window fallback, and fixed-shape ``k_y`` batching
 eligibility. The runner module imports those policies so Cyclone, ETG,
 kinetic-electron, TEM, and KBM scans keep the same window and ordering

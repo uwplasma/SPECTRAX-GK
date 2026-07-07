@@ -183,7 +183,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "nonlinear helper module", "src/spectraxgk/operators/nonlinear/policies.py"
         ),
         EvidenceCheck(
-            "benchmark scan module", "src/spectraxgk/validation/benchmarks/scan.py"
+            "benchmark policy module", "src/spectraxgk/validation/benchmarks/defaults.py"
         ),
         EvidenceCheck(
             "diagnostics channel module", "src/spectraxgk/diagnostics/channels.py"

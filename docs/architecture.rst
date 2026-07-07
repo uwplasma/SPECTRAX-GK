@@ -37,7 +37,7 @@ Core modules
 - ``spectraxgk.workflows.runtime.orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable public-facade seams.
 - ``spectraxgk.validation.benchmarks.defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
 - ``spectraxgk.validation.benchmarks.defaults`` / ``spectraxgk.diagnostics.growth_rates``: reference data loaders, result containers, fitting policies, and benchmark species policies.
-- ``spectraxgk.validation.benchmarks.scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
+- ``spectraxgk.validation.benchmarks.defaults``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
 - ``spectraxgk.benchmarks``: public benchmark runners and stable import surface.
 - ``spectraxgk.artifacts.plotting``: reusable, publication-ready plotting utilities.
 

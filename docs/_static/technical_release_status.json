@@ -382,9 +382,9 @@
         },
         {
           "exists": true,
-          "name": "benchmark scan module",
+          "name": "benchmark policy module",
           "passed": true,
-          "path": "src/spectraxgk/validation/benchmarks/scan.py",
+          "path": "src/spectraxgk/validation/benchmarks/defaults.py",
           "required": true,
           "snippet": null
         },
