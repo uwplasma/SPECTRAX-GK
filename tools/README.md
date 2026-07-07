@@ -17,6 +17,18 @@ roles:
 - `campaigns`: documented long-run launch or postprocess helpers that are still
   part of an active validation or optimization lane.
 
+Top-level `tools/*.py` is a temporary migration area. New scripts should not be
+added there. Existing flat scripts should be classified as follows:
+
+| Current kind | Destination |
+| --- | --- |
+| `generate_*` artifact/gate refreshers | `tools/artifacts/` if they write reviewed docs/readme artifacts; `tools/release/` only if CI/release calls them as gates. |
+| `benchmark_*` reproducibility drivers | `benchmarks/` when user-facing and small; `tools/profiling/` when they are engineering profilers. |
+| `compress_*` image helpers | one maintained release/artifact compression entry point; delete redundant wrappers. |
+| `make_figures.py`, `make_tables.py`, `make_benchmark_atlas.py` | manifest-driven builders under `tools/artifacts/` after docs commands are updated. |
+| `digitize_*`, `derive_*` reference helpers | `tools/artifacts/` or `tools/comparison/`, depending on whether the output is a docs artifact or external-reference comparison. |
+| diagnostic probes such as `ky_diagnostics.py` | `tools/comparison/` only if actively used for parity work; otherwise remove from `main`. |
+
 Move or delete scripts that are only local probes, historical audits, blocked
 campaign launchers, or one-off debugging helpers. If a removed script may be
 useful later, keep it outside `main` in a draft PR or experiment branch rather

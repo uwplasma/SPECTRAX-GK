@@ -607,6 +607,21 @@ The remaining flat-tool disposition is:
   into manifest-driven artifact builders or keep temporarily as compatibility
   entry points until docs scripts are updated.
 
+Current flat-tool audit:
+
+| Family | Current files | Decision |
+| --- | ---: | --- |
+| `generate_*` artifact/gate generators | 25 | Move reviewed docs/readme artifact generators to `tools/artifacts`; move CI/release gates to `tools/release`; delete unreferenced generators after checking tests/manifests. |
+| `benchmark_*` scripts | 4 | Move small user-facing benchmark drivers to `benchmarks/performance`; move engineering profilers to `tools/profiling`; delete unreferenced experiments. |
+| `compress_*` helpers | 3 | Collapse to one maintained compression entry point or move release-specific wrappers to `tools/artifacts`. |
+| `make_*`, `derive_*`, `digitize_*` builders | 7 | Move to `tools/artifacts` or `tools/comparison` and merge duplicated table/figure policy. |
+| diagnostic helpers | 4 | Move `dump_rhs_terms.py` to `tools/comparison` if still used for parity diagnostics; delete or quarantine no-reference probes such as `ky_diagnostics.py`, `etg_eigenspectrum.py`, and stale resolution sweeps unless docs/tests prove ownership. |
+| VMEC metadata patch helper | 1 | Move to `tools/campaigns` or a geometry utility only if it remains part of documented VMEC-JAX workflows; otherwise quarantine. |
+
+The next tool tranche should reduce flat root scripts from 45 to about 15-20
+without changing solver behavior. The follow-up tranche should merge duplicate
+artifact builders and drive total tool scripts below 100.
+
 Suggested target file budget:
 
 | Tool area | Target files |
