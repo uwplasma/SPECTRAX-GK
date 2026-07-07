@@ -435,8 +435,8 @@ Phase 1: introduce protocols and containers
   species-to-``LinearParams`` construction and reference hypercollision policy,
   ``spectraxgk.diagnostics.growth_rates`` owns fit-signal and diagnostic
   normalization policies, ``spectraxgk.validation.benchmarks.scan`` owns scan batching, streaming windows,
-  scan-window policy, and ``spectraxgk.validation.benchmarks.solver_policy`` owns
-  branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``,
+  scan-window policy, and ``spectraxgk.validation.benchmarks.defaults`` owns
+  Krylov defaults plus branch-selection policies. ``spectraxgk.validation.benchmarks.cyclone_linear``,
   ``spectraxgk.validation.benchmarks.cyclone_scan``,
   ``spectraxgk.validation.benchmarks.kbm_beta``,
   ``spectraxgk.validation.benchmarks.kbm_linear``,

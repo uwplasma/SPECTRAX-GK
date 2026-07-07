@@ -568,13 +568,6 @@ Benchmark Initialization
 Benchmark Fit Signals
 ---------------------
 
-Benchmark Solver Policies
--------------------------
-
-.. automodule:: spectraxgk.validation.benchmarks.solver_policy
-   :members:
-   :private-members:
-
 Benchmark Reference Data
 ------------------------
 

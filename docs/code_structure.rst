@@ -694,10 +694,10 @@ Benchmark initial conditions and reference data live in
 ``spectraxgk.validation.benchmarks.initialization`` and
 ``spectraxgk.validation.benchmarks.reference``. Benchmark species-to-``LinearParams``
 construction and reference hypercollision/end-damping policy live in
-``spectraxgk.validation.benchmarks.species``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``; scan batching and
-solver-selection policies live in
-``spectraxgk.validation.benchmarks.scan``; solver-selection policies live in
-``spectraxgk.validation.benchmarks.solver_policy``. Import-identity tests pin the old
+``spectraxgk.validation.benchmarks.species``. Fit-signal selection lives in ``spectraxgk.diagnostics.growth_rates``. Scan batching and
+scan-window policies live in ``spectraxgk.validation.benchmarks.scan``. Benchmark
+solver-selection policies live with Krylov defaults in
+``spectraxgk.validation.benchmarks.defaults``. Import-identity tests pin the old
 helper symbols to the new modules before larger benchmark-family runners are
 moved. KBM beta-scan, single-point, and ky-scan implementations live in
 ``spectraxgk.validation.benchmarks.kbm_beta``,

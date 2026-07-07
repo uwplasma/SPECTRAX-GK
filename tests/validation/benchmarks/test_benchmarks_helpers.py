@@ -34,7 +34,7 @@ from spectraxgk.validation.benchmarks.reference import (
     load_kbm_reference,
     load_tem_reference,
 )
-from spectraxgk.validation.benchmarks.solver_policy import (
+from spectraxgk.validation.benchmarks.defaults import (
     _kbm_use_multi_target_krylov,
     _midplane_index,
     select_kbm_solver_auto,
