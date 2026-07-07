@@ -32,6 +32,20 @@ than shipping it as part of the maintained repository.
 - Raw generated outputs, NetCDF files, logs, scratch directories, or profiler
   traces. Keep those ignored or attach them to releases when needed.
 
+## Inventory
+
+Use the maintained inventory tool before large moves or deletions:
+
+```bash
+python tools/release/inventory_repository.py \
+  --json-out tools_out/repository_inventory.json \
+  --summary-json-out tools_out/repository_inventory_summary.json
+```
+
+The inventory classifies tracked files by role and recommended action. It is a
+planning aid, not a substitute for checking imports, docs references, tests, and
+release manifests before deleting or moving files.
+
 ## Refactor Gate
 
 `tools/package_architecture_manifest.toml` tracks the current Python-file

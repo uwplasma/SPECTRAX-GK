@@ -33,7 +33,7 @@ Last audited: 2026-07-07 on `main`.
 - Current tracked file counts:
   - `src/spectraxgk`: 351 Python files after retiring the reduced cETG path.
   - `tests`: 320 Python files after deleting cETG/reduced-model tests.
-  - `tools`: 264 Python files after deleting the reduced-model parser tool.
+  - `tools`: 262 Python files after adding the inventory tool and deleting three unreferenced historical tools.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 13 tracked files, 7 Python files, about 1k lines.
 - Source-package Python file counts by domain:
@@ -76,7 +76,7 @@ usable codebase.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 351 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
 | Test Python files | 320 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 264 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Tool Python files | 262 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
 | `src/spectraxgk/validation` package | 88 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
@@ -101,7 +101,7 @@ The highest-impact reductions are now clear:
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
 | Validation in `src` | 88 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Flat `tools/` | 264 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
+| Flat `tools/` | 261 Python scripts in one directory | Create purpose folders, merge duplicate builders/checkers, delete probes/debug scripts | Easier release/artifact ownership and fewer tests |
 | Flat `tests/` | 139 files still at test root after first move | Move by domain, merge one-file-per-script tests into parametrized suites | Lower test navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
@@ -135,7 +135,7 @@ Audited on 2026-07-07 after commit `8fa2332c`:
   biggest root files are historical aggregate tests such as
   `test_runtime_runner.py`, `test_benchmarks_runner_branches.py`,
   `test_runtime_helpers.py`, `test_benchmarks.py`, and `test_cli.py`.
-- `tools/` still has 264 flat Python scripts. Prefix families show the actual
+- `tools/` still has 261 flat Python scripts. Prefix families show the actual
   consolidation route: 57 `build_*`, 33 `plot_*`, 25 `check_*`, 25
   `compare_*`, 25 `generate_*`, 20 `profile_*`, 16 `write_*`, and 15 `run_*`
   scripts. These should become manifest-driven families, not hundreds of
@@ -908,6 +908,13 @@ Exit gates:
   clear unsupported-model error. Source Python files dropped from 357 to 351,
   test Python files from 322 to 320, tool Python files from 265 to 264, flat
   test files from 141 to 139, and flat tool scripts from 265 to 264.
+
+- 2026-07-07: added `tools/release/inventory_repository.py`, a reproducible
+  tracked-file inventory/classification tool for the consolidation plan. Removed
+  three unreferenced historical root tools (`calibrate_cyclone.py`,
+  `extract_cyclone_reference.py`, and `freeze_gx_big_eigenfunction_bundle.py`).
+  Tool Python files dropped from 264 to 262 and flat root tool scripts from 264
+  to 261; the architecture manifest baselines were tightened accordingly.
 
 ## Immediate Next Steps
 
