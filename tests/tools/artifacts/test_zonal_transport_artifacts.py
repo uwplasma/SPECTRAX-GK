@@ -92,8 +92,8 @@ def test_transport_audit_redesign_can_fail_on_required_redesign(
     )
 
 
-def test_plot_zonal_flow_response_from_output_main(tmp_path: Path, monkeypatch) -> None:
-    mod = load_artifact_tool("plot_zonal_flow_response_from_output")
+def test_plot_zonal_flow_response_output_subcommand(tmp_path: Path, monkeypatch) -> None:
+    mod = load_artifact_tool("plot_zonal_flow_response")
 
     data_path = tmp_path / "diag.out.nc"
     with nc.Dataset(data_path, "w") as ds:
@@ -106,7 +106,9 @@ def test_plot_zonal_flow_response_from_output_main(tmp_path: Path, monkeypatch) 
         )
 
     out = tmp_path / "zf_from_output.png"
-    monkeypatch.setattr(sys, "argv", [str(mod.__file__), str(data_path), "--out", str(out)])
+    monkeypatch.setattr(
+        sys, "argv", [str(mod.__file__), "output", str(data_path), "--out", str(out)]
+    )
 
     assert mod.main() == 0
     assert out.exists()
@@ -121,10 +123,10 @@ def test_plot_zonal_flow_response_from_output_main(tmp_path: Path, monkeypatch) 
     assert "zonal-energy proxy" in meta["notes"]
 
 
-def test_plot_zonal_flow_response_from_output_complex_mode_history(
+def test_plot_zonal_flow_response_output_subcommand_complex_mode_history(
     tmp_path: Path, monkeypatch
 ) -> None:
-    mod = load_artifact_tool("plot_zonal_flow_response_from_output")
+    mod = load_artifact_tool("plot_zonal_flow_response")
 
     data_path = tmp_path / "diag.out.nc"
     with nc.Dataset(data_path, "w") as ds:
@@ -145,6 +147,7 @@ def test_plot_zonal_flow_response_from_output_complex_mode_history(
         "argv",
         [
             str(mod.__file__),
+            "output",
             str(data_path),
             "--var",
             "Phi_zonal_mode_kxt",
@@ -165,6 +168,32 @@ def test_plot_zonal_flow_response_from_output_complex_mode_history(
     assert meta["damping_method"] == "combined_envelope"
     assert meta["frequency_method"] == "peak_spacing"
     assert "peak_fit_count" in meta
+
+
+def test_plot_zonal_flow_response_csv_subcommand(tmp_path: Path, monkeypatch) -> None:
+    mod = load_artifact_tool("plot_zonal_flow_response")
+
+    csv_path = tmp_path / "response.csv"
+    _write_csv(
+        csv_path,
+        [
+            {"t": 0.0, "response": 1.0},
+            {"t": 1.0, "response": 0.8},
+            {"t": 2.0, "response": 0.7},
+            {"t": 3.0, "response": 0.65},
+            {"t": 4.0, "response": 0.6},
+        ],
+    )
+    out = tmp_path / "zf_csv.png"
+    monkeypatch.setattr(
+        sys, "argv", [str(mod.__file__), "csv", str(csv_path), "--out", str(out)]
+    )
+
+    assert mod.main() == 0
+    assert out.exists()
+    meta = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert meta["initial_policy"] == "window_abs_mean"
+    assert "residual_level" in meta
 
 
 def test_build_zonal_flow_objective_gate_writes_diagnostic_artifacts(

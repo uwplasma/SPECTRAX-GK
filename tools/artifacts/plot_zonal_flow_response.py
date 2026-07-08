@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plot a zonal-flow response trace and save reviewer-facing metrics."""
+"""Render zonal-flow response panels from CSV data or saved diagnostics."""
 
 from __future__ import annotations
 
@@ -9,21 +9,13 @@ from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.benchmarks import zonal_flow_response_metrics
 from spectraxgk.artifacts.plotting import zonal_flow_response_figure
+from spectraxgk.benchmarks import load_diagnostic_time_series, zonal_flow_response_metrics
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("csv", type=Path, help="CSV with columns t,response")
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=ROOT / "docs" / "_static" / "zonal_flow_response.png",
-        help="Output figure path.",
-    )
+def _add_metric_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--tail-fraction",
         type=float,
@@ -60,42 +52,38 @@ def parse_args() -> argparse.Namespace:
         default="peak_spacing",
         help="Frequency-fit convention used for the GAM oscillation.",
     )
-    parser.add_argument(
-        "--fit-window-tmin",
-        type=float,
-        default=None,
-        help="Optional lower fit-window bound.",
-    )
-    parser.add_argument(
-        "--fit-window-tmax",
-        type=float,
-        default=None,
-        help="Optional upper fit-window bound.",
-    )
+    parser.add_argument("--fit-window-tmin", type=float, default=None)
+    parser.add_argument("--fit-window-tmax", type=float, default=None)
     parser.add_argument(
         "--hilbert-trim-fraction",
         type=float,
         default=0.2,
         help="Fraction trimmed from both ends of a Hilbert-phase fit window.",
     )
-    parser.add_argument(
-        "--title",
-        default="Zonal-flow response",
-        help="Figure title.",
-    )
-    return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
-    data = np.genfromtxt(args.csv, delimiter=",", names=True, dtype=float)
-    names = set(data.dtype.names or ())
-    if {"t", "response"} - names:
-        raise ValueError("CSV must contain columns t,response")
+def _metric_payload(metrics) -> dict[str, object]:
+    return {
+        "initial_level": metrics.initial_level,
+        "initial_policy": metrics.initial_policy,
+        "residual_level": metrics.residual_level,
+        "residual_std": metrics.residual_std,
+        "response_rms": metrics.response_rms,
+        "gam_frequency": metrics.gam_frequency,
+        "gam_damping_rate": metrics.gam_damping_rate,
+        "damping_method": metrics.damping_method,
+        "frequency_method": metrics.frequency_method,
+        "peak_count": metrics.peak_count,
+        "peak_fit_count": metrics.peak_fit_count,
+        "tmin": metrics.tmin,
+        "tmax": metrics.tmax,
+        "fit_tmin": metrics.fit_tmin,
+        "fit_tmax": metrics.fit_tmax,
+    }
 
-    t = np.asarray(data["t"], dtype=float)
-    response = np.asarray(data["response"], dtype=float)
-    metrics = zonal_flow_response_metrics(
+
+def _metrics_from_args(args: argparse.Namespace, t: np.ndarray, response: np.ndarray):
+    return zonal_flow_response_metrics(
         t,
         response,
         tail_fraction=float(args.tail_fraction),
@@ -108,39 +96,153 @@ def main() -> None:
         fit_window_tmax=args.fit_window_tmax,
         hilbert_trim_fraction=float(args.hilbert_trim_fraction),
     )
-    fig, _axes = zonal_flow_response_figure(
-        t, response, metrics=metrics, title=args.title
-    )
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(args.out, dpi=220, bbox_inches="tight")
-    if args.out.suffix.lower() != ".pdf":
-        fig.savefig(args.out.with_suffix(".pdf"), bbox_inches="tight")
 
-    metrics_out = args.out.with_suffix(".json")
-    metrics_out.write_text(
-        json.dumps(
-            {
-                "initial_level": metrics.initial_level,
-                "initial_policy": metrics.initial_policy,
-                "residual_level": metrics.residual_level,
-                "residual_std": metrics.residual_std,
-                "response_rms": metrics.response_rms,
-                "gam_frequency": metrics.gam_frequency,
-                "gam_damping_rate": metrics.gam_damping_rate,
-                "damping_method": metrics.damping_method,
-                "frequency_method": metrics.frequency_method,
-                "peak_count": metrics.peak_count,
-                "peak_fit_count": metrics.peak_fit_count,
-                "tmin": metrics.tmin,
-                "tmax": metrics.tmax,
-                "fit_tmin": metrics.fit_tmin,
-                "fit_tmax": metrics.fit_tmax,
-            },
-            indent=2,
-            sort_keys=True,
-        )
+
+def _save_panel(
+    *,
+    t: np.ndarray,
+    response: np.ndarray,
+    out: Path,
+    title: str,
+    metrics,
+) -> None:
+    fig, _axes = zonal_flow_response_figure(t, response, metrics=metrics, title=title)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=220, bbox_inches="tight")
+    if out.suffix.lower() != ".pdf":
+        fig.savefig(out.with_suffix(".pdf"), bbox_inches="tight")
+
+
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _run_csv(args: argparse.Namespace) -> int:
+    data = np.genfromtxt(args.csv, delimiter=",", names=True, dtype=float)
+    names = set(data.dtype.names or ())
+    if {"t", "response"} - names:
+        raise ValueError("CSV must contain columns t,response")
+
+    t = np.asarray(data["t"], dtype=float)
+    response = np.asarray(data["response"], dtype=float)
+    metrics = _metrics_from_args(args, t, response)
+    _save_panel(t=t, response=response, out=args.out, title=args.title, metrics=metrics)
+    _write_json(args.out.with_suffix(".json"), _metric_payload(metrics))
+    return 0
+
+
+def _run_output(args: argparse.Namespace) -> int:
+    series = load_diagnostic_time_series(
+        args.output,
+        variable=args.var,
+        kx_index=args.kx_index,
+        component=args.component,
+        align_phase=bool(args.align_phase),
     )
+    if np.iscomplexobj(series.values):
+        raise ValueError(
+            "zonal-response plotting requires a real-valued extracted series; choose component real/imag/abs"
+        )
+
+    metrics = _metrics_from_args(args, series.t, series.values)
+    title = args.title or f"{args.var} response"
+    _save_panel(
+        t=series.t,
+        response=series.values,
+        out=args.out,
+        title=title,
+        metrics=metrics,
+    )
+
+    csv_out = args.csv_out if args.csv_out is not None else args.out.with_suffix(".csv")
+    csv_out.parent.mkdir(parents=True, exist_ok=True)
+    np.savetxt(
+        csv_out,
+        np.column_stack([series.t, series.values]),
+        delimiter=",",
+        header="t,response",
+        comments="",
+    )
+
+    payload = {
+        "source_path": series.source_path,
+        "variable": series.variable,
+        **_metric_payload(metrics),
+        "notes": (
+            "Phi2_zonal_t is a zonal-energy proxy. For manuscript-grade Rosenbluth-Hinton/GAM work, "
+            "prefer Phi_zonal_mode_kxt with --kx-index and --align-phase."
+        ),
+    }
+    _write_json(args.out.with_suffix(".json"), payload)
+    return 0
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    csv_parser = subparsers.add_parser("csv", help="Plot a t,response CSV file.")
+    csv_parser.add_argument("csv", type=Path, help="CSV with columns t,response")
+    csv_parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "docs" / "_static" / "zonal_flow_response.png",
+        help="Output figure path.",
+    )
+    csv_parser.add_argument("--title", default="Zonal-flow response")
+    _add_metric_args(csv_parser)
+    csv_parser.set_defaults(func=_run_csv)
+
+    output_parser = subparsers.add_parser(
+        "output", help="Extract a response series from a saved diagnostics file."
+    )
+    output_parser.add_argument(
+        "output", type=Path, help="SPECTRAX-GK out.nc diagnostics file"
+    )
+    output_parser.add_argument(
+        "--var",
+        default="Phi2_zonal_t",
+        help="Diagnostics variable to extract. Use Phi_zonal_mode_kxt for signed mode history.",
+    )
+    output_parser.add_argument(
+        "--kx-index",
+        type=int,
+        default=None,
+        help="Select kx index for 2D time-by-kx diagnostics.",
+    )
+    output_parser.add_argument(
+        "--component",
+        choices=("real", "imag", "abs", "complex"),
+        default="real",
+        help="Component to extract from complex diagnostics.",
+    )
+    output_parser.add_argument(
+        "--align-phase",
+        action="store_true",
+        help="Rotate complex diagnostics so the first nonzero sample is real and positive.",
+    )
+    output_parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "docs" / "_static" / "zonal_flow_response_from_output.png",
+        help="Output figure path.",
+    )
+    output_parser.add_argument(
+        "--csv-out",
+        type=Path,
+        default=None,
+        help="Optional CSV path for the extracted time series. Defaults next to --out.",
+    )
+    output_parser.add_argument("--title", default=None)
+    _add_metric_args(output_parser)
+    output_parser.set_defaults(func=_run_output)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    return int(args.func(args))
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

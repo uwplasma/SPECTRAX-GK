@@ -2855,3 +2855,9 @@ following:
   standalone implementation shard. Updated VMEC helper tests, mypy overrides,
   validation coverage ownership, and differentiable-refactor manifests. Source
   Python files dropped to 275, and the topology baseline was tightened.
+
+- 2026-07-08: consolidated zonal-flow response plotting entry points into
+  `tools/artifacts/plot_zonal_flow_response.py` with explicit `csv` and
+  `output` modes, deleting the old output-only wrapper. Updated docs and
+  artifact tests to exercise both input adapters. Tool Python files dropped to
+  231, and the topology baseline was tightened.

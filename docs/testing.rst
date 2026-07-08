@@ -228,8 +228,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.diagnostics.zonal_validation.reference_residual_table`
 - :func:`spectraxgk.diagnostics.zonal_validation.tail_trace_metrics`
 - :func:`spectraxgk.artifacts.plotting.zonal_flow_response_figure`
-- ``tools/artifacts/plot_zonal_flow_response.py``
-- ``tools/artifacts/plot_zonal_flow_response_from_output.py``
+- ``tools/artifacts/plot_zonal_flow_response.py`` with ``csv`` and ``output`` modes
 - ``tools/artifacts/generate_miller_zonal_response_panel.py``
 - ``tools/artifacts/generate_w7x_zonal_response_panel.py``
 - ``tools/artifacts/plot_w7x_zonal_contract_audit.py``
