@@ -15,7 +15,6 @@ from spectraxgk.benchmarks import EigenfunctionComparisonMetrics
 from support.paths import load_artifact_tool
 
 
-
 def test_qi_branch_refinement_gate_blocks_marginal_branch(tmp_path: Path) -> None:
     mod = load_artifact_tool("build_qi_branch_refinement_gate")
     spectrum = {
@@ -334,7 +333,7 @@ def test_build_summary_accepts_collision_skip_and_rejects_hypercollision_skip() 
 def test_selected_kbm_branch_candidate_rows_uses_only_selected_branch(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("generate_kbm_branch_gate_summary")
+    mod = load_artifact_tool("generate_linear_validation_gates")
     path = tmp_path / "candidates.csv"
     pd.DataFrame(
         {
@@ -356,7 +355,7 @@ def test_selected_kbm_branch_candidate_rows_uses_only_selected_branch(
 def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("generate_kbm_branch_gate_summary")
+    mod = load_artifact_tool("generate_linear_validation_gates")
     candidates = tmp_path / "candidates.csv"
     out = tmp_path / "summary.json"
     pd.DataFrame(
@@ -369,7 +368,10 @@ def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
         }
     ).to_csv(candidates, index=False)
 
-    assert mod.main(["--candidates", str(candidates), "--out", str(out)]) == 0
+    assert (
+        mod.main(["kbm-branch", "--candidates", str(candidates), "--out", str(out)])
+        == 0
+    )
 
     payload = json.loads(out.read_text())
     assert payload["case"] == "kbm_linear_branch_continuity"
@@ -384,7 +386,7 @@ def test_generate_kbm_branch_gate_summary_main_writes_strict_json(
 
 
 def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) -> None:
-    mod = load_artifact_tool("generate_kbm_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"
     pd.DataFrame(
         {
@@ -402,7 +404,7 @@ def test_selected_kbm_overlay_candidate_row_requires_selected_match(tmp_path) ->
 
 
 def test_selected_kbm_overlay_candidate_row_rejects_missing_ky(tmp_path) -> None:
-    mod = load_artifact_tool("generate_kbm_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
     path = tmp_path / "candidates.csv"
     pd.DataFrame(
         {
@@ -418,7 +420,7 @@ def test_selected_kbm_overlay_candidate_row_rejects_missing_ky(tmp_path) -> None
 
 
 def test_steps_for_fit_window_respects_stride_alignment() -> None:
-    mod = load_artifact_tool("generate_kbm_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
 
     steps = mod._steps_for_fit_window(
         fit_tmax=9.69, dt=0.01, fit_padding=0.5, sample_stride=2
@@ -429,7 +431,7 @@ def test_steps_for_fit_window_respects_stride_alignment() -> None:
 
 
 def test_kbm_eigenfunction_gate_report_uses_strict_publication_thresholds() -> None:
-    mod = load_artifact_tool("generate_kbm_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
 
     report = mod._kbm_eigenfunction_gate_report(
         EigenfunctionComparisonMetrics(overlap=0.63, relative_l2=0.79, phase_shift=0.0)
@@ -443,7 +445,7 @@ def test_kbm_eigenfunction_gate_report_uses_strict_publication_thresholds() -> N
 
 
 def test_load_convergence_series_from_resolution_column(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_observed_order_gate")
+    mod = load_artifact_tool("generate_linear_validation_gates")
     path = tmp_path / "conv.csv"
     pd.DataFrame(
         {"N": [16, 4, 8], "error": [1.0 / 16**2, 1.0 / 4**2, 1.0 / 8**2]}
@@ -465,7 +467,7 @@ def test_load_convergence_series_from_resolution_column(tmp_path: Path) -> None:
 
 
 def test_generate_observed_order_gate_main_writes_json_and_plot(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_observed_order_gate")
+    mod = load_artifact_tool("generate_linear_validation_gates")
     csv_path = tmp_path / "conv.csv"
     out_json = tmp_path / "conv.json"
     out_png = tmp_path / "conv.png"
@@ -477,6 +479,7 @@ def test_generate_observed_order_gate_main_writes_json_and_plot(tmp_path: Path) 
     assert (
         mod.main(
             [
+                "observed-order",
                 "--csv",
                 str(csv_path),
                 "--step-column",
@@ -504,7 +507,7 @@ def test_generate_observed_order_gate_main_writes_json_and_plot(tmp_path: Path) 
 
 
 def test_load_convergence_series_requires_one_step_source(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_observed_order_gate")
+    mod = load_artifact_tool("generate_linear_validation_gates")
     path = tmp_path / "conv.csv"
     pd.DataFrame({"h": [0.1, 0.05], "N": [10, 20], "err": [0.01, 0.0025]}).to_csv(
         path,

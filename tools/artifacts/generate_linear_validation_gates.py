@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Generate an observed-order gate report from a convergence CSV."""
+"""Generate linear-validation gate reports from existing artifacts.
+
+Subcommands:
+  observed-order  Build a convergence observed-order JSON/plot gate.
+  kbm-branch      Build a KBM branch-continuity JSON gate.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -19,18 +25,26 @@ from spectraxgk.benchmarks import (
     observed_order_gate_report,
 )
 
-
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CSV = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_subset.csv"
-DEFAULT_JSON = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_observed_order.json"
-DEFAULT_PNG = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_observed_order.png"
+DEFAULT_OBSERVED_CSV = REPO_ROOT / "docs" / "_static" / "cyclone_resolution_subset.csv"
+DEFAULT_OBSERVED_JSON = (
+    REPO_ROOT / "docs" / "_static" / "cyclone_resolution_observed_order.json"
+)
+DEFAULT_OBSERVED_PNG = (
+    REPO_ROOT / "docs" / "_static" / "cyclone_resolution_observed_order.png"
+)
+DEFAULT_KBM_CANDIDATES = (
+    REPO_ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"
+)
+DEFAULT_KBM_BRANCH_OUT = REPO_ROOT / "docs" / "_static" / "kbm_branch_gate_summary.json"
 
 
 def _json_clean(value: Any) -> Any:
+    """Return a strict-JSON-compatible copy with nonfinite numbers set to null."""
+
     if isinstance(value, dict):
         return {str(key): _json_clean(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -50,7 +64,7 @@ def load_convergence_series(
     error_column: str,
     absolute_error: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, list[dict[str, object]]]:
-    """Load ``h`` and error arrays from a convergence table."""
+    """Load effective step sizes and errors from a convergence table."""
 
     if (step_column is None) == (resolution_column is None):
         raise ValueError("Specify exactly one of step_column or resolution_column.")
@@ -100,6 +114,8 @@ def build_summary(
     max_final_error: float | None,
     absolute_error: bool = True,
 ) -> dict[str, object]:
+    """Build the JSON payload for an observed-order convergence gate."""
+
     h, err, rows = load_convergence_series(
         csv_path,
         step_column=step_column,
@@ -142,6 +158,8 @@ def write_observed_order_plot(
     title: str,
     min_order: float,
 ) -> None:
+    """Write a log-log convergence panel for an observed-order gate."""
+
     h = np.asarray(summary["step_sizes"], dtype=float)
     err = np.asarray(summary["errors"], dtype=float)
     asymptotic_order = float(summary["asymptotic_order"])
@@ -179,11 +197,88 @@ def write_observed_order_plot(
     plt.close(fig)
 
 
-def build_parser() -> argparse.ArgumentParser:
+def _branch_gate_report_from_selected_rows(
+    rows: list[dict[str, object]],
+    *,
+    max_rel_gamma_jump: float,
+    max_rel_omega_jump: float,
+    min_successive_overlap: float | None,
+) -> dict[str, object] | None:
+    from tools.comparison.compare_gx_kbm import _branch_gate_report_from_rows
+
+    return _branch_gate_report_from_rows(
+        rows,
+        max_rel_gamma_jump=max_rel_gamma_jump,
+        max_rel_omega_jump=max_rel_omega_jump,
+        min_successive_overlap=min_successive_overlap,
+    )
+
+
+def _coerce_bool(value: object) -> bool:
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if value is None:
+        return False
+    text = str(value).strip().lower()
+    return text in {"1", "true", "t", "yes", "y"}
+
+
+def selected_candidate_rows(path: Path) -> list[dict[str, object]]:
+    """Load selected branch rows from a KBM candidate table."""
+
+    table = pd.read_csv(path)
+    required = {"ky", "gamma", "omega", "selected"}
+    missing = sorted(required.difference(table.columns))
+    if missing:
+        raise ValueError(f"{path} is missing required columns: {', '.join(missing)}")
+    selected = table["selected"].map(_coerce_bool)
+    rows = table.loc[selected].sort_values("ky").to_dict(orient="records")
+    return [_json_clean(row) for row in rows]
+
+
+def build_kbm_branch_summary(
+    candidate_csv: Path,
+    *,
+    max_rel_gamma_jump: float,
+    max_rel_omega_jump: float,
+    min_successive_overlap: float | None,
+) -> dict[str, object]:
+    """Build the JSON payload for the selected KBM branch-continuity gate."""
+
+    rows = selected_candidate_rows(candidate_csv)
+    report = _branch_gate_report_from_selected_rows(
+        rows,
+        max_rel_gamma_jump=max_rel_gamma_jump,
+        max_rel_omega_jump=max_rel_omega_jump,
+        min_successive_overlap=min_successive_overlap,
+    )
+    payload: dict[str, object] = {
+        "case": "kbm_linear_branch_continuity",
+        "candidate_csv": str(candidate_csv),
+        "selected_count": len(rows),
+        "thresholds": {
+            "max_rel_gamma_jump": float(max_rel_gamma_jump),
+            "max_rel_omega_jump": float(max_rel_omega_jump),
+            "min_successive_overlap": min_successive_overlap,
+        },
+        "rows": rows,
+        "gate_report": report,
+        "gate_passed": None if report is None else bool(report["passed"]),
+        "notes": (
+            "Selected rows are taken from the KBM comparison candidate table. "
+            "The gate is intentionally a branch-identity check: adjacent gamma "
+            "and omega jumps should stay smooth, and successive eigenfunction "
+            "overlaps should remain high when those overlaps are available."
+        ),
+    }
+    return _json_clean(payload)
+
+
+def build_observed_order_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Write an observed-order gate report from a convergence CSV."
     )
-    parser.add_argument("--csv", type=Path, default=DEFAULT_CSV)
+    parser.add_argument("--csv", type=Path, default=DEFAULT_OBSERVED_CSV)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--step-column", default=None)
     group.add_argument("--resolution-column", default=None)
@@ -203,15 +298,27 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use signed errors instead of absolute values.",
     )
-    parser.add_argument("--out-json", type=Path, default=DEFAULT_JSON)
-    parser.add_argument("--out-png", type=Path, default=DEFAULT_PNG)
+    parser.add_argument("--out-json", type=Path, default=DEFAULT_OBSERVED_JSON)
+    parser.add_argument("--out-png", type=Path, default=DEFAULT_OBSERVED_PNG)
     parser.add_argument("--no-plot", action="store_true")
     parser.add_argument("--title", default="Cyclone Resolution Convergence")
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+def build_kbm_branch_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Write a KBM branch-continuity gate summary from selected candidate rows."
+    )
+    parser.add_argument("--candidates", type=Path, default=DEFAULT_KBM_CANDIDATES)
+    parser.add_argument("--out", type=Path, default=DEFAULT_KBM_BRANCH_OUT)
+    parser.add_argument("--max-rel-gamma-jump", type=float, default=0.5)
+    parser.add_argument("--max-rel-omega-jump", type=float, default=0.5)
+    parser.add_argument("--min-successive-overlap", type=float, default=0.95)
+    return parser
+
+
+def main_observed_order(argv: list[str] | None = None) -> int:
+    args = build_observed_order_parser().parse_args(argv)
     resolution_column = (
         args.resolution_column if args.resolution_column is not None else "Nm"
     )
@@ -244,6 +351,37 @@ def main(argv: list[str] | None = None) -> int:
     if not args.no_plot:
         print(f"Wrote {args.out_png}")
     return 0
+
+
+def main_kbm_branch(argv: list[str] | None = None) -> int:
+    args = build_kbm_branch_parser().parse_args(argv)
+    summary = build_kbm_branch_summary(
+        args.candidates,
+        max_rel_gamma_jump=float(args.max_rel_gamma_jump),
+        max_rel_omega_jump=float(args.max_rel_omega_jump),
+        min_successive_overlap=float(args.min_successive_overlap),
+    )
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    )
+    print(f"Wrote {args.out}")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    tokens = list(sys.argv[1:] if argv is None else argv)
+    if not tokens:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("command", choices=("observed-order", "kbm-branch"))
+        parser.print_help()
+        return 2
+    command, rest = tokens[0], tokens[1:]
+    if command == "observed-order":
+        return main_observed_order(rest)
+    if command == "kbm-branch":
+        return main_kbm_branch(rest)
+    raise SystemExit(f"unknown command: {command}")
 
 
 if __name__ == "__main__":

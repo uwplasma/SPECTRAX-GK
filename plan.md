@@ -2891,3 +2891,12 @@ following:
   and `periodic-streaming` subcommands. Preserved both build functions and
   artifact schemas for focused tests, updated docs and performance manifests,
   and tightened the tool topology baseline to 224.
+
+- 2026-07-08: consolidated linear validation artifact entry points into two
+  command-family tools: `tools/artifacts/generate_linear_reference_overlays.py`
+  with `kbm`/`w7x` modes, and
+  `tools/artifacts/generate_linear_validation_gates.py` with
+  `observed-order`/`kbm-branch` modes. Removed the four one-off overlay/gate
+  wrappers, updated docs and tests to the explicit subcommands, and tightened
+  the tool topology baseline to 222. The affected artifact shard and ruff
+  passed locally.

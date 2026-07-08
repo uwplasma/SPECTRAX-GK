@@ -33,7 +33,6 @@ from spectraxgk.workflows.runtime.config import (
 from support.paths import load_artifact_tool
 
 
-
 # W7-X TEM extension status assertions
 def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) -> None:
     spectrum = tmp_path / "w7x_spectrum.json"
@@ -158,7 +157,7 @@ def test_w7x_tem_extension_status_writes_artifacts(tmp_path: Path) -> None:
 
 # W7-X reference overlay assertions
 def test_w7x_reference_loader_rejects_nonfinite_bundle(tmp_path: Path) -> None:
-    mod = load_artifact_tool("generate_w7x_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
     bundle = tmp_path / "bad_w7x_ref.npz"
     save_eigenfunction_reference_bundle(
         bundle,
@@ -173,7 +172,7 @@ def test_w7x_reference_loader_rejects_nonfinite_bundle(tmp_path: Path) -> None:
 
 
 def test_w7x_eigenfunction_gate_report_uses_strict_publication_thresholds() -> None:
-    mod = load_artifact_tool("generate_w7x_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
 
     report = mod._w7x_eigenfunction_gate_report(
         EigenfunctionComparisonMetrics(overlap=0.50, relative_l2=0.80, phase_shift=0.0)
@@ -187,7 +186,7 @@ def test_w7x_eigenfunction_gate_report_uses_strict_publication_thresholds() -> N
 
 
 def test_w7x_overlay_main_writes_gate_artifacts(tmp_path: Path, monkeypatch) -> None:
-    mod = load_artifact_tool("generate_w7x_reference_overlay")
+    mod = load_artifact_tool("generate_linear_reference_overlays")
     theta = np.linspace(-np.pi, np.pi, 32)
     reference = np.cos(theta) + 0.25j * np.sin(theta)
     bundle = tmp_path / "w7x_ref.npz"
@@ -235,6 +234,7 @@ def test_w7x_overlay_main_writes_gate_artifacts(tmp_path: Path, monkeypatch) -> 
 
     mod.main(
         [
+            "w7x",
             "--gx",
             str(tmp_path / "dummy.out.nc"),
             "--gx-input",

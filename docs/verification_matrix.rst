@@ -111,7 +111,7 @@ Closed raw-overlay diagnostic artifacts for the KBM lane:
 - ``docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv``
 - ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
 - ``docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json``
-- ``tools/artifacts/generate_kbm_reference_overlay.py``
+- ``tools/artifacts/generate_linear_reference_overlays.py kbm``
 
 The refreshed bounded-cost extraction produces normalized overlap
 ``0.999985`` and relative ``L^2`` mismatch ``0.00721`` against the frozen GX
@@ -126,7 +126,7 @@ observed-order gates for resolution or velocity-space convergence, and
 branch-continuity gates for adjacent ``gamma``/``omega`` jumps and successive
 eigenfunction overlap when overlap data are available. The tracked KBM
 candidate table now has a no-rerun summary path through
-``tools/artifacts/generate_kbm_branch_gate_summary.py`` and
+``tools/artifacts/generate_linear_validation_gates.py kbm-branch`` and
 ``docs/_static/kbm_branch_gate_summary.json``. That summary now uses the
 continuity-first selected branch and passes the strict checks:
 ``max_rel_gamma_jump ~= 0.388``, ``max_rel_omega_jump ~= 0.320``, and no
@@ -134,7 +134,7 @@ successive-overlap deficit.
 
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic
-``tools/artifacts/generate_observed_order_gate.py`` path now records this policy in JSON.
+``tools/artifacts/generate_linear_validation_gates.py observed-order`` path now records this policy in JSON.
 The tracked Cyclone velocity-space convergence artifact
 ``docs/_static/cyclone_resolution_observed_order.json`` is closed on an
 office/GPU ``ky=0.30`` time-path sweep with all pairwise orders positive,
@@ -218,7 +218,7 @@ from ``docs/_static/hsx_linear_t2_lastvalue.csv`` because the final
 ``(gamma, omega)`` values are much tighter than the whole-window average.
 
 The W7-X raw eigenfunction overlay is now closed at ``k_y rho_i = 0.3`` using
-``tools/artifacts/generate_w7x_reference_overlay.py``. The frozen GX bundle was refreshed
+``tools/artifacts/generate_linear_reference_overlays.py w7x``. The frozen GX bundle was refreshed
 from the finite ``t≈2`` raw field history because the older bundle source
 contained non-finite late-time fields. The matched imported-geometry
 SPECTRAX-GK extraction uses the validated ``z_index`` diagnostic contract and
