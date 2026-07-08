@@ -772,7 +772,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py hermite-ladder --logical-devices 2
 
 The tracked artifact passes with zero ladder error and records an accompanying
 Hermite field-reduction error of ``1.9e-6``. This closes the communication and
@@ -838,7 +838,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming --logical-devices 2
 
 The tracked artifact passes with zero reported absolute and relative error.
 This is still a linear streaming microkernel gate, not a full linear RHS or

@@ -2884,3 +2884,10 @@ following:
   the existing build-function names for tests and profiling imports, updated
   docs and performance manifests, and tightened the tool topology baseline to
   226.
+
+- 2026-07-08: folded the Hermite streaming-ladder and periodic streaming
+  microkernel identity-gate tools into
+  `tools/artifacts/generate_velocity_parallel_gates.py` as `hermite-ladder`
+  and `periodic-streaming` subcommands. Preserved both build functions and
+  artifact schemas for focused tests, updated docs and performance manifests,
+  and tightened the tool topology baseline to 224.

@@ -1254,7 +1254,7 @@ performance claims:
   pattern to the production electrostatic quasineutrality density moment and
   writes ``docs/_static/electrostatic_field_reduce_gate.{png,pdf,csv,json}``.
   It is currently scoped to single-species periodic electrostatic cases.
-- ``tools/artifacts/generate_hermite_streaming_ladder_gate.py`` combines the Hermite
+- ``tools/artifacts/generate_velocity_parallel_gates.py hermite-ladder`` combines the Hermite
   exchange with the actual ``sqrt(m+1)`` / ``sqrt(m)`` streaming-ladder
   coefficients and writes
   ``docs/_static/hermite_streaming_ladder_gate.{png,pdf,csv,json}``. This is
@@ -1269,7 +1269,7 @@ performance claims:
   production diamagnetic-only linear RHS. It uses the Hermite-sharded
   electrostatic field reduction plus local ``m=0`` and ``m=2`` drive masks and
   writes ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``.
-- ``tools/artifacts/generate_periodic_streaming_microkernel_gate.py`` adds the periodic
+- ``tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming`` adds the periodic
   spectral parallel derivative and compares the shard-map path directly
   against ``spectraxgk.terms.operators.streaming_term``. Its artifact
   ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``

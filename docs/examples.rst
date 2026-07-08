@@ -230,7 +230,7 @@ The Hermite streaming-ladder coefficient gate is:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py hermite-ladder --logical-devices 2
 
 .. figure:: _static/hermite_streaming_ladder_gate.png
    :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
@@ -274,7 +274,7 @@ The periodic streaming microkernel gate adds that field-line derivative:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py periodic-streaming --logical-devices 2
 
 .. figure:: _static/periodic_streaming_microkernel_gate.png
    :alt: SPECTRAX-GK periodic streaming microkernel identity gate
