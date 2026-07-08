@@ -2797,3 +2797,15 @@ following:
   the new current counts: 277 source files, 229 test files, and 234 tool files.
   The final topology targets remain unchanged at 100 source, 99 tests, and
   99 tools.
+
+- 2026-07-08: consolidated the referenced zonal/transport artifact tests into
+  `tests/tools/artifacts/test_zonal_transport_artifacts.py`, covering matched
+  nonlinear audit redesign, zonal output plotting, reduced zonal objective
+  gate artifacts, and the Miller zonal response panel. Updated
+  `tools/validation_coverage_manifest.toml`,
+  `tools/differentiable_refactor_manifest.toml`, and
+  `docs/stellarator_optimization.rst` to point at the consolidated test. The
+  focused artifact test, validation-coverage manifest, differentiable-refactor
+  manifest, ruff, py_compile, and package architecture manifest passed locally.
+  Test Python files dropped to 226, and the topology baseline was tightened to
+  preserve that reduction.

@@ -2162,7 +2162,7 @@ The CI-scale gate is:
 
 .. code-block:: bash
 
-   pytest -q tests/unit/objectives/test_zonal_objective.py tests/tools/artifacts/test_build_zonal_flow_objective_gate.py
+   pytest -q tests/unit/objectives/test_zonal_objective.py tests/tools/artifacts/test_zonal_transport_artifacts.py
    python tools/artifacts/build_zonal_flow_objective_gate.py
 
 The test exercises the optimization contract that the literature motivates:
