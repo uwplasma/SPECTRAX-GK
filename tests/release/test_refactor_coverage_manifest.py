@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import re
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 
 import pytest
 
@@ -20,15 +19,7 @@ PUBLIC_PACKAGE_API_INIT_EXCEPTIONS = {
 
 
 def _load_tool_module():
-    path = ROOT / "tools" / "release" / "check_validation_coverage_manifest.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_validation_coverage_manifest_refactor", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_validation_coverage_manifest")
 
 
 def _write_package(tmp_path: Path, *modules: str) -> None:

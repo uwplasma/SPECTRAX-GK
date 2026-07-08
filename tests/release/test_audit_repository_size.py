@@ -2,26 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_release_tool
 from pathlib import Path
 import subprocess
-import sys
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "tools"
-        / "release"
-        / "audit_repository_size.py"
-    )
-    spec = importlib.util.spec_from_file_location("audit_repository_size", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("audit_repository_size")
 
 
 def test_repository_size_report_separates_tracked_and_local_roots(

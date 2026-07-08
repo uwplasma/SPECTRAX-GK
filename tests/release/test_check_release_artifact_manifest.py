@@ -2,29 +2,14 @@
 
 from __future__ import annotations
 
+from support.paths import load_release_tool
 import hashlib
-import importlib.util
 from pathlib import Path
-import sys
 import textwrap
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "tools"
-        / "release"
-        / "check_release_artifact_manifest.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "check_release_artifact_manifest", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_release_artifact_manifest")
 
 
 def _manifest(

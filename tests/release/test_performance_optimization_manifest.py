@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_release_tool
 import json
 from pathlib import Path
 
@@ -8,20 +8,7 @@ import pytest
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "tools"
-        / "release"
-        / "check_performance_optimization_manifest.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "check_performance_optimization_manifest", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_performance_optimization_manifest")
 
 
 def _manifest_text(*, tool: str, artifact: str, status: str = "active") -> str:

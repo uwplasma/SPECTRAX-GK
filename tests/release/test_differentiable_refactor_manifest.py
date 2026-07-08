@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import load_release_tool
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "release" / "check_differentiable_refactor_manifest.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_differentiable_refactor_manifest", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_differentiable_refactor_manifest")
 
 
 def test_differentiable_refactor_manifest_is_well_formed() -> None:

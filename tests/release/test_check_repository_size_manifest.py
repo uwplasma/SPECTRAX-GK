@@ -2,24 +2,14 @@
 
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_release_tool
 from pathlib import Path
 import subprocess
-import sys
 import textwrap
 
 
 def _load_tool_module(name: str):
-    tools_dir = Path(__file__).resolve().parents[2] / "tools" / "release"
-    sys.path.insert(0, str(tools_dir))
-    path = tools_dir / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool(name)
 
 
 def _init_repo(tmp_path: Path) -> None:

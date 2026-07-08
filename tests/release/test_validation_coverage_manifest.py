@@ -1,24 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import load_release_tool
 
 import pytest
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "release" / "check_validation_coverage_manifest.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_validation_coverage_manifest", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_validation_coverage_manifest")
 
 
 def _manifest_text(

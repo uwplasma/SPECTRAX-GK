@@ -2,28 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_release_tool
 import json
 from pathlib import Path
-import sys
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "tools"
-        / "release"
-        / "check_quasilinear_calibration_inputs.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "check_quasilinear_calibration_inputs", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_quasilinear_calibration_inputs")
 
 
 def _write_report(path: Path, artifact: str, *, split: str = "holdout") -> None:
