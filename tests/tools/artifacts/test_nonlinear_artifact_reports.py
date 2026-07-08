@@ -639,8 +639,8 @@ def test_campaign_builder_loads_json_and_admits_rbc_like_evidence(
     )
 
     report = load_artifact_tool(
-        "build_nonlinear_campaign_admission_report"
-    ).build_report(
+        "build_nonlinear_transport_admission"
+    ).build_campaign_report(
         prelaunch_report=prelaunch,
         landscape_admission=landscape,
         policy=VMECJAXNonlinearCampaignPolicy(),
@@ -665,8 +665,9 @@ def test_campaign_cli_writes_blocked_report_and_returns_nonzero(tmp_path: Path) 
     )
     out = tmp_path / "campaign.json"
 
-    rc = load_artifact_tool("build_nonlinear_campaign_admission_report").main(
+    rc = load_artifact_tool("build_nonlinear_transport_admission").main(
         [
+            "campaign",
             "--prelaunch-report",
             str(prelaunch),
             "--landscape-admission",
@@ -725,8 +726,8 @@ def test_build_report_selects_best_uncertainty_resolved_candidate(
     )
 
     report = load_artifact_tool(
-        "build_nonlinear_landscape_admission_report"
-    ).build_report(
+        "build_nonlinear_transport_admission"
+    ).build_landscape_report(
         baseline_ensemble=baseline,
         candidate_ensembles=[("+3%", p3), ("+6%", p6)],
         policy=VMECJAXNonlinearAuditPolicy(minimum_uncertainty_z_score=2.0),
@@ -750,8 +751,9 @@ def test_cli_writes_report_and_fails_closed_when_requested(tmp_path: Path) -> No
     out_json = tmp_path / "admission.json"
 
     assert (
-        load_artifact_tool("build_nonlinear_landscape_admission_report").main(
+        load_artifact_tool("build_nonlinear_transport_admission").main(
             [
+                "landscape",
                 "--baseline-ensemble",
                 str(baseline),
                 "--candidate-ensemble",

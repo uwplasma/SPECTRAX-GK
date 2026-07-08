@@ -1515,7 +1515,7 @@ the nonlinear campaign-admission report should be rebuilt from the matching
 strict-baseline reduced scan and the new replicated nonlinear landscape
 sidecars::
 
-   python tools/artifacts/build_nonlinear_campaign_admission_report.py \
+   python tools/artifacts/build_nonlinear_transport_admission.py campaign \
      --prelaunch-report path/to/current_prelaunch_gate.json \
      --landscape-admission path/to/current_landscape_admission.json \
      --out-json path/to/current_campaign_admission_report.json \
@@ -1552,9 +1552,9 @@ Implementation Map
 - Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/artifacts/build_qa_low_turbulence_comparison.py>`
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/artifacts/build_qa_low_turbulence_time_horizon_audit.py>`
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/artifacts/build_vmec_boundary_transport_landscape.py>`
-- Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/artifacts/build_nonlinear_landscape_admission_report.py>`
+- Nonlinear landscape admission builder: :download:`build_nonlinear_transport_admission.py landscape <../tools/artifacts/build_nonlinear_transport_admission.py>`
 - Reduced nonlinear-audit prelaunch builder: :download:`build_reduced_nonlinear_audit_prelaunch_report.py <../tools/artifacts/build_reduced_nonlinear_audit_prelaunch_report.py>`
-- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_campaign_admission_report.py <../tools/artifacts/build_nonlinear_campaign_admission_report.py>`
+- Nonlinear optimizer campaign-admission builder: :download:`build_nonlinear_transport_admission.py campaign <../tools/artifacts/build_nonlinear_transport_admission.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/campaigns/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/validation/stellarator/test_qa_low_turbulence.py`` and
   ``tests/validation/physics_gates/test_vmec_boundary_transport_landscape.py`` plus the nonlinear

@@ -67,7 +67,7 @@ Current tracked audit:
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 241 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 242 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Tools | 241 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -1974,6 +1974,17 @@ Exit gates:
 12. Bump, tag, release.
 
 ## Progress Log
+
+- 2026-07-08: consolidated the nonlinear landscape-admission and
+  campaign-admission wrappers into
+  `tools/artifacts/build_nonlinear_transport_admission.py` with explicit
+  `landscape` and `campaign` subcommands. The underlying physics/policy
+  functions stay in `spectraxgk.diagnostics.stellarator_transport_reports`
+  and `spectraxgk.objectives.vmec_transport_admission`; this removes two
+  one-off artifact entry points without changing admission semantics. Focused
+  nonlinear artifact tests, Python syntax, ruff, architecture, validation
+  coverage, release-artifact manifest, and stale-reference checks passed for
+  this tranche. Tool Python files dropped to 241.
 
 - 2026-07-08: consolidated standalone quasilinear spectrum, spectrum-shape,
   and UQ ensemble scaling plotters into `tools/artifacts/plot_quasilinear_diagnostics.py`
