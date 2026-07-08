@@ -1,25 +1,16 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import REPO_ROOT, load_campaign_tool
 import json
 from pathlib import Path
-import sys
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = REPO_ROOT
 SCRIPT = ROOT / "tools" / "campaigns" / "write_nonlinear_replicate_followup_campaign.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "write_nonlinear_replicate_followup_campaign", SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("write_nonlinear_replicate_followup_campaign")
 
 
 def _write_config(path: Path, *, label: str, axis: str, seed: int, dt: float) -> None:

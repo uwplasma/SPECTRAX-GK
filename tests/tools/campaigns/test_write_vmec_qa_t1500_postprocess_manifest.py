@@ -1,27 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_campaign_tool
 import json
 from pathlib import Path
-import sys
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "campaigns"
-        / "write_vmec_qa_t1500_postprocess_manifest.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "write_vmec_qa_t1500_postprocess_manifest", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("write_vmec_qa_t1500_postprocess_manifest")
 
 
 def test_manifest_contains_fail_closed_case_and_comparison_commands() -> None:

@@ -1,27 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_campaign_tool
 import json
 from pathlib import Path
-import sys
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "campaigns"
-        / "summarize_nonlinear_replicate_spread.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "summarize_nonlinear_replicate_spread", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("summarize_nonlinear_replicate_spread")
 
 
 def _write_summary_artifacts(root: Path, label: str, *, axis: str, mean: float) -> str:

@@ -1,32 +1,17 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import REPO_ROOT, load_campaign_tool
 import json
 from pathlib import Path
-import sys
 
 import numpy as np
 import pytest
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = REPO_ROOT
 
 
 def _load_tool_module():
-    path = (
-        ROOT
-        / "tools"
-        / "campaigns"
-        / "postprocess_nonlinear_gradient_control_mean_campaign.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "postprocess_nonlinear_gradient_control_mean_campaign", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("postprocess_nonlinear_gradient_control_mean_campaign")
 
 
 def _write_output(path: Path, mean: float, *, tmax: float = 100.0) -> None:
