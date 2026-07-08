@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import load_release_tool
 
 
-ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "release" / "check_vmec_boozer_aggregate_holdout_gate.py"
-spec = importlib.util.spec_from_file_location(
-    "check_vmec_boozer_aggregate_holdout_gate", SCRIPT
-)
-mod = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(mod)
+mod = load_release_tool("check_vmec_boozer_aggregate_holdout_gate")
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> Path:

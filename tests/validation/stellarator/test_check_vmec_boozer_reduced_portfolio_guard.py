@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import load_release_tool
 
 import pytest
 
@@ -14,14 +13,7 @@ from spectraxgk.objectives.portfolio_artifacts import (
 )
 
 
-ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "release" / "check_vmec_boozer_reduced_portfolio_guard.py"
-spec = importlib.util.spec_from_file_location(
-    "check_vmec_boozer_reduced_portfolio_guard", SCRIPT
-)
-mod = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(mod)
+mod = load_release_tool("check_vmec_boozer_reduced_portfolio_guard")
 
 
 def _row_artifact() -> dict[str, object]:

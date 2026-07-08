@@ -2,26 +2,17 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 import subprocess
 import sys
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "release" / "check_quasilinear_promotion_guardrails.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_quasilinear_promotion_guardrails", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_quasilinear_promotion_guardrails")
 
 
 def _write_doc(path: Path, text: str | None = None) -> None:

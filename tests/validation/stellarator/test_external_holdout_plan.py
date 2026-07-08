@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import csv
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_artifact_tool
 
 from tools.artifacts.build_external_vmec_holdout_runbook import (
     ExternalHoldoutScreenRow,
@@ -359,16 +357,7 @@ def test_runbook_blocks_marginal_linear_candidate_from_nonlinear_launch() -> Non
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "artifacts" / "build_external_vmec_holdout_runbook.py"
-    spec = importlib.util.spec_from_file_location(
-        "build_external_vmec_holdout_runbook", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_external_vmec_holdout_runbook")
 
 
 def test_runbook_tool_writes_replayable_artifacts(tmp_path: Path) -> None:

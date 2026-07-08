@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-import importlib.util
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import load_artifact_tool
 
 import numpy as np
 import pytest
@@ -36,15 +35,7 @@ from spectraxgk.diagnostics.transport_windows import (
 
 
 def _load_build_tool_module():
-    path = REPO_ROOT / "tools" / "artifacts" / "build_quasilinear_calibration_report.py"
-    spec = importlib.util.spec_from_file_location(
-        "build_quasilinear_calibration_report", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_quasilinear_calibration_report")
 
 
 def _valid_window_stats(case: str = "holdout") -> dict:

@@ -4,7 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_campaign_tool
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -23,15 +23,7 @@ DRIVER = ROOT / "tools" / "campaigns" / "vmec_jax_qa_low_turbulence_optimization
 
 
 def _load_driver():
-    spec = importlib.util.spec_from_file_location(
-        "vmec_jax_qa_low_turbulence_optimization", DRIVER
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return load_campaign_tool("vmec_jax_qa_low_turbulence_optimization")
 
 
 def test_solved_wout_candidate_gate_passes_valid_qa_branch() -> None:

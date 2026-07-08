@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import load_artifact_tool
 
 import numpy as np
 
@@ -34,35 +32,11 @@ def _fast_config() -> QALowTurbulenceConfig:
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "artifacts" / "build_qa_low_turbulence_comparison.py"
-    spec = importlib.util.spec_from_file_location(
-        "build_qa_low_turbulence_comparison", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_qa_low_turbulence_comparison")
 
 
 def _load_time_horizon_tool_module():
-    path = (
-        REPO_ROOT
-        / "tools"
-        / "artifacts"
-        / "build_qa_low_turbulence_time_horizon_audit.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "build_qa_low_turbulence_time_horizon_audit",
-        path,
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_qa_low_turbulence_time_horizon_audit")
 
 
 def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None:

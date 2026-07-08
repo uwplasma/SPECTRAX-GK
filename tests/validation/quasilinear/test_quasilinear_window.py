@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 import subprocess
 import sys
 
@@ -32,15 +31,7 @@ from spectraxgk.diagnostics.transport_windows import (
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "release" / "check_nonlinear_window_convergence.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_nonlinear_window_convergence", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_nonlinear_window_convergence")
 
 
 def _saturated_trace() -> tuple[np.ndarray, np.ndarray]:
