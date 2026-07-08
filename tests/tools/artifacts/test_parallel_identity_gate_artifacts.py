@@ -23,13 +23,9 @@ from tools.artifacts import (
     generate_linear_rhs_streaming_electrostatic_gate as electrostatic_gate,
 )
 from tools.artifacts import generate_linear_rhs_streaming_gate as streaming_gate
-from tools.artifacts import generate_logical_cpu_parallel_scan_gate as logical_scan_gate
-from tools.artifacts import generate_parallel_ky_scan_gate as ky_scan_gate
+from tools.artifacts import generate_parallel_identity_gate as parallel_identity_gate
 from tools.artifacts import (
     generate_periodic_streaming_microkernel_gate as periodic_gate,
-)
-from tools.artifacts import (
-    generate_quasilinear_runtime_parallel_gate as ql_parallel_gate,
 )
 from tools.artifacts import generate_velocity_field_reduce_gate as velocity_reduce_gate
 
@@ -591,8 +587,8 @@ def test_parallel_ky_scan_gate_builds_identity_summary(monkeypatch) -> None:
         )
         return result, 4.0 if ky_batch == 1 else 2.0
 
-    monkeypatch.setattr(ky_scan_gate, "_timed_cyclone_scan", fake_scan)
-    summary = ky_scan_gate.build_parallel_ky_scan_gate(
+    monkeypatch.setattr(parallel_identity_gate, "_timed_cyclone_scan", fake_scan)
+    summary = parallel_identity_gate.build_parallel_ky_scan_gate(
         ky_values=np.asarray([0.1, 0.2]),
         serial_batch=1,
         parallel_batch=2,
@@ -628,10 +624,10 @@ def test_logical_cpu_parallel_scan_gate_builds_identity_summary(monkeypatch) -> 
             "ql_proxy": (ky + 0.1) / (ky**2 + 0.08),
         }, 4.0 if batch_size == 1 else 2.0
 
-    monkeypatch.setattr(logical_scan_gate, "_select_devices", fake_devices)
-    monkeypatch.setattr(logical_scan_gate, "_timed_scan_model", fake_scan)
+    monkeypatch.setattr(parallel_identity_gate, "_select_devices", fake_devices)
+    monkeypatch.setattr(parallel_identity_gate, "_timed_scan_model", fake_scan)
 
-    summary = logical_scan_gate.build_logical_cpu_parallel_scan_gate(
+    summary = parallel_identity_gate.build_logical_cpu_parallel_scan_gate(
         ky_values=np.asarray([0.1, 0.2]),
         serial_batch=1,
         parallel_batch=2,
@@ -658,8 +654,8 @@ def test_quasilinear_runtime_parallel_gate_builds_identity_summary(monkeypatch) 
             4.0 if workers == 1 else 2.0
         )
 
-    monkeypatch.setattr(ql_parallel_gate, "_timed_runtime_scan", fake_timed_scan)
-    summary = ql_parallel_gate.build_quasilinear_runtime_parallel_gate(
+    monkeypatch.setattr(parallel_identity_gate, "_timed_runtime_scan", fake_timed_scan)
+    summary = parallel_identity_gate.build_quasilinear_runtime_parallel_gate(
         ky_values=np.asarray([0.1, 0.2]),
         workers=2,
         rtol=1.0e-12,
@@ -678,6 +674,16 @@ def test_quasilinear_runtime_parallel_gate_builds_identity_summary(monkeypatch) 
     assert summary["serial_parallel_metadata"]["requested_workers"] == 2
     assert len(summary["rows"]) == 2
     assert summary["rows"][0]["heat_flux_weight_total_abs_error"] == 0.0
+
+
+def _writer_name(prefix: str) -> str:
+    if prefix == "parallel_gate":
+        return "write_parallel_ky_scan_artifacts"
+    if prefix == "logical_cpu_parallel_gate":
+        return "write_logical_cpu_parallel_scan_artifacts"
+    if prefix == "ql_parallel_gate":
+        return "write_quasilinear_runtime_parallel_artifacts"
+    return "write_artifacts"
 
 
 @pytest.mark.parametrize(
@@ -856,7 +862,7 @@ def test_quasilinear_runtime_parallel_gate_builds_identity_summary(monkeypatch) 
             "abs_error",
         ),
         (
-            ky_scan_gate,
+            parallel_identity_gate,
             "parallel_gate",
             {
                 "rows": [
@@ -880,7 +886,7 @@ def test_quasilinear_runtime_parallel_gate_builds_identity_summary(monkeypatch) 
             "gamma_rel_error",
         ),
         (
-            logical_scan_gate,
+            parallel_identity_gate,
             "logical_cpu_parallel_gate",
             {
                 "rows": [
@@ -908,7 +914,7 @@ def test_quasilinear_runtime_parallel_gate_builds_identity_summary(monkeypatch) 
             "ql_rel_error",
         ),
         (
-            ql_parallel_gate,
+            parallel_identity_gate,
             "ql_parallel_gate",
             {
                 "identity_passed": True,
@@ -935,5 +941,5 @@ def test_parallel_identity_gate_writes_artifacts(
     tmp_path: Path, gate: Any, prefix: str, summary: dict[str, object], csv_token: str
 ) -> None:
     out = tmp_path / prefix
-    paths = gate.write_artifacts(summary, out)
+    paths = getattr(gate, _writer_name(prefix))(summary, out)
     _assert_standard_artifacts(paths, out, csv_token)

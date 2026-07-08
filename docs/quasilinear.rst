@@ -191,7 +191,7 @@ The shipped worker-identity gate for this path is generated with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python tools/artifacts/generate_quasilinear_runtime_parallel_gate.py \
+   JAX_ENABLE_X64=1 python tools/artifacts/generate_parallel_identity_gate.py quasilinear-runtime \
      --workers 2 \
      --ky 0.1 0.2 \
      --out-prefix docs/_static/quasilinear_runtime_parallel_gate

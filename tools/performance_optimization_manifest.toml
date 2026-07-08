@@ -220,8 +220,7 @@ cases = ["linear-scans", "ensemble-uq", "autodiff-sensitivities", "nonlinear-pil
 profiling_tools = [
   "tools/campaigns/run_device_parity_gate.py",
   "tools/artifacts/plot_scaling_speedup.py",
-  "tools/artifacts/generate_parallel_ky_scan_gate.py",
-  "tools/artifacts/generate_logical_cpu_parallel_scan_gate.py",
+  "tools/artifacts/generate_parallel_identity_gate.py",
   "tools/artifacts/generate_hermite_exchange_gate.py",
   "tools/artifacts/generate_velocity_field_reduce_gate.py",
   "tools/artifacts/generate_electrostatic_field_reduce_gate.py",
@@ -339,8 +338,8 @@ bottleneck_hypotheses = [
 ]
 optimization_actions = [
   "prioritize sharded linear scans, UQ ensembles, and autodiff sensitivity batches",
-  "use tools/artifacts/generate_parallel_ky_scan_gate.py as the release identity gate for fixed-shape ky batching",
-  "use tools/artifacts/generate_logical_cpu_parallel_scan_gate.py as the RuntimeParallelConfig/batch_map logical-CPU identity gate",
+  "use tools/artifacts/generate_parallel_identity_gate.py ky-scan as the release identity gate for fixed-shape ky batching",
+  "use tools/artifacts/generate_parallel_identity_gate.py logical-cpu as the RuntimeParallelConfig/batch_map logical-CPU identity gate",
   "use tools/artifacts/generate_hermite_exchange_gate.py as the first shard_map Hermite ghost-exchange communication gate",
   "use tools/artifacts/generate_velocity_field_reduce_gate.py as the shard_map velocity field-reduction/broadcast gate",
   "use tools/artifacts/generate_electrostatic_field_reduce_gate.py as the electrostatic quasineutrality field-reduction gate",

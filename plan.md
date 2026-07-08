@@ -1997,6 +1997,17 @@ Exit gates:
   stale-reference scan, ruff, py_compile, and mypy on the changed builder
   passed. Tool Python files dropped to 236.
 
+- 2026-07-08: consolidated the parallel identity gate artifact scripts into
+  `tools/artifacts/generate_parallel_identity_gate.py` with `ky-scan`,
+  `logical-cpu`, and `quasilinear-runtime` subcommands. The release artifact
+  basenames stay unchanged: `parallel_ky_scan_gate`,
+  `logical_cpu_parallel_scan_gate`, and `quasilinear_runtime_parallel_gate`.
+  The performance manifest now records the family script as the profiling tool
+  and keeps subcommand details in the optimization action text. Focused
+  parallel artifact tests, CLI help smoke tests for all subcommands, stale
+  script-reference scan, performance-manifest check, ruff, py_compile, and
+  mypy on the changed builder passed. Tool Python files dropped to 234.
+
 - 2026-07-08: converted the root `spectraxgk` package,
   `spectraxgk.api` registry, and `spectraxgk.parallel` facade to lazy
   public-export resolution. This preserves `__all__`,

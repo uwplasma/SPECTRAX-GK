@@ -159,7 +159,7 @@ For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_parallel_ky_scan_gate.py
+   python tools/artifacts/generate_parallel_identity_gate.py ky-scan
 
 .. figure:: _static/parallel_ky_scan_gate.png
    :alt: SPECTRAX-GK ky-batch parallelization identity gate
@@ -174,7 +174,7 @@ outputs, run:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+   python tools/artifacts/generate_parallel_identity_gate.py logical-cpu --logical-devices 2
 
 .. figure:: _static/logical_cpu_parallel_scan_gate.png
    :alt: SPECTRAX-GK logical CPU parallel scan identity gate

@@ -1229,12 +1229,12 @@ performance claims:
   identity for independent ``k_y`` and quasilinear/UQ rows, checks that
   nonlinear whole-state sharding embeds per-device profiler/profile payloads,
   and fails if docs detach speedup wording from the current artifact set.
-- ``tools/artifacts/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
+- ``tools/artifacts/generate_parallel_identity_gate.py ky-scan`` runs the actual linear solver
   serially and with fixed-shape ``k_y`` batching, then writes
   ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate
   requires numerical identity for growth rate and frequency; the speedup value
   is reported separately for engineering tracking.
-- ``tools/artifacts/generate_logical_cpu_parallel_scan_gate.py`` exercises
+- ``tools/artifacts/generate_parallel_identity_gate.py logical-cpu`` exercises
   ``RuntimeParallelConfig`` and ``batch_map`` over logical CPU devices with a
   structured JAX-native scan output. Its artifact
   ``docs/_static/logical_cpu_parallel_scan_gate.{png,pdf,csv,json}`` is an API

@@ -546,7 +546,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_parallel_ky_scan_gate.py
+   python tools/artifacts/generate_parallel_identity_gate.py ky-scan
 
 This gate runs the same linear solver serially and with fixed-shape
 ``k_y`` batching, checks ``gamma`` and ``omega`` numerical identity, and
@@ -568,7 +568,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+   python tools/artifacts/generate_parallel_identity_gate.py logical-cpu --logical-devices 2
 
 The tracked artifact used two logical CPU devices and passed the identity gate:
 ``max_gamma_rel_error=6.7e-8``, ``max_ql_rel_error=1.1e-7``, and
