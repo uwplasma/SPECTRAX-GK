@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 
 import numpy as np
 import pytest
@@ -14,13 +13,7 @@ SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_outputs.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "check_nonlinear_runtime_outputs", SCRIPT
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_nonlinear_runtime_outputs")
 
 
 def _write_nonlinear_output(

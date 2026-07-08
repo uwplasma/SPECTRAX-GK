@@ -1,23 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_release_tool
 
 
 ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_matrix_portfolio.py"
-spec = importlib.util.spec_from_file_location(
-    "check_nonlinear_transport_matrix_portfolio", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_release_tool("check_nonlinear_transport_matrix_portfolio")
 
 
 def _matrix_report(

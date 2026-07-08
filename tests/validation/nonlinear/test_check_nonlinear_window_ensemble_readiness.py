@@ -1,28 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import load_release_tool
 
 import numpy as np
 
 
 def _load_tool_module():
-    path = (
-        REPO_ROOT / "tools" / "release" / "check_nonlinear_window_ensemble_readiness.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "check_nonlinear_window_ensemble_readiness", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_nonlinear_window_ensemble_readiness")
 
 
 def _write_trace(path: Path, offset: float = 0.0) -> None:

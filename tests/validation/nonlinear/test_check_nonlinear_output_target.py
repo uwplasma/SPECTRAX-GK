@@ -1,21 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
-
-from support.paths import REPO_ROOT
 import subprocess
 import sys
+
+from support.paths import REPO_ROOT, load_release_tool
 
 
 ROOT = REPO_ROOT
 SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_output_target.py"
-spec = importlib.util.spec_from_file_location("check_nonlinear_output_target", SCRIPT)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_release_tool("check_nonlinear_output_target")
 
 
 def _touch_bundle(output: Path) -> None:

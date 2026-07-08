@@ -1,24 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import load_campaign_tool
 
 
 def _load_tool_module():
-    path = REPO_ROOT / "tools" / "campaigns" / "compact_replicate_ensemble_bundle.py"
-    spec = importlib.util.spec_from_file_location(
-        "compact_replicate_ensemble_bundle", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("compact_replicate_ensemble_bundle")
 
 
 def _payload() -> dict:

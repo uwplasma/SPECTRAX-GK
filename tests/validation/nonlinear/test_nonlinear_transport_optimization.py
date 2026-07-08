@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 
 import pytest
 
@@ -20,17 +19,10 @@ from spectraxgk.diagnostics.nonlinear_transport_optimization import (
 
 
 ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "release" / "check_production_nonlinear_optimization_guard.py"
 
 
 def _tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "check_production_nonlinear_optimization_guard", SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    mod = load_release_tool("check_production_nonlinear_optimization_guard")
     return mod
 
 
