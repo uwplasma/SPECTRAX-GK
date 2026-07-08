@@ -130,7 +130,7 @@ rerunning large profiles.
 
 .. code-block:: bash
 
-   python tools/artifacts/build_parallel_decomposition_status.py
+   python tools/artifacts/build_parallelization_completion_status.py decomposition
 
 .. image:: _static/parallel_decomposition_status.png
    :alt: Parallel decomposition contract status

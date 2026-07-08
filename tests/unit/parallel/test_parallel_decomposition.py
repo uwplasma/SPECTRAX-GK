@@ -17,10 +17,10 @@ from spectraxgk.parallel.decomposition import (
     serial_reconstruction_identity_report,
     shard_sequence,
 )
-from tools.artifacts.build_parallel_decomposition_status import (
-    build_status,
-    write_csv_artifact,
-    write_json_artifact,
+from tools.artifacts.build_parallelization_completion_status import (
+    build_decomposition_status as build_status,
+    write_decomposition_csv_artifact as write_csv_artifact,
+    write_decomposition_json_artifact as write_json_artifact,
 )
 
 
