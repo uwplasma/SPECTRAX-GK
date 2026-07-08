@@ -14,7 +14,6 @@ from tools.artifacts import generate_electrostatic_drift_gate as drift_gate
 from tools.artifacts import (
     generate_electrostatic_field_reduce_gate as field_reduce_gate,
 )
-from tools.artifacts import generate_hermite_exchange_gate as hermite_exchange_gate
 from tools.artifacts import (
     generate_hermite_streaming_ladder_gate as hermite_ladder_gate,
 )
@@ -27,7 +26,10 @@ from tools.artifacts import generate_parallel_identity_gate as parallel_identity
 from tools.artifacts import (
     generate_periodic_streaming_microkernel_gate as periodic_gate,
 )
-from tools.artifacts import generate_velocity_field_reduce_gate as velocity_reduce_gate
+from tools.artifacts import generate_velocity_parallel_gates as velocity_parallel_gates
+
+hermite_exchange_gate = velocity_parallel_gates
+velocity_reduce_gate = velocity_parallel_gates
 
 
 class _VelocityPlan:

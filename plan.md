@@ -2861,3 +2861,11 @@ following:
   `output` modes, deleting the old output-only wrapper. Updated docs and
   artifact tests to exercise both input adapters. Tool Python files dropped to
   231, and the topology baseline was tightened.
+
+- 2026-07-08: consolidated the Hermite ghost-exchange and velocity
+  field-reduction maintainer gates into
+  `tools/artifacts/generate_velocity_parallel_gates.py` with
+  `hermite-exchange` and `field-reduce` subcommands. Kept the two build
+  functions testable inside the new tool, updated performance/testing/example
+  docs and the performance manifest, and tightened the tool topology baseline
+  to 230.

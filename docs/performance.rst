@@ -711,7 +711,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_hermite_exchange_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py hermite-exchange --logical-devices 2
 
 The tracked artifact passes with zero reported lower/upper neighbor error. It
 only validates the communication primitive. Promoting nonlinear velocity-space
@@ -731,7 +731,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_velocity_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py field-reduce --logical-devices 2
 
 The tracked artifact passes with ``max_abs_error=3.9e-6`` under an absolute
 tolerance of ``1e-5``. This tolerance reflects expected float32 roundoff from a

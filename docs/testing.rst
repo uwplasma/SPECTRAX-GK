@@ -1238,13 +1238,13 @@ performance claims:
   structured JAX-native scan output. Its artifact
   ``docs/_static/logical_cpu_parallel_scan_gate.{png,pdf,csv,json}`` is an API
   identity gate, not a gyrokinetic physics benchmark.
-- ``tools/artifacts/generate_hermite_exchange_gate.py`` runs the first actual
+- ``tools/artifacts/generate_velocity_parallel_gates.py hermite-exchange`` runs the first actual
   ``jax.shard_map`` communication-kernel gate for nearest-neighbor Hermite
   ghost exchange and writes
   ``docs/_static/hermite_exchange_gate.{png,pdf,csv,json}``. This is a
   prerequisite for production velocity-space decomposition, but it is not a
   nonlinear runtime speedup claim.
-- ``tools/artifacts/generate_velocity_field_reduce_gate.py`` runs the matching
+- ``tools/artifacts/generate_velocity_parallel_gates.py field-reduce`` runs the matching
   ``jax.shard_map`` field-reduction gate with ``lax.psum`` over the Hermite
   mesh and writes
   ``docs/_static/velocity_field_reduce_gate.{png,pdf,csv,json}``. Its

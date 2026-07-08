@@ -189,7 +189,7 @@ the Hermite ghost exchange:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_hermite_exchange_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py hermite-exchange --logical-devices 2
 
 .. figure:: _static/hermite_exchange_gate.png
    :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
@@ -203,7 +203,7 @@ The paired field-reduction gate is:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_velocity_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_velocity_parallel_gates.py field-reduce --logical-devices 2
 
 .. figure:: _static/velocity_field_reduce_gate.png
    :alt: SPECTRAX-GK velocity field-reduction identity gate
