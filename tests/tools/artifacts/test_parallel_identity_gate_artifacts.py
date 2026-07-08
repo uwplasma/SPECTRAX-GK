@@ -13,11 +13,7 @@ from tools.artifacts import generate_electrostatic_parallel_gates as electrostat
 from tools.artifacts import (
     generate_hermite_streaming_ladder_gate as hermite_ladder_gate,
 )
-from tools.artifacts import generate_linear_rhs_electrostatic_slices_gate as slices_gate
-from tools.artifacts import (
-    generate_linear_rhs_streaming_electrostatic_gate as electrostatic_gate,
-)
-from tools.artifacts import generate_linear_rhs_streaming_gate as streaming_gate
+from tools.artifacts import generate_linear_rhs_parallel_gates as linear_rhs_gates
 from tools.artifacts import generate_parallel_identity_gate as parallel_identity_gate
 from tools.artifacts import (
     generate_periodic_streaming_microkernel_gate as periodic_gate,
@@ -29,6 +25,9 @@ velocity_reduce_gate = velocity_parallel_gates
 field_reduce_gate = electrostatic_gates
 diamagnetic_gate = electrostatic_gates
 drift_gate = electrostatic_gates
+streaming_gate = linear_rhs_gates
+electrostatic_gate = linear_rhs_gates
+slices_gate = linear_rhs_gates
 
 
 class _VelocityPlan:

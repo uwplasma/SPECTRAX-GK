@@ -289,7 +289,7 @@ linear-RHS call graph with every non-streaming contribution disabled:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_streaming_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_gate.png
    :alt: SPECTRAX-GK streaming-only linear RHS identity gate
@@ -304,7 +304,7 @@ With a nonzero electrostatic response, use:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming-electrostatic --logical-devices 2
 
 .. figure:: _static/linear_rhs_streaming_electrostatic_gate.png
    :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
@@ -319,7 +319,7 @@ For the composed electrostatic linear-slices backend, use:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py electrostatic-slices --logical-devices 2
 
 .. figure:: _static/linear_rhs_electrostatic_slices_gate.png
    :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate

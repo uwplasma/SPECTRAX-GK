@@ -2876,3 +2876,11 @@ following:
   `field-reduce`, `drift`, and `diamagnetic` subcommands. Preserved the
   existing build-function names for focused tests, updated docs/manifests and
   tracked artifact notes, and tightened the tool topology baseline to 228.
+
+- 2026-07-08: consolidated the streaming-only, streaming-plus-electrostatic,
+  and composed electrostatic linear-RHS identity-gate tools into
+  `tools/artifacts/generate_linear_rhs_parallel_gates.py` with `streaming`,
+  `streaming-electrostatic`, and `electrostatic-slices` subcommands. Preserved
+  the existing build-function names for tests and profiling imports, updated
+  docs and performance manifests, and tightened the tool topology baseline to
+  226.

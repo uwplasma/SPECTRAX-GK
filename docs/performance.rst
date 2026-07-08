@@ -857,7 +857,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_streaming_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming --logical-devices 2
 
 The tracked artifact passes with ``max_abs_error=9.7e-7``,
 ``max_rel_error=5.6e-7``, and ``phi_norm=0``. This closes a streaming-only
@@ -886,7 +886,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py streaming-electrostatic --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.34e-1``,
 ``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
@@ -907,7 +907,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py electrostatic-slices --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.68e-1``,
 ``max_abs_error=1.5e-7``, ``max_rel_error=3.7e-7``, and zero reported

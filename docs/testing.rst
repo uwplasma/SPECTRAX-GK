@@ -1274,18 +1274,18 @@ performance claims:
   against ``spectraxgk.terms.operators.streaming_term``. Its artifact
   ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``
   gates the first opt-in linear streaming microkernel before full RHS wiring.
-- ``tools/artifacts/generate_linear_rhs_streaming_gate.py`` routes the same sharded
+- ``tools/artifacts/generate_linear_rhs_parallel_gates.py streaming`` routes the same sharded
   periodic streaming kernel through production ``linear_rhs_cached`` with all
   non-streaming terms and electromagnetic channels disabled. Its artifact
   ``docs/_static/linear_rhs_streaming_gate.{png,pdf,csv,json}`` is the first
   full-call-graph linear-RHS identity gate for velocity-space streaming.
-- ``tools/artifacts/generate_linear_rhs_streaming_electrostatic_gate.py`` repeats that
+- ``tools/artifacts/generate_linear_rhs_parallel_gates.py streaming-electrostatic`` repeats that
   gate with an ``m=0`` density perturbation and nonzero electrostatic ``phi``.
   Its artifact
   ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``
   gates the field-reduction-to-streaming call graph for the current
   single-species periodic electrostatic route.
-- ``tools/artifacts/generate_linear_rhs_electrostatic_slices_gate.py`` compares the
+- ``tools/artifacts/generate_linear_rhs_parallel_gates.py electrostatic-slices`` compares the
   composed opt-in ``backend="electrostatic_linear_slices"`` route against
   serial ``linear_rhs_cached`` with streaming, mirror, curvature, grad-B, and
   diamagnetic drive enabled. Its artifact
