@@ -1986,6 +1986,17 @@ Exit gates:
   architecture/differentiable refactor manifest checks, ruff, py_compile, and
   mypy on the changed builder passed. Tool Python files dropped to 238.
 
+- 2026-07-08: consolidated the VMEC/Boozer solver-frequency, quasilinear, and
+  reduced nonlinear-window gradient artifact wrappers into
+  `tools/artifacts/build_vmec_boozer_gradient_gate.py` with `frequency`,
+  `quasilinear`, and `nonlinear-window` subcommands. The documented artifact
+  basenames and backend report functions are unchanged; the command now owns
+  shared VMEC/Boozer parser defaults, artifact writing, JSON-only output, and
+  nonlinear-window stencil validation. Added focused tests for all three
+  subcommands, and the VMEC/Boozer artifact shard, package-architecture tests,
+  stale-reference scan, ruff, py_compile, and mypy on the changed builder
+  passed. Tool Python files dropped to 236.
+
 - 2026-07-08: converted the root `spectraxgk` package,
   `spectraxgk.api` registry, and `spectraxgk.parallel` facade to lazy
   public-export resolution. This preserves `__all__`,

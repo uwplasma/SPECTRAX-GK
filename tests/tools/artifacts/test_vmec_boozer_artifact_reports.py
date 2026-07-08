@@ -387,7 +387,7 @@ def _fake_nonlinear_gradient_payload() -> dict[str, object]:
 
 
 def test_nonlinear_window_builder_writes_artifacts(tmp_path: Path, monkeypatch) -> None:
-    mod = load_artifact_tool("build_vmec_boozer_nonlinear_window_gradient_gate")
+    mod = load_artifact_tool("build_vmec_boozer_gradient_gate")
     monkeypatch.setattr(
         mod,
         "mode21_vmec_boozer_nonlinear_window_gradient_report",
@@ -395,7 +395,12 @@ def test_nonlinear_window_builder_writes_artifacts(tmp_path: Path, monkeypatch) 
     )
 
     out = tmp_path / "vmec_boozer_nonlinear_window_gradient_gate.png"
-    assert mod.main(["--out", str(out), "--surface-stencil-width", "3"]) == 0
+    assert (
+        mod.main(
+            ["nonlinear-window", "--out", str(out), "--surface-stencil-width", "3"]
+        )
+        == 0
+    )
 
     for suffix in (".png", ".pdf", ".json", ".csv"):
         assert out.with_suffix(suffix).exists()
@@ -404,18 +409,69 @@ def test_nonlinear_window_builder_writes_artifacts(tmp_path: Path, monkeypatch) 
 
 
 def test_nonlinear_window_builder_json_only(capsys, monkeypatch) -> None:
-    mod = load_artifact_tool("build_vmec_boozer_nonlinear_window_gradient_gate")
+    mod = load_artifact_tool("build_vmec_boozer_gradient_gate")
     monkeypatch.setattr(
         mod,
         "mode21_vmec_boozer_nonlinear_window_gradient_report",
         lambda **_kwargs: _fake_nonlinear_gradient_payload(),
     )
 
-    assert mod.main(["--json-only", "--nonlinear-steps", "12"]) == 0
+    assert (
+        mod.main(["nonlinear-window", "--json-only", "--nonlinear-steps", "12"])
+        == 0
+    )
 
     payload = json.loads(capsys.readouterr().out)
     assert payload["passed"] is True
     assert payload["objective_names"][-1] == "nonlinear_window_heat_flux_trend"
+
+
+def test_vmec_boozer_gradient_builder_frequency_and_quasilinear_json_only(
+    capsys, monkeypatch
+) -> None:
+    mod = load_artifact_tool("build_vmec_boozer_gradient_gate")
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_frequency(**kwargs: object) -> dict[str, object]:
+        calls.append(("frequency", dict(kwargs)))
+        return {
+            "kind": "mode21_vmec_boozer_linear_frequency_gradient_gate",
+            "passed": True,
+            "objective_names": ["gamma", "omega"],
+            "objective_gates": [],
+        }
+
+    def fake_quasilinear(**kwargs: object) -> dict[str, object]:
+        calls.append(("quasilinear", dict(kwargs)))
+        return {
+            "kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+            "passed": True,
+            "objective_names": ["gamma", "omega", "ql_heat_flux"],
+            "objective_gates": [],
+        }
+
+    monkeypatch.setattr(
+        mod, "mode21_vmec_boozer_linear_frequency_gradient_report", fake_frequency
+    )
+    monkeypatch.setattr(
+        mod, "mode21_vmec_boozer_quasilinear_gradient_report", fake_quasilinear
+    )
+    assert mod.main(["frequency", "--json-only", "--mboz", "21", "--nboz", "21"]) == 0
+    frequency_payload = json.loads(capsys.readouterr().out)
+    assert (
+        frequency_payload["kind"]
+        == "mode21_vmec_boozer_linear_frequency_gradient_gate"
+    )
+
+    assert mod.main(["quasilinear", "--json-only", "--fd-step", "2e-6"]) == 0
+    quasilinear_payload = json.loads(capsys.readouterr().out)
+    assert (
+        quasilinear_payload["kind"] == "mode21_vmec_boozer_quasilinear_gradient_gate"
+    )
+
+    assert [name for name, _ in calls] == ["frequency", "quasilinear"]
+    assert calls[0][1]["mboz"] == 21
+    assert calls[1][1]["fd_step"] == 2.0e-6
 
 
 def _fake_parity_report(**kwargs: object) -> dict[str, object]:
