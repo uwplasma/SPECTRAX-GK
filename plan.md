@@ -2818,3 +2818,12 @@ following:
   full `tests/tools/campaigns` shard, validation-coverage manifest, ruff,
   py_compile, and package architecture manifest passed locally. Test Python
   files dropped to 223, and the topology baseline was tightened accordingly.
+
+- 2026-07-08: consolidated the two small eigenfunction plotting tools into
+  `tools/artifacts/plot_eigenfunction_diagnostics.py` with `overlap-summary`
+  and `reference-overlay` subcommands. Updated
+  `docs/manuscript_figures.rst` and added focused tests for both subcommands
+  to `tests/tools/artifacts/test_artifact_plot_smoke.py`. Ruff, focused
+  artifact tests, py_compile, and the package architecture manifest passed
+  locally. Tool Python files dropped to 233, and the topology baseline was
+  tightened to preserve the reduction.

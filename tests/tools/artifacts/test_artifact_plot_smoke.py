@@ -9,8 +9,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np
 
 from support.paths import load_artifact_tool
+from spectraxgk.diagnostics.modes import save_eigenfunction_reference_bundle
 
 
 def test_plot_independent_ky_scan_scaling_defaults_and_rows(tmp_path: Path) -> None:
@@ -47,6 +49,63 @@ def test_plot_independent_ky_scan_scaling_defaults_and_rows(tmp_path: Path) -> N
     assert summary["identity_passed"] is True
     assert summary["rows"][0]["backend"] == "cpu"
     assert summary["rows"][0]["grid_label"] == "Nx=1, Ny=128, Nz=96, Nl=4, Nm=8"
+
+
+def test_eigenfunction_diagnostics_tool_writes_summary_and_overlay(
+    tmp_path: Path,
+) -> None:
+    mod = load_artifact_tool("plot_eigenfunction_diagnostics")
+
+    summary_csv = tmp_path / "overlap.csv"
+    summary_csv.write_text(
+        "ky,eig_overlap_gx,eig_rel_l2,selected\n"
+        "0.2,0.95,0.08,true\n"
+        "0.3,0.98,0.04,true\n"
+        "0.4,0.10,0.90,false\n",
+        encoding="utf-8",
+    )
+    summary_png = tmp_path / "overlap.png"
+    assert (
+        mod.main(["overlap-summary", "--csv", str(summary_csv), "--out", str(summary_png)])
+        == 0
+    )
+    assert summary_png.exists()
+    assert summary_png.with_suffix(".pdf").exists()
+
+    theta = np.linspace(-1.0, 1.0, 5)
+    mode = np.exp(1j * theta)
+    reference = save_eigenfunction_reference_bundle(
+        tmp_path / "reference.npz",
+        theta=theta,
+        mode=mode,
+        source="unit-test",
+        case="synthetic",
+    )
+    spectrax_csv = tmp_path / "spectrax.csv"
+    spectrax_csv.write_text(
+        "z,eigen_real,eigen_imag\n"
+        + "\n".join(
+            f"{z},{value.real},{value.imag}" for z, value in zip(theta, mode)
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    overlay_png = tmp_path / "overlay.png"
+
+    assert (
+        mod.main(
+            [
+                "reference-overlay",
+                str(reference),
+                str(spectrax_csv),
+                "--out",
+                str(overlay_png),
+            ]
+        )
+        == 0
+    )
+    assert overlay_png.exists()
+    assert overlay_png.with_suffix(".pdf").exists()
 
 
 def test_readme_panel_builder_treats_missing_optional_transport_artifacts_as_pending(
