@@ -2,30 +2,15 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 from types import SimpleNamespace
-import sys
 
 import numpy as np
 import pytest
 
-from support.paths import REPO_ROOT
+from support.paths import load_artifact_tool
 
-
-def load_artifact_tool(script_name: str):
-    tools_dir = REPO_ROOT / "tools" / "artifacts"
-    if str(tools_dir) not in sys.path:
-        sys.path.insert(0, str(tools_dir))
-    path = tools_dir / f"{script_name}.py"
-    spec = importlib.util.spec_from_file_location(f"test_loaded_{script_name}", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 def _write_gradient_gate(

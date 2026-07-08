@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import sys
@@ -31,23 +30,8 @@ from spectraxgk.workflows.runtime.config import (
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
-from support.paths import REPO_ROOT
+from support.paths import load_artifact_tool
 
-
-def load_artifact_tool(script_name: str):
-    """Load a repository artifact tool without relying on package installation."""
-
-    tools_dir = REPO_ROOT / "tools" / "artifacts"
-    if str(tools_dir) not in sys.path:
-        sys.path.insert(0, str(tools_dir))
-    path = tools_dir / f"{script_name}.py"
-    spec = importlib.util.spec_from_file_location(f"test_loaded_{script_name}", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 # W7-X TEM extension status assertions
