@@ -10,7 +10,6 @@ from tools.artifacts import build_vmec_boozer_aggregate_alpha_holdout_gate as al
 from tools.artifacts import (
     build_vmec_boozer_aggregate_line_search_comparison as comparison_gate,
 )
-from tools.artifacts import build_vmec_boozer_aggregate_line_search_gate as line_gate
 from tools.artifacts import build_vmec_boozer_aggregate_objective_gate as objective_gate
 from tools.artifacts import (
     build_vmec_boozer_aggregate_surface_holdout_gate as surface_gate,
@@ -417,13 +416,14 @@ def test_line_search_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
         return _line_search_payload()
 
     monkeypatch.setattr(
-        line_gate,
+        objective_gate,
         "vmec_boozer_aggregate_scalar_objective_line_search_report",
         fake_report,
     )
 
-    result = line_gate.main(
+    result = objective_gate.main(
         [
+            "line-search",
             "--out",
             str(tmp_path / "line_search.png"),
             "--selected-ky-indices",
@@ -883,7 +883,7 @@ def test_second_equilibrium_json_only_uses_reports(monkeypatch, capsys) -> None:
             "heldout_surface",
         ),
         (
-            line_gate,
+            objective_gate,
             "write_vmec_boozer_aggregate_line_search_artifacts",
             _line_search_payload(),
             "line_search.png",
