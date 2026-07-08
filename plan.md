@@ -2752,3 +2752,25 @@ following:
   outputs until office runs the scripts. Do not promote this lane or import a
   portfolio artifact until the actual matrix report is fetched/regenerated and
   passes the configured policy.
+
+- 2026-07-08: centralized test-side script loading through `tests/support/paths.py`
+  across release, profiling, comparison, runtime/objective/parallel,
+  nonlinear-validation, quasilinear-validation, stellarator-validation, and
+  nonlinear-gradient validation shards. This removed repeated direct
+  `importlib.util.spec_from_file_location` blocks from tests, leaving only
+  optional-dependency discovery and a stdlib-only production loader. Focused
+  shards passed locally: `tests/release`, `tests/tools/profiling`, targeted
+  runtime/objective/parallel tests, nonlinear validation, quasilinear +
+  stellarator validation, nonlinear-gradient validation, ruff, py_compile, and
+  the package architecture manifest.
+
+- 2026-07-08: consolidated five one-file release-hygiene tests into
+  `tests/release/test_release_hygiene_gates.py`: release-version checks,
+  release-artifact manifest checks, repository-size manifest checks,
+  repository-size audit checks, and technical-release-status checks. The
+  `tests/release` shard passed locally, test Python files dropped from 241 to
+  237, and the architecture manifest still passes the no-regression policy.
+  Remaining topology targets are still open: source 277/100, tests 237/99,
+  tools 234/99. Next structural target is another domain-level test/tool
+  consolidation, followed by shrinking the oversized public
+  `spectraxgk.benchmarks` facade without adding another source-file forest.
