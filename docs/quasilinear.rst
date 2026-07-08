@@ -183,7 +183,7 @@ Then render the spectrum:
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_spectrum.py \
+   python tools/artifacts/plot_quasilinear_diagnostics.py spectrum \
      --spectrum tools_out/cyclone_quasilinear_scan.quasilinear_spectrum.csv \
      --out docs/_static/quasilinear_cyclone_spectrum.png
 
@@ -411,7 +411,7 @@ Implementation map
      - train/holdout/audit schemas, spectrum integration, nonlinear-window
        ingestion, scale fitting, and report scoring
    * - Plotting tools
-     - ``tools/artifacts/plot_quasilinear_spectrum.py`` and
+     - ``tools/artifacts/plot_quasilinear_diagnostics.py spectrum`` and
        ``tools/artifacts/plot_quasilinear_calibration.py``
      - publication-facing spectrum and calibration figures
    * - Differentiability gates
@@ -1908,7 +1908,7 @@ heat-flux-weight distribution is compared with the resolved nonlinear
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_spectrum_shape_gate.py \
+   python tools/artifacts/plot_quasilinear_diagnostics.py shape-gate \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc \
      --out docs/_static/quasilinear_w7x_spectrum_shape_gate.png \
@@ -1935,7 +1935,7 @@ linear heat-flux-weight spectrum against the normalized nonlinear
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_spectrum_shape_gate.py \
+   python tools/artifacts/plot_quasilinear_diagnostics.py shape-gate \
      --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear tools_out/final_nonlinear_audit/hsx_nonlinear_t50.out.nc \
      --out docs/_static/quasilinear_hsx_spectrum_shape_gate.png \

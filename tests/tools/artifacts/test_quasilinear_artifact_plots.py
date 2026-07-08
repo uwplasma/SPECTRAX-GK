@@ -1166,7 +1166,7 @@ def _spectrum_write_spectrum(
 
 
 def test_load_quasilinear_spectrum_requires_columns(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_spectrum")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     path = tmp_path / "spectrum.csv"
     _spectrum_write_spectrum(path)
     data = mod.load_quasilinear_spectrum(path)
@@ -1179,7 +1179,7 @@ def test_load_quasilinear_spectrum_requires_columns(tmp_path: Path) -> None:
 
 
 def test_write_quasilinear_spectrum_figure(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_spectrum")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     path = tmp_path / "spectrum.csv"
     _spectrum_write_spectrum(path)
     out = tmp_path / "ql_spectrum.png"
@@ -1219,7 +1219,7 @@ def _spectrum_shape_gate_write_netcdf(
 
 
 def test_quasilinear_spectrum_shape_gate_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_spectrum_shape_gate")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     spectrum = tmp_path / "ql.csv"
     np.savetxt(
         spectrum,
@@ -1252,7 +1252,7 @@ def test_quasilinear_spectrum_shape_gate_writes_artifacts(tmp_path: Path) -> Non
 
 
 def test_quasilinear_spectrum_shape_gate_rejects_missing_column(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_spectrum_shape_gate")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     spectrum = tmp_path / "bad.csv"
     np.savetxt(
         spectrum,
@@ -1372,7 +1372,7 @@ def _uq_ensemble_write_payload(path: Path, *, backend: str) -> None:
 
 
 def test_load_summary_combines_cpu_and_gpu_payloads(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_uq_ensemble_scaling")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     cpu = tmp_path / "cpu.json"
     gpu = tmp_path / "gpu.json"
     _uq_ensemble_write_payload(cpu, backend="cpu")
@@ -1387,7 +1387,7 @@ def test_load_summary_combines_cpu_and_gpu_payloads(tmp_path: Path) -> None:
 
 
 def test_write_artifacts_creates_combined_outputs(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_uq_ensemble_scaling")
+    mod = load_artifact_tool("plot_quasilinear_diagnostics")
     cpu = tmp_path / "cpu.json"
     gpu = tmp_path / "gpu.json"
     _uq_ensemble_write_payload(cpu, backend="cpu")

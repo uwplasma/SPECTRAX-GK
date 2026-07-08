@@ -680,7 +680,7 @@ It is regenerated with:
      --backend gpu --devices 1,2 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
 
-   python tools/artifacts/plot_quasilinear_uq_ensemble_scaling.py
+   python tools/artifacts/plot_quasilinear_diagnostics.py uq-ensemble-scaling
 
 The May 10, 2026 ``office`` sweep passes the serial identity gate for both the
 reduced quasilinear proxy and ``gamma``. The CPU run reaches ``1.70x`` on two

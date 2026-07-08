@@ -67,7 +67,7 @@ Current tracked audit:
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 241 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 244 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Tools | 242 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -1975,6 +1975,12 @@ Exit gates:
 
 ## Progress Log
 
+- 2026-07-08: consolidated standalone quasilinear spectrum, spectrum-shape,
+  and UQ ensemble scaling plotters into `tools/artifacts/plot_quasilinear_diagnostics.py`
+  with `spectrum`, `shape-gate`, and `uq-ensemble-scaling` subcommands.
+  Documentation command snippets and the quasilinear artifact test family now
+  use the shared owner, and the tool-count no-regression baseline tightened
+  to 242 Python files.
 - 2026-07-08: folded the VMEC/Boozer aggregate line-search artifact
   builder into `tools/artifacts/build_vmec_boozer_aggregate_objective_gate.py`
   as a `line-search` subcommand. The finite-difference and line-search
