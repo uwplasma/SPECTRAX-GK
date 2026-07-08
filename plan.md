@@ -66,8 +66,8 @@ Current tracked audit:
 | Branches | `main`, `origin/main` only | no branch cleanup needed | keep experiments in one draft PR, not on `main` |
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
-| Tests | 243 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 247 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Tests | 241 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
+| Tools | 245 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -1975,6 +1975,12 @@ Exit gates:
 
 ## Progress Log
 
+- 2026-07-08: consolidated the three tracked reference-comparison panel
+  builders into `tools/comparison/make_reference_panels.py` with `tokamak`,
+  `publication`, and `summary` subcommands. The three one-script tests were
+  collapsed into one family test, default docs paths now resolve from the
+  repository root, and topology no-regression baselines were tightened to
+  277 source, 241 test, and 245 tool Python files.
 - 2026-07-08: fixed CI release-runner discovery after the test tree
   consolidation. `run_tests_fast.py` and `run_wide_coverage_gate.py` now
   discover nested `test_*.py` files recursively, their unit tests lock that
