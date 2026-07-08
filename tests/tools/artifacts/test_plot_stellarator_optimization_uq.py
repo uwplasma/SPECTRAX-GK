@@ -2,28 +2,14 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
+
+from support.paths import load_artifact_tool
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "artifacts"
-        / "plot_stellarator_optimization_uq.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "plot_stellarator_optimization_uq", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("plot_stellarator_optimization_uq")
 
 
 def _result(kind: str, scale: float) -> dict[str, object]:

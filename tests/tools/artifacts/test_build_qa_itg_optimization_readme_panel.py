@@ -1,26 +1,17 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
+from support.paths import load_artifact_tool
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "artifacts" / "build_qa_itg_optimization_readme_panel.py"
-spec = importlib.util.spec_from_file_location(
-    "build_qa_itg_optimization_readme_panel", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+
+mod = load_artifact_tool("build_qa_itg_optimization_readme_panel")
 
 
 def test_readme_panel_builder_treats_missing_optional_transport_artifacts_as_pending(

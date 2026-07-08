@@ -1,25 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
+from support.paths import load_artifact_tool
+
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "artifacts"
-        / "plot_independent_ky_scan_scaling.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "plot_independent_ky_scan_scaling", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("plot_independent_ky_scan_scaling")
 
 
 def test_plot_independent_ky_scan_scaling_parser_defaults_to_large_inputs() -> None:

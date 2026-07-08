@@ -1,27 +1,16 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
+from support.paths import load_artifact_tool
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = (
-    ROOT / "tools" / "artifacts" / "build_vmec_jax_transport_gradient_diagnostic.py"
-)
-spec = importlib.util.spec_from_file_location(
-    "build_vmec_jax_transport_gradient_diagnostic", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+
+mod = load_artifact_tool("build_vmec_jax_transport_gradient_diagnostic")
 
 
 def test_gradient_diagnostic_defaults_to_multisample_transport_contract(

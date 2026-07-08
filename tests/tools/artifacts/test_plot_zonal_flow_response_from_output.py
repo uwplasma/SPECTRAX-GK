@@ -1,29 +1,16 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
-from pathlib import Path
 
 import netCDF4 as nc
 import numpy as np
 
+from support.paths import load_artifact_tool
+
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "artifacts"
-        / "plot_zonal_flow_response_from_output.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "plot_zonal_flow_response_from_output", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("plot_zonal_flow_response_from_output")
 
 
 def test_plot_zonal_flow_response_from_output_main(tmp_path, monkeypatch) -> None:

@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
 
+from support.paths import REPO_ROOT, load_artifact_tool
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = REPO_ROOT
 SCRIPT = ROOT / "tools" / "artifacts" / "build_qa_optimizer_strategy_report.py"
-spec = importlib.util.spec_from_file_location(
-    "build_qa_optimizer_strategy_report", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_artifact_tool("build_qa_optimizer_strategy_report")
 
 
 def _write_panel(path: Path) -> None:

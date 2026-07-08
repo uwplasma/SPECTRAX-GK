@@ -1,26 +1,15 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 from pathlib import Path
-import sys
 
 import numpy as np
 
+from support.paths import load_artifact_tool
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = (
-    ROOT / "tools" / "artifacts" / "build_vmec_jax_qa_transport_candidate_comparison.py"
-)
-spec = importlib.util.spec_from_file_location(
-    "build_vmec_jax_qa_transport_candidate_comparison", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+
+mod = load_artifact_tool("build_vmec_jax_qa_transport_candidate_comparison")
 
 
 def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback() -> (

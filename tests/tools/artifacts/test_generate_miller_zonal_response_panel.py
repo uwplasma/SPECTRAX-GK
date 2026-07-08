@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -8,22 +7,11 @@ from pathlib import Path
 import netCDF4 as nc
 import numpy as np
 
+from support.paths import load_artifact_tool
+
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "artifacts"
-        / "generate_miller_zonal_response_panel.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "generate_miller_zonal_response_panel", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("generate_miller_zonal_response_panel")
 
 
 def test_generate_miller_zonal_response_panel_main(tmp_path, monkeypatch) -> None:

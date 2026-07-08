@@ -2,27 +2,15 @@
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
-import sys
 
 from PIL import Image
 
-from support.paths import REPO_ROOT
+from support.paths import load_artifact_tool
 
 
 def _load_tool_module():
-    tools_dir = REPO_ROOT / "tools" / "artifacts"
-    if str(tools_dir) not in sys.path:
-        sys.path.insert(0, str(tools_dir))
-    path = tools_dir / "compress_previews.py"
-    spec = importlib.util.spec_from_file_location("test_loaded_compress_previews", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("compress_previews")
 
 
 def test_compress_docs_previews_skips_release_manifest_paths(tmp_path: Path) -> None:

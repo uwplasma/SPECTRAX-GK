@@ -1,29 +1,17 @@
 from __future__ import annotations
 
 import csv
-import importlib.util
 import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+from support.paths import load_artifact_tool
+
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "artifacts"
-        / "build_zonal_flow_objective_gate.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "build_zonal_flow_objective_gate", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_zonal_flow_objective_gate")
 
 
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
