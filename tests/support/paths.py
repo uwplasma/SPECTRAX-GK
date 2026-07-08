@@ -62,3 +62,9 @@ def load_release_tool(script_name: str) -> ModuleType:
     """Load a ``tools/release`` script directly from the checkout."""
 
     return load_tool_script("release", script_name)
+
+
+def load_profiling_tool(script_name: str) -> ModuleType:
+    """Load a ``tools/profiling`` script directly from the checkout."""
+
+    return load_tool_script("profiling", script_name)

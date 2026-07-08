@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_profiling_tool
 from pathlib import Path
 
 import jax.numpy as jnp
@@ -10,18 +10,7 @@ from spectraxgk.terms.config import FieldState
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "profiling"
-        / "profile_nonlinear_sharding.py"
-    )
-    spec = importlib.util.spec_from_file_location("profile_nonlinear_sharding", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_profiling_tool("profile_nonlinear_sharding")
 
 
 def test_profile_nonlinear_sharding_parser_defaults_to_tracked_artifact() -> None:

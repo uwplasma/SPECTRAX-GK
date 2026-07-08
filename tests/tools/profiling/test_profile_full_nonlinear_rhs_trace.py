@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import load_profiling_tool
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profiling" / "profile_full_nonlinear_rhs_trace.py"
-spec = importlib.util.spec_from_file_location(
-    "profile_full_nonlinear_rhs_trace", SCRIPT
-)
-mod = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(mod)
+mod = load_profiling_tool("profile_full_nonlinear_rhs_trace")
 
 
 def test_build_summary_contains_nonlinear_trace_metadata() -> None:

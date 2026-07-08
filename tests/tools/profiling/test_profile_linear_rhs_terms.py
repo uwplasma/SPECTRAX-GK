@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import REPO_ROOT, load_profiling_tool
 import json
 from pathlib import Path
 
 import jax.numpy as jnp
 
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "profiling" / "profile_linear_rhs_terms.py"
-spec = importlib.util.spec_from_file_location("profile_linear_rhs_terms", SCRIPT)
-mod = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(mod)
+mod = load_profiling_tool("profile_linear_rhs_terms")
+ROOT = REPO_ROOT
 
 
 def test_build_summary_reports_dominant_and_zero_norm_terms() -> None:

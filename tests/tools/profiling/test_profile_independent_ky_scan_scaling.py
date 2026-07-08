@@ -1,26 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
-from pathlib import Path
+from support.paths import load_profiling_tool
 
 import numpy as np
 
 
 def _load_tool_module():
-    path = (
-        Path(__file__).resolve().parents[3]
-        / "tools"
-        / "profiling"
-        / "profile_independent_ky_scan_scaling.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "profile_independent_ky_scan_scaling", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_profiling_tool("profile_independent_ky_scan_scaling")
 
 
 def test_independent_ky_scan_scaling_parser_defaults_to_large_solver_case() -> None:
