@@ -534,7 +534,7 @@ requiring replacement, locality repair, or variance reduction. Its
 recommendation now prioritizes paired-seed or control-variate variance
 reduction for the current plus-state limiter, while keeping the broader
 nonlinear-gradient claim fail-closed.
-``tools/artifacts/build_nonlinear_gradient_variance_reduction_plan.py`` is the matching
+``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` is the matching
 paired-seed/control-variate runbook. It consumes one central-FD artifact,
 matches common plus/minus seed labels, estimates paired response SEM, records
 the limiting replicated-window state, and writes JSON/CSV/PNG/PDF sidecars. The
@@ -557,7 +557,7 @@ about ``0.480``. The tracked post-run campaign now exceeds that pre-run target;
 future use of this result should cite the exact rel7.5 perturbation, the
 ``21``-pair campaign, and the ``t=[600,1100]`` window rather than presenting it
 as a generic nonlinear turbulent-flux optimization result.
-``tools/artifacts/build_nonlinear_gradient_control_mean_gate.py`` is the matching
+``tools/artifacts/build_nonlinear_gradient_evidence.py control-mean`` is the matching
 post-run gate. It consumes the original variance report plus independent plus
 and minus ensemble reports, estimates the held-out mean of
 ``0.5 * (Q_plus + Q_minus)``, and combines that uncertainty with the screened

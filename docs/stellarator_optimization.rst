@@ -2732,7 +2732,7 @@ and 15 require replacement, locality repair, or variance reduction. Because
 the newest local ``ZBS(1,0)`` follow-up is plus-state variance limited, the
 planner now recommends paired-seed or control-variate variance reduction
 instead of more same-bracket replicas.
-``tools/artifacts/build_nonlinear_gradient_variance_reduction_plan.py`` is the concrete
+``tools/artifacts/build_nonlinear_gradient_evidence.py variance-plan`` is the concrete
 runbook for that recommendation. Applied to the rel7.5 artifact, it finds four
 common plus/minus seed or timestep labels and estimates the paired response
 uncertainty directly from matched differences. The paired estimator is better
@@ -2752,7 +2752,7 @@ to project a combined response uncertainty of ``0.480``. That closes the
 pre-run design question but not the physics claim; the actual runs must still
 pass output, replicated-window, control-mean, and central-response gates.
 The companion
-``tools/artifacts/build_nonlinear_gradient_control_mean_gate.py`` consumes the post-run
+``tools/artifacts/build_nonlinear_gradient_evidence.py control-mean`` consumes the post-run
 plus/minus ensemble reports and evaluates the full uncertainty budget,
 ``SEM_total^2 = SEM_residual^2 + beta^2 SEM_control_mean^2``. This keeps the
 control-variate path auditable: the sample-centered screen can motivate a

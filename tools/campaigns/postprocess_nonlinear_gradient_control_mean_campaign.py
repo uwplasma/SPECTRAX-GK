@@ -335,8 +335,9 @@ def main(argv: list[str] | None = None) -> int:
             ROOT
             / "tools"
             / "artifacts"
-            / "build_nonlinear_gradient_control_mean_gate.py"
+            / "build_nonlinear_gradient_evidence.py"
         ),
+        "control-mean",
         "--variance-report",
         str(args.variance_report),
         "--plus-ensemble",

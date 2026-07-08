@@ -67,7 +67,7 @@ Current tracked audit:
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 241 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 241 Python files, 100,713 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Tools | 240 Python files, 100,538 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -1974,6 +1974,15 @@ Exit gates:
 12. Bump, tag, release.
 
 ## Progress Log
+
+- 2026-07-08: consolidated the nonlinear-gradient variance-reduction and
+  independent control-mean artifact builders into
+  `tools/artifacts/build_nonlinear_gradient_evidence.py` with
+  `variance-plan` and `control-mean` subcommands. The reusable evidence
+  algorithms remain in `tools/campaigns/nonlinear_gradient_followup.py`, and
+  the postprocess campaign now routes through the shared artifact owner. The
+  focused nonlinear-gradient validation shard, Python syntax, ruff, CLI help,
+  and stale-reference checks passed. Tool Python files dropped to 240.
 
 - 2026-07-08: consolidated the nonlinear landscape-admission and
   campaign-admission wrappers into

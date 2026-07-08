@@ -761,10 +761,10 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
         ROOT
         / "tools"
         / "artifacts"
-        / "build_nonlinear_gradient_variance_reduction_plan.py"
+        / "build_nonlinear_gradient_evidence.py"
     )
     spec = importlib.util.spec_from_file_location(
-        "build_nonlinear_gradient_variance_reduction_plan", path
+        "build_nonlinear_gradient_evidence", path
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -786,7 +786,10 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     artifact.write_text(json.dumps(payload), encoding="utf-8")
     out_prefix = tmp_path / "variance_plan"
 
-    assert module.main([str(artifact), "--out-prefix", str(out_prefix)]) == 0
+    assert (
+        module.main(["variance-plan", str(artifact), "--out-prefix", str(out_prefix)])
+        == 0
+    )
     report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert report["kind"] == "nonlinear_turbulence_gradient_variance_reduction_plan"
     assert out_prefix.with_suffix(".csv").exists()
@@ -859,10 +862,10 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
 
 def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     path = (
-        ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_control_mean_gate.py"
+        ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_evidence.py"
     )
     spec = importlib.util.spec_from_file_location(
-        "build_nonlinear_gradient_control_mean_gate", path
+        "build_nonlinear_gradient_evidence", path
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -881,6 +884,7 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     assert (
         module.main(
             [
+                "control-mean",
                 "--variance-report",
                 str(source),
                 "--plus-ensemble",
