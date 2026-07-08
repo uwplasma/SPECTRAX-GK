@@ -32,3 +32,15 @@ assert "numpy" not in sys.modules
 assert "jax" not in sys.modules
 """
     subprocess.run([sys.executable, "-S", "-c", script], check=True)
+
+
+def test_api_registry_import_is_lazy_until_symbol_access() -> None:
+    script = f"""
+import sys
+sys.path.insert(0, {str(REPO_ROOT / "src")!r})
+import spectraxgk.api as api
+assert "numpy" not in sys.modules
+assert "jax" not in sys.modules
+assert "LinearParams" in api.__all__
+"""
+    subprocess.run([sys.executable, "-S", "-c", script], check=True)

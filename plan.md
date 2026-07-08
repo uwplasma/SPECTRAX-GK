@@ -1975,18 +1975,20 @@ Exit gates:
 
 ## Progress Log
 
-- 2026-07-08: converted the root `spectraxgk` package and
-  `spectraxgk.parallel` facade to lazy public-export resolution. This preserves
-  `__all__`, `from spectraxgk import ...`, `from spectraxgk import benchmarks`,
-  and parallel facade imports, but avoids importing NumPy/JAX-heavy solver
-  stacks when callers only need version metadata or pure contracts such as
-  `spectraxgk.parallel.decomposition`. A no-site-packages regression test now
-  asserts that root import plus pure decomposition import does not load NumPy or
-  JAX. Cold root import time in the local environment dropped from about 1.17 s
-  to about 0.003 s. Focused public API, parallel decomposition, parallel facade,
-  velocity/nonlinear parallel, ruff, mypy on changed source, py_compile,
-  architecture, release-readiness, and dependency-light artifact smoke checks
-  passed.
+- 2026-07-08: converted the root `spectraxgk` package,
+  `spectraxgk.api` registry, and `spectraxgk.parallel` facade to lazy
+  public-export resolution. This preserves `__all__`,
+  `from spectraxgk import ...`, `from spectraxgk import benchmarks`, grouped
+  API-registry imports, and parallel facade imports, but avoids importing
+  NumPy/JAX-heavy solver stacks when callers only need version metadata or pure
+  contracts such as `spectraxgk.parallel.decomposition`. No-site-packages
+  regression tests now assert that root import, API-registry import, and pure
+  decomposition import do not load NumPy or JAX. Cold root import time in the
+  local environment dropped from about 1.17 s to about 0.003 s, and
+  `spectraxgk.api` import dropped from about 1.22 s to about 0.004 s. Focused
+  public API, parallel decomposition, parallel facade, velocity/nonlinear
+  parallel, ruff, mypy on changed source, py_compile, architecture,
+  release-readiness, and dependency-light artifact smoke checks passed.
 
 - 2026-07-08: folded decomposition-contract status into the release-facing
   `tools/artifacts/build_parallelization_completion_status.py` owner as a

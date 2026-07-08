@@ -181,12 +181,12 @@ modules.
 Completed extractions:
 
 - domain-organized public API registry in ``spectraxgk.api.*``. The root
-  ``spectraxgk`` package is now a lazy facade that keeps a stable documented
-  ``__all__`` order while the grouped API modules make the exported
-  configuration, geometry, solver, validation, parallelization, objective, and
-  plotting surfaces easier to audit. Pure-contract imports such as
-  ``spectraxgk.parallel.decomposition`` must remain dependency-light and must
-  not import NumPy/JAX-heavy solver stacks through package initializers.
+  ``spectraxgk`` package and ``spectraxgk.api`` registry are lazy facades that
+  keep a stable documented ``__all__`` order while the grouped API modules make
+  the exported configuration, geometry, solver, validation, parallelization,
+  objective, and plotting surfaces easier to audit. Pure-contract imports such
+  as ``spectraxgk.parallel.decomposition`` must remain dependency-light and
+  must not import NumPy/JAX-heavy solver stacks through package initializers.
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
   sampled/imported flux-tube geometry data/loading:
   ``geometry/boundaries.py``, ``geometry/analytic.py``, and
