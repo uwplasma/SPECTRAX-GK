@@ -10,10 +10,13 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
+RELEASE_DIR = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
+if str(RELEASE_DIR) not in sys.path:
+    sys.path.insert(0, str(RELEASE_DIR))
 
 try:
     from .check_matched_nonlinear_transport_matrix_progress import (
