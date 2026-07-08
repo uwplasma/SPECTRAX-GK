@@ -12,7 +12,6 @@ import spectraxgk.geometry_backends.vmec_backend_discovery as vmec_backend_disco
 import spectraxgk.geometry_backends.vmec_fieldline_numerics as vmec_fieldline_numerics
 import spectraxgk.geometry_backends.vmec_fieldlines as vmec_fieldlines
 import spectraxgk.geometry_backends.vmec_io as vmec_io
-import spectraxgk.geometry_backends.vmec_numerics as vmec_numerics
 import spectraxgk.geometry_backends.vmec_pipeline as vmec_pipeline
 import spectraxgk.geometry_backends.vmec_remap as vmec_remap
 import spectraxgk.geometry_backends.vmec_splines as vmec_splines
@@ -41,8 +40,8 @@ def test_vmec_facade_reexports_focused_backend_owners() -> None:
     assert (
         vmec_facade._import_booz_backend is vmec_backend_discovery._import_booz_backend
     )
-    assert vmec_facade.nperiod_set is vmec_numerics.nperiod_set
-    assert vmec_facade.dermv is vmec_numerics.dermv
+    assert vmec_facade.nperiod_set is vmec_fieldline_numerics.nperiod_set
+    assert vmec_facade.dermv is vmec_fieldline_numerics.dermv
     assert vmec_facade._vmec_splines is vmec_fieldlines._vmec_splines
     assert vmec_fieldlines._vmec_splines is vmec_splines._vmec_splines
     assert vmec_facade._vmec_fieldlines is vmec_fieldlines._vmec_fieldlines
@@ -248,7 +247,7 @@ def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None
 
 def test_nperiod_set_and_dermv(monkeypatch) -> None:
     monkeypatch.setattr(
-        "spectraxgk.geometry_backends.vmec_numerics.nperiod_contract",
+        "spectraxgk.geometry_backends.vmec_fieldline_numerics.nperiod_contract",
         lambda values, theta, npol: (values[1:-1], theta[1:-1]),
     )
     values, theta = nperiod_set(

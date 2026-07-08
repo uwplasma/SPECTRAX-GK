@@ -2847,3 +2847,11 @@ following:
   artifact tests, py_compile, and the package architecture manifest passed
   locally. Tool Python files dropped to 232, and the topology baseline was
   tightened.
+
+- 2026-07-08: folded the two VMEC imported-geometry scalar numerical helpers
+  from `geometry_backends/vmec_numerics.py` into
+  `geometry_backends/vmec_fieldline_numerics.py`, preserving the public
+  `spectraxgk.geometry_backends.vmec` facade exports while deleting the tiny
+  standalone implementation shard. Updated VMEC helper tests, mypy overrides,
+  validation coverage ownership, and differentiable-refactor manifests. Source
+  Python files dropped to 275, and the topology baseline was tightened.

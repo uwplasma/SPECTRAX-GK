@@ -2868,16 +2868,6 @@ fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "test
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_numerics"
-source_path = "src/spectraxgk/geometry_backends/vmec_numerics.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "VMEC imported-geometry period contraction and nonuniform finite-difference helper numerics"
-moved_exports = ["dermv", "nperiod_set"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.geometry_backends.vmec_fieldline_numerics"
 source_path = "src/spectraxgk/geometry_backends/vmec_fieldline_numerics.py"
 facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
