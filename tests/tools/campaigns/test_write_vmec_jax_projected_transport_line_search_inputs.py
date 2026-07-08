@@ -1,29 +1,15 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import pytest
 
+from support.paths import load_campaign_tool
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = (
-    ROOT
-    / "tools"
-    / "campaigns"
-    / "write_vmec_jax_projected_transport_line_search_inputs.py"
-)
-spec = importlib.util.spec_from_file_location(
-    "write_vmec_jax_projected_transport_line_search_inputs", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+
+mod = load_campaign_tool("write_vmec_jax_projected_transport_line_search_inputs")
 
 
 def _gradient_report(path: Path) -> None:

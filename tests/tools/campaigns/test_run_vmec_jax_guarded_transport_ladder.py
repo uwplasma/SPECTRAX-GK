@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-import sys
+
+from support.paths import load_campaign_tool
 
 
-ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "campaigns" / "run_vmec_jax_guarded_transport_ladder.py"
-spec = importlib.util.spec_from_file_location(
-    "run_vmec_jax_guarded_transport_ladder", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_campaign_tool("run_vmec_jax_guarded_transport_ladder")
 
 
 def _write_candidate(

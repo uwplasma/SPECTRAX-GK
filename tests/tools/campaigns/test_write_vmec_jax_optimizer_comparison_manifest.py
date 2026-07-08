@@ -1,25 +1,19 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import shlex
 import subprocess
 import sys
 
+from support.paths import REPO_ROOT, load_campaign_tool
 
-ROOT = Path(__file__).resolve().parents[3]
+
+ROOT = REPO_ROOT
 SCRIPT = (
     ROOT / "tools" / "campaigns" / "write_vmec_jax_optimizer_comparison_manifest.py"
 )
-spec = importlib.util.spec_from_file_location(
-    "write_vmec_jax_optimizer_comparison_manifest", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_campaign_tool("write_vmec_jax_optimizer_comparison_manifest")
 
 
 def _entry(payload: dict[str, object], case_id: str) -> dict[str, object]:
