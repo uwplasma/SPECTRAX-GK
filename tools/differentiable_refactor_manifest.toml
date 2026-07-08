@@ -2041,15 +2041,6 @@ literature_anchors = [
 autodiff_gates = ["reduced differentiable nonlinear-window estimator stays separate from production long-window transport claim"]
 extension_points = ["NonlinearRHS", "TimeStepper", "TransportDiagnostic"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.operators.linear.streaming"
-source_path = "src/spectraxgk/operators/linear/streaming.py"
-facade_module = "spectraxgk.operators"
-status = "active"
-responsibility = "Hermite streaming kernel exposed through the linear operator package facade"
-moved_exports = ["hermite_streaming"]
-fast_tests = ["tests/unit/linear/test_linear.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.operators.linear.params"

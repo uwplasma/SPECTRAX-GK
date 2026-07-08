@@ -288,7 +288,6 @@ owned_modules = [
   "spectraxgk.diagnostics.modes",
   "spectraxgk.core.velocity",
   "spectraxgk.core.grid",
-  "spectraxgk.operators.linear.streaming",
   "spectraxgk.solvers.linear.eigen_operator",
   "spectraxgk.solvers.linear.eigen_preconditioners",
   "spectraxgk.solvers.linear.eigen_selection",

@@ -2925,3 +2925,13 @@ following:
   coverage summary, and tightened the source topology baseline to 274. Focused
   linear/Krylov tests, release tests, ruff, py_compile, and architecture checks
   passed locally.
+
+- 2026-07-08: folded `operators/linear/streaming.py` into
+  `operators/linear/moments.py`, where the other Hermite-Laguerre ladder
+  primitives already live. The public `spectraxgk.operators.hermite_streaming`
+  and `spectraxgk.operators.linear.hermite_streaming` exports remain intact,
+  while the private standalone implementation shard was removed. Updated
+  operator tests, differentiable/validation coverage manifests, regenerated
+  validation coverage metadata, and tightened the source topology baseline to
+  273. Operator tests, release tests, ruff, py_compile, and architecture checks
+  passed locally.

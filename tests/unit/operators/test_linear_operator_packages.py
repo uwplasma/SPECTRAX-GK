@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.operators.linear import hermite_streaming as package_streaming
-from spectraxgk.operators.linear.streaming import hermite_streaming as streaming_impl
+from spectraxgk.operators.linear.moments import hermite_streaming as streaming_impl
 
 
 def test_linear_operator_package_reexports_streaming_kernel() -> None:
