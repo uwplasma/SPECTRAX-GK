@@ -580,7 +580,7 @@ Completed extractions:
   drift diagonal assembly, linked Hermite-line solves, coarse kx projection,
   preconditioner selection, and matrix-free matvec construction as separate
   private stages;
-  focused developer helpers live in ``eigen_policy.py``, ``eigen_operator.py``,
+  focused developer helpers live in ``eigen_operator.py``,
   ``eigen_selection.py``, ``eigen_preconditioners.py``, and
   ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear

@@ -2219,15 +2219,6 @@ moved_exports = ["KrylovConfig", "dominant_eigenpair", "dominant_eigenvalue"]
 fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
-[[phase1_split_modules]]
-module = "spectraxgk.solvers.linear.eigen_policy"
-source_path = "src/spectraxgk/solvers/linear/eigen_policy.py"
-facade_module = "spectraxgk.solvers.linear.krylov"
-status = "active"
-responsibility = "immutable eigenmode-solver configuration policy used by runtime and benchmark scans"
-moved_exports = ["KrylovConfig"]
-fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/validation/benchmarks/test_benchmarks_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.solvers.linear.eigen_operator"

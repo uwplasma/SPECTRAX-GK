@@ -2916,3 +2916,12 @@ following:
   the tool topology baseline to 220. The affected artifact shards, release
   tests, ruff, py_compile, performance manifest, and architecture manifest
   passed locally.
+
+- 2026-07-08: folded the one-dataclass linear eigen-policy module into
+  `src/spectraxgk/solvers/linear/krylov.py`, so `KrylovConfig` now lives with
+  the Krylov solver owner instead of in a standalone policy shard. Removed
+  `solvers/linear/eigen_policy.py`, updated API/code-structure docs and the
+  differentiable/validation coverage manifests, regenerated the validation
+  coverage summary, and tightened the source topology baseline to 274. Focused
+  linear/Krylov tests, release tests, ruff, py_compile, and architecture checks
+  passed locally.

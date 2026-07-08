@@ -340,9 +340,9 @@ Linear Krylov Solvers
 Linear Eigenmode Solver Internals
 ---------------------------------
 
-``spectraxgk.solvers.linear.eigen_policy`` owns ``KrylovConfig``; the public
-``spectraxgk.solvers.linear.krylov`` facade re-exports it so existing scripts
-and TOML loaders keep the same import path.
+``spectraxgk.solvers.linear.krylov`` owns ``KrylovConfig`` and the public
+status-reporting wrapper, while the focused helper modules below own operator
+application, branch selection, preconditioning, and Arnoldi iterations.
 
 .. automodule:: spectraxgk.solvers.linear.eigen_operator
    :members:
