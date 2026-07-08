@@ -2774,3 +2774,12 @@ following:
   tools 234/99. Next structural target is another domain-level test/tool
   consolidation, followed by shrinking the oversized public
   `spectraxgk.benchmarks` facade without adding another source-file forest.
+
+- 2026-07-08: consolidated six small campaign command tests into
+  `tests/tools/campaigns/test_campaign_gate_commands.py`, covering device
+  parity, VMEC roundtrip, restart parity, benchmark refresh, imported-linear
+  targeted audit, and KBM low-ky audit command contracts. Updated the
+  validation-coverage manifest to reference the consolidated test. The
+  `tests/tools/campaigns` shard, validation-coverage manifest, ruff,
+  py_compile, and package architecture manifest passed locally. Test Python
+  files dropped further to 232 while source and tool counts remain unchanged.

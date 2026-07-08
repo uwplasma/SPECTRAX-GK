@@ -1612,7 +1612,7 @@ fast_tests = [
   "tests/unit/geometry/test_miller_eik.py",
   "tests/unit/geometry/test_vmec_eik.py",
   "tests/unit/geometry/test_vmec_roundtrip_gate.py",
-  "tests/tools/campaigns/test_run_vmec_roundtrip_gate.py",
+  "tests/tools/campaigns/test_campaign_gate_commands.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
