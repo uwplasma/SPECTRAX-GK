@@ -2960,16 +2960,6 @@ fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "test
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_types"
-source_path = "src/spectraxgk/geometry_backends/vmec_types.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "lightweight mutable container shared by VMEC imported-geometry assembly modules"
-moved_exports = ["_Struct"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.parallel_contracts_domain"
 source_path = "src/spectraxgk/operators/nonlinear/parallel_contracts_domain.py"
 facade_module = "spectraxgk.operators.nonlinear.parallel"

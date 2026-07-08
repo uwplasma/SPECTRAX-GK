@@ -16,7 +16,7 @@ import spectraxgk.geometry_backends.vmec_numerics as vmec_numerics
 import spectraxgk.geometry_backends.vmec_pipeline as vmec_pipeline
 import spectraxgk.geometry_backends.vmec_remap as vmec_remap
 import spectraxgk.geometry_backends.vmec_splines as vmec_splines
-from spectraxgk.geometry_backends.vmec_types import _Struct
+from spectraxgk.geometry_backends.vmec_splines import _Struct
 from spectraxgk.geometry_backends.vmec import (
     _apply_flux_tube_cut,
     _booz_read_wout_square_layout_failure,

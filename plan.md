@@ -2827,3 +2827,13 @@ following:
   artifact tests, py_compile, and the package architecture manifest passed
   locally. Tool Python files dropped to 233, and the topology baseline was
   tightened to preserve the reduction.
+
+- 2026-07-08: folded the private VMEC `_Struct` holder from
+  `geometry_backends/vmec_types.py` into `geometry_backends/vmec_splines.py`,
+  where the mutable VMEC assembly record is first constructed. Updated VMEC
+  helper imports, the geometry helper test, mypy overrides, validation coverage
+  ownership, differentiable-refactor manifest rows, and regenerated
+  `docs/_static/validation_coverage_manifest_summary.json`. Focused VMEC
+  geometry tests, validation-coverage manifest, differentiable-refactor
+  manifest, ruff, py_compile, and package architecture manifest passed locally.
+  Source Python files dropped to 276, and the topology baseline was tightened.
