@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import csv
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -14,13 +15,40 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC = REPO_ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-from spectraxgk.parallel.decomposition import (  # noqa: E402
-    DecompositionContract,
-    build_diagnostic_nonlinear_domain_decomposition,
-    build_independent_portfolio_decomposition,
-    serial_reconstruction_identity_report,
+
+
+def _load_decomposition_module() -> Any:
+    """Load the pure-stdlib decomposition helpers without importing the package.
+
+    The repo-hygiene CI job intentionally runs before optional numerical
+    dependencies are installed. Importing ``spectraxgk`` would pull in the full
+    public API and NumPy, while this artifact only needs the dependency-light
+    contract helpers.
+    """
+
+    path = SRC / "spectraxgk" / "parallel" / "decomposition.py"
+    spec = importlib.util.spec_from_file_location(
+        "_spectraxgk_parallel_decomposition",
+        path,
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load decomposition helpers from {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_DECOMPOSITION = _load_decomposition_module()
+DecompositionContract = _DECOMPOSITION.DecompositionContract
+build_diagnostic_nonlinear_domain_decomposition = (
+    _DECOMPOSITION.build_diagnostic_nonlinear_domain_decomposition
+)
+build_independent_portfolio_decomposition = (
+    _DECOMPOSITION.build_independent_portfolio_decomposition
+)
+serial_reconstruction_identity_report = (
+    _DECOMPOSITION.serial_reconstruction_identity_report
 )
 
 STATIC = REPO_ROOT / "docs" / "_static"
