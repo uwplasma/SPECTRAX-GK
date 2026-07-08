@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_campaign_tool
 
 import pytest
 
@@ -184,14 +182,7 @@ def test_ql_seed_screen_tracks_gate_blockers_and_validation_errors() -> None:
 def test_design_nonlinear_gradient_ql_seed_screen_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = ROOT / "tools" / "campaigns" / "design_nonlinear_gradient_ql_seed_screen.py"
-    spec = importlib.util.spec_from_file_location(
-        "design_nonlinear_gradient_ql_seed_screen", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_campaign_tool("design_nonlinear_gradient_ql_seed_screen")
 
     artifact_a = tmp_path / "a.json"
     artifact_b = tmp_path / "b.json"

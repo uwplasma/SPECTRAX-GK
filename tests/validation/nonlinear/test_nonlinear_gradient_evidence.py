@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import load_artifact_tool, load_campaign_tool, load_release_tool
 
 import numpy as np
 import pytest
@@ -38,22 +36,6 @@ from spectraxgk.diagnostics.transport_windows import (
 )
 from spectraxgk.diagnostics.transport_windows import (
     nonlinear_window_convergence_report,
-)
-
-
-ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_turbulence_gradient_evidence.py"
-FD_SCRIPT = (
-    ROOT / "tools" / "artifacts" / "build_nonlinear_turbulence_gradient_fd_gate.py"
-)
-CAMPAIGN_SCRIPT = (
-    ROOT / "tools" / "campaigns" / "write_nonlinear_turbulence_gradient_campaign.py"
-)
-RANK_SCRIPT = (
-    ROOT / "tools" / "campaigns" / "rank_nonlinear_turbulence_gradient_candidates.py"
-)
-BRACKET_SCRIPT = (
-    ROOT / "tools" / "campaigns" / "summarize_nonlinear_gradient_bracket_sweep.py"
 )
 
 
@@ -119,63 +101,23 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "check_nonlinear_turbulence_gradient_evidence", SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_nonlinear_turbulence_gradient_evidence")
 
 
 def _load_fd_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "build_nonlinear_turbulence_gradient_fd_gate", FD_SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_artifact_tool("build_nonlinear_turbulence_gradient_fd_gate")
 
 
 def _load_campaign_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "write_nonlinear_turbulence_gradient_campaign", CAMPAIGN_SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("write_nonlinear_turbulence_gradient_campaign")
 
 
 def _load_rank_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "rank_nonlinear_turbulence_gradient_candidates", RANK_SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("rank_nonlinear_turbulence_gradient_candidates")
 
 
 def _load_bracket_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "summarize_nonlinear_gradient_bracket_sweep", BRACKET_SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("summarize_nonlinear_gradient_bracket_sweep")
 
 
 def _window_report(offset: float, *, case: str) -> dict[str, object]:

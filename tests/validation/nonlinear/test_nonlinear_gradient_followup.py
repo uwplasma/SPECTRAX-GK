@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_artifact_tool, load_campaign_tool
 
 import pytest
 
@@ -34,19 +32,10 @@ from tools.campaigns.nonlinear_gradient_followup import (
 
 
 ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "campaigns" / "plan_nonlinear_gradient_followup.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location(
-        "plan_nonlinear_gradient_followup", SCRIPT
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_campaign_tool("plan_nonlinear_gradient_followup")
 
 
 def _ensemble(
@@ -757,19 +746,7 @@ def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
 
 
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = (
-        ROOT
-        / "tools"
-        / "artifacts"
-        / "build_nonlinear_gradient_evidence.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "build_nonlinear_gradient_evidence", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_artifact_tool("build_nonlinear_gradient_evidence")
 
     artifact = tmp_path / "candidate.json"
     payload = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
@@ -798,19 +775,7 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
 
 
 def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = (
-        ROOT
-        / "tools"
-        / "campaigns"
-        / "write_nonlinear_gradient_control_variate_campaign.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "write_nonlinear_gradient_control_variate_campaign", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_campaign_tool("write_nonlinear_gradient_control_variate_campaign")
 
     out_prefix = tmp_path / "cv_campaign"
     source = (
@@ -861,16 +826,7 @@ def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
 
 
 def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
-    path = (
-        ROOT / "tools" / "artifacts" / "build_nonlinear_gradient_evidence.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "build_nonlinear_gradient_evidence", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_artifact_tool("build_nonlinear_gradient_evidence")
 
     plus = tmp_path / "plus.json"
     minus = tmp_path / "minus.json"
@@ -909,14 +865,7 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
 def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = ROOT / "tools" / "campaigns" / "design_nonlinear_gradient_next_campaign.py"
-    spec = importlib.util.spec_from_file_location(
-        "design_nonlinear_gradient_next_campaign", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_campaign_tool("design_nonlinear_gradient_next_campaign")
 
     artifact = tmp_path / "candidate.json"
     out_prefix = tmp_path / "design"
@@ -1028,16 +977,7 @@ def test_composite_control_report_validates_config_and_metadata() -> None:
 def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = (
-        ROOT / "tools" / "campaigns" / "design_nonlinear_gradient_composite_control.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "design_nonlinear_gradient_composite_control", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_campaign_tool("design_nonlinear_gradient_composite_control")
 
     artifact = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
     artifact["parameter_name"] = "rbc_1_1"

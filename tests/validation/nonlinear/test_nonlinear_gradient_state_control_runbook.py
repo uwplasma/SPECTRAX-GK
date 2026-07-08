@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import load_campaign_tool
 
 import pytest
 
@@ -15,10 +13,6 @@ from tools.campaigns.nonlinear_gradient_followup import (
 from tools.campaigns.nonlinear_gradient_followup import (
     nonlinear_gradient_state_control_runbook_report,
 )
-
-
-ROOT = REPO_ROOT
-
 
 def _ql_screen() -> dict[str, object]:
     return {
@@ -184,19 +178,7 @@ def test_state_control_runbook_rejects_bad_mapping_and_validates_config() -> Non
 def test_design_nonlinear_gradient_state_control_runbook_tool_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    path = (
-        ROOT
-        / "tools"
-        / "campaigns"
-        / "design_nonlinear_gradient_state_control_runbook.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "design_nonlinear_gradient_state_control_runbook", path
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = load_campaign_tool("design_nonlinear_gradient_state_control_runbook")
 
     ql_path = tmp_path / "ql.json"
     mapping_path = tmp_path / "mapping.json"
