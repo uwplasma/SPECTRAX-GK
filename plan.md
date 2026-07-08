@@ -2783,3 +2783,11 @@ following:
   `tests/tools/campaigns` shard, validation-coverage manifest, ruff,
   py_compile, and package architecture manifest passed locally. Test Python
   files dropped further to 232 while source and tool counts remain unchanged.
+
+- 2026-07-08: consolidated four unreferenced small artifact plot/report tests
+  into `tests/tools/artifacts/test_artifact_plot_smoke.py`, covering
+  independent-ky scaling summaries, QA ITG README panel pending-artifact
+  behavior, quasilinear residual-anatomy fail-closed sidecars, and stellarator
+  optimization UQ plots. The full `tests/tools/artifacts` shard, ruff,
+  py_compile, and package architecture manifest passed locally. Test Python
+  files dropped to 229; source and tool file counts are unchanged.
