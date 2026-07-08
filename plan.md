@@ -2791,3 +2791,9 @@ following:
   optimization UQ plots. The full `tests/tools/artifacts` shard, ruff,
   py_compile, and package architecture manifest passed locally. Test Python
   files dropped to 229; source and tool file counts are unchanged.
+
+- 2026-07-08: tightened `tools/package_architecture_manifest.toml` topology
+  baselines after the consolidation pass so future commits cannot regress above
+  the new current counts: 277 source files, 229 test files, and 234 tool files.
+  The final topology targets remain unchanged at 100 source, 99 tests, and
+  99 tools.
