@@ -68,3 +68,9 @@ def load_profiling_tool(script_name: str) -> ModuleType:
     """Load a ``tools/profiling`` script directly from the checkout."""
 
     return load_tool_script("profiling", script_name)
+
+
+def load_comparison_tool(script_name: str) -> ModuleType:
+    """Load a ``tools/comparison`` script directly from the checkout."""
+
+    return load_tool_script("comparison", script_name)
