@@ -16,12 +16,12 @@ from support.paths import load_artifact_tool
 from spectraxgk.diagnostics.modes import save_eigenfunction_reference_bundle
 
 
-def test_plot_independent_ky_scan_scaling_defaults_and_rows(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_independent_ky_scan_scaling")
+def test_plot_scaling_panels_independent_ky_defaults_and_rows(tmp_path: Path) -> None:
+    mod = load_artifact_tool("plot_scaling_panels")
 
-    args = mod.build_parser().parse_args([])
-    assert args.inputs == mod.DEFAULT_INPUTS
-    assert args.out_prefix == mod.DEFAULT_PREFIX
+    args = mod.build_independent_ky_parser().parse_args([])
+    assert args.inputs == mod.DEFAULT_INDEPENDENT_KY_INPUTS
+    assert args.out_prefix == mod.DEFAULT_INDEPENDENT_KY_PREFIX
 
     payload = {
         "backend": "cpu",
@@ -45,7 +45,7 @@ def test_plot_independent_ky_scan_scaling_defaults_and_rows(tmp_path: Path) -> N
     path = tmp_path / "cpu.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
 
-    summary = mod.load_summary([path])
+    summary = mod.load_independent_ky_summary([path])
 
     assert summary["identity_passed"] is True
     assert summary["rows"][0]["backend"] == "cpu"
@@ -67,7 +67,9 @@ def test_eigenfunction_diagnostics_tool_writes_summary_and_overlay(
     )
     summary_png = tmp_path / "overlap.png"
     assert (
-        mod.main(["overlap-summary", "--csv", str(summary_csv), "--out", str(summary_png)])
+        mod.main(
+            ["overlap-summary", "--csv", str(summary_csv), "--out", str(summary_png)]
+        )
         == 0
     )
     assert summary_png.exists()
@@ -85,9 +87,7 @@ def test_eigenfunction_diagnostics_tool_writes_summary_and_overlay(
     spectrax_csv = tmp_path / "spectrax.csv"
     spectrax_csv.write_text(
         "z,eigen_real,eigen_imag\n"
-        + "\n".join(
-            f"{z},{value.real},{value.imag}" for z, value in zip(theta, mode)
-        )
+        + "\n".join(f"{z},{value.real},{value.imag}" for z, value in zip(theta, mode))
         + "\n",
         encoding="utf-8",
     )
@@ -274,15 +274,21 @@ def test_error_anatomy_report_and_cli_lock_fail_closed_residual_story(
     assert report["case_count"] == 12
     assert report["holdout_count"] == 10
     assert report["promotion_gate"]["passed"] is False
-    assert "case_residuals_exceed_transport_gate" in report["promotion_gate"]["blockers"]
+    assert (
+        "case_residuals_exceed_transport_gate" in report["promotion_gate"]["blockers"]
+    )
     assert 0.697 < report["candidate_mean_abs_relative_error"] < 0.698
-    assert report["rows"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
+    assert (
+        report["rows"][0]["case"] == "solovev_reference_repair_dt002_amp1em5_n48_t250"
+    )
     assert report["rows"][0]["above_transport_gate"] is True
     assert report["rows"][0]["overpredicts"] is True
     groups = {row["geometry_group"]: row for row in report["geometry_group_summary"]}
     assert groups["external axisymmetric VMEC"]["error_budget_fraction"] > 0.82
     assert groups["stellarator benchmark"]["mean_abs_relative_error"] < 0.35
-    assert report["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    assert (
+        report["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    )
     assert report["frozen_ledger_policy"]["ledger_case_count"] == 12
     assert report["dominant_residuals"][0]["case"] == report["rows"][0]["case"]
     core = report["core_portfolio_gate"]
@@ -317,7 +323,9 @@ def test_error_anatomy_report_and_cli_lock_fail_closed_residual_story(
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["promotion_gate"]["passed"] is False
     assert payload["core_portfolio_gate"]["passed"] is True
-    assert payload["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    assert (
+        payload["frozen_ledger_policy"]["additional_holdout_collection_active"] is False
+    )
     csv_text = out.with_suffix(".csv").read_text(encoding="utf-8")
     assert csv_text.startswith("case,label,split,geometry")
 

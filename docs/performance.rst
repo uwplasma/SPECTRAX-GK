@@ -507,7 +507,7 @@ be replotted with:
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_scaling_speedup.py
+   python tools/artifacts/plot_scaling_panels.py diffrax-speedup
 
 The exploratory distributed-RK2 strong-scaling data is still tracked for
 engineering work, but it is intentionally not presented as a headline
@@ -605,7 +605,7 @@ It is regenerated with:
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_gpu_large
 
-   python tools/artifacts/plot_independent_ky_scan_scaling.py
+   python tools/artifacts/plot_scaling_panels.py independent-ky
 
 The May 12, 2026 refresh passes the identity gate with zero reported
 ``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.94x`` on two
@@ -1046,7 +1046,7 @@ each device count gets a clean JAX runtime:
    # Equivalent office two-GPU profile preset with JAX traces enabled.
    python tools/profiling/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
 
-   python tools/artifacts/plot_nonlinear_sharding_strong_scaling.py
+   python tools/artifacts/plot_scaling_panels.py nonlinear-sharding
 
    python tools/artifacts/generate_nonlinear_sharding_production_gate.py
 

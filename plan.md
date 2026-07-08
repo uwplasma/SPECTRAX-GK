@@ -2908,3 +2908,11 @@ following:
   release-hygiene test that parses the quick-test matrix and fails if any
   hardcoded pytest path is missing. The explicit release-artifacts shard and
   full `tests/release` suite passed locally.
+
+- 2026-07-08: consolidated scaling figure entry points into
+  `tools/artifacts/plot_scaling_panels.py` with `diffrax-speedup`,
+  `independent-ky`, and `nonlinear-sharding` subcommands. Removed the three
+  one-panel wrappers, updated performance docs/tests/manifests, and tightened
+  the tool topology baseline to 220. The affected artifact shards, release
+  tests, ruff, py_compile, performance manifest, and architecture manifest
+  passed locally.

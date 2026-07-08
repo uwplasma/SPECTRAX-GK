@@ -17,7 +17,6 @@ from spectraxgk.objectives.vmec_transport_admission import (
 from support.paths import load_artifact_tool
 
 
-
 # Baseline-vs-optimized nonlinear audit assertions
 def _build_baseline_optimized_nonlinear_audit_ensemble_payload(
     *, case: str, mean: float, sem: float = 0.1
@@ -1691,21 +1690,21 @@ def test_parse_input_arg_and_case_label() -> None:
 
 
 # Nonlinear sharding strong-scaling assertions
-def test_plot_nonlinear_sharding_strong_scaling_parser_defaults_to_large_inputs() -> (
+def test_plot_scaling_panels_nonlinear_sharding_parser_defaults_to_large_inputs() -> (
     None
 ):
-    mod = load_artifact_tool("plot_nonlinear_sharding_strong_scaling")
+    mod = load_artifact_tool("plot_scaling_panels")
 
-    args = mod.build_parser().parse_args([])
+    args = mod.build_nonlinear_sharding_parser().parse_args([])
 
-    assert args.inputs == mod.DEFAULT_INPUTS
-    assert args.out_prefix == mod.DEFAULT_PREFIX
+    assert args.inputs == mod.DEFAULT_NONLINEAR_SHARDING_INPUTS
+    assert args.out_prefix == mod.DEFAULT_NONLINEAR_SHARDING_PREFIX
 
 
-def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(
+def test_plot_scaling_panels_nonlinear_sharding_loads_combined_rows(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_nonlinear_sharding_strong_scaling")
+    mod = load_artifact_tool("plot_scaling_panels")
     payload = {
         "backend": "cpu",
         "grid": {"Nx": 24, "Ny_requested": 48, "Nz": 96, "Nl": 4, "Nm": 8},
@@ -1731,7 +1730,7 @@ def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(
     path = tmp_path / "profile.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
 
-    summary = mod.load_summary([path])
+    summary = mod.load_nonlinear_sharding_summary([path])
 
     assert summary["identity_passed"] is True
     assert summary["speedup_passed"] is False
