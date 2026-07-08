@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_artifact_tool
 
 import jax
 import jax.numpy as jnp
@@ -58,13 +57,7 @@ from spectraxgk.objectives.solver_gradients import (
 
 
 ROOT = REPO_ROOT
-SCRIPT = ROOT / "tools" / "artifacts" / "build_solver_objective_gradient_gate.py"
-spec = importlib.util.spec_from_file_location(
-    "build_solver_objective_gradient_gate", SCRIPT
-)
-mod = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(mod)
+mod = load_artifact_tool("build_solver_objective_gradient_gate")
 
 
 def test_solver_ready_geometry_mapping_validates_contract() -> None:

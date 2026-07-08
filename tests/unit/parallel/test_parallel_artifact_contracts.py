@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from pathlib import Path
 
-from support.paths import REPO_ROOT
+from support.paths import REPO_ROOT, load_release_tool
 
 import pytest
 
@@ -29,16 +27,7 @@ def _load_toml(path: Path) -> dict:
 
 
 def _load_parallel_checker():
-    path = ROOT / "tools" / "release" / "check_parallel_scaling_artifacts.py"
-    spec = importlib.util.spec_from_file_location(
-        "check_parallel_scaling_artifacts", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return load_release_tool("check_parallel_scaling_artifacts")
 
 
 def _write_nonlinear_sharding_source_artifacts(

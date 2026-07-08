@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
-
-from support.paths import REPO_ROOT
 import sys
+
+from support.paths import REPO_ROOT, load_repo_script
 
 import pytest
 
@@ -25,11 +24,7 @@ from spectraxgk.workflows.runtime.config import (
 
 
 def _load_module_from_path(name: str, path: Path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_repo_script(path.relative_to(REPO_ROOT), module_name=name)
 
 
 def test_runtime_config_to_dict_contains_sections() -> None:

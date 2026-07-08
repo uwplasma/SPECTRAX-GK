@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import importlib.util
-
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_repo_script
 from types import SimpleNamespace
 
 import numpy as np
@@ -19,19 +16,11 @@ _CONFIG = _REPO / "examples" / "parallelization" / "runtime_batch_ky_scan.toml"
 
 
 def _load_example_module():
-    spec = importlib.util.spec_from_file_location(
-        "independent_ky_runtime_batch_scan", _EXAMPLE
+    return load_repo_script(
+        _EXAMPLE.relative_to(REPO_ROOT),
+        module_name="independent_ky_runtime_batch_scan",
+        write_bytecode=False,
     )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    previous = sys.dont_write_bytecode
-    sys.dont_write_bytecode = True
-    try:
-        spec.loader.exec_module(module)
-    finally:
-        sys.dont_write_bytecode = previous
-    return module
 
 
 def test_runtime_batch_ky_scan_example_uses_independent_workers(

@@ -18,7 +18,10 @@ TOOLS_ROOT = REPO_ROOT / "tools"
 
 
 def load_repo_script(
-    relative_path: str | Path, module_name: str | None = None
+    relative_path: str | Path,
+    module_name: str | None = None,
+    *,
+    write_bytecode: bool = True,
 ) -> ModuleType:
     """Load a repository script directly from the checkout."""
 
@@ -33,7 +36,12 @@ def load_repo_script(
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    previous = sys.dont_write_bytecode
+    sys.dont_write_bytecode = not write_bytecode
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = previous
     return module
 
 

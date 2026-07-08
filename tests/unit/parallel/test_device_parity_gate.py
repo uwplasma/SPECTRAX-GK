@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import os
 from dataclasses import replace
-import importlib.util
 from pathlib import Path
 
 import numpy as np
 import pytest
+from support.paths import load_repo_script
 
 jax = pytest.importorskip("jax")
 
@@ -14,17 +14,10 @@ from spectraxgk.runtime import run_runtime_nonlinear
 
 
 def _load_restart_base_cfg():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "integration"
-        / "runtime"
-        / "test_restart_gate.py"
+    module = load_repo_script(
+        Path("tests/integration/runtime/test_restart_gate.py"),
+        module_name="runtime_restart_gate_helpers",
     )
-    spec = importlib.util.spec_from_file_location("runtime_restart_gate_helpers", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
     return module._restart_base_cfg
 
 

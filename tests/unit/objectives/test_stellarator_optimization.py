@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import importlib.util
 import json
 from pathlib import Path
 
-from support.paths import REPO_ROOT
-import sys
+from support.paths import REPO_ROOT, load_repo_script
 from types import SimpleNamespace
 
 import jax
@@ -72,22 +70,12 @@ def _disable_optional_backend_discovery(monkeypatch) -> None:
 
 
 def _load_stellarator_itg_plotting_module():
-    path = (
-        REPO_ROOT
-        / "examples"
-        / "theory_and_demos"
-        / "reduced_stellarator_itg"
-        / "_stellarator_itg_plotting.py"
+    return load_repo_script(
+        Path(
+            "examples/theory_and_demos/reduced_stellarator_itg/_stellarator_itg_plotting.py"
+        ),
+        module_name="_stellarator_itg_plotting_for_test",
     )
-    spec = importlib.util.spec_from_file_location(
-        "_stellarator_itg_plotting_for_test", path
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 def test_reduced_stellarator_itg_development_scripts_are_explicit_workflows() -> None:
