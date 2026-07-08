@@ -1,21 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
+from support.paths import REPO_ROOT, load_campaign_tool
 import json
 from pathlib import Path
-import sys
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = REPO_ROOT
 SCRIPT = ROOT / "tools" / "campaigns" / "import_nonlinear_transport_matrix_portfolio.py"
-spec = importlib.util.spec_from_file_location(
-    "import_nonlinear_transport_matrix_portfolio", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_campaign_tool("import_nonlinear_transport_matrix_portfolio")
 
 
 def _write_json(path: Path, payload: dict) -> Path:

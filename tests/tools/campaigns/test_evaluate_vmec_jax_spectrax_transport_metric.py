@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+from support.paths import REPO_ROOT, load_campaign_tool
 import argparse
-import importlib.util
 import json
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -14,16 +13,9 @@ from spectraxgk import StellaratorITGSampleSet, VMECJAXTransportObjectiveConfig
 from spectraxgk.objectives.core import SOLVER_OBJECTIVE_NAMES
 
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = REPO_ROOT
 SCRIPT = ROOT / "tools" / "campaigns" / "evaluate_vmec_jax_spectrax_transport_metric.py"
-spec = importlib.util.spec_from_file_location(
-    "evaluate_vmec_jax_spectrax_transport_metric", SCRIPT
-)
-assert spec is not None
-assert spec.loader is not None
-mod = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = mod
-spec.loader.exec_module(mod)
+mod = load_campaign_tool("evaluate_vmec_jax_spectrax_transport_metric")
 
 
 def test_float_tuple_rejects_empty_or_nonfinite_values() -> None:
