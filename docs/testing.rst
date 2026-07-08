@@ -1250,7 +1250,7 @@ performance claims:
   ``docs/_static/velocity_field_reduce_gate.{png,pdf,csv,json}``. Its
   tolerance is a float32 communication/reduction-tree tolerance, not a physics
   acceptance tolerance.
-- ``tools/artifacts/generate_electrostatic_field_reduce_gate.py`` applies that reduction
+- ``tools/artifacts/generate_electrostatic_parallel_gates.py field-reduce`` applies that reduction
   pattern to the production electrostatic quasineutrality density moment and
   writes ``docs/_static/electrostatic_field_reduce_gate.{png,pdf,csv,json}``.
   It is currently scoped to single-species periodic electrostatic cases.
@@ -1260,11 +1260,11 @@ performance claims:
   ``docs/_static/hermite_streaming_ladder_gate.{png,pdf,csv,json}``. This is
   the last isolated communication/coefficient gate before a linear streaming
   microkernel can be wired.
-- ``tools/artifacts/generate_electrostatic_drift_gate.py`` gates the single-species
+- ``tools/artifacts/generate_electrostatic_parallel_gates.py drift`` gates the single-species
   periodic electrostatic mirror and curvature/grad-B drift slices against the
   production linear RHS. It uses offset-1 and offset-2 Hermite exchanges and
   writes ``docs/_static/electrostatic_drift_gate.{png,pdf,csv,json}``.
-- ``tools/artifacts/generate_electrostatic_diamagnetic_gate.py`` gates the
+- ``tools/artifacts/generate_electrostatic_parallel_gates.py diamagnetic`` gates the
   single-species periodic electrostatic diamagnetic drive against the
   production diamagnetic-only linear RHS. It uses the Hermite-sharded
   electrostatic field reduction plus local ``m=0`` and ``m=2`` drive masks and

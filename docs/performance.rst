@@ -751,7 +751,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py field-reduce --logical-devices 2
 
 The tracked artifact passes exactly on the current single-species periodic
 gate with ``phi_norm=1.68e-1`` and zero reported absolute/relative error. This
@@ -792,7 +792,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_drift_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py drift --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.21e-1`` and zero reported
 absolute/relative error for the mirror, curvature/grad-B, and combined drift
@@ -816,7 +816,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py diamagnetic --logical-devices 2
 
 The tracked artifact passes with ``phi_norm=1.68e-1`` and zero reported
 absolute/relative error against the production diamagnetic-only linear RHS.

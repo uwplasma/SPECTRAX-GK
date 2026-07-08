@@ -211,7 +211,7 @@ def build_linear_rhs_streaming_electrostatic_gate(
             "notes": (
                 "Only streaming is enabled. The state includes an m=0 density perturbation, so phi is nonzero. "
                 "The electrostatic field solve uses the Hermite-sharded field-reduction path gated separately by "
-                "tools/artifacts/generate_electrostatic_field_reduce_gate.py."
+                "tools/artifacts/generate_electrostatic_parallel_gates.py field-reduce."
             ),
         }
     )

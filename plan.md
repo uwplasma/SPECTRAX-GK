@@ -2869,3 +2869,10 @@ following:
   functions testable inside the new tool, updated performance/testing/example
   docs and the performance manifest, and tightened the tool topology baseline
   to 230.
+
+- 2026-07-08: consolidated the electrostatic field-reduction, drift-slice, and
+  diamagnetic-drive identity-gate tools into
+  `tools/artifacts/generate_electrostatic_parallel_gates.py` with
+  `field-reduce`, `drift`, and `diamagnetic` subcommands. Preserved the
+  existing build-function names for focused tests, updated docs/manifests and
+  tracked artifact notes, and tightened the tool topology baseline to 228.

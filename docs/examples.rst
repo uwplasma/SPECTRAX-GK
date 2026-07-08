@@ -217,7 +217,7 @@ The first production-field-solve reduction gate is:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py field-reduce --logical-devices 2
 
 .. figure:: _static/electrostatic_field_reduce_gate.png
    :alt: SPECTRAX-GK electrostatic field-reduction identity gate
@@ -245,7 +245,7 @@ The first electrostatic drift-slice gate is:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_drift_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py drift --logical-devices 2
 
 .. figure:: _static/electrostatic_drift_gate.png
    :alt: SPECTRAX-GK electrostatic drift-slice identity gate
@@ -259,7 +259,7 @@ The matching electrostatic diamagnetic-drive gate is:
 
 .. code-block:: bash
 
-   python tools/artifacts/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+   python tools/artifacts/generate_electrostatic_parallel_gates.py diamagnetic --logical-devices 2
 
 .. figure:: _static/electrostatic_diamagnetic_gate.png
    :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate

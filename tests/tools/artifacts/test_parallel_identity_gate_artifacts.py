@@ -9,11 +9,7 @@ import pytest
 
 from spectraxgk.benchmarks import CycloneScanResult
 from spectraxgk.workflows.runtime.results import RuntimeLinearScanResult
-from tools.artifacts import generate_electrostatic_diamagnetic_gate as diamagnetic_gate
-from tools.artifacts import generate_electrostatic_drift_gate as drift_gate
-from tools.artifacts import (
-    generate_electrostatic_field_reduce_gate as field_reduce_gate,
-)
+from tools.artifacts import generate_electrostatic_parallel_gates as electrostatic_gates
 from tools.artifacts import (
     generate_hermite_streaming_ladder_gate as hermite_ladder_gate,
 )
@@ -30,6 +26,9 @@ from tools.artifacts import generate_velocity_parallel_gates as velocity_paralle
 
 hermite_exchange_gate = velocity_parallel_gates
 velocity_reduce_gate = velocity_parallel_gates
+field_reduce_gate = electrostatic_gates
+diamagnetic_gate = electrostatic_gates
+drift_gate = electrostatic_gates
 
 
 class _VelocityPlan:
