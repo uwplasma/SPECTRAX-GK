@@ -2837,3 +2837,13 @@ following:
   geometry tests, validation-coverage manifest, differentiable-refactor
   manifest, ruff, py_compile, and package architecture manifest passed locally.
   Source Python files dropped to 276, and the topology baseline was tightened.
+
+- 2026-07-08: consolidated imported-geometry EIK helper wrappers into
+  `tools/artifacts/generate_geometry_eik.py` with `vmec` and `miller`
+  subcommands, deleting `tools/comparison/generate_gx_vmec_eik.py` and
+  `tools/artifacts/generate_miller_eik.py`. Updated geometry/examples docs
+  away from the old comparison-code filename and added routed subcommand tests
+  to `tests/tools/artifacts/test_artifact_plot_smoke.py`. Ruff, focused
+  artifact tests, py_compile, and the package architecture manifest passed
+  locally. Tool Python files dropped to 232, and the topology baseline was
+  tightened.
