@@ -1140,7 +1140,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/nonlinear/test_nonlinear_replicate_diagnostics.py",
-  "tests/tools/campaigns/test_summarize_nonlinear_replicate_spread.py",
+  "tests/tools/campaigns/test_campaign_manifest_reports.py",
 ]
 artifact_paths = [
   "docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.json",
@@ -1234,7 +1234,7 @@ fast_tests = [
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
   "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
-  "tests/tools/campaigns/test_prepare_external_vmec_holdout_from_screen.py",
+  "tests/tools/campaigns/test_campaign_manifest_reports.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_validated_calibration_inputs.json",

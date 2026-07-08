@@ -2809,3 +2809,12 @@ following:
   manifest, ruff, py_compile, and package architecture manifest passed locally.
   Test Python files dropped to 226, and the topology baseline was tightened to
   preserve that reduction.
+
+- 2026-07-08: consolidated four small campaign manifest/report tests into
+  `tests/tools/campaigns/test_campaign_manifest_reports.py`, covering QA
+  t=1500 postprocessing manifests, W7-X zonal closure sweep manifests,
+  external-VMEC holdout selection, and nonlinear replicate-spread summaries.
+  Updated the validation-coverage manifest to use the consolidated path. The
+  full `tests/tools/campaigns` shard, validation-coverage manifest, ruff,
+  py_compile, and package architecture manifest passed locally. Test Python
+  files dropped to 223, and the topology baseline was tightened accordingly.
