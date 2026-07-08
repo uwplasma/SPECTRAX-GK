@@ -48,7 +48,7 @@ def test_split_shards_rejects_nonpositive_count() -> None:
         split_shards([Path("tests/test_a.py")], 0)
 
 
-def test_discover_test_files_returns_sorted_top_level_tests(tmp_path: Path) -> None:
+def test_discover_test_files_returns_sorted_recursive_tests(tmp_path: Path) -> None:
     (tmp_path / "test_b.py").write_text("", encoding="utf-8")
     (tmp_path / "test_a.py").write_text("", encoding="utf-8")
     (tmp_path / "helper.py").write_text("", encoding="utf-8")
@@ -56,9 +56,10 @@ def test_discover_test_files_returns_sorted_top_level_tests(tmp_path: Path) -> N
     nested.mkdir()
     (nested / "test_nested.py").write_text("", encoding="utf-8")
 
-    assert [path.name for path in discover_test_files(tmp_path)] == [
-        "test_a.py",
-        "test_b.py",
+    assert [path.relative_to(tmp_path) for path in discover_test_files(tmp_path)] == [
+        Path("nested/test_nested.py"),
+        Path("test_a.py"),
+        Path("test_b.py"),
     ]
 
 

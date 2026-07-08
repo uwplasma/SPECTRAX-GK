@@ -1975,6 +1975,12 @@ Exit gates:
 
 ## Progress Log
 
+- 2026-07-08: fixed CI release-runner discovery after the test tree
+  consolidation. `run_tests_fast.py` and `run_wide_coverage_gate.py` now
+  discover nested `test_*.py` files recursively, their unit tests lock that
+  behavior, and the fast-coverage workflow no longer requires the stale
+  deleted `secondary.py` module entry while retaining the package-wide 95%
+  coverage gate.
 - 2026-07-07: added topology counts to
   `tools/package_architecture_manifest.toml` and extended
   `tools/release/check_package_architecture_manifest.py` so source, test, tool, flat

@@ -40,9 +40,10 @@ def _resolve_test_dir(test_dir: Path) -> Path:
 
 
 def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
-    """Return top-level pytest files in deterministic order."""
+    """Return pytest files below ``test_dir`` in deterministic order."""
 
-    return sorted(_resolve_test_dir(test_dir).glob("test_*.py"))
+    root = _resolve_test_dir(test_dir)
+    return sorted(path for path in root.rglob("test_*.py") if path.is_file())
 
 
 def _wide_coverage_test_weight(path: Path) -> int:
@@ -199,7 +200,7 @@ def parse_args() -> argparse.Namespace:
         "--test-dir",
         type=Path,
         default=DEFAULT_TEST_DIR,
-        help="Directory containing test_*.py files.",
+        help="Directory tree containing test_*.py files.",
     )
     parser.add_argument(
         "--dry-run",
