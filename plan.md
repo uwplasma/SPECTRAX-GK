@@ -2900,3 +2900,11 @@ following:
   wrappers, updated docs and tests to the explicit subcommands, and tightened
   the tool topology baseline to 222. The affected artifact shard and ruff
   passed locally.
+
+- 2026-07-08: fixed the CI release-artifacts shard after prior release tests
+  were consolidated. The workflow now references the current release-hygiene,
+  architecture, refactor-coverage, validation-coverage, readiness, scope, and
+  quasilinear guard tests instead of deleted one-off release files. Added a
+  release-hygiene test that parses the quick-test matrix and fails if any
+  hardcoded pytest path is missing. The explicit release-artifacts shard and
+  full `tests/release` suite passed locally.

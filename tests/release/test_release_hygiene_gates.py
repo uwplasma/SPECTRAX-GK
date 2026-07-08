@@ -6,6 +6,7 @@ import subprocess
 import textwrap
 
 import pytest
+import yaml
 
 from support.paths import load_release_tool
 from tools.artifacts.build_technical_release_status import (
@@ -106,6 +107,22 @@ def test_default_tag_from_github_env_ignores_branch_refs(
     monkeypatch.setenv("GITHUB_REF_TYPE", "tag")
 
     assert default_tag_from_github_env() == "v2.0.1"
+
+
+def test_ci_quick_test_matrix_references_existing_paths() -> None:
+    """Keep hardcoded CI pytest shards synchronized with the test tree."""
+
+    root = Path(__file__).resolve().parents[2]
+    workflow = yaml.safe_load((root / ".github" / "workflows" / "ci.yml").read_text())
+    shards = workflow["jobs"]["quick-tests"]["strategy"]["matrix"]["shard"]
+
+    missing: list[str] = []
+    for shard in shards:
+        for entry in str(shard["files"]).split():
+            if not (root / entry).exists():
+                missing.append(f"{shard['name']}: {entry}")
+
+    assert missing == []
 
 
 def _release_artifact_manifest(
