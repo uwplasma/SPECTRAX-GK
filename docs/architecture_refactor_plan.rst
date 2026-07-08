@@ -263,6 +263,9 @@ Stable facades during migration
   ``spectraxgk.linear``, ``spectraxgk.nonlinear``, ``spectraxgk.runtime``,
   ``spectraxgk.geometry``, ``spectraxgk.quasilinear``, and
   ``spectraxgk.benchmarks`` remain public facades while internals move.
+  Facades should be lazy when practical: importing a package to access version
+  metadata or pure contracts must not import NumPy/JAX-heavy kernels, solvers,
+  plotting, or file-I/O stacks.
 
 Explicit contracts at package boundaries
   Shared dataclasses, protocols, and PyTree containers live in ``core`` and
