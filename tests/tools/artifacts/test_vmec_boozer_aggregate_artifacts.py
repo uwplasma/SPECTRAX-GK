@@ -6,20 +6,21 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from tools.artifacts import build_vmec_boozer_aggregate_alpha_holdout_gate as alpha_gate
+from tools.artifacts import build_vmec_boozer_aggregate_holdout_gate as holdout_gate
 from tools.artifacts import (
     build_vmec_boozer_aggregate_line_search_comparison as comparison_gate,
 )
 from tools.artifacts import build_vmec_boozer_aggregate_objective_gate as objective_gate
-from tools.artifacts import (
-    build_vmec_boozer_aggregate_surface_holdout_gate as surface_gate,
-)
 from tools.artifacts import (
     build_vmec_boozer_multi_point_objective_gate as multi_point_gate,
 )
 from tools.artifacts import (
     build_vmec_boozer_second_equilibrium_aggregate_gate as second_gate,
 )
+
+
+alpha_gate = holdout_gate
+surface_gate = holdout_gate
 
 
 def _assert_artifacts(paths: dict[str, str], *, json_key: str, csv_token: str) -> dict:
@@ -299,6 +300,7 @@ def test_alpha_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
 
     result = alpha_gate.main(
         [
+            "alpha",
             "--out",
             str(tmp_path / "alpha_holdout.png"),
             "--holdout-alphas",
@@ -393,6 +395,7 @@ def test_surface_holdout_main_uses_report(monkeypatch, tmp_path: Path) -> None:
 
     result = surface_gate.main(
         [
+            "surface",
             "--out",
             str(tmp_path / "surface_holdout.png"),
             "--training-surface-indices",

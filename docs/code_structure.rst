@@ -38,6 +38,12 @@ Files that do not fit one of those roles should be deleted from ``main`` or
 moved to a draft experiment branch. Benchmark or comparison references to other
 codes are allowed only in explicit benchmark/comparison contexts.
 
+Artifact builders under ``tools/artifacts`` should be organized by validation
+family rather than by one output file per script. For example, the VMEC/Boozer
+aggregate holdout evidence now uses one
+``build_vmec_boozer_aggregate_holdout_gate.py`` command with ``alpha`` and
+``surface`` subcommands while preserving separate documented artifact names.
+
 Public API vs Internal Modules
 ------------------------------
 

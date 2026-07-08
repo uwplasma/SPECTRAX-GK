@@ -1975,6 +1975,17 @@ Exit gates:
 
 ## Progress Log
 
+- 2026-07-08: consolidated the VMEC/Boozer aggregate alpha-heldout and
+  surface-heldout artifact builders into the single
+  `tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py` family command
+  with `alpha` and `surface` subcommands. The existing evidence artifact names
+  remain unchanged, the JSON metadata now points to the family command, and the
+  shared writer keeps the same split objective, reduction, CSV, PNG, and PDF
+  contracts. Focused aggregate-artifact tests, the VMEC/Boozer aggregate release
+  gate tests, package-architecture tests, release artifact manifest check,
+  architecture/differentiable refactor manifest checks, ruff, py_compile, and
+  mypy on the changed builder passed. Tool Python files dropped to 238.
+
 - 2026-07-08: converted the root `spectraxgk` package,
   `spectraxgk.api` registry, and `spectraxgk.parallel` facade to lazy
   public-export resolution. This preserves `__all__`,
