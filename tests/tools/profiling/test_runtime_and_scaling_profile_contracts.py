@@ -9,7 +9,6 @@ import numpy as np
 
 from support.paths import REPO_ROOT, load_profiling_tool
 from tools.profiling import profile_linear_rhs_parallel_slices as linear_slices
-from tools.profiling import profile_linear_rhs_parallel_slices_sweep as linear_sweep
 from tools.profiling._profiler_options import make_profile_options
 from tools.profiling.profile_linear_cache_build import build_low_rank_moment_cache
 from tools.profiling.profile_runtime_startup import (
@@ -294,7 +293,9 @@ def test_profile_linear_rhs_parallel_slices_writes_artifacts(tmp_path: Path) -> 
     assert Path(paths["pdf"]).exists()
 
 
-def test_profile_linear_rhs_parallel_slices_sweep_builds_summary(monkeypatch) -> None:
+def test_linear_rhs_sweep_subcommand_builds_summary(
+    monkeypatch,
+) -> None:
     def fake_profile(**kwargs):  # type: ignore[no-untyped-def]
         devices = int(kwargs["requested_devices"])
         nm = int(kwargs["nm"])
@@ -311,9 +312,11 @@ def test_profile_linear_rhs_parallel_slices_sweep_builds_summary(monkeypatch) ->
             "max_phi_abs_error": 0.0,
         }
 
-    monkeypatch.setattr(linear_sweep, "profile_linear_rhs_parallel_slices", fake_profile)
+    monkeypatch.setattr(
+        linear_slices, "profile_linear_rhs_parallel_slices", fake_profile
+    )
 
-    summary = linear_sweep.run_sweep(
+    summary = linear_slices.run_sweep(
         platform="cpu",
         devices=[1, 2],
         nms=[8, 16],
@@ -332,7 +335,9 @@ def test_profile_linear_rhs_parallel_slices_sweep_builds_summary(monkeypatch) ->
     assert {row["speedup"] for row in summary["rows"]} == {1.0, 2.0}
 
 
-def test_profile_linear_rhs_parallel_slices_sweep_writes_artifacts(tmp_path: Path) -> None:
+def test_linear_rhs_sweep_subcommand_writes_artifacts(
+    tmp_path: Path,
+) -> None:
     summary = {
         "identity_passed": True,
         "rtol": 1.0e-5,
@@ -366,7 +371,7 @@ def test_profile_linear_rhs_parallel_slices_sweep_writes_artifacts(tmp_path: Pat
         ],
     }
     out = tmp_path / "linear_rhs_parallel_slices_sweep"
-    paths = linear_sweep.write_artifacts(summary, out)
+    paths = linear_slices.write_sweep_artifacts(summary, out)
 
     assert json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))["identity_passed"] is True
     assert "requested_devices" in out.with_suffix(".csv").read_text(encoding="utf-8")

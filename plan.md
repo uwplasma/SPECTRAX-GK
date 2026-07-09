@@ -3632,3 +3632,14 @@ following:
   for release hosting. The release hygiene/readiness shards, Python lint check,
   validation manifest, release tests, compile check, command smoke check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/profiling/profile_linear_rhs_parallel_slices_sweep.py` into
+  `tools/profiling/profile_linear_rhs_parallel_slices.py` as the `sweep`
+  subcommand. Single-call linear-RHS profiling and bounded Hermite/device
+  engineering sweeps now share one performance-profiling owner, and docs/examples
+  call `python tools/profiling/profile_linear_rhs_parallel_slices.py sweep`.
+  The package architecture tool baseline tightened from 201 to 200. The focused
+  profiling contract shard, Python lint check, command-help smoke checks,
+  validation manifest, compile check, diff hygiene, and architecture manifest
+  passed locally.

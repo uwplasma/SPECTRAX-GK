@@ -951,7 +951,7 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_linear_rhs_parallel_slices_sweep.py \
+   python tools/profiling/profile_linear_rhs_parallel_slices.py sweep \
      --platform cpu --devices 1,2,4,8 --nms 64,128 \
      --nl 4 --ny 32 --nz 128 --rtol 1e-5
 
