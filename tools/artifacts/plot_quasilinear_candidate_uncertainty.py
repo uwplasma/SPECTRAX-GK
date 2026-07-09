@@ -25,7 +25,7 @@ from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
     raw_rule_estimates,
     require_validated_nonlinear_inputs,
 )
-from plot_quasilinear_shape_aware_saturation import (  # noqa: E402
+from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
     _observed_flux,
     fit_power_law_shape_exponent,
     shape_aware_raw_estimate,

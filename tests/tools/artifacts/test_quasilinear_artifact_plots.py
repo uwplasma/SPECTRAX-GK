@@ -1494,7 +1494,7 @@ def _shape_aware_write_case(
 
 
 def test_fit_power_law_shape_exponent_uses_case_intercepts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_shape_aware_saturation")
+    mod = load_artifact_tool("plot_quasilinear_saturation_rule_sweep")
     cases = []
     for name, dist in [
         ("a", (0.2, 0.3, 0.5)),
@@ -1513,7 +1513,7 @@ def test_fit_power_law_shape_exponent_uses_case_intercepts(tmp_path: Path) -> No
 
 
 def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_shape_aware_saturation")
+    mod = load_artifact_tool("plot_quasilinear_saturation_rule_sweep")
     cases = []
     for name, observed, dist in [
         ("a", 1.0, (0.2, 0.3, 0.5)),
@@ -1551,7 +1551,7 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
 
 
 def test_observed_flux_falls_back_to_tracked_calibration_points(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_shape_aware_saturation")
+    mod = load_artifact_tool("plot_quasilinear_saturation_rule_sweep")
     case = mod.SaturationCase(
         "cyclone_long_window",
         "train",
@@ -1568,7 +1568,7 @@ def test_observed_flux_falls_back_to_tracked_calibration_points(tmp_path: Path) 
 
 
 def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_shape_aware_saturation")
+    mod = load_artifact_tool("plot_quasilinear_saturation_rule_sweep")
     spectrum, summary, _shape = _shape_aware_write_case(
         tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5)
     )
@@ -1579,7 +1579,7 @@ def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
 
 
 def test_shape_aware_report_rejects_incomplete_shape_gate(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_shape_aware_saturation")
+    mod = load_artifact_tool("plot_quasilinear_saturation_rule_sweep")
     spectrum, summary, shape = _shape_aware_write_case(
         tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5)
     )

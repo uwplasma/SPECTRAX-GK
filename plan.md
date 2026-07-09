@@ -3750,3 +3750,16 @@ following:
   package architecture test baseline tightened from 140 to 139 files. The
   merged diffrax shard, differentiable refactor manifest, Python lint check,
   stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/plot_quasilinear_shape_aware_saturation.py` into
+  `tools/artifacts/plot_quasilinear_saturation_rule_sweep.py` as the
+  `shape-aware` mode. Simple-rule saturation sweeps and the shape-aware
+  leave-one-geometry-out diagnostic now share one quasilinear saturation-model
+  artifact owner while preserving the shape-aware report/figure helper
+  functions for tests and downstream artifact tools. The package architecture
+  tool baseline tightened from 181 to 180 files. The saturation/shape-aware and
+  candidate-uncertainty artifact shard, direct shape-aware CLI smoke,
+  quasilinear promotion guardrails, validation coverage manifest,
+  differentiable refactor manifest, Python lint check, stale-reference scan,
+  and architecture manifest passed locally.

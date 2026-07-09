@@ -1029,7 +1029,7 @@ the other geometries.
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_shape_aware_saturation.py \
+   python tools/artifacts/plot_quasilinear_saturation_rule_sweep.py shape-aware \
      --passed-shape-only \
      --out docs/_static/quasilinear_shape_aware_saturation.png
 
