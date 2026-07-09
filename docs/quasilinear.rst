@@ -714,7 +714,7 @@ observable.
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_calibration_report.py \
+   python tools/artifacts/plot_quasilinear_calibration.py report \
      --points docs/_static/quasilinear_calibration_points.json \
      --out docs/_static/quasilinear_calibration_report.json \
      --saturation-rule mixing_length
@@ -738,7 +738,7 @@ a nonlinear gate summary:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_calibration_report.py \
+   python tools/artifacts/plot_quasilinear_calibration.py report \
      --spectrum docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_cyclone_gate_summary.json \
      --split audit \
@@ -794,7 +794,7 @@ The report is generated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_calibration_report.py \
+   python tools/artifacts/plot_quasilinear_calibration.py report \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --fit-train-scale \
      --out docs/_static/quasilinear_cyclone_miller_train_holdout_report.json
@@ -842,7 +842,7 @@ generated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_calibration_report.py \
+   python tools/artifacts/plot_quasilinear_calibration.py report \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_hsx_gate_summary.json \
@@ -908,7 +908,7 @@ window is added to the same train/holdout report with:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_calibration_report.py \
+   python tools/artifacts/plot_quasilinear_calibration.py report \
      --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
      --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
      --nonlinear-summary docs/_static/nonlinear_w7x_gate_summary.json \

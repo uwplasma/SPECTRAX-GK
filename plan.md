@@ -3698,3 +3698,13 @@ following:
   184 to 183. The zero-norm helper shard, linear-RHS parallel identity shard,
   Python lint check, command-help smoke checks, stale-reference scan, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/artifacts/build_quasilinear_calibration_report.py`
+  into `tools/artifacts/plot_quasilinear_calibration.py` as the `report`
+  subcommand. Quasilinear calibration JSON generation and publication-facing
+  calibration plots now share one quasilinear calibration artifact owner, while
+  preserving direct plotting behavior and module-level report-builder argument
+  compatibility for tests. The package architecture tool baseline tightened
+  from 183 to 182. The quasilinear calibration report/plot shard, Python lint
+  check, command-help smoke checks, stale-reference scan, diff hygiene, and
+  architecture manifest passed locally.

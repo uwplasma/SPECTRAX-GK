@@ -35,7 +35,7 @@ from spectraxgk.diagnostics.transport_windows import (
 
 
 def _load_build_tool_module():
-    return load_artifact_tool("build_quasilinear_calibration_report")
+    return load_artifact_tool("plot_quasilinear_calibration")
 
 
 def _valid_window_stats(case: str = "holdout") -> dict:
