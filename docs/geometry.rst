@@ -359,7 +359,7 @@ writer with:
 
 .. code-block:: bash
 
-   python tools/artifacts/build_vmec_jax_boundary_chain_collection.py \
+   python tools/artifacts/build_vmec_state_to_input_mapping_response.py boundary-chain-collection \
      --probe-json tools_out/latest_vmec_stack/boundary_chain_zs13_h2e5_branch_locality.json \
                   tools_out/latest_vmec_stack/boundary_chain_rc14_h2e5_branch_locality.json \
      --out-json tools_out/latest_vmec_stack/boundary_chain_growth_collection.json

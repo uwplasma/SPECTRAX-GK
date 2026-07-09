@@ -3570,3 +3570,13 @@ following:
   209 to 208. The linear-validation artifact shard, Python lint check,
   validation manifest, release tests, compile check, command smoke check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/build_vmec_jax_boundary_chain_collection.py` into
+  `tools/artifacts/build_vmec_state_to_input_mapping_response.py` as the
+  `boundary-chain-collection` subcommand. Boundary-chain locality collections,
+  state-to-input response maps, and bracket-amplitude sweep status now share one
+  VMEC state-control artifact owner. The package architecture tool baseline
+  tightened from 208 to 207. The VMEC misc artifact shard, Python lint check,
+  validation manifest, release tests, compile check, command smoke check, diff
+  hygiene, and architecture manifest passed locally.

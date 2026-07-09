@@ -295,8 +295,8 @@ def test_build_collection_payload_counts_growth_branch_status(tmp_path: Path) ->
     )
 
     payload = load_artifact_tool(
-        "build_vmec_jax_boundary_chain_collection"
-    ).build_collection_payload([first, second])
+        "build_vmec_state_to_input_mapping_response"
+    ).build_boundary_chain_collection_payload([first, second])
 
     assert payload["finite"] is True
     assert (
@@ -319,8 +319,8 @@ def test_build_collection_main_writes_json(tmp_path: Path) -> None:
         first, index=1, exact_ok=True, growth_ok=True
     )
 
-    rc = load_artifact_tool("build_vmec_jax_boundary_chain_collection").main(
-        ["--probe-json", str(first), "--out-json", str(out)]
+    rc = load_artifact_tool("build_vmec_state_to_input_mapping_response").main(
+        ["boundary-chain-collection", "--probe-json", str(first), "--out-json", str(out)]
     )
 
     payload = json.loads(out.read_text(encoding="utf-8"))

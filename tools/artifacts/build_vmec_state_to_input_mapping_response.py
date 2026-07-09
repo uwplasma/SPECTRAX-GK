@@ -20,6 +20,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.campaigns.write_vmec_boundary_perturbation_inputs import _json_clean  # noqa: E402
+from spectraxgk.geometry.vmec_boundary_chain import (  # noqa: E402
+    build_boundary_chain_collection_summary,
+)
 
 
 DEFAULT_OUT_PREFIX = (
@@ -587,6 +590,65 @@ def build_bracket_sweep_status_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_boundary_chain_collection_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Summarize VMEC-JAX boundary-chain probe JSON files."
+    )
+    parser.add_argument(
+        "--probe-json",
+        type=Path,
+        nargs="+",
+        required=True,
+        help="One or more JSON files from tools/campaigns/audit_vmec_jax_boundary_chain.py.",
+    )
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--exact-relative-tolerance", type=float, default=1.0e-1)
+    parser.add_argument("--internal-relative-tolerance", type=float, default=1.0e-8)
+    parser.add_argument("--absolute-tolerance", type=float, default=1.0e-10)
+    return parser
+
+
+def build_boundary_chain_collection_payload(
+    probe_paths: list[Path],
+    *,
+    exact_relative_tolerance: float = 1.0e-1,
+    internal_relative_tolerance: float = 1.0e-8,
+    absolute_tolerance: float = 1.0e-10,
+) -> dict[str, Any]:
+    """Return a JSON-safe collection summary from boundary-chain probe paths."""
+
+    probes = [json.loads(path.read_text(encoding="utf-8")) for path in probe_paths]
+    payload = build_boundary_chain_collection_summary(
+        probes,
+        exact_relative_tolerance=float(exact_relative_tolerance),
+        internal_relative_tolerance=float(internal_relative_tolerance),
+        absolute_tolerance=float(absolute_tolerance),
+    )
+    payload["probe_jsons"] = [str(path) for path in probe_paths]
+    payload["claim_scope"] = (
+        "sparse VMEC-JAX boundary-chain and optional SPECTRAX growth-branch "
+        "locality collection gate; not a nonlinear transport optimization claim"
+    )
+    return payload
+
+
+def main_boundary_chain_collection(argv: list[str] | None = None) -> int:
+    args = build_boundary_chain_collection_parser().parse_args(argv)
+    payload = build_boundary_chain_collection_payload(
+        list(args.probe_json),
+        exact_relative_tolerance=float(args.exact_relative_tolerance),
+        internal_relative_tolerance=float(args.internal_relative_tolerance),
+        absolute_tolerance=float(args.absolute_tolerance),
+    )
+    args.out_json.parent.mkdir(parents=True, exist_ok=True)
+    args.out_json.write_text(
+        json.dumps(payload, indent=2, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(payload, indent=2, allow_nan=False))
+    return 0 if bool(payload.get("finite", False)) else 1
+
+
 def main_bracket_sweep_status(argv: list[str] | None = None) -> int:
     args = build_bracket_sweep_status_parser().parse_args(argv)
     report = build_bracket_sweep_status(
@@ -612,6 +674,8 @@ def main_bracket_sweep_status(argv: list[str] | None = None) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
+    if tokens and tokens[0] == "boundary-chain-collection":
+        return main_boundary_chain_collection(tokens[1:])
     if tokens and tokens[0] == "bracket-sweep-status":
         return main_bracket_sweep_status(tokens[1:])
 
