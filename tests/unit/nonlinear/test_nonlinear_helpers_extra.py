@@ -398,12 +398,12 @@ def test_select_nonlinear_step_diagnostics_and_progress_noop() -> None:
     np.testing.assert_allclose(np.asarray(out), [7.0])
 
 
-def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:
+def test_nonlinear_diagnostic_helpers_are_reexported_by_public_facade() -> None:
     for name in nonlinear_diagnostics.__all__:
         assert getattr(nonlinear_mod, name) is getattr(nonlinear_diagnostics, name)
 
 
-def test_nonlinear_helpers_preserve_legacy_exports() -> None:
+def test_nonlinear_policy_helpers_are_reexported_by_public_facade() -> None:
     for name in nonlinear_helpers.__all__:
         assert getattr(nonlinear_mod, name) is getattr(nonlinear_helpers, name)
     for name in nonlinear_collisions.__all__:

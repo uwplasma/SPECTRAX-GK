@@ -3435,3 +3435,10 @@ following:
   aliases. The parallel-domain shard, public import check, Python lint check,
   stale-name scan, release tests, compile check, diff hygiene, and architecture
   manifest passed locally.
+
+- 2026-07-08: renamed nonlinear helper tests that described the public facade
+  as "legacy exports". The tests now assert that diagnostics and policy helpers
+  are re-exported by the documented public facade, matching the architecture
+  plan without suggesting old compatibility behavior is being preserved. The
+  nonlinear helper shard, Python lint check, stale-name scan, compile check,
+  and diff hygiene passed locally.
