@@ -3161,3 +3161,12 @@ following:
   share one VMEC campaign-writer owner while preserving fail-closed validation,
   LASYM insertion, manifest, and generated-input assertions. Updated validation
   ownership and tightened the package architecture test baseline to 179.
+
+
+- 2026-07-08: consolidated VMEC-JAX campaign-writer tests into
+  `tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py`. Optimizer
+  comparison manifests, projected transport line-search inputs, and SPSA
+  common-random-number candidate generation now share one VMEC-JAX writer
+  contract owner while keeping runnable-command, boundary-chain, strict QA gate,
+  and CLI-write assertions. Updated validation ownership and tightened the
+  package architecture test baseline to 177.

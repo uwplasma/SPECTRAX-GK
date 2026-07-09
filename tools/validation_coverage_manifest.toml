@@ -2571,7 +2571,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_vmec_jax_transport_admission.py",
-  "tests/tools/campaigns/test_write_vmec_jax_projected_transport_line_search_inputs.py",
+  "tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
@@ -2674,7 +2674,7 @@ fast_tests = [
   "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
   "tests/unit/objectives/test_vmec_jax_transport_line_search.py",
   "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-  "tests/tools/campaigns/test_write_vmec_jax_projected_transport_line_search_inputs.py",
+  "tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
