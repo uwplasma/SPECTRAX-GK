@@ -1227,15 +1227,13 @@ more aggregate matrix reports, selects the passing family with the largest mean
 heat-flux reduction, and records strict ``t=1500`` growth/QL/nonlinear-window
 matched comparisons only as excluded negative-transfer evidence.
 After that gate passes, import the selected release artifacts with
-``tools/campaigns/import_nonlinear_transport_matrix_portfolio.py``. The importer is
-fail-closed: it rejects blocked portfolios and writes the canonical
+``tools/campaigns/finalize_nonlinear_transport_matrix_release.py``. The finalizer is
+fail-closed: it rejects blocked portfolios, writes the canonical
 ``docs/_static/nonlinear_transport_matrix_portfolio.{json,png}`` plus the
-selected matrix report only for a passing broad matrix family.
-For release candidates, prefer
-``tools/campaigns/finalize_nonlinear_transport_matrix_release.py``. It wraps that import
-and immediately rebuilds the manuscript-readiness and strict pre-manuscript
-closure panels, so the documentation dashboard cannot lag behind the selected
-matrix family.
+selected matrix report only for a passing broad matrix family, and immediately
+rebuilds the manuscript-readiness and strict pre-manuscript closure panels. Use
+``--skip-dashboard-regeneration`` only for import-path debugging or tests, not
+for release candidates.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

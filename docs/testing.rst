@@ -107,8 +107,9 @@ Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
 ``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` writes the long-window
 matched matrix, ``tools/release/check_nonlinear_transport_matrix_portfolio.py`` selects
-only a passing family, and ``tools/campaigns/import_nonlinear_transport_matrix_portfolio.py``
-refuses blocked portfolios. The current tracked max-mode-5 campaign is negative
+only a passing family, and ``tools/campaigns/finalize_nonlinear_transport_matrix_release.py``
+refuses blocked portfolios before importing any release artifacts. The current
+tracked max-mode-5 campaign is negative
 evidence: accepted QA/ESS passed only ``9/18`` samples, projected weight
 ``1e-3`` failed early, and projected weight ``5e-4`` increased heat flux on its
 first completed sample. The negative ledger is
@@ -801,18 +802,12 @@ excluded negative-transfer evidence. This prevents the release process from
 counting negative strict rows or single-point matched audits toward the broad
 nonlinear turbulent-flux optimization claim.
 
-``tools/campaigns/import_nonlinear_transport_matrix_portfolio.py`` is the release import
-step after that selector passes. It refuses blocked or malformed portfolio
-JSON, then copies the canonical portfolio artifact and the selected family
-matrix report into ``docs/_static``. This keeps the documentation dashboard
-fail-closed: a broad nonlinear turbulent-flux optimization claim can appear in
-the shipped docs only after the matrix portfolio gate has passed.
-
-``tools/campaigns/finalize_nonlinear_transport_matrix_release.py`` is the preferred
-release wrapper after a portfolio passes. It calls the fail-closed importer and
-then regenerates the manuscript-readiness, pre-manuscript closure, and closure
-runbook artifacts. Use this wrapper for release candidates; use the lower-level
-importer only when debugging copied paths.
+``tools/campaigns/finalize_nonlinear_transport_matrix_release.py`` is the release
+import and dashboard wrapper after a portfolio passes. It refuses blocked or
+malformed portfolio JSON, copies the canonical portfolio artifact and selected
+family matrix report into ``docs/_static``, and then regenerates the
+manuscript-readiness, pre-manuscript closure, and closure runbook artifacts. Use
+``--skip-dashboard-regeneration`` only for import-path debugging or tests.
 
 ``tools/campaigns/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips

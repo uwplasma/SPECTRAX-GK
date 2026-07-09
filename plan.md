@@ -3474,3 +3474,15 @@ following:
   manifest, differentiable refactor manifest, release tests, stale-reference
   scan with only historical plan-log hits, compile check, diff hygiene, and
   architecture manifest passed locally.
+
+- 2026-07-08: folded
+  `tools/campaigns/import_nonlinear_transport_matrix_portfolio.py` into
+  `tools/campaigns/finalize_nonlinear_transport_matrix_release.py`. The
+  finalizer now owns both fail-closed portfolio import and optional dashboard
+  regeneration; `--skip-dashboard-regeneration` is the import-only/debug path.
+  Docs now point to the finalizer as the single release command, while the
+  `nonlinear_transport_matrix_portfolio_import.json` schema remains as the
+  copied-artifact manifest. The package architecture tool baseline tightened
+  from 213 to 212. The campaign contract shard, Python lint check, validation
+  manifest, release tests, stale-reference scan, compile check, diff hygiene,
+  and architecture manifest passed locally.

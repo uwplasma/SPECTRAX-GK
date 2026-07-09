@@ -9,7 +9,6 @@ import pytest
 
 from support.paths import load_campaign_tool
 
-portfolio_import = load_campaign_tool("import_nonlinear_transport_matrix_portfolio")
 release_finalizer = load_campaign_tool("finalize_nonlinear_transport_matrix_release")
 over_writer = load_campaign_tool("write_overdetermined_nonlinear_gradient_campaign")
 over_runner = load_campaign_tool("run_overdetermined_nonlinear_gradient_campaign")
@@ -36,7 +35,7 @@ def _overdetermined_input_text() -> str:
 """
 
 
-def test_import_nonlinear_transport_matrix_portfolio_selected_family_only(
+def test_finalize_nonlinear_transport_matrix_release_import_artifacts_selected_family_only(
     tmp_path: Path,
 ) -> None:
     portfolio = _write_json(
@@ -55,7 +54,7 @@ def test_import_nonlinear_transport_matrix_portfolio_selected_family_only(
     matrix_png = _write_png_stub(tmp_path / "projected.png")
     docs_static = tmp_path / "docs_static"
 
-    manifest = portfolio_import.import_artifacts(
+    manifest = release_finalizer.import_artifacts(
         portfolio_json=portfolio,
         portfolio_figure=portfolio_png,
         matrix_report_jsons={"projected_0p001": matrix_json},
@@ -77,7 +76,7 @@ def test_import_nonlinear_transport_matrix_portfolio_selected_family_only(
     assert import_manifest["kind"] == "nonlinear_transport_matrix_portfolio_import"
 
 
-def test_import_nonlinear_transport_matrix_portfolio_fail_closed_and_cli(
+def test_finalize_nonlinear_transport_matrix_release_import_artifacts_fail_closed(
     tmp_path: Path,
 ) -> None:
     blocked = _write_json(
@@ -89,51 +88,13 @@ def test_import_nonlinear_transport_matrix_portfolio_fail_closed_and_cli(
         },
     )
     with pytest.raises(ValueError, match="blocked"):
-        portfolio_import.import_artifacts(
+        release_finalizer.import_artifacts(
             portfolio_json=blocked,
             portfolio_figure=None,
             matrix_report_jsons={},
             matrix_report_figures={},
             docs_static=tmp_path / "docs_static",
         )
-
-    portfolio = _write_json(
-        tmp_path / "portfolio.json",
-        {
-            "kind": "nonlinear_transport_matrix_portfolio_gate",
-            "passed": True,
-            "selected_family": "accepted_qa_ess",
-        },
-    )
-    portfolio_png = _write_png_stub(tmp_path / "portfolio.png")
-    matrix_json = _write_json(
-        tmp_path / "accepted.json",
-        {"kind": "matched_nonlinear_transport_matrix_report", "passed": True},
-    )
-    matrix_png = _write_png_stub(tmp_path / "accepted.png")
-    docs_static = tmp_path / "docs_static"
-
-    rc = portfolio_import.main(
-        [
-            "--portfolio-json",
-            str(portfolio),
-            "--portfolio-figure",
-            str(portfolio_png),
-            "--matrix-report-json",
-            f"accepted_qa_ess={matrix_json}",
-            "--matrix-report-figure",
-            f"accepted_qa_ess={matrix_png}",
-            "--docs-static",
-            str(docs_static),
-        ]
-    )
-    assert rc == 0
-    payload = json.loads(
-        (docs_static / "nonlinear_transport_matrix_portfolio_import.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    assert payload["selected_family"] == "accepted_qa_ess"
 
 
 def test_finalize_nonlinear_transport_matrix_release_imports_passing_portfolio(
