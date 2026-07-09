@@ -35,41 +35,6 @@ def test_imported_window_parser_accepts_required_args() -> None:
     assert args.time_index_stop == 1
 
 
-def test_startup_select_ky_block_and_parser_contracts() -> None:
-    mod = load_comparison_tool("compare_gx_startup")
-    arr = np.arange(2 * 3 * 4 * 5 * 6).reshape(2, 3, 4, 5, 6)
-
-    sliced = mod._select_ky_block(arr, 2)
-
-    assert sliced.shape == (2, 3, 1, 5, 6)
-    assert np.array_equal(sliced[:, :, 0, :, :], arr[:, :, 2, :, :])
-
-    args = mod.build_parser().parse_args(
-        [
-            "--gx-dir",
-            "gx_dump",
-            "--gx-out",
-            "gx.out.nc",
-            "--case",
-            "kbm",
-            "--ky",
-            "0.3",
-            "--Ny",
-            "16",
-            "--Nz",
-            "96",
-            "--Nl",
-            "16",
-            "--Nm",
-            "48",
-        ]
-    )
-    assert args.case == "kbm"
-    assert args.gx_dir == Path("gx_dump")
-    assert args.gx_out == Path("gx.out.nc")
-    assert args.ky == 0.3
-
-
 def test_nonlinear_comparison_loaders_and_late_window_stats(tmp_path: Path) -> None:
     mod = load_comparison_tool("compare_gx_nonlinear")
     csv_path = tmp_path / "restart.csv"

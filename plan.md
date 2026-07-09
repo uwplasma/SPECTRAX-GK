@@ -3853,3 +3853,8 @@ following:
 - Consolidated the open-lane, manuscript-readiness, and pre-manuscript-closure dashboard builders into `tools/artifacts/build_research_status.py` with explicit `open-lanes`, `manuscript-readiness`, `pre-manuscript-closure`, and `runbook` subcommands.
 - Removed the three old one-dashboard entry scripts, updated docs and release finalization code to use the consolidated owner, and renamed test fixture helpers so stale script names no longer remain in the active tree.
 - Dropped tool topology from 163 to 161 Python files while preserving the same JSON/CSV/PNG/PDF artifact outputs and fail-closed status/readiness semantics.
+
+### 2026-07-09 Retired standalone startup dump comparison
+
+- Removed the last tests-only standalone startup dump comparison helper from `tools/comparison`; exact-state startup validation remains covered by the runtime-configured comparison path used by `tools/campaigns/run_exact_state_audit.py`.
+- Updated comparison tests and package topology baseline, reducing tool topology from 161 to 160 Python files.
