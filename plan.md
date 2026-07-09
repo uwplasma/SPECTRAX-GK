@@ -3051,3 +3051,14 @@ following:
   topology baseline to 264. Focused terms assembly tests, linear helper tests,
   stale-reference scans, ruff, py_compile, validation/differentiable manifests,
   and architecture checks passed locally.
+
+- 2026-07-08: folded `terms/assembly_diagnostics.py` into
+  `terms/assembly_core.py`, so `assemble_rhs_terms_cached` now lives with the
+  cached RHS and field-only solve path that shares its state normalization,
+  field solve, Hamiltonian construction, contribution assembly, and summation
+  helpers. The public `spectraxgk.terms.assembly.assemble_rhs_terms_cached`
+  import remains unchanged. Updated code-structure docs, validation and
+  differentiable refactor manifests, regenerated validation metadata, and
+  tightened the source topology baseline to 263. Focused terms assembly,
+  linear, comparison, stale-reference, ruff, py_compile, validation/
+  differentiable manifest, and architecture checks passed locally.
