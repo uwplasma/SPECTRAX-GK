@@ -3248,3 +3248,13 @@ following:
   metadata, and tightened the package architecture source baseline to 259. The
   Krylov focused tests, ruff, py_compile, release tests, stale-reference scan,
   and architecture/refactor/validation manifests passed locally.
+
+- 2026-07-08: consolidated the device-z pencil transport-window profiling
+  contracts into `tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py`.
+  The nonlinear sharding profiling owner now covers the profiler, sweep driver,
+  and device-z pencil transport/RHS contracts while preserving FFT batch-pressure,
+  RHS identity, parser dispatch, and input-validation assertions. Removed the
+  one-off device-z test file and tightened the package architecture test baseline
+  to 168. The full profiling shard, release tests, ruff, py_compile,
+  stale-reference scan, and architecture/refactor/validation/performance
+  manifests passed locally.
