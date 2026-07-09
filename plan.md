@@ -3145,3 +3145,11 @@ following:
   Updated validation and differentiable-refactor manifests, regenerated
   validation metadata, and tightened the package architecture test baseline to
   186. The consolidated nonlinear window artifact shard passed locally.
+
+- 2026-07-08: consolidated nonlinear transport campaign orchestration tests into
+  `tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py`,
+  covering portfolio import, overdetermined direct-run task collection,
+  overdetermined postprocess sequencing, and gradient-manifest postprocess
+  ordering/fail-closed behavior in one campaign owner. Tightened the package
+  architecture test baseline to 183. The consolidated campaign contract shard
+  passed locally.
