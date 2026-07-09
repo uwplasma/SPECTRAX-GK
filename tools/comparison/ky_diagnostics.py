@@ -60,7 +60,7 @@ from spectraxgk.config import (
     KBMBaseCase,
     TEMBaseCase,
 )
-from spectraxgk.solvers.time.diffrax import integrate_linear_diffrax
+from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (

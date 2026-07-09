@@ -1669,7 +1669,7 @@ physics rigor:
   external repositories in the public coverage job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
-  ``solvers/linear/krylov.py`` and ``solvers/time/diffrax.py``.
+  ``solvers/linear/krylov.py`` and the ``solvers/time/diffrax_*`` owner modules.
 
 This keeps iteration latency low for development and still enforces complete
 coverage and regression checks on demand without relying on scheduled runners.
@@ -1755,7 +1755,7 @@ CI also enforces dedicated per-module thresholds for the two linear solver
 engines that are most likely to regress during algorithm work:
 
 - ``spectraxgk.solvers.linear.krylov`` (matrix-free Arnoldi/shift-invert path)
-- ``spectraxgk.solvers.time.diffrax`` (explicit/IMEX/implicit diffrax path)
+- ``spectraxgk.solvers.time.diffrax_linear``/``diffrax_nonlinear``/``diffrax_core`` (Diffrax explicit/IMEX/implicit paths)
 
 The gate runs focused tests and checks each module from ``coverage-core.xml``:
 

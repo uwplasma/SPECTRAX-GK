@@ -10,7 +10,12 @@ pytest.importorskip("equinox")
 
 from spectraxgk.diagnostics.analysis import ModeSelection, ModeSelectionBatch
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.solvers.time.diffrax import (
+from spectraxgk.solvers.time import (
+    integrate_linear_diffrax,
+    integrate_linear_diffrax_streaming,
+    integrate_nonlinear_diffrax,
+)
+from spectraxgk.solvers.time.diffrax_core import (
     _adjoint,
     _density_from_G_cached,
     _is_imex_solver,
@@ -21,9 +26,6 @@ from spectraxgk.solvers.time.diffrax import (
     _solver_from_name,
     _stepsize_controller,
     _unpack_complex_state,
-    integrate_linear_diffrax,
-    integrate_linear_diffrax_streaming,
-    integrate_nonlinear_diffrax,
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid

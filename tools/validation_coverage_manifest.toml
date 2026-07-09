@@ -115,7 +115,6 @@ path = "src/spectraxgk/runtime.py"
 owned_modules = [
   "spectraxgk.cli",
   "spectraxgk.config",
-  "spectraxgk.solvers.time.diffrax",
   "spectraxgk.solvers.time.diffrax_core",
   "spectraxgk.solvers.time.diffrax_linear",
   "spectraxgk.solvers.time.diffrax_nonlinear",

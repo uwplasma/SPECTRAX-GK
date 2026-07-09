@@ -161,7 +161,7 @@ private stages for state/species normalization, field/Hamiltonian construction,
 drift/drive/dissipation contribution assembly, fixed-order summation, and
 species-axis restoration so term-level parity audits exercise named physics
 pieces instead of one monolithic debug function. Diffrax time integration follows the same
-pattern: public imports stay on ``solvers.time.diffrax`` while optional
+pattern: public imports stay on ``solvers.time`` while optional
 dependency/policy helpers, linear save paths, streaming fits, and nonlinear
 paths live in focused owner modules.
 Growth diagnostics follow the same rule: ``diagnostics.growth_rates`` remains

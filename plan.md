@@ -3019,3 +3019,13 @@ following:
   topology baseline to 267. Explicit integrator tests, runtime diagnostic
   tests, release tests, stale-reference scans, ruff, py_compile,
   validation/differentiable manifests, and architecture checks passed locally.
+
+- 2026-07-08: removed the `solvers/time/diffrax.py` facade and made
+  `spectraxgk.solvers.time` the package-level public Diffrax surface. Internal
+  callers now import directly from `diffrax_linear.py`, `diffrax_streaming.py`,
+  `diffrax_nonlinear.py`, and `diffrax_core.py`, while public tests/examples
+  use `spectraxgk.solvers.time`. Updated API/numerics/testing/code-structure
+  docs, validation and differentiable refactor manifests, regenerated
+  validation metadata, and tightened the source topology baseline to 266.
+  Diffrax unit tests, release tests, stale-reference scans, ruff, py_compile,
+  validation/differentiable manifests, and architecture checks passed locally.

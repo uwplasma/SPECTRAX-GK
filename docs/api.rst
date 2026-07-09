@@ -483,7 +483,19 @@ Explicit CFL Policy
 Diffrax Time Integrators
 ------------------------
 
-.. automodule:: spectraxgk.solvers.time.diffrax
+.. automodule:: spectraxgk.solvers.time.diffrax_core
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.solvers.time.diffrax_linear
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.solvers.time.diffrax_streaming
+   :members:
+   :private-members:
+
+.. automodule:: spectraxgk.solvers.time.diffrax_nonlinear
    :members:
    :private-members:
 

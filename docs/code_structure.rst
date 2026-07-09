@@ -101,7 +101,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``solvers/time/explicit.py``
    - ``solvers/time/explicit_steps.py``
    - ``solvers/time/explicit_cfl.py``
-   - ``solvers/time/diffrax.py`` facade plus ``solvers/time/diffrax_*`` owner modules
+   - ``solvers/time/diffrax_*`` owner modules exported by ``solvers/time/__init__.py``
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
    - ``diagnostics/core.py``
@@ -234,8 +234,8 @@ Completed extractions:
   construction, energy/transport sampling, progress rendering, and
   ``SimulationDiagnostics`` construction so saved explicit-time benchmark paths
   exercise named numerical pieces instead of one monolithic loop.
-- Diffrax time-integration internals. ``solvers/time/diffrax.py`` remains the
-  public facade while optional dependency/policy helpers, linear save-path
+- Diffrax time-integration internals. ``solvers/time/__init__.py`` remains the
+  package-level public facade while optional dependency/policy helpers, linear save-path
   integration, streaming growth/frequency fits, and nonlinear integration live
   in ``solvers/time/diffrax_core.py``, ``diffrax_linear.py``,
   ``diffrax_streaming.py``, and ``diffrax_nonlinear.py``. The streaming owner

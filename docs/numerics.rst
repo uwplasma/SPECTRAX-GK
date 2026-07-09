@@ -37,8 +37,8 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.integrate_linear_explicit`
   (implemented in :func:`spectraxgk.solvers.time.explicit.integrate_linear_explicit`).
 - **Diffrax integration (explicit/implicit/IMEX)**:
-  :func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax`,
-  :func:`spectraxgk.solvers.time.diffrax.integrate_nonlinear_diffrax`.
+  :func:`spectraxgk.solvers.time.integrate_linear_diffrax`,
+  :func:`spectraxgk.solvers.time.integrate_nonlinear_diffrax`.
 - **Config-driven runner**:
   :func:`spectraxgk.solvers.time.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
@@ -96,8 +96,8 @@ Diffrax integration
 -------------------
 
 Diffrax-backed solvers are available via
-:func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax` and
-:func:`spectraxgk.solvers.time.diffrax.integrate_nonlinear_diffrax`. Explicit
+:func:`spectraxgk.solvers.time.integrate_linear_diffrax` and
+:func:`spectraxgk.solvers.time.integrate_nonlinear_diffrax`. Explicit
 solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
 supported. Progress reporting is disabled by default; enable it by setting
 ``TimeConfig.progress_bar=True`` (or ``progress_bar=True`` in the integrator
@@ -177,7 +177,7 @@ SPECTRAX-GK includes several performance-oriented options that preserve
 end-to-end JAX differentiability:
 
 - **Streaming growth-rate fits**: use
-  :func:`spectraxgk.solvers.time.diffrax.integrate_linear_diffrax_streaming`
+  :func:`spectraxgk.solvers.time.integrate_linear_diffrax_streaming`
   to compute ``(gamma, omega)`` online without storing time series. This reduces
   memory pressure during long scans. The streaming fit supports ``phi`` or
   density moments via ``fit_signal`` and uses a fixed ``tmin/tmax`` window.
