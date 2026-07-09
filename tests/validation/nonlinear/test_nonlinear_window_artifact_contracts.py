@@ -20,7 +20,7 @@ OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_out
 output_target = load_release_tool("check_nonlinear_runtime_outputs")
 window_ensemble = load_release_tool("check_nonlinear_window_ensemble")
 window_readiness = window_ensemble
-compact_bundle = load_campaign_tool("compact_replicate_ensemble_bundle")
+compact_bundle = load_campaign_tool("nonlinear_replicate_followup")
 
 
 def _touch_bundle(output: Path) -> None:
@@ -325,6 +325,7 @@ def test_compact_ensemble_payload_and_cli_rewrite_rows_to_authoritative_netcdf(
     ensemble.write_text(json.dumps(_compact_payload()), encoding="utf-8")
     rc = compact_bundle.main(
         [
+            "compact-bundle",
             "--ensemble-json",
             str(ensemble),
             "--output-gate-json",

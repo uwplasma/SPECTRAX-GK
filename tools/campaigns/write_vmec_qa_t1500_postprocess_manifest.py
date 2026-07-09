@@ -166,7 +166,7 @@ def _case_commands(
         + f" --figure-title {_quote_title(case.title)}"
     )
     compact_command = (
-        f"{PYTHON} tools/campaigns/compact_replicate_ensemble_bundle.py"
+        f"{PYTHON} tools/campaigns/nonlinear_replicate_followup.py compact-bundle"
         f" --ensemble-json {ensemble}"
         f" --output-gate-json {output_gate}"
         f" --netcdf-root {netcdf_root.rstrip('/')}"

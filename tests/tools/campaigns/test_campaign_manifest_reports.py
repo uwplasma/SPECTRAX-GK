@@ -40,7 +40,7 @@ def test_vmec_qa_t1500_postprocess_manifest_commands(tmp_path: Path) -> None:
     assert ql["output_gate_json"] == "docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
     assert "--min-window-samples 80" in ql["check_outputs_command"]
     assert "--json-out docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql["check_outputs_command"]
-    assert "compact_replicate_ensemble_bundle.py" in ql["compact_bundle_command"]
+    assert "nonlinear_replicate_followup.py compact-bundle" in ql["compact_bundle_command"]
     assert "--output-gate-json docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql["compact_bundle_command"]
     assert "office:/work/audits" in ql["compact_bundle_command"]
     comparisons = manifest["comparison_commands"]

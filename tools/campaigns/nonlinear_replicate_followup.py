@@ -8,11 +8,12 @@ from collections.abc import Mapping, Sequence
 import csv
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
+import re
 import shlex
 import sys
 from typing import Any
-import math
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -1052,12 +1053,117 @@ def main_write_campaign(argv: list[str] | None = None) -> int:
     return 0
 
 
+_COMPACT_CASE_RE = re.compile(
+    r"(?P<case>.+)_nonlinear_t[^_]+_[^_]+_(?:seed[0-9]+|dt[0-9pm]+)\.out\.nc$"
+)
+
+
+def _compact_output_stem(row: dict[str, Any]) -> str:
+    source = str(row.get("source_artifact", ""))
+    name = Path(source).name
+    if name.endswith("_heat_flux_trace.csv"):
+        return name[: -len("_heat_flux_trace.csv")] + ".out.nc"
+    if name.endswith(".out.nc"):
+        return name
+    generated = str(row.get("generated_trace_artifact", ""))
+    generated_name = Path(generated).name
+    if generated_name.endswith("_heat_flux_trace.csv"):
+        return generated_name[: -len("_heat_flux_trace.csv")] + ".out.nc"
+    raise ValueError(f"cannot infer NetCDF output from row source_artifact={source!r}")
+
+
+def _compact_case_dir(output_name: str) -> str:
+    match = _COMPACT_CASE_RE.match(output_name)
+    if match is None:
+        raise ValueError(f"cannot infer case directory from output name {output_name!r}")
+    return match.group("case")
+
+
+def compact_ensemble_payload(
+    payload: dict[str, Any],
+    *,
+    output_gate_json: str,
+    netcdf_root: str,
+) -> dict[str, Any]:
+    """Return a compact-provenance copy of a replicated ensemble payload."""
+
+    out = json.loads(json.dumps(payload))
+    rows = out.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("ensemble payload must contain a rows list")
+    root = netcdf_root.rstrip("/")
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"row {index} must be a JSON object")
+        output_name = _compact_output_stem(row)
+        previous_source = str(row.get("source_artifact", ""))
+        row.setdefault("generated_trace_artifact", previous_source)
+        row["source_artifact"] = (
+            f"{root}/{_compact_case_dir(output_name)}/{output_name}"
+        )
+        row["summary_artifact"] = f"{output_gate_json}#rows[{row.get('index', index)}]"
+    out["compact_bundle_policy"] = {
+        "tracked_bundle": "ensemble JSON, output-gate JSON, and PNG only",
+        "reason": (
+            "avoid committing regenerable per-trace CSV and convergence "
+            "intermediates under repository-size policy"
+        ),
+        "regeneration": (
+            "run tools/artifacts/build_external_vmec_replicate_ensemble.py against the "
+            "NetCDF outputs listed in rows[].source_artifact"
+        ),
+        "output_gate_json": output_gate_json,
+    }
+    return out
+
+
+def build_compact_bundle_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Compact replicated nonlinear-window ensemble provenance for git tracking."
+    )
+    parser.add_argument("--ensemble-json", type=Path, required=True)
+    parser.add_argument("--output-gate-json", required=True)
+    parser.add_argument(
+        "--netcdf-root",
+        required=True,
+        help="Prefix containing per-case NetCDF output directories, e.g. office:/.../tools_out/audits",
+    )
+    parser.add_argument(
+        "--out-json",
+        type=Path,
+        help="Output path. Defaults to in-place rewrite of --ensemble-json.",
+    )
+    return parser
+
+
+def main_compact_bundle(argv: list[str] | None = None) -> int:
+    args = build_compact_bundle_parser().parse_args(argv)
+    payload = compact_ensemble_payload(
+        _load_json(args.ensemble_json),
+        output_gate_json=str(args.output_gate_json),
+        netcdf_root=str(args.netcdf_root),
+    )
+    out_path = args.out_json or args.ensemble_json
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps(
+            {"out_json": out_path.as_posix(), "rows": len(payload["rows"])},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=("spread-summary", "write-campaign"),
+        choices=("compact-bundle", "spread-summary", "write-campaign"),
         help="Replicate follow-up artifact to build.",
     )
     return parser
@@ -1069,6 +1175,8 @@ def main(argv: list[str] | None = None) -> int:
         build_parser().parse_args(tokens)
         return 0
     command, rest = tokens[0], tokens[1:]
+    if command == "compact-bundle":
+        return main_compact_bundle(rest)
     if command == "spread-summary":
         return main_spread_summary(rest)
     if command == "write-campaign":
@@ -1080,6 +1188,7 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "NonlinearReplicateFollowupConfig",
     "build_followup_campaign",
+    "compact_ensemble_payload",
     "main",
     "nonlinear_replicate_followup_plan",
 ]
