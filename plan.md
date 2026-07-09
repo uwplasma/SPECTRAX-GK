@@ -3506,3 +3506,13 @@ following:
   tightened from 211 to 210. The nonlinear artifact and artifact-plot shards,
   Python lint check, validation manifest, command-help smoke check, compile
   check, diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-08: folded
+  `tools/artifacts/build_vmec_state_control_bracket_sweep_status.py` into
+  `tools/artifacts/build_vmec_state_to_input_mapping_response.py` as the
+  `bracket-sweep-status` subcommand. VMEC state-to-input response maps and
+  bracket-amplitude sweep status now share one state-control artifact owner and
+  one documented workflow. The package architecture tool baseline tightened
+  from 210 to 209. The VMEC misc artifact shard, Python lint check, validation
+  manifest, release tests, command-help smoke check, compile check, diff
+  hygiene, and architecture manifest passed locally.

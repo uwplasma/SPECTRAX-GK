@@ -434,7 +434,7 @@ def _build_vmec_state_control_bracket_sweep_status_gate(
 
 
 def test_build_vmec_state_control_bracket_sweep_status(tmp_path: Path) -> None:
-    mod = load_artifact_tool("build_vmec_state_control_bracket_sweep_status")
+    mod = load_artifact_tool("build_vmec_state_to_input_mapping_response")
     gate_a = tmp_path / "gate_a.json"
     gate_b = tmp_path / "gate_b.json"
     run_summary = tmp_path / "summary.json"
