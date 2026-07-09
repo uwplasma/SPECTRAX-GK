@@ -3062,3 +3062,13 @@ following:
   tightened the source topology baseline to 263. Focused terms assembly,
   linear, comparison, stale-reference, ruff, py_compile, validation/
   differentiable manifest, and architecture checks passed locally.
+
+- 2026-07-08: folded `operators/nonlinear/spectral_tolerances.py` into
+  `operators/nonlinear/spectral_core.py`, so the JAX/host max-error gates,
+  allclose-style scalar tolerance gate, and host-staging helper now live with
+  the spectral facade that already exports them to nonlinear parallel routes.
+  Updated code-structure docs, validation and differentiable refactor
+  manifests, regenerated validation metadata, and tightened the source topology
+  baseline to 262. Nonlinear parallel tests, spectral communication tests,
+  release validation-manifest test, stale-reference scan, ruff, py_compile,
+  validation/differentiable manifests, and architecture checks passed locally.

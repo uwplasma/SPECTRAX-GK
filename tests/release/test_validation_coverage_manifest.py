@@ -95,7 +95,7 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.operators.nonlinear.diagnostic_state"]["n_physics_contracts"]
         >= 2
     )
-    assert rows["spectraxgk.operators.nonlinear.spectral_core"]["n_owned_modules"] == 7
+    assert rows["spectraxgk.operators.nonlinear.spectral_core"]["n_owned_modules"] == 6
     assert (
         rows["spectraxgk.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
     )

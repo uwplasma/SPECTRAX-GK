@@ -904,6 +904,10 @@ facade_module = "spectraxgk.operators.nonlinear.parallel"
 status = "active"
 responsibility = "deterministic spectral states, chunk/layout utilities, work models, pencil FFT/bracket kernels, RHS micro-routes, and tolerance helpers for nonlinear parallelization gates"
 moved_exports = [
+  "_host_max_abs_rel_error",
+  "_host_staged_array_for_sharding",
+  "_max_abs_rel_error",
+  "_within_abs_or_rel_tolerance",
   "deterministic_nonlinear_spectral_state",
   "device_z_pencil_fft_batch_pressure_model",
   "nonlinear_spectral_domain_work_model",
@@ -911,7 +915,6 @@ moved_exports = [
   "_serial_nonlinear_spectral_rhs",
   "_pencil_spectral_bracket",
   "_pencil_spectral_bracket_z_chunked",
-  "_within_abs_or_rel_tolerance",
 ]
 fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
@@ -2929,21 +2932,6 @@ moved_exports = [
   "_pencil_spectral_bracket_z_chunked",
   "_serial_nonlinear_spectral_rhs",
   "_spectral_bracket",
-]
-fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.operators.nonlinear.spectral_tolerances"
-source_path = "src/spectraxgk/operators/nonlinear/spectral_tolerances.py"
-facade_module = "spectraxgk.operators.nonlinear.spectral_core"
-status = "active"
-responsibility = "JAX/host max-error helpers, allclose-style gates, and host-staging helper for explicit device sharding"
-moved_exports = [
-  "_host_max_abs_rel_error",
-  "_host_staged_array_for_sharding",
-  "_max_abs_rel_error",
-  "_within_abs_or_rel_tolerance",
 ]
 fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
