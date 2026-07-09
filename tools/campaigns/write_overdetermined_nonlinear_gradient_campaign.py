@@ -207,7 +207,7 @@ def write_overdetermined_campaign(
         / f"{case}_overdetermined_nonlinear_gradient_candidate_ranking.json"
     )
     ranking_command = (
-        f"{PYTHON_CMD} tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py "
+        f"{PYTHON_CMD} tools/campaigns/design_nonlinear_gradient.py rank-candidates "
         + " ".join(_repo_relative(path) for path in fd_artifacts)
         + f" --json-out {_repo_relative(ranking_json)}"
         + " --campaign-context overdetermined_followup"

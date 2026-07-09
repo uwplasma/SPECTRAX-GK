@@ -35,7 +35,7 @@ ROOT = REPO_ROOT
 
 
 def _load_tool_module():
-    return load_campaign_tool("plan_nonlinear_gradient_followup")
+    return load_campaign_tool("design_nonlinear_gradient")
 
 
 def _ensemble(
@@ -246,7 +246,7 @@ def test_followup_plan_handles_missing_numeric_metrics() -> None:
     }
 
 
-def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> None:
+def test_design_nonlinear_gradient_followup_plan_writes_json(tmp_path: Path) -> None:
     tool = _load_tool_module()
     artifact = tmp_path / "candidate.json"
     out = tmp_path / "plan.json"
@@ -254,6 +254,7 @@ def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> No
 
     rc = tool.main(
         [
+            "followup-plan",
             str(artifact),
             "--case",
             "tool_case",
@@ -270,7 +271,7 @@ def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> No
     assert payload["summary"]["planned_run_count"] == 3
 
 
-def test_plan_nonlinear_gradient_followup_tool_hydrates_compact_ensembles(
+def test_design_nonlinear_gradient_followup_plan_hydrates_compact_ensembles(
     tmp_path: Path,
 ) -> None:
     tool = _load_tool_module()
@@ -288,6 +289,7 @@ def test_plan_nonlinear_gradient_followup_tool_hydrates_compact_ensembles(
 
     rc = tool.main(
         [
+            "followup-plan",
             str(artifact),
             "--case",
             "hydrated_case",

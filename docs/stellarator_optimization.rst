@@ -2697,7 +2697,7 @@ central-FD, ranking, and status artifacts.
 The bounded follow-up decision is tracked separately in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``
 and can be regenerated with
-``tools/campaigns/plan_nonlinear_gradient_followup.py``. That follow-up recommended only
+``tools/campaigns/design_nonlinear_gradient.py followup-plan``. That follow-up recommended only
 two new matched nominal-timestep ``RBC(1,1)`` seed replicas per state
 (``seed33`` and ``seed34`` for baseline, plus, and minus), because that was the
 only completed overdetermined candidate whose response and locality already

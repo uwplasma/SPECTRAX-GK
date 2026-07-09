@@ -113,7 +113,7 @@ def _load_campaign_tool_module():
 
 
 def _load_rank_tool_module():
-    return load_campaign_tool("rank_nonlinear_turbulence_gradient_candidates")
+    return load_campaign_tool("design_nonlinear_gradient")
 
 
 def _load_bracket_tool_module():
@@ -1202,6 +1202,7 @@ def test_candidate_ranking_cli_writes_fail_closed_campaign_recommendation(
 
     rc = mod.main(
         [
+            "rank-candidates",
             str(noisy_path),
             str(nonlocal_path),
             "--json-out",

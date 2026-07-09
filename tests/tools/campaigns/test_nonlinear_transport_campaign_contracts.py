@@ -287,7 +287,7 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(
         for row in manifest["controls"]
     )
     assert (
-        "rank_nonlinear_turbulence_gradient_candidates.py"
+        "design_nonlinear_gradient.py rank-candidates"
         in manifest["promotion_contract"]["candidate_ranking_command"]
     )
     assert (
@@ -424,7 +424,7 @@ def _over_post_manifest(tmp_path: Path) -> Path:
             ],
             "promotion_contract": {
                 "candidate_ranking_command": (
-                    "python3 tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py "
+                    "python3 tools/campaigns/design_nonlinear_gradient.py rank-candidates "
                     "docs/_static/a.json docs/_static/b.json --json-out docs/_static/rank.json"
                 )
             },
@@ -451,7 +451,7 @@ def test_overdetermined_postprocess_sequence_and_dry_run(tmp_path: Path) -> None
     assert commands[0].label == "zbs_1_1"
     assert "--require-outputs" in commands[0].command
     assert "postprocess_summary.json" in commands[0].command
-    assert "rank_nonlinear_turbulence_gradient_candidates.py" in commands[2].command
+    assert "design_nonlinear_gradient.py rank-candidates" in commands[2].command
     assert "check_overdetermined_nonlinear_gradient_campaign.py" in commands[3].command
     assert "--fail-on-blocked" in commands[3].command
 

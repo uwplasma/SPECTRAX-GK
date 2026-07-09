@@ -24,14 +24,20 @@ if str(ROOT) not in sys.path:
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from spectraxgk.diagnostics.nonlinear_gradient_evidence import load_json_artifact  # noqa: E402
+from spectraxgk.diagnostics.nonlinear_gradient_evidence import (  # noqa: E402
+    NonlinearTurbulenceGradientCandidateRankingConfig,
+    load_json_artifact,
+    nonlinear_turbulence_gradient_candidate_ranking_report,
+)
 from tools.campaigns.nonlinear_gradient_followup import (  # noqa: E402
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
+    NonlinearGradientFollowupConfig,
     NonlinearGradientQLSeedScreenConfig,
     NonlinearGradientStateControlRunbookConfig,
     nonlinear_gradient_candidate_design_report,
     nonlinear_gradient_composite_control_report,
+    nonlinear_gradient_followup_plan,
     nonlinear_gradient_ql_seed_screen_report,
     nonlinear_gradient_state_control_runbook_report,
 )
@@ -53,6 +59,168 @@ def _candidate_artifact_label(payload: dict[str, Any], path: Path) -> str:
     if isinstance(parameter, str) and parameter:
         return f"{parameter}:{path.stem.removesuffix('_central_fd_gradient_gate')}"
     return path.stem
+
+
+def _resolve_artifact_path(raw: Any) -> Path | None:
+    if not isinstance(raw, str) or not raw:
+        return None
+    path = Path(raw)
+    if path.is_absolute():
+        return path if path.exists() else None
+    for candidate in (ROOT / path, path):
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _hydrate_source_ensembles(payload: dict[str, Any]) -> dict[str, Any]:
+    """Load compact source-ensemble rows from tracked ensemble artifacts."""
+
+    source_ensembles = payload.get("source_ensembles")
+    if not isinstance(source_ensembles, dict):
+        return payload
+    hydrated: dict[str, Any] = {}
+    changed = False
+    for state, raw in source_ensembles.items():
+        if not isinstance(raw, dict):
+            hydrated[state] = raw
+            continue
+        row = dict(raw)
+        if isinstance(row.get("rows"), list):
+            hydrated[state] = row
+            continue
+        ensemble_path = _resolve_artifact_path(row.get("path"))
+        if ensemble_path is not None:
+            ensemble = load_json_artifact(ensemble_path)
+            if isinstance(ensemble.get("rows"), list):
+                row["rows"] = ensemble["rows"]
+                changed = True
+        hydrated[state] = row
+    if not changed:
+        return payload
+    return {**payload, "source_ensembles": hydrated}
+
+
+def build_followup_plan_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plan bounded nonlinear-gradient follow-up runs.")
+    parser.add_argument(
+        "artifact",
+        nargs="+",
+        type=Path,
+        help="Production central-FD gradient JSON artifacts to inspect.",
+    )
+    parser.add_argument("--case", default="nonlinear_turbulence_gradient_followup")
+    parser.add_argument("--json-out", type=Path)
+    parser.add_argument("--max-gradient-uncertainty-rel", type=float, default=0.50)
+    parser.add_argument("--max-fd-asymmetry-rel", type=float, default=0.50)
+    parser.add_argument("--min-fd-response-fraction", type=float, default=0.03)
+    parser.add_argument(
+        "--sem-safety-factor",
+        type=float,
+        default=1.10,
+        help="Safety factor applied to the ideal 1/sqrt(N) replica estimate.",
+    )
+    parser.add_argument("--max-extra-replicates-per-state", type=int, default=4)
+    parser.add_argument("--default-nominal-timestep", type=float, default=0.05)
+    return parser
+
+
+def main_followup_plan(argv: list[str] | None = None) -> int:
+    args = build_followup_plan_parser().parse_args(argv)
+    artifacts = [
+        _hydrate_source_ensembles(load_json_artifact(path)) for path in args.artifact
+    ]
+    report = nonlinear_gradient_followup_plan(
+        artifacts,
+        paths=[_repo_relative(path) for path in args.artifact],
+        labels=[
+            _candidate_artifact_label(payload, path)
+            for payload, path in zip(artifacts, args.artifact)
+        ],
+        case=args.case,
+        config=NonlinearGradientFollowupConfig(
+            max_gradient_uncertainty_rel=args.max_gradient_uncertainty_rel,
+            max_fd_asymmetry_rel=args.max_fd_asymmetry_rel,
+            min_fd_response_fraction=args.min_fd_response_fraction,
+            sem_safety_factor=args.sem_safety_factor,
+            max_extra_replicates_per_state=args.max_extra_replicates_per_state,
+            default_nominal_timestep=args.default_nominal_timestep,
+        ),
+    )
+    text = json.dumps(report, indent=2, sort_keys=True)
+    if args.json_out is not None:
+        args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        args.json_out.write_text(text + "\n", encoding="utf-8")
+        print(f"saved {args.json_out}")
+    else:
+        print(text)
+    return 0
+
+
+def build_rank_candidates_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Rank failed nonlinear turbulence-gradient candidates."
+    )
+    parser.add_argument(
+        "artifact",
+        nargs="+",
+        type=Path,
+        help="Central finite-difference candidate JSON artifacts to rank.",
+    )
+    parser.add_argument("--json-out", type=Path)
+    parser.add_argument("--max-gradient-uncertainty-rel", type=float, default=0.50)
+    parser.add_argument("--max-fd-asymmetry-rel", type=float, default=0.50)
+    parser.add_argument("--max-fd-condition-number", type=float, default=1.0e8)
+    parser.add_argument("--min-fd-response-fraction", type=float, default=0.03)
+    parser.add_argument(
+        "--campaign-context",
+        choices=("single_control_screen", "overdetermined_followup"),
+        default="single_control_screen",
+        help=(
+            "Recommendation context. Use overdetermined_followup when the input "
+            "candidates are the result of a completed multi-control follow-up."
+        ),
+    )
+    parser.add_argument(
+        "--fail-on-no-promotable",
+        action="store_true",
+        help="Return nonzero unless at least one candidate already passes all production gates.",
+    )
+    return parser
+
+
+def main_rank_candidates(argv: list[str] | None = None) -> int:
+    args = build_rank_candidates_parser().parse_args(argv)
+    artifacts = [load_json_artifact(path) for path in args.artifact]
+    report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        artifacts,
+        paths=[_repo_relative(path) for path in args.artifact],
+        labels=[
+            _candidate_artifact_label(payload, path)
+            for payload, path in zip(artifacts, args.artifact)
+        ],
+        config=NonlinearTurbulenceGradientCandidateRankingConfig(
+            max_gradient_uncertainty_rel=args.max_gradient_uncertainty_rel,
+            max_fd_asymmetry_rel=args.max_fd_asymmetry_rel,
+            max_fd_condition_number=args.max_fd_condition_number,
+            min_fd_response_fraction=args.min_fd_response_fraction,
+            campaign_context=args.campaign_context,
+        ),
+    )
+    text = json.dumps(report, indent=2, sort_keys=True)
+    if args.json_out is not None:
+        args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        args.json_out.write_text(text + "\n", encoding="utf-8")
+        print(f"saved {args.json_out}")
+    else:
+        print(text)
+    if args.fail_on_no_promotable and not bool(report.get("passed", False)):
+        print(
+            "no nonlinear turbulence-gradient candidate passes production gates",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
 
 
 def _write_next_campaign_csv(path: Path, report: dict[str, Any]) -> None:
@@ -876,7 +1044,9 @@ def main_state_control_runbook(argv: list[str] | None = None) -> int:
 SUBCOMMANDS: dict[str, Callable[[list[str] | None], int]] = {
     "next-campaign": main_next_campaign,
     "composite-control": main_composite_control,
+    "followup-plan": main_followup_plan,
     "ql-seed-screen": main_ql_seed_screen,
+    "rank-candidates": main_rank_candidates,
     "state-control-runbook": main_state_control_runbook,
 }
 

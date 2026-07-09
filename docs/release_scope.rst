@@ -389,14 +389,14 @@ Quasilinear model-selection state:
   promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
-- ``tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py`` ranks failed
+- ``tools/campaigns/design_nonlinear_gradient.py rank-candidates`` ranks failed
   central finite-difference candidates without promoting them. The current
   ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` summary
   compares the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` campaigns
   and recommends an overdetermined least-squares/profile-gradient campaign next
   because the best single-control candidates have complementary locality and
   uncertainty failures.
-- ``tools/campaigns/plan_nonlinear_gradient_followup.py`` turns completed central-FD
+- ``tools/campaigns/design_nonlinear_gradient.py followup-plan`` turns completed central-FD
   artifacts into a bounded follow-up prescription. For the completed
   overdetermined QA/ESS campaign it writes
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``:

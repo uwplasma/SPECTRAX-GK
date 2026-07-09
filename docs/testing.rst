@@ -467,7 +467,7 @@ artifact is tracked as
 ``docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_followup_central_fd_gradient_gate.json``.
 It is a regression target for the fail-closed workflow and a design input for
 the next campaign, not promotion evidence.
-``tools/campaigns/rank_nonlinear_turbulence_gradient_candidates.py`` is the companion
+``tools/campaigns/design_nonlinear_gradient.py rank-candidates`` is the companion
 planning utility for failed candidates. It ranks completed central-FD artifacts
 by response, locality, conditioning, and propagated uncertainty margins, writes
 a fail-closed JSON summary, and recommends whether the next campaign should add
