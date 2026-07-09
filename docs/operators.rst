@@ -189,6 +189,33 @@ The code then reconstructs low moments:
 and a temperature-like correction :math:`\bar{T}` from ``m=0`` and ``m=2``.
 These are added back only into the ``m=0,1,2`` channels.
 
+Claim boundary and extension plan
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is a conserving Lenard--Bernstein/Dougherty-like model, not a complete
+linearized gyrokinetic Landau operator. The low-order field-particle correction
+is important: the operator cannot be represented only by a diagonal damping
+array. The implementation contract for future collision models therefore has
+two paths:
+
+- ``contribution(state, fields, cache, species)`` for the complete RHS,
+  including low-rank or dense field-particle terms;
+- an optional ``split_step`` only when the model supplies a mathematically
+  valid exact or implicit update. Diagonal hypercollision splitting must not be
+  reused for a non-diagonal conserving operator.
+
+The next model tier is a species-coupled conserving Dougherty operator. The
+research tier after that is the linearized gyrokinetic Sugama/Coulomb operator
+in the Hermite--Laguerre moment basis. Promotion requires discrete Maxwellian
+null-space, particle conservation per species, total momentum and energy
+conservation, adjointness, non-positive entropy production, velocity-resolution
+convergence, collisional ITG, conductivity, and zonal-flow damping gates.
+
+Relevant derivations and verification targets include the
+`Laguerre--Hermite pseudo-spectral formulation <https://doi.org/10.1017/S0022377818000339>`_,
+the `advanced linearized gyrokinetic moment operators <https://arxiv.org/abs/2104.11480>`_,
+and the `local collisional ITG study <https://arxiv.org/abs/2201.02860>`_.
+
 Controls:
 
 - ``RuntimePhysicsConfig.collisions``

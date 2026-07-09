@@ -1870,7 +1870,14 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
     assert {row["status"] for row in rows} <= allowed_statuses
     assert all(row["spectrax_owner"] and row["evidence"] for row in rows)
     assert by_id["nonlinear_multi_device_domain_decomposition"]["status"] == "blocked"
-    assert by_id["linearized_sugama_or_coulomb_collisions"]["status"] == "planned_research_lane"
+    assert (
+        by_id["conserving_lenard_bernstein_dougherty_like_collisions"]["status"]
+        == "validated_limited_model"
+    )
+    assert (
+        by_id["linearized_sugama_or_coulomb_collisions"]["status"]
+        == "planned_research_lane"
+    )
     assert by_id["jax_autodiff_and_implicit_gradients"]["group"] == "differentiable_extension"
 
     required = payload["matched_comparison_contract"]["required_fields"]

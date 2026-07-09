@@ -263,7 +263,7 @@ def test_build_H_adds_apar_to_m1():
     assert jnp.allclose(H[0, :, 1, 0, 0, 0], -2.0)
 
 
-def test_collisions_include_gx_conservation_correction():
+def test_collisions_include_low_order_conservation_correction():
     G = jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.complex64)
     G = G.at[0, 0, 0, 0, 0, 0].set(2.0 + 0.0j)
     G = G.at[0, 0, 1, 0, 0, 0].set(3.0 + 0.0j)

@@ -86,20 +86,20 @@ comparison_owner = "src/ncdf.cu, src/diagnostics.cu, and src/spectra_calc.cu"
 evidence = "restart identity, schema, heat-flux, field-energy, and resolved-spectrum tests"
 
 [[capabilities]]
-id = "diagonal_velocity_space_collisions"
+id = "conserving_lenard_bernstein_dougherty_like_collisions"
 group = "required_core"
 status = "validated_limited_model"
 spectrax_owner = "spectraxgk.operators.nonlinear.collisions and linear dissipation terms"
 comparison_owner = "src/closures.cu"
-evidence = "sign, damping, finite-state, and hypercollision regression gates"
+evidence = "moment damping and low-order momentum/temperature correction tests; model remains limited for trapped-particle and multispecies collisional physics"
 
 [[capabilities]]
-id = "conserving_dougherty_collision_operator"
+id = "multispecies_conserving_dougherty_collision_operator"
 group = "optional_extension"
 status = "planned"
 spectrax_owner = "future collision-operator protocol implementation"
 comparison_owner = "src/closures.cu"
-evidence = "must pass particle, momentum, energy, null-space, adjointness, and entropy gates"
+evidence = "must pass species-coupled particle, total momentum, total energy, null-space, adjointness, and entropy gates"
 
 [[capabilities]]
 id = "linearized_sugama_or_coulomb_collisions"

@@ -41,9 +41,10 @@ explicitly verified differentiable workflows for analysis and optimization.
 - GPU profiles separate cold compilation, fixed per-run overhead, warm per-step
   throughput, memory, and device utilization. Multi-device speedups require
   active sharding plus state, invariant, diagnostic, and transport-window identity.
-- Collision operators use a common extension contract. The shipped baseline is
-  retained while conserving Dougherty and linearized gyrokinetic Sugama/Coulomb
-  implementations progress through invariant and literature-benchmark gates.
+- Collision operators use a common extension contract. The shipped conserving
+  Lenard--Bernstein/Dougherty-like baseline is retained while species-coupled
+  Dougherty and linearized gyrokinetic Sugama/Coulomb implementations progress
+  through invariant and literature-benchmark gates.
 - The repository remains light: no generated caches, raw long-run outputs, build
   directories, or large transient artifacts are tracked.
 
@@ -139,10 +140,14 @@ use mathematical names independent of comparison provenance.
 5. **Close required-core physics gates.** Maintain state-level short gates and
    converged long-window gates for axisymmetric/stellarator, electrostatic/
    electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
-6. **Add collision-operator extensibility.** Land a tested operator protocol,
-   conserving Dougherty parity model, and linearized Sugama/Coulomb operators.
-   Require null-space, particle/momentum/energy, adjointness, entropy-production,
-   collisional ITG, zonal-flow damping, conductivity, and convergence evidence.
+6. **Add collision-operator extensibility.** Land a protocol with a complete
+   RHS contribution plus an optional mathematically valid split step; do not
+   model field-particle terms as diagonal damping. Preserve the current
+   conserving Lenard--Bernstein/Dougherty-like result, then add species-coupled
+   Dougherty and linearized Sugama/Coulomb operators. Require Maxwellian
+   null-space, particle/total-momentum/total-energy conservation, adjointness,
+   entropy production, collisional ITG, zonal damping, conductivity, and
+   velocity-resolution evidence.
 7. **Formalize differentiation.** Use forward JVPs for few design parameters,
    reverse checkpointing for many-parameter scalar objectives, and implicit JVP/
    VJP rules for converged eigen/root solves. Adaptive and turbulent objectives
@@ -184,6 +189,12 @@ use mathematical names independent of comparison provenance.
   the existing `spectraxgk.workflows.nonlinear` owner. The benchmark facade fell
   from 13209 to 12854 lines without adding source files, while the destination
   remains within the 1000-line module budget and all secondary tests pass.
+- 2026-07-09: Audited the collision implementation against GX source and the
+  Hermite--Laguerre collision literature. The current operator already contains
+  low-order momentum/temperature corrections, so it is now described as a
+  conserving Lenard--Bernstein/Dougherty-like limited model. The next protocol
+  must expose a complete RHS contribution and only optional valid split steps;
+  species-coupled Dougherty and Sugama/Coulomb remain separately gated lanes.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
