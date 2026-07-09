@@ -344,7 +344,7 @@ def _postprocess_commands(
                 / f"{manifest['case']}_{state}_followup_evidence_gap_report.json"
             )
             row["replicate_spread_command"] = (
-                f"python3 tools/campaigns/summarize_nonlinear_replicate_spread.py {baseline_json} "
+                f"python3 tools/campaigns/nonlinear_replicate_followup.py spread-summary {baseline_json} "
                 f"{row['ensemble_json']} {minus_json} --out-prefix {_repo_relative(spread_prefix)} "
                 f"--case {manifest['case']}_{state}_followup_replicate_spread"
             )

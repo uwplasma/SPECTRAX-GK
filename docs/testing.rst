@@ -732,7 +732,7 @@ final nonlinear-gradient evidence check in dependency order. Use
 ``--allow-blocked`` only when collecting a failure artifact for diagnosis; a
 promotion run should keep the default fail-closed behavior.
 If that central-FD gate is blocked by a replicated state, run
-``tools/campaigns/summarize_nonlinear_replicate_spread.py`` on the baseline, plus, and
+``tools/campaigns/nonlinear_replicate_followup.py spread-summary`` on the baseline, plus, and
 minus ensemble JSON files before launching more nonlinear simulations. The
 tool enriches the ensemble rows with seed/timestep labels and convergence
 statistics, writes JSON/CSV/PNG sidecars, and classifies whether the failed
@@ -752,7 +752,7 @@ profile-direction audit, the tracked launch artifact is
 it selects ``seed22_dt0p05``, ``seed32_dt0p04``, and ``seed33_dt0p05`` for the
 ``plus_delta`` state. After those three GPU runs finish, rebuild the plus
 ensemble with the added outputs, rerun
-``tools/campaigns/summarize_nonlinear_replicate_spread.py``, and only then rerun the
+``tools/campaigns/nonlinear_replicate_followup.py spread-summary``, and only then rerun the
 central-FD/evidence gates.
 
 ``tools/campaigns/write_optimized_equilibrium_transport_configs.py`` is the production

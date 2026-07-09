@@ -218,8 +218,8 @@ def _write_summary_artifacts(root: Path, label: str, *, axis: str, mean: float) 
     return summary.name
 
 
-def test_summarize_nonlinear_replicate_spread_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_campaign_tool("summarize_nonlinear_replicate_spread")
+def test_nonlinear_replicate_followup_writes_artifacts(tmp_path: Path) -> None:
+    mod = load_campaign_tool("nonlinear_replicate_followup")
     seed31 = _write_summary_artifacts(tmp_path, "seed31", axis="seed", mean=10.0)
     seed32 = _write_summary_artifacts(tmp_path, "seed32", axis="seed", mean=11.5)
     dt0p04 = _write_summary_artifacts(tmp_path, "dt0p04", axis="timestep", mean=8.5)
@@ -266,7 +266,9 @@ def test_summarize_nonlinear_replicate_spread_writes_artifacts(tmp_path: Path) -
     ensemble_path.write_text(json.dumps(ensemble), encoding="utf-8")
     out_prefix = tmp_path / "spread"
 
-    rc = mod.main([str(ensemble_path), "--out-prefix", str(out_prefix)])
+    rc = mod.main(
+        ["spread-summary", str(ensemble_path), "--out-prefix", str(out_prefix)]
+    )
 
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert rc == 0

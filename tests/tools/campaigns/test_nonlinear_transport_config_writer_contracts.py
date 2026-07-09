@@ -680,7 +680,7 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
         in postprocess["build_ensemble_command"]
     )
     assert (
-        "summarize_nonlinear_replicate_spread.py"
+        "nonlinear_replicate_followup.py spread-summary"
         in postprocess["replicate_spread_command"]
     )
     assert (
