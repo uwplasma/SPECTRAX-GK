@@ -136,7 +136,7 @@ the configured pass-fraction and mean-reduction policy.
 Run the progress checker before postprocessing; a checkpointed output can have
 all three NetCDF bundle files present while its recorded `Grids/time` is still
 below the final transport window. The generated final-horizon launch scripts
-use `tools/release/check_nonlinear_output_target.py` before skipping an existing file,
+use `tools/release/check_nonlinear_transport_gates.py target-time` before skipping an existing file,
 and wrap each output in a per-output lock (`flock` with a `mkdir` fallback), so
 interrupted runs are safe to relaunch without manually deleting partial
 checkpoint bundles and future split-worker launches do not race on the same
