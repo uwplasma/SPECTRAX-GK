@@ -3885,3 +3885,11 @@ following:
 - Kept `write_nonlinear_turbulence_gradient_campaign.py` as the active shared matched-campaign writer because downstream campaign tools and frozen provenance artifacts still depend on it.
 - Updated docs/tests and tightened the tool-file topology baseline from 154 to 153.
 - Validated affected campaign tests, nonlinear validation tests, command help, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, byte compilation, and diff whitespace checks locally.
+
+### 2026-07-09 Reference-validation campaign wrapper consolidation
+
+- Folded the benchmark refresh runner, imported-linear targeted audit wrapper, and KBM low-ky extractor audit wrapper into `tools/campaigns/run_reference_validation_campaigns.py` with `benchmark-refresh`, `imported-linear-targeted`, and `kbm-lowky-extractor` subcommands.
+- Removed the three standalone campaign wrapper scripts and updated benchmark/testing docs to use the grouped command surface.
+- Preserved the tested manifest loader, job selector, imported-linear per-ky cache handling, and KBM low-ky dispatch helpers; the KBM imported-geometry path now routes through the grouped command.
+- Tightened the tool-file topology baseline from 153 to 151.
+- Validated the campaign gate command shard, grouped command help for all three subcommands, Python byte compilation, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.

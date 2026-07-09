@@ -3,17 +3,20 @@ from __future__ import annotations
 from pathlib import Path
 import tomllib
 
-from tools.campaigns import run_kbm_lowky_extractor_audit as kbm_lowky
-from tools.campaigns.run_benchmark_refresh import _load_manifest, _select_jobs
+from tools.campaigns import run_reference_validation_campaigns as reference_campaigns
+from tools.campaigns.run_reference_validation_campaigns import (
+    _load_manifest,
+    _select_jobs,
+)
 from tools.campaigns.run_device_parity_gate import (
     _resolve_manifest_path as resolve_device_manifest_path,
 )
 from tools.campaigns.run_device_parity_gate import build_parser as device_parser
-from tools.campaigns.run_imported_linear_targeted_audit import (
-    build_parser as imported_linear_parser,
+from tools.campaigns.run_reference_validation_campaigns import (
+    build_imported_linear_targeted_parser as imported_linear_parser,
 )
-from tools.campaigns.run_kbm_lowky_extractor_audit import (
-    build_parser as kbm_lowky_parser,
+from tools.campaigns.run_reference_validation_campaigns import (
+    build_kbm_lowky_parser as kbm_lowky_parser,
 )
 from tools.campaigns.run_restart_parity_gate import (
     _resolve_manifest_path as resolve_restart_manifest_path,
@@ -34,11 +37,7 @@ W7X_RUNTIME_EXAMPLE = (
     / "runtime_w7x_nonlinear_vmec_geometry.toml"
 )
 KBM_RUNTIME_EXAMPLE = (
-    ROOT
-    / "examples"
-    / "nonlinear"
-    / "axisymmetric"
-    / "runtime_kbm_nonlinear_t100.toml"
+    ROOT / "examples" / "nonlinear" / "axisymmetric" / "runtime_kbm_nonlinear_t100.toml"
 )
 
 
@@ -56,7 +55,9 @@ def test_device_parity_gate_parser_and_manifest_paths(tmp_path: Path) -> None:
     assert ns.manifest == Path("lanes.toml")
     assert ns.outdir == outdir
 
-    manifest, config = _manifest_lane_config("device_parity_lanes.office.toml", "w7x_vmec")
+    manifest, config = _manifest_lane_config(
+        "device_parity_lanes.office.toml", "w7x_vmec"
+    )
     resolved = resolve_device_manifest_path(config, manifest_dir=manifest.parent)
     assert resolved == W7X_RUNTIME_EXAMPLE
     assert resolved.is_file()
@@ -70,7 +71,9 @@ def test_vmec_roundtrip_gate_parser_and_manifest_paths(tmp_path: Path) -> None:
     assert ns.manifest == Path("lanes.toml")
     assert ns.outdir == outdir
 
-    manifest, config = _manifest_lane_config("vmec_roundtrip_lanes.office.toml", "w7x_vmec")
+    manifest, config = _manifest_lane_config(
+        "vmec_roundtrip_lanes.office.toml", "w7x_vmec"
+    )
     resolved = resolve_roundtrip_manifest_path(config, manifest_dir=manifest.parent)
     assert resolved == W7X_RUNTIME_EXAMPLE
     assert resolved.is_file()
@@ -83,12 +86,16 @@ def test_restart_parity_gate_parser_and_manifest_paths() -> None:
     assert args.manifest == Path("tools/restart_gate_lanes.office.toml")
     assert args.lane == "kbm_salpha"
 
-    manifest, config = _manifest_lane_config("restart_gate_lanes.office.toml", "w7x_vmec")
+    manifest, config = _manifest_lane_config(
+        "restart_gate_lanes.office.toml", "w7x_vmec"
+    )
     resolved = resolve_restart_manifest_path(config, manifest_dir=manifest.parent)
     assert resolved == W7X_RUNTIME_EXAMPLE
     assert resolved.is_file()
 
-    manifest, config = _manifest_lane_config("restart_gate_lanes.office.toml", "kbm_salpha")
+    manifest, config = _manifest_lane_config(
+        "restart_gate_lanes.office.toml", "kbm_salpha"
+    )
     resolved = resolve_restart_manifest_path(config, manifest_dir=manifest.parent)
     assert resolved == KBM_RUNTIME_EXAMPLE
     assert resolved.is_file()
@@ -194,16 +201,23 @@ def test_kbm_lowky_extractor_audit_parser_and_dispatch(tmp_path: Path) -> None:
     gx_input = tmp_path / "kbm_salpha.in"
     gx_input.write_text("[Geometry]\ngeo_option = 's-alpha'\n", encoding="utf-8")
     args = kbm_lowky_parser().parse_args(
-        ["--gx", str(gx), "--gx-input", str(gx_input), "--out", str(tmp_path / "out.csv")]
+        [
+            "--gx",
+            str(gx),
+            "--gx-input",
+            str(gx_input),
+            "--out",
+            str(tmp_path / "out.csv"),
+        ]
     )
-    cmd = kbm_lowky._build_command(
+    cmd = reference_campaigns._build_command(
         args,
-        here=Path("/toolroot"),
+        here=Path("/repo/tools/campaigns"),
         gx=gx,
         gx_input=gx_input,
         gx_big=tmp_path / "gx.big.nc",
     )
-    assert cmd[1] == "/toolroot/compare_gx_kbm.py"
+    assert cmd[1] == "/repo/tools/comparison/compare_gx_kbm.py"
     assert "--candidate-out" in cmd
 
     gx = tmp_path / "kbm_miller_correct.out.nc"
@@ -224,14 +238,15 @@ def test_kbm_lowky_extractor_audit_parser_and_dispatch(tmp_path: Path) -> None:
             "16",
         ]
     )
-    cmd = kbm_lowky._build_command(
+    cmd = reference_campaigns._build_command(
         args,
-        here=Path("/toolroot"),
+        here=Path("/repo/tools/campaigns"),
         gx=gx,
         gx_input=gx_input,
         gx_big=tmp_path / "gx.big.nc",
     )
-    assert cmd[1] == "/toolroot/run_imported_linear_targeted_audit.py"
+    assert cmd[1] == "/repo/tools/campaigns/run_reference_validation_campaigns.py"
+    assert cmd[2] == "imported-linear-targeted"
     assert "--geometry-file" in cmd
     assert "--sample-step-stride" in cmd
     assert "--max-samples" in cmd

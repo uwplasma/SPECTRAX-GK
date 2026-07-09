@@ -1483,9 +1483,9 @@ For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
 
 - ``tools/comparison/run_reference_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
-- ``tools/campaigns/run_imported_linear_targeted_audit.py`` (generic per-``ky`` targeted imported-linear wrapper)
+- ``tools/campaigns/run_reference_validation_campaigns.py imported-linear-targeted`` (generic per-``ky`` targeted imported-linear wrapper)
 - ``tools/comparison/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
-- ``tools/campaigns/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
+- ``tools/campaigns/run_reference_validation_campaigns.py kbm-lowky-extractor`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/campaigns/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/artifacts/plot_w7x_exact_state_audit.py`` (no-rerun W7-X exact-state convention audit panel)
 - ``tools/campaigns/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
