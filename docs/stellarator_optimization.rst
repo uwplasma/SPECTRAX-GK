@@ -2656,7 +2656,7 @@ recommendation is to move to an overdetermined least-squares/profile-gradient
 campaign: the best single-control candidates fail in complementary ways, with
 ``ZBS(1,1)`` statistically clean but nonlocal and ``ZBS(1,0)`` local but too
 noisy.
-``tools/campaigns/summarize_nonlinear_gradient_bracket_sweep.py`` is the companion
+``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the companion
 amplitude-sweep utility for this decision. It consumes completed central-FD
 artifacts for one control, plots gradient, response, asymmetry, and uncertainty
 against perturbation amplitude, and preserves the same claim boundary: the

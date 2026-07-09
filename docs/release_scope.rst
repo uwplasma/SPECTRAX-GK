@@ -404,7 +404,7 @@ Quasilinear model-selection state:
   state, because ``RBC(1,1)`` is local and response-resolved but slightly too
   uncertain. It refuses more replicas for the nonlocal ``ZBS(1,1)`` bracket
   and the unresolved ``ZBS(1,0)`` response.
-- ``tools/campaigns/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
+- ``tools/campaigns/design_nonlinear_gradient.py bracket-sweep`` is the bounded
   follow-up for a same-control perturbation-amplitude sweep. It writes
   JSON/CSV/PNG sidecars and an optional PDF from completed central
   finite-difference artifacts and recommends whether to add replicas,

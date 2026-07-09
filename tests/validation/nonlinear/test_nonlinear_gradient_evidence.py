@@ -117,7 +117,7 @@ def _load_rank_tool_module():
 
 
 def _load_bracket_tool_module():
-    return load_campaign_tool("summarize_nonlinear_gradient_bracket_sweep")
+    return load_campaign_tool("design_nonlinear_gradient")
 
 
 def _window_report(offset: float, *, case: str) -> dict[str, object]:
@@ -1242,6 +1242,7 @@ def test_bracket_sweep_cli_writes_json_csv_and_plot(tmp_path: Path) -> None:
 
     rc = mod.main(
         [
+            "bracket-sweep",
             str(small_path),
             str(passing_path),
             "--json-out-prefix",
@@ -1274,6 +1275,7 @@ def test_bracket_sweep_cli_can_skip_pdf_for_tracked_docs_preview(
 
     rc = mod.main(
         [
+            "bracket-sweep",
             str(path),
             "--json-out-prefix",
             str(out_prefix),
