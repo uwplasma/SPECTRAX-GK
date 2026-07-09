@@ -37,7 +37,7 @@ Date: 2026-07-09.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 243 | 100 | active |
+| Installable source Python files | 239 | 100 | active |
 | Tool Python files | 137 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -76,7 +76,7 @@ branch/PR.
 | --- | ---: | --- |
 | Tool consolidation | 54% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 38% | Shrink `spectraxgk.benchmarks`, merge `geometry_backends` into `geometry`, and resolve `terms`/`operators` ownership. |
+| Source consolidation | 42% | Continue VMEC backend ownership cleanup, shrink `spectraxgk.benchmarks`, and resolve `terms`/`operators` ownership. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
 | Docs/readme release pass | 74% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
@@ -139,6 +139,10 @@ branch/PR.
   campaign commands into `tools/campaigns/run_validation_campaigns.py`, reducing
   tool count from 138 to 137 and updating docs/manifests/tests to the smaller
   command surface.
+- 2026-07-09: Folded the Miller imported-geometry backend into
+  `spectraxgk.geometry.imported_miller` and moved shared JAX geometry kernels
+  into `spectraxgk.geometry.kernels`, reducing source count from 243 to 239
+  while preserving Miller/VMEC geometry tests.
 
 ## Validation Commands For This Tranche
 

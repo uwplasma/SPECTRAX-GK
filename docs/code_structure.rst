@@ -146,7 +146,7 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/vmec_eik.py``, ``geometry_backends/miller.py`` and ``geometry_backends/vmec.py`` facades plus focused Miller and VMEC backend modules
+     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/imported_miller.py``, ``geometry/kernels.py``, ``geometry/vmec_eik.py``, and the focused VMEC backend modules
      - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py`` facade plus ``terms/assembly_*`` owner modules
@@ -199,15 +199,15 @@ Completed extractions:
   mirror-term reconstruction, drift/Jacobian normalization, and
   ``FluxTubeGeometryData`` packing as separate private stages so geometry-file
   variants can be tested without one large loader body.
-- focused imported-geometry backends. ``geometry_backends.miller`` and
-  ``geometry_backends.vmec`` are now stable facades, while numerics,
-  field-line/core assembly, remap, optional-backend discovery, and pipeline
-  ownership live in smaller ``geometry_backends.miller_*`` and
-  ``geometry_backends.vmec_*`` modules. Imported Miller profile assembly keeps
-  central-surface normalization, period extension, Bishop coefficients, metric
-  coefficients, magnetic drifts, target-grid interpolation, ballooning
-  conversion, and final EIK profile packing as explicit stages inside
-  ``geometry_backends.miller_profiles``.
+- focused imported-geometry backends. ``geometry.imported_miller`` now owns
+  the complete Miller imported-geometry pipeline in one module, while shared
+  JAX finite-difference and period-extension kernels live in
+  ``geometry.kernels``. VMEC remains in focused ``geometry_backends.vmec_*``
+  modules until that backend is folded into ``spectraxgk.geometry``. Imported
+  Miller profile assembly keeps central-surface normalization, period extension,
+  Bishop coefficients, metric coefficients, magnetic drifts, target-grid
+  interpolation, ballooning conversion, and final EIK profile packing as
+  explicit stages inside ``geometry.imported_miller``.
 - mode selection/eigenfunction extraction and late-time growth/frequency
   fitting:
   ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``,

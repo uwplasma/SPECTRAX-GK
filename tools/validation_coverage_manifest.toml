@@ -1529,12 +1529,8 @@ next_tests = [
 module = "spectraxgk.geometry_backends.vmec"
 path = "src/spectraxgk/geometry_backends/vmec.py"
 owned_modules = [
-  "spectraxgk.geometry_backends.kernels",
-  "spectraxgk.geometry_backends.miller",
-  "spectraxgk.geometry_backends.miller_core",
-  "spectraxgk.geometry_backends.miller_numerics",
-  "spectraxgk.geometry_backends.miller_pipeline",
-  "spectraxgk.geometry_backends.miller_profiles",
+  "spectraxgk.geometry.kernels",
+  "spectraxgk.geometry.imported_miller",
   "spectraxgk.geometry_backends.vmec_backend_discovery",
   "spectraxgk.geometry_backends.vmec_fieldline_numerics",
   "spectraxgk.geometry_backends.vmec_fieldlines",

@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from spectraxgk.geometry_backends.kernels import (
+from spectraxgk.geometry.kernels import (
     finite_diff_nonuniform,
     centered_reflected_difference,
     weighted_centered_difference,
@@ -114,7 +114,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 
-from spectraxgk.geometry_backends.miller import (
+from spectraxgk.geometry.imported_miller import (
     MillerCoreParams,
     _request_attr,
     _safe_denom,

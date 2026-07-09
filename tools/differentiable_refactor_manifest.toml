@@ -2571,72 +2571,27 @@ autodiff_gates = ["CLI remains outside differentiable objective paths"]
 extension_points = ["Command", "PlotCommand", "DemoWorkflow"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller"
-source_path = "src/spectraxgk/geometry_backends/miller.py"
-facade_module = "spectraxgk.geometry_backends.miller"
+module = "spectraxgk.geometry.imported_miller"
+source_path = "src/spectraxgk/geometry/imported_miller.py"
+facade_module = "spectraxgk.geometry.imported_miller"
 status = "active"
-responsibility = "stable public facade for internal Miller imported-geometry generation"
+responsibility = "single imported Miller backend owning finite-difference numerics, surface/theta-grid construction, profile assembly, request normalization, and EIK NetCDF writeout"
 moved_exports = [
   "MillerCoreParams",
-  "generate_miller_eik_internal",
-  "internal_miller_backend_available",
-]
-fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller_numerics"
-source_path = "src/spectraxgk/geometry_backends/miller_numerics.py"
-facade_module = "spectraxgk.geometry_backends.miller"
-status = "active"
-responsibility = "Miller finite-difference, period-extension, trapezoid, and ballooning-grid helper numerics"
-moved_exports = [
+  "assemble_miller_profiles",
+  "build_collocation_surfaces",
+  "compute_equal_arc_theta",
+  "compute_primary_gradients",
+  "compute_straight_field_theta",
   "cumulative_trapezoid",
   "derm",
   "dermv",
-  "nperiod_data_extend",
-  "reflect_n_append",
-  "to_ballooning",
-]
-fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller_core"
-source_path = "src/spectraxgk/geometry_backends/miller_core.py"
-facade_module = "spectraxgk.geometry_backends.miller"
-status = "active"
-responsibility = "Miller core parameters, collocation surfaces, derivative blocks, and straight/equal-arc theta-grid construction"
-moved_exports = [
-  "MillerCoreParams",
-  "build_collocation_surfaces",
-  "compute_primary_gradients",
-  "compute_straight_field_theta",
-  "compute_equal_arc_theta",
-  "rebuild_straight_theta_state",
-]
-fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller_profiles"
-source_path = "src/spectraxgk/geometry_backends/miller_profiles.py"
-facade_module = "spectraxgk.geometry_backends.miller"
-status = "active"
-responsibility = "Miller imported-geometry profile assembly on the selected ballooning theta grid"
-moved_exports = ["assemble_miller_profiles"]
-fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller_pipeline"
-source_path = "src/spectraxgk/geometry_backends/miller_pipeline.py"
-facade_module = "spectraxgk.geometry_backends.miller"
-status = "active"
-responsibility = "high-level Miller request normalization, NetCDF writeout, and Miller-to-EIK pipeline orchestration"
-moved_exports = [
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
+  "nperiod_data_extend",
+  "rebuild_straight_theta_state",
+  "reflect_n_append",
+  "to_ballooning",
   "write_miller_eik_netcdf",
 ]
 fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
