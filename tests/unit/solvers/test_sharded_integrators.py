@@ -177,6 +177,8 @@ def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(
 
 
 def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
+    calls = {"rhs": 0}
+
     def fake_rhs(
         G,
         cache,
@@ -187,6 +189,7 @@ def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
         laguerre_mode="grid",
         external_phi=None,
     ):
+        calls["rhs"] += 1
         return 2.0 * jnp.ones_like(G), FieldState(
             phi=jnp.ones((1, 1, 1), dtype=G.dtype)
         )
@@ -209,3 +212,6 @@ def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
 
     assert out.shape == G0.shape
     assert jnp.allclose(out, 1.0)
+    # lax.scan traces one RHS site for the final-only graph. The field-history
+    # path has a second RHS site to recover fields at the accepted state.
+    assert calls["rhs"] == 1

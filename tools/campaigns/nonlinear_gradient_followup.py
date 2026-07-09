@@ -17,7 +17,7 @@ the focused nonlinear-gradient follow-up planners.
 """
 
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 import math
@@ -511,9 +511,6 @@ __all__ = [
 """Candidate-design reports for nonlinear turbulence-gradient follow-up campaigns."""
 
 
-from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
-import math
 
 
 
@@ -1068,9 +1065,6 @@ __all__ = [
 """Composite-control reports for nonlinear turbulence-gradient follow-up."""
 
 
-from dataclasses import asdict
-from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
 
 
 
@@ -1415,9 +1409,6 @@ __all__ = ["_composite_control_row", "nonlinear_gradient_composite_control_repor
 """Matched-replicate follow-up plans for nonlinear turbulence-gradient audits."""
 
 
-from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
-import math
 
 
 
@@ -1835,9 +1826,6 @@ __all__ = [
 """QL/linear seed-screen reports for nonlinear-gradient controls."""
 
 
-from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
-import math
 
 
 
@@ -2284,8 +2272,6 @@ __all__ = [
 """State-to-input runbook reports for nonlinear-gradient controls."""
 
 
-from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
 
 
 
@@ -2618,9 +2604,6 @@ __all__ = [
 """Variance-reduction follow-up reports for nonlinear-gradient audits."""
 
 
-from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
-import math
 
 
 

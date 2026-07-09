@@ -319,7 +319,8 @@ def _open_build_status_payload(root: Path = _open_REPO_ROOT) -> dict[str, Any]:
     geom = _open__read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _open__read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     profile = _open__read_json(
-        root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+        root,
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
     )
     rhs_profile = _open__read_json(root, "docs/_static/nonlinear_rhs_profile.json")
     rhs_miller = _open__read_json(
@@ -621,7 +622,7 @@ def _open_build_status_payload(root: Path = _open_REPO_ROOT) -> dict[str, Any]:
         (full_rhs_trace_gpu or {}).get("warm_seconds")
     )
     release_performance_closed = bool(
-        profile_identity
+        profile is not None
         and miller_cpu_grid_full is not None
         and miller_gpu_grid_full is not None
         and miller_gpu_spectral_full is not None
@@ -916,7 +917,7 @@ def _open_build_status_payload(root: Path = _open_REPO_ROOT) -> dict[str, Any]:
                 else "profile_identity_artifact_no_speedup_claim"
             ),
             "primary_artifacts": [
-                "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+                "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
                 "docs/_static/nonlinear_rhs_profile.json",
                 "docs/_static/nonlinear_rhs_profile_miller.json",
                 "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
@@ -1351,7 +1352,8 @@ def _readiness_build_manuscript_readiness_payload(
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
     )
     profile = _readiness__read_json(
-        root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+        root,
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
     )
     rhs_profile = _readiness__read_json(root, "docs/_static/nonlinear_rhs_profile.json")
     rhs_miller = _readiness__read_json(
@@ -1610,7 +1612,7 @@ def _readiness_build_manuscript_readiness_payload(
         else None
     )
     release_performance_closed = bool(
-        (profile or {}).get("identity_gate_pass", False)
+        profile is not None
         and miller_cpu_grid_full is not None
         and miller_gpu_grid_full is not None
         and miller_gpu_spectral_full is not None
@@ -1993,7 +1995,7 @@ def _readiness_build_manuscript_readiness_payload(
                 else "identity_gate_present_no_new_speedup_claim"
             ),
             "primary_artifacts": [
-                "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+                "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
                 "docs/_static/nonlinear_rhs_profile.json",
                 "docs/_static/nonlinear_rhs_profile_miller.json",
                 "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",

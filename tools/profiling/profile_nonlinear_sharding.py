@@ -219,14 +219,14 @@ def _nonlinear_diagnostic_identity_metrics(
 
 
 def _sharding_specs(primary: str, extra: str | None) -> list[str]:
-    raw = extra if extra is not None else primary
     specs: list[str] = []
-    for item in str(raw).split(","):
-        key = item.strip()
-        if key and key not in specs:
-            specs.append(key)
-    if primary not in specs:
-        specs.insert(0, primary)
+    for raw in (primary, extra):
+        if raw is None:
+            continue
+        for item in str(raw).split(","):
+            key = item.strip()
+            if key and key not in specs:
+                specs.append(key)
     return specs
 
 
@@ -238,7 +238,11 @@ def _best_identity_preserving_candidate(
     candidates: list[tuple[float, str, dict[str, Any]]] = []
     for spec, result in sharded_results.items():
         speedup = result.get("engineering_speedup_median")
-        if not bool(result.get("identity_gate_pass", False)) or speedup is None:
+        if (
+            not bool(result.get("state_sharding_active", False))
+            or not bool(result.get("identity_gate_pass", False))
+            or speedup is None
+        ):
             continue
         speedup_float = float(speedup)
         if math.isfinite(speedup_float):
@@ -975,7 +979,7 @@ def main_profile(argv: list[str] | None = None) -> int:
     sharding_specs = _sharding_specs(str(args.sharding), args.sharding_options)
 
     def serial_run():
-        G_final, _fields = integrate_nonlinear_cached(
+        return integrate_nonlinear_cached(
             jnp.asarray(G0_host),
             cache,
             params,
@@ -985,8 +989,8 @@ def main_profile(argv: list[str] | None = None) -> int:
             terms=terms,
             compressed_real_fft=True,
             laguerre_mode=str(args.laguerre_mode),
+            return_fields=False,
         )
-        return G_final
 
     def make_sharded_run(spec: str):
         state_sharding = resolve_state_sharding(G0, spec)
@@ -1121,7 +1125,8 @@ def main_profile(argv: list[str] | None = None) -> int:
             )
         identity_passes.append(identity_pass)
 
-    primary = sharded_results[str(args.sharding)]
+    primary_spec = sharding_specs[0]
+    primary = sharded_results[primary_spec]
     best_candidate = _best_identity_preserving_candidate(sharded_results)
     source_contract = _source_contract(args, argv)
     payload = {
@@ -1131,6 +1136,7 @@ def main_profile(argv: list[str] | None = None) -> int:
         "default_backend": str(source_contract["backend"]),
         "state_shape": list(map(int, G0.shape)),
         "state_sharding_requested": str(args.sharding),
+        "state_sharding_primary": primary_spec,
         "state_sharding_active": bool(primary["state_sharding_active"]),
         "sharding_options": sharding_specs,
         "dt": float(args.dt),
@@ -1146,7 +1152,11 @@ def main_profile(argv: list[str] | None = None) -> int:
         "profiler_trace": trace_status,
         "serial_warm_s": serial_stats["median"],
         "sharded_warm_s": primary["stats_s"]["median"] if primary["stats_s"] else None,
-        "engineering_speedup": primary["engineering_speedup_median"],
+        "engineering_speedup": (
+            primary["engineering_speedup_median"]
+            if bool(primary["state_sharding_active"])
+            else None
+        ),
         "max_abs_state_error": primary["max_abs_state_error"],
         "max_rel_state_error": primary["max_rel_state_error"],
         "identity_gate_pass": bool(all(identity_passes)),

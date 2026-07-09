@@ -1405,6 +1405,28 @@ def _architecture_manifest_with_topology(
     return data
 
 
+def _architecture_manifest_with_complexity(
+    *, baseline: int, target: int
+) -> dict[str, object]:
+    data = _architecture_manifest(allowed=[])
+    data["complexity_policy"] = {
+        "mode": "no_regression_until_target",
+        "description": "test complexity policy",
+        "default_max_lines": 3,
+        "public_facade_max_lines": 2,
+        "public_facades": ["facade.py"],
+        "exceptions": [
+            {
+                "path": "facade.py",
+                "baseline_lines": baseline,
+                "target_lines": target,
+                "reason": "test facade migration",
+            }
+        ],
+    }
+    return data
+
+
 def _performance_manifest_text(
     *, tool: str, artifact: str, status: str = "active"
 ) -> str:
@@ -1735,6 +1757,48 @@ def test_validate_architecture_policy_can_require_topology_targets(tmp_path):
         require_topology_targets=True,
     )
     assert summary["topology_targets_met"] is True
+
+
+def test_validate_architecture_policy_tracks_complexity_exceptions(tmp_path):
+    source_root = tmp_path / "spectraxgk"
+    (source_root / "operators").mkdir(parents=True)
+    (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
+    (source_root / "facade.py").write_text("a\nb\nc\nd\n", encoding="utf-8")
+
+    summary = validate_architecture_policy(
+        _architecture_manifest_with_complexity(baseline=5, target=2),
+        source_root=source_root,
+        check_paths=False,
+    )
+
+    row = summary["complexity_exceptions"][0]
+    assert row["path"] == "facade.py"
+    assert row["lines"] == 4
+    assert row["remaining_to_target"] == 2
+    assert summary["complexity_targets_met"] is False
+
+    with pytest.raises(ValueError, match="complexity target not met"):
+        validate_architecture_policy(
+            _architecture_manifest_with_complexity(baseline=5, target=2),
+            source_root=source_root,
+            check_paths=False,
+            require_complexity_targets=True,
+        )
+
+
+def test_validate_architecture_policy_rejects_unowned_complexity_growth(tmp_path):
+    source_root = tmp_path / "spectraxgk"
+    (source_root / "operators").mkdir(parents=True)
+    (source_root / "operators" / "__init__.py").write_text("", encoding="utf-8")
+    (source_root / "facade.py").write_text("a\nb\nc\n", encoding="utf-8")
+    (source_root / "new_hotspot.py").write_text("a\nb\nc\nd\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="without reviewed exceptions"):
+        validate_architecture_policy(
+            _architecture_manifest_with_complexity(baseline=5, target=2),
+            source_root=source_root,
+            check_paths=False,
+        )
 
 
 def test_package_architecture_inventory_classifies_repository_areas() -> None:

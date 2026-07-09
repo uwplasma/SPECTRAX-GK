@@ -6,19 +6,25 @@ open lanes, and the recent implementation log.
 
 ## One-Sentence Plan
 
-Make SPECTRAX-GK a compact, JAX-native gyrokinetic package with a small and
-navigable source tree, a smaller set of grouped maintainer tools, fewer and more
-physics-driven tests, documented benchmark/comparison workflows, preserved
-validated solver behavior, and profiler-backed CPU/GPU performance claims.
+Make SPECTRAX-GK a compact, JAX-native gyrokinetic package with a navigable
+physics-first architecture, documented comparison contracts, research-grade
+validation, efficient CPU/GPU execution, production-safe parallelization, and
+explicitly verified differentiable workflows for analysis and optimization.
 
 ## Definition Of Done
 
-- `src/spectraxgk` has fewer than 100 Python files or every remaining excess file
-  is justified by a domain boundary and tracked in the architecture manifest.
-- `tools` has fewer than 99 Python files, with one grouped command per artifact,
-  campaign, release-gate, or profiling family.
-- `tests` has fewer than 99 Python files while preserving the fast release gates,
-  physics validation gates, numerics gates, and package-wide coverage above 95%.
+- The source tree follows explicit domain ownership: model/state, geometry,
+  physical operators, solvers/parallelism, diagnostics, design/optimization,
+  and I/O/workflows. File count is a review signal, not an optimization target.
+- Hand-written production modules stay below 1000 lines and public facades below
+  500 lines unless an architecture manifest records a reviewed exception. No
+  compatibility facade may own physical or numerical implementation policy.
+- Maintainer tools use one grouped command per artifact, campaign, release-gate,
+  comparison, or profiling family; generated outputs and campaign policy do not
+  live in the installed package.
+- Tests mirror scientific domains and preserve fast release gates, conservation
+  and observed-order checks, literature/reference comparisons, and package-wide
+  coverage above 95%. Coverage is necessary but does not replace physics gates.
 - The executable user path remains simple: `spectraxgk`, `spectrax-gk`, and
   `spectraxgk --plot` keep working with documented examples.
 - Python workflows remain differentiable where advertised; executable workflows
@@ -28,6 +34,16 @@ validated solver behavior, and profiler-backed CPU/GPU performance claims.
   labeled comparison figures/tables.
 - Runtime and memory claims in README/docs are backed by current artifacts and
   profiler or benchmark records.
+- Core electrostatic/electromagnetic equations, supported geometries and
+  boundaries, species response, restarts, and resolved diagnostics have an
+  explicit capability/parity matrix. Specialized reduced models are either
+  validated features or clearly out of scope, never implied by broad wording.
+- GPU profiles separate cold compilation, fixed per-run overhead, warm per-step
+  throughput, memory, and device utilization. Multi-device speedups require
+  active sharding plus state, invariant, diagnostic, and transport-window identity.
+- Collision operators use a common extension contract. The shipped baseline is
+  retained while conserving Dougherty and linearized gyrokinetic Sugama/Coulomb
+  implementations progress through invariant and literature-benchmark gates.
 - The repository remains light: no generated caches, raw long-run outputs, build
   directories, or large transient artifacts are tracked.
 
@@ -37,14 +53,18 @@ Date: 2026-07-09.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 228 | 100 | active |
-| Tool Python files | 134 | 99 | active |
-| Test Python files | 98 | 98 | closed |
+| Installable source Python files | 228 | reviewed domain ownership | active |
+| Source modules above 1000 lines | 8 including a 13209-line facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 13209 lines | <=500 lines | active |
+| Tool Python files | 134 | grouped commands; no duplicate owners | active |
+| Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
+| Nonlinear A4000 warm step, 192x64x24 | 109 ms fixed / 160 ms adaptive | <=1.25x matched comparison baseline | active |
+| Nonlinear two-GPU whole-state path | 0.706x and identity failure | no production claim; replace decomposition | blocked from claims |
 
 ## File Retention Rule
 
@@ -70,40 +90,89 @@ branch/PR.
 | `tests` | Automated correctness, physics, numerics, and release gates | one-file-per-helper mirrors and redundant monkeypatch branch tests |
 | `docs/_static` | Curated evidence referenced by README/docs/release manifests | stale pilot traces and unreferenced historical panels |
 
+## Capability And Comparison Policy
+
+The implementation does not need every specialized feature in another
+gyrokinetic code. Each capability belongs to one tier:
+
+| Tier | Meaning | Current examples |
+| --- | --- | --- |
+| Required core | Must have equation, normalization, state-level, and observable gates | electrostatic ITG, electromagnetic fields, kinetic/Boltzmann species, linked/periodic flux tubes, Miller/VMEC geometry, restart and resolved diagnostics |
+| Differentiable extension | SPECTRAX-GK-specific research capability with AD/FD and conditioning gates | implicit eigenvalue gradients, UQ, quasilinear objectives, vmec_jax/booz_xform_jax geometry and optimization |
+| Optional extension | Implement only with a scientific owner and validation campaign | advanced closures, broad forcing, transport-framework coupling |
+| Explicitly out of scope | No release implication; may be reconsidered later | unrelated reduced plasma models and retired collisional-ETG compatibility paths |
+
+External-code names remain confined to comparison inputs, benchmark tooling,
+validation documentation, and figures/tables. Source-level physics and numerics
+use mathematical names independent of comparison provenance.
+
 ## Open Lanes And Progress
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
+| Capability/parity specification | 75% | Freeze the required-core matrix and exact matched geometry/grid/diagnostic contracts. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 51% | Shrink `spectraxgk.benchmarks`, resolve remaining `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
-| Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
-| Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
-| Docs/readme release pass | 76% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
+| Source consolidation | 51% | Shrink `spectraxgk.benchmarks` below facade budget, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
+| Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
+| Nonlinear GPU performance | 60% | Move CFL/sampling device-resident, then match fixed-step workloads before optimizing kernels. |
+| Production parallelization | 35% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
+| Performance/release claims | 82% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
+| Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
 ## Prioritized Implementation Steps
 
-1. **Tool pruning and grouping.** Delete unreferenced tools, replace stale command
-   references, then consolidate artifact builders by domain: nonlinear transport,
-   quasilinear model development, stellarator/VMEC-Boozer, W7-X/zonal, and
-   performance panels.
-2. **Test family collapse.** Merge one-file-per-tool tests into table-driven
-   families with shared fake artifacts and shared command-load fixtures.
+1. **Freeze the required-core comparison contract.** Record exact equations,
+   normalization, geometry arrays, grid layout, initialization, timestepping,
+   precision, and diagnostics for each promoted linear/nonlinear comparison.
+2. **Correct nonlinear execution and profiling.** Remove unused RHS evaluations,
+   keep CFL and sampling device-resident, report only active-sharding speedups,
+   and separate cold, fixed-overhead, warm-throughput, utilization, and memory.
 3. **Benchmark facade shrink.** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
    drivers to root `benchmarks` or maintainer tools.
 4. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
    a single public mathematical-kernel namespace for `terms`/`operators`, and
    consolidate objective helper shards into fewer family modules.
-5. **Performance pass.** Profile quickstart, linear RHS/cache, nonlinear RHS and
-   bracket, diagnostics IO, and VMEC/Boozer transforms. Add speed claims only when
-   before/after artifacts and numerical identity gates exist.
-6. **Docs and release pass.** Regenerate referenced figures/tables, run fast
+5. **Close required-core physics gates.** Maintain state-level short gates and
+   converged long-window gates for axisymmetric/stellarator, electrostatic/
+   electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
+6. **Add collision-operator extensibility.** Land a tested operator protocol,
+   conserving Dougherty parity model, and linearized Sugama/Coulomb operators.
+   Require null-space, particle/momentum/energy, adjointness, entropy-production,
+   collisional ITG, zonal-flow damping, conductivity, and convergence evidence.
+7. **Formalize differentiation.** Use forward JVPs for few design parameters,
+   reverse checkpointing for many-parameter scalar objectives, and implicit JVP/
+   VJP rules for converged eigen/root solves. Adaptive and turbulent objectives
+   require tolerance/window/seed refinement plus AD/finite-difference checks.
+8. **Implement production parallelism.** Decompose species first and Hermite
+   moments second, exchange Hermite halos explicitly, reduce field moments with
+   collectives, and keep perpendicular FFTs local until memory requires pencils.
+9. **Tool pruning and test normalization.** Delete unreferenced tools, group
+   artifact commands, and use table-driven domain tests with shared fixtures.
+10. **Docs and release pass.** Regenerate referenced figures/tables, run fast
    release tests, package build, docs build, package-wide coverage gate, then bump
    version and tag only when CI is green.
 
 ## Recent Implementation Log
+
+- 2026-07-09: Audited a clean comparison-code build and SPECTRAX-GK on office
+  RTX A4000 GPUs. The isolated SPECTRAX nonlinear RHS is GPU-efficient, but the
+  full integrator is dominated by fixed overhead and low device occupancy; the
+  two-GPU whole-state `kx` route is slower and fails trajectory identity.
+- 2026-07-09: Replaced raw source-file-count completion pressure with domain
+  ownership and complexity budgets, and added explicit core-parity, collision,
+  differentiation, and production-parallelization exit gates.
+- 2026-07-09: Added a final-state-only nonlinear integration mode that skips
+  the post-step RHS used solely for field-history recovery. A controlled office
+  A4000 A/B at `(4,8,64,192,24)` reduced median warm time by about 5--6% while
+  preserving the existing field-returning default and its numerical tests.
+- 2026-07-09: Re-ran two-GPU whole-state `kx` sharding on that benchmark grid.
+  It was slower than serial (`0.706x`) and failed trajectory identity
+  (`max_abs_state_error=33.32`), so the result is now a tracked fail-closed
+  artifact and the old tiny-grid identity profile is explicitly smoke-only.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

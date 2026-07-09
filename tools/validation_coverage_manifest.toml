@@ -1998,6 +1998,7 @@ artifact_paths = [
   "docs/_static/parallel_ky_scan_gate.png",
   "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+  "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.csv",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.png",

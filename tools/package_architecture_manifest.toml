@@ -51,7 +51,7 @@ path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
 baseline = 228
-target = 100
+target = 228
 
 [[topology_policy.counts]]
 name = "test_python_files"
@@ -66,8 +66,8 @@ name = "tool_python_files"
 path = "tools"
 pattern = "*.py"
 recursive = true
-baseline = 137
-target = 99
+baseline = 134
+target = 134
 
 
 [[topology_policy.counts]]
@@ -85,3 +85,77 @@ pattern = "*.py"
 recursive = false
 baseline = 0
 target = 0
+
+[complexity_policy]
+mode = "no_regression_until_target"
+description = "Prevent new giant modules while named legacy hotspots are reduced to reviewed domain budgets."
+default_max_lines = 1000
+public_facade_max_lines = 500
+public_facades = [
+  "api/__init__.py",
+  "benchmarks.py",
+  "linear.py",
+  "nonlinear.py",
+  "quasilinear.py",
+  "runtime.py",
+]
+
+[[complexity_policy.exceptions]]
+path = "benchmarks.py"
+baseline_lines = 13209
+target_lines = 500
+reason = "legacy public benchmark facade; move case policy to root benchmarks and keep result contracts only"
+
+[[complexity_policy.exceptions]]
+path = "geometry/imported_vmec.py"
+baseline_lines = 2540
+target_lines = 1000
+reason = "split file parsing, convention mapping, and backend execution behind one geometry facade"
+
+[[complexity_policy.exceptions]]
+path = "diagnostics/nonlinear_gradient_evidence.py"
+baseline_lines = 2371
+target_lines = 1000
+reason = "move campaign/report assembly out of installed diagnostics"
+
+[[complexity_policy.exceptions]]
+path = "diagnostics/validation_gates.py"
+baseline_lines = 1418
+target_lines = 1000
+reason = "consolidate common gate algebra and move case policy to validation drivers"
+
+[[complexity_policy.exceptions]]
+path = "diagnostics/transport_windows.py"
+baseline_lines = 1237
+target_lines = 1000
+reason = "separate reusable window statistics from artifact policy"
+
+[[complexity_policy.exceptions]]
+path = "geometry/imported_miller.py"
+baseline_lines = 1173
+target_lines = 1000
+reason = "share imported-geometry parsing and normalization kernels"
+
+[[complexity_policy.exceptions]]
+path = "diagnostics/nonlinear_transport_optimization.py"
+baseline_lines = 1020
+target_lines = 1000
+reason = "move campaign-specific admission policy out of installed diagnostics"
+
+[[complexity_policy.exceptions]]
+path = "objectives/vmec_boozer_line_search.py"
+baseline_lines = 1006
+target_lines = 1000
+reason = "small remaining line-search policy consolidation"
+
+[[complexity_policy.exceptions]]
+path = "api/__init__.py"
+baseline_lines = 839
+target_lines = 500
+reason = "curate the stable public API and keep specialist report builders internal"
+
+[[complexity_policy.exceptions]]
+path = "runtime.py"
+baseline_lines = 535
+target_lines = 500
+reason = "finish moving executable orchestration details behind the workflow package"

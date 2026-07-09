@@ -8,7 +8,7 @@ import glob
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import matplotlib
 import numpy as np

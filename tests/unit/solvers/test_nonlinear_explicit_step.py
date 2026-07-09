@@ -122,6 +122,7 @@ def test_integrate_cached_explicit_scan_forwards_scan_policy() -> None:
         checkpoint=True,
         project_state=project_state,
         show_progress=True,
+        return_fields=False,
     )
 
     np.testing.assert_allclose(np.asarray(G_out), [4.0], rtol=1e-6)
@@ -134,6 +135,7 @@ def test_integrate_cached_explicit_scan_forwards_scan_policy() -> None:
     assert captured["checkpoint"] is True
     assert captured["project_state"] is project_state
     assert captured["show_progress"] is True
+    assert captured["return_fields"] is False
 
 
 def test_make_explicit_diagnostic_step_forwards_runtime_policies() -> None:

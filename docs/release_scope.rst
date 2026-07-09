@@ -608,8 +608,11 @@ Parallelization and performance state:
   split/reassemble communication layout, respectively. They are correctness
   prerequisites for future nonlinear domain decomposition, not runtime
   distributed-FFT or nonlinear speedup claims.
-- ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` and related RHS
-  profiler artifacts support scoped hot-path localization only.
+- ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` is a tiny smoke
+  artifact. The controlling benchmark-grid result is
+  ``docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json``;
+  it is slower than serial and fails final-state identity, so whole-state
+  nonlinear sharding is blocked from production use and speedup claims.
 - ``docs/_static/nonlinear_device_z_pencil_transport_gpu2_observable_split_profile.json``
   is the final performance artifact for this release tranche. It passes
   serial-vs-sharded identity on the auto-chunked two-GPU transport-window

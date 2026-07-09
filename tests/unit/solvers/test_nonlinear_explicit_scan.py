@@ -118,6 +118,29 @@ def test_integrate_nonlinear_scan_rk3_alias_matches_heun_variant() -> None:
     assert jnp.allclose(out_rk3, out_heun)
 
 
+def test_integrate_nonlinear_scan_final_only_skips_field_history_rhs() -> None:
+    calls = {"rhs": 0}
+
+    def rhs_fn(G: jnp.ndarray) -> tuple[jnp.ndarray, FieldState]:
+        calls["rhs"] += 1
+        return 0.2 * G, FieldState(phi=jnp.sum(G, axis=0))
+
+    G0 = jnp.asarray([[1.0 + 0.0j]], dtype=jnp.complex64)
+    expected = (1.0 + 0.1 * 0.2) ** 2 * G0
+    out = integrate_nonlinear_scan(
+        rhs_fn,
+        G0,
+        0.1,
+        2,
+        method="euler",
+        return_fields=False,
+    )
+
+    assert out.shape == G0.shape
+    assert jnp.allclose(out, expected)
+    assert calls["rhs"] == 1
+
+
 @pytest.mark.parametrize(
     ("method", "expected_order", "min_observed_order"),
     [

@@ -922,6 +922,7 @@ def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> Non
 
     def _fake_scan(rhs_fn, G0, dt, steps, **kwargs):
         captured["project_state"] = kwargs.get("project_state")
+        captured["return_fields"] = kwargs.get("return_fields")
         return G0, FieldState(
             phi=jnp.zeros((4, 2, 2), dtype=jnp.complex64), apar=None, bpar=None
         )
@@ -954,6 +955,7 @@ def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> Non
     )
     assert out_G.shape == (1, 4, 2, 2)
     assert captured["project_state"] is not None
+    assert captured["return_fields"] is True
     assert out_fields.phi.shape == (4, 2, 2)
 
 

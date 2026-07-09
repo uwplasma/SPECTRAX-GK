@@ -132,13 +132,13 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     )
     _write_manuscript_readiness_json(
         tmp_path,
-        "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
         {
-            "identity_gate_pass": True,
-            "engineering_speedup": 0.8,
+            "identity_gate_pass": False,
+            "engineering_speedup": 0.706,
             "best_identity_preserving_candidate": {
-                "spec": "kx",
-                "engineering_speedup_median": 1.03,
+                "spec": None,
+                "engineering_speedup_median": None,
             },
         },
     )
@@ -443,7 +443,12 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
+    assert profiler["key_metrics"]["identity_gate_pass"] is False
+    assert profiler["key_metrics"]["best_identity_candidate"] is None
+    assert (
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json"
+        in profiler["primary_artifacts"]
+    )
     assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
     assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
     assert profiler["key_metrics"]["rhs_cpu_bracket_grid_over_spectral"] == 1.66
@@ -820,15 +825,15 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_open_research_lane_json(
         tmp_path,
-        "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
         {
-            "identity_gate_pass": True,
-            "engineering_speedup": 0.8,
+            "identity_gate_pass": False,
+            "engineering_speedup": 0.706,
             "device_count": 2,
             "default_backend": "gpu",
             "best_identity_preserving_candidate": {
-                "spec": "kx",
-                "engineering_speedup_median": 1.03,
+                "spec": None,
+                "engineering_speedup_median": None,
             },
         },
     )
@@ -968,7 +973,12 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
         in profiler["primary_artifacts"]
     )
-    assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
+    assert profiler["key_metrics"]["identity_gate_pass"] is False
+    assert profiler["key_metrics"]["best_identity_candidate"] is None
+    assert (
+        "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json"
+        in profiler["primary_artifacts"]
+    )
     assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
     assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
     assert profiler["key_metrics"]["rhs_gpu_bracket_grid_over_spectral"] == 2.20

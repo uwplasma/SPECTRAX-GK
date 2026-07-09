@@ -89,6 +89,16 @@ purpose-specific folders, one-file-per-tool tests should become parametrized
 family tests, and retired/non-promoted workflows should not remain on ``main``
 unless they are promoted and documented.
 
+The 2026-07-09 comparison and GPU audit replaced raw file-count completion with
+complexity and capability gates. The current tree has 228 source Python files,
+98 test Python files, and 134 maintainer-tool Python files. Ten source hotspots
+have reviewed no-regression baselines and finite reduction targets in
+``tools/package_architecture_manifest.toml``. The largest is the 13,209-line
+``spectraxgk.benchmarks`` compatibility facade, which must shrink to a small
+result-contract facade instead of absorbing more case policy. New unreviewed
+modules above 1,000 lines or public facades above 500 lines now fail the
+architecture checker.
+
 Current Consolidation Decision
 ------------------------------
 
@@ -650,9 +660,10 @@ open-ended extraction work.
    after the source package move is stable, preserving the wide 95% coverage
    gate.
 6. Remove temporary migration allowances.
-   Shrink ``tools/package_architecture_manifest.toml`` allowed root-prefix
-   modules as each family moves. This is the measurable endpoint for the
-   simplification lane.
+   Shrink reviewed complexity exceptions as each family moves and remove each
+   exception when it reaches its target. Root-prefix and topology counts remain
+   no-regression signals; complexity, ownership, tests, and public API clarity
+   are the measurable endpoint for the simplification lane.
 
 Acceptance Gates
 ----------------
@@ -673,6 +684,8 @@ Every migration tranche must pass:
 Architecture-specific gates:
 
 - no new root-level prefix module without an explicit migration-manifest row;
+- no new source module above 1,000 lines or public facade above 500 lines
+  without a reviewed no-regression exception and reduction target;
 - no new public module without a docstring and documented ownership;
 - no public package facade with undocumented re-exports;
 - no solver or operator module importing validation/comparison adapters;

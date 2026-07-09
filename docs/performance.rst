@@ -1012,14 +1012,25 @@ versions. The fast parallel artifact checker validates that contract whenever
 it is present; older checked-in diagnostic profiles remain scoped until they
 are refreshed with the same metadata. The
 local checked-in artifact is deliberately small and only establishes the
-control-flow and single-device identity gate. The two-GPU office artifact at
-``docs/_static/nonlinear_sharding_profile_office_gpu.json`` records active
-``auto``/``kx`` state sharding with zero final-state, final-field, and final-RHS
-diagnostic error on both candidate axes. In the current bounded run the
-requested ``auto`` path is slower (``0.81x``), while the best
-identity-preserving candidate is explicit ``kx`` sharding at about ``0.96x``.
-That is not a speedup, so this artifact should be treated as a correctness and
-profiler-localization gate rather than a publication runtime claim.
+control-flow and single-device identity gate. The older two-GPU office artifact
+at ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` is likewise a
+tiny ``(4,6,8,4,16)`` smoke test: it records zero state error but no speedup.
+It must not be generalized to a transport grid. The matched benchmark-grid
+artifact,
+``docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json``,
+uses ``(4,8,64,192,24)`` and 20 fixed RK2 steps. Active ``kx`` sharding is
+slower than serial (``0.706x``) and fails trajectory identity
+(``max_abs_state_error=33.32``), even though a final field/RHS diagnostic
+happens to agree. Therefore whole-state nonlinear sharding is blocked from
+production routing and runtime claims. The next implementation must change the
+decomposition, not relax this gate.
+
+For final-state-only optimization or profiling, the explicit scan accepts
+``return_fields=False``. This avoids one post-step RHS evaluation that exists
+only to materialize final field history. On the same office GPU and
+``(4,8,64,192,24)`` workload, a controlled same-process A/B measurement reduced
+the median warm 20-step time by about 5--6%. This is a narrowly scoped
+engineering result, not a refreshed end-to-end application speed claim.
 
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple

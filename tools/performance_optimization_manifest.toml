@@ -151,6 +151,7 @@ artifact_paths = [
   "docs/_static/laguerre_mode_gate_gpu.png",
   "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+  "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
   "tools/runtime_memory_manifest.toml",
 ]
 bottleneck_hypotheses = [
@@ -293,6 +294,7 @@ artifact_paths = [
   "docs/_static/linear_rhs_parallel_slices_sweep.csv",
     "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+  "docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.csv",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.png",

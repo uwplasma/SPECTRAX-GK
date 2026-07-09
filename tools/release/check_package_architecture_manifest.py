@@ -107,6 +107,113 @@ def _count_matching_files(path: Path, *, pattern: str, recursive: bool) -> int:
     return sum(1 for item in iterator if item.is_file())
 
 
+def _source_line_count(path: Path) -> int:
+    with path.open("rb") as stream:
+        return sum(1 for _ in stream)
+
+
+def _validate_complexity_policy(
+    data: dict[str, Any],
+    *,
+    source_root: Path,
+    require_targets: bool = False,
+) -> list[dict[str, Any]]:
+    policy = data.get("complexity_policy")
+    if policy is None:
+        return []
+    if not isinstance(policy, dict):
+        raise ValueError("complexity_policy must be a TOML table")
+    mode = _as_nonempty_string(policy.get("mode"), "complexity_policy.mode")
+    if mode != "no_regression_until_target":
+        raise ValueError(
+            "complexity_policy.mode must be 'no_regression_until_target'"
+        )
+    _as_nonempty_string(policy.get("description"), "complexity_policy.description")
+    default_limit = _as_nonnegative_int(
+        policy.get("default_max_lines"), "complexity_policy.default_max_lines"
+    )
+    facade_limit = _as_nonnegative_int(
+        policy.get("public_facade_max_lines"),
+        "complexity_policy.public_facade_max_lines",
+    )
+    public_facades = set(
+        _as_string_list(policy.get("public_facades"), "complexity_policy.public_facades")
+    )
+    raw_exceptions = policy.get("exceptions")
+    if not isinstance(raw_exceptions, list):
+        raise ValueError("complexity_policy.exceptions must be a list")
+
+    exceptions: dict[str, dict[str, Any]] = {}
+    for index, entry in enumerate(raw_exceptions):
+        if not isinstance(entry, dict):
+            raise ValueError(f"complexity_policy.exceptions[{index}] must be a table")
+        prefix = f"complexity_policy.exceptions[{index}]"
+        path = _as_nonempty_string(entry.get("path"), f"{prefix}.path")
+        if path in exceptions:
+            raise ValueError(f"complexity_policy.exceptions contains duplicate path: {path}")
+        baseline = _as_nonnegative_int(
+            entry.get("baseline_lines"), f"{prefix}.baseline_lines"
+        )
+        target = _as_nonnegative_int(
+            entry.get("target_lines"), f"{prefix}.target_lines"
+        )
+        if target > baseline:
+            raise ValueError(
+                f"{path}: complexity target {target} cannot exceed baseline {baseline}"
+            )
+        exceptions[path] = {
+            "baseline": baseline,
+            "target": target,
+            "reason": _as_nonempty_string(entry.get("reason"), f"{prefix}.reason"),
+        }
+
+    source_files = sorted(path for path in source_root.rglob("*.py") if path.is_file())
+    existing = {path.relative_to(source_root).as_posix(): path for path in source_files}
+    stale = sorted(set(exceptions) - set(existing))
+    if stale:
+        raise ValueError(f"complexity exceptions reference missing modules: {stale}")
+
+    rows: list[dict[str, Any]] = []
+    unowned: list[str] = []
+    for relative, path in existing.items():
+        lines = _source_line_count(path)
+        limit = facade_limit if relative in public_facades else default_limit
+        exception = exceptions.get(relative)
+        if lines > limit and exception is None:
+            unowned.append(f"{relative} ({lines}>{limit})")
+            continue
+        if exception is None:
+            continue
+        baseline = int(exception["baseline"])
+        target = int(exception["target"])
+        if lines > baseline:
+            raise ValueError(
+                f"{relative}: complexity regressed to {lines} lines, above baseline {baseline}"
+            )
+        if require_targets and lines > target:
+            raise ValueError(
+                f"{relative}: complexity target not met; {lines} lines exceeds {target}"
+            )
+        rows.append(
+            {
+                "path": relative,
+                "lines": lines,
+                "limit": limit,
+                "baseline": baseline,
+                "target": target,
+                "remaining_to_target": max(0, lines - target),
+                "target_met": lines <= target,
+                "reason": str(exception["reason"]),
+            }
+        )
+    if unowned:
+        raise ValueError(
+            "source modules exceed complexity budgets without reviewed exceptions: "
+            + ", ".join(unowned)
+        )
+    return rows
+
+
 def _validate_topology_policy(
     data: dict[str, Any],
     *,
@@ -178,6 +285,7 @@ def validate_architecture_policy(
     source_root: Path = DEFAULT_SOURCE_ROOT,
     check_paths: bool = True,
     require_topology_targets: bool = False,
+    require_complexity_targets: bool = False,
 ) -> dict[str, Any]:
     """Validate architecture-policy content and return a compact summary."""
 
@@ -261,6 +369,11 @@ def validate_architecture_policy(
         data,
         require_targets=require_topology_targets,
     )
+    complexity_exceptions = _validate_complexity_policy(
+        data,
+        source_root=source_root,
+        require_targets=require_complexity_targets,
+    )
 
     return {
         "layout_authority": str(metadata["layout_authority"]),
@@ -272,6 +385,11 @@ def validate_architecture_policy(
         "n_topology_counts": len(topology_counts),
         "topology_counts": topology_counts,
         "topology_targets_met": all(row["target_met"] for row in topology_counts),
+        "n_complexity_exceptions": len(complexity_exceptions),
+        "complexity_exceptions": complexity_exceptions,
+        "complexity_targets_met": all(
+            row["target_met"] for row in complexity_exceptions
+        ),
         "status": str(metadata["status"]),
     }
 
@@ -573,6 +691,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fail unless all topology counts are already at their final targets.",
     )
+    parser.add_argument(
+        "--require-complexity-targets",
+        action="store_true",
+        help="Fail unless all reviewed oversized modules meet their target budgets.",
+    )
     return parser
 
 
@@ -583,6 +706,7 @@ def main_architecture(argv: list[str] | None = None) -> int:
         source_root=args.source_root,
         check_paths=True,
         require_topology_targets=args.require_topology_targets,
+        require_complexity_targets=args.require_complexity_targets,
     )
     payload = json.dumps(summary, indent=2, sort_keys=True) + "\n"
     if args.out_json is not None:

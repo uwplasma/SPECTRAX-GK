@@ -80,6 +80,7 @@ def test_profile_nonlinear_sharding_helpers_report_stats_and_unique_specs() -> N
     assert stats["mean"] == 2.0
     assert stats["max"] == 3.0
     assert mod._sharding_specs("auto", "ky,kx,ky,z") == ["auto", "ky", "kx", "z"]
+    assert mod._sharding_specs("auto,kx", None) == ["auto", "kx"]
 
 
 def test_profile_nonlinear_sharding_reports_best_identity_candidate() -> None:
@@ -111,6 +112,28 @@ def test_profile_nonlinear_sharding_reports_best_identity_candidate() -> None:
         "state_sharding_active": True,
         "identity_gate_pass": True,
     }
+
+
+def test_profile_nonlinear_sharding_excludes_inactive_speedup_candidates() -> None:
+    mod = _load_sharding_tool_module()
+
+    best = mod._best_identity_preserving_candidate(
+        {
+            "auto": {
+                "identity_gate_pass": True,
+                "engineering_speedup_median": 4.0,
+                "state_sharding_active": False,
+            },
+            "kx": {
+                "identity_gate_pass": True,
+                "engineering_speedup_median": 1.1,
+                "state_sharding_active": True,
+            },
+        }
+    )
+
+    assert best["spec"] == "kx"
+    assert best["engineering_speedup_median"] == 1.1
 
 
 def test_profile_nonlinear_sharding_skips_unsafe_cpu_state_sharding() -> None:

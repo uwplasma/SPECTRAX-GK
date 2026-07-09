@@ -1073,6 +1073,9 @@ def _assert_nonlinear_sharding_identity_artifact(payload: dict) -> None:
 def test_nonlinear_sharding_profiles_are_identity_gated_and_scoped() -> None:
     local = _load_json("nonlinear_sharding_profile.json")
     office_gpu = _load_json("nonlinear_sharding_profile_office_gpu.json")
+    benchmark_gpu = _load_json(
+        "nonlinear_sharding_profile_office_gpu_benchmark_grid.json"
+    )
 
     _assert_nonlinear_sharding_identity_artifact(local)
     assert local["default_backend"] == "cpu"
@@ -1083,6 +1086,26 @@ def test_nonlinear_sharding_profiles_are_identity_gated_and_scoped() -> None:
     assert office_gpu["device_count"] >= 2
     assert office_gpu["state_sharding_active"] is True
     assert office_gpu["profiler_trace"]["requested"] is True
+
+    # The old profile is a tiny control-flow smoke. The matched benchmark grid
+    # is the production-candidate gate and must fail closed on trajectory drift.
+    assert benchmark_gpu["default_backend"] == "gpu"
+    assert benchmark_gpu["device_count"] == 2
+    assert benchmark_gpu["state_shape"] == [4, 8, 64, 192, 24]
+    assert benchmark_gpu["state_sharding_active"] is True
+    assert benchmark_gpu["identity_gate_pass"] is False
+    assert benchmark_gpu["max_abs_state_error"] > 1.0
+    assert benchmark_gpu["engineering_speedup"] < 1.0
+    assert benchmark_gpu["best_identity_preserving_candidate"]["spec"] is None
+    assert (
+        benchmark_gpu["best_identity_preserving_candidate"]["identity_gate_pass"]
+        is False
+    )
+    assert (
+        benchmark_gpu["sharded_results"]["kx"]["diagnostic_identity_gate_pass"]
+        is True
+    )
+    assert benchmark_gpu["sharded_results"]["kx"]["identity_gate_pass"] is False
 
 
 def test_device_z_transport_window_profiles_are_identity_gated_and_scoped() -> None:

@@ -37,9 +37,11 @@ into ``unit``, ``integration``, ``validation``, ``tools``, ``release``, or
 ``support`` according to the contract they protect. Do not add new flat
 ``tests/test_*.py`` files, and do not add one-file-per-script wrappers when a
 parametrized family test can protect the same artifact or tool contract.
-The active refactor target is to reduce the tracked test tree from roughly 240
-Python files to fewer than 150 near-term and fewer than 100 in the final
-layout. Deleting a shallow compatibility test is acceptable when the underlying
+The test tree is organized by domain and currently satisfies its topology
+guard. Raw file count is not a release objective: parametrization is preferred
+when it makes one physical or numerical contract easier to understand, while a
+separate test file is preferred when it gives a distinct research claim a clear
+owner. Deleting a shallow compatibility test is acceptable when the underlying
 legacy behavior has been removed; weakening physics, numerical, artifact, or
 release gates is not.
 
@@ -59,6 +61,11 @@ such as ``runtime_*``, ``nonlinear_*``, ``vmec_jax_*``, ``quasilinear_*``, or
 ``benchmark_*`` from being added without an explicit migration entry. This keeps
 the package moving toward domain packages while the validation manifest keeps
 scientific ownership and coverage traceable.
+The same architecture manifest enforces source complexity budgets. New
+hand-written modules above the default line budget, and new oversized public
+facades, fail unless they have a reviewed baseline, reduction target, reason,
+and domain owner. This replaces the earlier raw source-file-count target, which
+encouraged unrelated behavior to accumulate in giant compatibility modules.
 
 The manifest now has two levels of coverage ownership:
 
@@ -1304,8 +1311,11 @@ performance claims:
 - ``tools/profiling/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and
-  ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` for the two-GPU
-  office run. The release-gated nonlinear axes are ``auto``/``ky`` and ``kx``;
+  ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` for a tiny
+  two-GPU smoke. The controlling transport-grid regression artifact is
+  ``docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json``;
+  it currently fails identity and speedup, so the route remains blocked. The
+  candidate nonlinear axes are ``auto``/``ky`` and ``kx``;
   ``z``-axis FFT sharding remains an exploratory domain-decomposition lane and
   must pass its own identity gate before it can be exposed as a runtime option.
   This keeps nonlinear state-sharding work profiler-backed while preventing
