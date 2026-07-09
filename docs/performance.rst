@@ -130,7 +130,7 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 
 .. code-block:: bash
 
-   python tools/profiling/profile_nonlinear_cyclone.py \
+   python tools/profiling/profile_runtime_kernels.py cyclone \
      --trace-dir /tmp/spectrax_nl_trace \
      --xla-dump-dir /tmp/spectrax_nl_xla \
      --steps 400 --dt 0.0377 --Nl 4 --Nm 8
@@ -168,7 +168,7 @@ Reference run configuration (March 4, 2026):
 - ``ky=0.3``, ``Nl=4``, ``Nm=8``
 - ``dt=0.01``, ``steps=400``
 - ``sample_stride=10``, ``diagnostics_stride=10``
-- ``tools/profiling/profile_nonlinear_cyclone.py`` with the tracked Cyclone runtime config
+- ``tools/profiling/profile_runtime_kernels.py cyclone`` with the tracked Cyclone runtime config
 
 CPU profiling (Apple CPU, JAX CPU backend):
 
@@ -232,7 +232,7 @@ full RHS kernels after compilation:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_nonlinear_step_split.py \
+   python tools/profiling/profile_runtime_kernels.py nonlinear-step-split \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml \
      --repeats 10 \
      --out docs/_static/nonlinear_rhs_profile_gpu.csv
@@ -291,7 +291,7 @@ short Cyclone case.
 
 .. code-block:: bash
 
-   python tools/profiling/profile_nonlinear_step_split.py \
+   python tools/profiling/profile_runtime_kernels.py nonlinear-step-split \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --repeats 5 \
      --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
@@ -317,7 +317,7 @@ The full fused nonlinear-RHS trace companion is generated with:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_full_nonlinear_rhs_trace.py \
+   python tools/profiling/profile_runtime_kernels.py full-nonlinear-rhs \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --ky 0.3 \
      --Nl 4 \
@@ -458,7 +458,7 @@ helper:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_full_linear_rhs_trace.py \
+   python tools/profiling/profile_runtime_kernels.py full-linear-rhs \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --ky 0.3 \
      --Nl 4 \

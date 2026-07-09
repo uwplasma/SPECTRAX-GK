@@ -17,8 +17,9 @@ from tools.profiling.profile_runtime_startup import (
     _write_phase_json,
 )
 
-linear_trace = load_profiling_tool("profile_full_linear_rhs_trace")
-nonlinear_trace = load_profiling_tool("profile_full_nonlinear_rhs_trace")
+runtime_kernels = load_profiling_tool("profile_runtime_kernels")
+linear_trace = runtime_kernels
+nonlinear_trace = runtime_kernels
 
 
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:
@@ -143,7 +144,7 @@ def test_full_linear_trace_inject_z_wave_adds_parallel_variation() -> None:
 
 
 def test_full_nonlinear_trace_summary_contains_metadata() -> None:
-    payload = nonlinear_trace._build_summary(
+    payload = nonlinear_trace._build_nonlinear_summary(
         config="examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml",
         backend="gpu",
         nl=4,

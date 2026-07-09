@@ -54,6 +54,8 @@ ROOT = REPO_ROOT
 MANIFEST = ROOT / "benchmarks" / "results" / "manifest.toml"
 MAX_TRACKED_RESULT_BYTES = 1_000_000
 MAX_ROOT_BENCHMARK_PAYLOAD_BYTES = 200_000
+
+
 def test_scan_policy_normalizes_keys_and_auto_fit_side_effects() -> None:
     assert normalize_solver_key(" Auto ") == "auto"
     assert normalize_solver_key(" gx_time ") == "gx_time"
@@ -164,6 +166,7 @@ def test_scan_fit_window_policy_falls_back_to_auto_when_window_is_invalid() -> N
     assert gamma == pytest.approx(0.08, rel=1e-3, abs=1e-3)
     assert omega == pytest.approx(0.2, rel=1e-3, abs=1e-3)
 
+
 def _load_results_manifest() -> dict:
     with MANIFEST.open("rb") as fh:
         return tomllib.load(fh)
@@ -235,6 +238,7 @@ def test_root_benchmark_payload_stays_lightweight() -> None:
     assert tracked_benchmark_files
     total_bytes = sum(path.stat().st_size for path in tracked_benchmark_files)
     assert total_bytes <= MAX_ROOT_BENCHMARK_PAYLOAD_BYTES
+
 
 def test_runtime_memory_manifest_loads_runs() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
@@ -351,10 +355,10 @@ def test_short_nonlinear_gpu_rows_request_warm_profile_pass() -> None:
         if run.backend == "spectrax_gpu"
         and run.case in {"cyclone-nonlinear", "kbm-nonlinear"}
     }
-    assert "profile_nonlinear_cyclone.py" in str(
+    assert "profile_runtime_kernels.py cyclone" in str(
         selected[("cyclone-nonlinear", "spectrax_gpu")]
     )
-    assert "profile_nonlinear_cyclone.py" in str(
+    assert "profile_runtime_kernels.py cyclone" in str(
         selected[("kbm-nonlinear", "spectrax_gpu")]
     )
 
@@ -514,6 +518,7 @@ def test_runtime_memory_plot_supports_warm_runtime_markers(tmp_path: Path) -> No
 
     assert png_path.exists()
     assert pdf_path.exists()
+
 
 def _gx_jflr(ell: int, b: jnp.ndarray) -> jnp.ndarray:
     """GX Jflr: exp(-b/2) * (-b/2)^ell / ell!."""

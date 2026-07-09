@@ -3901,3 +3901,11 @@ following:
 - Updated testing documentation, performance-manifest references, and campaign command tests to use the grouped runtime-gate command surface.
 - Tightened the tool-file topology baseline from 151 to 149.
 - Validated the campaign gate command shard, grouped command help for all three subcommands, Python byte compilation, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.
+
+### 2026-07-09 Runtime-kernel profiler consolidation
+
+- Folded the nonlinear Cyclone runtime profiler, nonlinear step-split profiler, full linear-RHS trace profiler, and full nonlinear-RHS trace profiler into `tools/profiling/profile_runtime_kernels.py` with `cyclone`, `nonlinear-step-split`, `full-linear-rhs`, and `full-nonlinear-rhs` subcommands.
+- Removed the four standalone runtime-kernel profiler probe scripts while preserving HLO token counting, z-wave injection, Perfetto/memory profile options, step-split CSV output, and runtime-memory profile-command coverage.
+- Updated performance docs, runtime-memory manifest commands, performance optimization manifest tool paths, and profiling/benchmark tests to use the grouped profiler command surface.
+- Tightened the tool-file topology baseline from 149 to 146.
+- Validated profiling contracts, benchmark runtime-memory profile-contract subset, grouped profiler help for all four subcommands, Python byte compilation, performance/package/repository/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.

@@ -22,7 +22,7 @@ cases = [
 ]
 profiling_tools = [
   "benchmarks/performance/benchmark_runtime_memory.py",
-  "tools/profiling/profile_nonlinear_cyclone.py",
+  "tools/profiling/profile_runtime_kernels.py",
 ]
 metrics = [
   "cold_runtime_s",
@@ -94,12 +94,9 @@ priority = "high"
 platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
-  "tools/profiling/profile_nonlinear_step_split.py",
-  "tools/profiling/profile_full_nonlinear_rhs_trace.py",
-  "tools/profiling/profile_nonlinear_cyclone.py",
+  "tools/profiling/profile_runtime_kernels.py",
   "tools/profiling/profile_nonlinear_sharding.py",
   "tools/profiling/profile_linear_rhs_terms.py",
-  "tools/profiling/profile_full_linear_rhs_trace.py",
   "tools/artifacts/generate_linear_rhs_parallel_gates.py",
   "tools/artifacts/gate_laguerre_nonlinear_modes.py",
 ]
