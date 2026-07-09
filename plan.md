@@ -3348,3 +3348,13 @@ following:
   manifest now tracks the consolidated VMEC EIK owner. The VMEC EIK shard,
   Python lint check, stale-reference scan, and architecture manifest passed
   locally.
+
+- 2026-07-08: consolidated the optional CPU/GPU short-window parity gate from
+  `tests/unit/parallel/test_device_parity_gate.py` into
+  `tests/unit/parallel/test_parallel.py`, keeping heavy runtime imports behind
+  the `SPECTRAXGK_DEVICE_PARITY=1` opt-in path so default CI remains fast.
+  Developer docs now run it with
+  `pytest -q tests/unit/parallel/test_parallel.py -k cpu_gpu`, and the package
+  architecture test baseline tightened from 162 to 161. The core parallel shard,
+  Python lint check, stale-reference scan, and architecture manifest passed
+  locally.

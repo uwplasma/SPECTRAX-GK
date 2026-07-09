@@ -1465,12 +1465,12 @@ benchmark figures move):
   continuous run. This now covers both the raw binary state path and the
   nonlinear ``*.restart.nc`` bundle path, together with append-on-restart
   history preservation in ``*.out.nc``.
-- **CPU/GPU short-window parity** (optional): ``tests/unit/parallel/test_device_parity_gate.py``
+- **CPU/GPU short-window parity** (optional): ``tests/unit/parallel/test_parallel.py -k cpu_gpu``
   compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
 
   .. code-block:: bash
 
-     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_device_parity_gate.py
+     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_parallel.py -k cpu_gpu
 
 - **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_eik.py -k roundtrip``
   regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the
