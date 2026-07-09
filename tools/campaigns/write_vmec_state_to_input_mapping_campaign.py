@@ -268,7 +268,7 @@ def write_state_to_input_mapping_campaign(
             "extract the admitted VMEC-state controls from each solved equilibrium",
             "form the central finite-difference response matrix d(state_control)/d(input_coefficient)",
             "solve the least-squares state-to-input map and record condition number plus relative residual",
-            "only pass the mapping artifact to design_nonlinear_gradient_state_control_runbook.py if the mapping is local, conditioned, and residual-bounded",
+            "only pass the mapping artifact to design_nonlinear_gradient.py state-control-runbook if the mapping is local, conditioned, and residual-bounded",
         ],
         "coefficient_convention": (
             "Candidate directions are stored exactly as they appear in the VMEC input file, "

@@ -179,10 +179,10 @@ def test_ql_seed_screen_tracks_gate_blockers_and_validation_errors() -> None:
         )
 
 
-def test_design_nonlinear_gradient_ql_seed_screen_tool_writes_artifacts(
+def test_design_nonlinear_gradient_ql_seed_screen_subcommand_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    module = load_campaign_tool("design_nonlinear_gradient_ql_seed_screen")
+    module = load_campaign_tool("design_nonlinear_gradient")
 
     artifact_a = tmp_path / "a.json"
     artifact_b = tmp_path / "b.json"
@@ -197,6 +197,7 @@ def test_design_nonlinear_gradient_ql_seed_screen_tool_writes_artifacts(
     assert (
         module.main(
             [
+                "ql-seed-screen",
                 str(artifact_a),
                 str(artifact_b),
                 "--out-prefix",

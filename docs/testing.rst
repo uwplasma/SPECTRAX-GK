@@ -523,7 +523,7 @@ therefore reports complete runtime coverage and zero promoted controls. This is
 a regression target for the fail-closed workflow and a design input for future
 variance-reduction or smaller-bracket campaigns, not a nonlinear turbulence
 gradient validation claim.
-``tools/campaigns/design_nonlinear_gradient_next_campaign.py`` is the follow-on planning
+``tools/campaigns/design_nonlinear_gradient.py next-campaign`` is the follow-on planning
 gate. It consumes completed central-FD artifacts and writes JSON/CSV/PNG/PDF
 sidecars that compare the uncertainty-required bracket scale, locality-safe
 bracket scale, and extra-replica estimate. The tracked design artifact
@@ -586,7 +586,7 @@ matched pairs, partial checkpoint chunks, missing seeds, and
 requested matched-pair count is available. It does not build figures or
 ensemble gates, so it is the preferred lightweight polling command while long
 GPU campaigns are still running.
-``tools/campaigns/design_nonlinear_gradient_composite_control.py`` is the stricter
+``tools/campaigns/design_nonlinear_gradient.py composite-control`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved
 response, bounded finite-difference locality, acceptable propagated
@@ -597,7 +597,7 @@ fails closed: only ``RBC(1,1)`` is admissible, while ``ZBS(1,1)`` is nonlocal
 and ``ZBS(1,0)`` is unresolved/nonlocal. Therefore the next campaign still
 needs a new local/resolved control or an explicit single-control bracket check
 before launching expensive long-window GPU runs.
-``tools/campaigns/design_nonlinear_gradient_ql_seed_screen.py`` is the upstream
+``tools/campaigns/design_nonlinear_gradient.py ql-seed-screen`` is the upstream
 linear/quasilinear sensitivity screen for finding those controls. It consumes
 full-chain ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity artifacts
 and groups rows by VMEC-state parameter, not by direct input-file
@@ -613,7 +613,7 @@ short nonlinear bracket-screen design only after a separate state-to-input
 mapping gate passes; it is not a launch artifact, converged
 nonlinear-gradient, or optimization claim.
 
-``tools/campaigns/design_nonlinear_gradient_state_control_runbook.py`` is the mandatory
+``tools/campaigns/design_nonlinear_gradient.py state-control-runbook`` is the mandatory
 bridge from those admitted VMEC-state controls to launchable VMEC input
 directions. It consumes the QL seed screen plus optional state-to-input mapping
 artifacts and fails closed unless at least two admitted state controls have a

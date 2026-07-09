@@ -2719,7 +2719,7 @@ too large (``gradient_uncertainty_rel = 1.81 > 0.5``). This is the clearest
 evidence so far that the finite-difference direction can be made local, but it
 also shows that plus-state turbulence variance must be reduced before any
 production nonlinear turbulence-gradient claim is scientifically defensible.
-``tools/campaigns/design_nonlinear_gradient_next_campaign.py`` now materializes that
+``tools/campaigns/design_nonlinear_gradient.py next-campaign`` now materializes that
 decision into ``docs/_static/nonlinear_gradient_next_campaign_design.json``.
 The design gate estimates the bracket scale needed to satisfy propagated
 uncertainty, the locality-safe bracket scale implied by the asymmetry gate,

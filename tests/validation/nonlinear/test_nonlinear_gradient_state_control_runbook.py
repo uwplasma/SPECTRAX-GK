@@ -175,10 +175,10 @@ def test_state_control_runbook_rejects_bad_mapping_and_validates_config() -> Non
             nonlinear_gradient_state_control_runbook_report(_ql_screen(), config=config)
 
 
-def test_design_nonlinear_gradient_state_control_runbook_tool_writes_artifacts(
+def test_design_nonlinear_gradient_state_control_runbook_subcommand_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    module = load_campaign_tool("design_nonlinear_gradient_state_control_runbook")
+    module = load_campaign_tool("design_nonlinear_gradient")
 
     ql_path = tmp_path / "ql.json"
     mapping_path = tmp_path / "mapping.json"
@@ -189,6 +189,7 @@ def test_design_nonlinear_gradient_state_control_runbook_tool_writes_artifacts(
     assert (
         module.main(
             [
+                "state-control-runbook",
                 str(ql_path),
                 "--mapping-artifact",
                 str(mapping_path),

@@ -862,10 +862,10 @@ def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".pdf").exists()
 
 
-def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(
+def test_design_nonlinear_gradient_next_campaign_subcommand_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    module = load_campaign_tool("design_nonlinear_gradient_next_campaign")
+    module = load_campaign_tool("design_nonlinear_gradient")
 
     artifact = tmp_path / "candidate.json"
     out_prefix = tmp_path / "design"
@@ -874,7 +874,10 @@ def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(
         encoding="utf-8",
     )
 
-    assert module.main([str(artifact), "--out-prefix", str(out_prefix)]) == 0
+    assert (
+        module.main(["next-campaign", str(artifact), "--out-prefix", str(out_prefix)])
+        == 0
+    )
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["kind"] == "nonlinear_turbulence_gradient_candidate_design_report"
     assert payload["summary"]["candidate_count"] == 1
@@ -974,10 +977,10 @@ def test_composite_control_report_validates_config_and_metadata() -> None:
         nonlinear_gradient_composite_control_report([artifact], labels=["one", "two"])
 
 
-def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(
+def test_design_nonlinear_gradient_composite_control_subcommand_writes_artifacts(
     tmp_path: Path,
 ) -> None:
-    module = load_campaign_tool("design_nonlinear_gradient_composite_control")
+    module = load_campaign_tool("design_nonlinear_gradient")
 
     artifact = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
     artifact["parameter_name"] = "rbc_1_1"
@@ -989,6 +992,7 @@ def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(
     assert (
         module.main(
             [
+                "composite-control",
                 str(candidate_path),
                 "--out-prefix",
                 str(out_prefix),

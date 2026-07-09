@@ -384,7 +384,7 @@ def write_asymmetric_state_to_input_mapping_campaign(
             "extract the admitted Rsin/Zcos VMEC-state controls from each solved equilibrium",
             "form the central finite-difference response matrix d(state_control)/d(RBS/ZBC coefficient)",
             "solve the least-squares state-to-input map and record condition number plus relative residual",
-            "only pass the mapping artifact to design_nonlinear_gradient_state_control_runbook.py if the map is finite, full row-rank, conditioned, and residual-bounded",
+            "only pass the mapping artifact to design_nonlinear_gradient.py state-control-runbook if the map is finite, full row-rank, conditioned, and residual-bounded",
         ],
         "coefficient_convention": (
             "Candidate directions are explicit VMEC input coefficients. The stored vmec_m/vmec_n "

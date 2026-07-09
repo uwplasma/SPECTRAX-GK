@@ -3663,3 +3663,18 @@ following:
   tightened from 199 to 198. The release manifest shard, Python lint check,
   command-help and real-inventory smoke checks, compile check, stale-reference
   scan, diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated the four nonlinear-gradient design wrapper scripts
+  (`design_nonlinear_gradient_next_campaign.py`,
+  `design_nonlinear_gradient_composite_control.py`,
+  `design_nonlinear_gradient_ql_seed_screen.py`, and
+  `design_nonlinear_gradient_state_control_runbook.py`) into
+  `tools/campaigns/design_nonlinear_gradient.py` with `next-campaign`,
+  `composite-control`, `ql-seed-screen`, and `state-control-runbook`
+  subcommands. The shared report physics and gate logic remains in
+  `tools.campaigns.nonlinear_gradient_followup`; the new command owns only the
+  artifact-writing and publication-plot entry points. The package architecture
+  tool baseline tightened from 198 to 195. The nonlinear-gradient validation
+  shards, campaign writer contract shard, Python lint check, command-help smoke
+  checks, stale-reference scan, compile check, diff hygiene, and architecture
+  manifest passed locally.
