@@ -3416,3 +3416,12 @@ following:
   156 to 155. The consolidated campaign contract shard, Python lint check,
   validation manifest, release tests, stale-reference scan, compile check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the single-trajectory KBM extractor audit tests from
+  `tests/tools/comparison/test_audit_gx_kbm_extractors.py` into
+  `tests/tools/comparison/test_compare_gx_kbm.py`, where KBM branch-continuity,
+  cached-trajectory, and reference-comparison contracts already live. The
+  package architecture test baseline tightened from 155 to 154. The
+  consolidated KBM comparison shard, Python lint check, validation manifest,
+  release tests, stale-reference scan with only historical plan-log hits,
+  compile check, diff hygiene, and architecture manifest passed locally.
