@@ -106,7 +106,7 @@ Nonlinear matrix release gates
 Broad nonlinear turbulent-flux optimization claims use fail-closed matrix and
 portfolio tools rather than manual figure selection.
 ``tools/artifacts/build_matched_nonlinear_transport_matrix.py`` writes the long-window
-matched matrix, ``tools/release/check_nonlinear_transport_matrix_portfolio.py`` selects
+matched matrix, ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio`` selects
 only a passing family, and ``tools/campaigns/finalize_nonlinear_transport_matrix_release.py``
 refuses blocked portfolios before importing any release artifacts. The current
 tracked max-mode-5 campaign is negative
@@ -379,7 +379,7 @@ failed points must remain visible in the final plot rather than terminating a
 multi-point campaign; it must not be used to promote a nonlinear transport
 claim.
 Before those files enter the ensemble builder, run
-``tools/release/check_nonlinear_runtime_outputs.py`` on every produced ``*.out.nc``.
+``tools/release/check_nonlinear_transport_gates.py runtime-outputs`` on every produced ``*.out.nc``.
 That gate verifies the grouped NetCDF contains ``Grids/time`` and the requested
 heat-flux diagnostic, checks finite monotone time samples, enforces optional
 ``tmin/tmax`` coverage, and fails closed for restart-only or metadata-only
@@ -779,7 +779,7 @@ For independent GPU queues, pass ``--gpu-splits 2`` and launch the generated
 ``run_matrix_final_horizon_gpu0.sh`` and ``run_matrix_final_horizon_gpu1.sh``
 scripts; they contain only final-horizon direct commands, not the intermediate
 restart-ladder horizons. Their skip-existing policy calls
-``tools/release/check_nonlinear_runtime_outputs.py target-time`` for each final output, so rerunning
+``tools/release/check_nonlinear_transport_gates.py target-time`` for each final output, so rerunning
 after an interruption skips only bundles whose recorded time reaches the target
 within the generated time-step tolerance; partial checkpoint bundles are rerun.
 Newly generated final-horizon scripts also guard each output with a per-output
@@ -787,7 +787,7 @@ Newly generated final-horizon scripts also guard each output with a per-output
 matrices use split workers or be relaunched safely without two workers writing
 the same ``*.out.nc``/``*.big.nc``/``*.restart.nc`` bundle at once.
 Use
-``tools/release/check_matched_nonlinear_transport_matrix_progress.py`` before
+``tools/release/check_nonlinear_transport_gates.py matrix-progress`` before
 postprocessing: it reads the manifest, verifies the expected NetCDF bundle
 files, and separately checks that the recorded ``Grids/time`` reaches the
 final target. This prevents a checkpoint bundle at, for example, ``t≈800``
@@ -798,7 +798,7 @@ reduction are insufficient. This is the required gate before changing scoped
 single-point optimization evidence into a broad multi-surface turbulent-flux
 optimization claim.
 
-``tools/release/check_nonlinear_transport_matrix_portfolio.py`` is the final selector
+``tools/release/check_nonlinear_transport_gates.py matrix-portfolio`` is the final selector
 when several candidate families have been audited. It consumes one or more
 aggregate matrix reports, chooses only a passing broad matrix family, and
 records strict ``t=1500`` growth/QL/nonlinear-window matched comparisons as

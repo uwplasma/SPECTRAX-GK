@@ -890,7 +890,7 @@ def _postprocess_commands(
             "all_expected_outputs": all_outputs,
             "output_gate_json": _repo_relative(output_gate_json),
             "output_gate_command": (
-                "python3 tools/release/check_nonlinear_runtime_outputs.py "
+                "python3 tools/release/check_nonlinear_transport_gates.py runtime-outputs "
                 + " ".join(all_outputs)
                 + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
                 + " --min-window-samples 80 --min-abs-window-mean 1e-4"

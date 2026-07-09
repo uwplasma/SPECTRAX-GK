@@ -16,8 +16,8 @@ from spectraxgk.diagnostics.transport_windows import (
 )
 
 ROOT = REPO_ROOT
-OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_outputs.py"
-output_target = load_release_tool("check_nonlinear_runtime_outputs")
+OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_transport_gates.py"
+output_target = load_release_tool("check_nonlinear_transport_gates")
 window_ensemble = load_release_tool("check_nonlinear_window_ensemble")
 window_readiness = window_ensemble
 compact_bundle = load_campaign_tool("nonlinear_replicate_followup")

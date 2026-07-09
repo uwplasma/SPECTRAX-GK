@@ -1222,7 +1222,7 @@ every output gate, ensemble gate, matched comparison, and the aggregate matrix
 report. A broad optimization claim is allowed only when that aggregate report
 passes; otherwise the candidate remains single-point or diagnostic evidence.
 If several candidate families are available, the final release decision is made
-by ``tools/release/check_nonlinear_transport_matrix_portfolio.py``. It consumes one or
+by ``tools/release/check_nonlinear_transport_gates.py matrix-portfolio``. It consumes one or
 more aggregate matrix reports, selects the passing family with the largest mean
 heat-flux reduction, and records strict ``t=1500`` growth/QL/nonlinear-window
 matched comparisons only as excluded negative-transfer evidence.
@@ -1698,7 +1698,7 @@ count:
 
 .. code-block:: bash
 
-   python tools/release/check_nonlinear_transport_matrix_portfolio.py \
+   python tools/release/check_nonlinear_transport_gates.py matrix-portfolio \
      --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
      --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
      --excluded-comparison strict_growth=docs/_static/vmec_qa_t1500_baseline_to_growth_comparison.json \

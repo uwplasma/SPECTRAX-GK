@@ -1799,7 +1799,7 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     ]
     assert heldout[0]["transport_sample"]["alpha"] == 1.2
     assert "--torflux 0.78 --alpha 1.2" in heldout[0]["generate_configs_command"]
-    assert "check_nonlinear_runtime_outputs.py" in heldout[0]["output_gate_command"]
+    assert "check_nonlinear_transport_gates.py" in heldout[0]["output_gate_command"]
     assert (
         "build_external_vmec_replicate_ensemble.py"
         in heldout[0]["build_ensemble_command"]

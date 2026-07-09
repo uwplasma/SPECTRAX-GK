@@ -2435,6 +2435,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
+  "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
 ]
 artifact_paths = [
   "docs/_static/production_nonlinear_optimization_guard.json",
@@ -2593,6 +2594,7 @@ fast_tests = [
   "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
+  "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
   "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
   "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
   "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
@@ -3270,7 +3272,6 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
-  "tests/validation/nonlinear/test_check_nonlinear_runtime_outputs.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_readme_panel.png",

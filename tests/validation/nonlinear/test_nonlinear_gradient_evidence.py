@@ -1373,7 +1373,7 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(
         for command in baseline_commands["direct_full_horizon_launch_commands"]
     )
     assert (
-        "check_nonlinear_runtime_outputs.py" in baseline_commands["output_gate_command"]
+        "check_nonlinear_transport_gates.py" in baseline_commands["output_gate_command"]
     )
     assert "--tmin 1 --tmax 2" in baseline_commands["output_gate_command"]
     assert "restart-ladder segments" in baseline_commands["restart_ladder_note"]

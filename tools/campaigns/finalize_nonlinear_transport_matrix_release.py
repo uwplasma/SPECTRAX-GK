@@ -3,7 +3,7 @@
 
 The script is a fail-closed wrapper around the nonlinear transport portfolio
 importer and the readiness dashboards. It should be run only after
-``tools/release/check_nonlinear_transport_matrix_portfolio.py`` has produced a passing
+``tools/release/check_nonlinear_transport_gates.py matrix-portfolio`` has produced a passing
 portfolio JSON.
 """
 

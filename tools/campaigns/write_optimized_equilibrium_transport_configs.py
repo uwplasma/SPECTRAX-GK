@@ -114,7 +114,7 @@ def _promotion_commands(
     )
     output_gate_json = f"{case}_output_gate.json"
     output_gate_command = (
-        "python3 tools/release/check_nonlinear_runtime_outputs.py "
+        "python3 tools/release/check_nonlinear_transport_gates.py runtime-outputs "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
         + " --min-window-samples 80 --min-abs-window-mean 0.0001"

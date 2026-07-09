@@ -451,7 +451,7 @@ def test_optimized_equilibrium_transport_launch_contract(tmp_path: Path) -> None
         for command in contract["direct_full_horizon_launch_commands"]
     )
     assert contract["output_gate_command"].startswith(
-        "python3 tools/release/check_nonlinear_runtime_outputs.py"
+        "python3 tools/release/check_nonlinear_transport_gates.py runtime-outputs"
     )
     assert "--tmin 1 --tmax 2" in contract["output_gate_command"]
     assert "--min-window-samples 80" in contract["output_gate_command"]
@@ -525,7 +525,7 @@ def test_strict_qa_t1500_contract_exposes_true_full_horizon_commands(
         "seed32": 30000,
         "seed33": 30000,
     }
-    assert "check_nonlinear_runtime_outputs.py" in contract["output_gate_command"]
+    assert "check_nonlinear_transport_gates.py" in contract["output_gate_command"]
     assert "--tmin 1100 --tmax 1500" in contract["output_gate_command"]
 
 
@@ -674,7 +674,7 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
     )
     postprocess = payload["postprocess_commands_by_state"]["plus_delta"]
     assert len(postprocess["all_expected_outputs"]) == 6
-    assert "check_nonlinear_runtime_outputs.py" in postprocess["output_gate_command"]
+    assert "check_nonlinear_transport_gates.py" in postprocess["output_gate_command"]
     assert (
         "build_external_vmec_replicate_ensemble.py"
         in postprocess["build_ensemble_command"]

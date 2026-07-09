@@ -65,9 +65,9 @@ Current tracked audit:
 | --- | ---: | --- | --- |
 | Branches | `main`, `origin/main` only | no branch cleanup needed | keep experiments in one draft PR, not on `main` |
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
-| Source package | 255 Python files, 100,180 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
-| Tests | 164 Python files, 94,973 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 143 Python files after profiler/runtime/VMEC-boundary consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
+| Source package | 253 Python files, 100,107 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
+| Tests | 136 Python files, 93,958 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
+| Tools | 141 Python files after profiler/runtime/VMEC-boundary/nonlinear-transport consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -151,6 +151,23 @@ Refactor order that minimizes risk:
   manifest, performance manifest, repository-size manifest, ruff, and `git diff
   --check` passed locally.
 
+### 2026-07-09 Nonlinear Transport Release-Gate Consolidation
+
+- Consolidated nonlinear runtime-output integrity, target-time completion,
+  matched matrix progress, and broad transport-matrix portfolio selection into
+  `tools/release/check_nonlinear_transport_gates.py` with `runtime-outputs`,
+  `target-time`, `matrix-progress`, and `matrix-portfolio` subcommands. Deleted
+  the three standalone nonlinear transport release-gate entry points.
+- Collapsed the matching release-gate tests into
+  `tests/validation/nonlinear/test_nonlinear_transport_release_gates.py`, so
+  the test topology now follows the grouped command owner.
+- Current tracked Python counts after this tranche: `tools=141`, `src=253`,
+  `tests=136`.
+- Validation run: grouped nonlinear transport release-gate tests,
+  nonlinear-window artifact contracts, quasilinear window contracts, nonlinear
+  campaign/artifact/status contracts, package architecture manifest, and command
+  reference migration passed locally.
+
 ### Repository Role Model
 
 The repository should have one obvious destination for every retained file. If a
@@ -197,11 +214,11 @@ These targets are intentionally aggressive but realistic:
 
 | Area | Current audit | Release target | How to get there |
 | --- | ---: | ---: | --- |
-| Installed source files | 255 | <= 150 near term, <= 100 final | keep `validation` deleted, merge tiny geometry/objective/operator shards, remove legacy facades |
+| Installed source files | 253 | <= 150 near term, <= 100 final | keep `validation` deleted, merge tiny geometry/objective/operator shards, remove legacy facades |
 | Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
-| Test files | 164 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
+| Test files | 136 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
-| Tool scripts | 143 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
+| Tool scripts | 141 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
 | Docs static files | 1605 | reference-graph curated | keep only docs/readme/release-manifest referenced evidence |
 
 The immediate milestone is not a cosmetic move. It is a measurable shrink:
@@ -3608,8 +3625,8 @@ following:
   hygiene, and architecture manifest passed locally.
 
 - 2026-07-09: folded `tools/release/check_nonlinear_output_target.py` into
-  `tools/release/check_nonlinear_runtime_outputs.py` as the `target-time`
-  subcommand. Nonlinear runtime diagnostics and final-horizon bundle target
+  `tools/release/check_nonlinear_transport_gates.py target-time` as the
+  target-time subcommand. Nonlinear runtime diagnostics and final-horizon bundle target
   checks now share one release-gate owner, and matched transport-matrix launch
   scripts generate the consolidated command. The package architecture tool
   baseline tightened from 207 to 206. The nonlinear runtime/window validation

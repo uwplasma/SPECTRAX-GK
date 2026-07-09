@@ -124,7 +124,7 @@ python tools/artifacts/build_matched_nonlinear_transport_matrix.py write \
 
 ./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu0.sh
 ./tools_out/qa_low_transport_matrix/run_matrix_final_horizon_gpu1.sh
-python tools/release/check_matched_nonlinear_transport_matrix_progress.py \
+python tools/release/check_nonlinear_transport_gates.py matrix-progress \
   --matrix-manifest tools_out/qa_low_transport_matrix/matched_transport_matrix_manifest.json \
   --out-json tools_out/qa_low_transport_matrix/artifacts/progress.json
 ./tools_out/qa_low_transport_matrix/run_matrix_postprocess.sh
@@ -146,7 +146,7 @@ When more than one candidate family is available, select the release claim
 with the portfolio gate rather than by hand:
 
 ```bash
-python tools/release/check_nonlinear_transport_matrix_portfolio.py \
+python tools/release/check_nonlinear_transport_gates.py matrix-portfolio \
   --matrix-report accepted_qa_ess=tools_out/qa_ess_matrix/artifacts/qa_ess_matrix_report.json \
   --matrix-report projected_0p001=tools_out/projected_0p001_matrix/artifacts/projected_0p001_matrix_report.json \
   --matrix-report projected_0p0005=tools_out/projected_0p0005_matrix/artifacts/projected_0p0005_matrix_report.json \

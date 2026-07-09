@@ -3285,7 +3285,7 @@ def _closure__vmec_boozer_holdout_transport_commands(
     holdout_json = artifact_dir / f"{case}_production_holdout.json"
     output_gate_json = artifact_dir / f"{case}_output_gate.json"
     output_gate_command = (
-        "python3 tools/release/check_nonlinear_runtime_outputs.py "
+        "python3 tools/release/check_nonlinear_transport_gates.py runtime-outputs "
         + " ".join(path.as_posix() for path in outputs)
         + " --min-samples 200 --tmin 350 --tmax 700 --min-window-samples 80 "
         f"--min-abs-window-mean 0.0001 --json-out {output_gate_json.as_posix()}"
