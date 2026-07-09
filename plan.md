@@ -3442,3 +3442,16 @@ following:
   plan without suggesting old compatibility behavior is being preserved. The
   nonlinear helper shard, Python lint check, stale-name scan, compile check,
   and diff hygiene passed locally.
+
+- 2026-07-08: consolidated artifact preview-compression and benchmark-atlas
+  tests from `tests/tools/artifacts/test_compress_previews.py` and
+  `tests/tools/artifacts/test_make_benchmark_atlas.py` into
+  `tests/tools/artifacts/test_artifact_plot_smoke.py`, which now owns small
+  artifact plotting, preview, geometry-EIK, QA-panel, quasilinear-error, UQ,
+  and benchmark-atlas contracts. CI's release-artifact shard and the wide
+  coverage high-cost scheduler now point at the consolidated owner. The package
+  architecture test baseline tightened from 154 to 152. The consolidated
+  artifact utility shard, Python lint check, validation manifest, release tests,
+  wide-coverage planner smoke check, stale-reference scan with only historical
+  plan-log hits, compile check, diff hygiene, and architecture manifest passed
+  locally.

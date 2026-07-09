@@ -23,7 +23,7 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     "test_vmec_boozer_artifact_reports.py",
     "test_diffrax_integrators.py",
     "test_diffrax_integrators_core.py",
-    "test_make_benchmark_atlas.py",
+    "test_artifact_plot_smoke.py",
     "test_w7x_artifact_panels.py",
     "test_runtime_runner.py",
 }
