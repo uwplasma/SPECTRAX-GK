@@ -1326,7 +1326,7 @@ def _composite_launch_plan(
             f"--control {control['control_argument']}" for control in controls
         )
         command_template = (
-            "python tools/campaigns/write_vmec_boundary_profile_perturbation_inputs.py "
+            "python tools/campaigns/write_vmec_boundary_campaigns.py profile-direction "
             "--baseline-input <input.vmec> "
             "--out-dir docs/_static/<case>_composite_direction "
             f"--case {case} "

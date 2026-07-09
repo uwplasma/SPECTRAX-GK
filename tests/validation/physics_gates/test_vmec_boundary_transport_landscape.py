@@ -18,7 +18,7 @@ from tools.artifacts.build_vmec_boundary_transport_landscape import (
     build_parser,
 )
 from tools.campaigns.patch_vmec_jax_wout_metadata import patch_wout
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import (
+from tools.campaigns.write_vmec_boundary_campaigns import (
     _parse_coefficient_spec,
 )
 

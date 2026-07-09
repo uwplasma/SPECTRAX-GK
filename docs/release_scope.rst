@@ -435,7 +435,7 @@ Quasilinear model-selection state:
   matching fail-closed post-runtime driver. It runs each nested campaign's
   output, ensemble, and central-FD gates, then runs the overdetermined
   candidate ranking and final status checker before any release promotion.
-- ``tools/campaigns/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
+- ``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` writes a
   launch-contract for a smoother composite VMEC boundary direction. The
   tracked
   ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` applies
@@ -453,7 +453,7 @@ Quasilinear model-selection state:
   files have byte-identical SHA256 contents. The only override is
   ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
   manifest flag and must not be used for production turbulence-gradient claims.
-- ``tools/campaigns/write_vmec_boundary_perturbation_inputs.py`` is the upstream
+- ``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient`` is the upstream
   boundary-gradient launch helper. It writes matched ``baseline``,
   ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
   ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands

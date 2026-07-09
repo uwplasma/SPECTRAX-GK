@@ -928,7 +928,7 @@ def test_composite_control_report_builds_descent_direction_and_blocks_bad_contro
     assert ready["controls"][0]["control_argument"] == "RBC(1,1):1"
     assert ready["controls"][1]["control_argument"] == "ZBS(1,1):-0.5"
     assert (
-        "write_vmec_boundary_profile_perturbation_inputs.py"
+        "write_vmec_boundary_campaigns.py profile-direction"
         in ready["write_profile_direction_command_template"]
     )
 

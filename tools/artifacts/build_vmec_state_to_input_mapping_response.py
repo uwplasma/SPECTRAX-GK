@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import _json_clean  # noqa: E402
+from tools.campaigns.write_vmec_boundary_campaigns import _json_clean  # noqa: E402
 from spectraxgk.geometry.vmec_boundary_chain import (  # noqa: E402
     build_boundary_chain_collection_summary,
 )

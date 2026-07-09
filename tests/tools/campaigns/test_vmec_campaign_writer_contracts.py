@@ -95,13 +95,14 @@ def _state_control_runbook() -> dict[str, object]:
 def test_boundary_writer_creates_baseline_plus_minus_inputs_and_manifest(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     baseline = tmp_path / "input.final"
     baseline.write_text(_boundary_input_text(), encoding="utf-8")
     out_dir = tmp_path / "vmec_delta"
 
     rc = mod.main(
         [
+            "single-coefficient",
             "--baseline-input",
             str(baseline),
             "--out-dir",
@@ -144,7 +145,7 @@ def test_boundary_writer_creates_baseline_plus_minus_inputs_and_manifest(
 def test_boundary_writer_patches_second_coefficient_on_combined_vmec_line(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     baseline = tmp_path / "input.final"
     baseline.write_text(_boundary_input_text(), encoding="utf-8")
     out_dir = tmp_path / "vmec_delta"
@@ -173,7 +174,7 @@ def test_boundary_writer_patches_second_coefficient_on_combined_vmec_line(
 def test_boundary_writer_ignores_comments_and_rejects_duplicate_coefficients(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     baseline = tmp_path / "input.comments"
     baseline.write_text(
         """&INDATA
@@ -219,7 +220,7 @@ def test_boundary_writer_ignores_comments_and_rejects_duplicate_coefficients(
 def test_boundary_writer_rejects_ambiguous_zero_or_nonfinite_perturbations(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     ambiguous = tmp_path / "input.ambiguous"
     ambiguous.write_text(
         """&INDATA
@@ -276,12 +277,13 @@ def test_boundary_writer_rejects_ambiguous_zero_or_nonfinite_perturbations(
 def test_profile_direction_writer_creates_normalized_launch_manifest(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_profile_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     baseline = tmp_path / "input.final"
     baseline.write_text(_profile_input_text(), encoding="utf-8")
 
     rc = mod.main(
         [
+            "profile-direction",
             "--baseline-input",
             str(baseline),
             "--out-dir",
@@ -360,7 +362,7 @@ def test_profile_direction_writer_creates_normalized_launch_manifest(
 def test_profile_direction_writer_rejects_ambiguous_or_unusable_controls(
     tmp_path: Path,
 ) -> None:
-    mod = load_campaign_tool("write_vmec_boundary_profile_perturbation_inputs")
+    mod = load_campaign_tool("write_vmec_boundary_campaigns")
     baseline = tmp_path / "input.final"
     baseline.write_text(_profile_input_text(), encoding="utf-8")
 

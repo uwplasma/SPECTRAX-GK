@@ -67,7 +67,7 @@ Current tracked audit:
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 255 Python files, 100,180 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 164 Python files, 94,973 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 144 Python files after profiler/runtime-gate consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
+| Tools | 143 Python files after profiler/runtime/VMEC-boundary consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -130,11 +130,26 @@ Refactor order that minimizes risk:
   `linear-cache` subcommands. Deleted the standalone
   `profile_runtime_startup.py` / `profile_linear_cache_build.py` entry points.
 - Current tracked Python counts after this tranche: `tools=144`, `src=253`,
-  `tests=138`. The next high-yield trims should be family-level artifact and
-  release-gate commands, not more one-script edits.
+  `tests=138` after the profiler consolidation. The next high-yield trims
+  should be family-level artifact and release-gate commands, not more
+  one-script edits.
 - Validation run: profiling contracts, grouped profiler help, performance
   manifest, architecture manifest, repository-size manifest, and `git diff
   --check` all passed locally.
+
+### 2026-07-09 VMEC Boundary Campaign Consolidation
+
+- Consolidated single-coefficient and profile-direction VMEC boundary input
+  writers into `tools/campaigns/write_vmec_boundary_campaigns.py` with
+  `single-coefficient` and `profile-direction` subcommands. Deleted the two
+  standalone VMEC boundary writer entry points and migrated imports, tests, and
+  docs references.
+- Current tracked Python counts after this tranche: `tools=143`, `src=253`,
+  `tests=138`.
+- Validation run: VMEC campaign-writer contracts, VMEC boundary landscape
+  contracts, profiler contracts, grouped command help, package architecture
+  manifest, performance manifest, repository-size manifest, ruff, and `git diff
+  --check` passed locally.
 
 ### Repository Role Model
 
@@ -186,7 +201,7 @@ These targets are intentionally aggressive but realistic:
 | Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
 | Test files | 164 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
-| Tool scripts | 144 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
+| Tool scripts | 143 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
 | Docs static files | 1605 | reference-graph curated | keep only docs/readme/release-manifest referenced evidence |
 
 The immediate milestone is not a cosmetic move. It is a measurable shrink:

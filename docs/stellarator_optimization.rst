@@ -2758,7 +2758,7 @@ campaign, but only the independent control-mean gate can promote the response
 uncertainty.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
-``tools/campaigns/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
+``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` for a smoother
 multi-coefficient direction. The tracked
 ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
 current long-window evidence signs to define a 2% descent-oriented direction:
@@ -3087,7 +3087,7 @@ seed/timestep labels across all parameter states.
    smaller locality sweep or an overdetermined profile-gradient campaign.
 
 For boundary-coefficient gradients, first use
-``tools/campaigns/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete
+``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient``. It starts from a concrete
 VMEC input file such as the optimized-equilibrium ``input.final``, writes
 matched ``baseline``, ``plus_delta``, and ``minus_delta`` input files for an
 explicit ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient, and records the exact

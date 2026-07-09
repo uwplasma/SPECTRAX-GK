@@ -403,7 +403,7 @@ than a missing sample dimension. These artifacts are intentionally tracked so
 future transport-objective redesigns can be judged against a real long-window
 nonlinear failure, not a startup proxy.
 For actual nonlinear turbulence-gradient promotion, use
-``tools/campaigns/write_vmec_boundary_perturbation_inputs.py`` when the perturbation is a
+``tools/campaigns/write_vmec_boundary_campaigns.py single-coefficient`` when the perturbation is a
 VMEC boundary coefficient. It writes the matched ``input.*`` files and records
 the exact ``vmec_jax`` commands needed to create the three real re-equilibrated
 ``wout`` files. Then use
@@ -712,7 +712,7 @@ as a promotion route. The next valid test is lower-variance evidence: longer
 post-transient windows, more independent replicas, paired-seed variance
 reduction, or a better-conditioned multi-control observable.
 
-``tools/campaigns/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
+``tools/campaigns/write_vmec_boundary_campaigns.py profile-direction`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean
 norm of the coefficient-change vector, and writes the same

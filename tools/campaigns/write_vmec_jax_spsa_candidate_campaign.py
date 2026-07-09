@@ -26,11 +26,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.campaigns.write_nonlinear_turbulence_gradient_campaign import _repo_relative  # noqa: E402
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import _coefficient_value  # noqa: E402
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import (
+from tools.campaigns.write_vmec_boundary_campaigns import _coefficient_value  # noqa: E402
+from tools.campaigns.write_vmec_boundary_campaigns import (
     _parse_coefficient_spec,
 )  # noqa: E402
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import _patch_coefficient  # noqa: E402
+from tools.campaigns.write_vmec_boundary_campaigns import _patch_coefficient  # noqa: E402
 
 
 METRIC_EVAL = Path("tools/campaigns/evaluate_vmec_jax_spectrax_transport_metric.py")

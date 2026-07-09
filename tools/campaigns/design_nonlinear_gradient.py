@@ -53,7 +53,7 @@ from tools.campaigns.write_nonlinear_turbulence_gradient_campaign import (  # no
     DEFAULT_WINDOW,
     PYTHON_CMD,
 )
-from tools.campaigns.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
+from tools.campaigns.write_vmec_boundary_campaigns import (  # noqa: E402
     CoefficientSpec,
     _json_clean as _vmec_json_clean,
     _parse_coefficient_spec,

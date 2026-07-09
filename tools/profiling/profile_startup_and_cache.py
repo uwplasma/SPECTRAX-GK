@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass, replace
 import json
 import os
 from pathlib import Path
+import sys
 import time
 from typing import Any, Callable
 
@@ -916,10 +917,20 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 def main(argv: list[str] | None = None) -> int:
-    args, extra = build_parser().parse_known_args(argv)
-    # Reparse within the selected implementation so each subcommand keeps its
-    # original defaults and error messages.
-    args.func(extra)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    if not raw or raw[0] in {"-h", "--help"}:
+        build_parser().print_help()
+        return 0
+    command = raw.pop(0)
+    runners = {
+        "runtime-startup": main_runtime_startup,
+        "linear-cache": main_linear_cache,
+    }
+    try:
+        runner = runners[command]
+    except KeyError as exc:
+        raise SystemExit(f"unknown startup/cache profiler subcommand: {command}") from exc
+    runner(raw)
     return 0
 
 if __name__ == "__main__":
