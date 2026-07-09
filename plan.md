@@ -3496,3 +3496,13 @@ following:
   tightened from 212 to 211. The W7-X/zonal artifact shard, Python lint check,
   validation manifest, release tests, stale-reference scan, compile check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-08: folded
+  `tools/artifacts/plot_nonlinear_rhs_profile.py` into
+  `tools/artifacts/plot_scaling_panels.py` as the `rhs-profile` subcommand.
+  Nonlinear RHS hot-path plotting now lives with the other performance and
+  parallelization panels, while the docs keep the explicit command used to
+  regenerate the release evidence. The package architecture tool baseline
+  tightened from 211 to 210. The nonlinear artifact and artifact-plot shards,
+  Python lint check, validation manifest, command-help smoke check, compile
+  check, diff hygiene, and architecture manifest passed locally.

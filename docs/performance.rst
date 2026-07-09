@@ -253,6 +253,11 @@ refactor tranche. The GPU environment reported
 measurements, not a broad production runtime claim. The refreshed GPU
 grid-mode split is:
 
+.. code-block:: bash
+
+   python tools/artifacts/plot_scaling_panels.py rhs-profile \
+     --out docs/_static/nonlinear_rhs_profile.png
+
 .. code-block:: text
 
    field_solve=4.65e-4 s

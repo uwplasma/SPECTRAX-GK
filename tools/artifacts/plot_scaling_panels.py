@@ -4,6 +4,7 @@
 Subcommands:
   diffrax-speedup       Two-device diffrax scaling from scaling_speedup_data.csv.
   independent-ky        Independent ky CPU/GPU scan strong-scaling panel.
+  rhs-profile           CPU/GPU nonlinear RHS kernel split profile.
   nonlinear-sharding    Nonlinear whole-state sharding diagnostic scaling panel.
 """
 
@@ -40,6 +41,19 @@ DEFAULT_NONLINEAR_SHARDING_INPUTS = [
 DEFAULT_NONLINEAR_SHARDING_PREFIX = (
     REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling_large"
 )
+DEFAULT_RHS_PROFILE_INPUTS = {
+    "CPU grid": REPO_ROOT / "docs" / "_static" / "nonlinear_rhs_profile_cpu.csv",
+    "CPU spectral": REPO_ROOT
+    / "docs"
+    / "_static"
+    / "nonlinear_rhs_profile_cpu_spectral.csv",
+    "GPU grid": REPO_ROOT / "docs" / "_static" / "nonlinear_rhs_profile_gpu.csv",
+    "GPU spectral": REPO_ROOT
+    / "docs"
+    / "_static"
+    / "nonlinear_rhs_profile_gpu_spectral.csv",
+}
+DEFAULT_RHS_PROFILE_PNG = REPO_ROOT / "docs" / "_static" / "nonlinear_rhs_profile.png"
 
 
 def _json_clean(value: Any) -> Any:
@@ -62,6 +76,165 @@ def _save_figure(fig, png_path: Path) -> dict[str, str]:
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
     return {"png": str(png_path), "pdf": str(pdf_path)}
+
+
+def parse_rhs_profile_input(value: str) -> tuple[str, Path]:
+    """Parse a ``LABEL=CSV`` RHS profile input specification."""
+
+    label, sep, path = value.partition("=")
+    if not sep or not label.strip() or not path.strip():
+        raise argparse.ArgumentTypeError("--input must have the form LABEL=CSV")
+    return label.strip(), Path(path.strip())
+
+
+def read_rhs_profile(path: Path) -> dict[str, float]:
+    with path.open(newline="") as f:
+        return {row["kernel"]: float(row["seconds"]) for row in csv.DictReader(f)}
+
+
+def rhs_profile_case_title(case: str) -> str:
+    titles = {
+        "cyclone_short": "Cyclone short case",
+        "cyclone_miller_benchmark_size": "Cyclone Miller benchmark-size case",
+    }
+    return titles.get(case, case.replace("_", " "))
+
+
+def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
+    if numerator is None or denominator is None or denominator <= 0.0:
+        return None
+    ratio = float(numerator) / float(denominator)
+    return ratio if math.isfinite(ratio) else None
+
+
+def build_rhs_profile_summary(
+    profiles: dict[str, dict[str, float]], *, case: str = "cyclone_short"
+) -> dict[str, Any]:
+    """Return a machine-readable summary of RHS split-profile CSV files."""
+
+    rows: dict[str, dict[str, Any]] = {}
+    for label, profile in profiles.items():
+        full_rhs = profile.get("full_rhs")
+        timed_kernels = {
+            key: value for key, value in profile.items() if key != "full_rhs"
+        }
+        dominant = (
+            max(timed_kernels, key=lambda key: timed_kernels[key])
+            if timed_kernels
+            else None
+        )
+        rows[label] = {
+            "seconds": profile,
+            "dominant_measured_kernel": dominant,
+            "field_solve_fraction_of_full_rhs": _safe_ratio(
+                profile.get("field_solve"), full_rhs
+            ),
+            "linear_rhs_fraction_of_full_rhs": _safe_ratio(
+                profile.get("linear_rhs"), full_rhs
+            ),
+            "nonlinear_bracket_fraction_of_full_rhs": _safe_ratio(
+                profile.get("nonlinear_bracket"), full_rhs
+            ),
+        }
+
+    spectral_speedups: dict[str, dict[str, float | None]] = {}
+    for backend in ("CPU", "GPU"):
+        grid = profiles.get(f"{backend} grid")
+        spectral = profiles.get(f"{backend} spectral")
+        if grid is None or spectral is None:
+            continue
+        spectral_speedups[backend.lower()] = {
+            "full_rhs_grid_over_spectral": _safe_ratio(
+                grid.get("full_rhs"), spectral.get("full_rhs")
+            ),
+            "nonlinear_bracket_grid_over_spectral": _safe_ratio(
+                grid.get("nonlinear_bracket"), spectral.get("nonlinear_bracket")
+            ),
+        }
+
+    full_rhs_candidates = [
+        (profile["full_rhs"], label)
+        for label, profile in profiles.items()
+        if "full_rhs" in profile and math.isfinite(float(profile["full_rhs"]))
+    ]
+    fastest = min(
+        full_rhs_candidates, default=(None, None), key=lambda item: float(item[0])
+    )
+    return {
+        "kind": "nonlinear_rhs_profile_summary",
+        "case": case,
+        "rows": rows,
+        "spectral_speedups": spectral_speedups,
+        "fastest_full_rhs_label": fastest[1],
+        "fastest_full_rhs_seconds": fastest[0],
+        "claim_scope": (
+            "RHS split profile for hot-path localization. Treat speedups as bounded engineering "
+            "measurements; production runtime claims require matched benchmark-size CPU/GPU sweeps."
+        ),
+    }
+
+
+def write_rhs_profile_summary_json(payload: dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def write_rhs_profile_panel(
+    profiles: dict[str, dict[str, float]],
+    *,
+    out_png: Path,
+    case: str = "cyclone_short",
+    title: str | None = None,
+    summary_json: Path | None = None,
+) -> dict[str, str]:
+    """Plot a nonlinear RHS kernel profile and write its JSON summary."""
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from spectraxgk.artifacts.plotting import set_plot_style
+
+    kernels = ["field_solve", "linear_rhs", "nonlinear_bracket", "full_rhs"]
+    labels = list(profiles)
+    x = np.arange(len(kernels))
+    width = min(0.18, 0.75 / max(len(labels), 1))
+    offsets = (np.arange(len(labels)) - (len(labels) - 1) / 2.0) * width
+
+    set_plot_style()
+    colors = ["#52616b", "#8c6d31", "#2f6f73", "#c46a3a"]
+    fig, ax = plt.subplots(figsize=(9.0, 4.2), constrained_layout=True)
+    for idx, label in enumerate(labels):
+        values = [profiles[label].get(kernel, np.nan) for kernel in kernels]
+        ax.bar(
+            x + offsets[idx],
+            values,
+            width=width,
+            label=label,
+            color=colors[idx % len(colors)],
+            edgecolor="0.18",
+        )
+
+    ax.set_yscale("log")
+    ax.set_ylabel("seconds per compiled kernel call")
+    ax.set_title(
+        f"Nonlinear RHS kernel profile: {title or rhs_profile_case_title(str(case))}"
+    )
+    ax.set_xticks(x, [kernel.replace("_", "\n") for kernel in kernels])
+    ax.grid(axis="y", which="major", alpha=0.25)
+    ax.legend(frameon=False, ncols=2, fontsize=8)
+    paths = _save_figure(fig, out_png)
+    plt.close(fig)
+
+    summary_path = summary_json if summary_json is not None else out_png.with_suffix(".json")
+    write_rhs_profile_summary_json(
+        build_rhs_profile_summary(profiles, case=str(case)), summary_path
+    )
+    paths["json"] = str(summary_path)
+    return paths
 
 
 def write_diffrax_speedup_panel(
@@ -459,6 +632,35 @@ def build_nonlinear_sharding_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_rhs_profile_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Plot nonlinear RHS split profiles.")
+    parser.add_argument("--out", type=Path, default=DEFAULT_RHS_PROFILE_PNG)
+    parser.add_argument(
+        "--summary-json",
+        type=Path,
+        default=None,
+        help="Optional JSON summary path. Defaults to the plot path with a .json suffix.",
+    )
+    parser.add_argument(
+        "--input",
+        action="append",
+        default=None,
+        metavar="LABEL=CSV",
+        help="Optional labeled profile CSV. May be repeated. Defaults to the shipped Cyclone inputs.",
+    )
+    parser.add_argument(
+        "--case",
+        default="cyclone_short",
+        help="Case label written to the JSON summary.",
+    )
+    parser.add_argument(
+        "--title",
+        default=None,
+        help="Optional plot title suffix. Defaults to a title from --case.",
+    )
+    return parser
+
+
 def main_diffrax_speedup(argv: list[str] | None = None) -> int:
     args = build_diffrax_parser().parse_args(argv)
     paths = write_diffrax_speedup_panel(args.data, args.out_png)
@@ -475,6 +677,32 @@ def main_independent_ky(argv: list[str] | None = None) -> int:
             {"identity_passed": summary["identity_passed"], "paths": paths}, indent=2
         )
     )
+    return 0
+
+
+def main_rhs_profile(argv: list[str] | None = None) -> int:
+    args = build_rhs_profile_parser().parse_args(argv)
+    input_paths = (
+        dict(parse_rhs_profile_input(item) for item in args.input)
+        if args.input is not None
+        else DEFAULT_RHS_PROFILE_INPUTS
+    )
+    profiles = {
+        label: read_rhs_profile(path)
+        for label, path in input_paths.items()
+        if path.exists()
+    }
+    if not profiles:
+        raise FileNotFoundError("no nonlinear RHS profile CSV files were found")
+    paths = write_rhs_profile_panel(
+        profiles,
+        out_png=Path(args.out),
+        case=str(args.case),
+        title=args.title,
+        summary_json=args.summary_json,
+    )
+    print(f"Wrote {paths['png']}")
+    print(f"Wrote {paths['json']}")
     return 0
 
 
@@ -502,7 +730,12 @@ def main(argv: list[str] | None = None) -> int:
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument(
             "command",
-            choices=("diffrax-speedup", "independent-ky", "nonlinear-sharding"),
+            choices=(
+                "diffrax-speedup",
+                "independent-ky",
+                "rhs-profile",
+                "nonlinear-sharding",
+            ),
         )
         parser.print_help()
         return 2
@@ -511,6 +744,8 @@ def main(argv: list[str] | None = None) -> int:
         return main_diffrax_speedup(rest)
     if command == "independent-ky":
         return main_independent_ky(rest)
+    if command == "rhs-profile":
+        return main_rhs_profile(rest)
     if command == "nonlinear-sharding":
         return main_nonlinear_sharding(rest)
     raise SystemExit(f"unknown command: {command}")

@@ -1633,7 +1633,7 @@ def test_window_summaries_validate_inputs() -> None:
 
 # Nonlinear RHS profile assertions
 def test_build_summary_reports_dominant_kernel_and_speedups() -> None:
-    payload = load_artifact_tool("plot_nonlinear_rhs_profile")._build_summary(
+    payload = load_artifact_tool("plot_scaling_panels").build_rhs_profile_summary(
         {
             "CPU grid": {
                 "field_solve": 1.0,
@@ -1663,7 +1663,7 @@ def test_build_summary_reports_dominant_kernel_and_speedups() -> None:
 
 def test_write_summary_json_roundtrips(tmp_path: Path) -> None:
     path = tmp_path / "summary.json"
-    load_artifact_tool("plot_nonlinear_rhs_profile")._write_summary_json(
+    load_artifact_tool("plot_scaling_panels").write_rhs_profile_summary_json(
         {"kind": "x", "value": 1.0}, path
     )
 
@@ -1671,10 +1671,10 @@ def test_write_summary_json_roundtrips(tmp_path: Path) -> None:
 
 
 def test_parse_input_arg_and_case_label() -> None:
-    label, path = load_artifact_tool("plot_nonlinear_rhs_profile")._parse_input_arg(
+    label, path = load_artifact_tool("plot_scaling_panels").parse_rhs_profile_input(
         "GPU spectral=docs/_static/example.csv"
     )
-    payload = load_artifact_tool("plot_nonlinear_rhs_profile")._build_summary(
+    payload = load_artifact_tool("plot_scaling_panels").build_rhs_profile_summary(
         {"GPU spectral": {"full_rhs": 2.0}}, case="larger_case"
     )
 
@@ -1682,7 +1682,7 @@ def test_parse_input_arg_and_case_label() -> None:
     assert str(path) == "docs/_static/example.csv"
     assert payload["case"] == "larger_case"
     assert (
-        load_artifact_tool("plot_nonlinear_rhs_profile")._case_title(
+        load_artifact_tool("plot_scaling_panels").rhs_profile_case_title(
             "cyclone_miller_benchmark_size"
         )
         == "Cyclone Miller benchmark-size case"
