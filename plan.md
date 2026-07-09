@@ -3621,3 +3621,14 @@ following:
   release-readiness shards, Python lint check, validation manifest, release
   tests, compile check, command smoke check, stale-reference scan, diff hygiene,
   and architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/release/check_release_artifact_manifest.py` into
+  `tools/release/check_repository_size_manifest.py` as the `release-artifacts`
+  subcommand. Tracked-size auditing, repository-size policy, and large
+  release-artifact provenance now share one repository-hygiene release owner,
+  and CI/release workflows call the consolidated command. The package
+  architecture tool baseline tightened from 202 to 201. The real
+  release-artifacts gate passed for 10 artifacts with 5,996,133 bytes marked
+  for release hosting. The release hygiene/readiness shards, Python lint check,
+  validation manifest, release tests, compile check, command smoke check, diff
+  hygiene, and architecture manifest passed locally.

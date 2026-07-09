@@ -162,7 +162,7 @@ def _release_artifact_manifest(
 
 
 def test_release_artifact_manifest_validates_size_and_sha(tmp_path: Path) -> None:
-    mod = load_release_tool("check_release_artifact_manifest")
+    mod = load_release_tool("check_repository_size_manifest")
     payload = b"panel"
     (tmp_path / "panel.png").write_bytes(payload)
     manifest = _release_artifact_manifest(
@@ -176,7 +176,7 @@ def test_release_artifact_manifest_validates_size_and_sha(tmp_path: Path) -> Non
 
 
 def test_release_artifact_manifest_accepts_kept_preview_action(tmp_path: Path) -> None:
-    mod = load_release_tool("check_release_artifact_manifest")
+    mod = load_release_tool("check_repository_size_manifest")
     payload = b"preview"
     (tmp_path / "panel.png").write_bytes(payload)
     manifest = _release_artifact_manifest(
@@ -194,7 +194,7 @@ def test_release_artifact_manifest_accepts_kept_preview_action(tmp_path: Path) -
 
 
 def test_release_artifact_manifest_fails_on_sha_mismatch(tmp_path: Path) -> None:
-    mod = load_release_tool("check_release_artifact_manifest")
+    mod = load_release_tool("check_repository_size_manifest")
     payload = b"panel"
     (tmp_path / "panel.png").write_bytes(payload)
     manifest = _release_artifact_manifest(tmp_path, sha="0" * 64, size=len(payload))
@@ -208,7 +208,7 @@ def test_release_artifact_manifest_fails_on_sha_mismatch(tmp_path: Path) -> None
 def test_release_artifact_manifest_accepts_uploaded_release_asset(
     tmp_path: Path,
 ) -> None:
-    mod = load_release_tool("check_release_artifact_manifest")
+    mod = load_release_tool("check_repository_size_manifest")
     payload = b"panel"
     manifest = _release_artifact_manifest(
         tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload)
@@ -226,7 +226,7 @@ def test_release_artifact_manifest_accepts_uploaded_release_asset(
 def test_release_artifact_manifest_requires_url_for_missing_moved_asset(
     tmp_path: Path,
 ) -> None:
-    mod = load_release_tool("check_release_artifact_manifest")
+    mod = load_release_tool("check_repository_size_manifest")
     payload = b"panel"
     manifest = _release_artifact_manifest(
         tmp_path, sha=hashlib.sha256(payload).hexdigest(), size=len(payload)

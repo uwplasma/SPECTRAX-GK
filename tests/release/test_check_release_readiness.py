@@ -78,7 +78,7 @@ coverage:
         "name: Release\n"
         "tools/release/check_release_readiness.py version\n"
         "tools/release/check_repository_size_manifest.py\n"
-        "tools/release/check_release_artifact_manifest.py\n"
+        "tools/release/check_repository_size_manifest.py release-artifacts\n"
         "tools/release/check_package_architecture_manifest.py\n"
         "tools/release/check_performance_optimization_manifest.py\n"
         "tools/release/check_parallel_scaling_artifacts.py\n"
