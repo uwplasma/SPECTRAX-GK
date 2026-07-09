@@ -3143,7 +3143,7 @@ numerics_contracts = [
   "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
 ]
 fast_tests = [
-  "tests/validation/stellarator/test_check_vmec_boozer_reduced_portfolio_guard.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_reduced_portfolio_guard.json",

@@ -3526,3 +3526,14 @@ following:
   test baseline tightened from 151 to 150. The consolidated VMEC/Boozer
   artifact shard, Python lint check, validation manifest, release tests, compile
   check, diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated
+  `tests/validation/stellarator/test_check_vmec_boozer_reduced_portfolio_guard.py`
+  into
+  `tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py`.
+  VMEC/Boozer reduced-portfolio promotion guards and aggregate holdout guards
+  now share one stellarator-validation owner with explicit `holdout_mod` and
+  `portfolio_mod` release-tool aliases. The package architecture test baseline
+  tightened from 150 to 149. The consolidated VMEC/Boozer validation shard,
+  Python lint check, validation manifest, release tests, compile check, diff
+  hygiene, and architecture manifest passed locally.
