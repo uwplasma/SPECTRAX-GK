@@ -65,7 +65,7 @@ Current tracked audit:
 | --- | ---: | --- | --- |
 | Branches | `main`, `origin/main` only | no branch cleanup needed | keep experiments in one draft PR, not on `main` |
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
-| Source package | 253 Python files, 100,107 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
+| Source package | 243 Python files, 99,507 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 136 Python files, 93,958 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
 | Tools | 139 Python files after profiler/runtime/VMEC-boundary/nonlinear-release consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
@@ -183,6 +183,21 @@ Refactor order that minimizes risk:
   contracts, nonlinear campaign command contracts, and command-reference
   migration passed locally.
 
+### 2026-07-09 Compact API Facade Consolidation
+
+- Replaced ten thin `src/spectraxgk/api/*.py` domain re-export modules with one
+  compact lazy registry in `src/spectraxgk/api/__init__.py`. The public
+  `spectraxgk.api` export list and lazy loading are preserved, but deleted
+  submodule facades are no longer kept as separate installable files.
+- Updated API docs, code-structure docs, validation coverage ownership, and
+  differentiable-refactor facade metadata to point at the compact API registry
+  and the real domain implementation owners.
+- Current tracked Python counts after this tranche: `tools=139`, `src=243`,
+  `tests=136`.
+- Validation run: public API import/identity checks, validation and
+  differentiable-refactor manifests, package architecture manifest, and stale
+  deleted-API-reference search passed locally.
+
 ### Repository Role Model
 
 The repository should have one obvious destination for every retained file. If a
@@ -229,8 +244,8 @@ These targets are intentionally aggressive but realistic:
 
 | Area | Current audit | Release target | How to get there |
 | --- | ---: | ---: | --- |
-| Installed source files | 253 | <= 150 near term, <= 100 final | keep `validation` deleted, merge tiny geometry/objective/operator shards, remove legacy facades |
-| Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
+| Installed source files | 243 | <= 150 near term, <= 100 final | keep `validation` deleted, merge tiny geometry/objective/operator shards, remove legacy facades |
+| Installed source LOC | 99.5k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
 | Test files | 136 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
 | Tool scripts | 139 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
@@ -632,7 +647,7 @@ Benchmark tranche gates:
 - `python tools/release/check_differentiable_refactor_manifest.py --out-json /tmp/spectrax_diff_benchmark_snapshot.json`
 - `python tools/release/check_package_architecture_manifest.py --out-json /tmp/spectrax_arch_benchmark_snapshot.json`
 - stale import scan for `spectraxgk.validation.benchmarks`
-- public import smoke for `spectraxgk.benchmarks` and `spectraxgk.api.benchmarks`
+- public import smoke for `spectraxgk.benchmarks` and `spectraxgk.api`
 
 Test consolidation plan:
 
@@ -2625,7 +2640,7 @@ following:
   `calibration_spectrum.py`, and `calibration_io.py` into
   `src/spectraxgk/diagnostics/quasilinear_calibration.py`. Source Python files
   dropped from 343 to 341, installable validation files dropped from 76 to 73,
-  and public API exports continue through `spectraxgk.api.validation`.
+  and public API exports continue through `spectraxgk.api`.
 
 - 2026-07-07: moved external-VMEC holdout admission policy out of the
   installable validation package and into the existing

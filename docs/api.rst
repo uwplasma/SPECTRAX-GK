@@ -5,55 +5,14 @@ Public API Registry
 -------------------
 
 The top-level ``spectraxgk`` package remains the stable user-facing facade.
-Implementation ownership lives in the domain modules below; the API registry
-only groups and re-exports those symbols so the public surface is auditable
-without mixing physics kernels, validation gates, and executable workflows in a
-single large ``__init__.py`` file.
+Implementation ownership lives in the domain modules below; the compact API
+registry lazily re-exports promoted symbols without keeping one re-export file
+per domain. Advanced users should import from the owning domain modules when
+they need implementation-specific extension points.
 
 .. automodule:: spectraxgk.api
    :members:
    :exclude-members: KrylovConfig
-   :no-index:
-
-.. automodule:: spectraxgk.api.configuration
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.geometry
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.diagnostics
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.runtime
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.solvers
-   :members:
-   :exclude-members: KrylovConfig
-   :no-index:
-
-.. automodule:: spectraxgk.api.benchmarks
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.validation
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.parallel
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.objectives
-   :members:
-   :no-index:
-
-.. automodule:: spectraxgk.api.artifacts
-   :members:
    :no-index:
 
 Core Refactor Contracts

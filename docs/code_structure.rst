@@ -164,8 +164,8 @@ Physics / Numerics / IO Map
      - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
-     - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
-     - top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
+     - ``api/__init__.py``
+     - compact lazy public export registry, top-level ``spectraxgk`` export membership/order checks, public-object identity tests, API documentation build
    * - Diagnostic extraction and growth-rate fitting
      - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, ``diagnostics/growth_series.py``, ``diagnostics/quasilinear_transport.py``
      - mode selection, eigenfunction extraction, least-squares growth/frequency fitting, automatic fit-window selection, quasilinear transport weights and saturation helpers, late-time growth/frequency tests
@@ -185,13 +185,13 @@ modules.
 
 Completed extractions:
 
-- domain-organized public API registry in ``spectraxgk.api.*``. The root
+- compact public API registry in ``spectraxgk.api``. The root
   ``spectraxgk`` package and ``spectraxgk.api`` registry are lazy facades that
-  keep a stable documented ``__all__`` order while the grouped API modules make
-  the exported configuration, geometry, solver, validation, parallelization,
-  objective, and plotting surfaces easier to audit. Pure-contract imports such
-  as ``spectraxgk.parallel.decomposition`` must remain dependency-light and
-  must not import NumPy/JAX-heavy solver stacks through package initializers.
+  keep a stable documented ``__all__`` order while exporting directly from the
+  owning configuration, geometry, solver, validation, parallelization,
+  objective, and plotting modules. Pure-contract imports such as
+  ``spectraxgk.parallel.decomposition`` must remain dependency-light and must
+  not import NumPy/JAX-heavy solver stacks through package initializers.
 - zero-shear boundary promotion, analytic s-alpha/slab geometry models, and
   sampled/imported flux-tube geometry data/loading:
   ``geometry/analytic.py`` and ``geometry/flux_tube.py``. Imported NetCDF/eik loading keeps schema
@@ -837,7 +837,7 @@ field-line/``k_y`` sample coverage, and promoted transport-candidate selection.
 ``spectraxgk.diagnostics.stellarator_transport_reports`` owns report-style
 nonlinear transport diagnostics: landscape admission, reduced prelaunch gates,
 next-campaign admission, and matched nonlinear audit redesign. The public
-``spectraxgk.api.validation`` API re-exports user-facing admission helpers directly
+``spectraxgk.api`` re-exports user-facing admission helpers directly
 from these owners, while installable validation-campaign subpackages have
 been removed.
 

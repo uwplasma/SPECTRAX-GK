@@ -693,7 +693,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.geometry.vmec_boundary_chain"
 source_path = "src/spectraxgk/geometry/vmec_boundary_chain.py"
-facade_module = "spectraxgk.api.geometry"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "scalar VMEC-JAX boundary-chain probe classification and public collection summary assembly"
 moved_exports = [
@@ -1543,7 +1543,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_candidate_admission"
 source_path = "src/spectraxgk/objectives/vmec_candidate_admission.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "VMEC-JAX solved-equilibrium candidate admission, authoritative-WOUT checks, iota-profile extraction, and WOUT reproducibility gates"
 moved_exports = ["build_authoritative_wout_candidate_gate", "build_solved_vmec_candidate_gate", "build_wout_reproducibility_gate", "final_iota_profiles_from_vmec_result"]
@@ -1553,7 +1553,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.objectives.vmec_transport_admission"
 source_path = "src/spectraxgk/objectives/vmec_transport_admission.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "VMEC-JAX transport admission policy dataclasses, sample-coverage gates, candidate transport metrics, and promoted transport-candidate selection"
 moved_exports = ["DEFAULT_TRANSPORT_METRIC_KEYS", "VMECJAXNonlinearAuditPolicy", "VMECJAXNonlinearCampaignPolicy", "VMECJAXReducedPrelaunchPolicy", "VMECJAXTransportAdmissionPolicy", "build_transport_admission_report", "candidate_transport_metric", "select_admitted_transport_candidate", "transport_objective_sample_summary"]
@@ -1563,7 +1563,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.stellarator_transport_reports"
 source_path = "src/spectraxgk/diagnostics/stellarator_transport_reports.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "replicated nonlinear landscape admission, reduced prelaunch gates, campaign admission gates, and matched nonlinear audit redesign reports"
 moved_exports = ["build_nonlinear_audit_redesign_report", "build_nonlinear_campaign_admission_report", "build_nonlinear_landscape_admission_report", "build_reduced_nonlinear_audit_prelaunch_report"]
@@ -1573,7 +1573,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.quasilinear_calibration"
 source_path = "src/spectraxgk/diagnostics/quasilinear_calibration.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "quasilinear calibration points, spectrum-column integration, nonlinear-window CSV/NetCDF ingestion, scale fitting, train/holdout reports, and report JSON writing"
 moved_exports = [
@@ -2388,7 +2388,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.transport_windows"
 source_path = "src/spectraxgk/diagnostics/transport_windows.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "nonlinear transport-window convergence reports, CSV/summary readers, promotion-readiness checks, replicated ensemble uncertainty gates, and seed/timestep artifact-readiness manifests"
 moved_exports = [
@@ -2412,7 +2412,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.quasilinear_model_selection"
 source_path = "src/spectraxgk/diagnostics/quasilinear_model_selection.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "quasilinear model-selection claim ledger, artifact loading, required-candidate metrics, optimized-equilibrium audit summaries, candidate gates, and path-based artifact wrapper"
 moved_exports = [
@@ -2430,21 +2430,12 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 [[hotspots]]
 module = "spectraxgk.api"
 source_path = "src/spectraxgk/api/__init__.py"
-current_reason = "top-level public imports were previously maintained in one large package __init__; they are now grouped by domain while preserving the stable facade"
+current_reason = "top-level public imports are maintained by one compact lazy registry; domain modules own implementation while the facade preserves promoted exports"
 target_packages = [
-  "spectraxgk.api.configuration",
-  "spectraxgk.api.geometry",
-  "spectraxgk.api.diagnostics",
-  "spectraxgk.api.runtime",
-  "spectraxgk.api.solvers",
-  "spectraxgk.api.benchmarks",
-  "spectraxgk.api.validation",
-  "spectraxgk.api.parallel",
-  "spectraxgk.api.objectives",
-  "spectraxgk.api.artifacts",
+  "spectraxgk.api.__init__",
 ]
 public_facade = "spectraxgk.api"
-line_target = 250
+line_target = 900
 status = "closed"
 existing_fast_tests = [
   "tests/unit/objectives/test_stellarator_optimization.py",
@@ -2467,7 +2458,7 @@ autodiff_gates = [
   "API split is import-only and does not introduce side effects inside differentiable objective paths",
 ]
 extension_points = [
-  "domain API modules mirror configuration, geometry, solvers, validation, parallelization, objectives, and artifacts",
+  "compact API registry points users to configuration, geometry, solvers, validation, parallelization, objectives, and artifacts owners",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
@@ -2914,7 +2905,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.diagnostics.nonlinear_transport_optimization"
 source_path = "src/spectraxgk/diagnostics/nonlinear_transport_optimization.py"
-facade_module = "spectraxgk.api.validation"
+facade_module = "spectraxgk.api"
 status = "active"
 responsibility = "production nonlinear optimization guard configuration, reduced-artifact safety reports, replicated transport report extraction, and matched baseline-to-optimized audit gating"
 moved_exports = ["ProductionNonlinearOptimizationGuardConfig", "matched_optimized_transport_report", "optimization_artifact_reduction_scope", "optimized_equilibrium_transport_report", "production_nonlinear_optimization_guard_report", "reduced_artifact_scope_report", "replicated_transport_ensemble_report"]

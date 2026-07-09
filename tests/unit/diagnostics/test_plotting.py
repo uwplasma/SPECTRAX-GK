@@ -9,6 +9,7 @@ import numpy as np
 from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
 import pytest
+import spectraxgk.artifacts.plotting as plotting
 from spectraxgk.artifacts.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
@@ -29,6 +30,15 @@ from spectraxgk.artifacts.plotting import (
     scan_multi_reference_figure,
     zonal_flow_response_figure,
 )
+
+
+def test_plotting_facade_dir_and_style():
+    names = dir(plotting)
+    assert "plot_saved_output" in names
+    assert "set_plot_style" in names
+
+    plotting.set_plot_style()
+    assert plt.rcParams["axes.grid"] is True
 
 
 def test_cyclone_reference_figure(tmp_path):

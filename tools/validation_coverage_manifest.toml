@@ -10,7 +10,6 @@ require_all_package_modules_owned = true
 excluded_modules = [
   "spectraxgk.__init__",
   "spectraxgk._version",
-  "spectraxgk.api.__init__",
   "spectraxgk.benchmarking.__init__",
   "spectraxgk.core.__init__",
   "spectraxgk.diagnostics.__init__",
@@ -31,20 +30,9 @@ excluded_modules = [
 ]
 
 [[modules]]
-module = "spectraxgk.api.configuration"
-path = "src/spectraxgk/api/configuration.py"
-owned_modules = [
-  "spectraxgk.api.artifacts",
-  "spectraxgk.api.benchmarks",
-  "spectraxgk.api.diagnostics",
-  "spectraxgk.api.geometry",
-  "spectraxgk.api.objectives",
-  "spectraxgk.api.parallel",
-  "spectraxgk.api.runtime",
-  "spectraxgk.api.solvers",
-  "spectraxgk.api.validation",
-]
-owner_lane = "domain-organized public API registry"
+module = "spectraxgk.api.__init__"
+path = "src/spectraxgk/api/__init__.py"
+owner_lane = "compact lazy public API registry"
 status = "closed"
 coverage_priority = "low"
 coverage_target_percent = 95.0
@@ -54,16 +42,17 @@ reference_anchors = [
 ]
 physics_contracts = [
   "top-level imports remain a stable convenience layer while implementation modules own physics behavior",
-  "domain API modules group configuration, geometry, solvers, validation, parallelization, objectives, and plotting without changing numerical kernels",
+  "the API facade re-exports promoted configuration, geometry, solver, validation, parallelization, objective, and plotting symbols without changing numerical kernels",
 ]
 numerics_contracts = [
-  "public export order and membership are preserved exactly across the split",
-  "object identity for benchmark, objective, parallel, and runtime exports is checked by focused import tests",
+  "public export order and membership are preserved across the compact registry refactor",
+  "public-object identity for benchmark, objective, parallel, runtime, and validation exports is checked by focused import tests",
 ]
 fast_tests = [
+  "tests/unit/core/test_core_contracts.py",
   "tests/unit/objectives/test_stellarator_optimization.py",
   "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-    "tests/unit/parallel/test_parallel.py",
+  "tests/unit/parallel/test_parallel.py",
   "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 artifact_paths = [
@@ -74,7 +63,6 @@ next_tests = [
   "add a dedicated public API exact-order regression test if future export churn increases",
   "move advanced users toward domain imports while keeping top-level imports stable through the next release",
 ]
-
 [[modules]]
 module = "spectraxgk.core.contracts"
 path = "src/spectraxgk/core/contracts.py"
