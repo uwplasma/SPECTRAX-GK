@@ -1170,9 +1170,7 @@ tests:
 - ``tests/unit/solvers/test_linear_krylov_core.py`` hardens matrix-free Krylov internals
   (mode-family targeting, shift-invert preconditioner selection, fallback
   policy, and dominant eigenpair wrappers).
-- ``tests/integration/examples/test_example_smoke.py`` verifies the config-driven runner (diffrax
-  enabled) and a short nonlinear scan through the assembled E×B nonlinear
-  bracket.
+- ``tests/integration/examples/test_examples.py`` verifies shipped example workflows: autodiff inverse/UQ demos, implicit quasilinear sensitivity checks, the config-driven diffrax runner, and short nonlinear scans through the assembled E×B nonlinear bracket.
 - ``tests/unit/nonlinear/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
   real-FFT path, flutter coupling, scalar/precomputed gyroaverage paths, and
   EM component accounting. The targeted nonlinear-term tranche covers the

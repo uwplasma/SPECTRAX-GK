@@ -3010,7 +3010,7 @@ facade_module = "spectraxgk.solvers.linear.parallel"
 status = "active"
 responsibility = "electrostatic slice linear RHS route and fused multi-device Hermite shard-map kernel cache"
 moved_exports = ["linear_rhs_electrostatic_slices_velocity_sharded", "_linear_rhs_electrostatic_slices_velocity_sharded_fused", "_FUSED_ELECTROSTATIC_SLICE_KERNEL_CACHE"]
-fast_tests = ["tests/unit/parallel/test_velocity_sharding.py", "tests/unit/parallel/test_linear_parallel_dispatch.py", "tests/tools/profiling/test_profile_linear_rhs_parallel_slices.py"]
+fast_tests = ["tests/unit/parallel/test_velocity_sharding.py", "tests/unit/parallel/test_linear_parallel_dispatch.py", "tests/tools/profiling/test_profile_scaling_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]

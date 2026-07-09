@@ -3072,3 +3072,18 @@ following:
   baseline to 262. Nonlinear parallel tests, spectral communication tests,
   release validation-manifest test, stale-reference scan, ruff, py_compile,
   validation/differentiable manifests, and architecture checks passed locally.
+
+- 2026-07-08: consolidated the shipped example integration tests into
+  `tests/integration/examples/test_examples.py`, merging the separate autodiff
+  inverse, two-mode autodiff, implicit quasilinear sensitivity, and config-runner
+  smoke files without weakening assertions. Updated validation ownership,
+  release-artifact replay metadata, testing docs, and tightened the package
+  architecture test baseline to 212. The merged examples shard passed locally.
+
+- 2026-07-08: consolidated six small profiling contract tests into
+  `tests/tools/profiling/test_profile_scaling_contracts.py`, covering
+  independent-ky scaling, linear RHS slice scaling and sweeps, linear RHS term
+  profiling, nonlinear spectral-domain routing, and quasilinear/UQ ensemble
+  scaling in one coherent profiling-contract shard. Updated CI quick-test paths,
+  differentiable-refactor fast-test ownership, and tightened the package
+  architecture test baseline to 207. The merged profiling shard passed locally.

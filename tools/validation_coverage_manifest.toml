@@ -1508,8 +1508,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_autodiff_validation.py",
-  "tests/integration/examples/test_autodiff_demo.py",
-  "tests/integration/examples/test_autodiff_twomode_demo.py",
+  "tests/integration/examples/test_examples.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth.png",
@@ -3483,8 +3482,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
-  "tests/integration/examples/test_autodiff_demo.py",
-  "tests/integration/examples/test_autodiff_twomode_demo.py",
+  "tests/integration/examples/test_examples.py",
   "tests/tools/artifacts/test_status_readiness_artifacts.py",
   "tests/tools/comparison/test_make_reference_panels.py",
 ]
