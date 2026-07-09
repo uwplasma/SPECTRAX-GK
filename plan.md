@@ -3872,3 +3872,10 @@ following:
 - Removed the two standalone postprocess scripts so direct execution, nested overdetermined execution, and postprocessing now share one campaign runner family instead of three separate public entry points.
 - Updated testing, release-scope, stellarator-optimization, and validation documentation to use the consolidated subcommands, and tightened the package architecture tool baseline from 157 to 155.
 - Validated affected campaign tests, command help smokes, Python lint, stale-reference scan, validation coverage manifest, differentiable refactor manifest, package architecture manifest, and diff whitespace checks locally.
+
+### 2026-07-09 Nonlinear-gradient control-mean postprocess consolidation
+
+- Folded the independent control-mean campaign postprocess helper into `tools/campaigns/run_nonlinear_gradient_direct_campaign.py` as the `control-mean-postprocess` subcommand.
+- Removed the standalone control-mean postprocess script while preserving the tested matched-output discovery, readiness-status, replicated ensemble, and control-mean gate workflow helpers.
+- Updated README/testing documentation and campaign tests to use the unified nonlinear-gradient runner family, and tightened the package architecture tool baseline from 155 to 154.
+- Validated the consolidated campaign runner shard, control-mean command help, package architecture manifest, validation coverage manifest, differentiable refactor manifest, Python lint/compile checks, stale-reference scan, and diff whitespace checks locally.

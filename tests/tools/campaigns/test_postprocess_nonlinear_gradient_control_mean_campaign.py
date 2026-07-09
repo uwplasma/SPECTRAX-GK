@@ -11,7 +11,7 @@ ROOT = REPO_ROOT
 
 
 def _load_tool_module():
-    return load_campaign_tool("postprocess_nonlinear_gradient_control_mean_campaign")
+    return load_campaign_tool("run_nonlinear_gradient_direct_campaign")
 
 
 def _write_output(path: Path, mean: float, *, tmax: float = 100.0) -> None:
@@ -151,7 +151,7 @@ def test_postprocess_control_mean_campaign_status_only_reports_readiness(
     assert status["ready_for_strict_postprocess"] is False
     assert status["states"]["plus_delta"]["partial_outputs"][0]["seed"] == 33
 
-    rc = mod.main(
+    rc = mod.main_control_mean_postprocess(
         [
             "--campaign-dir",
             str(campaign),
@@ -197,7 +197,7 @@ def test_postprocess_control_mean_campaign_builds_gate(tmp_path: Path) -> None:
     campaign = _make_campaign(tmp_path)
     out_root = tmp_path / "artifacts"
 
-    rc = mod.main(
+    rc = mod.main_control_mean_postprocess(
         [
             "--campaign-dir",
             str(campaign),
@@ -231,7 +231,7 @@ def test_postprocess_control_mean_campaign_fails_closed_without_pairs(
     mod = _load_tool_module()
     campaign = _make_campaign(tmp_path, seeds=(31,))
 
-    rc = mod.main(
+    rc = mod.main_control_mean_postprocess(
         [
             "--campaign-dir",
             str(campaign),

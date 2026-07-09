@@ -565,7 +565,7 @@ control-variate residual SEM through ``SEM_total^2 = SEM_residual^2 +
 beta^2 SEM_control_mean^2``. The gate fails if either state ensemble fails, if
 there are too few matched pairs, or if the combined response uncertainty stays
 above target.
-``tools/campaigns/postprocess_nonlinear_gradient_control_mean_campaign.py`` is the
+``tools/campaigns/run_nonlinear_gradient_direct_campaign.py control-mean-postprocess`` is the
 one-command postprocessor for the long GPU campaign. It discovers completed
 matched ``plus_delta``/``minus_delta`` seed outputs, builds the two nonlinear
 window ensemble gates, and then runs the independent control-mean gate. The
