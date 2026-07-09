@@ -1263,7 +1263,7 @@ model fit is attempted. It requires:
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_dataset_sufficiency.py \
+   python tools/artifacts/plot_quasilinear_model_development.py dataset-sufficiency \
      --out docs/_static/quasilinear_dataset_sufficiency.png
 
 .. image:: _static/quasilinear_dataset_sufficiency.png
@@ -1294,7 +1294,7 @@ and are we still avoiding an absolute-flux overclaim?
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_model_selection_status.py \
+   python tools/artifacts/plot_quasilinear_model_development.py model-selection-status \
      --optimized-equilibrium-nonlinear-audit docs/_static/production_nonlinear_optimization_guard.json \
      --require-optimized-equilibrium-nonlinear-audit \
      --out docs/_static/quasilinear_model_selection_status.png

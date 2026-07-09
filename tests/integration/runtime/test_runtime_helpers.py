@@ -1201,33 +1201,19 @@ def test_runtime_species_and_model_helpers() -> None:
     assert _runtime_default_krylov_config(cfg).method != "shift_invert"
 
     assert _resolve_runtime_hl_dims(cfg, Nl=None, Nm=None) == (24, 12)
-    cetg_cfg = replace(cfg, physics=replace(cfg.physics, reduced_model="cetg"))
-    with pytest.raises(NotImplementedError, match="not supported"):
-        _resolve_runtime_hl_dims(cetg_cfg, Nl=2, Nm=1)
-    with pytest.raises(NotImplementedError, match="not supported"):
+    unsupported_cfg = replace(
+        cfg, physics=replace(cfg.physics, reduced_model="mystery")
+    )
+    with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
         _resolve_runtime_hl_dims(
-            replace(cfg, physics=replace(cfg.physics, reduced_model="krehm")),
-            Nl=None,
-            Nm=None,
-        )
-    with pytest.raises(ValueError):
-        _resolve_runtime_hl_dims(
-            replace(cfg, physics=replace(cfg.physics, reduced_model="mystery")),
-            Nl=None,
-            Nm=None,
+            unsupported_cfg,
+            Nl=2,
+            Nm=1,
         )
 
     _require_full_gk_runtime_model(cfg)
-    with pytest.raises(NotImplementedError, match="not supported"):
-        _require_full_gk_runtime_model(cetg_cfg)
-    with pytest.raises(NotImplementedError, match="not supported"):
-        _require_full_gk_runtime_model(
-            replace(cfg, physics=replace(cfg.physics, reduced_model="krehm"))
-        )
-    with pytest.raises(ValueError):
-        _require_full_gk_runtime_model(
-            replace(cfg, physics=replace(cfg.physics, reduced_model="mystery"))
-        )
+    with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
+        _require_full_gk_runtime_model(unsupported_cfg)
 
 
 def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None:

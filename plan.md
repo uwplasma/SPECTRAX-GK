@@ -3826,3 +3826,17 @@ following:
   YAML parsed locally, the matrix path guard in
   `tests/release/test_release_hygiene_gates.py` passed, and bounded affected
   fundamentals/runtime subsets passed locally.
+
+- 2026-07-09: consolidated the quasilinear model-development artifact plotters
+  into `tools/artifacts/plot_quasilinear_model_development.py`. The new command
+  owns the `dataset-sufficiency` and `model-selection-status` subcommands,
+  replacing `plot_quasilinear_dataset_sufficiency.py` and
+  `plot_quasilinear_model_selection_status.py` while preserving the report and
+  writer helper functions used by tests. The package architecture tool baseline
+  tightened from 174 to 173. In the same tranche, the runtime startup guard was
+  simplified to fail closed on any non-promoted `physics.reduced_model` instead
+  of carrying retired reduced-model names in maintained runtime code and tests.
+  The focused quasilinear artifact shard, corrected integration runtime startup
+  tests, command-help and fail-closed command smokes, Python lint/format checks,
+  validation coverage manifest, differentiable refactor manifest, and package
+  architecture manifest passed locally.

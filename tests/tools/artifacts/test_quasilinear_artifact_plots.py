@@ -14,7 +14,6 @@ import pytest
 from support.paths import load_artifact_tool
 
 
-
 # Quasilinear holdout gap report assertions
 def _load_tool_module():
     return load_artifact_tool("build_quasilinear_holdout_gap_report")
@@ -889,7 +888,7 @@ def _dataset_sufficiency_write_case(
 def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_quasilinear_dataset_sufficiency")
+    mod = load_artifact_tool("plot_quasilinear_model_development")
     cases = []
     for name, gate_case, split, geometry in [
         ("cyclone", "cyclone_nonlinear_long_window", "train", "cyclone"),
@@ -967,7 +966,7 @@ def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(
 
 
 def test_dataset_sufficiency_writes_artifacts(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_quasilinear_dataset_sufficiency")
+    mod = load_artifact_tool("plot_quasilinear_model_development")
     cases = []
     for idx, split in enumerate(
         ["train", "train", "holdout", "holdout", "holdout", "holdout"]
@@ -1090,13 +1089,14 @@ def _model_selection_write_optimized_audit(
 def test_model_selection_status_tool_writes_replayable_artifacts(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_quasilinear_model_selection_status")
+    mod = load_artifact_tool("plot_quasilinear_model_development")
     dataset, candidate, calibration = _model_selection_write_inputs(tmp_path)
     out = tmp_path / "status.png"
 
     assert (
         mod.main(
             [
+                "model-selection-status",
                 "--dataset",
                 str(dataset),
                 "--candidate",
@@ -1133,7 +1133,7 @@ def test_model_selection_status_tool_writes_replayable_artifacts(
 def test_model_selection_status_tool_can_require_optimized_equilibrium_audit(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_quasilinear_model_selection_status")
+    mod = load_artifact_tool("plot_quasilinear_model_development")
     dataset, candidate, calibration = _model_selection_write_inputs(tmp_path)
     audit = _model_selection_write_optimized_audit(tmp_path)
     out = tmp_path / "status.png"
@@ -1141,6 +1141,7 @@ def test_model_selection_status_tool_can_require_optimized_equilibrium_audit(
     assert (
         mod.main(
             [
+                "model-selection-status",
                 "--dataset",
                 str(dataset),
                 "--candidate",

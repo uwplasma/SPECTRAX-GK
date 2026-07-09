@@ -365,22 +365,6 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
     with pytest.raises(ValueError, match="kinetic species"):
         startup._species_to_linear(no_kinetic.species)
 
-    cetg = replace(
-        _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="cetg")
-    )
-    with pytest.raises(NotImplementedError, match="not supported"):
-        startup._resolve_runtime_hl_dims(cetg, Nl=None, Nm=None)
-    with pytest.raises(NotImplementedError, match="not supported"):
-        startup._require_full_gk_runtime_model(cetg)
-
-    krehm = replace(
-        _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="krehm")
-    )
-    with pytest.raises(NotImplementedError, match="not supported"):
-        startup._resolve_runtime_hl_dims(krehm, Nl=None, Nm=None)
-    with pytest.raises(NotImplementedError, match="not supported"):
-        startup._require_full_gk_runtime_model(krehm)
-
     unknown = replace(
         _base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="not-a-model")
     )
@@ -4246,7 +4230,9 @@ def test_direct_linear_and_nonlinear_integrators_fast_smoke() -> None:
         * 1.0e-6
     )
 
-    _, phi_t = integrate_linear(state, grid, geom, params, dt=0.1, steps=2, method="rk2")
+    _, phi_t = integrate_linear(
+        state, grid, geom, params, dt=0.1, steps=2, method="rk2"
+    )
     _, fields = integrate_nonlinear(
         state, grid, geom, params, dt=0.1, steps=2, method="rk2"
     )
