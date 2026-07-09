@@ -26,8 +26,8 @@ DEFAULT_REFERENCE = ROOT / "src" / "spectraxgk" / "data" / "tem_reference.csv"
 DEFAULT_OUT = ROOT / "docs" / "_static" / "tem_branch_parity_audit.png"
 
 REFERENCE_PROVENANCE = (
-    "Digitized low-ky TEM branch from the literature figure used by "
-    "tools/artifacts/digitize_reference.py; this is not a direct GX/SPECTRAX-GK dump."
+    "Digitized low-ky TEM branch from the literature figure tracked in "
+    "src/spectraxgk/data/tem_reference.csv; this is not a direct code-to-code dump."
 )
 
 REQUIRED_COLUMNS = (
