@@ -23,9 +23,11 @@ from spectraxgk.workflows.runtime.results import (
     RuntimeLinearResult,
     RuntimeNonlinearResult,
 )
-from spectraxgk.workflows.runtime.orchestration import (
+from spectraxgk.workflows.runtime.orchestration_progress import (
     build_runtime_progress_message,
     format_duration,
+)
+from spectraxgk.workflows.runtime.orchestration_scan import (
     run_runtime_scan_ky_task,
 )
 from spectraxgk.benchmarks import late_time_linear_metrics

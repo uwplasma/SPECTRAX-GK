@@ -326,11 +326,11 @@
         },
         {
           "exists": true,
-          "name": "runtime orchestration module",
+          "name": "runtime scan orchestration module",
           "passed": true,
-          "path": "src/spectraxgk/workflows/runtime/orchestration.py",
+          "path": "src/spectraxgk/workflows/runtime/orchestration_scan.py",
           "required": true,
-          "snippet": null
+          "snippet": "RuntimeScanDeps"
         },
         {
           "exists": true,
@@ -402,7 +402,7 @@
           "passed": true,
           "path": "tools/validation_coverage_manifest.toml",
           "required": true,
-          "snippet": "spectraxgk.workflows.runtime.orchestration"
+          "snippet": "spectraxgk.workflows.runtime.orchestration_scan"
         }
       ],
       "completion_percent": 100.0,

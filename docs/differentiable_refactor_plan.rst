@@ -350,8 +350,8 @@ High-Risk Module Split Plan
   scan batching now live in ``spectraxgk.workflows.runtime.orchestration_scan``;
   progress/ETA formatting lives in ``spectraxgk.workflows.runtime.orchestration_progress``;
   and nonlinear artifact/restart handoff lives in
-  ``spectraxgk.workflows.runtime.orchestration_artifacts`` behind the public
-  ``spectraxgk.workflows.runtime.orchestration`` and ``spectraxgk.runtime`` facades. Runtime nonlinear diagnostics keyword
+  ``spectraxgk.workflows.runtime.orchestration_artifacts`` behind focused owner
+  modules wired by the public ``spectraxgk.runtime`` facade. Runtime nonlinear diagnostics keyword
   assembly now lives in ``spectraxgk.workflows.runtime.policies`` so fixed-window and
   adaptive diagnostic branches share one policy. Generic runtime linear
   fit/eigenfunction extraction now lives in ``spectraxgk.workflows.runtime.diagnostics``

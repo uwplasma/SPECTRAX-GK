@@ -78,7 +78,7 @@ from spectraxgk.artifacts.io import (
     validate_finite_runtime_result,
 )
 from spectraxgk.workflows.runtime.diagnostic_arrays import concat_runtime_diagnostics
-from spectraxgk.workflows.runtime.orchestration import (
+from spectraxgk.workflows.runtime.orchestration_artifacts import (
     resolve_nonlinear_artifact_policy,
     run_runtime_nonlinear_artifact_handoff,
 )

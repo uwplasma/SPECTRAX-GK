@@ -197,13 +197,12 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.workflows.runtime.orchestration"
-path = "src/spectraxgk/workflows/runtime/orchestration.py"
+module = "spectraxgk.workflows.runtime.orchestration_scan"
+path = "src/spectraxgk/workflows/runtime/orchestration_scan.py"
 owned_modules = [
   "spectraxgk.workflows.runtime.chunks",
   "spectraxgk.workflows.runtime.orchestration_artifacts",
   "spectraxgk.workflows.runtime.orchestration_progress",
-  "spectraxgk.workflows.runtime.orchestration_scan",
   "spectraxgk.workflows.runtime.results",
 ]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"

@@ -2281,42 +2281,17 @@ fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integr
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.workflows.runtime.orchestration"
-source_path = "src/spectraxgk/workflows/runtime/orchestration.py"
-facade_module = "spectraxgk.runtime"
-status = "active"
-responsibility = "runtime orchestration facade preserving scan, progress, and artifact handoff exports for the public runtime facade"
-moved_exports = [
-  "COMMAND_LINEAR_ARTIFACT_DISPLAY_KEYS",
-  "COMMAND_NONLINEAR_ARTIFACT_DISPLAY_KEYS",
-  "COMMAND_QUASILINEAR_ARTIFACT_DISPLAY_KEYS",
-  "COMMAND_SCAN_ARTIFACT_DISPLAY_KEYS",
-  "NonlinearArtifactPolicy",
-  "RuntimeArtifactHandoffDeps",
-  "RuntimeProgressSnapshot",
-  "RuntimeScanBatchDeps",
-  "RuntimeScanDeps",
-  "build_runtime_progress_message",
-  "format_duration",
-  "resolve_nonlinear_artifact_policy",
-  "run_runtime_nonlinear_artifact_handoff",
-  "run_runtime_scan_batch",
-  "run_runtime_scan_orchestration",
-]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_runner.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-
-
-[[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration_scan"
 source_path = "src/spectraxgk/workflows/runtime/orchestration_scan.py"
-facade_module = "spectraxgk.workflows.runtime.orchestration"
+facade_module = "spectraxgk.runtime"
 status = "active"
 responsibility = "runtime ky-scan orchestration, independent worker planning, and combined-ky batch scan policy"
 moved_exports = [
+  "build_runtime_scan_batch_deps",
+  "build_runtime_scan_orchestration_deps",
   "RuntimeScanBatchDeps",
   "RuntimeScanDeps",
+  "run_runtime_scan_ky_task",
   "run_runtime_scan_batch",
   "run_runtime_scan_orchestration",
 ]
@@ -2326,7 +2301,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_ref
 [[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration_progress"
 source_path = "src/spectraxgk/workflows/runtime/orchestration_progress.py"
-facade_module = "spectraxgk.workflows.runtime.orchestration"
+facade_module = "spectraxgk.workflows.runtime.chunks"
 status = "active"
 responsibility = "runtime progress snapshot, duration formatting, and ETA/progress message construction"
 moved_exports = [
@@ -2340,7 +2315,7 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 [[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration_artifacts"
 source_path = "src/spectraxgk/workflows/runtime/orchestration_artifacts.py"
-facade_module = "spectraxgk.workflows.runtime.orchestration"
+facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
 responsibility = "runtime saved-path display order, command stdout policy, nonlinear NetCDF/restart/checkpoint artifact handoff, and cumulative diagnostic policy"
 moved_exports = [

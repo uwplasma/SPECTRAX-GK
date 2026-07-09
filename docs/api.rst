@@ -825,10 +825,6 @@ Runtime Results
 Runtime Orchestration
 ---------------------
 
-.. automodule:: spectraxgk.workflows.runtime.orchestration
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.workflows.runtime.orchestration_scan
    :members:
    :private-members:

@@ -3268,3 +3268,13 @@ following:
   165. The consolidated operator shard, full operator-unit shard, workflow YAML
   parse, ruff, py_compile, release tests, and architecture/refactor/validation
   manifests passed locally.
+
+- 2026-07-08: removed the pure runtime orchestration re-export facade
+  `src/spectraxgk/workflows/runtime/orchestration.py`. Runtime code and tests now
+  import scan orchestration, progress formatting, and artifact handoff directly
+  from `orchestration_scan.py`, `orchestration_progress.py`, and
+  `orchestration_artifacts.py`. Updated API/code-structure/architecture docs,
+  validation/refactor/performance-status manifests, regenerated tracked status
+  JSON, and tightened the package architecture source baseline to 258. Runtime
+  integration tests, ruff, py_compile, release tests, Sphinx docs, stale-reference
+  scan, and architecture/refactor/validation manifests passed locally.

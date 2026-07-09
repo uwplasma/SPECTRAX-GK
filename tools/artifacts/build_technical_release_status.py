@@ -159,8 +159,9 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "solve_imex_step",
         ),
         EvidenceCheck(
-            "runtime orchestration module",
-            "src/spectraxgk/workflows/runtime/orchestration.py",
+            "runtime scan orchestration module",
+            "src/spectraxgk/workflows/runtime/orchestration_scan.py",
+            "RuntimeScanDeps",
         ),
         EvidenceCheck(
             "runtime policy module",
@@ -191,7 +192,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck(
             "coverage manifest",
             "tools/validation_coverage_manifest.toml",
-            "spectraxgk.workflows.runtime.orchestration",
+            "spectraxgk.workflows.runtime.orchestration_scan",
         ),
     ),
     "docs_release_hygiene": (
