@@ -3040,3 +3040,14 @@ following:
   tightened the source topology baseline to 265. Focused Miller geometry tests,
   release tests, stale-reference scans, ruff, py_compile, validation/
   differentiable manifests, and architecture checks passed locally.
+
+- 2026-07-08: folded `terms/assembly_fields.py` into
+  `terms/assembly_core.py`, so `compute_fields_cached` now reuses the same
+  normalized state, species expansion, term-weight, and cached field-solve
+  helper path as `assemble_rhs_cached` without a standalone field-only shard.
+  The public `spectraxgk.terms.assembly.compute_fields_cached` import remains
+  unchanged. Updated code-structure docs, validation and differentiable
+  refactor manifests, regenerated validation metadata, and tightened the source
+  topology baseline to 264. Focused terms assembly tests, linear helper tests,
+  stale-reference scans, ruff, py_compile, validation/differentiable manifests,
+  and architecture checks passed locally.

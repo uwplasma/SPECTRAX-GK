@@ -260,7 +260,7 @@ Completed extractions:
   facade while cached RHS composition, per-term diagnostic decomposition,
   field-only solves, and shared helper policies live in
   ``terms/assembly_core.py``, ``terms/assembly_diagnostics.py``,
-  ``terms/assembly_fields.py``, and ``terms/assembly_helpers.py``. The
+  and ``terms/assembly_helpers.py``. The
   production RHS and diagnostic decomposition share one helper-owned staging
   layer for state/species normalization, scalar parameter expansion, field and
   Hamiltonian construction, drift/drive/dissipation contribution assembly,

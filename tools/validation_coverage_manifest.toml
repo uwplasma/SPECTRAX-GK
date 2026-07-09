@@ -295,7 +295,6 @@ owned_modules = [
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.assembly_core",
   "spectraxgk.terms.assembly_diagnostics",
-  "spectraxgk.terms.assembly_fields",
   "spectraxgk.terms.assembly_helpers",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",

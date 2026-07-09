@@ -2106,8 +2106,8 @@ module = "spectraxgk.terms.assembly_core"
 source_path = "src/spectraxgk/terms/assembly_core.py"
 facade_module = "spectraxgk.terms.assembly"
 status = "active"
-responsibility = "cached full linear-term RHS composition and generic/electrostatic JIT entry points"
-moved_exports = ["assemble_rhs_cached", "assemble_rhs_cached_jit", "assemble_rhs_cached_electrostatic_jit"]
+responsibility = "cached full linear-term RHS composition, field-only cached solves, and generic/electrostatic JIT entry points"
+moved_exports = ["assemble_rhs_cached", "assemble_rhs_cached_jit", "assemble_rhs_cached_electrostatic_jit", "compute_fields_cached"]
 fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
@@ -2119,16 +2119,6 @@ status = "active"
 responsibility = "per-term RHS contribution decomposition for diagnostics and reference-code parity audits"
 moved_exports = ["assemble_rhs_terms_cached"]
 fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/tools/comparison/test_compare_gx_rhs_terms.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.terms.assembly_fields"
-source_path = "src/spectraxgk/terms/assembly_fields.py"
-facade_module = "spectraxgk.terms.assembly"
-status = "active"
-responsibility = "field-only cached solve path used by runtime diagnostics, quasilinear tools, and validation comparisons"
-moved_exports = ["compute_fields_cached"]
-fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
