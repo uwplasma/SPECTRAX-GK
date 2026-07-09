@@ -3678,3 +3678,13 @@ following:
   shards, campaign writer contract shard, Python lint check, command-help smoke
   checks, stale-reference scan, compile check, diff hygiene, and architecture
   manifest passed locally.
+
+- 2026-07-09: folded `tools/artifacts/build_pre_manuscript_closure_runbook.py`
+  into `tools/artifacts/build_pre_manuscript_closure_status.py` as the
+  `runbook` subcommand. The strict manuscript-closure dashboard and the
+  companion action runbook now share one closure artifact owner, and the
+  nonlinear transport matrix finalizer calls the consolidated API. The package
+  architecture tool baseline tightened from 185 to 184. The pre-manuscript
+  artifact shard, nonlinear transport finalizer contract shard, Python lint
+  check, command smoke checks, stale-reference scan, diff hygiene, and
+  architecture manifest passed locally.

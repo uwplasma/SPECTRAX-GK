@@ -1778,7 +1778,7 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_runbook"
+        "build_pre_manuscript_closure_status"
     ).build_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
@@ -1853,7 +1853,7 @@ def test_pre_manuscript_runbook_reports_launchable_external_holdout(
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_runbook"
+        "build_pre_manuscript_closure_status"
     ).build_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
@@ -1916,7 +1916,7 @@ def test_pre_manuscript_runbook_marks_selected_external_holdout_harvested(
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_runbook"
+        "build_pre_manuscript_closure_status"
     ).build_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
@@ -1956,7 +1956,7 @@ def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
     }
 
     paths = load_artifact_tool(
-        "build_pre_manuscript_closure_runbook"
+        "build_pre_manuscript_closure_status"
     ).write_runbook_artifacts(payload, out=tmp_path / "runbook.png")
 
     for path in paths.values():

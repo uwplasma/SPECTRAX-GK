@@ -23,7 +23,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.artifacts import build_manuscript_readiness_status as manuscript_status  # noqa: E402
-from tools.artifacts import build_pre_manuscript_closure_runbook as closure_runbook  # noqa: E402
 from tools.artifacts import build_pre_manuscript_closure_status as closure_status  # noqa: E402
 
 
@@ -165,7 +164,7 @@ def finalize_release_artifacts(
                 out=docs_static / "pre_manuscript_closure_status.png",
             )
         )
-        runbook_payload = closure_runbook.build_runbook_payload(
+        runbook_payload = closure_status.build_runbook_payload(
             inventory_path=docs_static / "vmec_jax_equilibrium_inventory.json",
             screen_path=docs_static / "external_vmec_candidate_linear_screen.csv",
             external_runbook_path=docs_static
@@ -181,7 +180,7 @@ def finalize_release_artifacts(
             audit_root=Path("tools_out/pre_manuscript_nonlinear_audits"),
         )
         dashboards["pre_manuscript_closure_runbook"] = (
-            closure_runbook.write_runbook_artifacts(
+            closure_status.write_runbook_artifacts(
                 runbook_payload,
                 out=docs_static / "pre_manuscript_closure_runbook.png",
             )
