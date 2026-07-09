@@ -878,7 +878,7 @@ fast_tests = [
   "tests/unit/parallel/test_nonlinear_domain_parallel.py",
   "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
   "tests/tools/artifacts/test_status_readiness_artifacts.py",
-  "tests/tools/profiling/test_profile_nonlinear_sharding.py",
+  "tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_domain_parallel_identity_gate.json",

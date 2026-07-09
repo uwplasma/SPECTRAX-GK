@@ -3199,3 +3199,13 @@ following:
   and tightened the package architecture source baseline to 261. Focused
   solver-gradient/differentiable-geometry tests, release tests, ruff,
   py_compile, and release manifests passed locally.
+
+- 2026-07-08: consolidated nonlinear sharding profiling tests into
+  `tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py`. The
+  profiler and sweep-driver contracts now share one test owner with separate
+  loader helpers while preserving parser, source-contract, identity-candidate,
+  timeout, slowdown, and failed-profile JSON assertions. Updated CI quick-test
+  paths and validation/refactor manifests, regenerated validation metadata, and
+  tightened the package architecture test baseline to 170. The consolidated
+  profiling shard, release tests, workflow YAML parse, ruff, py_compile, and
+  architecture/refactor/validation manifests passed locally.

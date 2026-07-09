@@ -2906,7 +2906,7 @@ moved_exports = [
   "nonlinear_spectral_domain_work_model",
   "nonlinear_spectral_pencil_work_model",
 ]
-fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/tools/profiling/test_profile_nonlinear_sharding.py"]
+fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
