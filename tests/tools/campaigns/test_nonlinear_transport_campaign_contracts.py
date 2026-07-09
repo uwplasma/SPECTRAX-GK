@@ -10,6 +10,7 @@ import pytest
 from support.paths import load_campaign_tool
 
 portfolio_import = load_campaign_tool("import_nonlinear_transport_matrix_portfolio")
+release_finalizer = load_campaign_tool("finalize_nonlinear_transport_matrix_release")
 over_writer = load_campaign_tool("write_overdetermined_nonlinear_gradient_campaign")
 over_runner = load_campaign_tool("run_overdetermined_nonlinear_gradient_campaign")
 over_post = load_campaign_tool("postprocess_overdetermined_nonlinear_gradient_campaign")
@@ -131,6 +132,115 @@ def test_import_nonlinear_transport_matrix_portfolio_fail_closed_and_cli(
         (docs_static / "nonlinear_transport_matrix_portfolio_import.json").read_text(
             encoding="utf-8"
         )
+    )
+    assert payload["selected_family"] == "accepted_qa_ess"
+
+
+def test_finalize_nonlinear_transport_matrix_release_imports_passing_portfolio(
+    tmp_path: Path,
+) -> None:
+    portfolio = _write_json(
+        tmp_path / "portfolio.json",
+        {
+            "kind": "nonlinear_transport_matrix_portfolio_gate",
+            "passed": True,
+            "selected_family": "projected_0p001",
+        },
+    )
+    portfolio_png = _write_png_stub(tmp_path / "portfolio.png")
+    matrix_json = _write_json(
+        tmp_path / "matrix.json",
+        {"kind": "matched_nonlinear_transport_matrix_report", "passed": True},
+    )
+    matrix_png = _write_png_stub(tmp_path / "matrix.png")
+    docs_static = tmp_path / "docs" / "_static"
+
+    manifest = release_finalizer.finalize_release_artifacts(
+        portfolio_json=portfolio,
+        portfolio_figure=portfolio_png,
+        matrix_report_jsons={"projected_0p001": matrix_json},
+        matrix_report_figures={"projected_0p001": matrix_png},
+        docs_static=docs_static,
+        regenerate_dashboards=False,
+    )
+
+    assert manifest["passed"] is True
+    assert manifest["selected_family"] == "projected_0p001"
+    assert manifest["dashboards_regenerated"] is False
+    assert (docs_static / "nonlinear_transport_matrix_portfolio.json").exists()
+    assert (docs_static / "projected_0p001_matrix_report.json").exists()
+    saved = json.loads(
+        (
+            docs_static / "nonlinear_transport_matrix_release_finalization.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert saved["kind"] == "nonlinear_transport_matrix_release_finalization"
+    assert saved["selected_family"] == "projected_0p001"
+
+
+def test_finalize_nonlinear_transport_matrix_release_refuses_blocked_portfolio(
+    tmp_path: Path,
+) -> None:
+    portfolio = _write_json(
+        tmp_path / "portfolio.json",
+        {
+            "kind": "nonlinear_transport_matrix_portfolio_gate",
+            "passed": False,
+            "selected_family": None,
+        },
+    )
+
+    with pytest.raises(ValueError, match="blocked"):
+        release_finalizer.finalize_release_artifacts(
+            portfolio_json=portfolio,
+            portfolio_figure=None,
+            matrix_report_jsons={},
+            matrix_report_figures={},
+            docs_static=tmp_path / "docs" / "_static",
+            regenerate_dashboards=False,
+        )
+
+
+def test_finalize_nonlinear_transport_matrix_release_cli_smoke(
+    tmp_path: Path,
+) -> None:
+    portfolio = _write_json(
+        tmp_path / "portfolio.json",
+        {
+            "kind": "nonlinear_transport_matrix_portfolio_gate",
+            "passed": True,
+            "selected_family": "accepted_qa_ess",
+        },
+    )
+    portfolio_png = _write_png_stub(tmp_path / "portfolio.png")
+    matrix_json = _write_json(
+        tmp_path / "matrix.json",
+        {"kind": "matched_nonlinear_transport_matrix_report", "passed": True},
+    )
+    matrix_png = _write_png_stub(tmp_path / "matrix.png")
+    docs_static = tmp_path / "docs" / "_static"
+
+    rc = release_finalizer.main(
+        [
+            "--portfolio-json",
+            str(portfolio),
+            "--portfolio-figure",
+            str(portfolio_png),
+            "--matrix-report-json",
+            f"accepted_qa_ess={matrix_json}",
+            "--matrix-report-figure",
+            f"accepted_qa_ess={matrix_png}",
+            "--docs-static",
+            str(docs_static),
+            "--skip-dashboard-regeneration",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(
+        (
+            docs_static / "nonlinear_transport_matrix_release_finalization.json"
+        ).read_text(encoding="utf-8")
     )
     assert payload["selected_family"] == "accepted_qa_ess"
 

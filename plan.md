@@ -3405,3 +3405,14 @@ following:
   architecture test baseline tightened from 157 to 156. The consolidated
   quasilinear artifact shard, Python lint check, validation manifest, release
   tests, stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the nonlinear transport matrix release finalization
+  tests from
+  `tests/tools/campaigns/test_finalize_nonlinear_transport_matrix_release.py`
+  into `tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py`,
+  where portfolio import, matrix release finalization, overdetermined campaign
+  launch, and nonlinear-gradient postprocess contracts now share one campaign
+  orchestration owner. The package architecture test baseline tightened from
+  156 to 155. The consolidated campaign contract shard, Python lint check,
+  validation manifest, release tests, stale-reference scan, compile check, diff
+  hygiene, and architecture manifest passed locally.
