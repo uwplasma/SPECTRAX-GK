@@ -58,7 +58,7 @@ name = "test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = true
-baseline = 161
+baseline = 160
 target = 99
 
 [[topology_policy.counts]]

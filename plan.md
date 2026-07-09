@@ -3358,3 +3358,13 @@ following:
   architecture test baseline tightened from 162 to 161. The core parallel shard,
   Python lint check, stale-reference scan, and architecture manifest passed
   locally.
+
+- 2026-07-08: consolidated the overdetermined nonlinear-gradient campaign writer
+  tests from
+  `tests/tools/campaigns/test_write_overdetermined_nonlinear_gradient_campaign.py`
+  into `tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py`,
+  which already owns nonlinear transport portfolio import, overdetermined run
+  task collection, overdetermined postprocess sequencing, and gradient-manifest
+  postprocess contracts. The package architecture test baseline tightened from
+  161 to 160. The consolidated campaign contract shard, Python lint check,
+  stale-reference scan, and architecture manifest passed locally.
