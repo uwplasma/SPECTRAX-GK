@@ -3,6 +3,9 @@ schema_version = 1
 updated = "2026-07-09"
 comparison_code = "GX"
 comparison_revision = "bc2fe552"
+comparison_source_fingerprint = "sha256:bfaaadfa724c4e56e32364b5cb957449555bed94f6a4ee082e3b4e651b0cc20b"
+office_instrumented_source_fingerprint = "sha256:436e403e769cae7fc38362185d1da49920255d5dfd288eb06ad4ac8715b5a004"
+office_binary_status = "blocked_missing_shared_libraries; source inspection remains valid, rerun requires a clean rebuild"
 scope = "Required-core and differentiable-extension capability contract; feature names are mathematical, while GX appears only as benchmark provenance."
 
 [[capabilities]]
@@ -54,6 +57,14 @@ comparison_owner = "src/grad_parallel.cu and src/grad_parallel_linked.cu"
 evidence = "periodic streaming and linked-boundary operator tests; stellarator linear atlas"
 
 [[capabilities]]
+id = "vmec_flux_tube_boundary_selection"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.geometry.imported_vmec and spectraxgk.operators.linear.linked"
+comparison_owner = "src/parameters.cu, src/geometry.cu, and src/grad_parallel_linked.cu"
+evidence = "exact-periodic, continuous-drift, and fixed-aspect geometry-policy tests; fixed-aspect W7-X/HSX benchmark lanes"
+
+[[capabilities]]
 id = "nonlinear_exb_bracket"
 group = "required_core"
 status = "validated_scoped"
@@ -68,6 +79,14 @@ status = "validated"
 spectrax_owner = "spectraxgk.solvers.time and spectraxgk.solvers.nonlinear"
 comparison_owner = "src/ts_rk3.cu, src/ts_rk4.cu, src/ts_sspx2.cu, and src/ts_sspx3.cu"
 evidence = "observed-order, stability, restart, and benchmark-window gates"
+
+[[capabilities]]
+id = "explicit_and_adaptive_time_policy"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.solvers.time and spectraxgk.workflows.runtime"
+comparison_owner = "src/ts_rk3.cu, src/ts_rk4.cu, src/ts_sspx2.cu, src/ts_sspx3.cu, and src/ts_k10.cu"
+evidence = "Euler/RK2/RK3/RK4/SSPx3/K10 observed-order tests plus fixed-CFL and Diffrax adaptive-path gates; identical method names are not assumed to imply identical tableaux"
 
 [[capabilities]]
 id = "dominant_eigenmode_solver"
@@ -126,6 +145,14 @@ comparison_owner = "species/Hermite MPI/CUDA decomposition"
 evidence = "benchmark-grid whole-state route is 0.706x and fails trajectory identity"
 
 [[capabilities]]
+id = "species_hermite_multi_device_decomposition"
+group = "optional_extension"
+status = "planned"
+spectrax_owner = "spectraxgk.parallel.velocity and future nonlinear integrator routing"
+comparison_owner = "src/grids.cu, src/moments.cu, and src/reductions.cu"
+evidence = "GX source prioritizes species decomposition then Hermite decomposition with explicit ghost exchange and MPI/NCCL field reductions; SPECTRAX-GK requires state, invariant, diagnostic, transport-window, and speedup gates before routing"
+
+[[capabilities]]
 id = "jax_autodiff_and_implicit_gradients"
 group = "differentiable_extension"
 status = "validated_scoped"
@@ -148,6 +175,30 @@ status = "not_shipped"
 spectrax_owner = "none"
 comparison_owner = "src/forcing.cu and src/trinity_interface.cu"
 evidence = "no release claim; add only with a scientific owner and validation campaign"
+
+[[capabilities]]
+id = "specialized_reduced_equation_sets"
+group = "explicitly_out_of_scope"
+status = "not_shipped"
+spectrax_owner = "none"
+comparison_owner = "src/run_gx.cu plus KREHM, Vlasov-Poisson, and collisional-ETG implementations"
+evidence = "the release claim is the full gyrokinetic model; specialized reduced systems require separate equations, diagnostics, and literature validation"
+
+[[capabilities]]
+id = "beer_smith_moment_closures"
+group = "optional_extension"
+status = "not_shipped"
+spectrax_owner = "none"
+comparison_owner = "src/linear.cu and src/smith_par_closure.cu"
+evidence = "SPECTRAX-GK currently uses resolved Hermite-Laguerre truncation and dissipation; closure models should be added only through the collision/closure protocol with dispersion and convergence gates"
+
+[[capabilities]]
+id = "long_wavelength_reduced_field_limit"
+group = "optional_extension"
+status = "not_shipped"
+spectrax_owner = "none"
+comparison_owner = "src/solver.cu long_wavelength_GK path"
+evidence = "the shipped field solve retains finite-Larmor-radius response; a reduced long-wavelength field model needs separate asymptotic and parity tests"
 
 [matched_comparison_contract]
 required_fields = [

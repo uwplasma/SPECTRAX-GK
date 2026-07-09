@@ -1866,6 +1866,10 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
 
     assert metadata["comparison_code"] == "GX"
     assert metadata["comparison_revision"]
+    assert metadata["comparison_source_fingerprint"].startswith("sha256:")
+    assert metadata["office_instrumented_source_fingerprint"].startswith("sha256:")
+    assert metadata["comparison_source_fingerprint"] != metadata["office_instrumented_source_fingerprint"]
+    assert "blocked" in metadata["office_binary_status"]
     assert len(by_id) == len(rows) >= 15
     assert {row["status"] for row in rows} <= allowed_statuses
     assert all(row["spectrax_owner"] and row["evidence"] for row in rows)
@@ -1879,6 +1883,8 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
         == "planned_research_lane"
     )
     assert by_id["jax_autodiff_and_implicit_gradients"]["group"] == "differentiable_extension"
+    assert by_id["species_hermite_multi_device_decomposition"]["status"] == "planned"
+    assert by_id["specialized_reduced_equation_sets"]["status"] == "not_shipped"
 
     required = payload["matched_comparison_contract"]["required_fields"]
     assert len(required) == len(set(required)) >= 10

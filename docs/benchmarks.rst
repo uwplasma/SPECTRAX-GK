@@ -99,6 +99,15 @@ actually use the same physical and numerical contract.
    * - Conserving Dougherty and linearized Sugama/Coulomb collisions
      - planned
      - no release claim until conservation, adjointness, entropy, and physics benchmarks pass
+   * - VMEC exact-periodic, continuous-drift, and fixed-aspect boundaries
+     - validated, scoped
+     - policy tests plus fixed-aspect W7-X/HSX comparison lanes
+   * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
+     - not shipped
+     - separate reduced models are outside the full-gyrokinetic release claim
+   * - Species/Hermite nonlinear multi-device execution
+     - planned
+     - replace failed whole-state sharding with ghost exchange and field reductions
 
 A matched comparison must record the equations and normalization, geometry
 coefficients and parallel boundary, species conventions, perpendicular and
@@ -109,14 +118,27 @@ is insufficient. This rule is especially important for nonlinear saturation,
 where short state-level agreement does not establish a converged heat-flux
 comparison.
 
-The comparison-code audit used for this contract was performed at GX revision
-``bc2fe552``. GX remains the mature baseline for conventional GPU nonlinear
+The promoted comparison contract was audited at GX revision ``bc2fe552``. A
+fresh office clone confirms that revision and has aggregate source fingerprint
+``sha256:bfaaadfa...20b``. The long-lived instrumented office source tree is not
+a Git checkout and has fingerprint ``sha256:436e403e...a004``; these two
+provenances must not be interchanged. Its existing executable currently has
+missing NCCL, cuTENSOR, HDF5, and GSL shared-library dependencies and must be
+rebuilt in a complete toolchain before new runtime comparisons; source-level
+feature and decomposition inspection is unaffected. GX remains the mature baseline for conventional GPU nonlinear
 initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
 distinct validated scope is its Python/JAX API, differentiable objectives,
 implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/
 ``booz_xform_jax`` integration. Neither code currently justifies a broad claim
 of a complete linearized Landau operator; that capability remains a separately
 gated research lane.
+
+Feature parity is intentionally not blanket parity. SPECTRAX-GK's required
+comparison scope is the standard electrostatic/electromagnetic gyrokinetic
+system, not GX's optional KREHM, Vlasov--Poisson, collisional-ETG, forcing,
+transport-coupling, or Beer/Smith closure paths. Conversely, differentiable
+eigen/objective solves and the in-memory JAX geometry chain are SPECTRAX-GK
+extensions rather than comparison requirements.
 
 Tracked results index
 ---------------------

@@ -111,7 +111,7 @@ use mathematical names independent of comparison provenance.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Capability/parity specification | 95% | Keep the machine-readable matrix synchronized with promoted benchmark gates. |
+| Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 58% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
@@ -200,6 +200,14 @@ use mathematical names independent of comparison provenance.
   conserving Lenard--Bernstein/Dougherty-like limited model. The next protocol
   must expose a complete RHS contribution and only optional valid split steps;
   species-coupled Dougherty and Sugama/Coulomb remain separately gated lanes.
+- 2026-07-09: Re-audited GX at upstream revision `bc2fe552` and fingerprinted
+  the clean source as `sha256:bfaaadfa...20b`; the office instrumented snapshot
+  is separately fingerprinted as `sha256:436e403e...a004`. GX prioritizes species then Hermite decomposition,
+  with explicit Hermite ghost exchange and MPI/NCCL field reductions. The
+  capability matrix now distinguishes standard gyrokinetic parity from
+  separately scoped boundary policies, time schemes, reduced equation sets,
+  moment closures, and SPECTRAX-GK differentiable extensions. The stale office
+  GX binary needs a clean rebuild before new timing comparisons.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
