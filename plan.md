@@ -3548,3 +3548,15 @@ following:
   baseline tightened from 149 to 148. The consolidated external-VMEC validation
   shard, Python lint check, validation manifest, release tests, compile check,
   diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated
+  `tests/validation/stellarator/test_vmec_jax_qa_exact_scripts.py` and
+  `tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py` into
+  `tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py`.
+  VMEC-JAX-style QA example-script contracts, solved-WOUT admission checks, and
+  the transport optimization campaign-driver dry-run contracts now share one
+  stellarator-optimization validation owner. The package architecture test
+  baseline tightened from 148 to 147. The consolidated VMEC-JAX QA optimization
+  shard, Python lint check, validation manifest, differentiable-refactor
+  manifest, release tests, compile check, diff hygiene, and architecture
+  manifest passed locally.

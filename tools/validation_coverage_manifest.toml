@@ -2471,7 +2471,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
-  "tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py",
+  "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
@@ -2600,7 +2600,7 @@ fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
   "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
-  "tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py",
+  "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
   "tests/unit/objectives/test_vmec_jax_transport_admission.py",
   "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
   "tests/unit/objectives/test_vmec_jax_transport_line_search.py",

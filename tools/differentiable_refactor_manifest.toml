@@ -1547,7 +1547,7 @@ facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "VMEC-JAX solved-equilibrium candidate admission, authoritative-WOUT checks, iota-profile extraction, and WOUT reproducibility gates"
 moved_exports = ["build_authoritative_wout_candidate_gate", "build_solved_vmec_candidate_gate", "build_wout_reproducibility_gate", "final_iota_profiles_from_vmec_result"]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_candidate_gate.py", "tests/validation/stellarator/test_vmec_jax_qa_optimization_driver.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_candidate_gate.py", "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
