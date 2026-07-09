@@ -3228,3 +3228,13 @@ following:
   package architecture tool baseline to 218. The linear preconditioner tests,
   performance manifest, release tests, stale-reference scan, and architecture
   manifest passed locally.
+
+- 2026-07-08: folded shift-invert Krylov preconditioner construction from
+  `src/spectraxgk/solvers/linear/eigen_preconditioners.py` into
+  `src/spectraxgk/solvers/linear/krylov_algorithms.py`, keeping the
+  `spectraxgk.solvers.linear.krylov` facade export for tests and internal
+  monkeypatch seams. Removed the extra private source module, updated API and
+  code-structure docs plus validation/refactor manifests, regenerated validation
+  metadata, and tightened the package architecture source baseline to 260. The
+  Krylov/preconditioner focused tests, ruff, py_compile, release tests, stale
+  reference scan, and architecture/refactor/validation manifests passed locally.

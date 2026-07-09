@@ -577,8 +577,8 @@ Completed extractions:
   preconditioner selection, and matrix-free matvec construction as separate
   private stages;
   focused developer helpers live in ``eigen_operator.py``,
-  ``eigen_selection.py``, ``eigen_preconditioners.py``, and
-  ``krylov_algorithms.py``. The old root ``linear_*`` helper shims were
+  ``eigen_selection.py``, and ``krylov_algorithms.py``. The old root
+  ``linear_*`` helper shims were
   removed; normal users should use ``spectraxgk.linear`` for the public linear
   API or import focused developer helpers from the domain packages.
 - nonlinear turbulence-gradient follow-up shared configs, JSON parsing,

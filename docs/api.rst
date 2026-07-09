@@ -332,7 +332,7 @@ Linear Eigenmode Solver Internals
 
 ``spectraxgk.solvers.linear.krylov`` owns ``KrylovConfig`` and the public
 status-reporting wrapper, while the focused helper modules below own operator
-application, branch selection, preconditioning, and Arnoldi iterations.
+application, branch selection, shift-invert preconditioning, and Arnoldi iterations.
 
 .. automodule:: spectraxgk.solvers.linear.eigen_operator
    :members:
@@ -340,11 +340,6 @@ application, branch selection, preconditioning, and Arnoldi iterations.
    :no-index:
 
 .. automodule:: spectraxgk.solvers.linear.eigen_selection
-   :members:
-   :private-members:
-   :no-index:
-
-.. automodule:: spectraxgk.solvers.linear.eigen_preconditioners
    :members:
    :private-members:
    :no-index:
