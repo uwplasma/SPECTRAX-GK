@@ -65,9 +65,9 @@ Current tracked audit:
 | --- | ---: | --- | --- |
 | Branches | `main`, `origin/main` only | no branch cleanup needed | keep experiments in one draft PR, not on `main` |
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
-| Source package | 277 Python files, 100,402 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
-| Tests | 241 Python files, 96,720 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 239 Python files, 100,526 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
+| Source package | 255 Python files, 100,180 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
+| Tests | 164 Python files, 94,973 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
+| Tools | 213 Python files, 99,234 LOC | one-script-per-artifact/campaign/status | subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -169,11 +169,11 @@ These targets are intentionally aggressive but realistic:
 
 | Area | Current audit | Release target | How to get there |
 | --- | ---: | ---: | --- |
-| Installed source files | 275 | <= 150 near term, <= 100 final | delete `validation`, merge tiny geometry/objective/operator shards, remove legacy facades |
+| Installed source files | 255 | <= 150 near term, <= 100 final | keep `validation` deleted, merge tiny geometry/objective/operator shards, remove legacy facades |
 | Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
-| Test files | 243 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
+| Test files | 164 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
-| Tool scripts | 247 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
+| Tool scripts | 213 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
 | Docs static files | 1605 | reference-graph curated | keep only docs/readme/release-manifest referenced evidence |
 
 The immediate milestone is not a cosmetic move. It is a measurable shrink:
@@ -238,15 +238,15 @@ Current tracked state after the latest consolidation:
 - Root `benchmarks/`: 12 Python files and about 1.6k LOC. This is already a
   clear reproducibility layer and should stay at the repository root. Do not
   merge it into `tools/` or `examples/`.
-- Installed package: 277 Python files and about 100.4k LOC. The main blockers
+- Installed package: 255 Python files and about 100.2k LOC. The main blockers
   are now the oversized benchmark facade, `objectives` (41 files),
   `geometry_backends` (18 files), dual `terms`/`operators` ownership, and
   large runtime/artifact facades.
-- Tests: 243 Python files and about 96.7k LOC. The blocker is not coverage; it
+- Tests: 164 Python files and about 95.0k LOC. The blocker is not coverage; it
   is one-file-per-tool and monkeypatch-heavy historical branch testing. The
   largest targets are runtime integration, benchmark branch tests, artifact
   tool tests, and comparison-tool tests.
-- Tools: 247 Python files and about 100.7k LOC. Tool folders are conceptually
+- Tools: 213 Python files and about 99.2k LOC. Tool folders are conceptually
   right (`artifacts`, `campaigns`, `comparison`, `profiling`, `release`), but
   each still has too many single-panel, single-campaign, or single-status entry
   points.
@@ -352,9 +352,9 @@ maintainer complexity, not clone size.
 | --- | --- | --- |
 | Branches | only `main` and `origin/main` | no branch cleanup needed; keep future experimental work in draft PRs, not `main` |
 | `benchmarks/` | 18 tracked files, 12 Python files, about 1k lines | keep as the root reproducibility layer; do not merge with `tools/` or `examples/` |
-| `tools/` | 247 Python files, 19 profilers, 122 artifact builders | keep family folders but merge script forests into manifest-driven entry points |
-| `tests/` | 243 Python files; largest runtime and benchmark tests are 2k-4k lines | reduce by parametrizing repeated branch/tool tests, not by splitting monoliths into more files |
-| `src/spectraxgk/validation` | 13 files, all benchmark-related | close this package next by moving benchmark policy to a clearer benchmark-cases owner or root benchmark drivers |
+| `tools/` | 213 Python files, 16 profilers, 97 artifact builders | keep family folders but merge script forests into manifest-driven entry points |
+| `tests/` | 164 Python files; largest runtime and benchmark tests are still 2k-4k lines | reduce by parametrizing repeated branch/tool tests, not by splitting monoliths into more files |
+| `src/spectraxgk/validation` | 0 files | keep the installable validation package deleted; benchmark policy now belongs in benchmark, diagnostics, or tool owners |
 | comparison-code names | comparison tooling is correctly explicit, but some unit/runtime tests still use comparison-code terminology for numerical conventions | rename to physical/numerical names outside explicit comparison/benchmark context |
 
 The next work should avoid cosmetic moves. A file move is allowed only when it
@@ -658,10 +658,10 @@ Last audited: 2026-07-07 on `main`.
   The largest tracked file is `docs/_static/qa_low_turbulence_comparison.json`
   at about 0.94 MiB.
 - Current topology counts:
-  - `src/spectraxgk`: 275 Python files after extracting nonlinear-gradient, nonlinear-transport, stellarator validation subpackages, benchmark case presets, benchmark eigenfunction diagnostics, benchmark time-series/window diagnostics, benchmark zonal-response metrics, benchmark trace/window metrics, benchmark fit-signal helpers, benchmark scan-batching helpers, benchmark solver-policy helpers, benchmark reference loaders, benchmark species policies, benchmark initialization helpers, benchmark scan/mode orchestration, benchmark scan-window policy, the secondary slab workflow, benchmark scan/eigenfunction harness helpers, the KBM fixed-beta ky-scan wrapper, and the kinetic-electron, ETG, KBM, TEM, and Cyclone benchmark runners, then deleting `src/spectraxgk/validation`.
-  - `tests`: 243 Python files, including the shared `tests/support/paths.py`
+  - `src/spectraxgk`: 255 Python files after continued facade and helper consolidation while keeping `src/spectraxgk/validation` deleted.
+  - `tests`: 164 Python files, including the shared `tests/support/paths.py`
     helper; only `conftest.py` remains at the flat `tests/` root.
-  - `tools`: 247 Python files after purpose-folder moves, nonlinear-transport follow-up relocation, deletion of obsolete unreferenced tool scripts, and consolidation of the device-z RHS profiler into the transport-window profiler.
+  - `tools`: 213 Python files after purpose-folder moves, namespace-marker cleanup, deletion of obsolete unreferenced tool scripts, and profiler/tool-family consolidations.
   - `examples`: 42 Python files after retiring the cETG example.
   - `benchmarks`: 18 tracked files, 12 Python files, about 1k lines.
 - The repository inventory now leaves no installable validation files. The broader test/tool/doc-artifact
@@ -702,7 +702,7 @@ Last audited: 2026-07-07 on `main`.
 Latest focused audit for this tranche:
 
 - Flat topology is no longer the blocker: `tests/` has zero flat `test_*.py`
-  files, and `tools/` has zero flat scripts except `tools/__init__.py`.
+  files, and `tools/` has zero flat scripts.
 - The remaining code-size problem is family sprawl:
   - `tests/tools/artifacts`: 26 artifact-family tests after the linear-validation, parallel-identity, VMEC/Boozer aggregate, VMEC/Boozer report, quasilinear plotting, W7-X/zonal panel, nonlinear report, status/readiness, and VMEC miscellaneous consolidations.
   - `tools/artifacts`: 122 figure/table/status/gate builders after deleting unreferenced nonlinear-parallel/compression scripts.
@@ -737,11 +737,11 @@ window diagnostics, and benchmark zonal-response metrics:
 
 | Area | Files / lines | Main issue |
 | --- | ---: | --- |
-| `src/spectraxgk` | 275 Python files, about 100.2k LOC | oversized benchmark facade plus many public/internal facades |
+| `src/spectraxgk` | 255 Python files, about 100.2k LOC | oversized benchmark facade plus many public/internal facades |
 | `src/spectraxgk/validation` | 0 Python files | removed; do not reintroduce installable validation campaigns |
-| `tests` | 243 Python files, about 96.7k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
-| `tools` | 247 Python scripts, about 100.7k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
-| `tools/artifacts` | 122 Python scripts, about 52.5k LOC | figure/status/gate builders should be manifest-driven families, not one script per panel |
+| `tests` | 164 Python files, about 95.0k LOC | one-file-per-tool suites and historical branch monoliths are hard to maintain |
+| `tools` | 213 Python scripts, about 99.2k LOC | many scripts differ by case labels, artifact names, or campaign paths, but obsolete zero-reference scripts are being removed |
+| `tools/artifacts` | 97 Python scripts | figure/status/gate builders should be manifest-driven families, not one script per panel |
 | `benchmarks` | 12 Python files, about 1.6k LOC | already small; keep as root-level reproducible benchmark entry points |
 | `examples` | 42 Python files, about 6.2k LOC | keep only promoted pedagogical workflows; move long campaigns and reduced scaffolds out |
 
@@ -917,11 +917,11 @@ usable codebase.
 
 | Area | Current | Target | Requirement |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 288 | <= 100 | Move validation/campaign code out of `src`; consolidate domain modules. |
-| Test Python files | 243 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
-| Tool Python files | 247 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
+| Installable source Python files | 255 | <= 100 | Keep validation/campaign code out of `src`; consolidate domain modules. |
+| Test Python files | 164 | < 100 | Reorganize and parametrize tests by domain; merge one-file-per-script tests. |
+| Tool Python files | 213 | < 100 | Keep release gates, artifact builders, profilers, and comparison entry points only. |
 | Root public facades | 9 | <= 8 | Keep only user-facing facades; no new root prefix modules. |
-| `src/spectraxgk/validation` package | 13 | 0-5 | Remove installable validation campaigns; keep only tiny public metric helpers if necessary. |
+| `src/spectraxgk/validation` package | 0 | 0 | Keep installable validation campaigns removed. |
 | Legacy/non-promoted paths | many | 0 promoted by accident | Delete from `main` or move to a draft PR/experiment branch. |
 | Default local test runtime | variable | < 5 min | Keep local gates bounded; long physics campaigns stay explicit. |
 | Wide package coverage | >= 95% gate | >= 95% | Preserve or improve coverage after consolidation. |
@@ -943,9 +943,9 @@ The highest-impact reductions are now clear:
 
 | Lane | Current issue | Required action | Expected impact |
 | --- | --- | --- | --- |
-| Validation in `src` | 69 installable files, many are campaign/report builders | Move benchmark/campaign code to `benchmarks/`, `tools/campaigns`, or `tests/validation`; keep only reusable metrics or public facades | Largest source-file reduction and cleaner runtime imports |
-| Tool-family sprawl | 247 scripts, with 122 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
-| Test-family sprawl | 246 files, including runtime and benchmark branch monoliths plus one-file-per-tool wrappers | Merge by physical contract and shared fixtures; parametrize tool-family tests | Lower navigation cost without lowering coverage |
+| Validation in `src` | installable validation package removed | Prevent reintroduction of benchmark/campaign code under `src`; keep reusable metrics in diagnostics/objectives only | Cleaner runtime imports and lower source count |
+| Tool-family sprawl | 213 scripts, with 97 artifact builders and many case-specific status/check/report tools | Merge by capability with manifest-driven modes; delete unowned probes/debug scripts | Fewer maintenance entry points and clearer release/artifact ownership |
+| Test-family sprawl | 164 files, including runtime and benchmark branch monoliths plus one-file-per-tool wrappers | Merge by physical contract and shared fixtures; parametrize tool-family tests | Lower navigation cost without lowering coverage |
 | Retired cETG/reduced-model residue | Source implementation is gone, but unsupported-config tests/docs still mention it intentionally | Keep only fail-closed input validation and remove all historical cETG tutorial/research scaffolding | Prevents a deleted model from shaping the new architecture |
 | Reduced/synthetic optimization artifacts | Still appear in docs/tests as historical scaffolding | Keep only if they validate a promoted step; otherwise move out of README/docs and then out of main | Prevents confusing claims and reduces examples/tests |
 | Comparison-code terminology | Some source/test names use external-code names for physical conventions | Rename to physical/numerical names except explicit benchmark/comparison tools/docs | Cleaner clean-room library surface |
@@ -1064,8 +1064,8 @@ Audited on 2026-07-07 after commit
   current CI run for `4b57ef41` is in progress and earlier runs were cancelled by
   newer pushes, so the next check is to inspect that run after more work rather
   than polling continuously.
-- The active topology is `src/spectraxgk`: 275 Python files,
-  `tests`: 243 Python files, `tools`: 247 Python files, `examples`: 42 Python
+- The active topology is `src/spectraxgk`: 255 Python files,
+  `tests`: 164 Python files, `tools`: 213 Python files, `examples`: 42 Python
   files, and `benchmarks`: 12 Python files. The recent artifact-test
   consolidations reduced `tests/tools/artifacts` from 94 to 26 files while
   preserving focused artifact gates.
@@ -1189,8 +1189,8 @@ files.
 1. **Finish flat-tool cleanup.** Completed in this tranche: artifact/reference
    helpers moved to `tools/artifacts`, active RHS/ky diagnostics moved to
    `tools/comparison`, the VMEC metadata patcher moved to `tools/campaigns`,
-   and two no-owner probes left `main`. Target achieved: zero flat tool scripts
-   except `tools/__init__.py`.
+   and two no-owner probes left `main`. Target achieved: zero flat tool scripts; tool subpackages now use
+   Python namespace-package imports instead of marker files.
 2. **Collapse tools by capability.** Merge duplicated artifact/status builders
    into manifest-driven builders where only case names, labels, or output paths
    differ. Target: `tools/` below 180 scripts before source moves, then below
@@ -1525,10 +1525,9 @@ Suggested target file budget:
 
 ## Tool Consolidation Plan
 
-Current problem: `tools/` has 259 Python scripts. The flat root has been closed
-down to `tools/__init__.py` after release, comparison, artifact, campaign,
-profiling, benchmark, generator, compression-helper, reference-helper,
-diagnostic, and VMEC-helper moves. The remaining problem is duplication inside
+Current problem: `tools/` has 259 Python scripts. The flat root has been closed to zero tracked `tools/*.py` files after
+release, comparison, artifact, campaign, profiling, benchmark, generator,
+compression-helper, reference-helper, diagnostic, and VMEC-helper moves. The remaining problem is duplication inside
 purpose folders, especially artifact/status builders and one-tool-one-test
 coverage.
 
@@ -2216,8 +2215,8 @@ Exit gates:
   `tools/comparison`, and the VMEC-JAX WOUT metadata patch helper under
   `tools/campaigns`. Deleted the unowned `cyclone_resolution_sweep.py` and
   `etg_eigenspectrum.py` probes from `main`. Tool Python files dropped from
-  262 to 260, and flat root tool scripts dropped from 13 to 1
-  (`tools/__init__.py`).
+  262 to 260, and flat root tool scripts dropped from 13 to 1 at that time;
+  the later namespace-package cleanup removed the final marker-file exception.
 
 - 2026-07-07: moved the first safe root-test tranche into domain folders:
   unit core, diagnostics, geometry, linear, nonlinear, objectives, operators,
@@ -3319,3 +3318,11 @@ following:
   architecture test baseline to 164. The affected benchmark/diagnostics tests,
   release tests, workflow YAML parse, ruff, and architecture check passed
   locally.
+
+- 2026-07-08: removed the remaining package-marker files under `tools/`
+  (`tools/__init__.py`, `tools/artifacts/__init__.py`,
+  `tools/campaigns/__init__.py`, `tools/comparison/__init__.py`, and
+  `tools/profiling/__init__.py`). Tool imports now use standard Python
+  namespace-package resolution, matching the existing `tools/release` layout.
+  Tool Python files dropped from 218 to 213 and flat top-level tool Python
+  files dropped from 1 to 0.

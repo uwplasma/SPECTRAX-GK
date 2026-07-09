@@ -17,8 +17,8 @@ roles:
 - `campaigns`: documented long-run launch or postprocess helpers that are still
   part of an active validation or optimization lane.
 
-Top-level `tools/*.py` is closed except for `tools/__init__.py`. New scripts
-must be added to a purpose folder below. The former flat scripts were classified
+Top-level `tools/*.py` is closed. New scripts must be added to a purpose
+folder below. The former flat scripts were classified
 as follows:
 
 | Current kind | Destination |

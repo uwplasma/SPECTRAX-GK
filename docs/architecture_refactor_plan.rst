@@ -69,17 +69,16 @@ longer the main problem. The current blockers are source/test/tool sprawl,
 oversized facades, and ambiguous ownership between benchmark, tool, validation,
 and campaign code:
 
-- 277 Python source files under ``src/spectraxgk`` after removing the
-  installable validation package.
+- 255 Python source files under ``src/spectraxgk`` after continued
+  consolidation and removal of the installable validation package.
 - 0 Python files under ``src/spectraxgk/validation``; the package has been removed.
-- 243 Python test files, including the shared ``tests/support/paths.py`` helper;
+- 164 Python test files, including the shared ``tests/support/paths.py`` helper;
   only ``conftest.py`` still lives directly under ``tests`` after the flat
-  runtime/executable tests and the first artifact-gate families were
-  consolidated.
-- 247 Python tool scripts, with only ``tools/__init__.py`` left at the flat
-  top level after release, comparison, artifact, campaign, profiling,
-  benchmark, generator, compression-helper, reference-helper, diagnostic, and
-  VMEC-helper moves.
+  runtime/executable tests and artifact/tool families were consolidated.
+- 213 Python tool scripts and zero flat top-level ``tools/*.py`` files after
+  removing package-marker modules and moving release, comparison, artifact,
+  campaign, profiling, benchmark, generator, compression-helper, reference-helper,
+  diagnostic, and VMEC-helper scripts into purpose folders.
 - no tracked files above 2 MB and no tracked ``__pycache__`` / ``.pyc`` /
   ``.DS_Store`` files.
 
