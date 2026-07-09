@@ -1048,6 +1048,15 @@ serial artifact reported ``15.37 s`` because nominal warm repeats recompiled.
 This is a substantial single-GPU execution fix, but it is not a multi-device
 speedup: the decomposition remains both slower and numerically invalid.
 
+The end-to-end runtime profiler now blocks every returned JAX leaf before
+stopping its timer and validates that its default input exists. It also accepts
+``--repeats`` and reports each completed warm timing. On the shipped Cyclone
+``64x64x24`` CPU input, a bounded 20-step run at
+``sample_stride=diagnostics_stride=10`` takes ``6.05 s`` warm after a
+``12.84 s`` cold pass. This is a profiler baseline, not a publication runtime
+row; the matched A4000 measurement and diagnostic breakdown determine the next
+optimization.
+
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple
 forced CPU devices. The profiling tool therefore skips active multi-device CPU

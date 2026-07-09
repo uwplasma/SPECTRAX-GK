@@ -169,7 +169,7 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/linear/axisymmetric/runtime_cyclone_nonlinear.toml"),
+        default=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml"),
     )
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--Nl", type=int, default=4)
@@ -179,6 +179,7 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
     parser.add_argument("--method", type=str, default=None)
     parser.add_argument("--sample-stride", type=int, default=None)
     parser.add_argument("--diagnostics-stride", type=int, default=None)
+    parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--memory-profile", type=Path, default=None)
     parser.add_argument("--xla-dump-dir", type=Path, default=None)
@@ -200,7 +201,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
     cfg, _data = load_runtime_from_toml(args.config)
 
     def _run():
-        return run_runtime_nonlinear(
+        result = run_runtime_nonlinear(
             cfg,
             ky_target=args.ky,
             Nl=args.Nl,
@@ -212,6 +213,8 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             diagnostics_stride=args.diagnostics_stride,
             diagnostics=True,
         )
+        _block_tree(result)
+        return result
 
     t0 = time.perf_counter()
     with profiler.TraceAnnotation("spectrax_warmup"):
@@ -231,11 +234,14 @@ def main_cyclone(argv: list[str] | None = None) -> int:
                 host_tracer_level=args.host_tracer_level,
             ),
         )
-    t2 = time.perf_counter()
+    if args.repeats < 1:
+        raise ValueError("repeats must be >= 1")
+    run_times: list[float] = []
     try:
         with profiler.TraceAnnotation("spectrax_profiled_run"):
-            _run()
-        t3 = time.perf_counter()
+            for _ in range(args.repeats):
+                elapsed, _result = _time_call(_run)
+                run_times.append(elapsed)
     finally:
         if args.trace_dir is not None:
             profiler.stop_trace()
@@ -244,7 +250,11 @@ def main_cyclone(argv: list[str] | None = None) -> int:
         with profiler.TraceAnnotation("spectrax_memory_snapshot"):
             profiler.save_device_memory_profile(str(args.memory_profile))
 
-    print(f"warmup_time_s={t1 - t0:.3f} run_time_s={t3 - t2:.3f}")
+    run_median = float(np.median(np.asarray(run_times, dtype=float)))
+    print(
+        f"warmup_time_s={t1 - t0:.3f} run_time_s={run_median:.3f} "
+        f"run_times_s={','.join(f'{value:.6f}' for value in run_times)}"
+    )
     return 0
 
 

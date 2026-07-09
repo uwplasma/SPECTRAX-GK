@@ -225,6 +225,11 @@ use mathematical names independent of comparison provenance.
   with one typed dataclass-field contract in `spectraxgk.benchmarking.shared`.
   The benchmark facade is now 12512 lines, with hook-bearing TEM policy kept
   explicit because it performs real assembly rather than mechanical packing.
+- 2026-07-09: Corrected the end-to-end runtime profiler to use an existing
+  nonlinear input and block every returned JAX leaf before stopping timers.
+  Added bounded repeat reporting. The shipped `64x64x24` Cyclone input takes
+  `6.05 s` warm for 20 CPU steps at diagnostic stride 10; an office A4000
+  matched run is the next profiling gate.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

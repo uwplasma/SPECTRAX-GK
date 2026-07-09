@@ -22,6 +22,13 @@ linear_trace = runtime_kernels
 nonlinear_trace = runtime_kernels
 
 
+def test_cyclone_runtime_profiler_default_config_exists() -> None:
+    args = runtime_kernels.build_cyclone_parser().parse_args([])
+
+    assert (REPO_ROOT / args.config).is_file()
+    assert args.repeats == 1
+
+
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:
     opts = make_profile_options()
     assert opts.python_tracer_level == 0
