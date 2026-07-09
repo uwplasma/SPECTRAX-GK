@@ -1032,6 +1032,18 @@ only to materialize final field history. On the same office GPU and
 the median warm 20-step time by about 5--6%. This is a narrowly scoped
 engineering result, not a refreshed end-to-end application speed claim.
 
+The fixed-step profiler also exposed a compilation-cache defect: both serial
+and sharded integration wrappers created new static Python closures on every
+call, so nominal warm repeats could compile again. The integration API now
+passes cache and parameter pytrees dynamically, keeps only mathematical
+switches static, memoizes the small grid projector, and reuses a compiled
+sharded runner. On the local ``(2,4,8,8,8)`` two-step smoke workload, three
+post-warmup serial calls take ``0.78--0.90 ms`` and the diagnostic sharded
+wrapper takes ``0.99--1.07 ms`` with exact state identity; before the fix the
+same sharded wrapper took about ``0.41 s`` per repeat. These numbers validate
+compile reuse only. The benchmark-grid GPU artifact must be refreshed before
+changing any application or multi-device speedup claim.
+
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple
 forced CPU devices. The profiling tool therefore skips active multi-device CPU

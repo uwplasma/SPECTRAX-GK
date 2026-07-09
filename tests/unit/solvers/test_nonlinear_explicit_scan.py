@@ -141,6 +141,30 @@ def test_integrate_nonlinear_scan_final_only_skips_field_history_rhs() -> None:
     assert calls["rhs"] == 1
 
 
+def test_integrate_nonlinear_scan_accepts_dynamic_and_static_rhs_arguments() -> None:
+    def rhs_fn(
+        G: jnp.ndarray, rate: jnp.ndarray, offset: float
+    ) -> tuple[jnp.ndarray, FieldState]:
+        return rate * G + offset, FieldState(phi=jnp.sum(G, axis=0))
+
+    G0 = jnp.asarray([[1.0 + 0.0j]], dtype=jnp.complex64)
+    expected = np.asarray(G0).copy()
+    out = integrate_nonlinear_scan(
+        rhs_fn,
+        G0,
+        0.1,
+        2,
+        method="euler",
+        return_fields=False,
+        rhs_args=(jnp.asarray(0.2, dtype=jnp.float32),),
+        rhs_static_args=(0.05,),
+    )
+
+    for _ in range(2):
+        expected = expected + 0.1 * (0.2 * expected + 0.05)
+    np.testing.assert_allclose(np.asarray(out), np.asarray(expected), rtol=1.0e-6)
+
+
 @pytest.mark.parametrize(
     ("method", "expected_order", "min_observed_order"),
     [

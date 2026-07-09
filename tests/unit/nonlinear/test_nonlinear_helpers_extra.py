@@ -415,6 +415,7 @@ def test_nonlinear_policy_helpers_are_reexported_by_public_facade() -> None:
 def test_make_hermitian_projector_and_mode_mask() -> None:
     ky = np.array([0.0, 0.2, -0.2, -0.4], dtype=float)
     projector = _make_hermitian_projector(ky, nx=3)
+    assert _make_hermitian_projector(ky.copy(), nx=3) is projector
     state = jnp.zeros((1, 4, 3, 2), dtype=jnp.complex64)
     state = state.at[..., 0:3, :, :].set(1.0 + 2.0j)
     out = projector(state)

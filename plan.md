@@ -117,9 +117,9 @@ use mathematical names independent of comparison provenance.
 | Source consolidation | 58% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
-| Nonlinear GPU performance | 60% | Move CFL/sampling device-resident, then match fixed-step workloads before optimizing kernels. |
-| Production parallelization | 35% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
-| Performance/release claims | 82% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
+| Nonlinear GPU performance | 68% | Refresh the benchmark-grid GPU profile after compile reuse, then move CFL/sampling device-resident before kernel optimization. |
+| Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
+| Performance/release claims | 84% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
 | Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
@@ -208,6 +208,13 @@ use mathematical names independent of comparison provenance.
   separately scoped boundary policies, time schemes, reduced equation sets,
   moment closures, and SPECTRAX-GK differentiable extensions. The stale office
   GX binary needs a clean rebuild before new timing comparisons.
+- 2026-07-09: Removed repeated JAX compilation from serial and diagnostic
+  sharded nonlinear integration. Cache and parameter pytrees are now dynamic,
+  mathematical switches remain static, the small Hermitian projector is
+  memoized by grid signature, and sharded compiled runners are reused. A local
+  post-warmup smoke profile fell from about 0.41 seconds to about 1 millisecond
+  per diagnostic sharded call with exact state identity; benchmark-grid GPU
+  profiling remains required before changing performance claims.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

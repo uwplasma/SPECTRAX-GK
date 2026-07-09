@@ -9,6 +9,7 @@ from spectraxgk.parallel.integrators import (
     integrate_linear_sharded,
     integrate_nonlinear_sharded,
 )
+from spectraxgk.parallel import integrators as integrator_module
 from spectraxgk.terms.config import FieldState
 
 
@@ -215,3 +216,44 @@ def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
     # lax.scan traces one RHS site for the final-only graph. The field-history
     # path has a second RHS site to recover fields at the accepted state.
     assert calls["rhs"] == 1
+
+
+def test_integrate_nonlinear_sharded_reuses_compiled_runner(monkeypatch) -> None:
+    calls = {"compile": 0}
+
+    def fake_pjit(fn, **_kwargs):
+        calls["compile"] += 1
+        return fn
+
+    def fake_rhs(
+        G,
+        cache,
+        params,
+        terms=None,
+        *,
+        compressed_real_fft=True,
+        laguerre_mode="grid",
+        external_phi=None,
+    ):
+        del cache, params, terms, compressed_real_fft, laguerre_mode, external_phi
+        return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
+
+    monkeypatch.setattr(integrator_module, "pjit", fake_pjit)
+    monkeypatch.setattr(integrator_module, "nonlinear_rhs_cached", fake_rhs)
+    integrator_module._compiled_nonlinear_sharded_runner.cache_clear()
+    G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
+
+    for _ in range(2):
+        out = integrate_nonlinear_sharded(
+            G0,
+            _cache_stub(),
+            SimpleNamespace(),
+            dt=0.1,
+            steps=2,
+            method="euler",
+            return_fields=False,
+        )
+        assert jnp.allclose(out, 0.2)
+
+    assert calls["compile"] == 1
+    integrator_module._compiled_nonlinear_sharded_runner.cache_clear()
