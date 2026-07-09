@@ -3847,3 +3847,9 @@ following:
 - Removed ten retired one-off tools from comparison, profiling, artifact, and completed campaign namespaces, plus their direct tests, cutting the tool topology from 173 to 163 Python files and the test topology from 139 to 138 Python files without touching installable source.
 - Kept the active benchmark-comparison harnesses, shared profiler option helper, and docs/release-backed artifact builders so parity, performance, and publication evidence remain reproducible while main stays leaner.
 - Updated the package architecture topology baselines to the new audited counts and fixed the stale validation-coverage release test to match the current nonlinear spectral-core ownership after the previous refactor.
+
+### 2026-07-09 Research status artifact consolidation
+
+- Consolidated the open-lane, manuscript-readiness, and pre-manuscript-closure dashboard builders into `tools/artifacts/build_research_status.py` with explicit `open-lanes`, `manuscript-readiness`, `pre-manuscript-closure`, and `runbook` subcommands.
+- Removed the three old one-dashboard entry scripts, updated docs and release finalization code to use the consolidated owner, and renamed test fixture helpers so stale script names no longer remain in the active tree.
+- Dropped tool topology from 163 to 161 Python files while preserving the same JSON/CSV/PNG/PDF artifact outputs and fail-closed status/readiness semantics.

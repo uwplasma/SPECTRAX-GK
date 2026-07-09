@@ -22,8 +22,7 @@ DEFAULT_DOCS_STATIC = ROOT / "docs" / "_static"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools.artifacts import build_manuscript_readiness_status as manuscript_status  # noqa: E402
-from tools.artifacts import build_pre_manuscript_closure_status as closure_status  # noqa: E402
+from tools.artifacts import build_research_status as research_status  # noqa: E402
 
 
 def _repo_relative(path: Path | str) -> str:
@@ -150,21 +149,21 @@ def finalize_release_artifacts(
     dashboards: dict[str, Any] = {}
     if regenerate_dashboards:
         root = docs_static.parent.parent
-        manuscript_payload = manuscript_status.build_manuscript_readiness_payload(root)
+        manuscript_payload = research_status.build_manuscript_readiness_payload(root)
         dashboards["manuscript_readiness_status"] = (
-            manuscript_status.write_manuscript_readiness_artifacts(
+            research_status.write_manuscript_readiness_artifacts(
                 manuscript_payload,
                 out=docs_static / "manuscript_readiness_status.png",
             )
         )
-        closure_payload = closure_status.build_status_payload(root)
+        closure_payload = research_status.build_pre_manuscript_closure_payload(root)
         dashboards["pre_manuscript_closure_status"] = (
-            closure_status.write_status_artifacts(
+            research_status.write_pre_manuscript_closure_artifacts(
                 closure_payload,
                 out=docs_static / "pre_manuscript_closure_status.png",
             )
         )
-        runbook_payload = closure_status.build_runbook_payload(
+        runbook_payload = research_status.build_pre_manuscript_runbook_payload(
             inventory_path=docs_static / "vmec_jax_equilibrium_inventory.json",
             screen_path=docs_static / "external_vmec_candidate_linear_screen.csv",
             external_runbook_path=docs_static
@@ -180,7 +179,7 @@ def finalize_release_artifacts(
             audit_root=Path("tools_out/pre_manuscript_nonlinear_audits"),
         )
         dashboards["pre_manuscript_closure_runbook"] = (
-            closure_status.write_runbook_artifacts(
+            research_status.write_pre_manuscript_runbook_artifacts(
                 runbook_payload,
                 out=docs_static / "pre_manuscript_closure_runbook.png",
             )

@@ -14,9 +14,8 @@ from support.paths import REPO_ROOT, load_artifact_tool
 ROOT = REPO_ROOT
 
 
-
 # Manuscript readiness status assertions
-def _build_manuscript_readiness_status_write_json(
+def _write_manuscript_readiness_json(
     root: Path, relative: str, payload: dict[str, object]
 ) -> None:
     path = root / relative
@@ -27,12 +26,12 @@ def _build_manuscript_readiness_status_write_json(
 def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     tmp_path: Path,
 ) -> None:
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -50,7 +49,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "quasilinear_shape_aware_saturation",
         "quasilinear_candidate_uncertainty",
     ):
-        _build_manuscript_readiness_status_write_json(
+        _write_manuscript_readiness_json(
             tmp_path,
             f"docs/_static/{name}.json",
             {
@@ -60,7 +59,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
                 }
             },
         )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -76,12 +75,12 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
@@ -89,7 +88,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "uq": {"sensitivity_map_rank": 2},
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/vmec_boozer_parity_matrix.json",
         {
@@ -97,7 +96,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "summary": {"all_equal_arc_passed": True, "n_cases": 3},
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/stellarator_itg_optimization_comparison.json",
         {
@@ -115,7 +114,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             ]
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/stellarator_itg_optimization_uq.json",
         {
@@ -124,7 +123,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             "all_sensitivity_maps_full_rank": True,
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
         {
@@ -136,7 +135,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile.json",
         {
@@ -153,7 +152,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile_miller.json",
         {
@@ -164,7 +163,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             }
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
         {
@@ -176,17 +175,17 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             }
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/full_nonlinear_rhs_trace_summary.json",
         {"warm_seconds": 0.316},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
         {"warm_seconds": 0.0128, "hlo_token_counts": {"transpose": 32}},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/solver_objective_gradient_gate.json",
         {
@@ -202,7 +201,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         "vmec_boozer_nonlinear_window_gradient_gate",
         "vmec_boozer_li383_nonlinear_window_gradient_gate",
     ):
-        _build_manuscript_readiness_status_write_json(
+        _write_manuscript_readiness_json(
             tmp_path,
             f"docs/_static/{name}.json",
             {
@@ -214,7 +213,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
                 "eigenpair_gate": {"max_rel_error": 1.0e-3},
             },
         )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
         {
@@ -226,7 +225,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/nonlinear_window_fd_audit.json",
         {
@@ -243,7 +242,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
         {
@@ -258,7 +257,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         {
@@ -272,7 +271,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     )
 
     payload = load_artifact_tool(
-        "build_manuscript_readiness_status"
+        "build_research_status"
     ).build_manuscript_readiness_payload(tmp_path)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
 
@@ -448,12 +447,12 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
 def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
     tmp_path: Path,
 ) -> None:
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -465,17 +464,17 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             ],
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_saturation_rule_sweep.json",
         {"promotion_gate": {"passed": False}},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_shape_aware_saturation.json",
         {"promotion_gate": {"passed": False}},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {
@@ -485,7 +484,7 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             }
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -496,7 +495,7 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_model_selection_status.json",
         {
@@ -507,14 +506,14 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             },
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
     )
 
     payload = load_artifact_tool(
-        "build_manuscript_readiness_status"
+        "build_research_status"
     ).build_manuscript_readiness_payload(tmp_path)
     lane = {row["lane"]: row for row in payload["lanes"]}[
         "Quasilinear diagnostics and saturation-model selection"
@@ -535,12 +534,12 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
 def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
     tmp_path: Path,
 ) -> None:
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -552,17 +551,17 @@ def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
             ],
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_saturation_rule_sweep.json",
         {"promotion_gate": {"passed": False}},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_shape_aware_saturation.json",
         {"promotion_gate": {"passed": False}},
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {
@@ -572,7 +571,7 @@ def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
             }
         },
     )
-    _build_manuscript_readiness_status_write_json(
+    _write_manuscript_readiness_json(
         tmp_path,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -582,7 +581,7 @@ def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
     )
 
     payload = load_artifact_tool(
-        "build_manuscript_readiness_status"
+        "build_research_status"
     ).build_manuscript_readiness_payload(tmp_path)
     lane = {row["lane"]: row for row in payload["lanes"]}[
         "Quasilinear diagnostics and saturation-model selection"
@@ -611,7 +610,7 @@ def test_write_manuscript_readiness_artifacts_writes_all_formats(
     }
 
     paths = load_artifact_tool(
-        "build_manuscript_readiness_status"
+        "build_research_status"
     ).write_manuscript_readiness_artifacts(payload, out=tmp_path / "status.png")
 
     for path in paths.values():
@@ -621,7 +620,7 @@ def test_write_manuscript_readiness_artifacts_writes_all_formats(
 
 
 # Open research-lane status assertions
-def _build_open_research_lane_status_write_json(
+def _write_open_research_lane_json(
     root: Path, relative: str, payload: dict[str, object]
 ) -> None:
     path = root / relative
@@ -630,7 +629,7 @@ def _build_open_research_lane_status_write_json(
 
 
 def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_zonal_reference_compare.json",
         {
@@ -643,7 +642,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
         {
@@ -664,7 +663,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
         {
@@ -689,7 +688,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ],
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json",
         {
@@ -716,7 +715,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
         {
@@ -728,7 +727,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             "dominant_heat_flux_ky": 0.4,
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/w7x_tem_extension_status.json",
         {
@@ -738,12 +737,12 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ]
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         {"passed": True},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -754,22 +753,22 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             ],
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
         {"promotion_gate": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         {
@@ -781,27 +780,27 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
@@ -812,7 +811,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             "booz_xform_jax_api_available": True,
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
         {
@@ -826,7 +825,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile.json",
         {
@@ -843,7 +842,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile_miller.json",
         {
@@ -854,7 +853,7 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             }
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
         {
@@ -866,20 +865,20 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             }
         },
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/full_nonlinear_rhs_trace_summary.json",
         {"warm_seconds": 0.316},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
         {"warm_seconds": 0.0128},
     )
 
     payload = load_artifact_tool(
-        "build_open_research_lane_status"
-    ).build_status_payload(tmp_path)
+        "build_research_status"
+    ).build_open_research_lane_payload(tmp_path)
     lanes = {row["lane"]: row for row in payload["lanes"]}
 
     assert payload["summary"] == {
@@ -975,25 +974,25 @@ def test_build_status_payload_accepts_cth_like_high_grid_admission(
 ) -> None:
     """CTH-like can be admitted through the scoped high-grid gate without full-grid convergence."""
 
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {"passed": False, "points": []},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
-    _build_open_research_lane_status_write_json(
+    _write_open_research_lane_json(
         tmp_path,
         "docs/_static/external_vmec_cth_like_modified_high_grid_admission_gate.json",
         {"promotion_gate": {"passed": True}},
     )
 
     payload = load_artifact_tool(
-        "build_open_research_lane_status"
-    ).build_status_payload(tmp_path)
+        "build_research_status"
+    ).build_open_research_lane_payload(tmp_path)
     lanes = {row["lane"]: row for row in payload["lanes"]}
     metrics = lanes["Scoped core quasilinear model-development diagnostic"][
         "key_metrics"
@@ -1006,10 +1005,10 @@ def test_build_status_payload_accepts_cth_like_high_grid_admission(
 
 def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> None:
     payload = load_artifact_tool(
-        "build_open_research_lane_status"
-    ).build_status_payload(ROOT)
+        "build_research_status"
+    ).build_open_research_lane_payload(ROOT)
     json.dumps(
-        load_artifact_tool("build_open_research_lane_status")._json_clean(payload),
+        load_artifact_tool("build_research_status").json_clean(payload),
         allow_nan=False,
     )
 
@@ -1036,7 +1035,7 @@ def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> 
         }.issubset(lane)
         assert (
             lane["status"]
-            in load_artifact_tool("build_open_research_lane_status").STATUS_ORDER
+            in load_artifact_tool("build_research_status").OPEN_STATUS_ORDER
         )
         assert isinstance(lane["primary_artifacts"], list)
         assert isinstance(lane["key_metrics"], dict)
@@ -1121,8 +1120,8 @@ def test_write_status_artifacts_writes_all_formats(tmp_path: Path) -> None:
     }
 
     paths = load_artifact_tool(
-        "build_open_research_lane_status"
-    ).write_status_artifacts(payload, out_png=tmp_path / "status.png")
+        "build_research_status"
+    ).write_open_research_lane_artifacts(payload, out_png=tmp_path / "status.png")
 
     for path in paths.values():
         assert Path(path).exists()
@@ -1410,7 +1409,7 @@ def test_parallelization_completion_status_script_runs_without_install(
 
 
 # Pre-manuscript closure status assertions
-def _build_pre_manuscript_closure_status_write_json(
+def _write_pre_manuscript_closure_json(
     root: Path, relative: str, payload: dict[str, object]
 ) -> None:
     path = root / relative
@@ -1418,8 +1417,8 @@ def _build_pre_manuscript_closure_status_write_json(
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> None:
-    _build_pre_manuscript_closure_status_write_json(
+def _write_pre_manuscript_closure_all_pass_fixture(root: Path) -> None:
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         {
@@ -1431,12 +1430,12 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             "points": [],
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_candidate_uncertainty.json",
         {"promotion_gate": {"passed": True, "accepted_candidates": ["candidate"]}},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_model_selection_status.json",
         {
@@ -1449,7 +1448,7 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             },
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
@@ -1463,15 +1462,15 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             }
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root, "docs/_static/quasilinear_promotion_guardrails.json", {"passed": True}
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_holdout_gap_report.json",
         {"promotion_gate": {"passed": True, "blockers": []}},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/quasilinear_error_anatomy.json",
         {
@@ -1508,7 +1507,7 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
         },
     )
 
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/production_nonlinear_optimization_guard.json",
         {
@@ -1520,12 +1519,12 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             },
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_jax_qa_transport_optimization_status.json",
         {"summary": {"long_window_nonlinear_audit_passed": True}},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_transport_matrix_portfolio.json",
         {
@@ -1544,7 +1543,7 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
         },
     )
 
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_sharding_strong_scaling_large.json",
         {
@@ -1556,22 +1555,22 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             ],
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_sharding_production_speedup_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_domain_parallel_identity_gate.json",
         {"gate": {"identity_passed": True}},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_spectral_communication_identity_gate.json",
         {"gate": {"identity_passed": True}},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/nonlinear_spectral_domain_routing_profile.json",
         {
@@ -1586,39 +1585,39 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
             },
         },
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root, "docs/_static/parallel_decomposition_status.json", {"passed": True}
     )
 
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json", {"passed": True}
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json",
         {"passed": True},
     )
-    _build_pre_manuscript_closure_status_write_json(
+    _write_pre_manuscript_closure_json(
         root,
         "docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json",
         {
@@ -1631,8 +1630,8 @@ def _build_pre_manuscript_closure_status_write_all_pass_fixture(root: Path) -> N
 
 def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_status_payload(ROOT)
+        "build_research_status"
+    ).build_pre_manuscript_closure_payload(ROOT)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
 
     assert payload["kind"] == "pre_manuscript_closure_status"
@@ -1684,11 +1683,11 @@ def test_current_repository_pre_manuscript_lanes_fail_closed() -> None:
 
 
 def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> None:
-    _build_pre_manuscript_closure_status_write_all_pass_fixture(tmp_path)
+    _write_pre_manuscript_closure_all_pass_fixture(tmp_path)
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_status_payload(tmp_path)
+        "build_research_status"
+    ).build_pre_manuscript_closure_payload(tmp_path)
 
     assert payload["summary"]["ready_for_manuscript_drafting"] is True
     assert payload["summary"]["n_closed"] == 4
@@ -1705,14 +1704,14 @@ def test_all_pass_fixture_closes_pre_manuscript_dashboard(tmp_path: Path) -> Non
 
 
 def test_write_pre_manuscript_artifacts(tmp_path: Path) -> None:
-    _build_pre_manuscript_closure_status_write_all_pass_fixture(tmp_path)
+    _write_pre_manuscript_closure_all_pass_fixture(tmp_path)
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_status_payload(tmp_path)
+        "build_research_status"
+    ).build_pre_manuscript_closure_payload(tmp_path)
 
     paths = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).write_status_artifacts(payload, out=tmp_path / "pre_status.png")
+        "build_research_status"
+    ).write_pre_manuscript_closure_artifacts(payload, out=tmp_path / "pre_status.png")
 
     for path in paths.values():
         assert Path(path).exists()
@@ -1778,8 +1777,8 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_runbook_payload(
+        "build_research_status"
+    ).build_pre_manuscript_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
         screen_path=screen,
@@ -1853,8 +1852,8 @@ def test_pre_manuscript_runbook_reports_launchable_external_holdout(
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_runbook_payload(
+        "build_research_status"
+    ).build_pre_manuscript_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
         screen_path=screen,
@@ -1916,8 +1915,8 @@ def test_pre_manuscript_runbook_marks_selected_external_holdout_harvested(
     )
 
     payload = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).build_runbook_payload(
+        "build_research_status"
+    ).build_pre_manuscript_runbook_payload(
         root=tmp_path,
         inventory_path=inventory,
         screen_path=screen,
@@ -1956,8 +1955,8 @@ def test_write_pre_manuscript_runbook_artifacts(tmp_path: Path) -> None:
     }
 
     paths = load_artifact_tool(
-        "build_pre_manuscript_closure_status"
-    ).write_runbook_artifacts(payload, out=tmp_path / "runbook.png")
+        "build_research_status"
+    ).write_pre_manuscript_runbook_artifacts(payload, out=tmp_path / "runbook.png")
 
     for path in paths.values():
         assert Path(path).exists()
