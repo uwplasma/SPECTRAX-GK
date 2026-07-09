@@ -34,7 +34,7 @@ Core modules
   facades for the focused projection/collision owners.
 - ``spectraxgk.runtime`` / ``spectraxgk.workflows.runtime.config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.workflows.runtime.policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
-- ``spectraxgk.workflows.runtime.orchestration_scan``, ``spectraxgk.workflows.runtime.orchestration_progress``, and ``spectraxgk.workflows.runtime.orchestration_artifacts``: runtime scan batching, progress/ETA formatting, and nonlinear restart/checkpoint artifact handoff behind injectable seams.
+- ``spectraxgk.workflows.runtime.orchestration_scan``, ``spectraxgk.workflows.runtime.chunks``, and ``spectraxgk.workflows.runtime.orchestration_artifacts``: runtime scan batching, progress/ETA formatting, and nonlinear restart/checkpoint artifact handoff behind injectable seams.
 - ``spectraxgk.benchmarks``: normalization constants and Krylov policies for shipped benchmark lanes.
 - ``spectraxgk.benchmarks`` / ``spectraxgk.diagnostics.growth_rates``: reference data loaders, result containers, fitting policies, and benchmark species policies.
 - ``spectraxgk.benchmarks``: shared scan-window, batching, and fit-signal policies used by benchmark runners.

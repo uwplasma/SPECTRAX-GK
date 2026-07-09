@@ -2299,20 +2299,6 @@ fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integr
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.workflows.runtime.orchestration_progress"
-source_path = "src/spectraxgk/workflows/runtime/orchestration_progress.py"
-facade_module = "spectraxgk.workflows.runtime.chunks"
-status = "active"
-responsibility = "runtime progress snapshot, duration formatting, and ETA/progress message construction"
-moved_exports = [
-  "RuntimeProgressSnapshot",
-  "build_runtime_progress_message",
-  "format_duration",
-]
-fast_tests = ["tests/integration/runtime/test_runtime_helpers.py", "tests/integration/runtime/test_runtime_chunks.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.workflows.runtime.orchestration_artifacts"
 source_path = "src/spectraxgk/workflows/runtime/orchestration_artifacts.py"
 facade_module = "spectraxgk.workflows.runtime.artifacts"

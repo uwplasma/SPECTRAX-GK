@@ -202,7 +202,6 @@ path = "src/spectraxgk/workflows/runtime/orchestration_scan.py"
 owned_modules = [
   "spectraxgk.workflows.runtime.chunks",
   "spectraxgk.workflows.runtime.orchestration_artifacts",
-  "spectraxgk.workflows.runtime.orchestration_progress",
   "spectraxgk.workflows.runtime.results",
 ]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"

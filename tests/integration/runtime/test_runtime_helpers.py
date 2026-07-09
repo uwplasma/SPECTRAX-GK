@@ -19,13 +19,13 @@ from spectraxgk.workflows.runtime.diagnostics import (
     RuntimeQuasilinearFinalizationDeps,
     finalize_runtime_linear_quasilinear,
 )
+from spectraxgk.workflows.runtime.chunks import (
+    build_runtime_progress_message,
+    format_duration,
+)
 from spectraxgk.workflows.runtime.results import (
     RuntimeLinearResult,
     RuntimeNonlinearResult,
-)
-from spectraxgk.workflows.runtime.orchestration_progress import (
-    build_runtime_progress_message,
-    format_duration,
 )
 from spectraxgk.workflows.runtime.orchestration_scan import (
     run_runtime_scan_ky_task,
@@ -833,7 +833,7 @@ def test_runtime_independent_parallel_plan_rejects_invalid_policy() -> None:
         )
 
 
-def test_runtime_orchestration_progress_policy() -> None:
+def test_runtime_chunk_progress_policy() -> None:
     message, snapshot = build_runtime_progress_message(
         label="nonlinear",
         chunk_index=3,

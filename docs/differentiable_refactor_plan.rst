@@ -348,7 +348,7 @@ High-Risk Module Split Plan
   Split executable commands, runtime workflows, scan dispatch, progress/ETA,
   plotting, and artifact handoff. Runtime scan orchestration and combined-``ky``
   scan batching now live in ``spectraxgk.workflows.runtime.orchestration_scan``;
-  progress/ETA formatting lives in ``spectraxgk.workflows.runtime.orchestration_progress``;
+  progress/ETA formatting lives in ``spectraxgk.workflows.runtime.chunks``;
   and nonlinear artifact/restart handoff lives in
   ``spectraxgk.workflows.runtime.orchestration_artifacts`` behind focused owner
   modules wired by the public ``spectraxgk.runtime`` facade. Runtime nonlinear diagnostics keyword

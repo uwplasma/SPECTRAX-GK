@@ -10,9 +10,9 @@ from spectraxgk.workflows.runtime.chunks import (
     _effective_diagnostics_stride,
     _next_elapsed_time,
     _offset_chunk_diagnostics_time,
+    format_duration,
     run_adaptive_runtime_chunk_loop,
 )
-from spectraxgk.workflows.runtime.orchestration_progress import format_duration
 from spectraxgk.terms.config import FieldState
 
 

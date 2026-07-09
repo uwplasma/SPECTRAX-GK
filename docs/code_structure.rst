@@ -116,7 +116,7 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``workflows/runtime/diagnostics.py``
    - ``workflows/runtime/diagnostic_arrays.py``
    - ``workflows/runtime/results.py``
-   - ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, and ``workflows/runtime/orchestration_artifacts.py``
+   - ``workflows/runtime/orchestration_scan.py`` and ``workflows/runtime/orchestration_artifacts.py``
    - ``workflows/runtime/artifacts.py``
    - ``artifacts/``
    - ``artifacts/plotting.py``
@@ -161,7 +161,7 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``parallel/velocity.py``, ``parallel/velocity_plan.py``, ``parallel/velocity_hermite.py``, ``parallel/velocity_streaming.py``, ``parallel/velocity_drive.py``, ``operators/nonlinear/parallel.py``, ``operators/nonlinear/parallel_contracts_domain.py``, ``operators/nonlinear/parallel_contracts_spectral.py``, ``operators/nonlinear/parallel_contracts_strategy.py``, ``operators/nonlinear/domain_decomposition.py``, ``operators/nonlinear/spectral_core.py``, ``operators/nonlinear/spectral_layout.py``, ``operators/nonlinear/spectral_work_models.py``, ``operators/nonlinear/spectral_brackets.py``, ``operators/nonlinear/spectral_identity_reports.py``, ``operators/nonlinear/spectral_identity_rhs.py``, ``operators/nonlinear/spectral_identity_integrator.py``, ``operators/nonlinear/device_z.py``
      - identity gates, one-device fallback, velocity-space plan/exchange/streaming/field-reduction microkernels, domain/spectral/strategy contracts, spectral state/layout/work-model/bracket/tolerance helpers, logical spectral reports/RHS/integrator gates, device-z routing gates with explicit RHS and transport-trace/report policies, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_progress.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``cli.py``
+     - ``runtime.py``, ``workflows/runtime/startup.py``, ``workflows/runtime/policies.py``, ``workflows/runtime/execution.py``, ``workflows/runtime/diagnostics.py``, ``workflows/runtime/diagnostic_arrays.py``, ``workflows/runtime/initial_conditions.py``, ``workflows/runtime/initial_phi.py``, ``workflows/runtime/chunks.py``, ``workflows/runtime/results.py``, ``workflows/runtime/orchestration_scan.py``, ``workflows/runtime/orchestration_artifacts.py``, ``workflows/runtime/commands.py``, ``workflows/linear.py``, ``workflows/nonlinear.py``, ``workflows/cases.py``, ``workflows/demo.py``, ``workflows/named_cases.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, full-GK linear/nonlinear workflows, runtime TOML case dependency defaults, saved-output plot command routing, executable artifact path display and progress/summary printing, linear-fit diagnostics, electrostatic-potential initializers, quasilinear finalization, diagnostic-array validation/composition, named-case executable workflows, chunking, result assembly, runtime command workflows, executable smoke tests
    * - Public import registry
      - ``api/configuration.py``, ``api/geometry.py``, ``api/diagnostics.py``, ``api/runtime.py``, ``api/solvers.py``, ``api/benchmarks.py``, ``api/validation.py``, ``api/parallel.py``, ``api/objectives.py``, ``api/artifacts.py``
@@ -307,7 +307,7 @@ Completed extractions:
 - runtime progress formatting, combined-``ky`` scan batching, serial/worker
   scan orchestration, progress formatting, and nonlinear artifact handoff policy:
   ``workflows/runtime/orchestration_scan.py``,
-  ``workflows/runtime/orchestration_progress.py``, and
+  ``workflows/runtime/chunks.py``, and
   ``workflows/runtime/orchestration_artifacts.py``. Scan dependency-bundle
   builders live with the scan owner and read the public ``runtime.py`` facade
   only as a patchable symbol source. Scan routing keeps combined-``ky``

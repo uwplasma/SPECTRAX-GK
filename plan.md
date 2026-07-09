@@ -3272,9 +3272,19 @@ following:
 - 2026-07-08: removed the pure runtime orchestration re-export facade
   `src/spectraxgk/workflows/runtime/orchestration.py`. Runtime code and tests now
   import scan orchestration, progress formatting, and artifact handoff directly
-  from `orchestration_scan.py`, `orchestration_progress.py`, and
-  `orchestration_artifacts.py`. Updated API/code-structure/architecture docs,
+  from `orchestration_scan.py`, `chunks.py`, and `orchestration_artifacts.py`.
+  Updated API/code-structure/architecture docs,
   validation/refactor/performance-status manifests, regenerated tracked status
   JSON, and tightened the package architecture source baseline to 258. Runtime
   integration tests, ruff, py_compile, release tests, Sphinx docs, stale-reference
   scan, and architecture/refactor/validation manifests passed locally.
+
+- 2026-07-08: folded runtime progress/ETA formatting into the adaptive chunk
+  execution owner `src/spectraxgk/workflows/runtime/chunks.py` and removed
+  `src/spectraxgk/workflows/runtime/orchestration_progress.py`. Runtime tests now
+  import the progress helpers from the chunk owner, docs/API pages and
+  validation/refactor manifests describe the simpler ownership, validation
+  metadata was regenerated, and the package architecture source baseline was
+  tightened to 257. Runtime helper/chunk tests, ruff, py_compile, release tests,
+  Sphinx docs, stale-reference scan, and architecture/refactor/validation
+  manifests passed locally.
