@@ -3653,3 +3653,13 @@ following:
   nonlinear sharding profiling contract shard, Python lint check, command-help
   smoke checks, validation manifest, compile check, diff hygiene, and
   architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/release/inventory_repository.py` into
+  `tools/release/check_package_architecture_manifest.py` as the `inventory`
+  subcommand. Repository topology inventory and package-architecture policy now
+  share one release architecture owner, and the tools README uses
+  `python tools/release/check_package_architecture_manifest.py inventory` for
+  consolidation planning exports. The package architecture tool baseline
+  tightened from 199 to 198. The release manifest shard, Python lint check,
+  command-help and real-inventory smoke checks, compile check, stale-reference
+  scan, diff hygiene, and architecture manifest passed locally.

@@ -406,6 +406,48 @@ def test_validate_architecture_policy_can_require_topology_targets(tmp_path):
     assert summary["topology_targets_met"] is True
 
 
+def test_package_architecture_inventory_classifies_repository_areas() -> None:
+    mod = load_release_tool("check_package_architecture_manifest")
+
+    role, action, notes = mod._role_and_action(
+        Path("src/spectraxgk/operators/nonlinear/rhs.py")
+    )
+    tool_role, tool_action, tool_notes = mod._role_and_action(
+        Path("tools/artifacts/make_figures.py")
+    )
+    summary = mod._summary(
+        [
+            mod.InventoryRow(
+                path="src/spectraxgk/operators/nonlinear/rhs.py",
+                area="src/spectraxgk/operators",
+                role=role,
+                action=action,
+                suffix=".py",
+                bytes=12,
+                lines=1,
+                notes=notes,
+            ),
+            mod.InventoryRow(
+                path="tools/artifacts/make_figures.py",
+                area="tools/artifacts",
+                role=tool_role,
+                action=tool_action,
+                suffix=".py",
+                bytes=8,
+                lines=1,
+                notes=tool_notes,
+            ),
+        ]
+    )
+
+    assert role == "promoted library code"
+    assert action == "keep-and-consolidate"
+    assert tool_role == "artifact builder"
+    assert tool_action == "keep-or-merge"
+    assert summary["keep-and-consolidate"] == {"files": 1, "bytes": 12}
+    assert summary["keep-or-merge"] == {"files": 1, "bytes": 8}
+
+
 def test_validate_architecture_policy_rejects_stale_allowlist(tmp_path):
     source_root = tmp_path / "spectraxgk"
     (source_root / "operators").mkdir(parents=True)

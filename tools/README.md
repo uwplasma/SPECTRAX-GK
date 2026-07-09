@@ -53,7 +53,7 @@ than shipping it as part of the maintained repository.
 Use the maintained inventory tool before large moves or deletions:
 
 ```bash
-python tools/release/inventory_repository.py \
+python tools/release/check_package_architecture_manifest.py inventory \
   --json-out tools_out/repository_inventory.json \
   --summary-json-out tools_out/repository_inventory_summary.json
 ```
