@@ -3377,3 +3377,11 @@ following:
   comparison owner, and the package architecture test baseline tightened from
   160 to 159. The consolidated comparison shard, Python lint check,
   stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the runtime startup-state comparison tests from
+  `tests/tools/comparison/test_compare_gx_runtime_startup.py` into
+  `tests/tools/comparison/test_compare_gx_runtime_window.py`, so startup,
+  diagnostic-state, and exact-window comparison contracts share one
+  runtime-configured exact-state owner. The package architecture test baseline
+  tightened from 159 to 158. The consolidated runtime comparison shard, Python
+  lint check, stale-reference scan, and architecture manifest passed locally.
