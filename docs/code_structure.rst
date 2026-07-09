@@ -170,7 +170,7 @@ Physics / Numerics / IO Map
      - ``diagnostics/analysis.py``, ``diagnostics/modes.py``, ``diagnostics/growth_rates.py``, ``diagnostics/growth_fit.py``, ``diagnostics/growth_windows.py``, ``diagnostics/growth_series.py``, ``diagnostics/quasilinear_transport.py``
      - mode selection, eigenfunction extraction, least-squares growth/frequency fitting, automatic fit-window selection, quasilinear transport weights and saturation helpers, late-time growth/frequency tests
    * - Artifacts and plots
-     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
+     - ``workflows/runtime/artifacts.py``, ``artifacts/``, ``artifacts/spectral_layout.py``, ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, ``artifacts/zonal_plots.py``, ``artifacts/plotting.py``
      - serialization, reload, restart append schema, dealiased-axis contracts, runtime-output plots, benchmark/scan panels, diagnostic/eigenfunction figures, zonal-response figures, plotting contract tests
    * - Benchmark harness
      - ``config.py``, ``spectraxgk.benchmarks``, ``benchmarks.py``, ``diagnostics/modes.py``, ``diagnostics/validation_gates.py``, ``diagnostics/zonal_validation.py``
@@ -350,10 +350,11 @@ Completed extractions:
   ``workflows/nonlinear.py``
 - shared plot style plus runtime-output, benchmark/scan, diagnostic, and
   zonal-response figure families:
-  ``artifacts/plot_style.py``, ``artifacts/runtime_plots.py``,
-  ``artifacts/benchmark_plots.py``, ``artifacts/diagnostic_plots.py``, and
-  ``artifacts/zonal_plots.py``. The public ``artifacts.plotting`` module
-  remains a stable import facade for examples and user scripts.
+  ``artifacts/runtime_plots.py``, ``artifacts/benchmark_plots.py``,
+  ``artifacts/diagnostic_plots.py``, and ``artifacts/zonal_plots.py``.
+  The shared publication style and public imports live in
+  ``artifacts/plotting.py``, which remains the stable facade for examples and
+  user scripts.
 - validation gate dataclasses and JSON-ready gate helpers:
   ``diagnostics/validation_gates.py`` owns metric containers, scalar
   tolerance evaluation, JSON serialization, and report builders. One private

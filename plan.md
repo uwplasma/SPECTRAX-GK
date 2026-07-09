@@ -3288,3 +3288,13 @@ following:
   tightened to 257. Runtime helper/chunk tests, ruff, py_compile, release tests,
   Sphinx docs, stale-reference scan, and architecture/refactor/validation
   manifests passed locally.
+
+- 2026-07-08: folded the shared publication plotting style helper into
+  `src/spectraxgk/artifacts/plotting.py` and removed the one-function
+  `artifacts/plot_style.py` module. The plotting facade now lazy-loads figure
+  families on demand, which keeps `set_plot_style` as the stable public import
+  while avoiding circular imports and reducing import-time work. Updated plot
+  family imports, API/code-structure docs, validation coverage metadata, and
+  the package architecture source baseline to 256. Focused import, ruff,
+  py_compile, plotting/runtime tests, release tests, Sphinx docs,
+  validation-manifest, and architecture checks passed locally.

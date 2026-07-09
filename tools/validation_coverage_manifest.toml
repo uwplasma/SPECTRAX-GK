@@ -3291,32 +3291,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.artifacts.plot_style"
-path = "src/spectraxgk/artifacts/plot_style.py"
-owner_lane = "shared publication plotting style"
-status = "active"
-coverage_priority = "medium"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "README/docs publication panels and manuscript figure stack",
-]
-physics_contracts = [
-  "style helpers do not encode physics claims; they keep validation figures readable and consistent",
-]
-numerics_contracts = [
-  "font sizes, grid alpha, and dpi are deterministic across generated figures",
-]
-fast_tests = [
-  "tests/unit/diagnostics/test_plotting.py",
-]
-artifact_paths = [
-  "docs/_static/manuscript_readiness_status.png",
-]
-next_tests = [
-  "add image-content smoke tests for key publication panels where practical",
-]
-
-[[modules]]
 module = "spectraxgk.artifacts.runtime_plots"
 path = "src/spectraxgk/artifacts/runtime_plots.py"
 owner_lane = "publication-quality plotting from saved linear and nonlinear runtime outputs"
@@ -3442,6 +3416,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "log/linear axes and normalized eigenfunctions are chosen by observable type",
+  "font sizes, grid alpha, and dpi are deterministic across generated figures",
   "empty panels are removed instead of shipped",
 ]
 fast_tests = [

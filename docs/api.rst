@@ -688,12 +688,6 @@ Growth-Rate Time Series
 .. automodule:: spectraxgk.diagnostics.growth_series
    :members:
 
-Plot Style
-----------
-
-.. automodule:: spectraxgk.artifacts.plot_style
-   :members:
-
 Runtime Output Plots
 --------------------
 
