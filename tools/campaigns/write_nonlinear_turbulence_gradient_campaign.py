@@ -251,7 +251,7 @@ def _promotion_contract(
         "--fail-on-blocked"
     )
     evidence_command = (
-        f"{PYTHON_CMD} tools/release/check_nonlinear_turbulence_gradient_evidence.py "
+        f"{PYTHON_CMD} tools/release/check_nonlinear_optimization_gates.py gradient-evidence "
         f"--gradient-artifact {_repo_relative(fd_json)} "
         f"--window-artifact {state_commands['baseline']['ensemble_json']} "
         f"--window-artifact {state_commands['plus_delta']['ensemble_json']} "

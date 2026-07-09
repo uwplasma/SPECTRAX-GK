@@ -22,7 +22,7 @@ ROOT = REPO_ROOT
 
 
 def _tool_module():
-    mod = load_release_tool("check_production_nonlinear_optimization_guard")
+    mod = load_release_tool("check_nonlinear_optimization_gates")
     return mod
 
 
@@ -295,6 +295,7 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
 
     rc = mod.main(
         [
+            "production-guard",
             "--optimization-artifact",
             str(optimization),
             "--reduced-artifact",

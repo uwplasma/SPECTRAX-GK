@@ -955,7 +955,7 @@ def _postprocess_commands(
                 f"--out-prefix {_repo_relative(fd_prefix)} --fail-on-blocked"
             )
             row["evidence_check_command"] = (
-                "python3 tools/release/check_nonlinear_turbulence_gradient_evidence.py "
+                "python3 tools/release/check_nonlinear_optimization_gates.py gradient-evidence "
                 f"--gradient-artifact {_repo_relative(fd_prefix.with_suffix('.json'))} "
                 f"--window-artifact {baseline_json} --window-artifact {row['ensemble_json']} "
                 f"--window-artifact {minus_json} --json-out {_repo_relative(evidence_json)} "

@@ -101,7 +101,7 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
 
 
 def _load_tool_module():
-    return load_release_tool("check_nonlinear_turbulence_gradient_evidence")
+    return load_release_tool("check_nonlinear_optimization_gates")
 
 
 def _load_fd_tool_module():
@@ -1110,6 +1110,7 @@ def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:
 
     rc = mod.main(
         [
+            "gradient-evidence",
             "--gradient-artifact",
             str(gradient_path),
             "--json-out",

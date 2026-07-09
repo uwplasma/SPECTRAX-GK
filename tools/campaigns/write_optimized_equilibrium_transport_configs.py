@@ -127,7 +127,7 @@ def _promotion_commands(
         ROOT / "docs" / "_static" / "production_nonlinear_optimization_guard.png"
     )
     run_guard = (
-        "python3 tools/release/check_production_nonlinear_optimization_guard.py "
+        "python3 tools/release/check_nonlinear_optimization_gates.py production-guard "
         f"--optimized-equilibrium-ensemble {_repo_relative(ensemble_dir / ensemble_json)} "
         f"--out-json {_repo_relative(guard_json)} "
         f"--out-png {_repo_relative(guard_png)} "

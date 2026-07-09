@@ -385,7 +385,7 @@ heat-flux diagnostic, checks finite monotone time samples, enforces optional
 ``tmin/tmax`` coverage, and fails closed for restart-only or metadata-only
 artifacts. It is the first campaign-level smoke check after a long office GPU
 batch exits with ``rc=0``.
-``tools/release/check_production_nonlinear_optimization_guard.py`` then consumes those
+``tools/release/check_nonlinear_optimization_gates.py production-guard`` then consumes those
 replicated long-window ensembles together with the reduced optimization and
 startup finite-difference artifacts. It is the fail-closed check that allows
 release-safe scoped wording while blocking production nonlinear turbulent-flux
@@ -451,7 +451,7 @@ For future perturbation refreshes, keep each coefficient/amplitude in a
 distinct artifact slug such as
 ``docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``.
 Do not promote new prose until
-``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` reports
+``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` reports
 ``passed = true`` and the JSON sidecar sets
 ``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
 as a bounded production-candidate finite-difference audit, not as a nonlinear
@@ -497,7 +497,7 @@ perturbation manifests from one baseline input, records the per-control
 nonlinear campaign commands, and writes the final candidate-ranking command.
 The tracked QA/ESS profile-gradient launch plan is
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
-Use ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` to turn that
+Use ``tools/release/check_nonlinear_optimization_gates.py overdetermined-gradient`` to turn that
 multi-control launch plan into a machine-readable status artifact and
 ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` to run all
 nested long-window tasks through one shared CPU/GPU worker queue. The checker must
@@ -761,7 +761,7 @@ optimization companion for that final audit. Given a concrete post-optimization
 ladder on the release ``n64`` grid, two seed replicates, one timestep
 replicate, restart-copy commands, and the exact
 ``tools/artifacts/build_external_vmec_replicate_ensemble.py`` plus
-``tools/release/check_production_nonlinear_optimization_guard.py`` commands needed
+``tools/release/check_nonlinear_optimization_gates.py production-guard`` commands needed
 after the runs finish. This wrapper is a launch contract only: a new production
 optimization claim should not be counted until the generated ``t=[350,700]``
 ensemble actually passes finite-flux, running-window, block/SEM,

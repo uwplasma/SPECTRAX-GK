@@ -10,12 +10,12 @@ import pytest
 
 ROOT = REPO_ROOT
 SCRIPT = (
-    ROOT / "tools" / "release" / "check_overdetermined_nonlinear_gradient_campaign.py"
+    ROOT / "tools" / "release" / "check_nonlinear_optimization_gates.py"
 )
 
 
 def _load_tool_module():
-    return load_release_tool("check_overdetermined_nonlinear_gradient_campaign")
+    return load_release_tool("check_nonlinear_optimization_gates")
 
 
 def _write_runtime_output(path: Path, *, time_max: float) -> None:
@@ -236,8 +236,8 @@ def test_overdetermined_status_cli_writes_json_and_fail_code(tmp_path: Path) -> 
     out = tmp_path / "status.json"
     manifest.write_text(json.dumps(_manifest(tmp_path)), encoding="utf-8")
 
-    assert mod.main([str(manifest), "--out-json", str(out)]) == 0
-    assert mod.main([str(manifest), "--out-json", str(out), "--fail-on-blocked"]) == 1
+    assert mod.main(["overdetermined-gradient", str(manifest), "--out-json", str(out)]) == 0
+    assert mod.main(["overdetermined-gradient", str(manifest), "--out-json", str(out), "--fail-on-blocked"]) == 1
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["kind"] == "overdetermined_nonlinear_gradient_campaign_status"
 

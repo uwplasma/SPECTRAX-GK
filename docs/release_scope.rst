@@ -329,7 +329,7 @@ Quasilinear model-selection state:
   before any optimized-equilibrium production nonlinear heat-flux claim can be
   promoted. Single-window convergence reports remain necessary but insufficient
   for that claim level.
-- ``tools/release/check_production_nonlinear_optimization_guard.py`` is the explicit
+- ``tools/release/check_nonlinear_optimization_gates.py production-guard`` is the explicit
   production nonlinear turbulent-flux optimization guard. Its tracked artifact,
   ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
   safety because reduced/startup estimators are blocked and three long
@@ -349,7 +349,7 @@ Quasilinear model-selection state:
   with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
   SEM separation. This is a scoped finite-transform VMEC campaign comparison,
   not a broad multi-surface stellarator optimization claim.
-- ``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
+- ``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` is the stricter
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
@@ -421,7 +421,7 @@ Quasilinear model-selection state:
   ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
-- ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` and
+- ``tools/release/check_nonlinear_optimization_gates.py overdetermined-gradient`` and
   ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` make that
   launch contract executable. The current status artifact,
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,

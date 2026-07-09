@@ -67,7 +67,7 @@ Current tracked audit:
 | Tracked large files | none above 2 MB | local size comes from ignored caches/output | keep release artifact audit fail-closed |
 | Source package | 253 Python files, 100,107 LOC | benchmark facade, many tiny geometry/objective/operator shards | consolidate by domain and move benchmark-only workflows out of `src` |
 | Tests | 136 Python files, 93,958 LOC | one-file-per-tool and monkeypatch-heavy branch tests | table-driven contract families with shared fixtures |
-| Tools | 141 Python files after profiler/runtime/VMEC-boundary/nonlinear-transport consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
+| Tools | 139 Python files after profiler/runtime/VMEC-boundary/nonlinear-release consolidation | remaining one-script-per-artifact/campaign/status families | continue subcommand-style drivers plus manifest data |
 | Root benchmarks | 12 Python files, 1,589 LOC | role is acceptable but results are under-documented | keep at root and document outputs in docs |
 | Docs static | 1,572 files, about 38.5 MiB | many historical evidence files | prune by README/docs/release-manifest reference graph |
 
@@ -168,6 +168,21 @@ Refactor order that minimizes risk:
   campaign/artifact/status contracts, package architecture manifest, and command
   reference migration passed locally.
 
+### 2026-07-09 Nonlinear Optimization Release-Gate Consolidation
+
+- Consolidated nonlinear turbulence-gradient evidence, production nonlinear
+  optimization guardrails, and overdetermined nonlinear-gradient campaign
+  readiness into `tools/release/check_nonlinear_optimization_gates.py` with
+  `gradient-evidence`, `production-guard`, and `overdetermined-gradient`
+  subcommands. Deleted the three standalone nonlinear optimization/gradient
+  release-gate entry points.
+- Current tracked Python counts after this tranche: `tools=139`, `src=253`,
+  `tests=136`.
+- Validation run: nonlinear-gradient evidence contracts, production nonlinear
+  optimization guard contracts, overdetermined nonlinear-gradient campaign
+  contracts, nonlinear campaign command contracts, and command-reference
+  migration passed locally.
+
 ### Repository Role Model
 
 The repository should have one obvious destination for every retained file. If a
@@ -218,7 +233,7 @@ These targets are intentionally aggressive but realistic:
 | Installed source LOC | 101k | <= 70k near term, <= 50k final | fold branch-specific benchmark code, remove compatibility paths, prefer data tables over code branches |
 | Test files | 136 | <= 150 near term, <= 100 final | table-driven fixtures, one file per contract family, merge repeated artifact/comparison tests |
 | Test LOC | 96k | <= 60k near term, <= 40k final | replace monkeypatch forests with reusable fake runners and parametrized contracts |
-| Tool scripts | 141 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
+| Tool scripts | 139 | <= 150 near term, <= 100 final | manifest-driven artifact/campaign builders, merge one-panel status scripts |
 | Docs static files | 1605 | reference-graph curated | keep only docs/readme/release-manifest referenced evidence |
 
 The immediate milestone is not a cosmetic move. It is a measurable shrink:

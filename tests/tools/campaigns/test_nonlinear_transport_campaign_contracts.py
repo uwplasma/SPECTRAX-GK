@@ -463,7 +463,7 @@ def test_overdetermined_postprocess_sequence_and_dry_run(tmp_path: Path) -> None
     assert "--require-outputs" in commands[0].command
     assert "postprocess_summary.json" in commands[0].command
     assert "design_nonlinear_gradient.py rank-candidates" in commands[2].command
-    assert "check_overdetermined_nonlinear_gradient_campaign.py" in commands[3].command
+    assert "check_nonlinear_optimization_gates.py" in commands[3].command
     assert "--fail-on-blocked" in commands[3].command
 
     summary = tmp_path / "summary.json"

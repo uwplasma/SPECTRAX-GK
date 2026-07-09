@@ -457,7 +457,7 @@ def test_optimized_equilibrium_transport_launch_contract(tmp_path: Path) -> None
     assert "--min-window-samples 80" in contract["output_gate_command"]
     assert "restart-ladder segments" in contract["restart_ladder_note"]
     assert contract["run_guard_command"].startswith(
-        "python3 tools/release/check_production_nonlinear_optimization_guard.py"
+        "python3 tools/release/check_nonlinear_optimization_gates.py production-guard"
     )
     assert "--optimized-equilibrium-ensemble" in contract["run_guard_command"]
 

@@ -3108,7 +3108,7 @@ diagnostic-only paired-replicate finite-difference rows. Those rows diagnose
 weak or sign-changing stochastic responses; they are not production gates and
 do not relax the uncertainty, asymmetry, response, or conditioning thresholds.
 The resulting JSON is then supplied to
-``tools/release/check_nonlinear_turbulence_gradient_evidence.py`` together with the
+``tools/release/check_nonlinear_optimization_gates.py gradient-evidence`` together with the
 three ensemble artifacts; only that paired long-window workflow can promote a
 nonlinear turbulence-gradient claim.
 ``tools/campaigns/write_nonlinear_turbulence_gradient_campaign.py`` writes the matching
