@@ -1139,7 +1139,7 @@ fit across a ridge-penalty sweep and records the best admissible setting.
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_candidate_regularization_sweep.py \
+   python tools/artifacts/plot_quasilinear_candidate_uncertainty.py regularization-sweep \
      --no-pdf \
      --out docs/_static/quasilinear_candidate_regularization_sweep.png || true
 

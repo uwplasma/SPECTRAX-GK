@@ -581,7 +581,7 @@ def test_plot_quasilinear_calibration_uses_log_error_axis_for_wide_errors() -> N
 
 # Candidate regularization sweep assertions
 def test_regularization_sweep_locks_tracked_near_miss() -> None:
-    mod = load_artifact_tool("plot_quasilinear_candidate_regularization_sweep")
+    mod = load_artifact_tool("plot_quasilinear_candidate_uncertainty")
 
     report = mod.score_regularization_sweep(lambdas=(0.1, 0.2, 0.3, 0.5, 0.7, 1.0))
 
@@ -607,7 +607,7 @@ def test_regularization_sweep_locks_tracked_near_miss() -> None:
 def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("plot_quasilinear_candidate_regularization_sweep")
+    mod = load_artifact_tool("plot_quasilinear_candidate_uncertainty")
     report = mod.score_regularization_sweep(lambdas=(0.2, 0.3))
     paths = mod.write_regularization_sweep_figure(
         report,
@@ -633,8 +633,9 @@ def test_regularization_sweep_writes_sidecars_and_cli_fails_closed(
                 root
                 / "tools"
                 / "artifacts"
-                / "plot_quasilinear_candidate_regularization_sweep.py"
+                / "plot_quasilinear_candidate_uncertainty.py"
             ),
+            "regularization-sweep",
             "--out",
             str(tmp_path / "cli_regularization.png"),
             "--lambdas",

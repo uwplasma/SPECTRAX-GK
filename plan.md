@@ -3763,3 +3763,17 @@ following:
   quasilinear promotion guardrails, validation coverage manifest,
   differentiable refactor manifest, Python lint check, stale-reference scan,
   and architecture manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/plot_quasilinear_candidate_regularization_sweep.py` into
+  `tools/artifacts/plot_quasilinear_candidate_uncertainty.py` as the
+  `regularization-sweep` subcommand. The leave-one-geometry-out uncertainty
+  gate and the ridge-penalty sensitivity audit now share one quasilinear
+  candidate-model owner while preserving the public `score_regularization_sweep`
+  and `write_regularization_sweep_figure` helpers. The direct command remains
+  fail-closed when no ridge penalty passes the transport gate. The package
+  architecture tool baseline tightened from 180 to 179. The focused
+  candidate-uncertainty/regularization artifact shard, direct fail-closed CLI
+  smoke, Python lint check, stale-reference scan, validation coverage manifest,
+  differentiable refactor manifest, and package architecture manifest passed
+  locally.
