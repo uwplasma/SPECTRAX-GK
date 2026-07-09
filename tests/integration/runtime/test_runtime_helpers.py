@@ -2371,3 +2371,66 @@ def test_run_runtime_nonlinear_adaptive_chunk_forwards_fixed_mode_and_collision_
     assert out.state is None
     assert out.fields is not None
     np.testing.assert_allclose(out.diagnostics.t, [0.1, 0.2, 0.3, 0.4])
+
+
+def test_runtime_nonlinear_result_summary_contracts() -> None:
+    from spectraxgk.workflows.runtime.results import (
+        build_runtime_nonlinear_result,
+        nonlinear_field_phi2,
+    )
+
+    fields = FieldState(
+        phi=np.asarray(
+            [
+                [1.0 + 0.0j, 0.0 + 2.0j],
+                [3.0 + 4.0j, 0.0 + 0.0j],
+            ],
+            dtype=np.complex64,
+        )
+    )
+    np.testing.assert_allclose(nonlinear_field_phi2(fields), np.asarray(7.5))
+
+    summary_fields = FieldState(phi=np.asarray([1.0 + 1.0j, 2.0 + 0.0j]))
+    state = np.asarray([3.0])
+    summarized = build_runtime_nonlinear_result(
+        t=np.asarray([0.1, 0.2]),
+        diagnostics=None,
+        fields=summary_fields,
+        state=state,
+        ky_selected=0.3,
+        kx_selected=-0.5,
+        summarize_fields=True,
+    )
+    assert summarized.t.size == 0
+    assert summarized.diagnostics is None
+    assert summarized.fields is summary_fields
+    assert summarized.state is state
+    assert summarized.ky_selected == pytest.approx(0.3)
+    assert summarized.kx_selected == pytest.approx(-0.5)
+    np.testing.assert_allclose(summarized.phi2, np.asarray(3.0))
+
+    t = np.asarray([0.1, 0.2])
+    preserved = build_runtime_nonlinear_result(
+        t=t,
+        diagnostics=None,
+        fields=None,
+        state=None,
+        ky_selected=None,
+        kx_selected=None,
+        summarize_fields=False,
+    )
+    np.testing.assert_allclose(preserved.t, t)
+    assert preserved.diagnostics is None
+    assert preserved.phi2 is None
+    assert preserved.fields is None
+
+    with pytest.raises(RuntimeError, match="final fields are required"):
+        build_runtime_nonlinear_result(
+            t=np.asarray([0.1]),
+            diagnostics=None,
+            fields=None,
+            state=None,
+            ky_selected=None,
+            kx_selected=None,
+            summarize_fields=True,
+        )

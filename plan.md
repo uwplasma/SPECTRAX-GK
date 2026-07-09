@@ -3122,3 +3122,11 @@ following:
   This removes two one-off files while keeping operator facade and Miller
   standalone-writeout coverage. Tightened the package architecture test baseline
   to 191. Focused operator and Miller low-level tests passed locally.
+
+- 2026-07-08: folded direct linear/nonlinear fast-smoke runtime checks into
+  `tests/integration/runtime/test_runtime_runner.py` and runtime nonlinear
+  result-summary checks into `tests/integration/runtime/test_runtime_helpers.py`.
+  Updated validation and differentiable-refactor manifests to point at the
+  runtime runner owner, regenerated validation metadata, and tightened the
+  package architecture test baseline to 189. The folded runtime runner/helper
+  shard passed locally.

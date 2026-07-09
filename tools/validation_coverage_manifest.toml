@@ -465,7 +465,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/linear/test_linear.py",
   "tests/unit/linear/test_linear_helpers_extra.py",
-  "tests/integration/runtime/test_fast_smoke.py",
+  "tests/integration/runtime/test_runtime_runner.py",
   "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
 ]
 artifact_paths = [

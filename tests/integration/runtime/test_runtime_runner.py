@@ -15,6 +15,7 @@ import pytest
 import spectraxgk.workflows.runtime.startup as startup
 from spectraxgk.benchmarks import late_time_linear_metrics
 from spectraxgk.config import (
+    CycloneBaseCase,
     GeometryConfig,
     GridConfig,
     InitializationConfig,
@@ -4229,3 +4230,26 @@ def test_runtime_linear_explicit_time_rejects_return_state_before_setup(
         run_runtime_linear(
             cfg, ky_target=0.2, Nl=2, Nm=2, solver="explicit_time", return_state=True
         )
+
+
+def test_direct_linear_and_nonlinear_integrators_fast_smoke() -> None:
+    from spectraxgk.nonlinear import integrate_nonlinear
+    from spectraxgk.linear import integrate_linear
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    state = (
+        jnp.ones((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+        * 1.0e-6
+    )
+
+    _, phi_t = integrate_linear(state, grid, geom, params, dt=0.1, steps=2, method="rk2")
+    _, fields = integrate_nonlinear(
+        state, grid, geom, params, dt=0.1, steps=2, method="rk2"
+    )
+
+    assert jnp.isfinite(phi_t).all()
+    assert jnp.isfinite(fields.phi).all()

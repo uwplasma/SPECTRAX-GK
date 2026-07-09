@@ -2202,7 +2202,7 @@ facade_module = "spectraxgk.solvers.linear"
 status = "active"
 responsibility = "linear fixed-step integration, implicit dispatch, parallel fallback, and diagnostic sampling"
 moved_exports = ["_integrate_linear_cached", "_integrate_linear_cached_donate", "_integrate_linear_cached_impl", "integrate_linear", "integrate_linear_diagnostics"]
-fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/integration/runtime/test_fast_smoke.py"]
+fast_tests = ["tests/unit/linear/test_linear.py", "tests/unit/linear/test_linear_helpers_extra.py", "tests/integration/runtime/test_runtime_runner.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 
