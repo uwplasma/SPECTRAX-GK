@@ -27,8 +27,8 @@ from spectraxgk.geometry.vmec_eik import (
     default_vmec_eik_output_path,
     generate_runtime_vmec_eik,
 )
-import spectraxgk.geometry_backends.vmec as vmec_backend
-from spectraxgk.geometry_backends.vmec import internal_vmec_backend_available
+import spectraxgk.geometry.imported_vmec as vmec_backend
+from spectraxgk.geometry.imported_vmec import internal_vmec_backend_available
 
 
 def _vmec_runtime_cfg(
@@ -212,7 +212,7 @@ def test_atomic_vmec_eik_write_replaces_final_path(
         path.write_text("new", encoding="utf-8")
 
     monkeypatch.setattr(
-        "spectraxgk.geometry_backends.vmec_io.write_vmec_eik_netcdf", fake_write
+        "spectraxgk.geometry.imported_vmec.write_vmec_eik_netcdf", fake_write
     )
 
     vmec_backend._write_vmec_eik_netcdf_atomically(out_path, {}, request="request")

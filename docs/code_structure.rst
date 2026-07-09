@@ -75,8 +75,7 @@ remain unchanged:
 - ``spectraxgk.workflows.runtime.chunks``
 - ``spectraxgk.workflows.runtime.results``
 - ``spectraxgk.workflows.runtime.commands``
-- ``spectraxgk.geometry_backends.*``
-- low-level geometry adapters and import bridges
+- low-level geometry adapters and import bridges inside ``spectraxgk.geometry``
 
 Large refactor status for this push: the split runtime, diagnostics,
 validation-gate, zonal-validation, and parallelization-policy modules are
@@ -146,7 +145,7 @@ Physics / Numerics / IO Map
      - ``core/velocity.py``, ``core/grid.py``
      - orthonormality, indexing, symmetry
    * - Geometry and imported equilibria
-     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/imported_miller.py``, ``geometry/kernels.py``, ``geometry/vmec_eik.py``, and the focused VMEC backend modules
+     - ``geometry/analytic.py``, ``geometry/flux_tube.py``, ``geometry/core.py``, ``geometry/miller_eik.py``, ``geometry/imported_miller.py``, ``geometry/kernels.py``, ``geometry/vmec_eik.py``, and ``geometry/imported_vmec.py``
      - parser, remap, normalization, geometry-response tests, Miller/VMEC finite-difference geometry and NetCDF writeout gates
    * - Linear operators and fields
      - ``linear.py``, ``operators/linear/rhs.py``, ``operators/linear/cache_builder.py``, ``operators/linear/``, ``solvers/linear/``, ``terms/linear_terms.py``, ``terms/fields.py``, ``terms/assembly.py`` facade plus ``terms/assembly_*`` owner modules
@@ -199,12 +198,11 @@ Completed extractions:
   mirror-term reconstruction, drift/Jacobian normalization, and
   ``FluxTubeGeometryData`` packing as separate private stages so geometry-file
   variants can be tested without one large loader body.
-- focused imported-geometry backends. ``geometry.imported_miller`` now owns
-  the complete Miller imported-geometry pipeline in one module, while shared
-  JAX finite-difference and period-extension kernels live in
-  ``geometry.kernels``. VMEC remains in focused ``geometry_backends.vmec_*``
-  modules until that backend is folded into ``spectraxgk.geometry``. Imported
-  Miller profile assembly keeps central-surface normalization, period extension,
+- focused imported-geometry owners. ``geometry.imported_miller`` owns the
+  complete Miller imported-geometry pipeline, ``geometry.imported_vmec`` owns
+  the VMEC/Boozer-to-EIK pipeline, and shared finite-difference and
+  period-extension kernels live in ``geometry.kernels``. Imported Miller
+  profile assembly keeps central-surface normalization, period extension,
   Bishop coefficients, metric coefficients, magnetic drifts, target-grid
   interpolation, ballooning conversion, and final EIK profile packing as
   explicit stages inside ``geometry.imported_miller``.
@@ -856,29 +854,16 @@ The AD/FD validation owner stages parameter validation, observable flattening,
 Jacobian construction, tangent checks, conditioning gates, failure reasons, and
 strict JSON report assembly so differentiability tests can target each
 research-grade gate directly.
-Imported VMEC/Boozer radial spline construction lives in
-``spectraxgk.geometry_backends.vmec_splines`` and is re-exported through
-``spectraxgk.geometry_backends.vmec_fieldlines`` for the existing VMEC backend
-facade. The VMEC field-line backend keeps Boozer-object fallback,
-Boozer-mode table sampling, alpha-line coordinate construction, axisymmetric
-flip detection, angle construction, resonant-denominator guarding,
-field-line tensor algebra, alpha/coordinate-gradient construction, local
-shear, metric/drift coefficient assembly, flux-surface averaging, and centered
-field-line integral policies as focused helpers inside
-``spectraxgk.geometry_backends.vmec_fieldline_numerics`` so the
-imported-geometry equations remain in one owner while the numerical kernels are
-unit-testable. The field-line metric/drift path is staged as curvature
-components, normalized metric profiles, magnetic-drift profiles,
-gradient-vector packing, and final coefficient assembly. The flux-surface
-Hegna-Nakajima average path is staged as grid construction, Boozer-geometry
-sampling, ``|grad psi|`` normalization, and Jacobian-weighted averages, which
-keeps each physics convention independently testable without splitting the
-VMEC-specific formulas across unrelated packages.
-``spectraxgk.geometry_backends.vmec_fieldlines`` now keeps only
-the imported-geometry orchestration stages in that file: backend fallback,
-scalar VMEC profile sampling, Boozer field-line state assembly,
-Hegna-Nakajima mode corrections, metric/drift coefficient assembly, and
-normalized flux-tube packaging.
+Imported VMEC/Boozer geometry generation lives in
+``spectraxgk.geometry.imported_vmec``. That owner module stages optional
+Boozer backend discovery, radial spline construction, Boozer-mode table
+sampling, alpha-line coordinate construction, axisymmetric flip detection,
+resonant-denominator guarding, field-line tensor algebra, alpha/coordinate
+gradient construction, local shear, metric/drift coefficient assembly,
+flux-surface averaging, centered field-line integrals, flux-tube cuts,
+equal-arc remaps, and atomic EIK NetCDF writeout. Keeping those VMEC-specific
+formulas together avoids a second geometry namespace while still exposing
+small helper seams for physics and numerics tests.
 Zero-shear boundary policy and analytic s-alpha/slab geometry models live in
 ``spectraxgk.geometry.analytic``. Sampled solver-ready geometry data, analytic
 sampling, imported-NetCDF loading, and periodic mirror-term reconstruction live

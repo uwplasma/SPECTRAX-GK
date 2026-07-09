@@ -27,7 +27,7 @@
     "spectraxgk.objectives.zonal",
     "spectraxgk.objectives.autodiff_validation",
     "spectraxgk.geometry.core",
-    "spectraxgk.geometry_backends.vmec",
+    "spectraxgk.geometry.imported_vmec",
     "spectraxgk.geometry.differentiable",
     "spectraxgk.workflows.runtime.artifacts",
     "spectraxgk.artifacts.io",
@@ -73,11 +73,11 @@
     "spectraxgk.parallel.decomposition"
   ],
   "n_direct_modules": 90,
-  "n_excluded_modules": 19,
+  "n_excluded_modules": 18,
   "n_high_priority_open": 71,
   "n_modules": 90,
-  "n_owned_modules": 130,
-  "n_package_modules": 239,
+  "n_owned_modules": 123,
+  "n_package_modules": 231,
   "owned_modules_by_owner": {
     "spectraxgk.api.__init__": [],
     "spectraxgk.artifacts.__init__": [],
@@ -139,16 +139,9 @@
       "spectraxgk.geometry.vmec_state_sensitivity",
       "spectraxgk.geometry.vmec_tensor_mapping"
     ],
-    "spectraxgk.geometry_backends.vmec": [
+    "spectraxgk.geometry.imported_vmec": [
       "spectraxgk.geometry.kernels",
       "spectraxgk.geometry.imported_miller",
-      "spectraxgk.geometry_backends.vmec_backend_discovery",
-      "spectraxgk.geometry_backends.vmec_fieldline_numerics",
-      "spectraxgk.geometry_backends.vmec_fieldlines",
-      "spectraxgk.geometry_backends.vmec_io",
-      "spectraxgk.geometry_backends.vmec_pipeline",
-      "spectraxgk.geometry_backends.vmec_remap",
-      "spectraxgk.geometry_backends.vmec_splines",
       "spectraxgk.geometry.miller_eik",
       "spectraxgk.geometry.vmec_eik"
     ],
@@ -874,15 +867,15 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.geometry_backends.vmec",
+      "module": "spectraxgk.geometry.imported_vmec",
       "n_artifacts": 3,
       "n_fast_tests": 4,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
-      "n_owned_modules": 11,
+      "n_owned_modules": 4,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/geometry_backends/vmec.py",
+      "path": "src/spectraxgk/geometry/imported_vmec.py",
       "status": "active"
     },
     {

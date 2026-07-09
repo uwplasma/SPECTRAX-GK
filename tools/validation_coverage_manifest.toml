@@ -13,7 +13,6 @@ excluded_modules = [
   "spectraxgk.benchmarking.__init__",
   "spectraxgk.core.__init__",
   "spectraxgk.diagnostics.__init__",
-  "spectraxgk.geometry_backends.__init__",
   "spectraxgk.geometry.__init__",
   "spectraxgk.objectives.__init__",
   "spectraxgk.operators.__init__",
@@ -1522,22 +1521,15 @@ artifact_paths = [
 ]
 next_tests = [
   "add analytic Miller-like sampled geometry parity checks in the core facade shard",
-  "add imported-geometry cache stress tests after VMEC/eik backend split completion",
+  "add imported-geometry cache stress tests after broader VMEC/eik cache fixtures are available",
 ]
 
 [[modules]]
-module = "spectraxgk.geometry_backends.vmec"
-path = "src/spectraxgk/geometry_backends/vmec.py"
+module = "spectraxgk.geometry.imported_vmec"
+path = "src/spectraxgk/geometry/imported_vmec.py"
 owned_modules = [
   "spectraxgk.geometry.kernels",
   "spectraxgk.geometry.imported_miller",
-  "spectraxgk.geometry_backends.vmec_backend_discovery",
-  "spectraxgk.geometry_backends.vmec_fieldline_numerics",
-  "spectraxgk.geometry_backends.vmec_fieldlines",
-  "spectraxgk.geometry_backends.vmec_io",
-  "spectraxgk.geometry_backends.vmec_pipeline",
-  "spectraxgk.geometry_backends.vmec_remap",
-  "spectraxgk.geometry_backends.vmec_splines",
   "spectraxgk.geometry.miller_eik",
   "spectraxgk.geometry.vmec_eik",
 ]
@@ -1560,7 +1552,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/geometry/test_miller_geometry.py",
-  "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
+  "tests/unit/geometry/test_imported_vmec_geometry.py",
   "tests/unit/geometry/test_vmec_eik.py",
   "tests/tools/campaigns/test_campaign_gate_commands.py",
 ]
@@ -1614,7 +1606,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/objectives/test_differentiable_geometry_objectives.py",
   "tests/tools/artifacts/test_stellarator_artifact_tools.py",
-  "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
+  "tests/unit/geometry/test_imported_vmec_geometry.py",
   "tests/unit/geometry/test_vmec_eik.py",
 ]
 artifact_paths = [

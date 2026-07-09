@@ -243,10 +243,10 @@ High-Risk Module Split Plan
   equal-arc mapping, sensitivity reports, and parity reports. Required gates:
   optional-backend import behavior, same-WOUT provenance, geometry parity,
   JVP/VJP/finite-difference agreement, and conditioning diagnostics. The
-  internal file-backed VMEC imported-geometry backend is now split behind the
-  unchanged ``geometry_backends.vmec`` facade into focused discovery,
-  numerics, radial spline construction, field-line assembly, remap, IO, and
-  pipeline modules. The in-memory VMEC/Boozer equal-arc core bridge keeps its
+  internal file-backed VMEC imported-geometry backend now lives in the
+  ``geometry.imported_vmec`` owner module with explicit helper seams for
+  discovery, numerics, radial spline construction, field-line assembly, remap,
+  IO, and pipeline orchestration. The in-memory VMEC/Boozer equal-arc core bridge keeps its
   public facade stable while optional backend execution and Boozer radial-grid
   validation are isolated behind private helper seams.
 

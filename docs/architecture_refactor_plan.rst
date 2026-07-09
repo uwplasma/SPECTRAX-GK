@@ -129,7 +129,7 @@ This means the next implementation order is:
 4. Delete non-promoted examples, docs artifacts, and compatibility shims that
    are not part of the next supported product.
 5. Consolidate source domains only after validation exits the package, so
-   ``terms``/``operators``, ``geometry``/``geometry_backends``, and root facade
+   ``terms``/``operators``, geometry import ownership, and root facade
    cleanup can happen without preserving obsolete imports.
 6. Run profiler-backed hot-path changes only behind numerical-identity or
    physics gates.

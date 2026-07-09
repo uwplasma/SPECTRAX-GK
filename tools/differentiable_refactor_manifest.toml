@@ -2598,114 +2598,44 @@ fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec"
-source_path = "src/spectraxgk/geometry_backends/vmec.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
+module = "spectraxgk.geometry.imported_vmec"
+source_path = "src/spectraxgk/geometry/imported_vmec.py"
+facade_module = "spectraxgk.geometry.imported_vmec"
 status = "active"
-responsibility = "stable public facade for internal VMEC imported-geometry generation"
-moved_exports = [
-  "generate_vmec_eik_internal",
-  "internal_vmec_backend_available",
-  "write_vmec_eik_netcdf",
-]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_backend_discovery"
-source_path = "src/spectraxgk/geometry_backends/vmec_backend_discovery.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "optional Boozer backend discovery, search-path policy, and backend availability probing"
-moved_exports = [
-  "_booz_xform_jax_search_paths",
-  "_import_booz_backend",
-  "_import_module_with_search_paths",
-  "internal_vmec_backend_available",
-]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_fieldline_numerics"
-source_path = "src/spectraxgk/geometry_backends/vmec_fieldline_numerics.py"
-facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
-status = "active"
-responsibility = "Boozer field-line angle/basis contractions, field-line tensor algebra, alpha/coordinate gradients, metric/drift coefficients, field-line integrals, reference-scale validation, and Hegna-Nakajima local-equilibrium correction numerics"
+responsibility = "single imported VMEC/Boozer backend owner for optional Boozer discovery, radial spline construction, field-line sampling, Hegna-Nakajima corrections, flux-tube cuts, equal-arc remaps, atomic EIK NetCDF writeout, and high-level request orchestration"
 moved_exports = [
   "_MU_0",
-  "_sample_boozer_mode_table",
-  "_boozer_mode_angle",
-  "_boozer_mode_sum",
-  "_boozer_trig_basis",
-  "_fieldline_boozer_tensors",
-  "_fieldline_cartesian_derivatives",
-  "_fieldline_coordinate_gradients",
+  "_Struct",
+  "_apply_flux_tube_cut",
+  "_booz_read_wout_square_layout_failure",
+  "_booz_xform_jax_search_paths",
+  "_centered_fieldline_integral",
+  "_equal_arc_remap",
   "_fieldline_alpha_gradients",
+  "_fieldline_boozer_coordinates",
+  "_fieldline_boozer_tensors",
   "_fieldline_local_shear",
   "_fieldline_metric_drifts",
-  "_fieldline_boozer_coordinates",
-  "_axisym_flip_required",
-  "_safe_mode_denominator",
-  "_surface_average_2d",
-  "_centered_fieldline_integral",
-  "_validated_reference_scales",
-  "_input_iota_shear",
-  "_hngc_shear_correction",
-  "_hngc_pressure_correction",
   "_flux_surface_hngc_averages",
+  "_hngc_pressure_correction",
+  "_hngc_shear_correction",
+  "_import_booz_backend",
+  "_import_module_with_search_paths",
+  "_input_iota_shear",
+  "_safe_mode_denominator",
+  "_vmec_fieldlines",
+  "_vmec_splines",
+  "_write_vmec_eik_netcdf_atomically",
+  "dermv",
+  "generate_vmec_eik_internal",
+  "internal_vmec_backend_available",
+  "nperiod_set",
+  "write_vmec_eik_netcdf",
 ]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_fieldlines"
-source_path = "src/spectraxgk/geometry_backends/vmec_fieldlines.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "VMEC/Boozer imported-geometry orchestration: backend fallback, scalar profile sampling, Boozer field-line state assembly, Hegna-Nakajima corrections, metric/drift coefficients, and normalized flux-tube coefficient packaging"
-moved_exports = ["_vmec_fieldlines", "_vmec_splines"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_splines"
-source_path = "src/spectraxgk/geometry_backends/vmec_splines.py"
-facade_module = "spectraxgk.geometry_backends.vmec_fieldlines"
-status = "active"
-responsibility = "VMEC/Boozer radial spline construction and imported-equilibrium metadata extraction"
-moved_exports = ["_vmec_splines"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_remap"
-source_path = "src/spectraxgk/geometry_backends/vmec_remap.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "VMEC flux-tube boundary cuts, twist/aspect crossing selection, and equal-arc remapping"
-moved_exports = ["_apply_flux_tube_cut", "_equal_arc_remap"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_io"
-source_path = "src/spectraxgk/geometry_backends/vmec_io.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "VMEC imported-geometry NetCDF writeout and atomic cache replacement"
-moved_exports = ["_write_vmec_eik_netcdf_atomically", "write_vmec_eik_netcdf"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.vmec_pipeline"
-source_path = "src/spectraxgk/geometry_backends/vmec_pipeline.py"
-facade_module = "spectraxgk.geometry_backends.vmec"
-status = "active"
-responsibility = "high-level VMEC request normalization, betaprim policy, remap orchestration, and EIK output generation"
-moved_exports = ["generate_vmec_eik_internal"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_vmec_helpers.py", "tests/unit/geometry/test_vmec_eik.py"]
+fast_tests = [
+  "tests/unit/geometry/test_imported_vmec_geometry.py",
+  "tests/unit/geometry/test_vmec_eik.py",
+]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

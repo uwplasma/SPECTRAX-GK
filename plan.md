@@ -37,7 +37,7 @@ Date: 2026-07-09.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 239 | 100 | active |
+| Installable source Python files | 231 | 100 | active |
 | Tool Python files | 137 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -76,7 +76,7 @@ branch/PR.
 | --- | ---: | --- |
 | Tool consolidation | 54% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 42% | Continue VMEC backend ownership cleanup, shrink `spectraxgk.benchmarks`, and resolve `terms`/`operators` ownership. |
+| Source consolidation | 48% | Shrink `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
 | Docs/readme release pass | 74% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
@@ -93,7 +93,7 @@ branch/PR.
 3. **Benchmark facade shrink.** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
    drivers to root `benchmarks` or maintainer tools.
-4. **Source ownership cleanup.** Merge `geometry_backends` into `geometry`, choose
+4. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
    a single public mathematical-kernel namespace for `terms`/`operators`, and
    consolidate objective helper shards into fewer family modules.
 5. **Performance pass.** Profile quickstart, linear RHS/cache, nonlinear RHS and
@@ -143,6 +143,10 @@ branch/PR.
   `spectraxgk.geometry.imported_miller` and moved shared JAX geometry kernels
   into `spectraxgk.geometry.kernels`, reducing source count from 243 to 239
   while preserving Miller/VMEC geometry tests.
+- 2026-07-09: Folded the VMEC imported-geometry backend into
+  `spectraxgk.geometry.imported_vmec`, removing the deleted legacy geometry
+  namespace and reducing source count from 239 to 231 while preserving VMEC/EIK
+  geometry tests.
 
 ## Validation Commands For This Tranche
 
