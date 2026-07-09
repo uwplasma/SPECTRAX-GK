@@ -2988,3 +2988,11 @@ following:
   metadata, and tightened the source topology baseline to 269. Geometry tests,
   release tests, stale-reference scans, ruff, py_compile,
   validation/differentiable manifests, and architecture checks passed locally.
+
+- 2026-07-08: consolidated five small profiling-tool contract tests into
+  `tests/tools/profiling/test_profile_tool_contracts.py`, preserving profiler
+  option, startup-artifact, linear-cache, full-linear-trace, and
+  full-nonlinear-trace coverage while removing one-test-per-file noise. Updated
+  the package architecture test baseline to 215 test files. The focused
+  profiling contract test, full profiling test shard, release tests, stale-path
+  scan, ruff, py_compile, and architecture manifest passed locally.
