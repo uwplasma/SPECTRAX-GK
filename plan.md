@@ -3179,3 +3179,12 @@ following:
   transport-config writer owner while preserving parser, metadata, restart,
   promotion-contract, and postprocess-command assertions. Tightened the package
   architecture test baseline to 175.
+
+
+- 2026-07-08: consolidated VMEC-JAX QA artifact/report tests into
+  `tests/tools/artifacts/test_vmec_jax_qa_artifact_contracts.py`. Strategy
+  reports, QA candidate comparisons, transport-optimization status panels,
+  full-sweep panels, and transport-gradient diagnostics now share one QA
+  artifact contract owner while preserving authoritative-wout, long-window
+  audit, optimizer-comparison, sample-coverage, and AD/FD consistency
+  assertions. Tightened the package architecture test baseline to 171.
