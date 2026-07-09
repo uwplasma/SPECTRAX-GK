@@ -20,7 +20,7 @@ from spectraxgk.artifacts.plotting import (  # noqa: E402
     eigenfunction_overlap_summary_figure,
     eigenfunction_reference_overlay_figure,
 )
-from spectraxgk.benchmarks import load_eigenfunction_reference_bundle  # noqa: E402
+from spectraxgk.diagnostics.modes import load_eigenfunction_reference_bundle  # noqa: E402
 
 DEFAULT_OVERLAP_CSV = (
     ROOT / "docs" / "_static" / "comparison" / "kbm_reference_candidates.csv"

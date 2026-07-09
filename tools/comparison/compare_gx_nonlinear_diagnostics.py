@@ -14,7 +14,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import evaluate_scalar_gate, gate_report, gate_report_to_dict
+from spectraxgk.diagnostics.validation_gates import (
+    evaluate_scalar_gate,
+    gate_report,
+    gate_report_to_dict,
+)
 
 
 def _json_clean(value: Any) -> Any:

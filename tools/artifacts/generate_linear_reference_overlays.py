@@ -40,14 +40,16 @@ from tools.comparison.compare_gx_kbm import (  # noqa: E402
     _prepare_gx_reference,
 )
 from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
-from spectraxgk.benchmarks import (  # noqa: E402
+from spectraxgk.diagnostics.modes import (  # noqa: E402
     compare_eigenfunctions,
+    load_eigenfunction_reference_bundle,
+    save_eigenfunction_reference_bundle,
+)
+from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
     eigenfunction_gate_report,
     gate_report_to_dict,
     infer_triple_dealiased_ny,
     late_time_window,
-    load_eigenfunction_reference_bundle,
-    save_eigenfunction_reference_bundle,
 )
 from spectraxgk.benchmarks import _apply_reference_hypercollisions, run_kbm_linear  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402

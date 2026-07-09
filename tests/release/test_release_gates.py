@@ -1335,6 +1335,10 @@ def test_technical_release_status_reports_missing_required_evidence(
 # ---- test_release_manifests.py ----
 
 import re
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
+    import tomli as tomllib  # type: ignore[no-redef]
 
 
 from support.paths import REPO_ROOT
@@ -1841,6 +1845,38 @@ def test_package_architecture_inventory_classifies_repository_areas() -> None:
     assert tool_action == "keep-or-merge"
     assert summary["keep-and-consolidate"] == {"files": 1, "bytes": 12}
     assert summary["keep-or-merge"] == {"files": 1, "bytes": 8}
+
+
+def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
+    with (ROOT / "benchmarks" / "capability_matrix.toml").open("rb") as stream:
+        payload = tomllib.load(stream)
+
+    metadata = payload["metadata"]
+    rows = payload["capabilities"]
+    by_id = {row["id"]: row for row in rows}
+    allowed_statuses = {
+        "validated",
+        "validated_scoped",
+        "validated_limited_model",
+        "planned",
+        "planned_research_lane",
+        "blocked",
+        "not_shipped",
+    }
+
+    assert metadata["comparison_code"] == "GX"
+    assert metadata["comparison_revision"]
+    assert len(by_id) == len(rows) >= 15
+    assert {row["status"] for row in rows} <= allowed_statuses
+    assert all(row["spectrax_owner"] and row["evidence"] for row in rows)
+    assert by_id["nonlinear_multi_device_domain_decomposition"]["status"] == "blocked"
+    assert by_id["linearized_sugama_or_coulomb_collisions"]["status"] == "planned_research_lane"
+    assert by_id["jax_autodiff_and_implicit_gradients"]["group"] == "differentiable_extension"
+
+    required = payload["matched_comparison_contract"]["required_fields"]
+    assert len(required) == len(set(required)) >= 10
+    assert "fit_or_transport_window" in required
+    assert len(payload["matched_comparison_contract"]["fail_closed_rules"]) >= 3
 
 
 def test_validate_architecture_policy_rejects_stale_allowlist(tmp_path):

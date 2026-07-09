@@ -57,6 +57,67 @@ explicit.
 Future velocity-space convergence panels should use the same JSON-ready
 gate-report convention before they are promoted into the publication stack.
 
+Capability and matched-comparison contract
+------------------------------------------
+
+``benchmarks/capability_matrix.toml`` is the machine-readable source of truth
+for feature scope. It prevents two common errors: implying support because a
+related equation exists, and diagnosing a solver mismatch before the two runs
+actually use the same physical and numerical contract.
+
+.. list-table:: Required-core and extension status
+   :header-rows: 1
+   :widths: 28 18 54
+
+   * - Capability family
+     - Status
+     - Current claim
+   * - Electrostatic flux-tube dynamics and nonlinear ExB bracket
+     - validated, scoped by case
+     - Cyclone, Miller, W7-X, and HSX state/observable gates
+   * - Electromagnetic ``A_parallel``/``B_parallel`` dynamics
+     - validated, scoped by case
+     - KAW/KBM linear and KBM nonlinear gates
+   * - Boltzmann and kinetic species in a Hermite--Laguerre basis
+     - validated, scoped by branch
+     - adiabatic ITG is core; kinetic-electron/TEM remains a stress lane
+   * - Analytic, Miller, and imported VMEC geometry
+     - validated, scoped by equilibrium
+     - axisymmetric and selected W7-X/HSX comparisons
+   * - Restart, spectra, heat flux, and field-energy diagnostics
+     - validated
+     - schema plus numerical-identity and windowed-statistics gates
+   * - Independent ``k_y`` scans and UQ ensembles
+     - production validated
+     - CPU/GPU identity and strong-scaling evidence
+   * - Nonlinear multi-device domain decomposition
+     - blocked
+     - current benchmark-grid whole-state route is slower and fails identity
+   * - JAX autodiff, implicit gradients, and VMEC/Boozer optimization
+     - validated, scoped
+     - AD/FD, conditioning, covariance, geometry parity, and holdout gates
+   * - Conserving Dougherty and linearized Sugama/Coulomb collisions
+     - planned
+     - no release claim until conservation, adjointness, entropy, and physics benchmarks pass
+
+A matched comparison must record the equations and normalization, geometry
+coefficients and parallel boundary, species conventions, perpendicular and
+velocity grids, initial condition and seed, precision and de-aliasing,
+integrator and timestep policy, collision/dissipation settings, diagnostic
+normalization, and the fit or transport window. A visually similar input file
+is insufficient. This rule is especially important for nonlinear saturation,
+where short state-level agreement does not establish a converged heat-flux
+comparison.
+
+The comparison-code audit used for this contract was performed at GX revision
+``bc2fe552``. GX remains the mature baseline for conventional GPU nonlinear
+initial-value runs and species/Hermite multi-device execution. SPECTRAX-GK's
+distinct validated scope is its Python/JAX API, differentiable objectives,
+implicit gradient paths, CPU execution, and in-memory ``vmec_jax``/
+``booz_xform_jax`` integration. Neither code currently justifies a broad claim
+of a complete linearized Landau operator; that capability remains a separately
+gated research lane.
+
 Tracked results index
 ---------------------
 
@@ -242,13 +303,14 @@ runtime defaults for the solver or the shipped example drivers.
 Benchmark runner internals
 --------------------------
 
-The public benchmark surface remains ``spectraxgk.benchmarks``. Shared
-scan policies that are easy to test without launching a solver live in
-``spectraxgk.benchmarks``: fit-signal key validation, mode-only extraction
-coercion, explicit-window fallback, and fixed-shape ``k_y`` batching
-eligibility. The runner module imports those policies so Cyclone, ETG,
-kinetic-electron, TEM, and KBM scans keep the same window and ordering
-contracts without carrying separate copies of the policy code.
+``spectraxgk.benchmarks`` is currently a compatibility facade and a documented
+refactor hotspot, not the desired long-term owner of physics. Reusable fit,
+batching, result-schema, and reference-loading contracts live in
+``spectraxgk.benchmarking.shared`` and the solver/diagnostic domains. Case-level
+Cyclone, ETG, kinetic-electron, TEM, and KBM reproduction policy is being moved
+to root ``benchmarks/`` drivers. The installed facade must eventually contain
+only a curated lazy export surface; it must not own timestepping, geometry, or
+physical-operator policy.
 
 For the current stellarator nonlinear pair, the tracked public figures should
 also be read asymmetrically:

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
-import spectraxgk.benchmarks as benchmark_harness
+import spectraxgk.diagnostics.validation_gates as validation_gates
 from spectraxgk.diagnostics.validation_gates import (
     BranchContinuationMetrics,
     EigenfunctionComparisonMetrics,
@@ -28,6 +28,7 @@ from spectraxgk.diagnostics.validation_gates import (
     observed_order_gate_report,
     zonal_response_gate_report,
 )
+from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 
 
 def test_validation_gate_facade_points_to_focused_modules() -> None:
@@ -43,21 +44,16 @@ def test_validation_gate_facade_points_to_focused_modules() -> None:
     assert gates.observed_order_gate_report is gate_reports.observed_order_gate_report
 
 
-def test_validation_gate_primitives_are_public_and_available_to_benchmark_harness() -> (
-    None
-):
+def test_validation_gate_primitives_are_public_and_owned_by_diagnostics() -> None:
     assert spectraxgk.evaluate_scalar_gate is evaluate_scalar_gate
-    assert benchmark_harness.evaluate_scalar_gate is evaluate_scalar_gate
-    metrics = benchmark_harness.zonal_flow_response_metrics(
+    metrics = zonal_flow_response_metrics(
         np.linspace(0.0, 2.0, 8), np.linspace(1.0, 0.6, 8)
     )
     assert isinstance(metrics, ZonalFlowResponseMetrics)
-    assert benchmark_harness.observed_order_gate_report is observed_order_gate_report
+    assert validation_gates.observed_order_gate_report is observed_order_gate_report
+    assert validation_gates.branch_continuity_gate_report is branch_continuity_gate_report
     assert (
-        benchmark_harness.branch_continuity_gate_report is branch_continuity_gate_report
-    )
-    assert (
-        benchmark_harness.nonlinear_heat_flux_convergence_gate_report
+        validation_gates.nonlinear_heat_flux_convergence_gate_report
         is nonlinear_heat_flux_convergence_gate_report
     )
 

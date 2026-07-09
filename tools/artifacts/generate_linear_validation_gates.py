@@ -19,7 +19,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarks import (
+from spectraxgk.diagnostics.validation_gates import (
     estimate_observed_order,
     gate_report_to_dict,
     observed_order_gate_report,

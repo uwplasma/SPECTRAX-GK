@@ -1,0 +1,169 @@
+[metadata]
+schema_version = 1
+updated = "2026-07-09"
+comparison_code = "GX"
+comparison_revision = "bc2fe552"
+scope = "Required-core and differentiable-extension capability contract; feature names are mathematical, while GX appears only as benchmark provenance."
+
+[[capabilities]]
+id = "electrostatic_flux_tube"
+group = "required_core"
+status = "validated"
+spectrax_owner = "spectraxgk.terms.fields and spectraxgk.operators.linear"
+comparison_owner = "src/fields.cu and src/linear.cu"
+evidence = "Cyclone, Cyclone Miller, W7-X, and HSX linear/nonlinear atlas gates"
+
+[[capabilities]]
+id = "electromagnetic_apar_bpar"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.terms.fields and spectraxgk.operators.linear"
+comparison_owner = "src/fields.cu and src/linear.cu"
+evidence = "KBM and KAW linear gates; KBM nonlinear window gate"
+
+[[capabilities]]
+id = "boltzmann_and_kinetic_species"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.core.species and spectraxgk.operators.linear.params"
+comparison_owner = "src/parameters.cu and src/moments.cu"
+evidence = "adiabatic-electron ITG atlas plus kinetic-electron Cyclone/TEM stress lanes"
+
+[[capabilities]]
+id = "hermite_laguerre_velocity_basis"
+group = "required_core"
+status = "validated"
+spectrax_owner = "spectraxgk.core.velocity and spectraxgk.terms.gyroaveraging"
+comparison_owner = "src/moments.cu and src/laguerre_transform.cu"
+evidence = "basis orthonormality, streaming, gyroaverage, and velocity-resolution gates"
+
+[[capabilities]]
+id = "salpha_miller_vmec_geometry"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.geometry"
+comparison_owner = "src/geometry.cu and src/geo"
+evidence = "Cyclone, Cyclone Miller, circular VMEC, W7-X, and HSX comparison gates"
+
+[[capabilities]]
+id = "periodic_and_linked_parallel_boundaries"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.operators.linear.linked"
+comparison_owner = "src/grad_parallel.cu and src/grad_parallel_linked.cu"
+evidence = "periodic streaming and linked-boundary operator tests; stellarator linear atlas"
+
+[[capabilities]]
+id = "nonlinear_exb_bracket"
+group = "required_core"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.operators.nonlinear and spectraxgk.terms.brackets"
+comparison_owner = "src/nonlinear.cu and src/exb.cu"
+evidence = "operator identity, de-aliasing, invariant, and nonlinear transport-window gates"
+
+[[capabilities]]
+id = "initial_value_time_integration"
+group = "required_core"
+status = "validated"
+spectrax_owner = "spectraxgk.solvers.time and spectraxgk.solvers.nonlinear"
+comparison_owner = "src/ts_rk3.cu, src/ts_rk4.cu, src/ts_sspx2.cu, and src/ts_sspx3.cu"
+evidence = "observed-order, stability, restart, and benchmark-window gates"
+
+[[capabilities]]
+id = "dominant_eigenmode_solver"
+group = "differentiable_extension"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.solvers.linear"
+comparison_owner = "initial-value branch extraction"
+evidence = "Krylov-versus-time evolution, residual, branch-continuity, and eigenfunction gates"
+
+[[capabilities]]
+id = "restart_and_resolved_diagnostics"
+group = "required_core"
+status = "validated"
+spectrax_owner = "spectraxgk.artifacts and spectraxgk.diagnostics"
+comparison_owner = "src/ncdf.cu, src/diagnostics.cu, and src/spectra_calc.cu"
+evidence = "restart identity, schema, heat-flux, field-energy, and resolved-spectrum tests"
+
+[[capabilities]]
+id = "diagonal_velocity_space_collisions"
+group = "required_core"
+status = "validated_limited_model"
+spectrax_owner = "spectraxgk.operators.nonlinear.collisions and linear dissipation terms"
+comparison_owner = "src/closures.cu"
+evidence = "sign, damping, finite-state, and hypercollision regression gates"
+
+[[capabilities]]
+id = "conserving_dougherty_collision_operator"
+group = "optional_extension"
+status = "planned"
+spectrax_owner = "future collision-operator protocol implementation"
+comparison_owner = "src/closures.cu"
+evidence = "must pass particle, momentum, energy, null-space, adjointness, and entropy gates"
+
+[[capabilities]]
+id = "linearized_sugama_or_coulomb_collisions"
+group = "optional_extension"
+status = "planned_research_lane"
+spectrax_owner = "future collision-operator protocol implementation"
+comparison_owner = "not a complete shipped capability"
+evidence = "requires field-particle terms, conservation, conductivity, zonal damping, and collisional-ITG benchmarks"
+
+[[capabilities]]
+id = "independent_scan_and_ensemble_parallelism"
+group = "required_core"
+status = "validated"
+spectrax_owner = "spectraxgk.parallel.independent and spectraxgk.parallel.batch"
+comparison_owner = "MPI/CUDA run decomposition"
+evidence = "CPU/GPU numerical-identity and strong-scaling gates for ky scans and UQ ensembles"
+
+[[capabilities]]
+id = "nonlinear_multi_device_domain_decomposition"
+group = "optional_extension"
+status = "blocked"
+spectrax_owner = "spectraxgk.parallel and nonlinear device-z diagnostics"
+comparison_owner = "species/Hermite MPI/CUDA decomposition"
+evidence = "benchmark-grid whole-state route is 0.706x and fails trajectory identity"
+
+[[capabilities]]
+id = "jax_autodiff_and_implicit_gradients"
+group = "differentiable_extension"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.objectives and spectraxgk.geometry"
+comparison_owner = "not available"
+evidence = "AD/FD, tangent, implicit eigenpair, conditioning, and covariance gates"
+
+[[capabilities]]
+id = "differentiable_vmec_boozer_optimization"
+group = "differentiable_extension"
+status = "validated_scoped"
+spectrax_owner = "spectraxgk.geometry and spectraxgk.objectives"
+comparison_owner = "file-based geometry input"
+evidence = "vmec_jax/booz_xform_jax parity, gradient holdout, and scoped QA optimization gates"
+
+[[capabilities]]
+id = "generic_forcing_and_transport_framework_coupling"
+group = "explicitly_out_of_scope"
+status = "not_shipped"
+spectrax_owner = "none"
+comparison_owner = "src/forcing.cu and src/trinity_interface.cu"
+evidence = "no release claim; add only with a scientific owner and validation campaign"
+
+[matched_comparison_contract]
+required_fields = [
+  "equations_and_normalization",
+  "geometry_coefficients_and_parallel_boundary",
+  "species_and_gradient_conventions",
+  "spectral_grid_and_velocity_resolution",
+  "initial_condition_and_random_seed",
+  "precision_and_dealiasing",
+  "time_integrator_dt_and_adaptivity",
+  "collision_and_dissipation_settings",
+  "diagnostic_definition_and_normalization",
+  "fit_or_transport_window",
+]
+fail_closed_rules = [
+  "Do not attribute a mismatch to physics until the matched contract is complete.",
+  "Short state-level gates do not replace converged late-time transport windows.",
+  "A speedup requires active parallel work plus numerical identity on the same workload.",
+]

@@ -26,10 +26,17 @@ python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondar
 python benchmarks/secondary_slab_workflow.py
 ```
 
+The machine-readable feature and comparison contract is
+`benchmarks/capability_matrix.toml`. It separates required-core capabilities,
+SPECTRAX-GK differentiable extensions, optional research extensions, and
+explicitly unsupported features. A comparison result is not considered matched
+unless geometry, normalization, grid, initialization, precision, timestepping,
+collisions, diagnostics, and analysis windows are all recorded.
+
 The full atlas is built from tracked CSV/JSON assets rather than large transient
 simulation directories:
 
 ```bash
 python tools/artifacts/make_benchmark_atlas.py
-python tools/campaigns/run_reference_validation_campaigns.py benchmark-refresh --list
+python tools/campaigns/run_validation_campaigns.py benchmark-refresh --list
 ```

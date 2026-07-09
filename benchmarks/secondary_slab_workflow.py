@@ -6,7 +6,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
-from spectraxgk.benchmarks import build_secondary_stage2_config, run_secondary_modes, run_secondary_seed
+from spectraxgk.workflows.nonlinear import (
+    build_secondary_stage2_config,
+    run_secondary_modes,
+    run_secondary_seed,
+)
 
 
 SECONDARY_MODES = (

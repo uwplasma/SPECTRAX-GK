@@ -1401,7 +1401,7 @@ import pandas as pd
 from PIL import ImageDraw
 import pytest
 
-from spectraxgk.benchmarks import EigenfunctionComparisonMetrics
+from spectraxgk.diagnostics.validation_gates import EigenfunctionComparisonMetrics
 
 
 def test_qi_branch_refinement_gate_blocks_marginal_branch(tmp_path: Path) -> None:

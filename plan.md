@@ -110,10 +110,10 @@ use mathematical names independent of comparison provenance.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Capability/parity specification | 75% | Freeze the required-core matrix and exact matched geometry/grid/diagnostic contracts. |
+| Capability/parity specification | 95% | Keep the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 51% | Shrink `spectraxgk.benchmarks` below facade budget, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Source consolidation | 55% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
 | Nonlinear GPU performance | 60% | Move CFL/sampling device-resident, then match fixed-step workloads before optimizing kernels. |
@@ -173,6 +173,17 @@ use mathematical names independent of comparison provenance.
   It was slower than serial (`0.706x`) and failed trajectory identity
   (`max_abs_state_error=33.32`), so the result is now a tracked fail-closed
   artifact and the old tiny-grid identity profile is explicitly smoke-only.
+- 2026-07-09: Added `benchmarks/capability_matrix.toml` and a release contract
+  that separates required core, differentiable extensions, optional research
+  extensions, and unsupported features. It freezes the ten-field matched-run
+  contract and records the comparison audit at GX revision `bc2fe552`.
+- 2026-07-09: Removed generic diagnostic compatibility wrappers from
+  `spectraxgk.benchmarks`; eigenfunction, validation-gate, observed-order,
+  late-window, and zonal metrics now come from their diagnostic owners.
+- 2026-07-09: Moved the complete secondary-instability seed/stage workflow into
+  the existing `spectraxgk.workflows.nonlinear` owner. The benchmark facade fell
+  from 13209 to 12854 lines without adding source files, while the destination
+  remains within the 1000-line module budget and all secondary tests pass.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

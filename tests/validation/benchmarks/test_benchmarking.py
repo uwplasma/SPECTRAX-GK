@@ -7,6 +7,19 @@ import pytest
 
 from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.benchmarks import (
+    LinearRunResult,
+    LinearScanResult,
+    run_linear_scan,
+    run_scan_and_mode,
+)
+from spectraxgk.diagnostics.modes import (
+    compare_eigenfunctions,
+    load_eigenfunction_reference_bundle,
+    normalize_eigenfunction,
+    phase_align_eigenfunction,
+    save_eigenfunction_reference_bundle,
+)
+from spectraxgk.diagnostics.validation_gates import (
     _analytic_signal,
     _explicit_time_window,
     _leading_window,
@@ -18,7 +31,6 @@ from spectraxgk.benchmarks import (
     NonlinearWindowMetrics,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
-    compare_eigenfunctions,
     branch_continuity_gate_report,
     branch_continuity_metrics,
     eigenfunction_gate_report,
@@ -31,22 +43,15 @@ from spectraxgk.benchmarks import (
     late_time_window,
     linear_metrics_gate_report,
     load_diagnostic_time_series,
-    load_eigenfunction_reference_bundle,
     nonlinear_heat_flux_convergence_gate_report,
     nonlinear_heat_flux_convergence_metrics,
     nonlinear_window_gate_report,
-    normalize_eigenfunction,
     observed_order_gate_report,
-    phase_align_eigenfunction,
-    run_linear_scan,
-    run_scan_and_mode,
-    save_eigenfunction_reference_bundle,
     windowed_nonlinear_metrics,
     zonal_response_gate_report,
-    zonal_flow_response_metrics,
 )
-from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
 from spectraxgk.diagnostics import SimulationDiagnostics
+from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 

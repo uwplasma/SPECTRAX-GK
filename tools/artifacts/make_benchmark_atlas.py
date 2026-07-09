@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spectraxgk.benchmarks import (
+from spectraxgk.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
