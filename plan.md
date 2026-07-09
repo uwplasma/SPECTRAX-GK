@@ -3602,3 +3602,12 @@ following:
   The quasilinear/nonlinear window validation shard, Python lint check,
   validation manifest, release tests, compile check, command-help smoke checks,
   diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/release/audit_repository_size.py` into
+  `tools/release/check_repository_size_manifest.py` as the `audit` subcommand.
+  Repository-size audit reporting and manifest enforcement now share one
+  release-hygiene owner while preserving the CI manifest-check command. The
+  package architecture tool baseline tightened from 204 to 203. The release
+  hygiene shard, Python lint check, validation manifest, release tests,
+  compile check, command smoke check, diff hygiene, and architecture manifest
+  passed locally.

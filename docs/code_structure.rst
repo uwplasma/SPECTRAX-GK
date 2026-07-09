@@ -989,7 +989,7 @@ Use the non-destructive audit helper before release cleanups:
 
 .. code-block:: bash
 
-   python tools/release/audit_repository_size.py --top 30
+   python tools/release/check_repository_size_manifest.py audit --top 30
    python tools/release/check_repository_size_manifest.py
    python tools/release/check_release_artifact_manifest.py
 

@@ -298,7 +298,7 @@ def test_repository_size_manifest_fails_for_unlisted_large_file(tmp_path: Path) 
 def test_repository_size_report_separates_tracked_and_local_roots(
     tmp_path: Path,
 ) -> None:
-    mod = load_release_tool("audit_repository_size")
+    mod = load_release_tool("check_repository_size_manifest")
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     (tmp_path / "src").mkdir()
     (tmp_path / "docs" / "_static").mkdir(parents=True)
