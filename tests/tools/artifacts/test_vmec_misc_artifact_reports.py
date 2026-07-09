@@ -637,7 +637,7 @@ def _plot_external_vmec_time_horizon_gate_write_gate(
 
 
 def test_time_horizon_gate_passes_for_stable_high_grid_means(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_external_vmec_time_horizon_gate")
+    mod = load_artifact_tool("plot_external_vmec_nonlinear_convergence_gate")
     first = _plot_external_vmec_time_horizon_gate_write_gate(
         tmp_path, "t250", (10.0, 10.4)
     )
@@ -665,7 +665,7 @@ def test_time_horizon_gate_passes_for_stable_high_grid_means(tmp_path: Path) -> 
 
 
 def test_time_horizon_gate_fails_large_horizon_shift(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_external_vmec_time_horizon_gate")
+    mod = load_artifact_tool("plot_external_vmec_nonlinear_convergence_gate")
     first = _plot_external_vmec_time_horizon_gate_write_gate(
         tmp_path, "t250", (10.0, 10.0)
     )
@@ -690,7 +690,7 @@ def test_time_horizon_gate_fails_large_horizon_shift(tmp_path: Path) -> None:
 
 
 def test_time_horizon_gate_fails_when_input_grid_gate_failed(tmp_path: Path) -> None:
-    mod = load_artifact_tool("plot_external_vmec_time_horizon_gate")
+    mod = load_artifact_tool("plot_external_vmec_nonlinear_convergence_gate")
     first = _plot_external_vmec_time_horizon_gate_write_gate(
         tmp_path, "t250", (10.0, 10.4)
     )

@@ -63,8 +63,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/objectives/test_stellarator_optimization.py",
   "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
-  "tests/unit/parallel/test_parallel.py",
+    "tests/unit/parallel/test_parallel.py",
   "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 artifact_paths = [
@@ -1165,7 +1164,6 @@ fast_tests = [
   "tests/unit/quasilinear/test_quasilinear.py",
   "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection.py",
-  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/validation/stellarator/test_external_vmec_validation_policy.py",
 ]
 artifact_paths = [

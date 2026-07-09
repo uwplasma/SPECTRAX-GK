@@ -1,11 +1,28 @@
 from __future__ import annotations
 
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
+import spectraxgk.config as public_config
+from spectraxgk.config import (
+    CycloneBaseCase,
+    ETGBaseCase,
+    REFERENCE_ELECTRON_MASS,
+    GeometryConfig,
+    GridConfig,
+    KBMBaseCase,
+    KineticElectronBaseCase,
+    ModelConfig,
+    TEMBaseCase,
+    TimeConfig,
+    explicit_method_default_cfl_fac,
+    resolve_cfl_fac,
+)
 from spectraxgk.core.contracts import (
     DifferentiabilityContract,
     ExtensionPointContract,
@@ -23,6 +40,22 @@ from spectraxgk.core.extension_points import (
     LinearRHS,
     NonlinearRHS,
     Objective,
+)
+from spectraxgk.core.grid import (
+    SpectralGrid,
+    build_spectral_grid,
+    real_fft_ordered_kx,
+    real_fft_unique_ky,
+    select_ky_grid,
+    select_real_fft_ky_grid,
+)
+from spectraxgk.utils.callbacks import (
+    _PROGRESS_START,
+    _emit_progress,
+    _format_duration,
+    print_callback,
+    progress_update_stride,
+    should_emit_progress,
 )
 
 
@@ -421,3 +454,352 @@ assert "jax" not in sys.modules
 assert "LinearParams" in api.__all__
 """
     subprocess.run([sys.executable, "-S", "-c", api_script], check=True)
+
+
+# Progress callback contracts.
+def test_emit_progress_reports_one_based_step_once() -> None:
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        _emit_progress(4, 5, 1.0, -2.0, 3.0, 4.0, sim_time=2.0, sim_total=2.5)
+    out = buf.getvalue().strip()
+    assert "step=5/5" in out
+    assert "progress=100.0%" in out
+    assert "t=2/2.5" in out
+    assert "elapsed=" in out
+    assert "eta=00:00" in out
+    assert "step=6/5" not in out
+
+
+def test_format_duration_clamps_and_rolls_over() -> None:
+    assert _format_duration(-2.0) == "00:00"
+    assert _format_duration(65.4) == "01:05"
+    assert _format_duration(3661.0) == "1:01:01"
+
+
+def test_progress_update_stride_caps_long_runs() -> None:
+    assert progress_update_stride(5) == 1
+    assert progress_update_stride(50) == 1
+    assert progress_update_stride(51) == 2
+    assert progress_update_stride(500) == 10
+
+
+def test_progress_update_stride_sanitizes_inputs() -> None:
+    assert progress_update_stride(0) == 1
+    assert progress_update_stride(-10, target_updates=0) == 1
+    assert progress_update_stride(9, target_updates=4) == 3
+
+
+def test_should_emit_progress_reports_first_interval_and_last() -> None:
+    assert bool(should_emit_progress(0, 200)) is True
+    assert bool(should_emit_progress(3, 200)) is True
+    assert bool(should_emit_progress(4, 200)) is False
+    assert bool(should_emit_progress(199, 200)) is True
+
+
+def test_should_emit_progress_sanitizes_steps_and_targets() -> None:
+    assert bool(should_emit_progress(0, 0, target_updates=0)) is True
+    assert bool(should_emit_progress(1, 9, target_updates=4)) is False
+    assert bool(should_emit_progress(2, 9, target_updates=4)) is True
+
+
+def test_emit_progress_handles_time_variants_and_metric_labels(monkeypatch) -> None:
+    ticks = iter([10.0, 12.0])
+    monkeypatch.setattr(
+        "spectraxgk.utils.callbacks.time.perf_counter", lambda: next(ticks)
+    )
+    _PROGRESS_START.clear()
+
+    first = io.StringIO()
+    with redirect_stdout(first):
+        _emit_progress(
+            0, 3, 0.1, 0.2, 0.3, 0.4, sim_time=1.25, metric_labels=("A", "B")
+        )
+    first_out = first.getvalue()
+    assert "step=1/3" in first_out
+    assert "t=1.25" in first_out
+    assert "eta=--:--" in first_out
+    assert "A=0.3 B=0.4" in first_out
+
+    second = io.StringIO()
+    with redirect_stdout(second):
+        _emit_progress(1, 3, 0.1, 0.2, 0.3, 0.4, sim_time=2.0, sim_total=0.0)
+    second_out = second.getvalue()
+    assert "step=2/3" in second_out
+    assert "t=2" in second_out
+    assert "/0" not in second_out
+    assert "eta=00:01" in second_out
+
+
+def test_print_callback_returns_state_and_forwards_values(monkeypatch) -> None:
+    calls = []
+
+    def fake_callback(fn, *args):
+        calls.append(args)
+        fn(*args)
+
+    monkeypatch.setattr("spectraxgk.utils.callbacks.jax.debug.callback", fake_callback)
+
+    state = {"unchanged": True}
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        returned = print_callback(
+            state,
+            0,
+            1,
+            1.5,
+            -0.5,
+            2.0,
+            3.0,
+            sim_time=None,
+            sim_total=None,
+            metric_labels=("heat", "free"),
+        )
+
+    assert returned is state
+    assert calls == [(0, 1, 1.5, -0.5, 2.0, 3.0, None, None)]
+    out = buf.getvalue()
+    assert "heat=2" in out
+    assert "free=3" in out
+
+
+# Configuration contracts.
+def test_config_to_dict():
+    """All config dataclasses should serialize to dictionaries."""
+    cfg = CycloneBaseCase()
+    d = cfg.to_dict()
+    assert set(d.keys()) == {
+        "grid",
+        "time",
+        "geometry",
+        "model",
+        "init",
+        "reference_alignment",
+    }
+    assert d["geometry"]["q"] == cfg.geometry.q
+    assert d["grid"]["y0"] == 20.0
+    assert d["grid"]["ntheta"] == 32
+    assert d["grid"]["nperiod"] == 2
+    assert d["reference_alignment"]["enabled"] is True
+
+
+def test_benchmark_case_presets_keep_stable_public_exports() -> None:
+    """Benchmark presets are owned directly by the public config module."""
+
+    for name in (
+        "ModelConfig",
+        "CycloneBaseCase",
+        "ETGModelConfig",
+        "ETGBaseCase",
+        "KineticElectronModelConfig",
+        "KineticElectronBaseCase",
+        "KBMBaseCase",
+        "TEMModelConfig",
+        "TEMBaseCase",
+    ):
+        assert hasattr(public_config, name)
+        assert name in public_config.__all__
+
+
+def test_config_override():
+    """Overrides should propagate into the serialized representation."""
+    grid = GridConfig(Nx=12, Ny=10, Nz=8)
+    geom = GeometryConfig(q=1.7, s_hat=0.9, epsilon=0.2)
+    model = ModelConfig(R_over_LTi=7.0, R_over_LTe=1.0, R_over_Ln=2.5)
+    time = TimeConfig(t_max=1.0, dt=0.05, compressed_real_fft=False)
+    cfg = CycloneBaseCase(grid=grid, time=time, geometry=geom, model=model)
+    d = cfg.to_dict()
+    assert d["grid"]["Nx"] == 12
+    assert d["geometry"]["q"] == 1.7
+    assert d["model"]["R_over_LTe"] == 1.0
+    assert d["time"]["dt"] == 0.05
+    assert d["time"]["compressed_real_fft"] is False
+
+
+def test_etg_config_to_dict():
+    """ETG configuration should serialize to dictionaries."""
+    cfg = ETGBaseCase()
+    d = cfg.to_dict()
+    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init"}
+    assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
+    assert d["model"]["mass_ratio"] == cfg.model.mass_ratio
+
+
+def test_kinetic_config_to_dict():
+    """Kinetic-electron configuration should serialize to dictionaries."""
+    cfg = KineticElectronBaseCase()
+    d = cfg.to_dict()
+    assert d["model"]["R_over_LTi"] == cfg.model.R_over_LTi
+
+
+def test_reference_aligned_mass_ratio_defaults() -> None:
+    """Reference-aligned benchmark defaults should use the tracked electron mass."""
+
+    for cfg in (ETGBaseCase(), KineticElectronBaseCase(), KBMBaseCase()):
+        assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)
+
+
+def test_kbm_config_to_dict():
+    """KBM configuration should serialize to dictionaries."""
+    cfg = KBMBaseCase()
+    d = cfg.to_dict()
+    assert d["model"]["beta"] == cfg.model.beta
+
+
+def test_tem_config_to_dict():
+    """TEM configuration should serialize to dictionaries."""
+    cfg = TEMBaseCase()
+    d = cfg.to_dict()
+    assert d["geometry"]["q"] == cfg.geometry.q
+
+
+def test_explicit_method_default_cfl_fac_is_method_resolved() -> None:
+    assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
+    assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("sspx3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("rk4") == pytest.approx(2.82)
+
+
+def test_explicit_method_default_cfl_fac_alias_is_method_resolved() -> None:
+    assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
+    assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("sspx3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("rk4") == pytest.approx(2.82)
+
+
+def test_resolve_cfl_fac_preserves_explicit_override() -> None:
+    assert resolve_cfl_fac("rk3", None) == pytest.approx(1.73)
+    assert resolve_cfl_fac("rk4", 1.25) == pytest.approx(1.25)
+
+
+# Spectral grid contracts.
+def test_build_spectral_grid_shapes():
+    """Grid arrays should have consistent shapes."""
+    cfg = GridConfig(Nx=8, Ny=6, Nz=4, Lx=2.0, Ly=3.0)
+    grid = build_spectral_grid(cfg)
+    assert grid.kx.shape == (cfg.Nx,)
+    assert grid.ky.shape == (cfg.Ny,)
+    assert grid.z.shape == (cfg.Nz,)
+    assert grid.kx_grid.shape == (cfg.Ny, cfg.Nx)
+    assert grid.ky_grid.shape == (cfg.Ny, cfg.Nx)
+    assert grid.dealias_mask.shape == (cfg.Ny, cfg.Nx)
+
+
+def test_build_spectral_grid_spacing():
+    """Fourier spacing should match 2*pi/L for each direction."""
+    cfg = GridConfig(Nx=8, Ny=6, Nz=4, Lx=2.0, Ly=3.0)
+    grid = build_spectral_grid(cfg)
+    dkx = grid.kx[1] - grid.kx[0]
+    dky = grid.ky[1] - grid.ky[0]
+    assert jnp.isclose(dkx, 2.0 * jnp.pi / cfg.Lx)
+    assert jnp.isclose(dky, 2.0 * jnp.pi / cfg.Ly)
+
+
+def test_spectral_grid_tree_roundtrip():
+    """SpectralGrid pytree should round-trip through flatten/unflatten."""
+    cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=2.0, Ly=2.0)
+    grid = build_spectral_grid(cfg)
+    children, aux = grid.tree_flatten()
+    grid2 = SpectralGrid.tree_unflatten(aux, children)
+    assert jnp.allclose(grid2.kx, grid.kx)
+    assert jnp.allclose(grid2.ky, grid.ky)
+    assert jnp.allclose(grid2.z, grid.z)
+
+
+def test_grid_config_y0_and_ntheta():
+    """Field-aligned grid inputs should map to expected ky and z spacing."""
+    cfg = GridConfig(Nx=4, Ny=12, Nz=4, Lx=2.0, Ly=3.0, y0=20.0, ntheta=8, nperiod=2)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 8 * 3
+    dz = grid.z[1] - grid.z[0]
+    assert jnp.isclose(dz, 2.0 * jnp.pi / 8.0)
+    dky = grid.ky[1] - grid.ky[0]
+    assert jnp.isclose(dky, 1.0 / 20.0)
+
+
+def test_grid_config_ntheta_default_zp():
+    """ntheta without nperiod should default to Zp=1."""
+    cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=2.0, Ly=3.0, ntheta=6)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 6
+    assert jnp.isclose(grid.z[0], -jnp.pi)
+    dz = grid.z[1] - grid.z[0]
+    assert jnp.isclose(dz, 2.0 * jnp.pi / 6.0)
+
+
+def test_grid_config_explicit_zp():
+    """Explicit Zp should override nperiod when provided."""
+    cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=2.0, Ly=3.0, ntheta=5, zp=3)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 15
+    assert jnp.isclose(grid.z[0], -jnp.pi * 3.0)
+
+
+def test_compressed_real_fft_wavenumbers_match_gx_native_layout():
+    """compressed real-FFT helpers should expose positive Nyquist multipliers."""
+
+    cfg = GridConfig(Nx=4, Ny=10, Nz=4, Lx=2.0, Ly=20.0)
+    grid = build_spectral_grid(cfg)
+    dkx = 2.0 * jnp.pi / cfg.Lx
+    dky = 2.0 * jnp.pi / cfg.Ly
+    assert jnp.allclose(
+        real_fft_ordered_kx(grid.kx), jnp.asarray([0.0, dkx, 2.0 * dkx, -dkx])
+    )
+    assert jnp.allclose(
+        real_fft_unique_ky(grid.ky),
+        jnp.asarray([0.0, dky, 2.0 * dky, 3.0 * dky, 4.0 * dky, 5.0 * dky]),
+    )
+
+
+def test_select_real_fft_ky_grid_uses_explicit_positive_dump_values():
+    """GX dump grids should not inherit the negative Nyquist sign from fftfreq order."""
+
+    cfg = GridConfig(Nx=4, Ny=6, Nz=4, Lx=2.0, Ly=6.0)
+    grid = build_spectral_grid(cfg)
+    gx_ky = jnp.asarray(
+        [
+            0.0,
+            2.0 * jnp.pi / cfg.Ly,
+            2.0 * 2.0 * jnp.pi / cfg.Ly,
+            3.0 * 2.0 * jnp.pi / cfg.Ly,
+        ]
+    )
+    gx_grid = select_real_fft_ky_grid(grid, gx_ky)
+
+    assert jnp.allclose(gx_grid.ky, gx_ky)
+    assert jnp.all(gx_grid.ky >= 0.0)
+    assert jnp.allclose(gx_grid.kx, real_fft_ordered_kx(grid.kx))
+    assert gx_grid.dealias_mask.shape == (gx_ky.shape[0], cfg.Nx)
+    assert jnp.allclose(gx_grid.ky_grid[:, 0], gx_ky)
+
+
+def test_twothirds_mask_matches_strict_twothirds_cutoff():
+    """The nonlinear two-thirds mask excludes the |k| = 1/3 shell."""
+
+    cfg = GridConfig(Nx=96, Ny=96, Nz=4, Lx=2.0 * jnp.pi, Ly=96.0)
+    grid = build_spectral_grid(cfg)
+    gx_grid = select_real_fft_ky_grid(grid, real_fft_unique_ky(grid.ky))
+    mask = jnp.asarray(gx_grid.dealias_mask)
+
+    # Positive ky rows retained by GX on a 96-point padded grid are 0..31.
+    assert int(mask[:, 0].sum()) == 32
+    assert bool(mask[31, 0])
+    assert not bool(mask[32, 0])
+
+    # Retained kx modes are -31..31 in FFT ordering.
+    assert int(mask[0, :].sum()) == 63
+    assert bool(mask[0, 31])
+    assert not bool(mask[0, 32])
+
+
+def test_select_ky_grid_disables_nonlinear_dealias_mask_for_linear_slices():
+    """Linear ky slices should not zero modes dealiased only for nonlinear products."""
+
+    cfg = GridConfig(Nx=1, Ny=12, Nz=4, Lx=2.0 * jnp.pi, y0=10.0)
+    grid = build_spectral_grid(cfg)
+    # The strict nonlinear two-thirds mask removes the boundary shell at ky index 4.
+    assert not bool(grid.dealias_mask[4, 0])
+
+    sliced = select_ky_grid(grid, [3, 4])
+
+    assert jnp.allclose(sliced.ky, grid.ky[jnp.asarray([3, 4])])
+    assert jnp.all(sliced.dealias_mask)

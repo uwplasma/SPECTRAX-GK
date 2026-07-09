@@ -58,7 +58,7 @@ name = "test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = true
-baseline = 144
+baseline = 140
 target = 99
 
 [[topology_policy.counts]]
@@ -66,7 +66,7 @@ name = "tool_python_files"
 path = "tools"
 pattern = "*.py"
 recursive = true
-baseline = 182
+baseline = 181
 target = 99
 
 

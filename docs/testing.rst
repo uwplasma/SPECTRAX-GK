@@ -155,7 +155,7 @@ Representative unit checks include:
   :func:`spectraxgk.terms.assemble_rhs_cached`,
   :func:`spectraxgk.linear.linear_rhs_cached`.
 
-These tests live in ``tests/unit/linear/test_linear.py`` and ``tests/unit/core/test_grids.py`` and
+These tests live in ``tests/unit/linear/test_linear.py`` and
 ``tests/unit/core/test_core_contracts.py`` and ``tests/unit/operators/test_terms_assembly.py`` and are
 designed to fail deterministically if a discretization, assembly path, or
 normalization changes.
@@ -316,7 +316,7 @@ tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
 ``gate_index_include=false`` because it is a research-planning negative result,
 not a release-blocking validation gate.
 
-``tools/artifacts/plot_external_vmec_time_horizon_gate.py`` is the companion
+``tools/artifacts/plot_external_vmec_nonlinear_convergence_gate.py time-horizon`` is the companion
 time-horizon stability gate for modified-protocol holdout repairs. It consumes
 the JSON outputs from the high-grid convergence gate at several final times,
 requires every input grid gate to pass, and then checks that the high-grid

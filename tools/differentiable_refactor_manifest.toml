@@ -133,7 +133,7 @@ moved_exports = [
   "TEMBaseCase",
   "TEMModelConfig",
 ]
-fast_tests = ["tests/unit/core/test_config.py", "tests/validation/benchmarks/test_benchmarks.py"]
+fast_tests = ["tests/unit/core/test_core_contracts.py", "tests/validation/benchmarks/test_benchmarks.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/inputs.rst"]
 
 [[phase1_split_modules]]
@@ -2423,7 +2423,6 @@ moved_exports = [
 ]
 fast_tests = [
   "tests/unit/quasilinear/test_quasilinear_model_selection.py",
-  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
   "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
@@ -2450,8 +2449,7 @@ status = "closed"
 existing_fast_tests = [
   "tests/unit/objectives/test_stellarator_optimization.py",
   "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-  "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
-  "tests/unit/parallel/test_parallel.py",
+    "tests/unit/parallel/test_parallel.py",
   "tests/unit/parallel/test_nonlinear_parallel.py",
 ]
 planned_tests = [

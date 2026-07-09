@@ -3717,3 +3717,17 @@ following:
   The consolidated Miller test file, VMEC/Miller geometry fast shard,
   validation coverage manifest, differentiable refactor manifest, Python lint
   check, diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated two additional test families and one artifact-tool
+  family. Core callback/config/grid assertions now live in
+  `tests/unit/core/test_core_contracts.py`; quasilinear model-selection
+  fail-closed assertions now live in
+  `tests/unit/quasilinear/test_quasilinear_model_selection.py`; and the
+  external-VMEC time-horizon gate is now the `time-horizon` mode of
+  `tools/artifacts/plot_external_vmec_nonlinear_convergence_gate.py` instead of
+  a standalone one-panel script. The package architecture baselines tightened
+  from 144 to 140 test files and from 182 to 181 tool files. The merged core
+  and quasilinear shards, external-VMEC horizon/convergence artifact tests,
+  direct convergence/time-horizon CLI smoke, validation coverage manifest,
+  differentiable refactor manifest, Python lint check, stale-reference scan,
+  and architecture manifest passed locally.
