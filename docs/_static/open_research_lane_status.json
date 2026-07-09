@@ -217,7 +217,7 @@
         "best_identity_candidate": null,
         "best_identity_candidate_speedup": null,
         "device_count": 2,
-        "engineering_speedup": 0.705882433754711,
+        "engineering_speedup": 0.2114953704830928,
         "full_trace_cpu_warm_seconds": 0.3346847665961832,
         "full_trace_gpu_warm_seconds": 0.012807567021809518,
         "hsx_cpu_full_rhs": 0.3086076334118843,

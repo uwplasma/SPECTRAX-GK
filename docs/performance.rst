@@ -1019,9 +1019,10 @@ It must not be generalized to a transport grid. The matched benchmark-grid
 artifact,
 ``docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json``,
 uses ``(4,8,64,192,24)`` and 20 fixed RK2 steps. Active ``kx`` sharding is
-slower than serial (``0.706x``) and fails trajectory identity
-(``max_abs_state_error=33.32``), even though a final field/RHS diagnostic
-happens to agree. Therefore whole-state nonlinear sharding is blocked from
+slower than serial (``0.211x``) and fails trajectory identity
+(``max_abs_state_error=20.0``). The final RHS also differs by
+``max_abs_rhs_error=1279.39``; a zero potential difference alone is not a
+sufficient diagnostic identity gate. Therefore whole-state nonlinear sharding is blocked from
 production routing and runtime claims. The next implementation must change the
 decomposition, not relax this gate.
 
@@ -1040,9 +1041,12 @@ switches static, memoizes the small grid projector, and reuses a compiled
 sharded runner. On the local ``(2,4,8,8,8)`` two-step smoke workload, three
 post-warmup serial calls take ``0.78--0.90 ms`` and the diagnostic sharded
 wrapper takes ``0.99--1.07 ms`` with exact state identity; before the fix the
-same sharded wrapper took about ``0.41 s`` per repeat. These numbers validate
-compile reuse only. The benchmark-grid GPU artifact must be refreshed before
-changing any application or multi-device speedup claim.
+same sharded wrapper took about ``0.41 s`` per repeat. The refreshed office
+artifact at clean commit ``91c0c2a7`` records a serial median of ``0.893 s``
+and a diagnostic two-GPU median of ``4.22 s`` for 20 RK2 steps. The prior
+serial artifact reported ``15.37 s`` because nominal warm repeats recompiled.
+This is a substantial single-GPU execution fix, but it is not a multi-device
+speedup: the decomposition remains both slower and numerically invalid.
 
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple

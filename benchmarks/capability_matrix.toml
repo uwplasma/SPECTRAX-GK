@@ -142,7 +142,7 @@ group = "optional_extension"
 status = "blocked"
 spectrax_owner = "spectraxgk.parallel and nonlinear device-z diagnostics"
 comparison_owner = "species/Hermite MPI/CUDA decomposition"
-evidence = "benchmark-grid whole-state route is 0.706x and fails trajectory identity"
+evidence = "compile-stable benchmark-grid whole-state route is 0.211x and fails trajectory identity"
 
 [[capabilities]]
 id = "species_hermite_multi_device_decomposition"

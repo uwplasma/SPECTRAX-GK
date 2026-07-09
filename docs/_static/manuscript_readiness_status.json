@@ -166,7 +166,7 @@
       "key_metrics": {
         "best_identity_candidate": null,
         "best_identity_candidate_speedup": null,
-        "engineering_speedup": 0.705882433754711,
+        "engineering_speedup": 0.2114953704830928,
         "full_trace_cpu_warm_seconds": 0.3346847665961832,
         "full_trace_gpu_transpose_count": 32.0,
         "full_trace_gpu_warm_seconds": 0.012807567021809518,

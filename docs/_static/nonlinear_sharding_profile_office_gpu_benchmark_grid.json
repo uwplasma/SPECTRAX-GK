@@ -16,18 +16,20 @@
     "cuda:1"
   ],
   "dt": 0.01,
-  "engineering_speedup": 0.705882433754711,
+  "engineering_speedup": 0.2114953704830928,
+  "git_dirty": false,
+  "git_revision": "91c0c2a78a9874937c34d4f0fb3b3e55a14b180b",
   "identity_gate_pass": false,
   "laguerre_mode": "grid",
-  "max_abs_state_error": 33.32198715209961,
-  "max_rel_state_error": 333219.8799388383,
+  "max_abs_state_error": 20.0,
+  "max_rel_state_error": 200000.00505242508,
   "method": "rk2",
-  "profile_command": "/home/rjorge/tmp/spectrax-gx-audit-ety6Vy/SPECTRAX-GK/.venv/bin/python /home/rjorge/tmp/spectrax-gx-audit-ety6Vy/SPECTRAX-GK/tools/profiling/profile_nonlinear_sharding.py --out-json /tmp/spectrax-shard2-corrected-Q9rBvv/result.json --nx 192 --ny 64 --nz 24 --nl 4 --nm 8 --dt 0.01 --steps 20 --method rk2 --sharding kx --warmups 1 --repeats 1",
+  "profile_command": "/home/rjorge/tmp/spectrax-gx-audit-ety6Vy/SPECTRAX-GK/.venv/bin/python /tmp/spectrax_perf_d5b/tools/profiling/profile_nonlinear_sharding.py --out-json /tmp/nonlinear_compile_reuse_gpu_91c.json --nx 192 --ny 64 --nz 24 --nl 4 --nm 8 --dt 0.01 --steps 20 --method rk2 --sharding kx --warmups 1 --repeats 2",
   "profile_command_argv": [
     "/home/rjorge/tmp/spectrax-gx-audit-ety6Vy/SPECTRAX-GK/.venv/bin/python",
-    "/home/rjorge/tmp/spectrax-gx-audit-ety6Vy/SPECTRAX-GK/tools/profiling/profile_nonlinear_sharding.py",
+    "/tmp/spectrax_perf_d5b/tools/profiling/profile_nonlinear_sharding.py",
     "--out-json",
-    "/tmp/spectrax-shard2-corrected-Q9rBvv/result.json",
+    "/tmp/nonlinear_compile_reuse_gpu_91c.json",
     "--nx",
     "192",
     "--ny",
@@ -49,51 +51,53 @@
     "--warmups",
     "1",
     "--repeats",
-    "1"
+    "2"
   ],
   "profiler_trace": {
     "error": null,
     "path": null,
     "requested": false
   },
-  "repeats": 1,
+  "repeats": 2,
   "serial_stats_s": {
-    "max": 15.366406011000436,
-    "mean": 15.366406011000436,
-    "median": 15.366406011000436,
-    "min": 15.366406011000436,
-    "std": 0.0
+    "max": 0.8930296219987213,
+    "mean": 0.8930276409992075,
+    "median": 0.8930276409992075,
+    "min": 0.8930256599996937,
+    "std": 1.9809995137620717e-06
   },
   "serial_times_s": [
-    15.366406011000436
+    0.8930296219987213,
+    0.8930256599996937
   ],
-  "serial_warm_s": 15.366406011000436,
+  "serial_warm_s": 0.8930276409992075,
   "sharded_results": {
     "kx": {
-      "diagnostic_identity_gate_pass": true,
-      "engineering_speedup_median": 0.705882433754711,
+      "diagnostic_identity_gate_pass": false,
+      "engineering_speedup_median": 0.2114953704830928,
       "error": null,
       "identity_gate_pass": false,
       "max_abs_phi_error": 0.0,
-      "max_abs_rhs_error": 0.0,
-      "max_abs_state_error": 33.32198715209961,
+      "max_abs_rhs_error": 1279.3929443359375,
+      "max_abs_state_error": 20.0,
       "max_rel_phi_error": 0.0,
-      "max_rel_rhs_error": 0.0,
-      "max_rel_state_error": 333219.8799388383,
+      "max_rel_rhs_error": 1.2793929443359374e+33,
+      "max_rel_state_error": 200000.00505242508,
       "state_sharding_active": true,
       "stats_s": {
-        "max": 21.76907269000003,
-        "mean": 21.76907269000003,
-        "median": 21.76907269000003,
-        "min": 21.76907269000003,
-        "std": 0.0
+        "max": 4.293887079002161,
+        "mean": 4.222445337500176,
+        "median": 4.222445337500176,
+        "min": 4.151003595998191,
+        "std": 0.07144174150198523
       },
       "times_s": [
-        21.76907269000003
+        4.151003595998191,
+        4.293887079002161
       ]
     }
   },
-  "sharded_warm_s": 21.76907269000003,
+  "sharded_warm_s": 4.222445337500176,
   "sharding_axis": "kx",
   "sharding_options": [
     "kx"
@@ -105,7 +109,7 @@
     "python": "3.10.12",
     "spectraxgk": "1.6.10"
   },
-  "source_artifact": "/tmp/spectrax-shard2-corrected-Q9rBvv/result.json",
+  "source_artifact": "/tmp/nonlinear_compile_reuse_gpu_91c.json",
   "source_contract_version": 1,
   "state_shape": [
     4,
@@ -119,7 +123,7 @@
   "state_sharding_requested": "kx",
   "steps": 20,
   "timing_warmup_repeat": {
-    "repeats": 1,
+    "repeats": 2,
     "warmups": 1
   },
   "warmups": 1

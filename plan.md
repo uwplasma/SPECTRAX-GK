@@ -65,7 +65,7 @@ Date: 2026-07-09.
 | Public API facade | compact lazy registry | compact registry | closed |
 | Runtime/plot executable path | implemented and tested | stable | closed |
 | Nonlinear A4000 warm step, 192x64x24 | 109 ms fixed / 160 ms adaptive | <=1.25x matched comparison baseline | active |
-| Nonlinear two-GPU whole-state path | 0.706x and identity failure | no production claim; replace decomposition | blocked from claims |
+| Nonlinear two-GPU whole-state path | 0.211x and identity failure | no production claim; replace decomposition | blocked from claims |
 
 ## File Retention Rule
 
@@ -117,7 +117,7 @@ use mathematical names independent of comparison provenance.
 | Source consolidation | 59% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
-| Nonlinear GPU performance | 68% | Refresh the benchmark-grid GPU profile after compile reuse, then move CFL/sampling device-resident before kernel optimization. |
+| Nonlinear GPU performance | 75% | Profile compile-stable sampled diagnostics, then optimize only measured GPU synchronization or materialization bottlenecks. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 84% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
 | Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
@@ -175,8 +175,8 @@ use mathematical names independent of comparison provenance.
   A4000 A/B at `(4,8,64,192,24)` reduced median warm time by about 5--6% while
   preserving the existing field-returning default and its numerical tests.
 - 2026-07-09: Re-ran two-GPU whole-state `kx` sharding on that benchmark grid.
-  It was slower than serial (`0.706x`) and failed trajectory identity
-  (`max_abs_state_error=33.32`), so the result is now a tracked fail-closed
+  It was slower than serial (`0.211x`) and failed trajectory identity
+  (`max_abs_state_error=20.0`), so the result is now a tracked fail-closed
   artifact and the old tiny-grid identity profile is explicitly smoke-only.
 - 2026-07-09: Added `benchmarks/capability_matrix.toml` and a release contract
   that separates required core, differentiable extensions, optional research
@@ -215,6 +215,12 @@ use mathematical names independent of comparison provenance.
   post-warmup smoke profile fell from about 0.41 seconds to about 1 millisecond
   per diagnostic sharded call with exact state identity; benchmark-grid GPU
   profiling remains required before changing performance claims.
+- 2026-07-09: Refreshed the benchmark-grid office GPU profile from clean commit
+  `91c0c2a7`. Compile-stable serial execution is `0.893 s` for 20 RK2 steps,
+  down from `15.37 s`; diagnostic two-GPU `kx` sharding is `4.22 s` median,
+  remains slower (`0.211x`), and still fails state identity. Adaptive CFL is
+  already device-resident inside the JAX scan, so the next profiling target is
+  sampled diagnostics and remaining synchronization/materialization overhead.
 - 2026-07-09: Replaced fourteen identical benchmark request/context packers
   with one typed dataclass-field contract in `spectraxgk.benchmarking.shared`.
   The benchmark facade is now 12512 lines, with hook-bearing TEM policy kept

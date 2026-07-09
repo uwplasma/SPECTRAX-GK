@@ -1103,8 +1103,9 @@ def test_nonlinear_sharding_profiles_are_identity_gated_and_scoped() -> None:
     )
     assert (
         benchmark_gpu["sharded_results"]["kx"]["diagnostic_identity_gate_pass"]
-        is True
+        is False
     )
+    assert benchmark_gpu["sharded_results"]["kx"]["max_abs_rhs_error"] > 1.0
     assert benchmark_gpu["sharded_results"]["kx"]["identity_gate_pass"] is False
 
 
