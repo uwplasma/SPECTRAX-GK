@@ -3537,3 +3537,14 @@ following:
   tightened from 150 to 149. The consolidated VMEC/Boozer validation shard,
   Python lint check, validation manifest, release tests, compile check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated
+  `tests/validation/stellarator/test_external_holdout_plan.py` and
+  `tests/validation/stellarator/test_check_external_vmec_high_grid_admission.py`
+  into `tests/validation/stellarator/test_external_vmec_validation_policy.py`.
+  External-VMEC nonlinear holdout planning and scoped high-grid admission now
+  share one validation-policy owner while keeping the artifact-tool and
+  release-tool modules explicit in the tests. The package architecture test
+  baseline tightened from 149 to 148. The consolidated external-VMEC validation
+  shard, Python lint check, validation manifest, release tests, compile check,
+  diff hygiene, and architecture manifest passed locally.
