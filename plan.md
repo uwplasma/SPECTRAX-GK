@@ -3805,3 +3805,24 @@ following:
   direct solver/VMEC-Boozer CLI help and frequency JSON smoke, Python lint
   check, stale-reference scan, validation coverage manifest, differentiable
   refactor manifest, and package architecture manifest passed locally.
+
+- 2026-07-09: folded the VMEC/Boozer aggregate-objective artifact family into
+  `tools/artifacts/build_vmec_boozer_aggregate_objective_gate.py`. The canonical
+  command now owns the default finite-difference gate plus the `line-search`,
+  `line-search-comparison`, `multi-point`, and `second-equilibrium` subcommands,
+  replacing three one-off wrapper scripts while preserving the report and writer
+  helper names used by tests and downstream status builders. The package
+  architecture tool baseline tightened from 177 to 174. The focused VMEC/Boozer
+  artifact shard, aggregate holdout validation shard, readiness command shard,
+  command-help smoke checks, Python lint/format checks, stale-reference scan,
+  validation coverage manifest, differentiable refactor manifest, and package
+  architecture manifest passed locally.
+
+- 2026-07-09: fixed the GitHub Actions quick-test matrix after the latest test
+  consolidations. The `fundamentals-core` shard now points at the consolidated
+  core contracts file instead of deleted `test_config.py` and `test_grids.py`,
+  and the runtime quick/coverage commands now use the consolidated
+  `tests/unit/solvers/test_diffrax_integrators_core.py` owner only. The workflow
+  YAML parsed locally, the matrix path guard in
+  `tests/release/test_release_hygiene_gates.py` passed, and bounded affected
+  fundamentals/runtime subsets passed locally.

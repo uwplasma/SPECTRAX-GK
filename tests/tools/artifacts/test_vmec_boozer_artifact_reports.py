@@ -12,17 +12,11 @@ import pytest
 from support.paths import load_artifact_tool
 
 from tools.artifacts import build_vmec_boozer_aggregate_holdout_gate as holdout_gate
-from tools.artifacts import (
-    build_vmec_boozer_aggregate_line_search_comparison as comparison_gate,
-)
 from tools.artifacts import build_vmec_boozer_aggregate_objective_gate as objective_gate
-from tools.artifacts import (
-    build_vmec_boozer_multi_point_objective_gate as multi_point_gate,
-)
-from tools.artifacts import (
-    build_vmec_boozer_second_equilibrium_aggregate_gate as second_gate,
-)
 
+comparison_gate = objective_gate
+multi_point_gate = objective_gate
+second_gate = objective_gate
 
 
 def _write_gradient_gate(
@@ -476,8 +470,7 @@ def test_vmec_boozer_gradient_builder_frequency_and_quasilinear_json_only(
     )
     frequency_payload = json.loads(capsys.readouterr().out)
     assert (
-        frequency_payload["kind"]
-        == "mode21_vmec_boozer_linear_frequency_gradient_gate"
+        frequency_payload["kind"] == "mode21_vmec_boozer_linear_frequency_gradient_gate"
     )
 
     assert (
@@ -485,9 +478,7 @@ def test_vmec_boozer_gradient_builder_frequency_and_quasilinear_json_only(
         == 0
     )
     quasilinear_payload = json.loads(capsys.readouterr().out)
-    assert (
-        quasilinear_payload["kind"] == "mode21_vmec_boozer_quasilinear_gradient_gate"
-    )
+    assert quasilinear_payload["kind"] == "mode21_vmec_boozer_quasilinear_gradient_gate"
 
     assert [name for name, _ in calls] == ["frequency", "quasilinear"]
     assert calls[0][1]["mboz"] == 21
@@ -1358,6 +1349,7 @@ def test_comparison_main_uses_report(monkeypatch, tmp_path: Path) -> None:
 
     result = comparison_gate.main(
         [
+            "line-search-comparison",
             "--out",
             str(tmp_path / "comparison.png"),
             "--selected-ky-indices",
@@ -1448,6 +1440,7 @@ def test_multi_point_main_uses_report_and_bounds(monkeypatch, tmp_path: Path) ->
 
     result = multi_point_gate.main(
         [
+            "multi-point",
             "--out",
             str(tmp_path / "gate.png"),
             "--surface-indices",
@@ -1504,7 +1497,7 @@ def test_multi_point_main_rejects_invalid_coverage(
     )
 
     with pytest.raises(SystemExit):
-        multi_point_gate.main(argv)
+        multi_point_gate.main(["multi-point", *argv])
 
 
 def test_second_equilibrium_payload_passes_with_mode21_defaults(monkeypatch) -> None:
@@ -1595,6 +1588,7 @@ def test_second_equilibrium_json_only_uses_reports(monkeypatch, capsys) -> None:
 
     result = second_gate.main(
         [
+            "second-equilibrium",
             "--case-name",
             "nfp3_QI_fixed_resolution_final",
             "--selected-ky-indices",
