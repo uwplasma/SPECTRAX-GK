@@ -1195,10 +1195,10 @@ Parallelization identity gates
 Independent scan and ensemble parallelization is tested before it is used for
 performance claims:
 
-- ``tests/unit/parallel/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
+- ``tests/unit/parallel/test_parallel_core.py`` locks the ``batch_map`` / ``ky_scan_batches``
   helper semantics, including deterministic padding, one-device fallback, and
   pytree outputs used by UQ and sensitivity workflows.
-- ``tests/unit/parallel/test_velocity_sharding.py`` locks the species/Hermite
+- ``tests/unit/parallel/test_parallel_linear_velocity.py`` locks the species/Hermite
   velocity-decomposition planner. These tests verify load balance metadata,
   Hermite ghost-exchange flags, and field-reduction axes before any production
   ``shard_map`` implementation can use that layout. The same test file also
@@ -1210,11 +1210,10 @@ performance claims:
   including final-state-only profiling mode and the config-runner route through
   ``TimeConfig.state_sharding``. These are numerical-identity and control-flow
   gates, not speedup claims.
-- ``tests/unit/parallel/test_nonlinear_domain_parallel.py`` and
-  ``tests/unit/parallel/test_nonlinear_spectral_communication_gate.py`` lock the diagnostic
-  nonlinear decomposition gates. The first covers one-cell halo chunks for a
-  bounded local stencil. The second covers split/reassemble spectral layout
-  identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
+- ``tests/unit/parallel/test_parallel_nonlinear.py`` locks the diagnostic
+  nonlinear decomposition gates. It covers one-cell halo chunks for a bounded
+  local stencil plus split/reassemble spectral layout identity for FFT round
+  trip, pseudo-spectral bracket, and field-solve layout.
   Both fail closed and carry no production routing or speedup claim.
 - ``tests/tools/artifacts/test_transport_artifact_tools.py`` tests the
   parallel identity artifact family: velocity reduction, Hermite exchange and
@@ -1222,7 +1221,7 @@ performance claims:
   routes, independent ``k_y`` batching, logical CPU batching, and quasilinear
   runtime batching. It replaces the previous one-file-per-gate tests with one
   parametrized artifact-family suite.
-- ``tests/unit/parallel/test_parallel_artifact_contracts.py`` locks the tracked large-run
+- ``tests/unit/parallel/test_parallel_artifacts.py`` locks the tracked large-run
   scaling artifacts themselves. It requires the performance and validation
   manifests to list the CPU/GPU split artifacts, verifies serial numerical
   identity for independent ``k_y`` and quasilinear/UQ rows, checks that
@@ -1464,12 +1463,12 @@ benchmark figures move):
   continuous run. This now covers both the raw binary state path and the
   nonlinear ``*.restart.nc`` bundle path, together with append-on-restart
   history preservation in ``*.out.nc``.
-- **CPU/GPU short-window parity** (optional): ``tests/unit/parallel/test_parallel.py -k cpu_gpu``
+- **CPU/GPU short-window parity** (optional): ``tests/unit/parallel/test_parallel_core.py -k cpu_gpu``
   compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
 
   .. code-block:: bash
 
-     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_parallel.py -k cpu_gpu
+     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_parallel_core.py -k cpu_gpu
 
 - **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_eik.py -k roundtrip``
   regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the

@@ -114,7 +114,7 @@ def test_module_refactor_contract_tracks_facades_gates_and_extension_points() ->
         name="linear-growth-fd",
         category="autodiff",
         observable="gamma",
-        evidence=("tests/unit/objectives/test_solver_objective_gradients.py",),
+        evidence=("tests/unit/objectives/test_autodiff_solver_objectives.py",),
         tolerance="rtol <= 1e-3",
         literature_anchors=("Cyclone Base Case",),
     )

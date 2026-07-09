@@ -1,4 +1,10 @@
+"""Unit contracts: parallel artifacts."""
+
 from __future__ import annotations
+
+
+
+# ---- test_parallel_artifact_contracts.py ----
 
 import json
 from pathlib import Path

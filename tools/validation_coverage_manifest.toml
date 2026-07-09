@@ -50,10 +50,10 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/core/test_core_contracts.py",
-  "tests/unit/objectives/test_stellarator_optimization.py",
-  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-  "tests/unit/parallel/test_parallel.py",
-  "tests/unit/parallel/test_nonlinear_parallel.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
+  "tests/unit/parallel/test_parallel_core.py",
+  "tests/unit/parallel/test_parallel_nonlinear.py",
 ]
 artifact_paths = [
   "docs/code_structure.rst",
@@ -377,8 +377,8 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/linear/test_linear.py",
   "tests/unit/linear/test_linear_helpers_extra.py",
-  "tests/unit/parallel/test_velocity_sharding.py",
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/parallel/test_parallel_linear_velocity.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -584,8 +584,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/linear/test_linear_helpers_extra.py",
-  "tests/unit/parallel/test_linear_parallel_dispatch.py",
-  "tests/unit/parallel/test_velocity_sharding.py",
+  "tests/unit/parallel/test_parallel_linear_velocity.py",
 ]
 artifact_paths = [
   "docs/_static/linear_rhs_streaming_gate.json",
@@ -629,8 +628,7 @@ fast_tests = [
   "tests/unit/solvers/test_nonlinear_explicit_step.py",
   "tests/unit/solvers/test_nonlinear_imex.py",
   "tests/unit/nonlinear/test_nonlinear_exb.py",
-  "tests/unit/parallel/test_nonlinear_domain_parallel.py",
-  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/parallel/test_parallel_nonlinear.py",
   "tests/unit/operators/test_terms_assembly.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/tools/artifacts/test_general_artifact_tools.py",
@@ -856,9 +854,7 @@ numerics_contracts = [
   "profiler artifacts separate identity failures from speedup failures and record blocker reasons explicitly",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_nonlinear_parallel.py",
-  "tests/unit/parallel/test_nonlinear_domain_parallel.py",
-  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/parallel/test_parallel_nonlinear.py",
   "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py",
 ]
@@ -904,8 +900,7 @@ numerics_contracts = [
   "host-staged sharding and allclose-style tolerance helpers keep device-routing artifacts fail-closed and reproducible",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_nonlinear_parallel.py",
-  "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
+  "tests/unit/parallel/test_parallel_nonlinear.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_spectral_communication_identity_gate.json",
@@ -940,7 +935,7 @@ numerics_contracts = [
   "observable reductions compare final state, free energy, field energy, physical-flux proxy, and bracket RMS before enabling decomposed routing",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_nonlinear_parallel.py",
+  "tests/unit/parallel/test_parallel_nonlinear.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_device_z_pencil_rhs_cpu4_profile.json",
@@ -1449,7 +1444,7 @@ numerics_contracts = [
   "AD/JVP finite-difference and conditioning gates are required before optimizer use",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_zonal_objective.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
@@ -1483,7 +1478,7 @@ numerics_contracts = [
   "finite-difference helper ownership lives with the objective autodiff validation utilities",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_autodiff_validation.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/integration/examples/test_examples.py",
 ]
 artifact_paths = [
@@ -1621,7 +1616,7 @@ numerics_contracts = [
   "JAX-traced geometry mappings must preserve autodiff and match central finite differences for geometry observables",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_differentiable_geometry_bridge.py",
+  "tests/unit/objectives/test_differentiable_geometry_objectives.py",
   "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_vmec_eik.py",
@@ -2005,11 +2000,10 @@ numerics_contracts = [
   "strong-scaling panels separate compile, transfer, and warm runtime",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_sharding.py",
+  "tests/unit/parallel/test_parallel_core.py",
   "tests/unit/solvers/test_sharded_integrators.py",
-  "tests/unit/parallel/test_parallel.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
-  "tests/unit/parallel/test_velocity_sharding.py",
+  "tests/unit/parallel/test_parallel_linear_velocity.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",
@@ -2100,7 +2094,7 @@ numerics_contracts = [
   "branch gap, slope difference, and finite eigenvalue guards fail closed before optimization promotion",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2132,7 +2126,7 @@ numerics_contracts = [
   "scalar objective aliases map to canonical objective-vector entries with length validation",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2164,7 +2158,7 @@ numerics_contracts = [
   "aggregate weights must be finite, positive-sum, and normalized before objective reduction",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
@@ -2195,7 +2189,7 @@ numerics_contracts = [
   "finite-difference and AD Jacobian rows are compared with explicit absolute and relative tolerances",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -2226,7 +2220,7 @@ numerics_contracts = [
   "solver-ready value evaluators must remain finite and shape-compatible with the solver-objective vector contract",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
@@ -2258,7 +2252,7 @@ numerics_contracts = [
   "context and feature hooks must be dependency-injected so tests can validate the gradient-gate math without optional geometry backends",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/unit/solvers/test_solver_gradient_gate_modules.py",
 ]
 artifact_paths = [
@@ -2323,7 +2317,7 @@ numerics_contracts = [
   "weighted reductions normalize finite positive-sum weights before multiplying solver objective rows",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
@@ -2356,7 +2350,7 @@ numerics_contracts = [
   "weighted aggregate reductions must use finite normalized positive-sum weights inherited from the sampling contract",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_objective_gate.json",
@@ -2389,7 +2383,7 @@ numerics_contracts = [
   "holdout audits must recompute initial and final held-out objectives at the accepted coefficient offset",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_aggregate_line_search_gate.json",
@@ -2452,7 +2446,7 @@ numerics_contracts = [
   "iota-profile checks ignore the magnetic-axis singular point while preserving minimum-profile gates",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
   "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
 ]
 artifact_paths = [
@@ -2484,7 +2478,7 @@ numerics_contracts = [
   "single-grid-compatible ky sets are detected deterministically before packed runtime generation",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_transport_admission.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
   "tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py",
 ]
 artifact_paths = [
@@ -2516,7 +2510,7 @@ numerics_contracts = [
   "prelaunch cross-sample dispersion uses weighted standard errors normalized by finite weighted means",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_transport_admission.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
@@ -2575,19 +2569,14 @@ numerics_contracts = [
   "optimized-equilibrium nonlinear transport promotion requires seed and timestep long-window replicate audits with finite flux, running-mean stability, block/SEM stability, and bounded ensemble spread",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
-  "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
-  "tests/unit/objectives/test_vmec_jax_candidate_gate.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
   "tests/validation/stellarator/test_vmec_jax_qa_transport_optimization.py",
-  "tests/unit/objectives/test_vmec_jax_transport_admission.py",
-  "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
-  "tests/unit/objectives/test_vmec_jax_transport_line_search.py",
-  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
   "tests/tools/campaigns/test_vmec_jax_campaign_writer_contracts.py",
 ]
 artifact_paths = [
@@ -2915,7 +2904,7 @@ numerics_contracts = [
   "sample and objective weights are finite, non-negative, normalized, and shape checked",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -2945,7 +2934,7 @@ numerics_contracts = [
   "row-Jacobian conditioning and covariance diagnostics are reported with explicit rank gates",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -2974,7 +2963,7 @@ numerics_contracts = [
   "optional backend paths are pinned reproducibly when imported VMEC-JAX/Boozer modules are already active",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
@@ -3003,8 +2992,7 @@ numerics_contracts = [
   "surface chunking preserves weighted-mean reductions exactly against unchunked evaluation",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
-  "tests/unit/objectives/test_vmec_jax_transport_gradient.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
@@ -3034,7 +3022,7 @@ numerics_contracts = [
   "evaluation errors are converted into explicit failed gate rows",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_vmec_jax_transport_objective.py",
+  "tests/unit/objectives/test_vmec_transport_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -3064,8 +3052,7 @@ numerics_contracts = [
   "portfolio scalar reductions pass AD/FD, conditioning, and covariance gates before promotion",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_stellarator_optimization.py",
-  "tests/unit/objectives/test_stellarator_objective_portfolio.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_itg_portfolio_gate.json",
@@ -3096,7 +3083,7 @@ numerics_contracts = [
   "covariance gates require finite singular values, sufficient rank, and bounded condition numbers",
 ]
 fast_tests = [
-  "tests/unit/objectives/test_stellarator_optimization.py",
+  "tests/unit/objectives/test_autodiff_solver_objectives.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_itg_optimization_uq.png",
@@ -3160,7 +3147,7 @@ numerics_contracts = [
   "multi-device batches pad only by edge repetition and drop padded outputs deterministically",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_parallel.py",
+  "tests/unit/parallel/test_parallel_core.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
 ]
 artifact_paths = [
@@ -3228,7 +3215,7 @@ numerics_contracts = [
   "serial reconstruction identity fails closed on missing, duplicate, out-of-range, or out-of-order indices",
 ]
 fast_tests = [
-  "tests/unit/parallel/test_parallel_decomposition.py",
+  "tests/unit/parallel/test_parallel_core.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_decomposition_status.json",

@@ -39,7 +39,7 @@ Date: 2026-07-09.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 243 | 100 | active |
 | Tool Python files | 139 | 99 | active |
-| Test Python files | 113 | 99 | active |
+| Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
@@ -75,7 +75,7 @@ branch/PR.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Tool consolidation | 50% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
-| Test consolidation | 78% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
+| Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 38% | Shrink `spectraxgk.benchmarks`, merge `geometry_backends` into `geometry`, and resolve `terms`/`operators` ownership. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
@@ -129,6 +129,9 @@ branch/PR.
   suites: general, transport, quasilinear, and stellarator/status artifacts;
   total test file count dropped from 120 to 113 while preserving all artifact
   contracts.
+- 2026-07-09: Consolidated objectives and parallel unit tests into seven
+  domain suites, reducing total test file count from 113 to 98 and closing the
+  active test-file-count target without changing advertised solver behavior.
 
 ## Validation Commands For This Tranche
 

@@ -1,14 +1,333 @@
+"""Unit contracts: parallel nonlinear."""
+
 from __future__ import annotations
 
-import json
+
+
+# ---- test_nonlinear_domain_parallel.py ----
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
-import spectraxgk
 import spectraxgk.operators.nonlinear.parallel as nonlinear_parallel
+import spectraxgk.operators.nonlinear.domain_decomposition as nonlinear_parallel_domain
+from spectraxgk.operators.nonlinear.parallel import (
+    NonlinearDomainDecompositionPlan,
+    build_nonlinear_domain_decomposition_plan,
+    deterministic_nonlinear_domain_state,
+    nonlinear_domain_identity_report,
+    nonlinear_domain_parallel_identity_gate,
+    nonlinear_domain_transport_window_identity_gate,
+    local_stencil_nonlinear_domain_decomposed_step,
+    local_stencil_nonlinear_domain_serial_step,
+)
+
+
+def test_nonlinear_domain_facade_reexports_domain_gate_functions() -> None:
+    public_domain_names = (
+        "build_nonlinear_domain_decomposition_plan",
+        "deterministic_nonlinear_domain_state",
+        "nonlinear_domain_identity_report",
+        "nonlinear_domain_parallel_identity_gate",
+        "nonlinear_domain_transport_window_identity_gate",
+        "local_stencil_nonlinear_domain_decomposed_step",
+        "local_stencil_nonlinear_domain_serial_step",
+    )
+
+    for name in public_domain_names:
+        assert getattr(nonlinear_parallel, name) is getattr(
+            nonlinear_parallel_domain,
+            name,
+        )
+
+
+def test_nonlinear_domain_plan_uses_static_halo_chunks() -> None:
+    plan = build_nonlinear_domain_decomposition_plan(
+        (7, 3),
+        axis=-2,
+        num_domains=3,
+    )
+
+    assert plan == NonlinearDomainDecompositionPlan(
+        state_shape=(7, 3),
+        axis=0,
+        chunk_sizes=(3, 2, 2),
+        halo=1,
+    )
+    assert plan.num_domains == 3
+    assert plan.domain_size == 7
+    assert plan.offsets == (0, 3, 5)
+    assert plan.chunk_bounds == ((0, 3), (3, 5), (5, 7))
+    assert plan.boundary_indices == (0, 2, 3, 4, 5, 6)
+    assert plan.decomposition_metadata() == {
+        "state_shape": (7, 3),
+        "axis": 0,
+        "chunk_sizes": (3, 2, 2),
+        "halo": 1,
+        "num_domains": 3,
+        "domain_size": 7,
+        "offsets": (0, 3, 5),
+        "chunk_bounds": ((0, 3), (3, 5), (5, 7)),
+        "boundary_indices": (0, 2, 3, 4, 5, 6),
+    }
+    assert plan.to_dict() == {
+        "state_shape": (7, 3),
+        "axis": 0,
+        "chunk_sizes": (3, 2, 2),
+        "halo": 1,
+    }
+
+
+def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+
+    gated_state, report = nonlinear_domain_parallel_identity_gate(
+        state,
+        plan,
+        dt=0.025,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.025)
+    decomposed = local_stencil_nonlinear_domain_decomposed_step(state, plan, dt=0.025)
+
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.gate_name == "nonlinear_domain_local_stencil_identity"
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
+    assert report.max_abs_error <= report.atol
+    assert report.max_rel_error <= report.rtol
+    assert report.boundary_indices == (0, 2, 3, 5)
+    assert report.boundary_max_abs_error <= report.atol
+    assert report.boundary_max_rel_error <= report.rtol
+    assert "bounded local-stencil diagnostic" in report.claim_scope
+    assert "no production routing or speedup claim" in report.claim_scope
+    assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
+    assert jnp.allclose(gated_state, decomposed, atol=1.0e-6, rtol=1.0e-6)
+
+
+def test_nonlinear_domain_transport_window_gate_tracks_conservation_proxies() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+
+    report = nonlinear_domain_transport_window_identity_gate(
+        state,
+        plan,
+        dt=0.025,
+        steps=5,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.gate_name == "nonlinear_domain_transport_window_identity"
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.steps == 5
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
+    assert report.boundary_indices == (0, 2, 3, 5)
+    assert report.max_abs_state_error <= report.atol
+    assert report.max_abs_boundary_error <= report.atol
+    assert report.mass_trace_max_abs_error <= report.atol
+    assert report.mass_trace_max_rel_error <= report.rtol
+    assert report.free_energy_trace_max_abs_error <= report.atol
+    assert report.free_energy_trace_max_rel_error <= report.rtol
+    assert report.flux_proxy_trace_max_abs_error <= report.atol
+    assert report.flux_proxy_trace_max_rel_error <= report.rtol
+    assert len(report.serial_mass_trace) == report.steps + 1
+    assert len(report.decomposed_free_energy_trace) == report.steps + 1
+    assert report.serial_mass_drift == pytest.approx(report.decomposed_mass_drift)
+    assert report.serial_free_energy_drift == pytest.approx(
+        report.decomposed_free_energy_drift
+    )
+    assert "transport-window identity gate" in report.claim_scope
+    assert "no production routing or speedup claim" in report.claim_scope
+    assert report.to_dict()["identity_passed"] is True
+
+
+def test_nonlinear_domain_transport_window_gate_fails_closed_on_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=0,
+        chunk_sizes=(2, 2),
+        halo=1,
+    )
+
+    report = nonlinear_domain_transport_window_identity_gate(
+        state,
+        invalid_plan,
+        steps=2,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is False
+    assert report.blocked_reasons == ("chunk_sizes_do_not_cover_axis",)
+    assert report.max_abs_state_error == float("inf")
+    assert report.mass_trace_max_abs_error == float("inf")
+
+
+def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
+    state = deterministic_nonlinear_domain_state((5, 3))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
+    perturbed = serial.at[0, 0].add(1.0e-3)
+
+    report = nonlinear_domain_identity_report(
+        serial,
+        perturbed,
+        plan,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
+    assert report.max_abs_error > report.atol
+    assert report.boundary_max_abs_error > report.atol
+    assert report.to_dict()["identity_passed"] is False
+
+
+def test_nonlinear_domain_identity_report_blocks_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=0,
+        chunk_sizes=(2, 2),
+        halo=1,
+    )
+
+    report = nonlinear_domain_identity_report(
+        state,
+        state,
+        invalid_plan,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is False
+    assert report.blocked_reasons == ("chunk_sizes_do_not_cover_axis",)
+
+
+def test_nonlinear_domain_identity_report_blocks_shape_mismatch() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    candidate = deterministic_nonlinear_domain_state((5, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+
+    report = nonlinear_domain_identity_report(
+        state,
+        candidate,
+        plan,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ("decomposed_shape_does_not_match_serial",)
+    assert report.max_abs_error == float("inf")
+    assert report.max_rel_error == float("inf")
+
+
+def test_nonlinear_domain_decomposed_step_is_jax_jittable_with_static_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, axis=0, num_domains=3)
+
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
+    jit_step = jax.jit(
+        lambda item: local_stencil_nonlinear_domain_decomposed_step(item, plan, dt=0.05)
+    )
+    decomposed = jit_step(state)
+
+    assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
+
+
+def test_nonlinear_domain_plan_rejects_unsupported_or_invalid_domains() -> None:
+    with pytest.raises(ValueError, match="num_domains cannot exceed"):
+        build_nonlinear_domain_decomposition_plan((2, 4), num_domains=3)
+    with pytest.raises(ValueError, match="one-cell halo"):
+        build_nonlinear_domain_decomposition_plan((4, 4), halo=2)
+    with pytest.raises(ValueError, match="non-empty"):
+        build_nonlinear_domain_decomposition_plan((0, 4))
+
+
+def test_nonlinear_domain_decomposed_step_rejects_manual_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=-1,
+        chunk_sizes=(3, 3),
+        halo=1,
+    )
+
+    with pytest.raises(ValueError, match="axis_not_canonical"):
+        local_stencil_nonlinear_domain_decomposed_step(state, invalid_plan)
+
+
+def test_nonlinear_domain_fail_closed_edge_branches() -> None:
+    with pytest.raises(ValueError, match="state_shape"):
+        build_nonlinear_domain_decomposition_plan(())
+    with pytest.raises(ValueError, match="num_domains"):
+        build_nonlinear_domain_decomposition_plan((4, 4), num_domains=0)
+    with pytest.raises(ValueError, match="shape"):
+        deterministic_nonlinear_domain_state(())
+    with pytest.raises(ValueError, match="shape entries"):
+        deterministic_nonlinear_domain_state((4, 0))
+
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+    with pytest.raises(ValueError, match="state shape"):
+        local_stencil_nonlinear_domain_decomposed_step(state[:5], plan)
+    with pytest.raises(ValueError, match="steps"):
+        nonlinear_domain_transport_window_identity_gate(state, plan, steps=0)
+
+    single_chunk_plan = build_nonlinear_domain_decomposition_plan(
+        state.shape,
+        num_domains=1,
+    )
+    mass, free_energy, flux_proxy = (
+        nonlinear_parallel_domain._nonlinear_domain_transport_observables(
+            state,
+            single_chunk_plan,
+        )
+    )
+    assert mass > 0.0
+    assert free_energy > 0.0
+    assert flux_proxy > 0.0
+    assert nonlinear_parallel_domain._relative_trace_error(
+        (1.0, 2.0),
+        (1.0,),
+        floor=1.0e-6,
+    ) == (float("inf"), float("inf"))
+    assert nonlinear_parallel_domain._trace_drift((1.0,)) == 0.0
+
+    shape_mismatch_report = nonlinear_domain_transport_window_identity_gate(
+        state[:5],
+        plan,
+        steps=1,
+    )
+    assert shape_mismatch_report.identity_passed is False
+    assert shape_mismatch_report.blocked_reasons == ("state_shape_does_not_match_plan",)
+
+
+# ---- test_nonlinear_parallel.py ----
+
+import json
+
+import numpy as np
+
+import spectraxgk
 import spectraxgk.operators.nonlinear.parallel_contracts_domain as nonlinear_parallel_contracts_domain
 import spectraxgk.operators.nonlinear.parallel_contracts_spectral as nonlinear_parallel_contracts_spectral
 import spectraxgk.operators.nonlinear.parallel_contracts_strategy as nonlinear_parallel_contracts_strategy
@@ -18,7 +337,6 @@ import spectraxgk.operators.nonlinear.spectral_identity_integrator as spectral_i
 import spectraxgk.operators.nonlinear.spectral_identity_reports as spectral_identity_reports
 import spectraxgk.operators.nonlinear.spectral_identity_rhs as spectral_identity_rhs
 from spectraxgk.operators.nonlinear.parallel import (
-    NonlinearDomainDecompositionPlan,
     NonlinearDomainIdentityReport,
     NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
@@ -1104,3 +1422,280 @@ def test_strategy_policy_separates_identity_physics_and_profiler_gates() -> None
     assert "final_state" in " ".join(whole_state.identity_gates)
     assert "nonlinear_window" in " ".join(whole_state.physics_gates)
     assert "whole_state_scaling_profile" in " ".join(whole_state.profiler_gates)
+
+
+# ---- test_nonlinear_spectral_communication_gate.py ----
+
+
+from spectraxgk.operators.nonlinear.parallel import (
+    NonlinearSpectralIntegratorIdentityReport,
+    deterministic_nonlinear_spectral_state,
+    device_z_pencil_nonlinear_spectral_transport_window_identity_gate,
+    logical_decomposed_nonlinear_spectral_rhs,
+    nonlinear_spectral_communication_identity_gate,
+    nonlinear_spectral_communication_identity_report,
+    nonlinear_spectral_integrator_identity_gate,
+    nonlinear_spectral_rhs_identity_gate,
+    nonlinear_spectral_rhs_identity_report,
+)
+
+
+def test_nonlinear_spectral_communication_gate_closes_fft_bracket_and_field_layouts() -> (
+    None
+):
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_spectral_communication_identity_gate(
+        state,
+        y_chunks=(2, 2, 2),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralCommunicationReport)
+    assert report.state_shape == (2, 3, 6, 4, 2)
+    assert report.y_chunks == (2, 2, 2)
+    assert report.x_chunks == (2, 2)
+    assert report.y_offsets == (0, 2, 4)
+    assert report.x_offsets == (0, 2)
+    assert report.blocked_reasons == ()
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.fft_max_abs_error <= report.atol
+    assert report.fft_max_rel_error <= report.rtol
+    assert report.bracket_max_abs_error <= report.atol
+    assert report.bracket_max_rel_error <= report.rtol
+    assert report.field_max_abs_error <= report.atol
+    assert report.field_max_rel_error <= report.rtol
+    assert "no production routing or speedup claim" in report.claim_scope
+    assert report.to_dict()["identity_passed"] is True
+
+
+def test_nonlinear_spectral_communication_report_fails_closed_on_mismatch() -> None:
+    reference = jnp.ones((2, 3, 6, 4, 2), dtype=jnp.complex64)
+    perturbed = reference.at[0, 0, 0, 0, 0].add(1.0e-3)
+    field = jnp.ones((6, 4, 2), dtype=jnp.complex64)
+
+    report = nonlinear_spectral_communication_identity_report(
+        reference,
+        perturbed,
+        reference,
+        reference,
+        field,
+        field,
+        state_shape=(2, 3, 6, 4, 2),
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.fft_max_abs_error > report.atol
+    assert report.blocked_reasons == ()
+
+
+def test_nonlinear_spectral_communication_report_fails_closed_on_shape_blocker() -> (
+    None
+):
+    reference = jnp.ones((2, 3, 6, 4, 2), dtype=jnp.complex64)
+    communicated = jnp.ones((2, 3, 5, 4, 2), dtype=jnp.complex64)
+    field = jnp.ones((6, 4, 2), dtype=jnp.complex64)
+
+    report = nonlinear_spectral_communication_identity_report(
+        reference,
+        communicated,
+        reference,
+        reference,
+        field,
+        field,
+        state_shape=(2, 3, 6, 4, 2),
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.fft_max_abs_error == float("inf")
+    assert report.fft_max_rel_error == float("inf")
+    assert report.blocked_reasons == ("communicated_fft_roundtrip_shape_mismatch",)
+
+
+def test_nonlinear_spectral_rhs_identity_gate_reconstructs_ordered_logical_tiles() -> (
+    None
+):
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_spectral_rhs_identity_gate(
+        state,
+        y_chunks=(2, 1, 3),
+        x_chunks=(1, 3),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralRHSIdentityReport)
+    assert report.state_shape == (2, 3, 6, 4, 2)
+    assert report.y_chunks == (2, 1, 3)
+    assert report.x_chunks == (1, 3)
+    assert report.y_offsets == (0, 2, 3)
+    assert report.x_offsets == (0, 1)
+    assert report.tile_bounds == (
+        (0, 2, 0, 1),
+        (0, 2, 1, 4),
+        (2, 3, 0, 1),
+        (2, 3, 1, 4),
+        (3, 6, 0, 1),
+        (3, 6, 1, 4),
+    )
+    assert report.blocked_reasons == ()
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.reconstruction_max_abs_error <= report.atol
+    assert report.reconstruction_max_rel_error <= report.rtol
+    assert report.field_max_abs_error <= report.atol
+    assert report.field_max_rel_error <= report.rtol
+    assert report.bracket_max_abs_error <= report.atol
+    assert report.bracket_max_rel_error <= report.rtol
+    assert report.rhs_max_abs_error <= report.atol
+    assert report.rhs_max_rel_error <= report.rtol
+    assert "existing bracket contribution" in report.claim_scope
+    assert "no production routing or speedup claim" in report.claim_scope
+    assert report.to_dict()["tile_bounds"] == report.tile_bounds
+
+
+def test_logical_decomposed_nonlinear_spectral_rhs_returns_gated_rhs() -> None:
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    rhs, report = logical_decomposed_nonlinear_spectral_rhs(
+        state,
+        y_chunks=(2, 1, 3),
+        x_chunks=(1, 3),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralRHSIdentityReport)
+    assert rhs.shape == state.shape
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.rhs_max_abs_error <= report.atol
+    assert report.rhs_max_rel_error <= report.rtol
+
+
+def test_nonlinear_spectral_integrator_identity_gate_closes_multistep_route() -> None:
+    state = deterministic_nonlinear_spectral_state((2, 3, 6, 4, 2))
+
+    report = nonlinear_spectral_integrator_identity_gate(
+        state,
+        y_chunks=(2, 1, 3),
+        x_chunks=(1, 3),
+        steps=3,
+        dt=0.0025,
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert isinstance(report, NonlinearSpectralIntegratorIdentityReport)
+    assert report.state_shape == (2, 3, 6, 4, 2)
+    assert report.y_offsets == (0, 2, 3)
+    assert report.x_offsets == (0, 1)
+    assert report.steps == 3
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.final_state_max_rel_error <= report.rtol
+    assert report.free_energy_trace_max_abs_error <= report.atol
+    assert report.field_energy_trace_max_abs_error <= report.atol
+    assert report.flux_proxy_trace_max_abs_error <= report.atol
+    assert len(report.serial_free_energy_trace) == report.steps + 1
+    assert (
+        "no production distributed FFT routing or speedup claim" in report.claim_scope
+    )
+    assert report.to_dict()["identity_passed"] is True
+
+
+def test_device_z_transport_window_long_compute_route_passes_when_devices_available() -> (
+    None
+):
+    devices = tuple(jax.devices())
+    if len(devices) < 2:
+        pytest.skip("requires at least two local JAX devices")
+
+    state = deterministic_nonlinear_spectral_state((2, 4, 12, 10, 4))
+    report = device_z_pencil_nonlinear_spectral_transport_window_identity_gate(
+        state,
+        devices=devices[:2],
+        steps=8,
+        dt=0.0025,
+        z_chunk_size=2,
+        atol=5.0e-6,
+        rtol=1.0e-4,
+    )
+
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.final_state_max_abs_error <= report.atol
+    assert report.physical_flux_trace_max_abs_error <= report.atol
+
+
+def test_nonlinear_spectral_rhs_report_fails_closed_on_rhs_mismatch() -> None:
+    reference = jnp.ones((2, 3, 6, 4, 2), dtype=jnp.complex64)
+    field = jnp.ones((6, 4, 2), dtype=jnp.complex64)
+    bracket = 0.25j * reference
+    rhs = -bracket
+    perturbed_rhs = rhs.at[0, 0, 0, 0, 0].add(1.0e-3)
+
+    report = nonlinear_spectral_rhs_identity_report(
+        reference,
+        reference,
+        field,
+        field,
+        bracket,
+        bracket,
+        rhs,
+        perturbed_rhs,
+        state_shape=(2, 3, 6, 4, 2),
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        tile_bounds=(
+            (0, 3, 0, 2),
+            (0, 3, 2, 4),
+            (3, 6, 0, 2),
+            (3, 6, 2, 4),
+        ),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.blocked_reasons == ()
+    assert report.rhs_max_abs_error > report.atol
+
+
+def test_nonlinear_spectral_state_and_chunk_validation_reject_invalid_inputs() -> None:
+    with pytest.raises(ValueError, match="spectral state shape"):
+        deterministic_nonlinear_spectral_state((2, 3, 4, 5))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="Ny and Nx >= 2"):
+        deterministic_nonlinear_spectral_state((1, 1, 1, 4, 1))
+
+    state = deterministic_nonlinear_spectral_state((2, 2, 6, 4, 1))
+    with pytest.raises(ValueError, match="y_chunks must sum"):
+        nonlinear_spectral_communication_identity_gate(
+            state, y_chunks=(2, 2), x_chunks=(2, 2)
+        )
+    with pytest.raises(ValueError, match="x_chunks entries must be positive"):
+        nonlinear_spectral_communication_identity_gate(
+            state, y_chunks=(3, 3), x_chunks=(4, 0)
+        )
+    with pytest.raises(ValueError, match="y_chunks must sum"):
+        nonlinear_spectral_rhs_identity_gate(state, y_chunks=(2, 2), x_chunks=(2, 2))
+    with pytest.raises(ValueError, match="steps must be at least one"):
+        nonlinear_spectral_integrator_identity_gate(
+            state, y_chunks=(3, 3), x_chunks=(2, 2), steps=0
+        )
