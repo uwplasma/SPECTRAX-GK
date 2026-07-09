@@ -3742,3 +3742,11 @@ following:
   communication/parallel identity shard, validation coverage manifest,
   differentiable refactor manifest, Python lint check, stale-reference scan,
   and architecture manifest passed locally.
+
+- 2026-07-09: consolidated the diffrax smoke tests into
+  `tests/unit/solvers/test_diffrax_integrators_core.py`, replacing the separate
+  `test_diffrax_integrators.py` shard and keeping the explicit, IMEX, streaming,
+  JIT, and branch-coverage solver contracts under one diffrax test owner. The
+  package architecture test baseline tightened from 140 to 139 files. The
+  merged diffrax shard, differentiable refactor manifest, Python lint check,
+  stale-reference scan, and architecture manifest passed locally.

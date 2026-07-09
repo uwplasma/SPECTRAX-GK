@@ -21,7 +21,6 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     # paths. Keeping them isolated prevents one CI shard from exceeding the
     # five-minute per-shard budget while preserving package-wide coverage.
     "test_vmec_boozer_artifact_reports.py",
-    "test_diffrax_integrators.py",
     "test_diffrax_integrators_core.py",
     "test_artifact_plot_smoke.py",
     "test_w7x_artifact_panels.py",

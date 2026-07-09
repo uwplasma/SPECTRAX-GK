@@ -1161,7 +1161,7 @@ Diffrax and nonlinear smoke tests
 Diffrax integration and the nonlinear driver are exercised with fast smoke
 tests:
 
-- ``tests/unit/solvers/test_diffrax_integrators.py`` runs explicit and IMEX diffrax solvers
+- ``tests/unit/solvers/test_diffrax_integrators_core.py`` runs explicit, IMEX, streaming, and branch-coverage diffrax solver contracts
   on tiny grids.
 - ``tests/unit/solvers/test_diffrax_integrators_core.py`` hardens branch coverage for
   diffrax helper paths (solver selection, save modes, streaming fits, IMEX
@@ -1762,7 +1762,6 @@ The gate runs focused tests and checks each module from ``coverage-core.xml``:
 .. code-block:: bash
 
    pytest -q tests/unit/solvers/test_linear_krylov_core.py \
-          tests/unit/solvers/test_diffrax_integrators.py \
           tests/unit/solvers/test_diffrax_integrators_core.py \
           --maxfail=1 --disable-warnings \
           --cov=src/spectraxgk \

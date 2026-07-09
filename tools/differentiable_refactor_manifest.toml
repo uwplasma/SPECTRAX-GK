@@ -1313,7 +1313,7 @@ facade_module = "spectraxgk.solvers.time"
 status = "active"
 responsibility = "Diffrax linear integration with state/field/mode/density save paths and optional state sharding"
 moved_exports = ["integrate_linear_diffrax"]
-fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1323,7 +1323,7 @@ facade_module = "spectraxgk.solvers.time"
 status = "active"
 responsibility = "Diffrax streaming linear growth/frequency accumulation without storing full time histories"
 moved_exports = ["integrate_linear_diffrax_streaming"]
-fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -1333,7 +1333,7 @@ facade_module = "spectraxgk.solvers.time"
 status = "active"
 responsibility = "Diffrax nonlinear explicit/IMEX integration and nonlinear bracket RHS routing"
 moved_exports = ["integrate_nonlinear_diffrax"]
-fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py", "tests/unit/solvers/test_diffrax_integrators.py"]
+fast_tests = ["tests/unit/solvers/test_diffrax_integrators_core.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
