@@ -531,7 +531,7 @@ def test_strict_qa_t1500_contract_exposes_true_full_horizon_commands(
 
 
 def _load_tool_module():
-    return load_campaign_tool("write_nonlinear_replicate_followup_campaign")
+    return load_campaign_tool("nonlinear_replicate_followup")
 
 
 def _write_config(path: Path, *, label: str, axis: str, seed: int, dt: float) -> None:

@@ -742,7 +742,7 @@ metadata. The current QA/ESS composite profile-direction diagnostic is
 the plus state is a mixed seed/timestep failure, so the next GPU campaign must
 disambiguate timestep sensitivity or shrink the bracket rather than adding
 blind replicas.
-``tools/campaigns/write_nonlinear_replicate_followup_campaign.py`` turns that diagnostic
+``tools/campaigns/nonlinear_replicate_followup.py write-campaign`` turns that diagnostic
 back into a minimal run list. It reads the original
 ``gradient_campaign_manifest.json`` and the spread diagnostic, infers the seed
 and timestep metadata from the already-generated TOMLs, and writes only the
