@@ -3170,3 +3170,12 @@ following:
   contract owner while keeping runnable-command, boundary-chain, strict QA gate,
   and CLI-write assertions. Updated validation ownership and tightened the
   package architecture test baseline to 177.
+
+
+- 2026-07-08: consolidated nonlinear transport config-writer tests into
+  `tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py`.
+  External VMEC restart-ladder configs, optimized-equilibrium transport launch
+  contracts, and replicate follow-up campaign generation now share one
+  transport-config writer owner while preserving parser, metadata, restart,
+  promotion-contract, and postprocess-command assertions. Tightened the package
+  architecture test baseline to 175.

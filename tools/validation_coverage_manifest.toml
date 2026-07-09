@@ -1222,7 +1222,7 @@ fast_tests = [
   "tests/validation/stellarator/test_check_external_vmec_high_grid_admission.py",
   "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
-  "tests/tools/campaigns/test_write_external_vmec_holdout_configs.py",
+  "tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py",
   "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
   "tests/tools/campaigns/test_campaign_manifest_reports.py",
 ]
