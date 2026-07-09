@@ -305,7 +305,6 @@ owned_modules = [
   "spectraxgk.terms.linear_dissipation",
   "spectraxgk.terms.linear_terms",
   "spectraxgk.terms.operators",
-  "spectraxgk.terms.validation",
 ]
 owner_lane = "linear gyrokinetic operators, field solve, growth/frequency diagnostics"
 status = "active"

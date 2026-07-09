@@ -2956,3 +2956,13 @@ following:
   the source topology baseline to 272. Nonlinear parallel owner tests, release
   tests, ruff, py_compile, stale-reference scans, and architecture checks
   passed locally.
+
+- 2026-07-08: removed the redundant `terms/validation.py` helper shard by
+  moving the only used term-level positivity check into `terms/operators.py` and
+  deleting the unused duplicate nonnegative helper. Merged the small
+  `test_terms_validation.py` coverage into `test_terms_operators.py`, updated
+  CI/docs to the consolidated term-operator test owner, regenerated validation
+  metadata, and tightened topology baselines to 271 source files and 219 test
+  files. Term-operator tests, the dedicated terms coverage gate, release tests,
+  stale-reference scans, ruff, py_compile, validation/differentiable manifests,
+  and architecture checks passed locally.

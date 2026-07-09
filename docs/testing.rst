@@ -1740,7 +1740,6 @@ coverage gate for ``spectraxgk.terms``:
           tests/unit/operators/test_terms_operators.py \
           tests/unit/operators/test_terms_fields.py \
           tests/unit/operators/test_terms_integrators.py \
-          tests/unit/operators/test_terms_validation.py \
           --maxfail=1 --disable-warnings \
           --cov=src/spectraxgk/terms \
           --cov-fail-under=90

@@ -50,7 +50,7 @@ name = "installable_source_python_files"
 path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
-baseline = 272
+baseline = 271
 target = 100
 
 [[topology_policy.counts]]
@@ -58,7 +58,7 @@ name = "test_python_files"
 path = "tests"
 pattern = "*.py"
 recursive = true
-baseline = 220
+baseline = 219
 target = 99
 
 [[topology_policy.counts]]
