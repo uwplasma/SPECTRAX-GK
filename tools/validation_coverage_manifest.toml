@@ -1287,7 +1287,7 @@ fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_window.py",
   "tests/validation/quasilinear/test_quasilinear_calibration.py",
   "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
-  "tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py",
+  "tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_promotion_guardrails.json",

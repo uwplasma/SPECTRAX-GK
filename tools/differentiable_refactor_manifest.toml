@@ -2487,7 +2487,7 @@ moved_exports = [
 fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_window.py",
   "tests/validation/quasilinear/test_quasilinear_calibration.py",
-  "tests/validation/nonlinear/test_check_nonlinear_window_ensemble.py",
+  "tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py",
 ]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 

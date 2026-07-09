@@ -3137,3 +3137,11 @@ following:
   which is tracked by the performance manifest and maps timings to actionable
   cache-construction phases. Tightened the package architecture tool baseline
   to 219.
+
+- 2026-07-08: consolidated nonlinear transport-window artifact utility tests
+  into `tests/validation/nonlinear/test_nonlinear_window_artifact_contracts.py`,
+  covering output target-time gates, ensemble spread gates, readiness manifests,
+  and compact replicate-bundle rewrites in one nonlinear validation owner.
+  Updated validation and differentiable-refactor manifests, regenerated
+  validation metadata, and tightened the package architecture test baseline to
+  186. The consolidated nonlinear window artifact shard passed locally.
