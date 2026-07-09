@@ -1375,12 +1375,12 @@ terms and the implicit preconditioner instead of re-allocating on every RHS
 call. The change is small in absolute cost for low-order runs, but becomes
 noticeable in higher-order scans and tight profiling loops.
 
-GMRES preconditioner iterations
---------------------------------
+GMRES preconditioner policy
+---------------------------
 
-For the implicit linear solver, we include a small iteration-count harness that
-solves a reduced system and compares the GMRES iteration count with multiple
-preconditioners:
+The implicit linear solver exposes several preconditioner policies, with shape,
+finite-value, linked-boundary, and shift-invert contracts covered by the solver
+test suite rather than by an untracked ad-hoc profiling harness:
 
 - ``diag``: full diagonal (damping + drift + mirror)
 - ``pas``: PAS line preconditioner (streaming + diagonal damping/drifts)
@@ -1388,31 +1388,11 @@ preconditioners:
 - ``hermite-line``: Hermite streaming line solve (tridiagonal in ``m`` at fixed :math:`k_z`)
 - ``hermite-line-coarse``: Hermite line solve + kx-coarse correction
 
-.. code-block:: bash
-
-   python tools/profiling/profile_gmres_precond.py
-
-On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
-
-.. code-block:: text
-
-   iters_plain=6
-   iters_diag=6
-   iters_pas=6
-   iters_pas_coarse=6
-   iters_hermite_line=4
-   iters_hermite_line_coarse=4
-
-On a larger run (Ny=8, Nz=64, Nl=12, Nm=12, dt=0.1), this reported:
-
-.. code-block:: text
-
-   iters_plain=38
-   iters_diag=38
-   iters_pas=39
-   iters_pas_coarse=39
-   iters_hermite_line=22
-   iters_hermite_line_coarse=22
+Use ``tests/unit/linear/test_linear.py`` and
+``tests/unit/linear/test_linear_helpers_extra.py`` as the maintained
+verification owners for these policies. Fresh runtime or iteration-count claims
+should be added through the tracked performance manifest and profiling tools,
+not through standalone probe scripts.
 
 JIT considerations
 ------------------

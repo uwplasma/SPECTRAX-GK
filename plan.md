@@ -3220,3 +3220,11 @@ following:
   and differentiable-refactor manifest, and tightened the package architecture
   test baseline to 169. The combined profiling shard, release tests, workflow
   YAML parse, ruff, py_compile, and release manifests passed locally.
+
+- 2026-07-08: removed the untracked GMRES preconditioner iteration-count probe
+  `tools/profiling/profile_gmres_precond.py`. The performance docs now describe
+  the supported implicit preconditioner policies and point to the maintained
+  solver test owners instead of an ad-hoc profiling script. Tightened the
+  package architecture tool baseline to 218. The linear preconditioner tests,
+  performance manifest, release tests, stale-reference scan, and architecture
+  manifest passed locally.
