@@ -2089,8 +2089,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
   "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
-  "tests/tools/campaigns/test_write_vmec_boundary_perturbation_inputs.py",
-  "tests/tools/campaigns/test_write_vmec_state_to_input_mapping_campaign.py",
+  "tests/tools/campaigns/test_vmec_campaign_writer_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",

@@ -3153,3 +3153,11 @@ following:
   ordering/fail-closed behavior in one campaign owner. Tightened the package
   architecture test baseline to 183. The consolidated campaign contract shard
   passed locally.
+
+- 2026-07-08: consolidated five VMEC campaign-writer contract tests into
+  `tests/tools/campaigns/test_vmec_campaign_writer_contracts.py`. Boundary
+  perturbation, profile-direction perturbation, symmetric/asymmetric
+  state-to-input mapping, and state-control short-bracket launch artifacts now
+  share one VMEC campaign-writer owner while preserving fail-closed validation,
+  LASYM insertion, manifest, and generated-input assertions. Updated validation
+  ownership and tightened the package architecture test baseline to 179.

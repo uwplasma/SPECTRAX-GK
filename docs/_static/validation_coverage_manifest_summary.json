@@ -1097,7 +1097,7 @@
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.diagnostics.nonlinear_gradient_evidence",
       "n_artifacts": 6,
-      "n_fast_tests": 4,
+      "n_fast_tests": 3,
       "n_next_tests": 3,
       "n_numerics_contracts": 3,
       "n_owned_modules": 0,
