@@ -78,8 +78,8 @@
   "n_excluded_modules": 20,
   "n_high_priority_open": 73,
   "n_modules": 93,
-  "n_owned_modules": 156,
-  "n_package_modules": 269,
+  "n_owned_modules": 155,
+  "n_package_modules": 268,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -248,10 +248,9 @@
     "spectraxgk.objectives.zonal": [
       "spectraxgk.objectives.zonal_records"
     ],
-    "spectraxgk.operators.linear.cache": [
+    "spectraxgk.operators.linear.cache_builder": [
       "spectraxgk.operators.linear.cache_model",
-      "spectraxgk.operators.linear.cache_arrays",
-      "spectraxgk.operators.linear.cache_builder"
+      "spectraxgk.operators.linear.cache_arrays"
     ],
     "spectraxgk.operators.linear.linked": [],
     "spectraxgk.operators.linear.moments": [],
@@ -458,15 +457,15 @@
     {
       "coverage_priority": "medium",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.operators.linear.cache",
+      "module": "spectraxgk.operators.linear.cache_builder",
       "n_artifacts": 2,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 3,
+      "n_owned_modules": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
-      "path": "src/spectraxgk/operators/linear/cache.py",
+      "path": "src/spectraxgk/operators/linear/cache_builder.py",
       "status": "active"
     },
     {

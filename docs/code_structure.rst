@@ -568,8 +568,9 @@ Completed extractions:
   geometry-dependent construction. The builder itself now has explicit private
   stages for twist-shift policy, perpendicular wavenumber/drift arrays,
   Laguerre gyroaverage construction, and linked-boundary metadata so extension
-  work can test one numerical policy at a time; ``cache.py`` remains the stable
-  public facade. The public Krylov import path remains ``solvers/linear/krylov.py``;
+  work can test one numerical policy at a time; ``operators.linear`` remains
+  the package-level public cache facade. The public Krylov import path remains
+  ``solvers/linear/krylov.py``;
   that facade now keeps option normalization, user-facing progress messages,
   shift-invert seed selection, shift-selection flags, and fallback policy as
   explicit private stages while delegating compiled kernels to the focused

@@ -238,10 +238,6 @@ Linear Linked Boundaries
 Linear Cache
 ------------
 
-.. automodule:: spectraxgk.operators.linear.cache
-   :members:
-   :private-members:
-
 .. automodule:: spectraxgk.operators.linear.cache_model
    :members:
    :no-index:

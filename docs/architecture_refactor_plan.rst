@@ -443,7 +443,9 @@ The target root should be mostly packages plus a few user-facing facades:
        linear/
          rhs.py
          fields.py
-         cache.py
+         cache_model.py
+         cache_arrays.py
+         cache_builder.py
        nonlinear/
          bracket.py
          rhs.py

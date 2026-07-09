@@ -15,7 +15,7 @@ from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all
 import spectraxgk.linear as linear_mod
-import spectraxgk.operators.linear.cache as linear_cache
+import spectraxgk.operators.linear as linear_cache
 import spectraxgk.operators.linear.linked as linear_linked
 import spectraxgk.operators.linear.moments as linear_moments
 import spectraxgk.solvers.linear.implicit as linear_implicit
@@ -116,7 +116,17 @@ def test_linear_param_helpers_preserve_public_exports() -> None:
 
 
 def test_linear_cache_helpers_preserve_public_exports() -> None:
-    for name in linear_cache.__all__:
+    cache_exports = (
+        "LinearCache",
+        "_build_end_damping_profile_array",
+        "_build_gyroaverage_cache_arrays",
+        "_build_low_rank_moment_cache_arrays",
+        "_numpy_dtype_for_jax",
+        "build_linear_cache",
+        "collision_damping",
+        "hypercollision_damping",
+    )
+    for name in cache_exports:
         assert getattr(linear_mod, name) is getattr(linear_cache, name)
 
 

@@ -2996,3 +2996,17 @@ following:
   the package architecture test baseline to 215 test files. The focused
   profiling contract test, full profiling test shard, release tests, stale-path
   scan, ruff, py_compile, and architecture manifest passed locally.
+
+- 2026-07-08: removed the `operators/linear/cache.py` facade and routed code to
+  the direct cache owners: `cache_model.py` for the `LinearCache` pytree,
+  `cache_arrays.py` for damping/gyroaverage/moment arrays, and
+  `cache_builder.py` for geometry-dependent cache construction. The
+  package-level `spectraxgk.operators.linear` and public `spectraxgk.linear`
+  facades still export the intended user-facing cache helpers, including the
+  missing `hermite_streaming` moment helper uncovered by the facade-identity
+  test. Updated API/code-structure/architecture docs, technical release status,
+  validation and differentiable refactor manifests, regenerated validation
+  metadata, and tightened the source topology baseline to 268. Focused linear
+  tests, operator-package tests, release tests, stale-reference scans, ruff,
+  py_compile, validation/differentiable manifests, and architecture checks
+  passed locally.

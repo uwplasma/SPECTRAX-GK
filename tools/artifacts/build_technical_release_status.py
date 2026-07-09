@@ -168,7 +168,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
             "RuntimeIndependentParallelPlan",
         ),
         EvidenceCheck(
-            "linear cache module", "src/spectraxgk/operators/linear/cache.py"
+            "linear cache builder", "src/spectraxgk/operators/linear/cache_builder.py"
         ),
         EvidenceCheck(
             "linear moments module", "src/spectraxgk/operators/linear/moments.py"

@@ -77,8 +77,8 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.objectives.vmec_boozer_gradients"]["n_numerics_contracts"] >= 2
     )
 
-    assert rows["spectraxgk.operators.linear.cache"]["coverage_target_percent"] == 95.0
-    assert rows["spectraxgk.operators.linear.cache"]["n_owned_modules"] == 3
+    assert rows["spectraxgk.operators.linear.cache_builder"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.operators.linear.cache_builder"]["n_owned_modules"] == 2
     assert rows["spectraxgk.operators.linear.moments"]["n_numerics_contracts"] >= 2
     assert rows["spectraxgk.operators.linear.params"]["n_physics_contracts"] >= 2
     assert rows["spectraxgk.operators.linear.linked"]["n_owned_modules"] == 0

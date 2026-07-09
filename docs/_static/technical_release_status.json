@@ -342,9 +342,9 @@
         },
         {
           "exists": true,
-          "name": "linear cache module",
+          "name": "linear cache builder",
           "passed": true,
-          "path": "src/spectraxgk/operators/linear/cache.py",
+          "path": "src/spectraxgk/operators/linear/cache_builder.py",
           "required": true,
           "snippet": null
         },
