@@ -5,6 +5,8 @@ The two subcommands keep the evidence flow explicit:
 
 * ``landscape`` selects an uncertainty-resolved nonlinear landscape candidate
   from matched replicated transport-window ensembles.
+* ``prelaunch`` builds the reduced-objective prelaunch screen from either a
+  transport landscape row pair or explicit reduced metrics.
 * ``campaign`` decides whether a reduced prelaunch screen plus a landscape
   admission artifact is strong enough to launch the next optimizer campaign.
 """
@@ -25,6 +27,7 @@ if str(ROOT / "src") not in sys.path:
 from spectraxgk.diagnostics.stellarator_transport_reports import (  # noqa: E402
     build_nonlinear_audit_redesign_report,
     build_nonlinear_campaign_admission_report,
+    build_reduced_nonlinear_audit_prelaunch_report,
 )
 from spectraxgk.diagnostics.stellarator_transport_reports import (  # noqa: E402
     build_nonlinear_landscape_admission_report,
@@ -32,6 +35,7 @@ from spectraxgk.diagnostics.stellarator_transport_reports import (  # noqa: E402
 from spectraxgk.objectives.vmec_transport_admission import (  # noqa: E402
     VMECJAXNonlinearAuditPolicy,
     VMECJAXNonlinearCampaignPolicy,
+    VMECJAXReducedPrelaunchPolicy,
 )
 
 
@@ -56,6 +60,58 @@ def _repo_relative(path: Path) -> str:
         return path.resolve().relative_to(ROOT.resolve()).as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def _row_identifier(row: dict[str, Any]) -> tuple[str, ...]:
+    identifiers = [str(row.get("label", ""))]
+    fraction = row.get("relative_fraction")
+    if fraction is not None:
+        identifiers.append(str(fraction))
+        try:
+            identifiers.append(f"{float(fraction):.12g}")
+        except (TypeError, ValueError):
+            pass
+    return tuple(item for item in identifiers if item)
+
+
+def _select_row(rows: list[Any], selector: str) -> dict[str, Any]:
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        if selector in _row_identifier(row):
+            return row
+    available = [
+        item for row in rows if isinstance(row, dict) for item in _row_identifier(row)
+    ]
+    raise ValueError(
+        f"no landscape row matches {selector!r}; available selectors={available}"
+    )
+
+
+def _metric(row: dict[str, Any], metric_key: str) -> float:
+    metrics = row.get("reduced_metrics")
+    if not isinstance(metrics, dict):
+        raise ValueError(f"landscape row {row.get('label')} is missing reduced_metrics")
+    try:
+        return float(metrics[metric_key])
+    except KeyError as exc:
+        raise ValueError(
+            f"landscape row {row.get('label')} missing metric {metric_key!r}"
+        ) from exc
+
+
+def _sample_statistics(row: dict[str, Any], metric_key: str) -> dict[str, Any] | None:
+    reports = row.get("reduced_metric_reports")
+    if not isinstance(reports, dict):
+        return None
+    report = reports.get(metric_key)
+    if not isinstance(report, dict):
+        return None
+    payload = report.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    statistics = payload.get("sample_statistics")
+    return dict(statistics) if isinstance(statistics, dict) else None
 
 
 def build_landscape_report(
@@ -101,6 +157,78 @@ def build_campaign_report(
     report["artifacts"] = {
         "reduced_prelaunch_report": _repo_relative(prelaunch_report),
         "landscape_admission_report": _repo_relative(landscape_admission),
+    }
+    return report
+
+
+def build_prelaunch_report(
+    *,
+    landscape_json: Path,
+    baseline_selector: str,
+    candidate_selector: str,
+    metric_key: str,
+    failed_reference_relative_reduction: float | None,
+    policy: VMECJAXReducedPrelaunchPolicy,
+) -> dict[str, Any]:
+    """Build a reduced-objective prelaunch report from landscape rows."""
+
+    landscape = _load_json(landscape_json)
+    rows = landscape.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError(f"{landscape_json} is missing rows")
+    baseline_row = _select_row(rows, baseline_selector)
+    candidate_row = _select_row(rows, candidate_selector)
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=_metric(baseline_row, metric_key),
+        candidate_metric=_metric(candidate_row, metric_key),
+        objective_sample_set=landscape.get("sample_set"),
+        baseline_sample_statistics=_sample_statistics(baseline_row, metric_key),
+        candidate_sample_statistics=_sample_statistics(candidate_row, metric_key),
+        failed_reference_relative_reduction=failed_reference_relative_reduction,
+        policy=policy,
+    )
+    report["artifacts"] = {
+        "landscape_json": _repo_relative(landscape_json),
+    }
+    report["selected_rows"] = {
+        "baseline": {
+            "label": baseline_row.get("label"),
+            "relative_fraction": baseline_row.get("relative_fraction"),
+            "coefficient_value": baseline_row.get("coefficient_value"),
+        },
+        "candidate": {
+            "label": candidate_row.get("label"),
+            "relative_fraction": candidate_row.get("relative_fraction"),
+            "coefficient_value": candidate_row.get("coefficient_value"),
+        },
+    }
+    return report
+
+
+def build_prelaunch_metric_report(
+    *,
+    baseline_metric: float,
+    candidate_metric: float,
+    sample_set: dict[str, list[float]] | None,
+    metric_key: str,
+    failed_reference_relative_reduction: float | None,
+    policy: VMECJAXReducedPrelaunchPolicy,
+) -> dict[str, Any]:
+    """Build a reduced-objective prelaunch report from explicit metrics."""
+
+    report = build_reduced_nonlinear_audit_prelaunch_report(
+        baseline_metric=baseline_metric,
+        candidate_metric=candidate_metric,
+        objective_sample_set=sample_set,
+        failed_reference_relative_reduction=failed_reference_relative_reduction,
+        policy=policy,
+    )
+    report["artifacts"] = {
+        "landscape_json": None,
+    }
+    report["selected_rows"] = {
+        "baseline": None,
+        "candidate": None,
     }
     return report
 
@@ -179,6 +307,31 @@ def _add_campaign_parser(subparsers: argparse._SubParsersAction[argparse.Argumen
     parser.set_defaults(func=_run_campaign)
 
 
+def _add_prelaunch_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    parser = subparsers.add_parser(
+        "prelaunch",
+        help="build the reduced-objective nonlinear audit prelaunch gate",
+    )
+    parser.add_argument("--landscape-json", type=Path)
+    parser.add_argument("--baseline-row", default="0")
+    parser.add_argument("--candidate-row")
+    parser.add_argument("--baseline-metric", type=float)
+    parser.add_argument("--candidate-metric", type=float)
+    parser.add_argument("--sample-set-json", type=Path)
+    parser.add_argument("--surface", type=float, action="append", default=[])
+    parser.add_argument("--alpha", type=float, action="append", default=[])
+    parser.add_argument("--ky", type=float, action="append", default=[])
+    parser.add_argument("--metric-key", default="nonlinear_window_heat_flux")
+    parser.add_argument("--failed-reference-relative-reduction", type=float)
+    parser.add_argument("--min-relative-reduction", type=float, default=0.04)
+    parser.add_argument("--failed-reference-safety-factor", type=float, default=1.5)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--fail-on-blocked", action="store_true")
+    parser.set_defaults(func=_run_prelaunch)
+
+
 def _add_redesign_parser(
     subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
 ) -> None:
@@ -202,6 +355,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_landscape_parser(subparsers)
+    _add_prelaunch_parser(subparsers)
     _add_campaign_parser(subparsers)
     _add_redesign_parser(subparsers)
     return parser
@@ -285,6 +439,63 @@ def _run_campaign(args: argparse.Namespace) -> int:
         )
     )
     if args.fail_on_blocked and not bool(report["campaign_admitted"]):
+        return 1
+    return 0
+
+
+def _run_prelaunch(args: argparse.Namespace) -> int:
+    policy = VMECJAXReducedPrelaunchPolicy(
+        metric_key=str(args.metric_key),
+        minimum_relative_reduction=float(args.min_relative_reduction),
+        failed_reference_safety_factor=float(args.failed_reference_safety_factor),
+    )
+    if args.landscape_json is not None:
+        if args.candidate_row is None:
+            raise SystemExit(
+                "--candidate-row is required when --landscape-json is used"
+            )
+        report = build_prelaunch_report(
+            landscape_json=args.landscape_json,
+            baseline_selector=str(args.baseline_row),
+            candidate_selector=str(args.candidate_row),
+            metric_key=str(args.metric_key),
+            failed_reference_relative_reduction=args.failed_reference_relative_reduction,
+            policy=policy,
+        )
+    else:
+        if args.baseline_metric is None or args.candidate_metric is None:
+            raise SystemExit(
+                "either --landscape-json or both --baseline-metric and --candidate-metric are required"
+            )
+        report = build_prelaunch_metric_report(
+            baseline_metric=float(args.baseline_metric),
+            candidate_metric=float(args.candidate_metric),
+            sample_set=_sample_set_from_args(args),
+            metric_key=str(args.metric_key),
+            failed_reference_relative_reduction=args.failed_reference_relative_reduction,
+            policy=policy,
+        )
+    args.out_json.parent.mkdir(parents=True, exist_ok=True)
+    args.out_json.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps(
+            {
+                "passed": report["passed"],
+                "relative_reduced_reduction": report[
+                    "relative_reduced_reduction"
+                ],
+                "required_relative_reduced_reduction": report[
+                    "required_relative_reduced_reduction"
+                ],
+                "blockers": report["blockers"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    if args.fail_on_blocked and not bool(report["passed"]):
         return 1
     return 0
 

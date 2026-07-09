@@ -1118,8 +1118,8 @@ def _build_reduced_nonlinear_audit_prelaunch_report_landscape(path: Path) -> Pat
 
 def test_build_report_from_landscape_selects_candidate_row(tmp_path: Path) -> None:
     report = load_artifact_tool(
-        "build_reduced_nonlinear_audit_prelaunch_report"
-    ).build_report(
+        "build_nonlinear_transport_admission"
+    ).build_prelaunch_report(
         landscape_json=_build_reduced_nonlinear_audit_prelaunch_report_landscape(
             tmp_path / "landscape.json"
         ),
@@ -1142,8 +1142,9 @@ def test_cli_writes_blocked_report(tmp_path: Path) -> None:
     out_json = tmp_path / "prelaunch.json"
 
     assert (
-        load_artifact_tool("build_reduced_nonlinear_audit_prelaunch_report").main(
+        load_artifact_tool("build_nonlinear_transport_admission").main(
             [
+                "prelaunch",
                 "--landscape-json",
                 str(landscape),
                 "--candidate-row",
@@ -1164,8 +1165,8 @@ def test_cli_writes_blocked_report(tmp_path: Path) -> None:
 
 def test_metric_mode_builds_negative_prelaunch_reference() -> None:
     report = load_artifact_tool(
-        "build_reduced_nonlinear_audit_prelaunch_report"
-    ).build_metric_report(
+        "build_nonlinear_transport_admission"
+    ).build_prelaunch_metric_report(
         baseline_metric=0.08010670290,
         candidate_metric=0.07827418221,
         sample_set={

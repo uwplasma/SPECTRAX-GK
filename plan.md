@@ -38,7 +38,7 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 228 | 100 | active |
-| Tool Python files | 135 | 99 | active |
+| Tool Python files | 134 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
@@ -74,12 +74,12 @@ branch/PR.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Tool consolidation | 58% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 51% | Shrink `spectraxgk.benchmarks`, resolve remaining `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
-| Docs/readme release pass | 75% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
+| Docs/readme release pass | 76% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
 ## Prioritized Implementation Steps
@@ -158,6 +158,10 @@ branch/PR.
   (`differentiability-claim`, `aggregate-holdout`, and `reduced-portfolio`),
   reducing tool count from 137 to 135 while preserving release and stellarator
   validation tests.
+- 2026-07-09: Folded the reduced nonlinear-audit prelaunch artifact builder
+  into `tools/artifacts/build_nonlinear_transport_admission.py prelaunch`,
+  reducing tool count from 135 to 134 and keeping landscape, prelaunch,
+  campaign, and redesign policy in one nonlinear transport owner.
 
 ## Validation Commands For This Tranche
 
