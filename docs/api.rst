@@ -88,12 +88,6 @@ Geometry Core
    :members:
    :private-members:
 
-Geometry Boundaries
--------------------
-
-.. automodule:: spectraxgk.geometry.boundaries
-   :members:
-
 Analytic Geometry
 -----------------
 

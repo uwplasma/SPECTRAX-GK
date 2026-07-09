@@ -2978,3 +2978,13 @@ following:
   Artifact integration tests, release tests, stale-reference scans, ruff,
   py_compile, validation/differentiable manifests, and architecture checks
   passed locally.
+
+- 2026-07-08: folded `geometry/boundaries.py` into `geometry/analytic.py`, so
+  zero-shear boundary promotion lives with the analytic s-alpha/slab geometry
+  models that first apply it while `geometry.core` and the public
+  `spectraxgk.geometry` facade keep exporting the same helper names. Removed
+  the standalone boundary-policy shard, updated API/code-structure docs,
+  validation and differentiable refactor manifests, regenerated validation
+  metadata, and tightened the source topology baseline to 269. Geometry tests,
+  release tests, stale-reference scans, ruff, py_compile,
+  validation/differentiable manifests, and architecture checks passed locally.

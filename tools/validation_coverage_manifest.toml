@@ -1532,7 +1532,6 @@ module = "spectraxgk.geometry.core"
 path = "src/spectraxgk/geometry/core.py"
 owned_modules = [
   "spectraxgk.geometry.analytic",
-  "spectraxgk.geometry.boundaries",
   "spectraxgk.geometry.flux_tube",
 ]
 owner_lane = "analytic, slab, sampled, and imported flux-tube geometry contracts"

@@ -78,8 +78,8 @@
   "n_excluded_modules": 20,
   "n_high_priority_open": 73,
   "n_modules": 93,
-  "n_owned_modules": 157,
-  "n_package_modules": 270,
+  "n_owned_modules": 156,
+  "n_package_modules": 269,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -133,7 +133,6 @@
     "spectraxgk.diagnostics.zonal_validation": [],
     "spectraxgk.geometry.core": [
       "spectraxgk.geometry.analytic",
-      "spectraxgk.geometry.boundaries",
       "spectraxgk.geometry.flux_tube"
     ],
     "spectraxgk.geometry.differentiable": [
@@ -898,7 +897,7 @@
       "n_fast_tests": 1,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 3,
+      "n_owned_modules": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/geometry/core.py",
