@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
 import pytest
+from netCDF4 import Dataset
 
 from support.paths import load_comparison_tool
 from spectraxgk.config import GridConfig
@@ -53,6 +55,258 @@ def test_imported_window_parser_accepts_required_args() -> None:
     assert args.geometry_file == Path("/tmp/run.eik.nc")
     assert args.time_index_start == 0
     assert args.time_index_stop == 1
+
+
+def test_imported_startup_parser_accepts_required_args() -> None:
+    mod = load_comparison_tool("compare_gx_imported_startup")
+    args = mod.build_parser().parse_args(
+        [
+            "--gx-dir",
+            "gx_dump",
+            "--gx-out",
+            "gx.out.nc",
+            "--geometry-file",
+            "geom.eik.nc",
+            "--gx-input",
+            "run.in",
+            "--ky",
+            "0.3",
+        ]
+    )
+
+    assert args.gx_dir == Path("gx_dump")
+    assert args.gx_out == Path("gx.out.nc")
+    assert args.geometry_file == Path("geom.eik.nc")
+    assert args.gx_input == Path("run.in")
+    assert args.ky == 0.3
+
+
+def test_imported_startup_prefers_rhs_terms_dump_layout(tmp_path: Path) -> None:
+    mod = load_comparison_tool("compare_gx_imported_startup")
+
+    (tmp_path / "rhs_terms_shape.txt").write_text(
+        "nyc=2\nnx=1\nnz=2\n", encoding="utf-8"
+    )
+    (tmp_path / "g_state.bin").write_bytes(b"")
+    (tmp_path / "phi.bin").write_bytes(b"")
+    (tmp_path / "apar.bin").write_bytes(b"")
+
+    shape_path, g_path, phi_path, apar_path = mod._resolve_startup_dump_layout(tmp_path)
+
+    assert shape_path == tmp_path / "rhs_terms_shape.txt"
+    assert g_path == tmp_path / "g_state.bin"
+    assert phi_path == tmp_path / "phi.bin"
+    assert apar_path == tmp_path / "apar.bin"
+
+
+def test_imported_startup_builds_full_grid_before_slicing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mod = load_comparison_tool("compare_gx_imported_startup")
+
+    gx_out = tmp_path / "gx.out.nc"
+    with Dataset(gx_out, "w") as ds:
+        grids = ds.createGroup("Grids")
+        grids.createDimension("ky", 2)
+        ky = grids.createVariable("ky", "f8", ("ky",))
+        ky[:] = [0.1, 0.2]
+
+    monkeypatch.setattr(
+        mod,
+        "_load_shape",
+        lambda _path: {"nspec": 1, "nl": 1, "nm": 1, "nyc": 2, "nx": 1, "nz": 2},
+    )
+    monkeypatch.setattr(
+        mod, "_load_bin", lambda *_args, **_kwargs: np.zeros(4, dtype=np.complex64)
+    )
+    gx_g = np.arange(4, dtype=np.complex64).reshape(1, 1, 1, 2, 1, 2)
+    gx_phi = np.arange(4, dtype=np.complex64).reshape(2, 1, 2)
+    monkeypatch.setattr(mod, "_reshape_gx", lambda *_args, **_kwargs: gx_g)
+    monkeypatch.setattr(mod, "_load_field", lambda *_args, **_kwargs: gx_phi)
+    monkeypatch.setattr(
+        mod,
+        "_load_gx_input_contract",
+        lambda _path: SimpleNamespace(
+            boundary="linked",
+            Ny=2,
+            nperiod=2,
+            ntheta=4,
+            species=(object(),),
+            tau_e=1.0,
+            beta=0.0,
+        ),
+    )
+    geom_path = tmp_path / "geom.eik.nc"
+    monkeypatch.setattr(mod, "_resolve_internal_geometry_source", lambda **_: geom_path)
+    monkeypatch.setattr(
+        mod,
+        "load_imported_geometry_netcdf",
+        lambda _path: SimpleNamespace(gradpar=lambda: 1.0),
+    )
+    monkeypatch.setattr(
+        mod, "apply_imported_geometry_grid_defaults", lambda _geom, grid: grid
+    )
+    grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]))
+    monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
+    captured: dict[str, object] = {}
+
+    def _fake_build_imported_initial_condition(**kwargs):
+        captured["grid"] = kwargs["grid"]
+        captured["ky_index"] = kwargs["ky_index"]
+        captured["kx_index"] = kwargs["kx_index"]
+        return np.arange(8, dtype=np.complex64).reshape(1, 1, 1, 4, 1, 2)
+
+    monkeypatch.setattr(
+        mod, "_build_imported_initial_condition", _fake_build_imported_initial_condition
+    )
+    monkeypatch.setattr(mod, "build_linear_params", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(
+        mod,
+        "compute_fields_cached",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            phi=np.arange(8, dtype=np.complex64).reshape(4, 1, 2), apar=None
+        ),
+    )
+
+    summaries: list[tuple[str, tuple[int, ...], tuple[int, ...]]] = []
+    monkeypatch.setattr(
+        mod,
+        "_summary",
+        lambda name, ref, test: summaries.append(
+            (name, tuple(np.asarray(ref).shape), tuple(np.asarray(test).shape))
+        ),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "compare_gx_imported_startup.py",
+            "--gx-dir",
+            str(tmp_path),
+            "--gx-out",
+            str(gx_out),
+            "--geometry-file",
+            str(tmp_path / "geom.eik.nc"),
+            "--gx-input",
+            str(tmp_path / "run.in"),
+            "--ky",
+            "0.2",
+        ],
+    )
+
+    mod.main()
+
+    assert captured["grid"] is grid_full
+    assert captured["ky_index"] == 2
+    assert captured["kx_index"] == 0
+    assert ("g_state", (1, 1, 1, 1, 1, 2), (1, 1, 1, 1, 1, 2)) in summaries
+    assert ("phi", (1, 1, 2), (1, 1, 2)) in summaries
+
+
+def test_imported_startup_uses_slab_geometry_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mod = load_comparison_tool("compare_gx_imported_startup")
+
+    gx_out = tmp_path / "gx.out.nc"
+    with Dataset(gx_out, "w") as ds:
+        grids = ds.createGroup("Grids")
+        grids.createDimension("ky", 2)
+        ky = grids.createVariable("ky", "f8", ("ky",))
+        ky[:] = [0.0, 0.01]
+
+    monkeypatch.setattr(
+        mod,
+        "_load_shape",
+        lambda _path: {"nspec": 2, "nl": 1, "nm": 1, "nyc": 2, "nx": 1, "nz": 2},
+    )
+    monkeypatch.setattr(
+        mod, "_load_bin", lambda *_args, **_kwargs: np.zeros(8, dtype=np.complex64)
+    )
+    monkeypatch.setattr(
+        mod,
+        "_reshape_gx",
+        lambda *_args, **_kwargs: np.zeros((2, 1, 1, 2, 1, 2), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_load_field",
+        lambda *_args, **_kwargs: np.zeros((2, 1, 2), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_load_gx_input_contract",
+        lambda _path: SimpleNamespace(
+            boundary="linked",
+            geo_option="slab",
+            Ny=2,
+            s_hat=1.0e-8,
+            zero_shat=True,
+            nperiod=1,
+            ntheta=2,
+            species=(object(), object()),
+            tau_e=1.0,
+            beta=0.1,
+        ),
+    )
+    monkeypatch.setattr(
+        mod, "apply_imported_geometry_grid_defaults", lambda geom, grid: grid
+    )
+    grid_full = SimpleNamespace(ky=np.array([0.0, 0.01, -0.01]), kx=np.array([0.0]))
+    monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
+
+    captured: dict[str, object] = {}
+
+    def _fake_build_imported_initial_condition(**kwargs):
+        captured["grid"] = kwargs["grid"]
+        captured["geom"] = kwargs["geom"]
+        return np.zeros((2, 1, 1, 3, 1, 2), dtype=np.complex64)
+
+    monkeypatch.setattr(
+        mod, "_build_imported_initial_condition", _fake_build_imported_initial_condition
+    )
+    monkeypatch.setattr(mod, "build_linear_params", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(
+        mod,
+        "compute_fields_cached",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            phi=np.zeros((3, 1, 2), dtype=np.complex64), apar=None
+        ),
+    )
+    monkeypatch.setattr(mod, "_summary", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "compare_gx_imported_startup.py",
+            "--gx-dir",
+            str(tmp_path),
+            "--gx-out",
+            str(gx_out),
+            "--geometry-file",
+            str(tmp_path / "unused.eik.nc"),
+            "--gx-input",
+            str(tmp_path / "run.in"),
+            "--ky",
+            "0.01",
+        ],
+    )
+
+    mod.main()
+
+    assert captured["grid"] is grid_full
+    assert captured["geom"].__class__.__name__ == "SlabGeometry"
+    grid_cfg = mod.gx_contract_to_grid(
+        gx_contract=SimpleNamespace(
+            boundary="linked", zero_shat=True, nperiod=1, ntheta=2
+        ),
+        nx=1,
+        ny=3,
+        nz=2,
+        y0=100.0,
+    )
+    assert grid_cfg.boundary == "periodic"
+    assert np.isclose(grid_cfg.Lx, 2.0 * np.pi * 100.0)
 
 
 def test_startup_select_ky_block_and_parser_contracts() -> None:

@@ -3385,3 +3385,13 @@ following:
   runtime-configured exact-state owner. The package architecture test baseline
   tightened from 159 to 158. The consolidated runtime comparison shard, Python
   lint check, stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the imported-geometry startup comparison tests from
+  `tests/tools/comparison/test_compare_gx_imported_startup.py` into
+  `tests/tools/comparison/test_reference_comparison_contracts.py`, where
+  imported-window, startup, stage-reconstruction, big-field, and nonlinear
+  comparison helper contracts are already grouped. The move also replaces local
+  `sys.path` import setup with the shared `load_comparison_tool` helper. The
+  package architecture test baseline tightened from 158 to 157. The reference
+  comparison shard, Python lint check, stale-reference scan, and architecture
+  manifest passed locally.
