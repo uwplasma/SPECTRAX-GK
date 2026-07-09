@@ -16,8 +16,8 @@ from spectraxgk.diagnostics.transport_windows import (
 )
 
 ROOT = REPO_ROOT
-OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_output_target.py"
-output_target = load_release_tool("check_nonlinear_output_target")
+OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_outputs.py"
+output_target = load_release_tool("check_nonlinear_runtime_outputs")
 window_ensemble = load_release_tool("check_nonlinear_window_ensemble")
 window_readiness = load_release_tool("check_nonlinear_window_ensemble_readiness")
 compact_bundle = load_campaign_tool("compact_replicate_ensemble_bundle")
@@ -37,14 +37,14 @@ def test_output_target_checker_accepts_near_horizon_and_rejects_partial_bundle(
     _touch_bundle(output)
 
     monkeypatch.setattr(output_target, "_read_output_tmax", lambda _path: 1499.927)
-    accepted = output_target.build_report(
+    accepted = output_target.build_target_time_report(
         output=output, target_time=1500.0, time_tolerance=0.1
     )
     assert accepted["bundle_complete"] is True
     assert accepted["target_time_confirmed"] is True
 
     monkeypatch.setattr(output_target, "_read_output_tmax", lambda _path: 400.0)
-    rejected = output_target.build_report(
+    rejected = output_target.build_target_time_report(
         output=output, target_time=1500.0, time_tolerance=0.1
     )
     assert rejected["bundle_complete"] is True
@@ -61,6 +61,7 @@ def test_output_target_checker_cli_and_direct_help_contracts(
     assert (
         output_target.main(
             [
+                "target-time",
                 "--output",
                 str(output),
                 "--target-time",
@@ -75,6 +76,7 @@ def test_output_target_checker_cli_and_direct_help_contracts(
     assert (
         output_target.main(
             [
+                "target-time",
                 "--output",
                 str(output),
                 "--target-time",
@@ -88,14 +90,14 @@ def test_output_target_checker_cli_and_direct_help_contracts(
     )
 
     result = subprocess.run(
-        [sys.executable, str(OUTPUT_TARGET_SCRIPT), "--help"],
+        [sys.executable, str(OUTPUT_TARGET_SCRIPT), "target-time", "--help"],
         cwd=ROOT,
         check=False,
         text=True,
         capture_output=True,
     )
     assert result.returncode == 0
-    assert "target-time" in result.stdout
+    assert "--target-time" in result.stdout
 
 
 def _window_report(offset: float, *, case: str) -> dict[str, object]:

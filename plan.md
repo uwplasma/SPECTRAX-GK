@@ -3580,3 +3580,13 @@ following:
   tightened from 208 to 207. The VMEC misc artifact shard, Python lint check,
   validation manifest, release tests, compile check, command smoke check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/release/check_nonlinear_output_target.py` into
+  `tools/release/check_nonlinear_runtime_outputs.py` as the `target-time`
+  subcommand. Nonlinear runtime diagnostics and final-horizon bundle target
+  checks now share one release-gate owner, and matched transport-matrix launch
+  scripts generate the consolidated command. The package architecture tool
+  baseline tightened from 207 to 206. The nonlinear runtime/window validation
+  shard, nonlinear artifact shard, Python lint check, validation manifest,
+  release tests, compile check, command smoke check, diff hygiene, and
+  architecture manifest passed locally.

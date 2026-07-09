@@ -12,9 +12,23 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 import numpy as np
+
+try:
+    from .check_matched_nonlinear_transport_matrix_progress import (
+        _bundle_paths,
+        _read_output_tmax,
+        _repo_relative,
+    )
+except ImportError:  # pragma: no cover - direct script execution
+    from check_matched_nonlinear_transport_matrix_progress import (
+        _bundle_paths,
+        _read_output_tmax,
+        _repo_relative,
+    )
 
 
 DEFAULT_HEAT_FLUX_VARIABLE = "Diagnostics/HeatFlux_st"
@@ -62,11 +76,51 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_target_time_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Check whether one nonlinear NetCDF output bundle reached a target time."
+    )
+    parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--target-time", required=True, type=float)
+    parser.add_argument("--time-tolerance", type=float, default=1.0e-9)
+    parser.add_argument("--out-json", type=Path)
+    parser.add_argument("--quiet", action="store_true")
+    return parser
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+
+
+def build_target_time_report(
+    *,
+    output: Path,
+    target_time: float,
+    time_tolerance: float,
+) -> dict[str, object]:
+    bundle = _bundle_paths(output)
+    present = {key: path.exists() for key, path in bundle.items()}
+    bundle_complete = all(present.values())
+    output_tmax = _read_output_tmax(bundle["out"])
+    target_confirmed = bool(
+        bundle_complete
+        and output_tmax is not None
+        and float(output_tmax) >= float(target_time) - float(time_tolerance)
+    )
+    return {
+        "kind": "nonlinear_output_target_time_check",
+        "output": _repo_relative(output),
+        "bundle": {key: _repo_relative(path) for key, path in bundle.items()},
+        "present": present,
+        "bundle_complete": bundle_complete,
+        "output_tmax": output_tmax,
+        "target_time": float(target_time),
+        "time_tolerance": float(time_tolerance),
+        "target_time_confirmed": target_confirmed,
+    }
 
 
 def _netcdf_variable(root: Any, variable_path: str) -> np.ndarray:
@@ -254,8 +308,26 @@ def check_outputs(
     }
 
 
+def main_target_time(argv: list[str] | None = None) -> int:
+    args = build_target_time_parser().parse_args(argv)
+    report = build_target_time_report(
+        output=args.output,
+        target_time=float(args.target_time),
+        time_tolerance=float(args.time_tolerance),
+    )
+    if args.out_json is not None:
+        _write_json(args.out_json, report)
+    if not args.quiet:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if bool(report["target_time_confirmed"]) else 1
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    tokens = list(sys.argv[1:] if argv is None else argv)
+    if tokens and tokens[0] == "target-time":
+        return main_target_time(tokens[1:])
+
+    args = build_parser().parse_args(tokens)
     payload = check_outputs(
         args.outputs,
         heat_flux_variable=str(args.heat_flux_variable),

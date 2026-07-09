@@ -186,7 +186,7 @@ def _final_horizon_direct_commands(
         output_base = _bundle_base(item.output_path)
         time_tolerance = max(1.0e-9, 2.0 * float(item.dt))
         target_check = (
-            "PYTHONPATH=src python3 tools/release/check_nonlinear_output_target.py "
+            "PYTHONPATH=src python3 tools/release/check_nonlinear_runtime_outputs.py target-time "
             f"--output {item.output_path.as_posix()} "
             f"--target-time {float(item.horizon):.12g} "
             f"--time-tolerance {time_tolerance:.12g} --quiet"
