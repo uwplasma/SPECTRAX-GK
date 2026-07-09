@@ -336,6 +336,53 @@ def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> N
     assert score == pytest.approx(0.9 + 0.1 * 0.5 + 0.2)
 
 
+def test_auto_fit_signal_prefers_higher_gamma() -> None:
+    """Automatic fit-signal selection should prefer the faster growing branch."""
+
+    t = np.linspace(0.0, 1.0, 200)
+    gamma_phi = 0.1
+    gamma_density = 0.3
+    omega = 1.2
+    phi_signal = np.exp((gamma_phi - 1j * omega) * t)
+    density_signal = np.exp((gamma_density - 1j * omega) * t)
+
+    phi_t = phi_signal[:, None, None, None]
+    density_t = density_signal[:, None, None, None]
+    selection = benchmarks.ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    _signal, name, gamma, omega_fit = benchmarks._select_fit_signal_auto(
+        t,
+        phi_t,
+        density_t,
+        selection,
+        mode_method="z_index",
+        tmin=None,
+        tmax=None,
+        window_fraction=0.4,
+        min_points=40,
+        start_fraction=0.0,
+        growth_weight=1.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        max_amp_fraction=0.9,
+        window_method="loglinear",
+        max_fraction=0.8,
+        end_fraction=0.9,
+        num_windows=6,
+        phase_weight=0.2,
+        length_weight=0.05,
+        min_r2=0.0,
+        late_penalty=0.1,
+        min_slope=None,
+        min_slope_frac=0.0,
+        slope_var_weight=0.0,
+    )
+
+    assert name == "density"
+    assert gamma > gamma_phi
+    assert np.isfinite(omega_fit)
+
+
 def test_benchmark_reduced_trace_and_initialization_helpers() -> None:
     """Reduced diagnostics and analytic initializers should handle edge cases deterministically."""
 

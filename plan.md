@@ -3310,3 +3310,12 @@ following:
   py_compile, objective-gradient tests, release tests, Sphinx docs,
   validation-manifest, differentiable-refactor manifest, and architecture checks
   locally.
+
+- 2026-07-08: consolidated the one-test auto-fit signal file
+  `tests/unit/diagnostics/test_auto_fit_signal.py` into the benchmark validation
+  owner `tests/validation/benchmarks/test_benchmarks.py`, where the surrounding
+  auto-fit scoring and signal-selection contracts already live. Removed the
+  direct CI matrix path for the deleted file and tightened the package
+  architecture test baseline to 164. The affected benchmark/diagnostics tests,
+  release tests, workflow YAML parse, ruff, and architecture check passed
+  locally.
