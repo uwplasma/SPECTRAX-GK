@@ -79,8 +79,8 @@
   "n_excluded_modules": 20,
   "n_high_priority_open": 74,
   "n_modules": 94,
-  "n_owned_modules": 159,
-  "n_package_modules": 273,
+  "n_owned_modules": 158,
+  "n_package_modules": 272,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -282,7 +282,6 @@
       "spectraxgk.operators.nonlinear.spectral_identity_rhs",
       "spectraxgk.operators.nonlinear.spectral_identity_integrator",
       "spectraxgk.operators.nonlinear.spectral_layout",
-      "spectraxgk.operators.nonlinear.spectral_state",
       "spectraxgk.operators.nonlinear.spectral_tolerances",
       "spectraxgk.operators.nonlinear.spectral_work_models"
     ],
@@ -678,7 +677,7 @@
       "n_fast_tests": 2,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 8,
+      "n_owned_modules": 7,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/operators/nonlinear/spectral_core.py",

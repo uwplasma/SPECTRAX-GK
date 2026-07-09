@@ -911,7 +911,6 @@ owned_modules = [
   "spectraxgk.operators.nonlinear.spectral_identity_rhs",
   "spectraxgk.operators.nonlinear.spectral_identity_integrator",
   "spectraxgk.operators.nonlinear.spectral_layout",
-  "spectraxgk.operators.nonlinear.spectral_state",
   "spectraxgk.operators.nonlinear.spectral_tolerances",
   "spectraxgk.operators.nonlinear.spectral_work_models",
 ]

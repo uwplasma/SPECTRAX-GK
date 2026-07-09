@@ -2945,3 +2945,14 @@ following:
   tightened the test topology baseline to 220. Focused manifest tests, the full
   `tests/release` shard, ruff, py_compile, validation-coverage summary
   generation, and package-architecture checks passed locally.
+
+- 2026-07-08: folded `operators/nonlinear/spectral_state.py` into
+  `operators/nonlinear/spectral_layout.py`, so deterministic nonlinear
+  spectral-state generation and canonical state-shape validation live with the
+  logical spectral-layout owner. The `spectral_core` facade continues to export
+  the same helper names, while internal kernels import from the leaf layout
+  module to avoid facade cycles. Updated docs, validation/differentiable
+  manifests, generated validation metadata, release expectations, and tightened
+  the source topology baseline to 272. Nonlinear parallel owner tests, release
+  tests, ruff, py_compile, stale-reference scans, and architecture checks
+  passed locally.

@@ -2975,19 +2975,6 @@ fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.operators.nonlinear.spectral_state"
-source_path = "src/spectraxgk/operators/nonlinear/spectral_state.py"
-facade_module = "spectraxgk.operators.nonlinear.spectral_core"
-status = "active"
-responsibility = "deterministic nonlinear spectral states and canonical spectral-state shape validation"
-moved_exports = [
-  "deterministic_nonlinear_spectral_state",
-  "_validate_spectral_state_shape",
-]
-fast_tests = ["tests/unit/parallel/test_nonlinear_parallel.py", "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.operators.nonlinear.spectral_layout"
 source_path = "src/spectraxgk/operators/nonlinear/spectral_layout.py"
 facade_module = "spectraxgk.operators.nonlinear.spectral_core"
