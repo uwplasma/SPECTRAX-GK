@@ -100,7 +100,7 @@ profiling_tools = [
   "tools/profiling/profile_nonlinear_sharding.py",
   "tools/profiling/profile_linear_rhs_terms.py",
   "tools/profiling/profile_full_linear_rhs_trace.py",
-  "tools/artifacts/gate_linear_rhs_zero_norm_state_window.py",
+  "tools/artifacts/generate_linear_rhs_parallel_gates.py zero-norm-state-window",
   "tools/artifacts/gate_laguerre_nonlinear_modes.py",
 ]
 metrics = [

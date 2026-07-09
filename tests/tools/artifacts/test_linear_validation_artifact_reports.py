@@ -327,7 +327,7 @@ def test_w7x_zonal_digitizer_main_writes_artifacts(tmp_path: Path) -> None:
 
 
 def test_inject_z_wave_targets_resolved_hermite_mode() -> None:
-    mod = load_artifact_tool("gate_linear_rhs_zero_norm_state_window")
+    mod = load_artifact_tool("generate_linear_rhs_parallel_gates")
     state = jnp.zeros((2, 4, 3, 2, 5), dtype=jnp.complex64)
 
     out = mod._inject_z_wave(state, ky_index=1, kx_index=0, amplitude=0.25, z_mode=1)
@@ -337,7 +337,7 @@ def test_inject_z_wave_targets_resolved_hermite_mode() -> None:
 
 
 def test_build_summary_accepts_collision_skip_and_rejects_hypercollision_skip() -> None:
-    mod = load_artifact_tool("gate_linear_rhs_zero_norm_state_window")
+    mod = load_artifact_tool("generate_linear_rhs_parallel_gates")
     rows = [
         {
             "state": "initial",

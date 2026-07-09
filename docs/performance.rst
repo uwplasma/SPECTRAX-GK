@@ -433,7 +433,7 @@ The companion state-window gate is generated with:
 
 .. code-block:: bash
 
-   python tools/artifacts/gate_linear_rhs_zero_norm_state_window.py \
+   python tools/artifacts/generate_linear_rhs_parallel_gates.py zero-norm-state-window \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --ky 0.3 \
      --Nl 4 \

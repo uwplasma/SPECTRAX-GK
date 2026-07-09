@@ -3688,3 +3688,13 @@ following:
   artifact shard, nonlinear transport finalizer contract shard, Python lint
   check, command smoke checks, stale-reference scan, diff hygiene, and
   architecture manifest passed locally.
+
+- 2026-07-09: folded `tools/artifacts/gate_linear_rhs_zero_norm_state_window.py`
+  into `tools/artifacts/generate_linear_rhs_parallel_gates.py` as the
+  `zero-norm-state-window` subcommand. Profiler-zero active-state skip gates and
+  the streaming/electrostatic linear-RHS identity gates now share one linear-RHS
+  artifact owner, and performance documentation plus manifests call the
+  consolidated command. The package architecture tool baseline tightened from
+  184 to 183. The zero-norm helper shard, linear-RHS parallel identity shard,
+  Python lint check, command-help smoke checks, stale-reference scan, diff
+  hygiene, and architecture manifest passed locally.
