@@ -3793,3 +3793,15 @@ following:
   Python lint check, stale-reference scan, validation coverage manifest,
   differentiable refactor manifest, and package architecture manifest passed
   locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/build_vmec_boozer_gradient_gate.py` into
+  `tools/artifacts/build_solver_objective_gradient_gate.py` as the
+  `vmec-boozer` subcommand family. Solver-ready geometry AD/FD gates and the
+  VMEC/Boozer frequency, quasilinear, and reduced nonlinear-window gradient
+  gates now share one solver-objective gradient artifact owner and one plotting
+  writer. The package architecture tool baseline tightened from 178 to 177.
+  The VMEC/Boozer gradient artifact shard, solver-objective artifact shard,
+  direct solver/VMEC-Boozer CLI help and frequency JSON smoke, Python lint
+  check, stale-reference scan, validation coverage manifest, differentiable
+  refactor manifest, and package architecture manifest passed locally.
