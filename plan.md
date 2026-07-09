@@ -3106,3 +3106,12 @@ following:
   unnecessary comparison-code naming in test filenames. Tightened the package
   architecture test baseline to 196. The consolidated comparison-contract shard
   passed locally.
+
+- 2026-07-08: folded independent-ky scaling, nonlinear sharding, device-z
+  transport-window, and quasilinear/UQ scaling artifact checks into
+  `tests/unit/parallel/test_parallel_artifact_contracts.py`. The tracked CPU/GPU
+  scaling, scoped nonlinear-domain diagnostics, and quasilinear ensemble
+  parallelization evidence now share one artifact-contract owner instead of
+  three one-off files. Updated CI quick-test paths and tightened the package
+  architecture test baseline to 193. The consolidated parallel artifact shard
+  passed locally.

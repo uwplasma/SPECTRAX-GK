@@ -1012,3 +1012,142 @@ def test_parallel_docs_keep_speedup_claims_tied_to_current_artifacts() -> None:
     assert "Large-run scaling acceptance checklist" in compact_docs
     assert "fresh profiler artifacts for the exact workload" in compact_docs
     assert "not a production nonlinear speedup claim" in compact_docs
+
+
+def _assert_independent_ky_scaling_artifact(payload: dict) -> None:
+    assert payload["identity_passed"] is True
+    assert "independent ky" in payload["claim_scope"].lower()
+    assert payload["grid"] == {"Nl": 4, "Nm": 8, "Nx": 1, "Ny": 128, "Nz": 96}
+    assert payload["time"]["steps"] == 240
+    assert len(payload["ky"]) == 64
+    for row in payload["rows"]:
+        assert row["identity_gate_pass"] is True
+        assert row["max_gamma_rel_error"] == 0.0
+        assert row["max_omega_abs_error"] == 0.0
+        assert row["strong_speedup_vs_1_device"] > 0.0
+
+
+def test_independent_ky_cpu_gpu_scaling_artifacts_are_identity_gated() -> None:
+    cpu = _load_json("independent_ky_scan_scaling_cpu_large.json")
+    gpu = _load_json("independent_ky_scan_scaling_gpu_large.json")
+    combined = _load_json("independent_ky_scan_scaling_large.json")
+
+    _assert_independent_ky_scaling_artifact(cpu)
+    assert cpu["backend"] == "cpu"
+    assert [row["requested_devices"] for row in cpu["rows"]] == [1, 2, 4, 8]
+    assert cpu["rows"][-1]["strong_speedup_vs_1_device"] > 7.0
+
+    _assert_independent_ky_scaling_artifact(gpu)
+    assert gpu["backend"] == "gpu"
+    assert [row["requested_devices"] for row in gpu["rows"]] == [1, 2]
+    assert gpu["rows"][-1]["strong_speedup_vs_1_device"] > 1.8
+
+    assert combined["identity_passed"] is True
+    assert {row["backend"] for row in combined["rows"]} == {"cpu", "gpu"}
+    assert "not a nonlinear domain-decomposition" in combined["claim_scope"]
+
+
+def _assert_nonlinear_sharding_identity_artifact(payload: dict) -> None:
+    assert payload["identity_gate_pass"] is True
+    assert payload["sharding_options"] == ["auto", "kx"]
+    assert "Do not use as a published runtime claim" in payload["claim_scope"]
+    for axis in payload["sharding_options"]:
+        result = payload["sharded_results"][axis]
+        assert result["identity_gate_pass"] is True
+        assert result["error"] is None
+        assert result["max_abs_state_error"] == 0.0
+        assert result["max_rel_state_error"] == 0.0
+        assert result["diagnostic_identity_gate_pass"] is True
+        assert result["max_abs_phi_error"] == 0.0
+        assert result["max_rel_phi_error"] == 0.0
+        assert result["max_abs_rhs_error"] == 0.0
+        assert result["max_rel_rhs_error"] == 0.0
+
+
+def test_nonlinear_sharding_profiles_are_identity_gated_and_scoped() -> None:
+    local = _load_json("nonlinear_sharding_profile.json")
+    office_gpu = _load_json("nonlinear_sharding_profile_office_gpu.json")
+
+    _assert_nonlinear_sharding_identity_artifact(local)
+    assert local["default_backend"] == "cpu"
+    assert local["state_sharding_active"] is False
+
+    _assert_nonlinear_sharding_identity_artifact(office_gpu)
+    assert office_gpu["default_backend"] == "gpu"
+    assert office_gpu["device_count"] >= 2
+    assert office_gpu["state_sharding_active"] is True
+    assert office_gpu["profiler_trace"]["requested"] is True
+
+
+def test_device_z_transport_window_profiles_are_identity_gated_and_scoped() -> None:
+    cpu = _load_json("nonlinear_device_z_pencil_transport_cpu4_profile.json")
+    gpu = _load_json("nonlinear_device_z_pencil_transport_gpu2_profile.json")
+
+    for payload in (cpu, gpu):
+        assert payload["kind"] == "nonlinear_device_z_pencil_transport_window_profile"
+        assert (
+            "not yet a full production nonlinear turbulent-transport solve"
+            in payload["claim_scope"]
+        )
+        assert payload["summary"]["all_active_identity_passed"] is True
+        assert payload["summary"]["full_solver_speedup_claim_allowed"] is False
+        assert payload["shape"] == [4, 16, 96, 96, 32]
+        assert payload["steps"] == 4
+        active_rows = [
+            row for row in payload["rows"] if row["active"] and row["device_count"] > 1
+        ]
+        assert active_rows
+        for row in active_rows:
+            assert row["identity_passed"] is True
+            assert row["transport_window_identity_passed"] is True
+            assert row["final_state_max_abs_error"] <= payload["atol"]
+            assert row["physical_flux_trace_max_abs_error"] <= payload["atol"]
+            assert row["transport_window_report"]["identity_passed"] is True
+
+    assert cpu["backend"] == "cpu"
+    assert cpu["summary"]["transport_window_speedup_claim_allowed"] is True
+    assert cpu["summary"]["max_speedup_vs_serial"] >= 1.5
+    assert cpu["hlo"]["device_4"]["all_to_all"] == 0
+    assert cpu["hlo"]["device_4"]["collective_permute"] == 0
+    assert cpu["trace"]["requested"] is True
+
+    assert gpu["backend"] == "gpu"
+    assert gpu["summary"]["transport_window_speedup_claim_allowed"] is False
+    assert gpu["rows"][1]["blocked_reasons"] == ["speedup_below_gate"]
+    assert gpu["hlo"]["device_2"]["all_to_all"] == 0
+    assert gpu["hlo"]["device_2"]["collective_permute"] == 0
+    assert gpu["trace"]["requested"] is True
+
+
+def test_quasilinear_uq_cpu_gpu_artifacts_have_identity_and_speedup() -> None:
+    cpu = _load_json("quasilinear_uq_ensemble_scaling_cpu_large.json")
+    gpu = _load_json("quasilinear_uq_ensemble_scaling_gpu_large.json")
+    combined = _load_json("quasilinear_uq_ensemble_scaling_large.json")
+
+    assert cpu["identity_passed"] is True
+    assert cpu["grid"] == {"Nx": 1, "Ny": 96, "Nz": 64, "Nl": 3, "Nm": 6}
+    assert cpu["time"]["steps"] == 2000
+    assert cpu["time"]["fit_start_fraction"] == 0.5
+    assert cpu["time"]["fit_end_fraction"] == 0.95
+    assert cpu["gradients"] == [2.2, 2.4, 2.6, 2.8, 3.0, 3.2]
+    assert cpu["ky"] == [0.1, 0.2, 0.3, 0.4, 0.5]
+    assert [row["requested_devices"] for row in cpu["rows"]] == [1, 2, 4, 8]
+    assert all(row["identity_gate_pass"] for row in cpu["rows"])
+    assert min(row["ensemble_mean_heat_flux_proxy"] for row in cpu["rows"]) > 1.0
+    assert cpu["rows"][-1]["actual_workers"] == 6
+    assert cpu["rows"][-1]["strong_speedup_vs_1_device"] > 5.0
+
+    assert gpu["identity_passed"] is True
+    assert gpu["grid"] == {"Nx": 1, "Ny": 96, "Nz": 64, "Nl": 3, "Nm": 6}
+    assert [row["requested_devices"] for row in gpu["rows"]] == [1, 2]
+    assert all(row["identity_gate_pass"] for row in gpu["rows"])
+    assert min(row["ensemble_mean_heat_flux_proxy"] for row in gpu["rows"]) > 1.0
+    assert gpu["rows"][-1]["strong_speedup_vs_1_device"] > 1.5
+
+    assert combined["identity_passed"] is True
+    assert combined["kind"] == "quasilinear_uq_ensemble_scaling_combined"
+    assert {row["backend"] for row in combined["rows"]} == {"cpu", "gpu"}
+    assert (
+        "not a promoted absolute nonlinear heat-flux predictor"
+        in combined["claim_scope"]
+    )
