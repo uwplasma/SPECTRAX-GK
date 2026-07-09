@@ -13,8 +13,8 @@ from spectraxgk.operators.nonlinear.parallel import (
     nonlinear_domain_identity_report,
     nonlinear_domain_parallel_identity_gate,
     nonlinear_domain_transport_window_identity_gate,
-    prototype_nonlinear_domain_decomposed_step,
-    prototype_nonlinear_domain_serial_step,
+    local_stencil_nonlinear_domain_decomposed_step,
+    local_stencil_nonlinear_domain_serial_step,
 )
 
 
@@ -25,8 +25,8 @@ def test_nonlinear_domain_facade_reexports_domain_gate_functions() -> None:
         "nonlinear_domain_identity_report",
         "nonlinear_domain_parallel_identity_gate",
         "nonlinear_domain_transport_window_identity_gate",
-        "prototype_nonlinear_domain_decomposed_step",
-        "prototype_nonlinear_domain_serial_step",
+        "local_stencil_nonlinear_domain_decomposed_step",
+        "local_stencil_nonlinear_domain_serial_step",
     )
 
     for name in public_domain_names:
@@ -84,8 +84,8 @@ def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() ->
         atol=1.0e-6,
         rtol=1.0e-6,
     )
-    serial = prototype_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.025)
-    decomposed = prototype_nonlinear_domain_decomposed_step(state, plan, dt=0.025)
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.025)
+    decomposed = local_stencil_nonlinear_domain_decomposed_step(state, plan, dt=0.025)
 
     assert report.identity_passed is True
     assert report.decomposed_path_enabled is True
@@ -97,7 +97,7 @@ def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() ->
     assert report.boundary_indices == (0, 2, 3, 5)
     assert report.boundary_max_abs_error <= report.atol
     assert report.boundary_max_rel_error <= report.rtol
-    assert "bounded local-stencil prototype" in report.claim_scope
+    assert "bounded local-stencil diagnostic" in report.claim_scope
     assert "no production routing or speedup claim" in report.claim_scope
     assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
     assert jnp.allclose(gated_state, decomposed, atol=1.0e-6, rtol=1.0e-6)
@@ -170,7 +170,7 @@ def test_nonlinear_domain_transport_window_gate_fails_closed_on_invalid_plan() -
 def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
     state = deterministic_nonlinear_domain_state((5, 3))
     plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
-    serial = prototype_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
     perturbed = serial.at[0, 0].add(1.0e-3)
 
     report = nonlinear_domain_identity_report(
@@ -238,9 +238,9 @@ def test_nonlinear_domain_decomposed_step_is_jax_jittable_with_static_plan() -> 
     state = deterministic_nonlinear_domain_state((6, 4))
     plan = build_nonlinear_domain_decomposition_plan(state.shape, axis=0, num_domains=3)
 
-    serial = prototype_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
+    serial = local_stencil_nonlinear_domain_serial_step(state, axis=plan.axis, dt=0.05)
     jit_step = jax.jit(
-        lambda item: prototype_nonlinear_domain_decomposed_step(item, plan, dt=0.05)
+        lambda item: local_stencil_nonlinear_domain_decomposed_step(item, plan, dt=0.05)
     )
     decomposed = jit_step(state)
 
@@ -266,7 +266,7 @@ def test_nonlinear_domain_decomposed_step_rejects_manual_invalid_plan() -> None:
     )
 
     with pytest.raises(ValueError, match="axis_not_canonical"):
-        prototype_nonlinear_domain_decomposed_step(state, invalid_plan)
+        local_stencil_nonlinear_domain_decomposed_step(state, invalid_plan)
 
 
 def test_nonlinear_domain_fail_closed_edge_branches() -> None:
@@ -282,7 +282,7 @@ def test_nonlinear_domain_fail_closed_edge_branches() -> None:
     state = deterministic_nonlinear_domain_state((6, 4))
     plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
     with pytest.raises(ValueError, match="state shape"):
-        prototype_nonlinear_domain_decomposed_step(state[:5], plan)
+        local_stencil_nonlinear_domain_decomposed_step(state[:5], plan)
     with pytest.raises(ValueError, match="steps"):
         nonlinear_domain_transport_window_identity_gate(state, plan, steps=0)
 

@@ -3425,3 +3425,13 @@ following:
   consolidated KBM comparison shard, Python lint check, validation manifest,
   release tests, stale-reference scan with only historical plan-log hits,
   compile check, diff hygiene, and architecture manifest passed locally.
+
+- 2026-07-08: renamed the nonlinear state-domain parallelization diagnostic API
+  from "prototype" terminology to "local-stencil" terminology. The public
+  names now describe the validated scope directly:
+  `local_stencil_nonlinear_domain_serial_step` and
+  `local_stencil_nonlinear_domain_decomposed_step`. The old throwaway-sounding
+  names were removed from the public facade rather than kept as compatibility
+  aliases. The parallel-domain shard, public import check, Python lint check,
+  stale-name scan, release tests, compile check, diff hygiene, and architecture
+  manifest passed locally.

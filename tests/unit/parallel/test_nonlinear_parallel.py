@@ -121,8 +121,8 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "nonlinear_spectral_rhs_identity_gate",
         "nonlinear_spectral_rhs_identity_report",
         "pencil_decomposed_nonlinear_spectral_rhs",
-        "prototype_nonlinear_domain_decomposed_step",
-        "prototype_nonlinear_domain_serial_step",
+        "local_stencil_nonlinear_domain_decomposed_step",
+        "local_stencil_nonlinear_domain_serial_step",
         "release_ready_nonlinear_parallel_strategies",
     )
 
