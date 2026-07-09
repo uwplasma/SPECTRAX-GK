@@ -549,7 +549,7 @@ screen is now complete: ``21`` matched plus/minus pairs reach
 ``combined_response_uncertainty_rel = 0.311 < 0.5``, no failed plus/minus
 window rows, plus ``mean_rel_spread = 0.1268``, and minus
 ``mean_rel_spread = 0.1193``.
-``tools/campaigns/write_nonlinear_gradient_control_variate_campaign.py`` turns that
+``tools/campaigns/design_nonlinear_gradient.py control-variate-campaign`` turns that
 screen into a bounded pre-run contract. For the tracked rel7.5 artifact, the
 midpoint common-mode control needs ``21`` independent matched plus/minus pairs
 (``42`` new nonlinear runs) to reduce the combined response uncertainty to

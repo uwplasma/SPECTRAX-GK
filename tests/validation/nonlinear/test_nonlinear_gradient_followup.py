@@ -777,13 +777,18 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
 
 
 def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> None:
-    module = load_campaign_tool("write_nonlinear_gradient_control_variate_campaign")
+    module = load_campaign_tool("design_nonlinear_gradient")
 
     out_prefix = tmp_path / "cv_campaign"
     source = (
         ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
     )
-    assert module.main([str(source), "--out-prefix", str(out_prefix)]) == 0
+    assert (
+        module.main(
+            ["control-variate-campaign", str(source), "--out-prefix", str(out_prefix)]
+        )
+        == 0
+    )
 
     report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     rows = out_prefix.with_suffix(".csv").read_text(encoding="utf-8").splitlines()

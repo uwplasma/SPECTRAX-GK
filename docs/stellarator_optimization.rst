@@ -2742,7 +2742,7 @@ promising, lowering the apparent residual uncertainty to ``0.238`` with a
 mean is not independently known. The next campaign therefore needs an
 independent control-mean estimate or a better-conditioned response, not just a
 few more blind paired seeds.
-``tools/campaigns/write_nonlinear_gradient_control_variate_campaign.py`` converts this
+``tools/campaigns/design_nonlinear_gradient.py control-variate-campaign`` converts this
 screen into a launch contract for the independent control mean. With the
 current sample variances and a ``1.10`` SEM safety factor, the midpoint
 common-mode needs ``21`` new matched plus/minus pairs (``42`` nonlinear runs)
