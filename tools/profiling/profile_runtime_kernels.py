@@ -180,6 +180,11 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sample-stride", type=int, default=None)
     parser.add_argument("--diagnostics-stride", type=int, default=None)
     parser.add_argument("--repeats", type=int, default=1)
+    parser.add_argument(
+        "--resolved-diagnostics",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--memory-profile", type=Path, default=None)
     parser.add_argument("--xla-dump-dir", type=Path, default=None)
@@ -212,6 +217,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             sample_stride=args.sample_stride,
             diagnostics_stride=args.diagnostics_stride,
             diagnostics=True,
+            resolved_diagnostics=args.resolved_diagnostics,
         )
         _block_tree(result)
         return result
