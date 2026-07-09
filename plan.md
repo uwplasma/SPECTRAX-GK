@@ -3840,3 +3840,10 @@ following:
   tests, command-help and fail-closed command smokes, Python lint/format checks,
   validation coverage manifest, differentiable refactor manifest, and package
   architecture manifest passed locally.
+
+### 2026-07-09 Bulk obsolete tool trim
+
+- Tightened the tool-retention policy used for the refactor tranche: tests-only or historical plan references no longer justify keeping transient debug/probe tools on `main`; retained tools must be backed by docs/release manifests, active benchmark comparison workflows, shared profiler infrastructure, or active campaign launch/postprocess paths.
+- Removed ten retired one-off tools from comparison, profiling, artifact, and completed campaign namespaces, plus their direct tests, cutting the tool topology from 173 to 163 Python files and the test topology from 139 to 138 Python files without touching installable source.
+- Kept the active benchmark-comparison harnesses, shared profiler option helper, and docs/release-backed artifact builders so parity, performance, and publication evidence remain reproducible while main stays leaner.
+- Updated the package architecture topology baselines to the new audited counts and fixed the stale validation-coverage release test to match the current nonlinear spectral-core ownership after the previous refactor.

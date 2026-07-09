@@ -77,7 +77,10 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.objectives.vmec_boozer_gradients"]["n_numerics_contracts"] >= 2
     )
 
-    assert rows["spectraxgk.operators.linear.cache_builder"]["coverage_target_percent"] == 95.0
+    assert (
+        rows["spectraxgk.operators.linear.cache_builder"]["coverage_target_percent"]
+        == 95.0
+    )
     assert rows["spectraxgk.operators.linear.cache_builder"]["n_owned_modules"] == 2
     assert rows["spectraxgk.operators.linear.moments"]["n_numerics_contracts"] >= 2
     assert rows["spectraxgk.operators.linear.params"]["n_physics_contracts"] >= 2
@@ -95,7 +98,11 @@ def test_repository_validation_manifest_is_well_formed() -> None:
         rows["spectraxgk.operators.nonlinear.diagnostic_state"]["n_physics_contracts"]
         >= 2
     )
-    assert rows["spectraxgk.operators.nonlinear.spectral_core"]["n_owned_modules"] == 6
+    spectral_core = rows["spectraxgk.operators.nonlinear.spectral_core"]
+    assert spectral_core["coverage_target_percent"] == 95.0
+    assert spectral_core["n_owned_modules"] >= 4
+    assert spectral_core["n_numerics_contracts"] >= 2
+    assert spectral_core["n_physics_contracts"] >= 2
     assert (
         rows["spectraxgk.solvers.nonlinear.explicit"]["coverage_target_percent"] == 95.0
     )

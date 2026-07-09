@@ -21,57 +21,6 @@ from tools.campaigns.write_w7x_zonal_closure_sweep import (
 )
 
 
-def test_vmec_qa_t1500_postprocess_manifest_commands(tmp_path: Path) -> None:
-    mod = load_campaign_tool("write_vmec_qa_t1500_postprocess_manifest")
-
-    manifest = mod.build_manifest(
-        run_root="tools_out/audits",
-        netcdf_root="office:/work/audits",
-        cases=("baseline", "quasilinear"),
-        min_relative_reduction=0.04,
-    )
-
-    assert manifest["kind"] == "vmec_qa_t1500_postprocess_manifest"
-    assert manifest["window"] == {"tmin": 1100.0, "tmax": 1500.0}
-    assert len(manifest["case_commands"]) == 2
-    ql = manifest["case_commands"][1]
-    assert ql["case"] == "quasilinear"
-    assert "vmec_qa_full_sweep_quasilinear_from_strict_baseline" in ql["outputs"][0]
-    assert ql["output_gate_json"] == "docs/_static/vmec_qa_t1500_quasilinear_output_gate.json"
-    assert "--min-window-samples 80" in ql["check_outputs_command"]
-    assert "--json-out docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql["check_outputs_command"]
-    assert "nonlinear_replicate_followup.py compact-bundle" in ql["compact_bundle_command"]
-    assert "--output-gate-json docs/_static/vmec_qa_t1500_quasilinear_output_gate.json" in ql["compact_bundle_command"]
-    assert "office:/work/audits" in ql["compact_bundle_command"]
-    comparisons = manifest["comparison_commands"]
-    assert len(comparisons) == 1
-    assert comparisons[0]["candidate"] == "quasilinear"
-    assert "--min-relative-reduction 0.04" in comparisons[0]["command"]
-    assert "qa_baseline_scipy_t1500_ensemble_gate.json" in comparisons[0]["command"]
-
-    out = tmp_path / "manifest.json"
-    rc = mod.main(
-        [
-            "--case",
-            "baseline",
-            "--case",
-            "growth",
-            "--run-root",
-            "tools_out/demo",
-            "--netcdf-root",
-            "office:/demo",
-            "--out-json",
-            str(out),
-        ]
-    )
-
-    assert rc == 0
-    payload = json.loads(out.read_text(encoding="utf-8"))
-    assert [row["case"] for row in payload["case_commands"]] == ["baseline", "growth"]
-    assert payload["comparison_commands"][0]["candidate"] == "growth"
-    assert payload["case_commands"][0]["outputs"][2].endswith("_dt0p04.out.nc")
-
-
 def test_w7x_zonal_closure_sweep_manifest_contract(tmp_path: Path) -> None:
     payload = build_w7x_zonal_closure_manifest(
         config=tmp_path / "runtime_w7x.toml",
@@ -94,7 +43,9 @@ def test_w7x_zonal_closure_sweep_manifest_contract(tmp_path: Path) -> None:
     assert any(case["family"] == "constant_mixed_lm" for case in payload["cases"])
     assert any(case["family"] == "constant_laguerre" for case in payload["cases"])
     assert any(case["family"] == "constant_isotropic" for case in payload["cases"])
-    assert any("--nu-hyper-lm 0.01" in command for command in payload["launch_commands"])
+    assert any(
+        "--nu-hyper-lm 0.01" in command for command in payload["launch_commands"]
+    )
     assert any("--nu-hyper-l 0.03" in command for command in payload["launch_commands"])
     assert any("--nu-hyper 0.01" in command for command in payload["launch_commands"])
     assert any(
@@ -102,7 +53,9 @@ def test_w7x_zonal_closure_sweep_manifest_contract(tmp_path: Path) -> None:
         for command in payload["launch_commands"]
     )
     assert all("--out-png" in command for command in payload["launch_commands"])
-    assert all("--checkpoint-steps 500" in command for command in payload["launch_commands"])
+    assert all(
+        "--checkpoint-steps 500" in command for command in payload["launch_commands"]
+    )
     assert "plot_w7x_zonal_closure_ladder.py" in payload["plot_command"]
     assert "w7x_zonal_closure_ladder_full.png" in payload["plot_command"]
     assert payload["plot_outputs"]["png"].endswith("w7x_zonal_closure_ladder_full.png")
@@ -151,7 +104,9 @@ def test_external_vmec_holdout_selection_and_summary(tmp_path: Path) -> None:
     screen = tmp_path / "screen.csv"
     _write_screen(screen)
     rows = _read_screen(screen)
-    selected = select_candidate(rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"})
+    selected = select_candidate(
+        rows, excluded_cases={"DSHAPE_nc", "circular_tokamak_nc"}
+    )
     assert selected.case == "ITERModel_reference_nc"
     assert selected.best_gamma == pytest.approx(0.088737)
     assert _default_case_slug(selected.case) == "ITERModel_reference"
@@ -170,7 +125,9 @@ def test_external_vmec_holdout_selection_and_summary(tmp_path: Path) -> None:
     root.mkdir()
     target = root / "wout_ITERModel_reference.nc"
     target.write_text("fixture", encoding="utf-8")
-    resolved = resolve_vmec_file("/remote/wout_ITERModel_reference.nc", search_roots=[root])
+    resolved = resolve_vmec_file(
+        "/remote/wout_ITERModel_reference.nc", search_roots=[root]
+    )
     assert resolved == target
 
     generated = [tmp_path / "cfg_a.toml", tmp_path / "cfg_b.toml"]

@@ -185,7 +185,6 @@ def test_full_nonlinear_trace_field_norm_handles_missing_em_fields() -> None:
 # Parallel-scaling profiling contracts.
 independent_ky = load_profiling_tool("profile_independent_ky_scan_scaling")
 linear_terms = load_profiling_tool("profile_linear_rhs_terms")
-spectral_domain = load_profiling_tool("profile_nonlinear_spectral_domain_routing")
 quasilinear_uq = load_profiling_tool("profile_quasilinear_uq_ensemble_scaling")
 
 
@@ -287,7 +286,12 @@ def test_profile_linear_rhs_parallel_slices_writes_artifacts(tmp_path: Path) -> 
     out = tmp_path / "linear_rhs_parallel_slices_profile"
     paths = linear_slices.write_artifacts(summary, out)
 
-    assert json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))["identity_passed"] is True
+    assert (
+        json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))[
+            "identity_passed"
+        ]
+        is True
+    )
     assert "median_s" in out.with_suffix(".csv").read_text(encoding="utf-8")
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -373,7 +377,12 @@ def test_linear_rhs_sweep_subcommand_writes_artifacts(
     out = tmp_path / "linear_rhs_parallel_slices_sweep"
     paths = linear_slices.write_sweep_artifacts(summary, out)
 
-    assert json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))["identity_passed"] is True
+    assert (
+        json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))[
+            "identity_passed"
+        ]
+        is True
+    )
     assert "requested_devices" in out.with_suffix(".csv").read_text(encoding="utf-8")
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -423,7 +432,9 @@ def test_linear_rhs_terms_write_summary_json_roundtrips(tmp_path: Path) -> None:
 def test_linear_rhs_terms_inject_z_wave_adds_parallel_variation() -> None:
     state = jnp.zeros((1, 4, 3, 2, 1, 5), dtype=jnp.complex64)
 
-    out = linear_terms._inject_z_wave(state, ky_index=1, kx_index=0, amplitude=0.2, z_mode=1)
+    out = linear_terms._inject_z_wave(
+        state, ky_index=1, kx_index=0, amplitude=0.2, z_mode=1
+    )
 
     assert linear_terms._z_variation_norm(out) > 0.0
     assert jnp.linalg.norm(out[0, 0, 2, 1, 0]) > 0.0
@@ -465,69 +476,9 @@ def test_linear_rhs_terms_tracked_miller_profile_is_active_artifact() -> None:
     assert payload["dominant_nonzero_norm_term"] == "streaming"
 
 
-def test_nonlinear_spectral_domain_routing_parser_defaults() -> None:
-    args = spectral_domain.build_parser().parse_args([])
-
-    assert args.out_prefix == spectral_domain.DEFAULT_OUT_PREFIX
-    assert (args.nl, args.nm, args.ny, args.nx, args.nz) == (2, 4, 32, 32, 4)
-    assert args.y_chunks == (16, 16)
-    assert args.x_chunks == (16, 16)
-    assert args.min_speedup == 1.5
-
-
-def test_nonlinear_spectral_domain_routing_builds_identity_payload() -> None:
-    payload = spectral_domain.build_profile(
-        shape=(2, 2, 4, 4, 1),
-        y_chunks=(2, 2),
-        x_chunks=(2, 2),
-        steps=1,
-        dt=0.001,
-        warmups=0,
-        repeats=1,
-        min_speedup=1.5,
-        atol=5.0e-6,
-        rtol=5.0e-6,
-    )
-
-    assert payload["kind"] == "nonlinear_spectral_domain_routing_profile"
-    assert payload["identity_passed"] is True
-    assert payload["decomposed_path_enabled"] is True
-    assert payload["timing_identity_max_abs_error"] <= payload["atol"]
-    assert payload["timing_identity_max_rel_error"] <= payload["rtol"]
-    assert payload["production_speedup_claim_allowed"] is False
-    assert payload["work_model"]["num_tiles"] == 4
-    assert payload["work_model"]["production_speedup_feasible"] is False
-    assert payload["communication_to_owned_work_ratio"] > 1.0
-    assert payload["parallel_efficiency_ceiling"] < 0.5
-    assert payload["serial_stats_s"]["median"] > 0.0
-    assert payload["logical_domain_stats_s"]["median"] > 0.0
-    assert payload["strong_speedup_vs_serial"] is not None
-
-
-def test_nonlinear_spectral_domain_routing_writes_artifacts(tmp_path: Path) -> None:
-    payload = spectral_domain.build_profile(
-        shape=(2, 2, 4, 4, 1),
-        y_chunks=(2, 2),
-        x_chunks=(2, 2),
-        steps=1,
-        dt=0.001,
-        warmups=0,
-        repeats=1,
-        min_speedup=1.5,
-        atol=5.0e-6,
-        rtol=5.0e-6,
-    )
-
-    paths = spectral_domain.write_artifacts(payload, tmp_path / "domain_profile")
-
-    for path in paths.values():
-        assert Path(path).exists()
-    saved = json.loads((tmp_path / "domain_profile.json").read_text(encoding="utf-8"))
-    assert saved["identity_passed"] is True
-    assert saved["work_model_speedup_feasible"] is False
-
-
-def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case() -> None:
+def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case() -> (
+    None
+):
     args = quasilinear_uq.build_parser().parse_args([])
 
     assert args.out_prefix == quasilinear_uq.DEFAULT_PREFIX
@@ -553,7 +504,9 @@ def test_quasilinear_uq_ensemble_scaling_reduced_observable_is_positive() -> Non
     assert obs["omega_span"] == 0.19999999999999998
 
 
-def test_quasilinear_uq_ensemble_scaling_identity_metrics_detect_equal_members() -> None:
+def test_quasilinear_uq_ensemble_scaling_identity_metrics_detect_equal_members() -> (
+    None
+):
     members = [
         {"R_over_LTi": 2.4, "heat_flux_proxy": 1.5, "gamma": [0.1, 0.2]},
         {"R_over_LTi": 2.7, "heat_flux_proxy": 2.5, "gamma": [0.3, 0.4]},
