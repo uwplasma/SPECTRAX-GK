@@ -1051,7 +1051,7 @@ def _vmec_boozer_holdout_transport_commands(
         + f" --out-png {ensemble_png.name}"
     )
     build_holdout_artifact_command = (
-        "python3 tools/artifacts/build_vmec_boozer_production_holdout_artifact.py "
+        "python3 tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py production "
         f"--transport-manifest {(out_dir / 'run_manifest.json').as_posix()} "
         f"--ensemble-json {ensemble_json.as_posix()} "
         f"--case {case} --out {holdout_json.as_posix()}"

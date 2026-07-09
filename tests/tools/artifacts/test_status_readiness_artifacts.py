@@ -1806,7 +1806,7 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
         in heldout[0]["build_ensemble_command"]
     )
     assert (
-        "build_vmec_boozer_production_holdout_artifact.py"
+        "build_vmec_boozer_aggregate_holdout_gate.py production"
         in heldout[0]["build_holdout_artifact_command"]
     )
     assert (

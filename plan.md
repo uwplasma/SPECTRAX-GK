@@ -3777,3 +3777,19 @@ following:
   smoke, Python lint check, stale-reference scan, validation coverage manifest,
   differentiable refactor manifest, and package architecture manifest passed
   locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/build_vmec_boozer_production_holdout_artifact.py` into
+  `tools/artifacts/build_vmec_boozer_aggregate_holdout_gate.py` as the
+  `production` subcommand. Reduced alpha/surface held-out aggregate gates and
+  the production-scope nonlinear VMEC/Boozer holdout JSON now share one
+  aggregate-holdout owner. The original
+  `build_vmec_boozer_production_holdout_artifact` helper remains available from
+  the consolidated module for tests and downstream call sites, while generated
+  runbook commands now call
+  `build_vmec_boozer_aggregate_holdout_gate.py production`. The package
+  architecture tool baseline tightened from 179 to 178. The production holdout
+  artifact shard, readiness/runbook command shard, direct production CLI smoke,
+  Python lint check, stale-reference scan, validation coverage manifest,
+  differentiable refactor manifest, and package architecture manifest passed
+  locally.

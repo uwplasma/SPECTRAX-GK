@@ -696,7 +696,7 @@ def _holdout_ensemble(path: Path, *, passed: bool) -> Path:
 def test_vmec_boozer_production_holdout_artifact_promotes_only_passed_ensemble(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_vmec_boozer_production_holdout_artifact")
+    mod = load_artifact_tool("build_vmec_boozer_aggregate_holdout_gate")
     artifact = mod.build_vmec_boozer_production_holdout_artifact(
         transport_manifest=_holdout_manifest(tmp_path / "run_manifest.json"),
         ensemble_json=_holdout_ensemble(tmp_path / "ensemble.json", passed=True),
@@ -720,7 +720,7 @@ def test_vmec_boozer_production_holdout_artifact_promotes_only_passed_ensemble(
 def test_vmec_boozer_production_holdout_artifact_fails_closed_for_failed_ensemble(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_vmec_boozer_production_holdout_artifact")
+    mod = load_artifact_tool("build_vmec_boozer_aggregate_holdout_gate")
     artifact = mod.build_vmec_boozer_production_holdout_artifact(
         transport_manifest=_holdout_manifest(tmp_path / "run_manifest.json"),
         ensemble_json=_holdout_ensemble(tmp_path / "ensemble.json", passed=False),
@@ -738,10 +738,11 @@ def test_vmec_boozer_production_holdout_artifact_fails_closed_for_failed_ensembl
 def test_vmec_boozer_production_holdout_artifact_main_writes_output(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_vmec_boozer_production_holdout_artifact")
+    mod = load_artifact_tool("build_vmec_boozer_aggregate_holdout_gate")
     out = tmp_path / "holdout.json"
     result = mod.main(
         [
+            "production",
             "--transport-manifest",
             str(_holdout_manifest(tmp_path / "run_manifest.json")),
             "--ensemble-json",

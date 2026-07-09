@@ -67,6 +67,46 @@ def _finite_float(value: object, default: float = np.nan) -> float:
     return result if np.isfinite(result) else default
 
 
+def _repo_relative(path: Path | str) -> str:
+    raw = Path(path)
+    try:
+        return raw.resolve().relative_to(ROOT.resolve()).as_posix()
+    except (OSError, ValueError):
+        return str(path)
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return payload
+
+
+def _transport_sample(manifest: dict[str, Any]) -> dict[str, Any]:
+    sample = manifest.get("transport_sample")
+    if not isinstance(sample, dict):
+        raise ValueError("transport manifest must contain transport_sample")
+    required = ("vmec_file", "torflux", "alpha", "ky")
+    missing = [key for key in required if key not in sample]
+    if missing:
+        raise ValueError(
+            "transport_sample missing required key(s): " + ", ".join(missing)
+        )
+    return dict(sample)
+
+
+def _ensemble_passed(ensemble: dict[str, Any]) -> bool:
+    if bool(ensemble.get("passed", False)):
+        return True
+    gate = ensemble.get("gate_report")
+    return bool(isinstance(gate, dict) and gate.get("passed", False))
+
+
+def _window(ensemble: dict[str, Any]) -> dict[str, Any]:
+    window = ensemble.get("window")
+    return dict(window) if isinstance(window, dict) else {}
+
+
 def _surface_tuple(values: tuple[int, ...] | list[int]) -> tuple[int, ...]:
     result = tuple(int(item) for item in values)
     if not result:
@@ -530,6 +570,66 @@ def write_vmec_boozer_aggregate_surface_holdout_artifacts(
     return _write_holdout_artifacts(payload, out=out, kind="surface")
 
 
+def build_vmec_boozer_production_holdout_artifact(
+    *,
+    transport_manifest: str | Path,
+    ensemble_json: str | Path,
+    case: str | None = None,
+) -> dict[str, Any]:
+    """Return a promotion-gate input for a nonlinear VMEC/Boozer holdout."""
+
+    manifest_path = Path(transport_manifest)
+    ensemble_path = Path(ensemble_json)
+    manifest = _load_json(manifest_path)
+    ensemble = _load_json(ensemble_path)
+    sample = _transport_sample(manifest)
+    passed = _ensemble_passed(ensemble)
+    case_name = str(
+        case
+        or manifest.get("case")
+        or ensemble.get("case")
+        or manifest_path.parent.name
+    )
+    holdout_sample = {
+        "surface_index": None,
+        "surface": float(sample["torflux"]),
+        "torflux": float(sample["torflux"]),
+        "alpha": float(sample["alpha"]),
+        "ky": float(sample["ky"]),
+        "selected_ky_index": f"ky={float(sample['ky']):.16g}",
+        "vmec_file": str(sample["vmec_file"]),
+        "npol": float(sample.get("npol", 1.0)),
+    }
+    return {
+        "kind": "vmec_boozer_production_scope_heldout_nonlinear_transport_artifact",
+        "case": case_name,
+        "claim_level": (
+            "production_scope_vmec_boozer_heldout_nonlinear_transport_average"
+        ),
+        "passed": passed,
+        "promotion_gate": {
+            "passed": passed,
+            "blockers": []
+            if passed
+            else ["replicated_nonlinear_window_ensemble_failed"],
+        },
+        "transport_average_gate": passed,
+        "samples": [holdout_sample],
+        "holdout_samples": [holdout_sample],
+        "source_manifest": _repo_relative(manifest_path),
+        "nonlinear_ensemble_artifact": _repo_relative(ensemble_path),
+        "nonlinear_ensemble_passed": passed,
+        "window": _window(ensemble),
+        "statistics": ensemble.get("statistics", {}),
+        "notes": (
+            "This artifact is generated only from a concrete VMEC transport manifest "
+            "and a replicated post-transient nonlinear-window ensemble. It is the "
+            "surface/field-line holdout companion consumed by "
+            "check_vmec_boozer_aggregate_holdout_gate.py."
+        ),
+    }
+
+
 def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--case-name", default="nfp4_QH_warm_start")
     parser.add_argument("--objective", default="quasilinear_flux")
@@ -582,6 +682,14 @@ def build_parser() -> argparse.ArgumentParser:
     surface.add_argument("--holdout-surface-indices", nargs="+", type=int, default=[19])
     _add_common_args(surface)
     surface.set_defaults(holdout_alphas_default=[0.0])
+
+    production = subparsers.add_parser(
+        "production", help="Build a production-scope nonlinear holdout JSON artifact."
+    )
+    production.add_argument("--transport-manifest", required=True, type=Path)
+    production.add_argument("--ensemble-json", required=True, type=Path)
+    production.add_argument("--case")
+    production.add_argument("--out", required=True, type=Path)
     return parser
 
 
@@ -610,6 +718,12 @@ def _solver_kwargs(args: argparse.Namespace) -> dict[str, object]:
 
 
 def _build_payload_from_args(args: argparse.Namespace) -> dict[str, object]:
+    if args.kind == "production":
+        return build_vmec_boozer_production_holdout_artifact(
+            transport_manifest=args.transport_manifest,
+            ensemble_json=args.ensemble_json,
+            case=args.case,
+        )
     holdout_alphas = tuple(args.holdout_alphas or args.holdout_alphas_default)
     common = dict(
         case_name=args.case_name,
@@ -637,7 +751,14 @@ def _build_payload_from_args(args: argparse.Namespace) -> dict[str, object]:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     payload = _build_payload_from_args(args)
-    if args.json_only:
+    if args.kind == "production":
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(
+            json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(f"saved {_repo_relative(args.out)}")
+    elif args.json_only:
         print(json.dumps(_json_clean(payload), indent=2, sort_keys=True))
     else:
         writer = (
@@ -647,7 +768,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         paths = writer(payload, out=args.out)
         print(json.dumps(paths, indent=2, sort_keys=True))
-    if args.fail_on_blocked and not bool(payload.get("passed")):
+    if getattr(args, "fail_on_blocked", False) and not bool(payload.get("passed")):
         return 1
     return 0
 
