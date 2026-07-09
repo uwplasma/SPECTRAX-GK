@@ -323,7 +323,7 @@ Quasilinear model-selection state:
   cases. The QH VMEC/Boozer held-out surface/field-line campaign and the
   selected optimized-equilibrium audit now also pass their local seed/timestep
   ensemble gates.
-- ``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
+- ``tools/release/check_vmec_boozer_gates.py aggregate-holdout`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
   before any optimized-equilibrium production nonlinear heat-flux claim can be

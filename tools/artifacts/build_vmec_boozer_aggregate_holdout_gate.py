@@ -625,7 +625,7 @@ def build_vmec_boozer_production_holdout_artifact(
             "This artifact is generated only from a concrete VMEC transport manifest "
             "and a replicated post-transient nonlinear-window ensemble. It is the "
             "surface/field-line holdout companion consumed by "
-            "check_vmec_boozer_aggregate_holdout_gate.py."
+            "check_vmec_boozer_gates.py aggregate-holdout."
         ),
     }
 

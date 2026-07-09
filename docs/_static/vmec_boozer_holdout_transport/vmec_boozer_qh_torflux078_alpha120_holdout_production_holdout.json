@@ -16,7 +16,7 @@
   "kind": "vmec_boozer_production_scope_heldout_nonlinear_transport_artifact",
   "nonlinear_ensemble_artifact": "docs/_static/vmec_boozer_holdout_transport/vmec_boozer_qh_torflux078_alpha120_holdout_ensemble_gate.json",
   "nonlinear_ensemble_passed": true,
-  "notes": "This artifact is generated only from a concrete VMEC transport manifest and a replicated post-transient nonlinear-window ensemble. It is the surface/field-line holdout companion consumed by check_vmec_boozer_aggregate_holdout_gate.py.",
+  "notes": "This artifact is generated only from a concrete VMEC transport manifest and a replicated post-transient nonlinear-window ensemble. It is the surface/field-line holdout companion consumed by check_vmec_boozer_gates.py aggregate-holdout.",
   "passed": true,
   "promotion_gate": {
     "blockers": [],

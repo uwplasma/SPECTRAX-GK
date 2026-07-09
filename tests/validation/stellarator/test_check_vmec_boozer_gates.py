@@ -13,7 +13,7 @@ from spectraxgk.objectives.portfolio_artifacts import (
 )
 
 
-holdout_mod = load_release_tool("check_vmec_boozer_aggregate_holdout_gate")
+holdout_mod = load_release_tool("check_vmec_boozer_gates")
 
 
 def _write_json(path: Path, payload: dict[str, object]) -> Path:
@@ -282,7 +282,7 @@ def test_aggregate_holdout_gate_main_writes_json(tmp_path: Path) -> None:
     line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())
     out = tmp_path / "report.json"
 
-    result = holdout_mod.main(
+    result = holdout_mod.main_aggregate_holdout(
         [
             "--aggregate-artifact",
             str(aggregate),
@@ -300,7 +300,7 @@ def test_aggregate_holdout_gate_main_writes_json(tmp_path: Path) -> None:
 
 
 # VMEC/Boozer reduced portfolio guard assertions
-portfolio_mod = load_release_tool("check_vmec_boozer_reduced_portfolio_guard")
+portfolio_mod = holdout_mod
 
 
 def _row_artifact() -> dict[str, object]:
@@ -737,7 +737,7 @@ def test_tool_main_returns_nonzero_for_failed_guard(tmp_path: Path) -> None:
     row_path.write_text(json.dumps(row), encoding="utf-8")
     gradient_path.write_text(json.dumps(_gradient_artifact()), encoding="utf-8")
 
-    result = portfolio_mod.main(
+    result = portfolio_mod.main_reduced_portfolio_guard(
         [
             "--row-artifact",
             str(row_path),

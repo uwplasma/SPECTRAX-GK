@@ -2557,7 +2557,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/objectives/test_autodiff_solver_objectives.py",
   "tests/tools/artifacts/test_stellarator_artifact_tools.py",
-  "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_gates.py",
   "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
@@ -3099,7 +3099,7 @@ numerics_contracts = [
   "provenance, Boozer resolution, finite-difference, AD/FD, and reducer-value gates all pass before promotion",
 ]
 fast_tests = [
-  "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
+  "tests/validation/stellarator/test_check_vmec_boozer_gates.py",
 ]
 artifact_paths = [
   "docs/_static/vmec_boozer_reduced_portfolio_guard.json",

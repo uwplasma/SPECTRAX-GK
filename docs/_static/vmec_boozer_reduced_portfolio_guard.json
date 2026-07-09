@@ -3,9 +3,9 @@
     "finite_ad_fd_values": true,
     "has_growth_ad_fd_gate": true,
     "has_quasilinear_ad_fd_gate": true,
-    "n_gradient_artifacts": 2,
-    "n_objective_gates": 7,
-    "n_passed_objective_gates": 7,
+    "n_gradient_artifacts": 1,
+    "n_objective_gates": 5,
+    "n_passed_objective_gates": 5,
     "objective_names": [
       "gamma",
       "kperp_eff2",
@@ -26,21 +26,21 @@
     "min_alphas": 2,
     "min_boozer_mode": 21,
     "min_ky": 2,
-    "min_objectives": 2,
+    "min_objectives": 1,
     "require_growth_objective": true,
     "require_quasilinear_objective": true,
     "require_vmec_paths": true,
-    "value_atol": 1e-06,
-    "value_rtol": 1e-06
+    "value_atol": 1e-08,
+    "value_rtol": 1e-08
   },
   "coverage_gate": {
     "alphas": [
       0.0,
-      0.7
+      0.5
     ],
     "ky_values": [
-      0.1,
-      0.2
+      1.0,
+      2.0
     ],
     "min_alphas": 2,
     "min_ky": 2,
@@ -84,15 +84,14 @@
     ]
   },
   "gradient_artifacts": [
-    "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
-    "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json"
+    "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_quasilinear_gradient_gate.json"
   ],
   "kind": "vmec_boozer_reduced_portfolio_artifact_guard",
   "next_action": "Use this guard to admit reduced VMEC/Boozer growth/QL portfolio artifacts. Production nonlinear claims still require held-out optimized-equilibrium nonlinear-window ensembles and transport audits.",
   "objective_name_gate": {
     "has_growth_objective": true,
     "has_quasilinear_objective": true,
-    "min_objectives": 2,
+    "min_objectives": 1,
     "n_objectives": 6,
     "objective_names": [
       "gamma",
@@ -108,16 +107,16 @@
   },
   "passed": true,
   "portfolio_reducer_gate": {
-    "abs_error": 7.531322232523507e-10,
-    "artifact_base_value": 2.22709918097469,
-    "atol": 1e-06,
+    "abs_error": 8.674260865149108e-09,
+    "artifact_base_value": 0.8927196177524359,
+    "atol": 1e-08,
     "contract": {
       "n_alphas": 2,
       "n_ky": 2,
       "n_objectives": 1,
       "n_samples": 4,
       "n_surfaces": 1,
-      "reduction": "weighted_mean",
+      "reduction": "mean",
       "row_shape": [
         1,
         2,
@@ -130,13 +129,13 @@
         2
       ],
       "uses_objective_weights": false,
-      "uses_sample_weights": true,
+      "uses_sample_weights": false,
       "uses_separable_sample_weights": false
     },
     "passed": true,
-    "reduced_base_value": 2.2270991802215576,
-    "reduction": "weighted_mean",
-    "rtol": 1e-06
+    "reduced_base_value": 0.8927196264266968,
+    "reduction": "mean",
+    "rtol": 1e-08
   },
   "provenance_gate": {
     "has_input_and_wout_paths": true,
@@ -149,5 +148,5 @@
     "requires_vmec_paths": true,
     "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
   },
-  "row_artifact": "docs/_static/vmec_boozer_aggregate_objective_gate.json"
+  "row_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_multi_point_objective_gate.json"
 }

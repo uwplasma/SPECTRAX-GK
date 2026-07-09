@@ -481,7 +481,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/release/check_package_architecture_manifest.py",
                 "tools/release/check_performance_optimization_manifest.py",
                 "tools/release/check_quasilinear_promotion_guardrails.py",
-                "tools/release/check_vmec_boozer_differentiability_claim.py",
+                "tools/release/check_vmec_boozer_gates.py differentiability-claim",
                 "tools/artifacts/build_parallelization_completion_status.py",
                 "tools/release/check_release_readiness.py technical-status",
                 "tools/release/check_release_readiness.py",
@@ -519,7 +519,7 @@ coverage:
         "tools/release/check_performance_optimization_manifest.py\n"
         "tools/release/check_parallel_scaling_artifacts.py\n"
         "tools/release/check_quasilinear_promotion_guardrails.py\n"
-        "tools/release/check_vmec_boozer_differentiability_claim.py\n"
+        "tools/release/check_vmec_boozer_gates.py differentiability-claim\n"
         "tools/artifacts/build_parallelization_completion_status.py\n"
         "tools/release/check_release_readiness.py technical-status\n"
         "tools/release/check_release_readiness.py\n"

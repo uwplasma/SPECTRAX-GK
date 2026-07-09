@@ -1829,7 +1829,7 @@ at least one separate passed validation artifact whose sample metadata covers a
 held-out ``surface_index`` or field-line ``alpha``. A held-out ``k_y`` point
 alone is useful spectrum coverage, but it is not sufficient for the
 surface/field-line generalization gate. The repository-level check
-``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
+``tools/release/check_vmec_boozer_gates.py aggregate-holdout`` encodes that boundary for
 frozen artifacts: it accepts the aggregate FD and line-search artifacts as
 necessary optimizer-plumbing evidence, then blocks promotion until independent
 surface/field-line holdout evidence is supplied. It also requires a passed
@@ -2029,7 +2029,7 @@ finite difference on a deterministic nonlinear row fixture.
    optimization claim.
 
 The corresponding real-artifact guard is
-``tools/release/check_vmec_boozer_reduced_portfolio_guard.py``. It consumes the tracked
+``tools/release/check_vmec_boozer_gates.py reduced-portfolio``. It consumes the tracked
 multi-alpha VMEC/Boozer aggregate-objective JSON plus a VMEC/Boozer AD/FD
 gradient JSON, rebuilds a backend-free reducer table from the real rows, and
 fails closed unless the artifact has VMEC/Boozer provenance, at least two
@@ -2039,7 +2039,7 @@ non-production nonlinear claim boundary.
 
 .. code-block:: bash
 
-   python tools/release/check_vmec_boozer_reduced_portfolio_guard.py
+   python tools/release/check_vmec_boozer_gates.py reduced-portfolio
 
 The tracked guard lives at
 ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` and passes on the QH
@@ -2490,7 +2490,7 @@ the following pass:
    claims. The current multi-point VMEC/Boozer aggregate API closes the
    software plumbing for this gate, but the manuscript claim remains bounded
    until the corresponding aggregate artifacts pass on the selected
-   equilibria. ``tools/release/check_vmec_boozer_aggregate_holdout_gate.py`` is the
+   equilibria. ``tools/release/check_vmec_boozer_gates.py aggregate-holdout`` is the
    artifact-level promotion check for this boundary: aggregate finite-difference
    and line-search artifacts must pass on the same training sample set, and at
    least one independent passed validation artifact must cover a held-out

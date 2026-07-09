@@ -1816,7 +1816,7 @@ def test_pre_manuscript_runbook_fails_closed_but_lists_actions(tmp_path: Path) -
         in heldout[0]["build_holdout_artifact_command"]
     )
     assert (
-        "check_vmec_boozer_aggregate_holdout_gate.py"
+        "check_vmec_boozer_gates.py aggregate-holdout"
         in heldout[0]["promotion_gate_command"]
     )
     assert "production_scope_vmec_boozer" in heldout[0]["claim_level"]

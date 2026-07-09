@@ -1669,11 +1669,11 @@ def test_geometry_inverse_design_report_defaults_to_all_observables_for_square_p
     assert float(report["history"][0]["residual_norm"]) == pytest.approx(0.0)
 
 
-# ---- test_check_vmec_boozer_differentiability_claim.py ----
+# ---- test_check_vmec_boozer_gates.py differentiability-claim ----
 
 import json
 
-from tools.release.check_vmec_boozer_differentiability_claim import (
+from tools.release.check_vmec_boozer_gates import (
     build_vmec_boozer_differentiability_claim_guard,
 )
 

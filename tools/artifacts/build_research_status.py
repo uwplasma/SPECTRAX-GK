@@ -3308,7 +3308,7 @@ def _closure__vmec_boozer_holdout_transport_commands(
         f"--case {case} --out {holdout_json.as_posix()}"
     )
     promotion_gate_command = (
-        "python3 tools/release/check_vmec_boozer_aggregate_holdout_gate.py "
+        "python3 tools/release/check_vmec_boozer_gates.py aggregate-holdout "
         "--holdout-artifact docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json "
         "--holdout-artifact docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json "
         f"--holdout-artifact {holdout_json.as_posix()} "

@@ -38,7 +38,7 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 228 | 100 | active |
-| Tool Python files | 137 | 99 | active |
+| Tool Python files | 135 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
@@ -74,13 +74,13 @@ branch/PR.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Tool consolidation | 54% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Tool consolidation | 58% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 51% | Shrink `spectraxgk.benchmarks`, resolve remaining `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
-| Docs/readme release pass | 74% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
-| CI/release hygiene | 88% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
+| Docs/readme release pass | 75% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
+| CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
 ## Prioritized Implementation Steps
 
@@ -153,6 +153,11 @@ branch/PR.
 - 2026-07-09: Moved the fixed-step nonlinear scan policy from
   `spectraxgk.terms` into `spectraxgk.solvers.nonlinear.explicit`, reducing
   source count from 229 to 228 while preserving explicit-scan tests.
+- 2026-07-09: Grouped three VMEC/Boozer release-gate scripts into
+  `tools/release/check_vmec_boozer_gates.py` subcommands
+  (`differentiability-claim`, `aggregate-holdout`, and `reduced-portfolio`),
+  reducing tool count from 137 to 135 while preserving release and stellarator
+  validation tests.
 
 ## Validation Commands For This Tranche
 
