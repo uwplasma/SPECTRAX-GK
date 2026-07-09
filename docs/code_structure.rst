@@ -101,7 +101,6 @@ The executable-facing runtime path is split conceptually into four layers:
    - ``solvers/time/explicit.py``
    - ``solvers/time/explicit_steps.py``
    - ``solvers/time/explicit_cfl.py``
-   - ``solvers/time/explicit_progress.py``
    - ``solvers/time/diffrax.py`` facade plus ``solvers/time/diffrax_*`` owner modules
    - ``solvers/time/runners.py``
 3. **diagnostics and artifacts**
@@ -226,7 +225,7 @@ Completed extractions:
 - explicit linear step kernels, diagnostics-rich linear IVP integration,
   explicit CFL/frequency-bound policy, and progress formatting:
   ``solvers/time/explicit_steps.py``, ``solvers/time/explicit_diagnostics.py``,
-  ``solvers/time/explicit_cfl.py``, and ``solvers/time/explicit_progress.py``. The public
+  and ``solvers/time/explicit_cfl.py``. The public
   ``solvers.time.explicit`` module remains the import facade for existing
   debug tools and tests. Its linear IVP facade now keeps method validation,
   adaptive CFL timing, JIT stepper construction, sample-history collection,

@@ -123,7 +123,6 @@ owned_modules = [
   "spectraxgk.solvers.time.explicit",
   "spectraxgk.solvers.time.explicit_diagnostics",
   "spectraxgk.solvers.time.explicit_cfl",
-  "spectraxgk.solvers.time.explicit_progress",
   "spectraxgk.solvers.time.explicit_steps",
   "spectraxgk.workflows.runtime.toml",
   "spectraxgk.artifacts.restart",

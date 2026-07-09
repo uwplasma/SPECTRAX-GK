@@ -367,19 +367,6 @@ fast_tests = ["tests/unit/solvers/test_explicit_time_integrators_lowlevel.py", "
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.solvers.time.explicit_progress"
-source_path = "src/spectraxgk/solvers/time/explicit_progress.py"
-facade_module = "spectraxgk.solvers.time.explicit"
-status = "active"
-responsibility = "explicit integration wall-time and progress-message formatting"
-moved_exports = [
-  "_emit_time_progress",
-  "_format_wall_time",
-]
-fast_tests = ["tests/integration/runtime/test_runtime_diagnostics.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.diagnostics.modes"
 source_path = "src/spectraxgk/diagnostics/modes.py"
 facade_module = "spectraxgk.diagnostics.analysis"

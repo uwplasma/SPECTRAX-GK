@@ -3010,3 +3010,12 @@ following:
   tests, operator-package tests, release tests, stale-reference scans, ruff,
   py_compile, validation/differentiable manifests, and architecture checks
   passed locally.
+
+- 2026-07-08: folded `solvers/time/explicit_progress.py` into
+  `solvers/time/explicit.py`, keeping wall-time/ETA progress formatting with
+  the explicit integration loop that emits it. Removed the standalone progress
+  shard, updated API/code-structure docs, validation and differentiable
+  refactor manifests, regenerated validation metadata, and tightened the source
+  topology baseline to 267. Explicit integrator tests, runtime diagnostic
+  tests, release tests, stale-reference scans, ruff, py_compile,
+  validation/differentiable manifests, and architecture checks passed locally.

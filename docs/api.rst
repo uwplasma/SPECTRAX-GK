@@ -480,13 +480,6 @@ Explicit CFL Policy
    :members:
    :private-members:
 
-Explicit Progress Helpers
--------------------------
-
-.. automodule:: spectraxgk.solvers.time.explicit_progress
-   :members:
-   :private-members:
-
 Diffrax Time Integrators
 ------------------------
 
