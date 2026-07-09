@@ -38,8 +38,8 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 243 | 100 | active |
-| Tool Python files | 138 after current prune | 99 | active |
-| Test Python files | 129 | 99 | active |
+| Tool Python files | 139 | 99 | active |
+| Test Python files | 120 | 99 | active |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
@@ -74,8 +74,8 @@ branch/PR.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Tool consolidation | 52% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
-| Test consolidation | 57% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
+| Tool consolidation | 50% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Test consolidation | 68% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 38% | Shrink `spectraxgk.benchmarks`, merge `geometry_backends` into `geometry`, and resolve `terms`/`operators` ownership. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
@@ -116,11 +116,14 @@ branch/PR.
 - 2026-07-09: Replaced ten thin `spectraxgk.api.*` re-export modules with one
   compact lazy registry in `spectraxgk.api`; fixed the fast coverage plotting
   gate and pushed commit `880ea3ed`.
-- 2026-07-09: Pruned an unreferenced nonlinear comparison helper and lowered the
-  tool-count baseline to the current tracked state.
+- 2026-07-09: Audited comparison tools and kept `compare_gx_nonlinear.py`
+  because the comparison contract tests cover it; tool count remains 139.
 - 2026-07-09: Collapsed eight small release test files into
   `tests/release/test_release_gates.py`, reducing the test file count from 136
   to 129 while preserving all release, manifest, coverage, and hygiene gates.
+- 2026-07-09: Collapsed ten comparison-tool test files into
+  `tests/tools/comparison/test_reference_comparison_tools.py`, reducing the
+  test file count from 129 to 120 while keeping the comparison contracts.
 
 ## Validation Commands For This Tranche
 

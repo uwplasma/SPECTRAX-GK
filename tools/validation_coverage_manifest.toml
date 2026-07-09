@@ -1343,8 +1343,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/integration/runtime/test_runtime_diagnostics.py",
-  "tests/tools/comparison/test_compare_gx_nonlinear_diagnostics.py",
-  "tests/tools/comparison/test_compare_gx_runtime_window.py",
+  "tests/tools/comparison/test_reference_comparison_tools.py",
   "tests/tools/artifacts/test_w7x_artifact_panels.py",
 ]
 artifact_paths = [
@@ -1409,7 +1408,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/validation/physics_gates/test_zonal_validation.py",
-  "tests/tools/comparison/test_compare_w7x_zonal_reference.py",
+  "tests/tools/comparison/test_reference_comparison_tools.py",
   "tests/tools/artifacts/test_w7x_artifact_panels.py",
   "tests/tools/artifacts/test_status_readiness_artifacts.py",
 ]
@@ -3286,7 +3285,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
-  "tests/tools/comparison/test_make_reference_panels.py",
+  "tests/tools/comparison/test_reference_comparison_tools.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -3373,7 +3372,7 @@ fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
   "tests/integration/examples/test_examples.py",
   "tests/tools/artifacts/test_status_readiness_artifacts.py",
-  "tests/tools/comparison/test_make_reference_panels.py",
+  "tests/tools/comparison/test_reference_comparison_tools.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth_summary.json",
