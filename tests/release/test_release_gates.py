@@ -2144,11 +2144,11 @@ def test_core_source_avoids_comparison_code_terminology_outside_benchmarks() -> 
     assert not violations
 
 
-# ---- test_run_tests_fast.py ----
+# ---- test_run_test_gates.py fast ----
 
 from pathlib import Path
 
-from tools.release import run_tests_fast
+from tools.release import run_test_gates
 
 
 def test_discover_test_files_returns_recursive_tests(tmp_path: Path) -> None:
@@ -2161,7 +2161,7 @@ def test_discover_test_files_returns_recursive_tests(tmp_path: Path) -> None:
 
     assert [
         path.relative_to(tmp_path)
-        for path in run_tests_fast.discover_test_files(tmp_path)
+        for path in run_test_gates.discover_test_files(tmp_path)
     ] == [
         Path("nested/test_nested.py"),
         Path("test_a.py"),
@@ -2169,12 +2169,12 @@ def test_discover_test_files_returns_recursive_tests(tmp_path: Path) -> None:
     ]
 
 
-def test_run_tests_fast_relative_test_dir_resolves_under_repository_root() -> None:
-    resolved = run_tests_fast._resolve_test_dir(Path("tests"))
+def test_run_test_gates_fast_relative_test_dir_resolves_under_repository_root() -> None:
+    resolved = run_test_gates._resolve_test_dir(Path("tests"))
 
     assert resolved.is_absolute()
     assert resolved.name == "tests"
-    assert run_tests_fast.discover_test_files(Path("tests"))
+    assert run_test_gates.discover_test_files(Path("tests"))
 
 
 def test_run_tests_uses_bounded_pytest_invocations(monkeypatch, tmp_path: Path) -> None:
@@ -2186,8 +2186,8 @@ def test_run_tests_uses_bounded_pytest_invocations(monkeypatch, tmp_path: Path) 
         del cwd, check
         calls.append((list(cmd), float(timeout)))
 
-    monkeypatch.setattr(run_tests_fast.subprocess, "run", _fake_run)
-    code, results = run_tests_fast.run_tests(
+    monkeypatch.setattr(run_test_gates.subprocess, "run", _fake_run)
+    code, results = run_test_gates.run_tests(
         [test_file],
         per_file_timeout_s=12.0,
         total_timeout_s=30.0,
@@ -2196,7 +2196,7 @@ def test_run_tests_uses_bounded_pytest_invocations(monkeypatch, tmp_path: Path) 
 
     assert code == 0
     assert results[0][1] == "ok"
-    assert calls[0][0][0:4] == [run_tests_fast.sys.executable, "-m", "pytest", "-q"]
+    assert calls[0][0][0:4] == [run_test_gates.sys.executable, "-m", "pytest", "-q"]
     assert calls[0][0][-3:] == ["-k", "sample", str(test_file)]
     assert calls[0][1] <= 12.0
 
@@ -2209,8 +2209,8 @@ def test_run_tests_returns_124_on_timeout(monkeypatch, tmp_path: Path) -> None:
         del cwd, check
         raise subprocess.TimeoutExpired(cmd, timeout)
 
-    monkeypatch.setattr(run_tests_fast.subprocess, "run", _fake_run)
-    code, results = run_tests_fast.run_tests(
+    monkeypatch.setattr(run_test_gates.subprocess, "run", _fake_run)
+    code, results = run_test_gates.run_tests(
         [test_file],
         per_file_timeout_s=1.0,
         total_timeout_s=30.0,
@@ -2234,8 +2234,8 @@ def test_run_tests_treats_pytest_no_tests_collected_as_skip(
         del cwd, check, timeout
         raise subprocess.CalledProcessError(5, cmd)
 
-    monkeypatch.setattr(run_tests_fast.subprocess, "run", _fake_run)
-    code, results = run_tests_fast.run_tests(
+    monkeypatch.setattr(run_test_gates.subprocess, "run", _fake_run)
+    code, results = run_test_gates.run_tests(
         [test_file],
         per_file_timeout_s=1.0,
         total_timeout_s=30.0,
@@ -2259,9 +2259,9 @@ def test_run_tests_marks_remaining_files_after_total_timeout(
     def _fake_run(cmd, *, cwd, check, timeout):
         del cmd, cwd, check, timeout
 
-    monkeypatch.setattr(run_tests_fast.time, "monotonic", _fake_monotonic)
-    monkeypatch.setattr(run_tests_fast.subprocess, "run", _fake_run)
-    code, results = run_tests_fast.run_tests(
+    monkeypatch.setattr(run_test_gates.time, "monotonic", _fake_monotonic)
+    monkeypatch.setattr(run_test_gates.subprocess, "run", _fake_run)
+    code, results = run_test_gates.run_tests(
         files,
         per_file_timeout_s=10.0,
         total_timeout_s=1.0,
@@ -2272,12 +2272,12 @@ def test_run_tests_marks_remaining_files_after_total_timeout(
     assert results[1][1] == "not_run(total_timeout)"
 
 
-# ---- test_run_wide_coverage_gate.py ----
+# ---- test_run_test_gates.py wide-coverage ----
 
 from pathlib import Path
 
 
-from tools.release.run_wide_coverage_gate import (
+from tools.release.run_test_gates import (
     build_coverage_shard_report,
     _resolve_test_dir,
     discover_test_files,

@@ -81,7 +81,7 @@ def _validate_fast_test_path(resolved: Path, raw: str, module: str) -> None:
     if not rel.name.startswith("test_") or rel.suffix != ".py":
         raise ValueError(
             f"{module}: fast test must be a tests/**/test_*.py file "
-            f"discoverable by pytest and run_wide_coverage_gate.py: {raw}"
+            f"discoverable by pytest and run_test_gates.py wide-coverage: {raw}"
         )
 
 

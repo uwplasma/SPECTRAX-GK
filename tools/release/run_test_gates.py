@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run package-wide coverage in bounded shards and enforce a combined gate."""
+"""Run bounded release test gates from one maintained entry point."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 from typing import cast
 
 
@@ -20,10 +21,10 @@ WIDE_COVERAGE_HIGH_COST_TESTS = {
     # These files exercise JAX compilation, plotting, or runtime orchestration
     # paths. Keeping them isolated prevents one CI shard from exceeding the
     # five-minute per-shard budget while preserving package-wide coverage.
-    "test_vmec_boozer_artifact_reports.py",
+    "test_general_artifact_tools.py",
+    "test_transport_artifact_tools.py",
+    "test_stellarator_artifact_tools.py",
     "test_diffrax_integrators_core.py",
-    "test_artifact_plot_smoke.py",
-    "test_w7x_artifact_panels.py",
     "test_runtime_runner.py",
 }
 
@@ -45,6 +46,135 @@ def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
     return sorted(path for path in root.rglob("test_*.py") if path.is_file())
 
 
+def _add_fast_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "files", nargs="*", type=Path, help="Optional explicit test files."
+    )
+    parser.add_argument(
+        "--test-dir",
+        type=Path,
+        default=DEFAULT_TEST_DIR,
+        help="Directory tree containing test_*.py files.",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=300.0,
+        help="Per-file pytest timeout in seconds.",
+    )
+    parser.add_argument(
+        "--total-timeout",
+        type=float,
+        default=300.0,
+        help="Total runner budget in seconds; use 0 to disable the whole-run cap.",
+    )
+    parser.add_argument(
+        "--pytest-arg",
+        action="append",
+        default=[],
+        help="Additional argument passed to each pytest invocation; repeat as needed.",
+    )
+
+
+def parse_fast_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run pytest files with bounded per-file and total budgets."
+    )
+    _add_fast_arguments(parser)
+    return parser.parse_args(argv)
+
+
+def _relative(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def run_tests(
+    files: list[Path],
+    *,
+    per_file_timeout_s: float,
+    total_timeout_s: float,
+    pytest_args: list[str] | None = None,
+) -> tuple[int, list[tuple[str, str, float]]]:
+    """Run each pytest file and return ``(exit_code, results)``.
+
+    Exit code ``124`` means at least one subprocess hit a timeout or the
+    configured total budget expired before all files were attempted.
+    """
+
+    pytest_args = list(pytest_args or [])
+    deadline = time.monotonic() + total_timeout_s if total_timeout_s > 0.0 else None
+    results: list[tuple[str, str, float]] = []
+    timed_out = False
+    failed = False
+
+    for path in files:
+        label = _relative(path)
+        if deadline is not None and time.monotonic() >= deadline:
+            results.append((label, "not_run(total_timeout)", 0.0))
+            timed_out = True
+            continue
+
+        timeout_s = float(per_file_timeout_s)
+        if deadline is not None:
+            timeout_s = max(1.0, min(timeout_s, deadline - time.monotonic()))
+
+        t0 = time.monotonic()
+        cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "--maxfail=1",
+            "--disable-warnings",
+            *pytest_args,
+            str(path),
+        ]
+        try:
+            subprocess.run(cmd, cwd=REPO_ROOT, check=True, timeout=timeout_s)
+            status = "ok"
+        except subprocess.TimeoutExpired:
+            status = "timeout"
+            timed_out = True
+        except subprocess.CalledProcessError as exc:
+            if exc.returncode == 5:
+                status = "skipped(no_tests_collected)"
+            else:
+                status = f"fail({exc.returncode})"
+                failed = True
+        dt = time.monotonic() - t0
+        results.append((label, status, dt))
+        print(f"{label}: {status} ({dt:.1f}s)", flush=True)
+
+    print("SUMMARY", flush=True)
+    for path, status, dt in results:
+        print(f"{path}\t{status}\t{dt:.1f}s", flush=True)
+
+    if timed_out:
+        return 124, results
+    if failed:
+        return 1, results
+    return 0, results
+
+
+def main_fast(argv: list[str] | None = None) -> int:
+    args = parse_fast_args(argv)
+    files = [path if path.is_absolute() else (REPO_ROOT / path) for path in args.files]
+    if not files:
+        files = discover_test_files(args.test_dir)
+    if not files:
+        raise SystemExit(f"no test_*.py files found under {args.test_dir}")
+    code, _results = run_tests(
+        files,
+        per_file_timeout_s=float(args.timeout),
+        total_timeout_s=float(args.total_timeout),
+        pytest_args=list(args.pytest_arg),
+    )
+    return code
+
+
 def _wide_coverage_test_weight(path: Path) -> int:
     """Return the scheduling weight used by the wide-coverage shard planner."""
 
@@ -57,8 +187,8 @@ def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
     Alphabetical test discovery groups related plotting tests together. A
     weighted first-fit split keeps deterministic membership while isolating
     known high-cost modules across CI workers. With unit weights this reduces
-    to the previous round-robin assignment, but it avoids packing several
-    compile-heavy files into one five-minute shard.
+    to round-robin assignment, but it avoids packing several compile-heavy files
+    into one five-minute shard.
     """
 
     if nshards < 1:
@@ -175,8 +305,7 @@ def _run(cmd: list[str], *, timeout: int | None, cwd: Path) -> None:
         raise SystemExit(exc.returncode) from exc
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+def _add_wide_coverage_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--shards", type=int, default=6, help="Number of bounded test shards."
     )
@@ -247,11 +376,18 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Additional argument passed to each pytest shard; repeat as needed.",
     )
-    return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def parse_wide_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run package-wide coverage in bounded shards."
+    )
+    _add_wide_coverage_arguments(parser)
+    return parser.parse_args(argv)
+
+
+def main_wide(argv: list[str] | None = None) -> int:
+    args = parse_wide_args(argv)
     test_dir = _resolve_test_dir(args.test_dir)
     tests = discover_test_files(test_dir)
     if not tests:
@@ -265,7 +401,7 @@ def main() -> None:
             print(f"  {path}")
 
     if args.dry_run:
-        return
+        return 0
 
     if args.combine_only:
         report = build_coverage_shard_report(REPO_ROOT, int(args.shards))
@@ -296,7 +432,7 @@ def main() -> None:
             timeout=120,
             cwd=REPO_ROOT,
         )
-        return
+        return 0
 
     if args.only_shard is not None and not (1 <= int(args.only_shard) <= len(shards)):
         raise SystemExit(f"--only-shard must be in [1, {len(shards)}]")
@@ -331,7 +467,7 @@ def main() -> None:
         _run(cmd, timeout=int(args.timeout), cwd=REPO_ROOT)
 
     if args.skip_combine:
-        return
+        return 0
 
     _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
     _run(
@@ -350,7 +486,31 @@ def main() -> None:
         timeout=120,
         cwd=REPO_ROOT,
     )
+    return 0
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    fast = subparsers.add_parser(
+        "fast", help="Run bounded per-file pytest invocations."
+    )
+    _add_fast_arguments(fast)
+    wide = subparsers.add_parser(
+        "wide-coverage", help="Run package-wide coverage in bounded shards."
+    )
+    _add_wide_coverage_arguments(wide)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    if args.command == "fast":
+        return main_fast(argv[1:] if argv is not None else sys.argv[2:])
+    if args.command == "wide-coverage":
+        return main_wide(argv[1:] if argv is not None else sys.argv[2:])
+    raise SystemExit(f"unknown test-gate command: {args.command}")
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

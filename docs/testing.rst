@@ -1657,7 +1657,7 @@ physics rigor:
 - **Wide coverage tier**: CI runs the 48 top-level coverage shards as a matrix,
   uploads the per-shard ``coverage.py`` data, then combines the artifacts in one
   final ``wide-coverage`` check that enforces the package-wide ``>=95%`` target.
-  The same helper, ``tools/release/run_wide_coverage_gate.py``, is used locally and in
+  The same helper, ``tools/release/run_test_gates.py wide-coverage``, is used locally and in
   CI so the threshold is not weakened when the job is parallelized. Each shard
   has its own timeout so a single slow validation slice cannot become an
   unbounded release job. The combine step also requires labeled coverage data
@@ -1677,7 +1677,7 @@ For bounded local feedback, use the per-file runner:
 
 .. code-block:: bash
 
-   python tools/release/run_tests_fast.py
+   python tools/release/run_test_gates.py fast
 
 It enforces both a per-file timeout and a whole-run timeout of 300 seconds by
 default, then reports any remaining files as ``not_run(total_timeout)`` instead
@@ -1688,7 +1688,7 @@ The same wide gate can be run locally in one process with:
 
 .. code-block:: bash
 
-   python tools/release/run_wide_coverage_gate.py \
+   python tools/release/run_test_gates.py wide-coverage \
      --shards 48 \
      --timeout 300 \
      --fail-under 95 \
@@ -1707,7 +1707,7 @@ parallel and downloads the resulting coverage artifacts before the
 
    python -m coverage erase
    for shard in $(seq 1 48); do
-     python tools/release/run_wide_coverage_gate.py \
+     python tools/release/run_test_gates.py wide-coverage \
        --shards 48 \
        --timeout 300 \
        --only-shard "${shard}" \
@@ -1718,7 +1718,7 @@ parallel and downloads the resulting coverage artifacts before the
        --pytest-arg=-m \
        --pytest-arg="not slow"
    done
-   python tools/release/run_wide_coverage_gate.py \
+   python tools/release/run_test_gates.py wide-coverage \
      --shards 48 \
      --combine-only \
      --fail-under 95 \
