@@ -23,6 +23,7 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from spectraxgk.diagnostics.stellarator_transport_reports import (  # noqa: E402
+    build_nonlinear_audit_redesign_report,
     build_nonlinear_campaign_admission_report,
 )
 from spectraxgk.diagnostics.stellarator_transport_reports import (  # noqa: E402
@@ -104,6 +105,38 @@ def build_campaign_report(
     return report
 
 
+def _sample_set_from_args(args: argparse.Namespace) -> dict[str, list[float]] | None:
+    if args.sample_set_json is not None:
+        payload = _load_json(args.sample_set_json)
+        return {
+            "surfaces": [float(item) for item in payload.get("surfaces", ())],
+            "alphas": [float(item) for item in payload.get("alphas", ())],
+            "ky_values": [float(item) for item in payload.get("ky_values", ())],
+        }
+    if args.surface or args.alpha or args.ky:
+        return {
+            "surfaces": [float(item) for item in args.surface],
+            "alphas": [float(item) for item in args.alpha],
+            "ky_values": [float(item) for item in args.ky],
+        }
+    return None
+
+
+def build_redesign_report(
+    *,
+    matched_comparison: Path,
+    objective_sample_set: dict[str, list[float]] | None,
+    policy: VMECJAXNonlinearAuditPolicy,
+) -> dict[str, Any]:
+    """Load a matched comparison and recommend the next objective sample set."""
+
+    return build_nonlinear_audit_redesign_report(
+        _load_json(matched_comparison),
+        objective_sample_set=objective_sample_set,
+        policy=policy,
+    )
+
+
 def _add_landscape_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     parser = subparsers.add_parser(
         "landscape", help="select an admitted nonlinear landscape candidate"
@@ -146,11 +179,31 @@ def _add_campaign_parser(subparsers: argparse._SubParsersAction[argparse.Argumen
     parser.set_defaults(func=_run_campaign)
 
 
+def _add_redesign_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+) -> None:
+    parser = subparsers.add_parser(
+        "redesign",
+        help="recommend a broader objective sample set after a matched audit",
+    )
+    parser.add_argument("--matched-comparison", type=Path, required=True)
+    parser.add_argument("--sample-set-json", type=Path)
+    parser.add_argument("--surface", type=float, action="append", default=[])
+    parser.add_argument("--alpha", type=float, action="append", default=[])
+    parser.add_argument("--ky", type=float, action="append", default=[])
+    parser.add_argument("--minimum-relative-reduction", type=float, default=0.02)
+    parser.add_argument("--minimum-uncertainty-z-score", type=float, default=1.0)
+    parser.add_argument("--out-json", type=Path, required=True)
+    parser.add_argument("--fail-on-redesign", action="store_true")
+    parser.set_defaults(func=_run_redesign)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_landscape_parser(subparsers)
     _add_campaign_parser(subparsers)
+    _add_redesign_parser(subparsers)
     return parser
 
 
@@ -232,6 +285,37 @@ def _run_campaign(args: argparse.Namespace) -> int:
         )
     )
     if args.fail_on_blocked and not bool(report["campaign_admitted"]):
+        return 1
+    return 0
+
+
+def _run_redesign(args: argparse.Namespace) -> int:
+    policy = VMECJAXNonlinearAuditPolicy(
+        minimum_relative_reduction=float(args.minimum_relative_reduction),
+        minimum_uncertainty_z_score=float(args.minimum_uncertainty_z_score),
+    )
+    report = build_redesign_report(
+        matched_comparison=args.matched_comparison,
+        objective_sample_set=_sample_set_from_args(args),
+        policy=policy,
+    )
+    args.out_json.parent.mkdir(parents=True, exist_ok=True)
+    args.out_json.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps(
+            {
+                "nonlinear_audit_promoted": report["nonlinear_audit_promoted"],
+                "requires_objective_redesign": report["requires_objective_redesign"],
+                "blockers": report["blockers"],
+                "recommended_sample_set": report["recommended_sample_set"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    if args.fail_on_redesign and bool(report["requires_objective_redesign"]):
         return 1
     return 0
 

@@ -3486,3 +3486,13 @@ following:
   from 213 to 212. The campaign contract shard, Python lint check, validation
   manifest, release tests, stale-reference scan, compile check, diff hygiene,
   and architecture manifest passed locally.
+
+- 2026-07-08: folded
+  `tools/artifacts/build_transport_audit_redesign_report.py` into
+  `tools/artifacts/build_nonlinear_transport_admission.py` as the `redesign`
+  subcommand. Nonlinear landscape, campaign, and matched-audit redesign
+  decisions now share one transport-admission owner, while W7-X/zonal artifact
+  tests call the canonical subcommand. The package architecture tool baseline
+  tightened from 212 to 211. The W7-X/zonal artifact shard, Python lint check,
+  validation manifest, release tests, stale-reference scan, compile check, diff
+  hygiene, and architecture manifest passed locally.

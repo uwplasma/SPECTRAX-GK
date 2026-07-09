@@ -32,9 +32,6 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeSpeciesConfig,
 )
 from support.paths import load_artifact_tool
-from tools.artifacts.build_transport_audit_redesign_report import (
-    main as transport_redesign_main,
-)
 
 
 # Zonal and nonlinear-transport artifact assertions
@@ -66,13 +63,15 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def test_transport_audit_redesign_writes_fail_closed_report(tmp_path: Path) -> None:
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
     comparison = tmp_path / "comparison.json"
     out = tmp_path / "redesign.json"
     _comparison(comparison, relative_reduction=-0.005, passed=False)
 
     assert (
-        transport_redesign_main(
+        mod.main(
             [
+                "redesign",
                 "--matched-comparison",
                 str(comparison),
                 "--surface",
@@ -97,13 +96,15 @@ def test_transport_audit_redesign_writes_fail_closed_report(tmp_path: Path) -> N
 def test_transport_audit_redesign_can_fail_on_required_redesign(
     tmp_path: Path,
 ) -> None:
+    mod = load_artifact_tool("build_nonlinear_transport_admission")
     comparison = tmp_path / "comparison.json"
     out = tmp_path / "redesign.json"
     _comparison(comparison, relative_reduction=-0.005, passed=False)
 
     assert (
-        transport_redesign_main(
+        mod.main(
             [
+                "redesign",
                 "--matched-comparison",
                 str(comparison),
                 "--out-json",
