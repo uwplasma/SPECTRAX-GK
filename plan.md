@@ -3209,3 +3209,14 @@ following:
   tightened the package architecture test baseline to 170. The consolidated
   profiling shard, release tests, workflow YAML parse, ruff, py_compile, and
   architecture/refactor/validation manifests passed locally.
+
+- 2026-07-08: consolidated runtime/cache/trace profiling tests and
+  independent-work scaling profiling tests into
+  `tests/tools/profiling/test_runtime_and_scaling_profile_contracts.py`. The
+  combined owner preserves profiler-option, cache-build, runtime-startup,
+  full-linear/full-nonlinear trace, independent-ky, linear-RHS slice,
+  nonlinear-domain routing, and quasilinear/UQ ensemble scaling assertions while
+  removing another one-off profiling test file. Updated the CI quick-test path
+  and differentiable-refactor manifest, and tightened the package architecture
+  test baseline to 169. The combined profiling shard, release tests, workflow
+  YAML parse, ruff, py_compile, and release manifests passed locally.
