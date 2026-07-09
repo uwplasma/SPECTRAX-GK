@@ -3708,3 +3708,12 @@ following:
   from 183 to 182. The quasilinear calibration report/plot shard, Python lint
   check, command-help smoke checks, stale-reference scan, diff hygiene, and
   architecture manifest passed locally.
+
+- 2026-07-09: consolidated the Miller/backend geometry unit tests into
+  `tests/unit/geometry/test_miller_geometry.py`, replacing four small files that
+  split backend kernels, Miller internals, runtime eik generation, and low-level
+  Miller helpers. The assertions are preserved, but the test tree is easier to
+  navigate and the package architecture test baseline tightened from 147 to 144.
+  The consolidated Miller test file, VMEC/Miller geometry fast shard,
+  validation coverage manifest, differentiable refactor manifest, Python lint
+  check, diff hygiene, and architecture manifest passed locally.

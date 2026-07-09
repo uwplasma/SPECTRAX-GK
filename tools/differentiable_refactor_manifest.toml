@@ -2592,7 +2592,7 @@ moved_exports = [
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
 ]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py", "tests/unit/geometry/test_miller_eik.py"]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2609,7 +2609,7 @@ moved_exports = [
   "reflect_n_append",
   "to_ballooning",
 ]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2626,7 +2626,7 @@ moved_exports = [
   "compute_equal_arc_theta",
   "rebuild_straight_theta_state",
 ]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2636,7 +2636,7 @@ facade_module = "spectraxgk.geometry_backends.miller"
 status = "active"
 responsibility = "Miller imported-geometry profile assembly on the selected ballooning theta grid"
 moved_exports = ["assemble_miller_profiles"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -2650,7 +2650,7 @@ moved_exports = [
   "internal_miller_backend_available",
   "write_miller_eik_netcdf",
 ]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py", "tests/unit/geometry/test_miller_eik.py"]
+fast_tests = ["tests/unit/geometry/test_miller_geometry.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
