@@ -13,7 +13,6 @@ from spectraxgk import (
     load_etg_reference,
     normalize_eigenfunction,
     run_etg_linear,
-    run_etg_scan,
     run_scan_and_mode,
     scan_comparison_figure,
 )
@@ -88,7 +87,6 @@ def main() -> None:
 
     scan_result = run_scan_and_mode(
         ky_values=ky_values,
-        scan_fn=run_etg_scan,
         linear_fn=run_etg_linear,
         cfg=cfg,
         Nl=48,

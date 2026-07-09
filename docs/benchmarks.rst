@@ -312,6 +312,13 @@ to root ``benchmarks/`` drivers. The installed facade must eventually contain
 only a curated lazy export surface; it must not own timestepping, geometry, or
 physical-operator policy.
 
+Generic pointwise scans and representative-mode extraction are owned by
+``spectraxgk.workflows.linear``. They deliberately call one linear solve per
+``k_y`` and accept optional resolution and Krylov policies. Benchmark drivers
+provide case policy; the reusable workflow owns iteration, result assembly,
+mode selection, and fit-window extraction. The former ``scan_fn`` argument was
+removed because it was accepted but never used.
+
 For the current stellarator nonlinear pair, the tracked public figures should
 also be read asymmetrically:
 

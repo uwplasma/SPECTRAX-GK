@@ -55,8 +55,8 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 228 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8 including a 13209-line facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 13209 lines | <=500 lines | active |
+| Source modules above 1000 lines | 8 including a 12608-line facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 12608 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -114,7 +114,7 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 95% | Keep the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 55% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Source consolidation | 58% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
 | Nonlinear GPU performance | 60% | Move CFL/sampling device-resident, then match fixed-step workloads before optimizing kernels. |
@@ -189,6 +189,11 @@ use mathematical names independent of comparison provenance.
   the existing `spectraxgk.workflows.nonlinear` owner. The benchmark facade fell
   from 13209 to 12854 lines without adding source files, while the destination
   remains within the 1000-line module budget and all secondary tests pass.
+- 2026-07-09: Moved generic pointwise linear-scan and representative-mode
+  extraction into `spectraxgk.workflows.linear`, removed the unused `scan_fn`
+  argument, and retained an explicit empty-scan contract. The benchmark facade
+  is now 12608 lines, the destination remains below its 1000-line budget, and
+  focused benchmark, executable, and core-contract tests pass.
 - 2026-07-09: Audited the collision implementation against GX source and the
   Hermite--Laguerre collision literature. The current operator already contains
   low-order momentum/temperature corrections, so it is now described as a

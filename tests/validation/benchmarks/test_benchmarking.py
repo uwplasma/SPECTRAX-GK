@@ -9,9 +9,8 @@ from spectraxgk.diagnostics.analysis import ModeSelection
 from spectraxgk.benchmarks import (
     LinearRunResult,
     LinearScanResult,
-    run_linear_scan,
-    run_scan_and_mode,
 )
+from spectraxgk.workflows.linear import run_linear_scan, run_scan_and_mode
 from spectraxgk.diagnostics.modes import (
     compare_eigenfunctions,
     load_eigenfunction_reference_bundle,
@@ -752,6 +751,26 @@ def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
     assert calls[1]["tag"] == "ok"
 
 
+def test_run_linear_scan_accepts_an_empty_scan() -> None:
+    result = run_linear_scan(
+        ky_values=np.asarray([], dtype=float),
+        run_linear_fn=lambda **_kwargs: None,
+        cfg=SimpleNamespace(),
+        Nl=4,
+        Nm=8,
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        solver="time",
+        krylov_cfg=None,
+        window_kw={},
+    )
+
+    assert result.ky.shape == (0,)
+    assert result.gamma.shape == (0,)
+    assert result.omega.shape == (0,)
+
+
 def test_run_scan_and_mode_uses_selected_ky_and_fit_window(monkeypatch) -> None:
     selection = ModeSelection(ky_index=0, kx_index=0, z_index=1)
     run = LinearRunResult(
@@ -769,26 +788,25 @@ def test_run_scan_and_mode_uses_selected_ky_and_fit_window(monkeypatch) -> None:
         return run
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.workflows.linear.extract_mode_time_series",
         lambda phi_t, sel, method: np.array([1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j]),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto",
+        "spectraxgk.workflows.linear.fit_growth_rate_auto",
         lambda t, signal, **kwargs: (0.5, -0.1, 0.25, 1.75),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_eigenfunction",
+        "spectraxgk.workflows.linear.extract_eigenfunction",
         lambda phi_t, t, selection, z, method, tmin, tmax: np.array([1.0, 2.0, 3.0]),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_spectral_grid",
+        "spectraxgk.workflows.linear.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 0.0, 1.0])),
     )
     cfg = SimpleNamespace(grid=object())
 
     result = run_scan_and_mode(
         ky_values=np.array([0.1, 0.3]),
-        scan_fn=None,
         linear_fn=fake_linear_fn,
         cfg=cfg,
         Nl=2,
@@ -827,17 +845,16 @@ def test_run_scan_and_mode_short_trace_skips_fit(monkeypatch) -> None:
     )
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_spectral_grid",
+        "spectraxgk.workflows.linear.build_spectral_grid",
         lambda _grid: SimpleNamespace(z=np.array([-1.0, 1.0])),
     )
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_eigenfunction",
+        "spectraxgk.workflows.linear.extract_eigenfunction",
         lambda *args, **kwargs: np.array([1.0, -1.0]),
     )
 
     result = run_scan_and_mode(
         ky_values=np.array([0.2]),
-        scan_fn=None,
         linear_fn=lambda **kwargs: run,
         cfg=SimpleNamespace(grid=object()),
         Nl=1,

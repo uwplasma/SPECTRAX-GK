@@ -13,7 +13,6 @@ from spectraxgk import (
     load_cyclone_reference,
     normalize_eigenfunction,
     run_cyclone_linear,
-    run_cyclone_scan,
     run_scan_and_mode,
     scan_comparison_figure,
 )
@@ -44,7 +43,6 @@ def main() -> None:
 
     scan_result = run_scan_and_mode(
         ky_values=ky_values,
-        scan_fn=run_cyclone_scan,
         linear_fn=run_cyclone_linear,
         cfg=cfg,
         Nl=48,
