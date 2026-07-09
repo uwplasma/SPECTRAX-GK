@@ -1,4 +1,4 @@
-"""Tests for modular nonlinear scan integrator utilities."""
+"""Tests for nonlinear explicit scan integrator utilities."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import pytest
 
 from spectraxgk.benchmarks import estimate_observed_order
 from spectraxgk.terms.config import FieldState
-from spectraxgk.terms.integrators import integrate_nonlinear
+from spectraxgk.solvers.nonlinear.explicit import integrate_nonlinear_scan
 from spectraxgk.terms.nonlinear import (
     exb_nonlinear_contribution,
     placeholder_nonlinear_contribution,
@@ -49,7 +49,7 @@ def _linear_rhs(rate: complex):
         ("sspx3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
     ],
 )
-def test_integrate_nonlinear_methods_match_linear_amplification(
+def test_integrate_nonlinear_scan_methods_match_linear_amplification(
     method, one_step_factor
 ) -> None:
     dt = 0.1
@@ -57,7 +57,7 @@ def test_integrate_nonlinear_methods_match_linear_amplification(
     rate = 0.3 - 0.2j
     G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
     G0_ref = jnp.array(G0)
-    G_final, fields = integrate_nonlinear(
+    G_final, fields = integrate_nonlinear_scan(
         _linear_rhs(rate),
         G0,
         dt,
@@ -72,9 +72,9 @@ def test_integrate_nonlinear_methods_match_linear_amplification(
     assert jnp.allclose(G_final, expected, rtol=3.0e-3, atol=3.0e-3)
 
 
-def test_integrate_nonlinear_rejects_unknown_method() -> None:
+def test_integrate_nonlinear_scan_rejects_unknown_method() -> None:
     with pytest.raises(ValueError):
-        integrate_nonlinear(
+        integrate_nonlinear_scan(
             _linear_rhs(0.1 + 0.0j),
             jnp.ones((2, 2), dtype=jnp.complex64),
             0.1,
@@ -83,7 +83,7 @@ def test_integrate_nonlinear_rejects_unknown_method() -> None:
         )
 
 
-def test_integrate_nonlinear_projects_each_stage() -> None:
+def test_integrate_nonlinear_scan_projects_each_stage() -> None:
     def rhs_fn(G: jnp.ndarray) -> tuple[jnp.ndarray, FieldState]:
         flipped = jnp.flip(G, axis=-2)
         return 1j * flipped, FieldState(phi=jnp.sum(G, axis=0))
@@ -96,7 +96,7 @@ def test_integrate_nonlinear_projects_each_stage() -> None:
     G0 = jnp.asarray(
         [[1.0 + 0.0j], [2.0 + 1.0j], [-3.0 + 0.5j], [7.0 - 2.0j]], dtype=jnp.complex64
     )
-    G_final, _fields = integrate_nonlinear(
+    G_final, _fields = integrate_nonlinear_scan(
         rhs_fn,
         G0,
         0.1,
@@ -107,15 +107,15 @@ def test_integrate_nonlinear_projects_each_stage() -> None:
     assert jnp.allclose(G_final[..., 3, :], jnp.conj(G_final[..., 1, :]))
 
 
-def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
+def test_integrate_nonlinear_scan_rk3_alias_matches_heun_variant() -> None:
     G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
-    out_rk3, _ = integrate_nonlinear(
+    out_rk3, _ = integrate_nonlinear_scan(
         _linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3"
     )
-    out_gx, _ = integrate_nonlinear(
+    out_heun, _ = integrate_nonlinear_scan(
         _linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3_heun"
     )
-    assert jnp.allclose(out_rk3, out_gx)
+    assert jnp.allclose(out_rk3, out_heun)
 
 
 @pytest.mark.parametrize(
@@ -130,7 +130,7 @@ def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
         ("sspx3", 3.0, 2.6),
     ],
 )
-def test_integrate_nonlinear_observed_order_against_exact_solution(
+def test_integrate_nonlinear_scan_observed_order_against_exact_solution(
     method: str,
     expected_order: float,
     min_observed_order: float,
@@ -144,7 +144,7 @@ def test_integrate_nonlinear_observed_order_against_exact_solution(
     dts: list[float] = []
     for steps in (2, 4, 8, 16):
         dt = t_final / steps
-        out, _ = integrate_nonlinear(
+        out, _ = integrate_nonlinear_scan(
             _linear_rhs(rate), jnp.array(G0), dt, steps, method=method
         )
         err = float(np.max(np.abs(np.asarray(out) - exact)))
@@ -157,10 +157,10 @@ def test_integrate_nonlinear_observed_order_against_exact_solution(
     assert metrics.asymptotic_order <= expected_order + 0.6
 
 
-def test_integrate_nonlinear_k10_branch_is_finite_and_shape_preserving() -> None:
+def test_integrate_nonlinear_scan_k10_branch_is_finite_and_shape_preserving() -> None:
     G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
 
-    G_final, fields = integrate_nonlinear(
+    G_final, fields = integrate_nonlinear_scan(
         _linear_rhs(0.3 - 0.2j), G0, 0.1, 2, method="k10"
     )
 
@@ -169,7 +169,7 @@ def test_integrate_nonlinear_k10_branch_is_finite_and_shape_preserving() -> None
     assert np.all(np.isfinite(np.asarray(G_final)))
 
 
-def test_integrate_nonlinear_show_progress_callback_path(monkeypatch) -> None:
+def test_integrate_nonlinear_scan_show_progress_callback_path(monkeypatch) -> None:
     from spectraxgk.utils import callbacks
 
     callback_calls: list[int] = []
@@ -186,7 +186,7 @@ def test_integrate_nonlinear_show_progress_callback_path(monkeypatch) -> None:
     monkeypatch.setattr(callbacks, "print_callback", _fake_print_callback)
 
     G0 = jnp.asarray([[1.0 + 0.0j]], dtype=jnp.complex64)
-    G_final, fields = integrate_nonlinear(
+    G_final, fields = integrate_nonlinear_scan(
         _linear_rhs(0.0 + 0.0j),
         G0,
         0.1,

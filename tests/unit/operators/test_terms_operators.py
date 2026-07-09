@@ -388,7 +388,6 @@ def test_terms_package_lazy_exports() -> None:
     assert callable(term_pkg.assemble_rhs)
     assert callable(term_pkg.assemble_rhs_cached)
     assert callable(term_pkg.assemble_rhs_cached_jit)
-    assert callable(term_pkg.integrate_nonlinear)
     with pytest.raises(AttributeError):
         _ = term_pkg.not_a_real_symbol
 

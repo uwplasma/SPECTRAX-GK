@@ -1486,10 +1486,11 @@ moved_exports = [
   "advance_explicit_nonlinear_state",
   "checkpoint_explicit_step",
   "integrate_cached_explicit_scan",
+  "integrate_nonlinear_scan",
   "make_explicit_diagnostic_step",
   "run_explicit_diagnostic_scan",
 ]
-fast_tests = ["tests/unit/solvers/test_nonlinear_explicit_step.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
+fast_tests = ["tests/unit/solvers/test_nonlinear_explicit_step.py", "tests/unit/solvers/test_nonlinear_explicit_scan.py", "tests/unit/nonlinear/test_nonlinear.py", "tests/unit/nonlinear/test_nonlinear_helpers_extra.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

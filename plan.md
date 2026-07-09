@@ -37,7 +37,7 @@ Date: 2026-07-09.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 229 | 100 | active |
+| Installable source Python files | 228 | 100 | active |
 | Tool Python files | 137 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -76,7 +76,7 @@ branch/PR.
 | --- | ---: | --- |
 | Tool consolidation | 54% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 50% | Shrink `spectraxgk.benchmarks`, resolve remaining `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
+| Source consolidation | 51% | Shrink `spectraxgk.benchmarks`, resolve remaining `terms`/`operators` ownership, and split any remaining large facades only where domain boundaries stay clear. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
 | Docs/readme release pass | 74% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
@@ -150,6 +150,9 @@ branch/PR.
 - 2026-07-09: Folded cached RHS assembly helpers into
   `spectraxgk.terms.assembly`, reducing source count from 231 to 229 while
   preserving term-assembly and linear helper tests.
+- 2026-07-09: Moved the fixed-step nonlinear scan policy from
+  `spectraxgk.terms` into `spectraxgk.solvers.nonlinear.explicit`, reducing
+  source count from 229 to 228 while preserving explicit-scan tests.
 
 ## Validation Commands For This Tranche
 

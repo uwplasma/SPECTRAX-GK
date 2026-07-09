@@ -277,7 +277,6 @@ owned_modules = [
   "spectraxgk.terms.assembly",
   "spectraxgk.terms.config",
   "spectraxgk.terms.fields",
-  "spectraxgk.terms.integrators",
   "spectraxgk.terms.linear_dissipation",
   "spectraxgk.terms.linear_terms",
   "spectraxgk.terms.operators",
@@ -739,6 +738,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/solvers/test_nonlinear_explicit_step.py",
+  "tests/unit/solvers/test_nonlinear_explicit_scan.py",
   "tests/unit/nonlinear/test_nonlinear.py",
   "tests/unit/nonlinear/test_nonlinear_helpers_extra.py",
 ]

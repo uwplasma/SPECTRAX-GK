@@ -250,6 +250,9 @@ Completed extractions:
   state/damping preparation, serial/parallel RHS routing, RK/IMEX/SSPX3
   stepping, progress callbacks, and sample-stride scans separately while
   keeping the public ``integrate_linear`` and donated-buffer wrappers stable.
+  The nonlinear explicit solver owns fixed-step RK/SSP/K10 scan policy, progress
+  callbacks, state projection, and diagnostic explicit stepping in
+  ``solvers/nonlinear/explicit.py``.
   The nonlinear owner stages state/cache preparation, packed-state sharding,
   linear and nonlinear RHS construction, IMEX term routing, saved-``phi``
   extraction, solve execution, and final ``FieldState`` packing while keeping
