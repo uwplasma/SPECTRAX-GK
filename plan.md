@@ -3096,3 +3096,13 @@ following:
   deleting five one-topic files. Updated CI quick-test paths, testing docs, and
   tightened the package architecture test baseline to 202. The merged core
   contract shard passed locally.
+
+- 2026-07-08: consolidated seven small reference-comparison tool tests into
+  `tests/tools/comparison/test_reference_comparison_contracts.py`, replacing
+  one-file wrappers for field-solve dumps, imported-window parsing, startup
+  slicing, linear and nonlinear RK4 stage maps, imported big-field linear
+  helpers, and nonlinear late-window statistics. This keeps comparison behavior
+  test coverage while reducing comparison-test file sprawl and neutralizing
+  unnecessary comparison-code naming in test filenames. Tightened the package
+  architecture test baseline to 196. The consolidated comparison-contract shard
+  passed locally.
