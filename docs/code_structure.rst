@@ -201,7 +201,7 @@ Completed extractions:
   variants can be tested without one large loader body.
 - focused imported-geometry backends. ``geometry_backends.miller`` and
   ``geometry_backends.vmec`` are now stable facades, while numerics,
-  field-line/core assembly, remap, IO, optional-backend discovery, and pipeline
+  field-line/core assembly, remap, optional-backend discovery, and pipeline
   ownership live in smaller ``geometry_backends.miller_*`` and
   ``geometry_backends.vmec_*`` modules. Imported Miller profile assembly keeps
   central-surface normalization, period extension, Bishop coefficients, metric

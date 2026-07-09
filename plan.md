@@ -3029,3 +3029,14 @@ following:
   validation metadata, and tightened the source topology baseline to 266.
   Diffrax unit tests, release tests, stale-reference scans, ruff, py_compile,
   validation/differentiable manifests, and architecture checks passed locally.
+
+- 2026-07-08: folded `geometry_backends/miller_io.py` into
+  `geometry_backends/miller_pipeline.py`, so Miller NetCDF writeout lives with
+  the request-to-EIK pipeline that materializes the final imported-geometry
+  artifact. The stable `spectraxgk.geometry_backends.miller` facade still
+  exports `write_miller_eik_netcdf`, while internal imports no longer route
+  through a standalone IO shard. Updated code-structure docs, validation and
+  differentiable refactor manifests, regenerated validation metadata, and
+  tightened the source topology baseline to 265. Focused Miller geometry tests,
+  release tests, stale-reference scans, ruff, py_compile, validation/
+  differentiable manifests, and architecture checks passed locally.

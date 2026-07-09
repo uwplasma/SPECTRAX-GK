@@ -519,8 +519,9 @@ Phase 1: introduce protocols and containers
   sampling helpers.
   ``spectraxgk.geometry_backends.miller`` remains the stable internal Miller
   backend facade, while numerics, surface/theta-grid construction, profile
-  assembly, NetCDF IO, and request-to-EIK orchestration live in focused
-  ``geometry_backends.miller_*`` modules.
+  assembly, and request-to-EIK orchestration live in focused
+  ``geometry_backends.miller_*`` modules. Miller NetCDF writeout is owned by the
+  pipeline module that materializes the final EIK artifact.
   ``spectraxgk.geometry.differentiable`` retains object-identical re-exports
   for pure helpers and thin wrappers for optional-backend bridge functions whose
   tests patch facade-level backend discovery.

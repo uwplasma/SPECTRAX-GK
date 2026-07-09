@@ -2739,24 +2739,15 @@ fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.geometry_backends.miller_io"
-source_path = "src/spectraxgk/geometry_backends/miller_io.py"
-facade_module = "spectraxgk.geometry_backends.miller"
-status = "active"
-responsibility = "NetCDF writeout for internal Miller imported-geometry profiles"
-moved_exports = ["write_miller_eik_netcdf"]
-fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.geometry_backends.miller_pipeline"
 source_path = "src/spectraxgk/geometry_backends/miller_pipeline.py"
 facade_module = "spectraxgk.geometry_backends.miller"
 status = "active"
-responsibility = "high-level Miller request normalization and Miller-to-EIK pipeline orchestration"
+responsibility = "high-level Miller request normalization, NetCDF writeout, and Miller-to-EIK pipeline orchestration"
 moved_exports = [
   "generate_miller_eik_internal",
   "internal_miller_backend_available",
+  "write_miller_eik_netcdf",
 ]
 fast_tests = ["tests/unit/geometry/test_geometry_backend_miller_internal.py", "tests/unit/geometry/test_miller_eik.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
