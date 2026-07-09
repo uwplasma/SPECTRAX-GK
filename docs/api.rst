@@ -339,11 +339,6 @@ application, branch selection, shift-invert preconditioning, and Arnoldi iterati
    :private-members:
    :no-index:
 
-.. automodule:: spectraxgk.solvers.linear.eigen_selection
-   :members:
-   :private-members:
-   :no-index:
-
 .. automodule:: spectraxgk.solvers.linear.krylov_algorithms
    :members:
    :private-members:

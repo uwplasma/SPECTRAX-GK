@@ -2135,22 +2135,12 @@ fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linea
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.solvers.linear.eigen_selection"
-source_path = "src/spectraxgk/solvers/linear/eigen_selection.py"
-facade_module = "spectraxgk.solvers.linear.krylov"
-status = "active"
-responsibility = "target-frequency, sign, overlap, and mode-family branch-selection rules for linear eigenmode solves"
-moved_exports = ["_select_by_target", "_select_by_overlap", "_omega_scale", "_mode_family_sign"]
-fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.solvers.linear.krylov_algorithms"
 source_path = "src/spectraxgk/solvers/linear/krylov_algorithms.py"
 facade_module = "spectraxgk.solvers.linear.krylov"
 status = "active"
-responsibility = "compiled power, Arnoldi, propagator, shift-invert preconditioning, and shift-invert Krylov algorithms for linear eigenmode extraction"
-moved_exports = ["_build_shift_invert_precond", "dominant_eigenpair_power", "_arnoldi", "dominant_eigenpair_cached", "dominant_eigenpair_propagator_cached", "dominant_eigenpair_shift_invert_cached"]
+responsibility = "compiled power, Arnoldi, branch selection, propagator, shift-invert preconditioning, and shift-invert Krylov algorithms for linear eigenmode extraction"
+moved_exports = ["_select_by_target", "_select_by_overlap", "_omega_scale", "_mode_family_sign", "_build_shift_invert_precond", "dominant_eigenpair_power", "_arnoldi", "dominant_eigenpair_cached", "dominant_eigenpair_propagator_cached", "dominant_eigenpair_shift_invert_cached"]
 fast_tests = ["tests/unit/solvers/test_linear_krylov_core.py", "tests/unit/linear/test_linear.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
