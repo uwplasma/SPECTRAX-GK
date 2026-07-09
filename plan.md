@@ -3560,3 +3560,13 @@ following:
   shard, Python lint check, validation manifest, differentiable-refactor
   manifest, release tests, compile check, diff hygiene, and architecture
   manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/artifacts/derive_imported_linear_lastvalue_table.py` into
+  `tools/artifacts/make_tables.py` as the `--lastvalue-scan/--lastvalue-out`
+  fast path. Imported-linear benchmark refresh commands now use the table owner
+  directly, and the artifact test shard covers both helper conversion and the
+  executable subcommand. The package architecture tool baseline tightened from
+  209 to 208. The linear-validation artifact shard, Python lint check,
+  validation manifest, release tests, compile check, command smoke check, diff
+  hygiene, and architecture manifest passed locally.

@@ -151,7 +151,7 @@ def test_tem_branch_audit_writes_artifacts(tmp_path: Path) -> None:
 
 
 def test_build_lastvalue_table_converts_scan_columns() -> None:
-    mod = load_artifact_tool("derive_imported_linear_lastvalue_table")
+    mod = load_artifact_tool("make_tables")
     df = pd.DataFrame(
         {
             "ky": [0.1, 0.05],
@@ -181,11 +181,52 @@ def test_build_lastvalue_table_converts_scan_columns() -> None:
 
 
 def test_load_scan_requires_lastvalue_columns(tmp_path: Path) -> None:
-    mod = load_artifact_tool("derive_imported_linear_lastvalue_table")
+    mod = load_artifact_tool("make_tables")
     path = tmp_path / "scan.csv"
     pd.DataFrame({"ky": [0.1], "gamma_last": [0.2]}).to_csv(path, index=False)
     with pytest.raises(ValueError, match="missing columns"):
-        mod._load_scan(path)
+        mod._load_lastvalue_scan(path)
+
+
+def test_make_tables_lastvalue_subcommand_writes_csv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mod = load_artifact_tool("make_tables")
+    scan = tmp_path / "scan.csv"
+    out = tmp_path / "lastvalue.csv"
+    pd.DataFrame(
+        {
+            "ky": [0.1],
+            "gamma_last": [0.032],
+            "omega_last": [0.058],
+            "gamma_ref_last": [0.031],
+            "omega_ref_last": [0.059],
+        }
+    ).to_csv(scan, index=False)
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "make_tables.py",
+            "--lastvalue-scan",
+            str(scan),
+            "--lastvalue-out",
+            str(out),
+        ],
+    )
+
+    assert mod.main() == 0
+    written = pd.read_csv(out)
+    assert list(written.columns) == [
+        "ky",
+        "gamma",
+        "omega",
+        "gamma_gx",
+        "omega_gx",
+        "rel_gamma",
+        "rel_omega",
+    ]
+    assert written.loc[0, "rel_omega"] == pytest.approx((0.058 - 0.059) / 0.059)
 
 
 def _w7x_pixel_y(

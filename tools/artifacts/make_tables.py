@@ -11,6 +11,7 @@ import sys
 from typing import Callable
 
 import numpy as np
+import pandas as pd
 from tqdm.auto import tqdm
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -122,6 +123,54 @@ def _build_rows(scan, ref):
             f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
         )
     return rows
+
+
+REQUIRED_LASTVALUE_SCAN_COLUMNS = {
+    "ky",
+    "gamma_last",
+    "omega_last",
+    "gamma_ref_last",
+    "omega_ref_last",
+}
+
+
+def _load_lastvalue_scan(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    missing = REQUIRED_LASTVALUE_SCAN_COLUMNS.difference(df.columns)
+    if missing:
+        raise ValueError(f"{path} missing columns {sorted(missing)}")
+    return df.copy()
+
+
+def _build_lastvalue_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert imported-linear scan diagnostics into the last-value table."""
+
+    out = pd.DataFrame(
+        {
+            "ky": df["ky"].astype(float),
+            "gamma": df["gamma_last"].astype(float),
+            "omega": df["omega_last"].astype(float),
+            "gamma_gx": df["gamma_ref_last"].astype(float),
+            "omega_gx": df["omega_ref_last"].astype(float),
+        }
+    )
+    out["rel_gamma"] = (out["gamma"] - out["gamma_gx"]) / out["gamma_gx"].where(
+        out["gamma_gx"] != 0.0
+    )
+    out["rel_omega"] = (out["omega"] - out["omega_gx"]) / out["omega_gx"].where(
+        out["omega_gx"] != 0.0
+    )
+    return out.sort_values("ky").reset_index(drop=True)
+
+
+def _write_lastvalue_table(scan: Path, out: Path) -> pd.DataFrame:
+    df = _build_lastvalue_table(_load_lastvalue_scan(scan.expanduser().resolve()))
+    out = out.expanduser().resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out, index=False)
+    print(df.to_string(index=False))
+    print(f"saved {out}")
+    return df
 
 
 def _rows_from_reference_columns(
@@ -355,6 +404,16 @@ def _parse_args() -> argparse.Namespace:
         "--refresh-minimal",
         action="store_true",
         help="Only build the tracked outputs required by the benchmark refresh workflow.",
+    )
+    parser.add_argument(
+        "--lastvalue-scan",
+        type=Path,
+        help="Imported-linear scan CSV to convert into a last-value mismatch table.",
+    )
+    parser.add_argument(
+        "--lastvalue-out",
+        type=Path,
+        help="Output CSV for --lastvalue-scan conversion.",
     )
     return parser.parse_args()
 
@@ -1438,6 +1497,12 @@ def _run_kinetic_tables(
 
 def main() -> int:
     args = _parse_args()
+    if args.lastvalue_scan is not None or args.lastvalue_out is not None:
+        if args.lastvalue_scan is None or args.lastvalue_out is None:
+            raise SystemExit("--lastvalue-scan and --lastvalue-out must be provided together")
+        _write_lastvalue_table(args.lastvalue_scan, args.lastvalue_out)
+        return 0
+
     verbose = not args.quiet
     progress = not args.no_progress
     stiff_spot_check = bool(args.stiff_spot_check)
