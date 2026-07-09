@@ -544,7 +544,7 @@
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.nonlinear",
       "n_artifacts": 10,
-      "n_fast_tests": 12,
+      "n_fast_tests": 11,
       "n_next_tests": 5,
       "n_numerics_contracts": 2,
       "n_owned_modules": 5,

@@ -1216,7 +1216,7 @@ performance claims:
   bounded local stencil. The second covers split/reassemble spectral layout
   identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
   Both fail closed and carry no production routing or speedup claim.
-- ``tests/tools/artifacts/test_parallel_identity_gate_artifacts.py`` tests the
+- ``tests/tools/artifacts/test_transport_artifact_tools.py`` tests the
   parallel identity artifact family: velocity reduction, Hermite exchange and
   streaming, electrostatic field/drive/drift routes, linear-RHS parallel
   routes, independent ``k_y`` batching, logical CPU batching, and quasilinear

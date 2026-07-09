@@ -1,6 +1,13 @@
-"""Tests for quasilinear artifact plotting and model-development reports."""
+"""Artifact maintainer tool contracts: quasilinear artifact tools."""
 
 from __future__ import annotations
+
+
+
+# ---- test_quasilinear_artifact_plots.py ----
+
+"""Tests for quasilinear artifact plotting and model-development reports."""
+
 
 import csv
 import json

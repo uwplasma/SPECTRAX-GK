@@ -306,7 +306,7 @@ fast_tests = [
   "tests/unit/linear/test_linear_helpers_extra.py",
   "tests/unit/operators/test_terms_assembly.py",
   "tests/unit/operators/test_terms_fields.py",
-  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -632,9 +632,8 @@ fast_tests = [
   "tests/unit/parallel/test_nonlinear_domain_parallel.py",
   "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
   "tests/unit/operators/test_terms_assembly.py",
-  "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
-  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
@@ -860,7 +859,7 @@ fast_tests = [
   "tests/unit/parallel/test_nonlinear_parallel.py",
   "tests/unit/parallel/test_nonlinear_domain_parallel.py",
   "tests/unit/parallel/test_nonlinear_spectral_communication_gate.py",
-  "tests/tools/artifacts/test_status_readiness_artifacts.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/tools/profiling/test_nonlinear_sharding_profile_contracts.py",
 ]
 artifact_paths = [
@@ -1148,7 +1147,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/quasilinear/test_quasilinear.py",
-  "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
+  "tests/tools/artifacts/test_quasilinear_artifact_tools.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection.py",
   "tests/validation/stellarator/test_external_vmec_validation_policy.py",
 ]
@@ -1199,9 +1198,9 @@ fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
   "tests/release/test_release_gates.py",
   "tests/validation/stellarator/test_external_vmec_validation_policy.py",
-  "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py",
-  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/tools/campaigns/test_campaign_manifest_reports.py",
 ]
 artifact_paths = [
@@ -1344,7 +1343,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/integration/runtime/test_runtime_diagnostics.py",
   "tests/tools/comparison/test_reference_comparison_tools.py",
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
@@ -1376,7 +1375,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/validation/physics_gates/test_validation_gates.py",
-  "tests/tools/artifacts/test_linear_validation_artifact_reports.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/validation_gate_index.json",
@@ -1409,8 +1408,8 @@ numerics_contracts = [
 fast_tests = [
   "tests/validation/physics_gates/test_zonal_validation.py",
   "tests/tools/comparison/test_reference_comparison_tools.py",
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
-  "tests/tools/artifacts/test_status_readiness_artifacts.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.json",
@@ -1451,7 +1450,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_zonal_objective.py",
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -1623,7 +1622,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_differentiable_geometry_bridge.py",
-  "tests/tools/artifacts/test_vmec_boozer_artifact_reports.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_vmec_eik.py",
 ]
@@ -2009,7 +2008,7 @@ fast_tests = [
   "tests/unit/parallel/test_sharding.py",
   "tests/unit/solvers/test_sharded_integrators.py",
   "tests/unit/parallel/test_parallel.py",
-  "tests/tools/artifacts/test_parallel_identity_gate_artifacts.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/unit/parallel/test_velocity_sharding.py",
 ]
 artifact_paths = [
@@ -2063,7 +2062,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/validation/nonlinear/test_nonlinear_gradient_evidence.py",
-  "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/tools/campaigns/test_vmec_campaign_writer_contracts.py",
 ]
 artifact_paths = [
@@ -2518,8 +2517,8 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_vmec_jax_transport_admission.py",
-  "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_campaign_admission_report.json",
@@ -2577,9 +2576,9 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_solver_objective_gradients.py",
-  "tests/tools/artifacts/test_vmec_boozer_artifact_reports.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
-  "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
   "tests/validation/nonlinear/test_nonlinear_transport_release_gates.py",
   "tests/unit/objectives/test_vmec_jax_boundary_chain.py",
@@ -3162,7 +3161,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/parallel/test_parallel.py",
-  "tests/tools/artifacts/test_parallel_identity_gate_artifacts.py",
+  "tests/tools/artifacts/test_transport_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/parallel_ky_scan_gate.json",
@@ -3339,7 +3338,7 @@ numerics_contracts = [
   "time and response arrays are one-dimensional and length-matched before plotting",
 ]
 fast_tests = [
-  "tests/tools/artifacts/test_w7x_artifact_panels.py",
+  "tests/tools/artifacts/test_general_artifact_tools.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.png",
@@ -3371,7 +3370,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/diagnostics/test_plotting.py",
   "tests/integration/examples/test_examples.py",
-  "tests/tools/artifacts/test_status_readiness_artifacts.py",
+  "tests/tools/artifacts/test_stellarator_artifact_tools.py",
   "tests/tools/comparison/test_reference_comparison_tools.py",
 ]
 artifact_paths = [
