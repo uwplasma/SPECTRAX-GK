@@ -89,3 +89,45 @@ def test_generate_miller_eik_writes_minimal_geometry_file(tmp_path) -> None:
     )
 
     assert output.exists()
+
+
+class _FakeDataset:
+    def __init__(self, path, mode):
+        from pathlib import Path
+
+        self.path = Path(path)
+        self.mode = mode
+        self.dimensions: dict[str, int] = {}
+        self.closed = False
+
+    def createDimension(self, name, size):
+        self.dimensions[name] = size
+
+    def close(self):
+        self.closed = True
+
+
+def test_generate_miller_eik_uses_standalone_netcdf_fallback(monkeypatch, tmp_path) -> None:
+    import sys
+    from types import SimpleNamespace
+
+    datasets: list[_FakeDataset] = []
+    monkeypatch.setitem(
+        sys.modules,
+        "netCDF4",
+        SimpleNamespace(
+            Dataset=lambda path, mode: datasets.append(_FakeDataset(path, mode))
+            or datasets[-1]
+        ),
+    )
+    out_path = tmp_path / "miller.nc"
+    generate_miller_eik(
+        {
+            "Dimensions": {"ntheta": 16, "nperiod": 1},
+            "Geometry": {"rhoc": 0.5, "q": 1.4, "s_hat": 0.8, "R0": 3.0},
+        },
+        out_path,
+    )
+    assert datasets[0].path == out_path
+    assert datasets[0].dimensions["z"] == 16
+    assert datasets[0].closed is True

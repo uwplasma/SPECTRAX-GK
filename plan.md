@@ -3115,3 +3115,10 @@ following:
   three one-off files. Updated CI quick-test paths and tightened the package
   architecture test baseline to 193. The consolidated parallel artifact shard
   passed locally.
+
+- 2026-07-08: folded the tiny linear-operator package reexport check into
+  `tests/unit/operators/test_operators.py` and the standalone Miller NetCDF
+  fallback check into `tests/unit/geometry/test_geometry_miller_lowlevel.py`.
+  This removes two one-off files while keeping operator facade and Miller
+  standalone-writeout coverage. Tightened the package architecture test baseline
+  to 191. Focused operator and Miller low-level tests passed locally.

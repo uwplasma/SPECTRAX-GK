@@ -34,3 +34,11 @@ def test_streaming_invalid_shape():
     """Hermite axis length must be positive."""
     with pytest.raises(ValueError):
         hermite_streaming(jnp.zeros((2, 0)), kpar=1.0, vth=1.0)
+
+
+def test_linear_operator_package_reexports_streaming_kernel() -> None:
+    from spectraxgk.operators.linear import hermite_streaming as package_streaming
+    from spectraxgk.operators.linear.moments import hermite_streaming as streaming_impl
+
+    assert hermite_streaming is package_streaming
+    assert package_streaming is streaming_impl
