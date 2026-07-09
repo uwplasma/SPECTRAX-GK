@@ -285,7 +285,7 @@ High-Risk Module Split Plan
   reduced nonlinear-window estimator metrics, VMEC/Boozer state coefficient
   helpers, VMEC/Boozer objective-table plumbing, and VMEC/Boozer
   finite-difference/line-search gates now live in
-  ``objectives/geometry.py``, ``objectives/nonlinear_window.py``,
+  ``objectives/geometry.py``,
   ``objectives/gradient_gates.py``,
   ``objectives/vmec_boozer_gradients.py``,
   ``objectives/vmec_boozer_context.py``,

@@ -3298,3 +3298,15 @@ following:
   the package architecture source baseline to 256. Focused import, ruff,
   py_compile, plotting/runtime tests, release tests, Sphinx docs,
   validation-manifest, and architecture checks passed locally.
+
+- 2026-07-08: folded the reduced nonlinear-window estimator helper from
+  `src/spectraxgk/objectives/nonlinear_window.py` into
+  `src/spectraxgk/objectives/vmec_boozer_gradients.py`, where the VMEC/Boozer
+  frequency, quasilinear, and reduced-window gradient gates consume it. The
+  documented public re-export remains available through
+  `spectraxgk.objectives.solver_gradients`, while the obsolete standalone API
+  page and manifest entries were removed. Regenerated validation metadata,
+  tightened the package architecture source baseline to 255, and passed ruff,
+  py_compile, objective-gradient tests, release tests, Sphinx docs,
+  validation-manifest, differentiable-refactor manifest, and architecture checks
+  locally.

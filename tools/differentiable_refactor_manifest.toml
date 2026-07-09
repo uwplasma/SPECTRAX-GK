@@ -786,18 +786,6 @@ fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.objectives.nonlinear_window"
-source_path = "src/spectraxgk/objectives/nonlinear_window.py"
-facade_module = "spectraxgk.objectives.solver_gradients"
-status = "active"
-responsibility = "smooth reduced nonlinear-window estimator metrics used by differentiability gates without promoting converged nonlinear transport claims"
-moved_exports = [
-  "_reduced_nonlinear_window_metrics_from_linear_observables",
-]
-fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.objectives.gradient_gates"
 source_path = "src/spectraxgk/objectives/gradient_gates.py"
 facade_module = "spectraxgk.objectives.solver_gradients"
@@ -815,11 +803,12 @@ module = "spectraxgk.objectives.vmec_boozer_gradients"
 source_path = "src/spectraxgk/objectives/vmec_boozer_gradients.py"
 facade_module = "spectraxgk.objectives.solver_gradients"
 status = "active"
-responsibility = "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, and reduced nonlinear-window gradient gates"
+responsibility = "mode-21 VMEC/Boozer state-to-solver frequency, quasilinear, reduced nonlinear-window estimator metrics, and gradient gates"
 moved_exports = [
   "VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES",
   "VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES",
   "VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES",
+  "_reduced_nonlinear_window_metrics_from_linear_observables",
   "mode21_vmec_boozer_linear_frequency_gradient_report",
   "mode21_vmec_boozer_quasilinear_gradient_report",
   "mode21_vmec_boozer_nonlinear_window_gradient_report",
@@ -1914,7 +1903,6 @@ target_packages = [
   "spectraxgk.objectives.eigen",
   "spectraxgk.objectives.core",
   "spectraxgk.objectives.sampling",
-  "spectraxgk.objectives.nonlinear_window",
   "spectraxgk.objectives.solver_vmec",
   "spectraxgk.objectives.solver_gradient_reports",
   "spectraxgk.objectives.vmec_boozer",

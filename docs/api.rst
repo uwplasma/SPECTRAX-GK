@@ -975,13 +975,6 @@ Solver Geometry Objectives
    :members:
    :private-members:
 
-Solver Nonlinear-Window Objective
----------------------------------
-
-.. automodule:: spectraxgk.objectives.nonlinear_window
-   :members:
-   :private-members:
-
 Solver-Ready Gradient Gates
 ---------------------------
 

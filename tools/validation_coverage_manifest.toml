@@ -2229,37 +2229,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.nonlinear_window"
-path = "src/spectraxgk/objectives/nonlinear_window.py"
-owner_lane = "production solver-objective geometry-gradient validation"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "reduced nonlinear-window differentiability gates for stellarator optimization plumbing",
-  "late-window transport diagnostics require separate long-running nonlinear validation before promotion",
-]
-physics_contracts = [
-  "reduced nonlinear-window metrics are explicitly scoped as smooth estimator gates, not converged nonlinear heat-flux averages",
-  "window mean, coefficient of variation, and normalized trend are derived from linear observables and used only for bounded differentiability checks",
-]
-numerics_contracts = [
-  "RK2 logistic envelope propagation rejects too-short windows and invalid tail fractions",
-  "late-window trend normalization is finite and differentiable for near-zero but positive regularized flux scales",
-]
-fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
-]
-artifact_paths = [
-  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
-  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png",
-]
-next_tests = [
-  "add parameterized invalid-window tests for steps and tail_fraction guards",
-  "keep reduced-window gates separate from production nonlinear transport-window admission artifacts",
-]
-
-[[modules]]
 module = "spectraxgk.objectives.gradient_gates"
 path = "src/spectraxgk/objectives/gradient_gates.py"
 owner_lane = "production solver-objective geometry-gradient validation"
@@ -2307,6 +2276,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "VMEC/Boozer state-gradient reports must record mode resolution, surface stencil, state size, and objective-specific gate rows",
+  "RK2 logistic reduced-window propagation rejects too-short windows and invalid tail fractions",
   "context and feature hooks must be dependency-injected so tests can validate the gradient-gate math without optional geometry backends",
 ]
 fast_tests = [
