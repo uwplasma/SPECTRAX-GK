@@ -55,8 +55,8 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 228 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8 including a 12608-line facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 12608 lines | <=500 lines | active |
+| Source modules above 1000 lines | 8 including a 12512-line facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 12512 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | Tracked files above 2 MB | 0 | 0 | closed |
@@ -114,7 +114,7 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 58% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Source consolidation | 59% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
 | Nonlinear GPU performance | 68% | Refresh the benchmark-grid GPU profile after compile reuse, then move CFL/sampling device-resident before kernel optimization. |
@@ -215,6 +215,10 @@ use mathematical names independent of comparison provenance.
   post-warmup smoke profile fell from about 0.41 seconds to about 1 millisecond
   per diagnostic sharded call with exact state identity; benchmark-grid GPU
   profiling remains required before changing performance claims.
+- 2026-07-09: Replaced fourteen identical benchmark request/context packers
+  with one typed dataclass-field contract in `spectraxgk.benchmarking.shared`.
+  The benchmark facade is now 12512 lines, with hook-bearing TEM policy kept
+  explicit because it performs real assembly rather than mechanical packing.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
