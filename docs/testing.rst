@@ -72,7 +72,7 @@ directly listed, owned by a listed row, or explicitly excluded as package
 plumbing such as ``__init__.py`` or version metadata. This makes source
 extractions fail fast until the coverage owner, fast tests, and next-test debt
 are declared. New manifest tests for this policy should stay cheap and live in
-``tests/release/test_validation_coverage_manifest.py`` or
+``tests/release/test_release_gates.py`` or
 ``tests/test_refactor_coverage_*.py``.
 
 Manifest paths are intentionally concrete. ``fast_tests`` and

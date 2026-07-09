@@ -1197,7 +1197,7 @@ fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_calibration.py",
   "tests/validation/quasilinear/test_quasilinear_window.py",
   "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
-  "tests/release/test_check_quasilinear_calibration_inputs.py",
+  "tests/release/test_release_gates.py",
   "tests/validation/stellarator/test_external_vmec_validation_policy.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py",

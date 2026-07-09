@@ -39,7 +39,7 @@ Date: 2026-07-09.
 | --- | ---: | ---: | --- |
 | Installable source Python files | 243 | 100 | active |
 | Tool Python files | 138 after current prune | 99 | active |
-| Test Python files | 136 | 99 | active |
+| Test Python files | 129 | 99 | active |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
@@ -75,7 +75,7 @@ branch/PR.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Tool consolidation | 52% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
-| Test consolidation | 46% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
+| Test consolidation | 57% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 38% | Shrink `spectraxgk.benchmarks`, merge `geometry_backends` into `geometry`, and resolve `terms`/`operators` ownership. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
 | Performance/release claims | 78% | Keep only profiler-backed speed claims; refresh runtime/memory panel after topology cleanup. |
@@ -118,6 +118,9 @@ branch/PR.
   gate and pushed commit `880ea3ed`.
 - 2026-07-09: Pruned an unreferenced nonlinear comparison helper and lowered the
   tool-count baseline to the current tracked state.
+- 2026-07-09: Collapsed eight small release test files into
+  `tests/release/test_release_gates.py`, reducing the test file count from 136
+  to 129 while preserving all release, manifest, coverage, and hygiene gates.
 
 ## Validation Commands For This Tranche
 
