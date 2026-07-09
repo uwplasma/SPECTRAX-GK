@@ -1488,9 +1488,9 @@ artifacts, use:
 - ``tools/campaigns/run_reference_validation_campaigns.py kbm-lowky-extractor`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/campaigns/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/artifacts/plot_w7x_exact_state_audit.py`` (no-rerun W7-X exact-state convention audit panel)
-- ``tools/campaigns/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
-- ``tools/campaigns/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
-- ``tools/campaigns/run_vmec_roundtrip_gate.py`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
+- ``tools/campaigns/run_runtime_validation_gates.py restart-parity`` (manifest-driven nonlinear restart/continuation parity gate)
+- ``tools/campaigns/run_runtime_validation_gates.py device-parity`` (manifest-driven CPU/GPU short-window parity gate)
+- ``tools/campaigns/run_runtime_validation_gates.py vmec-roundtrip`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
 
 The current full-GK nonlinear ETG lane is now explicitly tracked as a pilot
 runtime contract via
@@ -1584,7 +1584,7 @@ tree so the office venv does not pick up a stale installed package:
 .. code-block:: bash
 
    PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_restart_parity_gate.py \
+   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_runtime_validation_gates.py restart-parity \
      --manifest tools/restart_gate_lanes.office.toml \
      --outdir tools_out/restart_parity_office
 
@@ -1626,7 +1626,7 @@ older zero-norm smoke probe:
 .. code-block:: bash
 
    PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_device_parity_gate.py \
+   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_runtime_validation_gates.py device-parity \
      --manifest tools/device_parity_lanes.office.toml \
      --outdir tools_out/device_parity_office
 
@@ -1636,7 +1636,7 @@ tracked W7-X and HSX VMEC lanes:
 .. code-block:: bash
 
    PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
-   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_vmec_roundtrip_gate.py \
+   "$SPECTRAX_VENV_PYTHON" tools/campaigns/run_runtime_validation_gates.py vmec-roundtrip \
      --manifest tools/vmec_roundtrip_lanes.office.toml \
      --outdir tools_out/vmec_roundtrip_office
 

@@ -8,24 +8,30 @@ from tools.campaigns.run_reference_validation_campaigns import (
     _load_manifest,
     _select_jobs,
 )
-from tools.campaigns.run_device_parity_gate import (
+from tools.campaigns.run_runtime_validation_gates import (
     _resolve_manifest_path as resolve_device_manifest_path,
 )
-from tools.campaigns.run_device_parity_gate import build_parser as device_parser
 from tools.campaigns.run_reference_validation_campaigns import (
     build_imported_linear_targeted_parser as imported_linear_parser,
 )
 from tools.campaigns.run_reference_validation_campaigns import (
     build_kbm_lowky_parser as kbm_lowky_parser,
 )
-from tools.campaigns.run_restart_parity_gate import (
+from tools.campaigns.run_runtime_validation_gates import (
     _resolve_manifest_path as resolve_restart_manifest_path,
 )
-from tools.campaigns.run_restart_parity_gate import build_parser as restart_parser
-from tools.campaigns.run_vmec_roundtrip_gate import (
+from tools.campaigns.run_runtime_validation_gates import (
     _resolve_manifest_path as resolve_roundtrip_manifest_path,
 )
-from tools.campaigns.run_vmec_roundtrip_gate import build_parser as roundtrip_parser
+from tools.campaigns.run_runtime_validation_gates import (
+    build_device_parity_parser as device_parser,
+)
+from tools.campaigns.run_runtime_validation_gates import (
+    build_restart_parity_parser as restart_parser,
+)
+from tools.campaigns.run_runtime_validation_gates import (
+    build_vmec_roundtrip_parser as roundtrip_parser,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]

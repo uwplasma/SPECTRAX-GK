@@ -3893,3 +3893,11 @@ following:
 - Preserved the tested manifest loader, job selector, imported-linear per-ky cache handling, and KBM low-ky dispatch helpers; the KBM imported-geometry path now routes through the grouped command.
 - Tightened the tool-file topology baseline from 153 to 151.
 - Validated the campaign gate command shard, grouped command help for all three subcommands, Python byte compilation, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.
+
+### 2026-07-09 Runtime validation gate consolidation
+
+- Folded the CPU/GPU device-parity gate, nonlinear restart/continuation parity gate, and VMEC roundtrip determinism gate into `tools/campaigns/run_runtime_validation_gates.py` with `device-parity`, `restart-parity`, and `vmec-roundtrip` subcommands.
+- Removed the three standalone runtime gate scripts while preserving the shared lane-manifest contract, environment expansion, manifest-path resolution, runtime summaries, and JSON outputs.
+- Updated testing documentation, performance-manifest references, and campaign command tests to use the grouped runtime-gate command surface.
+- Tightened the tool-file topology baseline from 151 to 149.
+- Validated the campaign gate command shard, grouped command help for all three subcommands, Python byte compilation, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.
