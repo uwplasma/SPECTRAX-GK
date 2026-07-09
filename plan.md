@@ -3731,3 +3731,14 @@ following:
   direct convergence/time-horizon CLI smoke, validation coverage manifest,
   differentiable refactor manifest, Python lint check, stale-reference scan,
   and architecture manifest passed locally.
+
+- 2026-07-09: consolidated internal nonlinear spectral helper modules into
+  `src/spectraxgk/operators/nonlinear/spectral_core.py`. The pseudo-spectral
+  field/bracket/RHS micro-routes and the nonlinear spectral communication/work
+  models are now owned by the spectral-core facade instead of separate
+  `spectral_brackets.py` and `spectral_work_models.py` shards. Public exported
+  helper names are preserved through `spectral_core`, the source topology
+  baseline tightened from 255 to 253 files, and the nonlinear spectral
+  communication/parallel identity shard, validation coverage manifest,
+  differentiable refactor manifest, Python lint check, stale-reference scan,
+  and architecture manifest passed locally.
