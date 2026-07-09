@@ -68,6 +68,8 @@ def test_profile_nonlinear_sharding_source_contract_is_machine_readable(
         contract["software_versions"]
     )
     assert all(contract["software_versions"].values())
+    assert contract["git_revision"]
+    assert isinstance(contract["git_dirty"], bool)
 
 
 def test_profile_nonlinear_sharding_helpers_report_stats_and_unique_specs() -> None:

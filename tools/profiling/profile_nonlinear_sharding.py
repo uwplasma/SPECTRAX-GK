@@ -83,6 +83,31 @@ def _software_versions() -> dict[str, str]:
     }
 
 
+def _git_source_state() -> dict[str, Any]:
+    """Return reproducible source provenance without requiring Git at runtime."""
+
+    try:
+        revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return {"git_revision": "unknown", "git_dirty": None}
+    return {"git_revision": revision, "git_dirty": dirty}
+
+
 def _source_contract(
     args: argparse.Namespace,
     argv: list[str] | None,
@@ -102,6 +127,7 @@ def _source_contract(
         "profile_command_argv": _profile_command_argv(argv),
         "source_artifact": _artifact_path_for_contract(Path(args.out_json)),
         "software_versions": _software_versions(),
+        **_git_source_state(),
         "timing_warmup_repeat": timing_warmup_repeat,
         "allow_unsafe_cpu_state_sharding": bool(args.allow_unsafe_cpu_state_sharding),
     }
