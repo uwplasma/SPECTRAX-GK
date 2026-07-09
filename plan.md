@@ -3516,3 +3516,13 @@ following:
   from 210 to 209. The VMEC misc artifact shard, Python lint check, validation
   manifest, release tests, command-help smoke check, compile check, diff
   hygiene, and architecture manifest passed locally.
+
+- 2026-07-09: consolidated
+  `tests/tools/artifacts/test_vmec_boozer_aggregate_artifacts.py` into
+  `tests/tools/artifacts/test_vmec_boozer_artifact_reports.py`. VMEC/Boozer
+  gradient, aggregate, holdout, and line-search artifact contracts now have one
+  artifact-test owner, while the validation manifest and wide coverage
+  scheduling still exercise the same high-cost shard. The package architecture
+  test baseline tightened from 151 to 150. The consolidated VMEC/Boozer
+  artifact shard, Python lint check, validation manifest, release tests, compile
+  check, diff hygiene, and architecture manifest passed locally.

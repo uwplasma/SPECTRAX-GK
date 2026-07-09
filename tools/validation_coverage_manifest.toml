@@ -2595,7 +2595,6 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/objectives/test_solver_objective_gradients.py",
   "tests/tools/artifacts/test_vmec_boozer_artifact_reports.py",
-  "tests/tools/artifacts/test_vmec_boozer_aggregate_artifacts.py",
   "tests/validation/stellarator/test_check_vmec_boozer_aggregate_holdout_gate.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/validation/nonlinear/test_nonlinear_transport_optimization.py",
