@@ -1107,7 +1107,7 @@ refit or promote a new model.
 
 .. code-block:: bash
 
-   python tools/artifacts/build_quasilinear_error_anatomy.py \
+   python tools/artifacts/plot_quasilinear_model_development.py error-anatomy \
      --out docs/_static/quasilinear_error_anatomy.png || true
 
 The command exits nonzero while promotion remains blocked. That is intentional:
@@ -1168,7 +1168,7 @@ present status of the QA and QH optimization families.
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_stellarator_usefulness.py \
+   python tools/artifacts/plot_quasilinear_model_development.py stellarator-usefulness \
      --out docs/_static/quasilinear_stellarator_usefulness.png
 
 .. image:: _static/quasilinear_stellarator_usefulness.png
@@ -1214,7 +1214,7 @@ also pass.
 
 .. code-block:: bash
 
-   python tools/artifacts/plot_quasilinear_screening_skill.py \
+   python tools/artifacts/plot_quasilinear_model_development.py screening-skill \
      --out docs/_static/quasilinear_screening_skill.png
 
 .. image:: _static/quasilinear_screening_skill.png

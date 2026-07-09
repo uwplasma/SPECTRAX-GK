@@ -1397,8 +1397,8 @@ def test_saturation_rule_sweep_records_shape_gate_metadata(tmp_path: Path) -> No
 
 # Screening-skill assertions
 def test_screening_skill_keeps_spectral_envelope_fail_closed() -> None:
-    module = load_artifact_tool("plot_quasilinear_screening_skill")
-    report = module.build_report()
+    module = load_artifact_tool("plot_quasilinear_model_development")
+    report = module.build_screening_skill_report()
     models = {row["model"]: row for row in report["models"]}
 
     assert report["kind"] == "quasilinear_screening_skill"
@@ -1431,9 +1431,9 @@ def test_screening_skill_keeps_spectral_envelope_fail_closed() -> None:
 
 
 def test_screening_skill_writer_creates_sidecars(tmp_path: Path) -> None:
-    module = load_artifact_tool("plot_quasilinear_screening_skill")
-    report = module.build_report()
-    paths = module.write_figure(
+    module = load_artifact_tool("plot_quasilinear_model_development")
+    report = module.build_screening_skill_report()
+    paths = module.write_screening_skill_figure(
         report, out=tmp_path / "screening.png", title="test", dpi=80
     )
 
@@ -1718,8 +1718,8 @@ def test_quasilinear_spectrum_shape_gate_rejects_missing_column(tmp_path: Path) 
 
 # Stellarator usefulness assertions
 def test_stellarator_usefulness_report_keeps_claim_scoped() -> None:
-    module = load_artifact_tool("plot_quasilinear_stellarator_usefulness")
-    report = module.build_report()
+    module = load_artifact_tool("plot_quasilinear_model_development")
+    report = module.build_stellarator_usefulness_report()
 
     assert report["kind"] == "quasilinear_stellarator_usefulness"
     assert "not_runtime_absolute_flux_predictor" in report["claim_level"]
@@ -1737,8 +1737,8 @@ def test_stellarator_usefulness_report_keeps_claim_scoped() -> None:
 
 
 def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:
-    module = load_artifact_tool("plot_quasilinear_stellarator_usefulness")
-    report = module.build_report()
+    module = load_artifact_tool("plot_quasilinear_model_development")
+    report = module.build_stellarator_usefulness_report()
     rows = {row["case"]: row for row in report["rows"]}
 
     for case in ("hsx_nonlinear_window", "w7x_nonlinear_window"):
@@ -1762,11 +1762,13 @@ def test_stellarator_rows_show_simple_rule_failure_and_scope_statuses() -> None:
 
 
 def test_stellarator_usefulness_writer_creates_sidecars(tmp_path: Path) -> None:
-    module = load_artifact_tool("plot_quasilinear_stellarator_usefulness")
-    report = module.build_report()
+    module = load_artifact_tool("plot_quasilinear_model_development")
+    report = module.build_stellarator_usefulness_report()
     out = tmp_path / "ql_usefulness.png"
 
-    paths = module.write_figure(report, out=out, title="test", dpi=80)
+    paths = module.write_stellarator_usefulness_figure(
+        report, out=out, title="test", dpi=80
+    )
 
     for key in ("png", "pdf", "json", "csv"):
         assert Path(paths[key]).exists()

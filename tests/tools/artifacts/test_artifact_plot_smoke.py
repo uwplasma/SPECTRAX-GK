@@ -536,7 +536,7 @@ def test_generate_geometry_eik_routes_vmec_and_miller_subcommands(
 def test_error_anatomy_report_and_cli_lock_fail_closed_residual_story(
     tmp_path: Path,
 ) -> None:
-    mod = load_artifact_tool("build_quasilinear_error_anatomy")
+    mod = load_artifact_tool("plot_quasilinear_model_development")
 
     report = mod.build_error_anatomy_report()
 
@@ -580,7 +580,8 @@ def test_error_anatomy_report_and_cli_lock_fail_closed_residual_story(
     completed = subprocess.run(
         [
             sys.executable,
-            str(root / "tools" / "artifacts" / "build_quasilinear_error_anatomy.py"),
+            str(root / "tools" / "artifacts" / "plot_quasilinear_model_development.py"),
+            "error-anatomy",
             "--out",
             str(out),
         ],

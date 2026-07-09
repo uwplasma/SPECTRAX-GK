@@ -3858,3 +3858,10 @@ following:
 
 - Removed the last tests-only standalone startup dump comparison helper from `tools/comparison`; exact-state startup validation remains covered by the runtime-configured comparison path used by `tools/campaigns/run_exact_state_audit.py`.
 - Updated comparison tests and package topology baseline, reducing tool topology from 161 to 160 Python files.
+
+### 2026-07-09 Quasilinear model-development tool consolidation
+
+- Folded the screening-skill, stellarator-usefulness, and residual-error anatomy artifact commands into `tools/artifacts/plot_quasilinear_model_development.py` as the `screening-skill`, `stellarator-usefulness`, and `error-anatomy` subcommands.
+- Removed the three standalone quasilinear artifact entry scripts while preserving generated PNG/PDF/JSON/CSV outputs, public report/writer helper aliases used by tests, and the fail-closed error-anatomy exit-code contract.
+- Updated quasilinear/manuscript docs, artifact tests, and the package architecture baseline, reducing tool Python topology from 160 to 157 files.
+- Validated the focused moved APIs, the broader quasilinear artifact shard, command help smokes, stale-reference scan, validation coverage manifest, differentiable refactor manifest, package architecture manifest, Python lint, and diff whitespace checks locally.
