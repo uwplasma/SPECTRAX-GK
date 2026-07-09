@@ -3360,9 +3360,7 @@ following:
   locally.
 
 - 2026-07-08: consolidated the overdetermined nonlinear-gradient campaign writer
-  tests from
-  `tests/tools/campaigns/test_write_overdetermined_nonlinear_gradient_campaign.py`
-  into `tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py`,
+  tests into `tests/tools/campaigns/test_nonlinear_transport_campaign_contracts.py`,
   which already owns nonlinear transport portfolio import, overdetermined run
   task collection, overdetermined postprocess sequencing, and gradient-manifest
   postprocess contracts. The package architecture test baseline tightened from
@@ -3879,3 +3877,11 @@ following:
 - Removed the standalone control-mean postprocess script while preserving the tested matched-output discovery, readiness-status, replicated ensemble, and control-mean gate workflow helpers.
 - Updated README/testing documentation and campaign tests to use the unified nonlinear-gradient runner family, and tightened the package architecture tool baseline from 155 to 154.
 - Validated the consolidated campaign runner shard, control-mean command help, package architecture manifest, validation coverage manifest, differentiable refactor manifest, Python lint/compile checks, stale-reference scan, and diff whitespace checks locally.
+
+### 2026-07-09 Nonlinear-gradient overdetermined writer consolidation
+
+- Folded the overdetermined nonlinear-gradient campaign writer into `tools/campaigns/design_nonlinear_gradient.py` as the `overdetermined-campaign` subcommand.
+- Removed the standalone overdetermined writer while preserving `write_overdetermined_campaign`, coefficient parsing, VMEC perturbation launch-plan generation, and candidate-ranking manifest contracts.
+- Kept `write_nonlinear_turbulence_gradient_campaign.py` as the active shared matched-campaign writer because downstream campaign tools and frozen provenance artifacts still depend on it.
+- Updated docs/tests and tightened the tool-file topology baseline from 154 to 153.
+- Validated affected campaign tests, nonlinear validation tests, command help, architecture/validation/differentiable-refactor manifests, stale-reference scan, lint/format, byte compilation, and diff whitespace checks locally.

@@ -491,8 +491,8 @@ tracked ``RBC(1,1)`` 5%/8% result,
 audit: response is resolved at both amplitudes, but finite-difference
 asymmetry grows with amplitude, so the correct next action is a smaller
 locality sweep or an overdetermined profile-gradient control.
-``tools/campaigns/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
-next launch-contract step. It writes multiple matched boundary-control VMEC
+``tools/campaigns/design_nonlinear_gradient.py overdetermined-campaign`` implements
+that next launch-contract step. It writes multiple matched boundary-control VMEC
 perturbation manifests from one baseline input, records the per-control
 nonlinear campaign commands, and writes the final candidate-ranking command.
 The tracked QA/ESS profile-gradient launch plan is

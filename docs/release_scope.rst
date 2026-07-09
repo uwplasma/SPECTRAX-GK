@@ -414,8 +414,8 @@ Quasilinear model-selection state:
   for mixed-control inputs, and the tracked ``RBC(1,1)`` amplitude sweep
   confirms that the current larger bracket worsens locality instead of closing
   the nonlinear turbulence-gradient gate.
-- ``tools/campaigns/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
-  launch-contract writer for that next campaign shape. The current tracked
+- ``tools/campaigns/design_nonlinear_gradient.py overdetermined-campaign`` is the
+  concrete launch-contract writer for that next campaign shape. The current tracked
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
   uses the optimized-QA/ESS baseline input and prepares ``ZBS(1,1)``,
   ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the

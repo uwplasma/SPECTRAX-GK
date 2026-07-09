@@ -10,7 +10,7 @@ import pytest
 from support.paths import load_campaign_tool
 
 release_finalizer = load_campaign_tool("finalize_nonlinear_transport_matrix_release")
-over_writer = load_campaign_tool("write_overdetermined_nonlinear_gradient_campaign")
+over_writer = load_campaign_tool("design_nonlinear_gradient")
 over_runner = load_campaign_tool("run_nonlinear_gradient_direct_campaign")
 over_post = over_runner
 gradient_post = over_runner
@@ -225,6 +225,7 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(
 
     rc = over_writer.main(
         [
+            "overdetermined-campaign",
             "--baseline-input",
             str(baseline),
             "--out-dir",
