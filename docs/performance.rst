@@ -594,13 +594,13 @@ It is regenerated with:
 
    KY=$(python -c "print(','.join(f'{0.04 + 0.0125*i:.3f}' for i in range(64)))")
 
-   python tools/profiling/profile_independent_ky_scan_scaling.py \
+   python tools/profiling/profile_parallel_workloads.py independent-ky \
      --backend cpu --devices 1,2,4,8 \
      --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_cpu_large
 
-   python tools/profiling/profile_independent_ky_scan_scaling.py \
+   python tools/profiling/profile_parallel_workloads.py independent-ky \
      --backend gpu --devices 1,2 \
      --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
@@ -673,11 +673,11 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_quasilinear_uq_ensemble_scaling.py \
+   python tools/profiling/profile_parallel_workloads.py quasilinear-uq \
      --backend cpu --devices 1,2,4,8 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_cpu_large
 
-   python tools/profiling/profile_quasilinear_uq_ensemble_scaling.py \
+   python tools/profiling/profile_parallel_workloads.py quasilinear-uq \
      --backend gpu --devices 1,2 \
      --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
 

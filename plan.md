@@ -3909,3 +3909,11 @@ following:
 - Updated performance docs, runtime-memory manifest commands, performance optimization manifest tool paths, and profiling/benchmark tests to use the grouped profiler command surface.
 - Tightened the tool-file topology baseline from 149 to 146.
 - Validated profiling contracts, benchmark runtime-memory profile-contract subset, grouped profiler help for all four subcommands, Python byte compilation, performance/package/repository/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.
+
+### 2026-07-09 Independent-work scaling profiler consolidation
+
+- Folded the independent-ky scan scaling profiler and quasilinear/UQ ensemble scaling profiler into `tools/profiling/profile_parallel_workloads.py` with `independent-ky` and `quasilinear-uq` subcommands.
+- Removed the two standalone scaling profiler scripts while preserving worker subprocess routing, CPU/GPU environment selection, serial identity gates, scaling CSV/JSON/PNG/PDF artifact writers, and reduced quasilinear observable checks.
+- Updated performance docs and profiling tests to use the grouped independent-work profiler command surface.
+- Tightened the tool-file topology baseline from 146 to 145.
+- Validated profiling contracts, grouped profiler help for both subcommands, Python byte compilation, performance/package/repository/validation/differentiable-refactor manifests, stale-reference scan, lint/format, and diff whitespace checks locally.

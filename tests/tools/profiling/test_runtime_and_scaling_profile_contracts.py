@@ -184,15 +184,16 @@ def test_full_nonlinear_trace_field_norm_handles_missing_em_fields() -> None:
 
 
 # Parallel-scaling profiling contracts.
-independent_ky = load_profiling_tool("profile_independent_ky_scan_scaling")
+parallel_workloads = load_profiling_tool("profile_parallel_workloads")
+independent_ky = parallel_workloads
 linear_terms = load_profiling_tool("profile_linear_rhs_terms")
-quasilinear_uq = load_profiling_tool("profile_quasilinear_uq_ensemble_scaling")
+quasilinear_uq = parallel_workloads
 
 
 def test_independent_ky_scan_scaling_parser_defaults_to_large_solver_case() -> None:
-    args = independent_ky.build_parser().parse_args([])
+    args = independent_ky.build_independent_ky_parser().parse_args([])
 
-    assert args.out_prefix == independent_ky.DEFAULT_PREFIX
+    assert args.out_prefix == independent_ky.DEFAULT_INDEPENDENT_KY_PREFIX
     assert args.backend == "cpu"
     assert args.devices == [1, 2, 4]
     assert args.ny == 128
@@ -480,9 +481,9 @@ def test_linear_rhs_terms_tracked_miller_profile_is_active_artifact() -> None:
 def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case() -> (
     None
 ):
-    args = quasilinear_uq.build_parser().parse_args([])
+    args = quasilinear_uq.build_quasilinear_uq_parser().parse_args([])
 
-    assert args.out_prefix == quasilinear_uq.DEFAULT_PREFIX
+    assert args.out_prefix == quasilinear_uq.DEFAULT_QUASILINEAR_UQ_PREFIX
     assert args.backend == "cpu"
     assert args.devices == [1, 2, 4]
     assert args.gradients == [2.20, 2.40, 2.60, 2.80, 3.00, 3.20]
@@ -513,7 +514,7 @@ def test_quasilinear_uq_ensemble_scaling_identity_metrics_detect_equal_members()
         {"R_over_LTi": 2.7, "heat_flux_proxy": 2.5, "gamma": [0.3, 0.4]},
     ]
 
-    metrics = quasilinear_uq._identity_metrics(
+    metrics = quasilinear_uq._quasilinear_identity_metrics(
         {"members": members},
         {"members": list(reversed(members)), "error": None},
         value_rtol=1.0e-12,
