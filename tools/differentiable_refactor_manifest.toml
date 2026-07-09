@@ -2069,8 +2069,12 @@ module = "spectraxgk.terms.assembly"
 source_path = "src/spectraxgk/terms/assembly.py"
 facade_module = "spectraxgk.terms.assembly"
 status = "active"
-responsibility = "stable public facade for term-wise cached RHS assembly, diagnostics, and field-only solves"
+responsibility = "single term-wise cached RHS owner for public RHS assembly, field-only solves, per-term diagnostics, external field sources, electrostatic field policy, collision skip policy, state/species normalization, fixed-order summation, and generic/electrostatic JIT entry points"
 moved_exports = [
+  "_apply_external_phi_source",
+  "_collision_contribution_or_zero",
+  "_is_static_zero",
+  "_rhs_field_views",
   "assemble_rhs",
   "assemble_rhs_cached",
   "assemble_rhs_cached_jit",
@@ -2078,27 +2082,10 @@ moved_exports = [
   "assemble_rhs_terms_cached",
   "compute_fields_cached",
 ]
-fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.terms.assembly_core"
-source_path = "src/spectraxgk/terms/assembly_core.py"
-facade_module = "spectraxgk.terms.assembly"
-status = "active"
-responsibility = "cached full linear-term RHS composition, per-term diagnostics, field-only cached solves, and generic/electrostatic JIT entry points"
-moved_exports = ["assemble_rhs_cached", "assemble_rhs_cached_jit", "assemble_rhs_cached_electrostatic_jit", "assemble_rhs_terms_cached", "compute_fields_cached"]
-fast_tests = ["tests/unit/operators/test_terms_assembly.py", "tests/unit/linear/test_linear_helpers_extra.py"]
-doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.terms.assembly_helpers"
-source_path = "src/spectraxgk/terms/assembly_helpers.py"
-facade_module = "spectraxgk.terms.assembly"
-status = "active"
-responsibility = "shared field-source, electrostatic-field, static-zero, and collision-skip helper policies"
-moved_exports = ["_apply_external_phi_source", "_collision_contribution_or_zero", "_is_static_zero", "_rhs_field_views"]
-fast_tests = ["tests/unit/operators/test_terms_assembly.py"]
+fast_tests = [
+  "tests/unit/operators/test_terms_assembly.py",
+  "tests/unit/linear/test_linear_helpers_extra.py",
+]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

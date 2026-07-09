@@ -254,11 +254,10 @@ Completed extractions:
   linear and nonlinear RHS construction, IMEX term routing, saved-``phi``
   extraction, solve execution, and final ``FieldState`` packing while keeping
   the public ``integrate_nonlinear_diffrax`` contract stable.
-- term-wise RHS assembly internals. ``terms/assembly.py`` remains the public
-  facade while cached RHS composition, per-term diagnostic decomposition,
-  field-only solves, and shared helper policies live in
-  ``terms/assembly_core.py`` and ``terms/assembly_helpers.py``. The
-  production RHS and diagnostic decomposition share one helper-owned staging
+- term-wise RHS assembly internals. ``terms/assembly.py`` owns public RHS
+  assembly, cached RHS composition, per-term diagnostic decomposition,
+  field-only solves, external-field sources, electrostatic-field policy, and
+  collision-skip policy. The production RHS and diagnostic decomposition share one staging
   layer for state/species normalization, scalar parameter expansion, field and
   Hamiltonian construction, drift/drive/dissipation contribution assembly,
   fixed-order term summation, and species-axis restoration. This keeps
