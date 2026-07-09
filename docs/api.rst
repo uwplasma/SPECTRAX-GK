@@ -1020,13 +1020,6 @@ Solver VMEC/Boozer Gradient Gates
    :members:
    :private-members:
 
-Solver VMEC-State Helpers
--------------------------
-
-.. automodule:: spectraxgk.objectives.vmec_state
-   :members:
-   :private-members:
-
 Solver VMEC/Boozer Objectives
 -----------------------------
 

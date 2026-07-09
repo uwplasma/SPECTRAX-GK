@@ -580,15 +580,20 @@ module = "spectraxgk.geometry.vmec_state_controls"
 source_path = "src/spectraxgk/geometry/vmec_state_controls.py"
 facade_module = "spectraxgk.geometry.vmec_state_sensitivity"
 status = "active"
-responsibility = "shared VMEC-JAX example-state loading, coefficient index resolution, length-two control normalization, and pure state perturbation helpers for differentiable geometry gates"
+responsibility = "shared VMEC-JAX example-state loading, coefficient index resolution, coefficient-table access/replacement, length-two control normalization, and pure state perturbation helpers for differentiable geometry and solver-objective gates"
 moved_exports = [
+  "VMEC_BOOZER_STATE_PARAMETER_FAMILIES",
+  "VMEC_BOOZER_STATE_PARAMETER_NAMES",
   "_VMECStateContext",
   "_length_two_params",
   "_load_vmec_state_context",
   "_perturb_vmec_state",
+  "_replace_vmec_boozer_state_coefficient",
   "_resolve_vmec_state_indices",
+  "_vmec_boozer_state_array",
+  "_vmec_boozer_state_parameter_name",
 ]
-fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py"]
+fast_tests = ["tests/unit/objectives/test_differentiable_geometry_bridge.py", "tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
@@ -833,22 +838,6 @@ moved_exports = [
   "_mode21_vmec_boozer_quasilinear_features",
 ]
 fast_tests = ["tests/unit/solvers/test_solver_gradient_gate_modules.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
-
-[[phase1_split_modules]]
-module = "spectraxgk.objectives.vmec_state"
-source_path = "src/spectraxgk/objectives/vmec_state.py"
-facade_module = "spectraxgk.objectives.solver_gradients"
-status = "active"
-responsibility = "VMEC/Boozer state coefficient array access, perturbation replacement, and parameter-name helpers for solver-objective gates"
-moved_exports = [
-  "VMEC_BOOZER_STATE_PARAMETER_FAMILIES",
-  "VMEC_BOOZER_STATE_PARAMETER_NAMES",
-  "_replace_vmec_boozer_state_coefficient",
-  "_vmec_boozer_state_array",
-  "_vmec_boozer_state_parameter_name",
-]
-fast_tests = ["tests/unit/objectives/test_solver_objective_gradients.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]

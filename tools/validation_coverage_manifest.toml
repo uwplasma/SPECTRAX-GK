@@ -2358,37 +2358,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.objectives.vmec_state"
-path = "src/spectraxgk/objectives/vmec_state.py"
-owner_lane = "production solver-objective geometry-gradient validation"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "VMEC-JAX state coefficient perturbations for Boozer and solver objective gates",
-  "mode-index naming conventions used by finite-difference gradient artifacts",
-]
-physics_contracts = [
-  "state coefficient helpers expose explicit VMEC/Boozer Fourier families instead of implicit string mutation in solver-objective gates",
-  "parameter names distinguish mid-surface defaults from radial-index-specific perturbations in optimization artifacts",
-]
-numerics_contracts = [
-  "state arrays must be two-dimensional and expose at least one non-axisymmetric mode before perturbation",
-  "coefficient replacement preserves the state pytree/dataclass structure while applying a single indexed perturbation",
-]
-fast_tests = [
-  "tests/unit/objectives/test_solver_objective_gradients.py",
-]
-artifact_paths = [
-  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
-  "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
-]
-next_tests = [
-  "add direct negative tests for invalid coefficient families and undersized arrays",
-  "record coefficient-family and mode-index metadata in every promoted VMEC/Boozer finite-difference artifact",
-]
-
-[[modules]]
 module = "spectraxgk.objectives.vmec_boozer"
 path = "src/spectraxgk/objectives/vmec_boozer.py"
 owner_lane = "production solver-objective geometry-gradient validation"

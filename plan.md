@@ -3188,3 +3188,14 @@ following:
   artifact contract owner while preserving authoritative-wout, long-window
   audit, optimizer-comparison, sample-coverage, and AD/FD consistency
   assertions. Tightened the package architecture test baseline to 171.
+
+- 2026-07-08: folded the VMEC/Boozer solver-objective state coefficient helper
+  module into the canonical geometry state-control owner
+  `src/spectraxgk/geometry/vmec_state_controls.py`. Solver-objective imports now
+  use the geometry owner directly while the public solver-gradient facade still
+  exports the parameter-family constants and helper seams used by tests. Removed
+  `src/spectraxgk/objectives/vmec_state.py`, updated API/code-structure docs and
+  validation/refactor manifests, regenerated the validation coverage summary,
+  and tightened the package architecture source baseline to 261. Focused
+  solver-gradient/differentiable-geometry tests, release tests, ruff,
+  py_compile, and release manifests passed locally.
