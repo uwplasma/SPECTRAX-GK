@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from spectraxgk.core.contracts import (
@@ -255,3 +259,166 @@ def test_extension_point_protocols_accept_structural_implementations() -> None:
     assert isinstance(ToyDiagnostic(), Diagnostic)
     assert isinstance(ToyObjective(), Objective)
     assert isinstance(ToyWriter(), ArtifactWriter)
+
+
+def test_velocity_basis_orthonormality_and_validation() -> None:
+    from spectraxgk.core.velocity import hermite_ladder_coeffs, hermite_normed, laguerre
+
+    xh = jnp.linspace(-6.0, 6.0, 4001)
+    dxh = xh[1] - xh[0]
+    h = hermite_normed(xh, 4)
+    wh = jnp.exp(-xh * xh)
+    gram_h = jnp.einsum("ix,jx,x->ij", h, h, wh) * dxh
+    assert jnp.allclose(gram_h, jnp.eye(5), atol=2e-2)
+
+    xl = jnp.linspace(0.0, 40.0, 8001)
+    dxl = xl[1] - xl[0]
+    lag = laguerre(xl, 4)
+    wl = jnp.exp(-xl)
+    gram_l = jnp.einsum("ix,jx,x->ij", lag, lag, wl) * dxl
+    assert jnp.allclose(gram_l, jnp.eye(5), atol=2e-2)
+
+    with pytest.raises(ValueError):
+        hermite_normed(jnp.array([0.0]), -1)
+    with pytest.raises(ValueError):
+        laguerre(jnp.array([0.0]), -1)
+    with pytest.raises(ValueError):
+        hermite_ladder_coeffs(-1)
+
+    h0 = hermite_normed(jnp.array([0.0, 1.0]), 0)
+    l0 = laguerre(jnp.array([0.0, 1.0]), 0)
+    assert h0.shape == (1, 2)
+    assert l0.shape == (1, 2)
+
+
+def test_species_builder_and_runtime_toml_core_contracts(tmp_path: Path) -> None:
+    from spectraxgk.core.species import Species, build_linear_params
+    from spectraxgk.workflows.runtime.toml import (
+        load_case_from_toml,
+        load_linear_terms_from_toml,
+    )
+
+    ion = Species(
+        charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=2.0, fprim=1.0
+    )
+    ele = Species(
+        charge=-1.0, mass=0.001, density=1.0, temperature=1.0, tprim=2.0, fprim=1.0
+    )
+    params = build_linear_params([ion, ele], beta=1.0e-4, fapar=1.0)
+    assert params.charge_sign.shape == (2,)
+    assert params.vth.shape == (2,)
+    assert np.isclose(params.vth[0], 1.0)
+    assert np.isclose(params.tz[1], -1.0)
+    assert params.beta == 1.0e-4
+
+    flag_path = tmp_path / "case_flag.toml"
+    flag_path.write_text('case = "cyclone"\nreference_alignment = true\n', encoding="utf-8")
+    case_name, cfg, _data = load_case_from_toml(flag_path)
+    assert case_name == "cyclone"
+    assert cfg.reference_aligned is True
+
+    table_path = tmp_path / "case_table.toml"
+    table_path.write_text(
+        'case = "cyclone"\n\n[reference_alignment]\nenabled = false\n',
+        encoding="utf-8",
+    )
+    case_name, cfg, _data = load_case_from_toml(table_path)
+    assert case_name == "cyclone"
+    assert cfg.reference_aligned is False
+
+    terms = load_linear_terms_from_toml(
+        {"terms": {"streaming": 0.0, "apar": 0.0, "bpar": 0.0, "nonlinear": 0.0}}
+    )
+    assert terms is not None
+    assert terms.streaming == 0.0
+    assert terms.apar == 0.0
+    assert terms.bpar == 0.0
+
+
+def test_normalization_and_benchmark_public_contracts() -> None:
+    import spectraxgk.benchmarks as benchmark_defaults
+    from spectraxgk import benchmarks
+    from spectraxgk.diagnostics.normalization import (
+        apply_diagnostic_normalization,
+        get_normalization_contract,
+    )
+
+    kin = get_normalization_contract("kinetic")
+    assert kin == get_normalization_contract("kinetic_itg")
+    with pytest.raises(ValueError, match="Unknown normalization case"):
+        get_normalization_contract("not-a-case")
+
+    gamma, omega = apply_diagnostic_normalization(
+        0.2, -0.3, rho_star=0.5, diagnostic_norm="rho_star"
+    )
+    assert gamma == pytest.approx(0.1)
+    assert omega == pytest.approx(-0.15)
+    gamma_none, omega_none = apply_diagnostic_normalization(
+        0.2, -0.3, rho_star=0.5, diagnostic_norm="none"
+    )
+    assert gamma_none == pytest.approx(0.2)
+    assert omega_none == pytest.approx(-0.3)
+
+    cyclone = get_normalization_contract("cyclone")
+    etg = get_normalization_contract("etg")
+    kinetic = get_normalization_contract("kinetic")
+    kbm = get_normalization_contract("kbm")
+    assert benchmarks.CYCLONE_OMEGA_D_SCALE == pytest.approx(cyclone.omega_d_scale)
+    assert benchmarks.CYCLONE_OMEGA_STAR_SCALE == pytest.approx(cyclone.omega_star_scale)
+    assert benchmarks.CYCLONE_RHO_STAR == pytest.approx(cyclone.rho_star)
+    assert benchmarks.ETG_OMEGA_D_SCALE == pytest.approx(etg.omega_d_scale)
+    assert benchmarks.ETG_OMEGA_STAR_SCALE == pytest.approx(etg.omega_star_scale)
+    assert benchmarks.ETG_RHO_STAR == pytest.approx(etg.rho_star)
+    assert benchmarks.KINETIC_OMEGA_D_SCALE == pytest.approx(kinetic.omega_d_scale)
+    assert benchmarks.KINETIC_OMEGA_STAR_SCALE == pytest.approx(kinetic.omega_star_scale)
+    assert benchmarks.KINETIC_RHO_STAR == pytest.approx(kinetic.rho_star)
+    assert benchmarks.KBM_OMEGA_D_SCALE == pytest.approx(kbm.omega_d_scale)
+    assert benchmarks.KBM_OMEGA_STAR_SCALE == pytest.approx(kbm.omega_star_scale)
+    assert benchmarks.KBM_RHO_STAR == pytest.approx(kbm.rho_star)
+
+    for name in benchmark_defaults.__all__:
+        assert getattr(benchmarks, name) is getattr(benchmark_defaults, name)
+    assert benchmarks.KINETIC_KRYLOV_REFERENCE_ALIGNED.shift_source == "history"
+    assert benchmarks.KINETIC_KRYLOV_DEFAULT.shift_source == "target"
+    assert benchmarks.KBM_KRYLOV_DEFAULT.mode_family == "kbm"
+    assert benchmarks.ETG_KRYLOV_DEFAULT.omega_sign == -1
+
+
+def test_public_api_facades_and_lazy_import_contracts() -> None:
+    import subprocess
+    import sys
+
+    import spectraxgk
+    from support.paths import REPO_ROOT
+
+    assert spectraxgk.LinearExplicitTimeConfig is spectraxgk.ExplicitTimeConfig
+    assert (
+        spectraxgk.integrate_nonlinear_diagnostics
+        is spectraxgk.integrate_nonlinear_explicit_diagnostics
+    )
+
+    root_script = f"""
+import sys
+sys.path.insert(0, {str(REPO_ROOT / "src")!r})
+import spectraxgk
+assert "numpy" not in sys.modules
+assert "jax" not in sys.modules
+from spectraxgk.parallel.decomposition import build_independent_portfolio_decomposition
+contract = build_independent_portfolio_decomposition(
+    4, requested_shards=2, workload="independent_ky_scan"
+)
+assert contract.actual_shards == 2
+assert "numpy" not in sys.modules
+assert "jax" not in sys.modules
+"""
+    subprocess.run([sys.executable, "-S", "-c", root_script], check=True)
+
+    api_script = f"""
+import sys
+sys.path.insert(0, {str(REPO_ROOT / "src")!r})
+import spectraxgk.api as api
+assert "numpy" not in sys.modules
+assert "jax" not in sys.modules
+assert "LinearParams" in api.__all__
+"""
+    subprocess.run([sys.executable, "-S", "-c", api_script], check=True)

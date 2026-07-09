@@ -3087,3 +3087,12 @@ following:
   scaling in one coherent profiling-contract shard. Updated CI quick-test paths,
   differentiable-refactor fast-test ownership, and tightened the package
   architecture test baseline to 207. The merged profiling shard passed locally.
+
+- 2026-07-08: folded the tiny core basis, species, TOML I/O,
+  normalization, and public-API tests into the existing
+  `tests/unit/core/test_core_contracts.py` owner. This keeps the orthonormal
+  velocity-basis quadrature checks, normalization constants, lazy-import public
+  surface checks, and runtime TOML contracts in one core-contract shard while
+  deleting five one-topic files. Updated CI quick-test paths, testing docs, and
+  tightened the package architecture test baseline to 202. The merged core
+  contract shard passed locally.
