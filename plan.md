@@ -3368,3 +3368,12 @@ following:
   postprocess contracts. The package architecture test baseline tightened from
   161 to 160. The consolidated campaign contract shard, Python lint check,
   stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the runtime diagnostic-state comparison tests from
+  `tests/tools/comparison/test_compare_gx_runtime_diag_state.py` into
+  `tests/tools/comparison/test_compare_gx_runtime_window.py`, which already owns
+  the exact-state runtime comparison path and imports the same diagnostic-state
+  helpers. The validation coverage manifest now tracks the consolidated runtime
+  comparison owner, and the package architecture test baseline tightened from
+  160 to 159. The consolidated comparison shard, Python lint check,
+  stale-reference scan, and architecture manifest passed locally.
