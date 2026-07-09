@@ -1361,7 +1361,7 @@ fast_tests = [
   "tests/integration/runtime/test_runtime_diagnostics.py",
   "tests/tools/comparison/test_compare_gx_nonlinear_diagnostics.py",
   "tests/tools/comparison/test_compare_gx_runtime_window.py",
-  "tests/tools/artifacts/test_zonal_transport_artifacts.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
@@ -1468,7 +1468,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/unit/objectives/test_zonal_objective.py",
-  "tests/tools/artifacts/test_zonal_transport_artifacts.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
@@ -2536,7 +2536,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/unit/objectives/test_vmec_jax_transport_admission.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
-  "tests/tools/artifacts/test_zonal_transport_artifacts.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_campaign_admission_report.json",
@@ -3357,7 +3357,7 @@ numerics_contracts = [
   "time and response arrays are one-dimensional and length-matched before plotting",
 ]
 fast_tests = [
-  "tests/tools/artifacts/test_zonal_transport_artifacts.py",
+  "tests/tools/artifacts/test_w7x_artifact_panels.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.png",

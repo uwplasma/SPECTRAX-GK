@@ -1567,7 +1567,7 @@ facade_module = "spectraxgk.api.validation"
 status = "active"
 responsibility = "replicated nonlinear landscape admission, reduced prelaunch gates, campaign admission gates, and matched nonlinear audit redesign reports"
 moved_exports = ["build_nonlinear_audit_redesign_report", "build_nonlinear_campaign_admission_report", "build_nonlinear_landscape_admission_report", "build_reduced_nonlinear_audit_prelaunch_report"]
-fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py", "tests/tools/artifacts/test_zonal_transport_artifacts.py"]
+fast_tests = ["tests/unit/objectives/test_vmec_jax_transport_admission.py", "tests/tools/artifacts/test_nonlinear_artifact_reports.py", "tests/tools/artifacts/test_w7x_artifact_panels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
@@ -1738,7 +1738,7 @@ moved_exports = [
   "_finite_metric_tensor_from_records",
   "_zonal_row_table",
 ]
-fast_tests = ["tests/unit/objectives/test_zonal_objective.py", "tests/tools/artifacts/test_zonal_transport_artifacts.py"]
+fast_tests = ["tests/unit/objectives/test_zonal_objective.py", "tests/tools/artifacts/test_w7x_artifact_panels.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/stellarator_optimization.rst"]
 
 [[phase1_split_modules]]

@@ -3463,3 +3463,14 @@ following:
   lazy public API. The core public-API contract shard, direct alias-removal
   import check, Python lint check, release tests, compile check, diff hygiene,
   and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the zonal/transport artifact tests from
+  `tests/tools/artifacts/test_zonal_transport_artifacts.py` into
+  `tests/tools/artifacts/test_w7x_artifact_panels.py`, which already owns W7-X,
+  Miller, zonal-response, and related artifact-panel contracts. Validation and
+  differentiable-refactor manifests now point to the consolidated owner. The
+  package architecture test baseline tightened from 152 to 151. The
+  consolidated W7-X/zonal artifact shard, Python lint check, validation
+  manifest, differentiable refactor manifest, release tests, stale-reference
+  scan with only historical plan-log hits, compile check, diff hygiene, and
+  architecture manifest passed locally.
