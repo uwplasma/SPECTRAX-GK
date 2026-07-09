@@ -3611,3 +3611,13 @@ following:
   hygiene shard, Python lint check, validation manifest, release tests,
   compile check, command smoke check, diff hygiene, and architecture manifest
   passed locally.
+
+- 2026-07-09: folded `tools/release/check_release_version.py` into
+  `tools/release/check_release_readiness.py` as the `version` subcommand.
+  Release-version consistency and broader release-readiness checks now share one
+  release owner, and CI/release workflows call
+  `python tools/release/check_release_readiness.py version`. The package
+  architecture tool baseline tightened from 203 to 202. The release hygiene and
+  release-readiness shards, Python lint check, validation manifest, release
+  tests, compile check, command smoke check, stale-reference scan, diff hygiene,
+  and architecture manifest passed locally.

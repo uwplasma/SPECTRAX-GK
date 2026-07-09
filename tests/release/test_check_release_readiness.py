@@ -76,7 +76,7 @@ coverage:
     )
     (root / ".github" / "workflows" / "release.yml").write_text(
         "name: Release\n"
-        "tools/release/check_release_version.py\n"
+        "tools/release/check_release_readiness.py version\n"
         "tools/release/check_repository_size_manifest.py\n"
         "tools/release/check_release_artifact_manifest.py\n"
         "tools/release/check_package_architecture_manifest.py\n"
@@ -328,7 +328,7 @@ def test_release_readiness_rejects_missing_release_guardrails(tmp_path: Path) ->
     _write_release_ready_tree(tmp_path)
     (tmp_path / ".github" / "workflows" / "release.yml").write_text(
         "name: Release\n"
-        "tools/release/check_release_version.py\n"
+        "tools/release/check_release_readiness.py version\n"
         "gh-action-pypi-publish\n",
         encoding="utf-8",
     )

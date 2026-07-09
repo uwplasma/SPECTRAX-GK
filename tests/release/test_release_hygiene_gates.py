@@ -13,7 +13,7 @@ from tools.artifacts.build_technical_release_status import (
     LANES,
     build_technical_release_status,
 )
-from tools.release.check_release_version import (
+from tools.release.check_release_readiness import (
     ReleaseVersionError,
     default_tag_from_github_env,
     normalize_tag,
