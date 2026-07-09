@@ -16,8 +16,6 @@ from pathlib import Path
 import sys
 from typing import Any
 
-import numpy as np
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = (
     REPO_ROOT / "docs" / "_static" / "vmec_boozer_differentiability_claim_guard.json"
@@ -1184,11 +1182,6 @@ def main_aggregate_holdout(argv: list[str] | None = None) -> int:
 # ---- reduced portfolio artifact gate ----
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-from spectraxgk.objectives.portfolio_artifacts import (
-    ReducedPortfolioArtifactGuardConfig,
-    reduced_portfolio_artifact_guard_report,
-)
 
 
 DEFAULT_REDUCED_PORTFOLIO_ROW_ARTIFACT = (
@@ -1202,6 +1195,8 @@ DEFAULT_REDUCED_PORTFOLIO_OUT = ROOT / "docs" / "_static" / "vmec_boozer_reduced
 
 
 def _json_clean(value: Any) -> Any:
+    import numpy as np
+
     if isinstance(value, dict):
         return {str(key): _json_clean(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -1227,6 +1222,19 @@ def _reduced_portfolio_path(path: str | Path) -> Path:
     return raw if raw.is_absolute() else ROOT / raw
 
 
+def _reduced_portfolio_guard_helpers():
+    src = ROOT / "src"
+    for path in (src, ROOT):
+        if str(path) not in sys.path:
+            sys.path.insert(0, str(path))
+    from spectraxgk.objectives.portfolio_artifacts import (
+        ReducedPortfolioArtifactGuardConfig,
+        reduced_portfolio_artifact_guard_report,
+    )
+
+    return ReducedPortfolioArtifactGuardConfig, reduced_portfolio_artifact_guard_report
+
+
 def build_vmec_boozer_reduced_portfolio_guard_payload(
     *,
     row_artifact: str | Path = DEFAULT_REDUCED_PORTFOLIO_ROW_ARTIFACT,
@@ -1242,6 +1250,10 @@ def build_vmec_boozer_reduced_portfolio_guard_payload(
 ) -> dict[str, object]:
     """Return the VMEC/Boozer reduced-portfolio promotion guard payload."""
 
+    (
+        ReducedPortfolioArtifactGuardConfig,
+        reduced_portfolio_artifact_guard_report,
+    ) = _reduced_portfolio_guard_helpers()
     row_path = _reduced_portfolio_path(row_artifact)
     gradient_paths = [_reduced_portfolio_path(path) for path in gradient_artifacts]
     row_payload = _read_json_object_path(row_path)
