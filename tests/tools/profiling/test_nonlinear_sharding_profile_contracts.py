@@ -193,19 +193,19 @@ def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(
 
 # Sweep-driver contracts for the same nonlinear sharding profiling lane.
 def _load_sweep_tool_module():
-    return load_profiling_tool("profile_nonlinear_sharding_sweep")
+    return load_profiling_tool("profile_nonlinear_sharding")
 
 
 def _load_device_z_pencil_tool_module():
     return load_profiling_tool("profile_device_z_pencil_transport_window")
 
 
-def test_profile_nonlinear_sharding_sweep_parser_defaults_to_bounded_artifact() -> None:
+def test_nonlinear_sharding_sweep_subcommand_parser_defaults_to_bounded_artifact() -> None:
     mod = _load_sweep_tool_module()
 
-    args = mod.build_parser().parse_args([])
+    args = mod.build_sweep_parser().parse_args([])
 
-    assert args.out_prefix == mod.DEFAULT_PREFIX
+    assert args.out_prefix == mod.DEFAULT_SWEEP_PREFIX
     assert args.backend == "cpu"
     assert args.devices == [1, 2]
     assert args.sharding_options == "auto,kx"
@@ -213,11 +213,11 @@ def test_profile_nonlinear_sharding_sweep_parser_defaults_to_bounded_artifact() 
     assert args.office_gpu_xlarge is False
 
 
-def test_profile_nonlinear_sharding_sweep_office_gpu_preset_is_canonical() -> None:
+def test_nonlinear_sharding_sweep_subcommand_office_gpu_preset_is_canonical() -> None:
     mod = _load_sweep_tool_module()
 
-    args = mod.apply_profile_preset(
-        mod.build_parser().parse_args(["--office-gpu-xlarge"])
+    args = mod.apply_sweep_preset(
+        mod.build_sweep_parser().parse_args(["--office-gpu-xlarge"])
     )
 
     assert args.backend == "gpu"
@@ -235,7 +235,7 @@ def test_profile_nonlinear_sharding_sweep_office_gpu_preset_is_canonical() -> No
     assert args.trace is True
 
 
-def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> None:
+def test_nonlinear_sharding_sweep_subcommand_device_env_is_backend_specific() -> None:
     mod = _load_sweep_tool_module()
 
     cpu_env = mod._device_env({"XLA_FLAGS": "--foo=bar"}, backend="cpu", devices=4)
@@ -258,7 +258,7 @@ def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> No
     assert gpu_env["XLA_PYTHON_CLIENT_PREALLOCATE"] == "false"
 
 
-def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate() -> (
+def test_nonlinear_sharding_sweep_subcommand_selects_fastest_identity_candidate() -> (
     None
 ):
     mod = _load_sweep_tool_module()
@@ -327,7 +327,7 @@ def test_profile_nonlinear_sharding_sweep_row_selects_fastest_identity_candidate
     assert row["profile_sharding_axis"] == "kx"
 
 
-def test_profile_nonlinear_sharding_sweep_json_clean_replaces_nonfinite() -> None:
+def test_nonlinear_sharding_sweep_subcommand_json_clean_replaces_nonfinite() -> None:
     mod = _load_sweep_tool_module()
 
     cleaned = mod._json_clean({"bad": math.inf, "ok": 1.0})
@@ -335,7 +335,7 @@ def test_profile_nonlinear_sharding_sweep_json_clean_replaces_nonfinite() -> Non
     assert cleaned == {"bad": None, "ok": 1.0}
 
 
-def test_profile_nonlinear_sharding_sweep_records_timeout_rows(monkeypatch) -> None:
+def test_nonlinear_sharding_sweep_subcommand_records_timeout_rows(monkeypatch) -> None:
     mod = _load_sweep_tool_module()
 
     def _raise_timeout(*_args, **kwargs):
@@ -377,7 +377,7 @@ def test_profile_nonlinear_sharding_sweep_records_timeout_rows(monkeypatch) -> N
     assert summary["speedup_blockers"] == ["cpu_2devices_identity_failed"]
 
 
-def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(
+def test_nonlinear_sharding_sweep_subcommand_marks_identity_only_slowdown(
     monkeypatch,
 ) -> None:
     mod = _load_sweep_tool_module()
@@ -437,7 +437,7 @@ def test_profile_nonlinear_sharding_sweep_marks_identity_only_slowdown(
     assert summary["speedup_blockers"] == ["gpu_2devices_speedup_0.5_below_1"]
 
 
-def test_profile_nonlinear_sharding_sweep_preserves_failed_profile_json(
+def test_nonlinear_sharding_sweep_subcommand_preserves_failed_profile_json(
     monkeypatch,
 ) -> None:
     mod = _load_sweep_tool_module()

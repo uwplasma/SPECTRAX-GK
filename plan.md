@@ -3643,3 +3643,13 @@ following:
   profiling contract shard, Python lint check, command-help smoke checks,
   validation manifest, compile check, diff hygiene, and architecture manifest
   passed locally.
+
+- 2026-07-09: folded `tools/profiling/profile_nonlinear_sharding_sweep.py`
+  into `tools/profiling/profile_nonlinear_sharding.py` as the `sweep`
+  subcommand. Fixed-step nonlinear state-sharding profiling and isolated
+  strong-scaling subprocess sweeps now share one nonlinear performance evidence
+  owner, while preserving the office two-GPU preset and fail-closed identity
+  gates. The package architecture tool baseline tightened from 200 to 199. The
+  nonlinear sharding profiling contract shard, Python lint check, command-help
+  smoke checks, validation manifest, compile check, diff hygiene, and
+  architecture manifest passed locally.

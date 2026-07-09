@@ -1034,18 +1034,18 @@ each device count gets a clean JAX runtime:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_nonlinear_sharding_sweep.py \
+   python tools/profiling/profile_nonlinear_sharding.py sweep \
      --backend cpu --devices 1,2,4,8 \
      --nx 24 --ny 48 --nz 96 --nl 4 --nm 8 --steps 8 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_cpu_large
 
-   python tools/profiling/profile_nonlinear_sharding_sweep.py \
+   python tools/profiling/profile_nonlinear_sharding.py sweep \
      --backend gpu --devices 1,2 \
      --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
 
    # Equivalent office two-GPU profile preset with JAX traces enabled.
-   python tools/profiling/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
+   python tools/profiling/profile_nonlinear_sharding.py sweep --office-gpu-xlarge
 
    python tools/artifacts/plot_scaling_panels.py nonlinear-sharding
 
