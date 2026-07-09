@@ -12,8 +12,8 @@ from support.paths import load_campaign_tool
 release_finalizer = load_campaign_tool("finalize_nonlinear_transport_matrix_release")
 over_writer = load_campaign_tool("write_overdetermined_nonlinear_gradient_campaign")
 over_runner = load_campaign_tool("run_nonlinear_gradient_direct_campaign")
-over_post = load_campaign_tool("postprocess_overdetermined_nonlinear_gradient_campaign")
-gradient_post = load_campaign_tool("run_nonlinear_gradient_manifest_postprocess")
+over_post = over_runner
+gradient_post = over_runner
 
 
 def _write_json(path: Path, payload: dict) -> Path:
@@ -444,7 +444,7 @@ def _over_post_manifest(tmp_path: Path) -> Path:
 
 def test_overdetermined_postprocess_sequence_and_dry_run(tmp_path: Path) -> None:
     manifest_path = _over_post_manifest(tmp_path)
-    manifest = over_post.load_manifest(manifest_path)
+    manifest = over_post.load_overdetermined_manifest(manifest_path)
 
     commands = over_post.build_postprocess_commands(
         manifest,
@@ -467,8 +467,15 @@ def test_overdetermined_postprocess_sequence_and_dry_run(tmp_path: Path) -> None
 
     summary = tmp_path / "summary.json"
     status = tmp_path / "status.json"
-    rc = over_post.main(
-        [str(manifest_path), "--status-json", str(status), "--summary-json", str(summary), "--dry-run"]
+    rc = over_post.main_overdetermined_postprocess(
+        [
+            str(manifest_path),
+            "--status-json",
+            str(status),
+            "--summary-json",
+            str(summary),
+            "--dry-run",
+        ]
     )
     payload = json.loads(summary.read_text(encoding="utf-8"))
     assert rc == 0
@@ -479,9 +486,12 @@ def test_overdetermined_postprocess_sequence_and_dry_run(tmp_path: Path) -> None
     assert [row["returncode"] for row in payload["results"]] == [0, 0, 0, 0]
 
     bad = tmp_path / "bad_post.json"
-    bad.write_text(json.dumps({"kind": "wrong", "controls": [], "promotion_contract": {}}), encoding="utf-8")
+    bad.write_text(
+        json.dumps({"kind": "wrong", "controls": [], "promotion_contract": {}}),
+        encoding="utf-8",
+    )
     with pytest.raises(ValueError, match="expected kind"):
-        over_post.load_manifest(bad)
+        over_post.load_overdetermined_manifest(bad)
 
 
 def _gradient_manifest() -> dict[str, object]:
@@ -537,8 +547,15 @@ def test_gradient_manifest_postprocess_order_selection_and_failure_modes(
     manifest_path = tmp_path / "manifest.json"
     summary_path = tmp_path / "summary.json"
     manifest_path.write_text(json.dumps(_gradient_manifest()), encoding="utf-8")
-    rc = gradient_post.main(
-        [str(manifest_path), "--step", "central-fd", "--dry-run", "--summary-json", str(summary_path)]
+    rc = gradient_post.main_postprocess(
+        [
+            str(manifest_path),
+            "--step",
+            "central-fd",
+            "--dry-run",
+            "--summary-json",
+            str(summary_path),
+        ]
     )
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert rc == 0
@@ -554,8 +571,14 @@ def test_gradient_manifest_postprocess_order_selection_and_failure_modes(
     ]
 
     require_summary = tmp_path / "summary_require.json"
-    rc = gradient_post.main(
-        [str(manifest_path), "--dry-run", "--require-outputs", "--summary-json", str(require_summary)]
+    rc = gradient_post.main_postprocess(
+        [
+            str(manifest_path),
+            "--dry-run",
+            "--require-outputs",
+            "--summary-json",
+            str(require_summary),
+        ]
     )
     summary = json.loads(require_summary.read_text(encoding="utf-8"))
     assert rc == 2
@@ -564,5 +587,7 @@ def test_gradient_manifest_postprocess_order_selection_and_failure_modes(
 
     bad = tmp_path / "bad_gradient.json"
     bad.write_text(json.dumps({"kind": "other"}), encoding="utf-8")
-    with pytest.raises(ValueError, match="nonlinear_turbulence_gradient_campaign_manifest"):
-        gradient_post.load_manifest(bad)
+    with pytest.raises(
+        ValueError, match="nonlinear_turbulence_gradient_campaign_manifest"
+    ):
+        gradient_post.load_postprocess_manifest(bad)

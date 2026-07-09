@@ -507,7 +507,7 @@ pass. Runtime outputs are only counted complete when their recorded
 ``Grids/time`` coverage reaches the campaign analysis-window endpoint, so
 in-progress NetCDF files cannot accidentally promote a result.
 After the long runtime queue completes,
-``tools/campaigns/postprocess_overdetermined_nonlinear_gradient_campaign.py`` runs the
+``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` runs the
 per-control output gates, ensemble gates, central finite-difference gates,
 candidate ranking, and final fail-closed status check in one reproducible
 sequence.
@@ -723,7 +723,7 @@ current QA/ESS long-window evidence signs to define a 2% descent-oriented
 artifact; promotion requires the resulting re-equilibrated VMEC files and
 long-window nonlinear FD gate.
 After a detached office campaign finishes, run
-``tools/campaigns/run_nonlinear_gradient_manifest_postprocess.py`` on the generated
+``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess`` on the generated
 ``gradient_campaign_manifest.json`` rather than replaying individual commands
 by hand. With ``--require-outputs`` it fails before post-processing if any
 expected ``*.out.nc`` file is missing; otherwise it runs the output gates,

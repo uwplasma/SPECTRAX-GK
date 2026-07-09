@@ -23,6 +23,7 @@ SUPPORTED_MANIFEST_KINDS = {
     "nonlinear_turbulence_gradient_campaign_manifest",
     "external_vmec_holdout_config_manifest",
 }
+POSTPROCESS_STEP_CHOICES = ("output-gates", "ensembles", "central-fd", "evidence")
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,24 @@ class DirectTask:
     command: str
     config: Path
     output: Path
+
+
+@dataclass(frozen=True)
+class ManifestCommand:
+    """One post-processing command extracted from a nonlinear-gradient manifest."""
+
+    step: str
+    label: str
+    command: str
+
+
+@dataclass(frozen=True)
+class PlannedCommand:
+    """One command in the overdetermined post-processing sequence."""
+
+    step: str
+    label: str
+    command: str
 
 
 def _repo_path(path: Path) -> str:
@@ -433,6 +452,223 @@ def collect_overdetermined_direct_tasks(
     return tasks
 
 
+def load_postprocess_manifest(path: Path) -> dict[str, Any]:
+    """Load and validate a nonlinear-gradient post-processing manifest."""
+
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if manifest.get("kind") != "nonlinear_turbulence_gradient_campaign_manifest":
+        raise ValueError(
+            "expected kind='nonlinear_turbulence_gradient_campaign_manifest', "
+            f"got {manifest.get('kind')!r}"
+        )
+    if not isinstance(manifest.get("state_ensemble_commands"), dict):
+        raise ValueError("manifest is missing state_ensemble_commands")
+    if not isinstance(manifest.get("promotion_contract"), dict):
+        raise ValueError("manifest is missing promotion_contract")
+    return manifest
+
+
+def missing_expected_outputs(
+    manifest: dict[str, Any], *, root: Path = ROOT
+) -> list[Path]:
+    """Return expected runtime outputs that are not present yet."""
+
+    missing: list[Path] = []
+    for state in _ordered_states(manifest["state_ensemble_commands"]):
+        row = manifest["state_ensemble_commands"][state]
+        for raw_path in row.get("expected_outputs", []):
+            path = root / str(raw_path)
+            if not path.exists():
+                missing.append(path)
+    return missing
+
+
+def collect_postprocess_commands(
+    manifest: dict[str, Any],
+    *,
+    steps: set[str] | None = None,
+) -> list[ManifestCommand]:
+    """Collect post-processing commands in dependency order."""
+
+    selected_steps = set(POSTPROCESS_STEP_CHOICES) if steps is None else set(steps)
+    unknown = selected_steps.difference(POSTPROCESS_STEP_CHOICES)
+    if unknown:
+        raise ValueError(f"unknown post-processing step(s): {sorted(unknown)}")
+
+    commands: list[ManifestCommand] = []
+    state_commands = manifest["state_ensemble_commands"]
+    for state in _ordered_states(state_commands):
+        row = state_commands[state]
+        if "output-gates" in selected_steps:
+            command = row.get("output_gate_command")
+            if not command:
+                raise ValueError(f"state {state!r} is missing output_gate_command")
+            commands.append(ManifestCommand("output-gates", state, command))
+    for state in _ordered_states(state_commands):
+        row = state_commands[state]
+        if "ensembles" in selected_steps:
+            command = row.get("build_ensemble_command")
+            if not command:
+                raise ValueError(f"state {state!r} is missing build_ensemble_command")
+            commands.append(ManifestCommand("ensembles", state, command))
+
+    contract = manifest["promotion_contract"]
+    if "central-fd" in selected_steps:
+        command = contract.get("central_fd_command")
+        if not command:
+            raise ValueError("promotion_contract is missing central_fd_command")
+        commands.append(ManifestCommand("central-fd", "promotion", command))
+    if "evidence" in selected_steps:
+        command = contract.get("evidence_check_command")
+        if not command:
+            raise ValueError("promotion_contract is missing evidence_check_command")
+        commands.append(ManifestCommand("evidence", "promotion", command))
+    return commands
+
+
+def _run_manifest_postprocess_command(command: ManifestCommand, *, cwd: Path) -> int:
+    print(f"[{command.step}:{command.label}] {command.command}", flush=True)
+    completed = subprocess.run(shlex.split(command.command), cwd=cwd, check=False)
+    return int(completed.returncode)
+
+
+def _write_manifest_postprocess_summary(
+    *,
+    path: Path,
+    manifest_path: Path,
+    commands: list[ManifestCommand],
+    results: list[dict[str, Any]],
+    dry_run: bool,
+    missing_outputs: list[Path],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "kind": "nonlinear_gradient_manifest_postprocess_summary",
+        "manifest": str(manifest_path),
+        "dry_run": dry_run,
+        "passed": all(row["returncode"] == 0 for row in results)
+        and not missing_outputs,
+        "missing_expected_outputs": [str(path) for path in missing_outputs],
+        "commands": [
+            {"step": item.step, "label": item.label, "command": item.command}
+            for item in commands
+        ],
+        "results": results,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def _default_overdetermined_status_json(manifest_path: Path) -> Path:
+    stem = manifest_path.stem
+    if stem.endswith("_plan"):
+        return manifest_path.with_name(f"{stem[:-5]}_status.json")
+    return manifest_path.with_suffix(".status.json")
+
+
+def build_postprocess_commands(
+    manifest: dict[str, Any],
+    *,
+    manifest_path: Path,
+    status_json: Path | None = None,
+) -> list[PlannedCommand]:
+    """Return the fail-closed overdetermined post-processing sequence."""
+
+    if not isinstance(manifest.get("controls"), list) or not manifest["controls"]:
+        raise ValueError("manifest is missing a non-empty controls list")
+    if not isinstance(manifest.get("promotion_contract"), dict):
+        raise ValueError("manifest is missing promotion_contract")
+
+    commands: list[PlannedCommand] = []
+    for control in manifest["controls"]:
+        if not isinstance(control, dict):
+            raise ValueError("all controls must be JSON objects")
+        slug = str(control.get("coefficient_slug", "unknown"))
+        nested_raw = control.get("expected_nonlinear_campaign_manifest")
+        if not nested_raw:
+            raise ValueError(
+                f"control {slug!r} is missing expected_nonlinear_campaign_manifest"
+            )
+        nested_manifest = _resolve_repo_path(str(nested_raw))
+        summary_json = nested_manifest.with_name("postprocess_summary.json")
+        commands.append(
+            PlannedCommand(
+                "per-control-postprocess",
+                slug,
+                " ".join(
+                    [
+                        "python3",
+                        "tools/campaigns/run_nonlinear_gradient_direct_campaign.py",
+                        "postprocess",
+                        shlex.quote(_repo_path(nested_manifest)),
+                        "--require-outputs",
+                        "--summary-json",
+                        shlex.quote(_repo_path(summary_json)),
+                    ]
+                ),
+            )
+        )
+
+    contract = manifest["promotion_contract"]
+    ranking_command = contract.get("candidate_ranking_command")
+    if not ranking_command:
+        raise ValueError("promotion_contract is missing candidate_ranking_command")
+    commands.append(
+        PlannedCommand("candidate-ranking", "promotion", str(ranking_command))
+    )
+
+    final_status = status_json or _default_overdetermined_status_json(manifest_path)
+    commands.append(
+        PlannedCommand(
+            "final-status",
+            "promotion",
+            " ".join(
+                [
+                    "python3",
+                    "tools/release/check_overdetermined_nonlinear_gradient_campaign.py",
+                    shlex.quote(_repo_path(manifest_path)),
+                    "--out-json",
+                    shlex.quote(_repo_path(final_status)),
+                    "--fail-on-blocked",
+                ]
+            ),
+        )
+    )
+    return commands
+
+
+def _run_overdetermined_postprocess_command(command: PlannedCommand) -> int:
+    print(f"[{command.step}:{command.label}] {command.command}", flush=True)
+    completed = subprocess.run(shlex.split(command.command), cwd=ROOT, check=False)
+    return int(completed.returncode)
+
+
+def _write_overdetermined_postprocess_summary(
+    *,
+    path: Path,
+    manifest_path: Path,
+    commands: list[PlannedCommand],
+    results: list[dict[str, Any]],
+    dry_run: bool,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "kind": "overdetermined_nonlinear_gradient_postprocess_summary",
+        "manifest": _repo_path(manifest_path),
+        "dry_run": dry_run,
+        "passed": all(int(row["returncode"]) == 0 for row in results),
+        "commands": [
+            {"step": item.step, "label": item.label, "command": item.command}
+            for item in commands
+        ],
+        "results": results,
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
@@ -491,6 +727,48 @@ def build_overdetermined_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout-s", type=float, default=10800.0)
     parser.add_argument("--skip-existing", action="store_true")
     parser.add_argument("--stop-on-failure", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
+    return parser
+
+
+def build_postprocess_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run post-processing commands from a nonlinear-gradient campaign manifest."
+    )
+    parser.add_argument("manifest", type=Path)
+    parser.add_argument(
+        "--step",
+        action="append",
+        choices=POSTPROCESS_STEP_CHOICES,
+        help="Step to run. Repeat to select multiple steps; default runs all.",
+    )
+    parser.add_argument(
+        "--require-outputs",
+        action="store_true",
+        help="Fail before running commands if any expected runtime output is missing.",
+    )
+    parser.add_argument(
+        "--allow-blocked",
+        action="store_true",
+        help="Continue through non-zero post-processing exits and return success.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print/record commands without executing them.",
+    )
+    parser.add_argument("--summary-json", type=Path)
+    return parser
+
+
+def build_overdetermined_postprocess_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Post-process and promote an overdetermined nonlinear-gradient campaign."
+    )
+    parser.add_argument("manifest", type=Path)
+    parser.add_argument("--status-json", type=Path)
+    parser.add_argument("--summary-json", type=Path)
+    parser.add_argument("--allow-blocked", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -578,8 +856,112 @@ def main_overdetermined(argv: list[str] | None = None) -> int:
     return 1 if payload["failed_count"] else 0
 
 
+def main_postprocess(argv: list[str] | None = None) -> int:
+    args = build_postprocess_parser().parse_args(argv)
+    manifest_path = args.manifest.expanduser().resolve()
+    manifest = load_postprocess_manifest(manifest_path)
+    steps = set(args.step) if args.step else None
+    commands = collect_postprocess_commands(manifest, steps=steps)
+    missing = missing_expected_outputs(manifest)
+    if args.require_outputs and missing:
+        for path in missing:
+            print(f"missing expected output: {path}", file=sys.stderr)
+        if args.summary_json:
+            _write_manifest_postprocess_summary(
+                path=args.summary_json,
+                manifest_path=manifest_path,
+                commands=commands,
+                results=[],
+                dry_run=bool(args.dry_run),
+                missing_outputs=missing,
+            )
+        return 2
+
+    results: list[dict[str, Any]] = []
+    for command in commands:
+        if args.dry_run:
+            print(f"[dry-run:{command.step}:{command.label}] {command.command}")
+            returncode = 0
+        else:
+            returncode = _run_manifest_postprocess_command(command, cwd=ROOT)
+        results.append(
+            {
+                "step": command.step,
+                "label": command.label,
+                "command": command.command,
+                "returncode": returncode,
+            }
+        )
+        if returncode != 0 and not args.allow_blocked:
+            break
+
+    if args.summary_json:
+        _write_manifest_postprocess_summary(
+            path=args.summary_json,
+            manifest_path=manifest_path,
+            commands=commands,
+            results=results,
+            dry_run=bool(args.dry_run),
+            missing_outputs=[] if not args.require_outputs else missing,
+        )
+    failed = any(row["returncode"] != 0 for row in results)
+    if failed and not args.allow_blocked:
+        return 1
+    return 0
+
+
+def main_overdetermined_postprocess(argv: list[str] | None = None) -> int:
+    args = build_overdetermined_postprocess_parser().parse_args(argv)
+    manifest_path = args.manifest.expanduser().resolve()
+    manifest = load_overdetermined_manifest(manifest_path)
+    status_json = args.status_json.expanduser().resolve() if args.status_json else None
+    commands = build_postprocess_commands(
+        manifest,
+        manifest_path=manifest_path,
+        status_json=status_json,
+    )
+    results: list[dict[str, Any]] = []
+    for command in commands:
+        if args.dry_run:
+            print(f"[dry-run:{command.step}:{command.label}] {command.command}")
+            returncode = 0
+        else:
+            returncode = _run_overdetermined_postprocess_command(command)
+        results.append(
+            {
+                "step": command.step,
+                "label": command.label,
+                "command": command.command,
+                "returncode": returncode,
+            }
+        )
+        if returncode != 0 and not args.allow_blocked:
+            break
+
+    summary_json = args.summary_json or (
+        (status_json or _default_overdetermined_status_json(manifest_path)).with_name(
+            "overdetermined_postprocess_summary.json"
+        )
+    )
+    _write_overdetermined_postprocess_summary(
+        path=summary_json,
+        manifest_path=manifest_path,
+        commands=commands,
+        results=results,
+        dry_run=bool(args.dry_run),
+    )
+    failed = any(int(row["returncode"]) != 0 for row in results)
+    if failed and not args.allow_blocked:
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     tokens = list(sys.argv[1:] if argv is None else argv)
+    if tokens and tokens[0] == "postprocess-overdetermined":
+        return main_overdetermined_postprocess(tokens[1:])
+    if tokens and tokens[0] == "postprocess":
+        return main_postprocess(tokens[1:])
     if tokens and tokens[0] == "overdetermined":
         return main_overdetermined(tokens[1:])
     if tokens and tokens[0] == "direct":

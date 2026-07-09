@@ -431,7 +431,7 @@ Quasilinear model-selection state:
   claim blocked until real post-transient outputs exist. The status check now
   requires each runtime NetCDF to reach the analysis-window endpoint, not just
   exist on disk, so in-progress files remain blocked.
-- ``tools/campaigns/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
+- ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` is the
   matching fail-closed post-runtime driver. It runs each nested campaign's
   output, ensemble, and central-FD gates, then runs the overdetermined
   candidate ranking and final status checker before any release promotion.

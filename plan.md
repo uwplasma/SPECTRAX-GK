@@ -3865,3 +3865,10 @@ following:
 - Removed the three standalone quasilinear artifact entry scripts while preserving generated PNG/PDF/JSON/CSV outputs, public report/writer helper aliases used by tests, and the fail-closed error-anatomy exit-code contract.
 - Updated quasilinear/manuscript docs, artifact tests, and the package architecture baseline, reducing tool Python topology from 160 to 157 files.
 - Validated the focused moved APIs, the broader quasilinear artifact shard, command help smokes, stale-reference scan, validation coverage manifest, differentiable refactor manifest, package architecture manifest, Python lint, and diff whitespace checks locally.
+
+### 2026-07-09 Nonlinear-gradient campaign runner consolidation
+
+- Folded the nonlinear-gradient manifest postprocess and overdetermined-campaign postprocess entry points into `tools/campaigns/run_nonlinear_gradient_direct_campaign.py` as explicit `postprocess` and `postprocess-overdetermined` subcommands.
+- Removed the two standalone postprocess scripts so direct execution, nested overdetermined execution, and postprocessing now share one campaign runner family instead of three separate public entry points.
+- Updated testing, release-scope, stellarator-optimization, and validation documentation to use the consolidated subcommands, and tightened the package architecture tool baseline from 157 to 155.
+- Validated affected campaign tests, command help smokes, Python lint, stale-reference scan, validation coverage manifest, differentiable refactor manifest, package architecture manifest, and diff whitespace checks locally.

@@ -2691,7 +2691,7 @@ The final status artifact,
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
 therefore reports complete runtime coverage but zero promoted controls. The
 post-runtime command
-``tools/campaigns/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
+``tools/campaigns/run_nonlinear_gradient_direct_campaign.py postprocess-overdetermined`` is the
 reproducible fail-closed path that produced these output, ensemble,
 central-FD, ranking, and status artifacts.
 The bounded follow-up decision is tracked separately in
