@@ -1192,10 +1192,11 @@ from spectraxgk.objectives.portfolio_artifacts import (
 
 
 DEFAULT_REDUCED_PORTFOLIO_ROW_ARTIFACT = (
-    ROOT / "docs" / "_static" / "vmec_boozer_multi_point_objective_gate.json"
+    ROOT / "docs" / "_static" / "vmec_boozer_aggregate_objective_gate.json"
 )
-DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACT = (
-    ROOT / "docs" / "_static" / "vmec_boozer_quasilinear_gradient_gate.json"
+DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACTS = (
+    ROOT / "docs" / "_static" / "vmec_boozer_quasilinear_gradient_gate.json",
+    ROOT / "docs" / "_static" / "vmec_boozer_solver_frequency_gradient_gate.json",
 )
 DEFAULT_REDUCED_PORTFOLIO_OUT = ROOT / "docs" / "_static" / "vmec_boozer_reduced_portfolio_guard.json"
 
@@ -1221,11 +1222,16 @@ def _read_json_object_path(path: Path) -> dict[str, Any]:
     return data
 
 
+def _reduced_portfolio_path(path: str | Path) -> Path:
+    raw = Path(path)
+    return raw if raw.is_absolute() else ROOT / raw
+
+
 def build_vmec_boozer_reduced_portfolio_guard_payload(
     *,
     row_artifact: str | Path = DEFAULT_REDUCED_PORTFOLIO_ROW_ARTIFACT,
     gradient_artifacts: list[str | Path] | tuple[str | Path, ...] = (
-        DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACT,
+        DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACTS
     ),
     min_alphas: int = 2,
     min_ky: int = 2,
@@ -1236,8 +1242,8 @@ def build_vmec_boozer_reduced_portfolio_guard_payload(
 ) -> dict[str, object]:
     """Return the VMEC/Boozer reduced-portfolio promotion guard payload."""
 
-    row_path = Path(row_artifact)
-    gradient_paths = [Path(path) for path in gradient_artifacts]
+    row_path = _reduced_portfolio_path(row_artifact)
+    gradient_paths = [_reduced_portfolio_path(path) for path in gradient_artifacts]
     row_payload = _read_json_object_path(row_path)
     gradient_payloads = [_read_json_object_path(path) for path in gradient_paths]
     config = ReducedPortfolioArtifactGuardConfig(
@@ -1253,8 +1259,8 @@ def build_vmec_boozer_reduced_portfolio_guard_payload(
         gradient_artifacts=gradient_payloads,
         config=config,
     )
-    report["row_artifact"] = str(row_path)
-    report["gradient_artifacts"] = [str(path) for path in gradient_paths]
+    report["row_artifact"] = _path_rel(ROOT, row_path)
+    report["gradient_artifacts"] = [_path_rel(ROOT, path) for path in gradient_paths]
     return report
 
 
@@ -1287,10 +1293,10 @@ def build_reduced_portfolio_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=DEFAULT_REDUCED_PORTFOLIO_OUT)
     parser.add_argument("--min-alphas", type=int, default=2)
     parser.add_argument("--min-ky", type=int, default=2)
-    parser.add_argument("--min-objectives", type=int, default=1)
+    parser.add_argument("--min-objectives", type=int, default=2)
     parser.add_argument("--min-boozer-mode", type=int, default=21)
-    parser.add_argument("--value-rtol", type=float, default=1.0e-8)
-    parser.add_argument("--value-atol", type=float, default=1.0e-8)
+    parser.add_argument("--value-rtol", type=float, default=1.0e-6)
+    parser.add_argument("--value-atol", type=float, default=1.0e-6)
     parser.add_argument("--json-only", action="store_true")
     return parser
 
@@ -1300,7 +1306,7 @@ def main_reduced_portfolio_guard(argv: list[str] | None = None) -> int:
     gradient_artifacts = (
         tuple(args.gradient_artifact)
         if args.gradient_artifact is not None
-        else (DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACT,)
+        else DEFAULT_REDUCED_PORTFOLIO_GRADIENT_ARTIFACTS
     )
     payload = build_vmec_boozer_reduced_portfolio_guard_payload(
         row_artifact=args.row_artifact,
