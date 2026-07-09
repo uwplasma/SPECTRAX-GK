@@ -130,7 +130,7 @@ The tracked atlas is now paired with a refresh manifest:
 
 .. code-block:: bash
 
-   python tools/campaigns/run_reference_validation_campaigns.py benchmark-refresh --list
+   python tools/campaigns/run_validation_campaigns.py benchmark-refresh --list
 
 The refresh runner executes the benchmark matrix in manifest order from
 ``tools/benchmark_refresh_manifest.toml`` and writes a summary to
@@ -145,7 +145,7 @@ Example:
 
 .. code-block:: bash
 
-   python tools/campaigns/run_reference_validation_campaigns.py benchmark-refresh --job cyclone-core-assets --job benchmark-atlas
+   python tools/campaigns/run_validation_campaigns.py benchmark-refresh --job cyclone-core-assets --job benchmark-atlas
 
 Tracked benchmark metrics
 -------------------------

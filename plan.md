@@ -38,7 +38,7 @@ Date: 2026-07-09.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 243 | 100 | active |
-| Tool Python files | 138 | 99 | active |
+| Tool Python files | 137 | 99 | active |
 | Test Python files | 98 | 98 | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
@@ -74,7 +74,7 @@ branch/PR.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Tool consolidation | 52% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Tool consolidation | 54% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 38% | Shrink `spectraxgk.benchmarks`, merge `geometry_backends` into `geometry`, and resolve `terms`/`operators` ownership. |
 | Differentiable API clarity | 72% | Keep compact API registry; document differentiable versus executable-fast paths; finish objective-family cleanup. |
@@ -135,6 +135,10 @@ branch/PR.
 - 2026-07-09: Replaced the separate fast-test and wide-coverage release runners
   with `tools/release/run_test_gates.py` subcommands, reducing tool count from
   139 to 138 while keeping bounded local and CI coverage semantics.
+- 2026-07-09: Grouped reference-validation, benchmark-refresh, and runtime-gate
+  campaign commands into `tools/campaigns/run_validation_campaigns.py`, reducing
+  tool count from 138 to 137 and updating docs/manifests/tests to the smaller
+  command surface.
 
 ## Validation Commands For This Tranche
 

@@ -3,33 +3,33 @@ from __future__ import annotations
 from pathlib import Path
 import tomllib
 
-from tools.campaigns import run_reference_validation_campaigns as reference_campaigns
-from tools.campaigns.run_reference_validation_campaigns import (
+from tools.campaigns import run_validation_campaigns as validation_campaigns
+from tools.campaigns.run_validation_campaigns import (
     _load_manifest,
     _select_jobs,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     _resolve_manifest_path as resolve_device_manifest_path,
 )
-from tools.campaigns.run_reference_validation_campaigns import (
+from tools.campaigns.run_validation_campaigns import (
     build_imported_linear_targeted_parser as imported_linear_parser,
 )
-from tools.campaigns.run_reference_validation_campaigns import (
+from tools.campaigns.run_validation_campaigns import (
     build_kbm_lowky_parser as kbm_lowky_parser,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     _resolve_manifest_path as resolve_restart_manifest_path,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     _resolve_manifest_path as resolve_roundtrip_manifest_path,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     build_device_parity_parser as device_parser,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     build_restart_parity_parser as restart_parser,
 )
-from tools.campaigns.run_runtime_validation_gates import (
+from tools.campaigns.run_validation_campaigns import (
     build_vmec_roundtrip_parser as roundtrip_parser,
 )
 
@@ -216,7 +216,7 @@ def test_kbm_lowky_extractor_audit_parser_and_dispatch(tmp_path: Path) -> None:
             str(tmp_path / "out.csv"),
         ]
     )
-    cmd = reference_campaigns._build_command(
+    cmd = validation_campaigns._build_command(
         args,
         here=Path("/repo/tools/campaigns"),
         gx=gx,
@@ -244,14 +244,14 @@ def test_kbm_lowky_extractor_audit_parser_and_dispatch(tmp_path: Path) -> None:
             "16",
         ]
     )
-    cmd = reference_campaigns._build_command(
+    cmd = validation_campaigns._build_command(
         args,
         here=Path("/repo/tools/campaigns"),
         gx=gx,
         gx_input=gx_input,
         gx_big=tmp_path / "gx.big.nc",
     )
-    assert cmd[1] == "/repo/tools/campaigns/run_reference_validation_campaigns.py"
+    assert cmd[1] == "/repo/tools/campaigns/run_validation_campaigns.py"
     assert cmd[2] == "imported-linear-targeted"
     assert "--geometry-file" in cmd
     assert "--sample-step-stride" in cmd

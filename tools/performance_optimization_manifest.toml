@@ -213,7 +213,7 @@ priority = "medium"
 platforms = ["multi_cpu", "multi_gpu"]
 cases = ["linear-scans", "ensemble-uq", "autodiff-sensitivities", "nonlinear-pilot"]
 profiling_tools = [
-  "tools/campaigns/run_runtime_validation_gates.py",
+  "tools/campaigns/run_validation_campaigns.py",
   "tools/artifacts/plot_scaling_panels.py",
   "tools/artifacts/generate_parallel_identity_gate.py",
   "tools/artifacts/generate_velocity_parallel_gates.py",
