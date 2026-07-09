@@ -3338,3 +3338,13 @@ following:
   matrix path and tightened the package architecture test baseline from 164 to
   163. The moved example test, core parallel tests, Python lint check, workflow
   YAML parse, stale-reference scan, and architecture manifest passed locally.
+
+- 2026-07-08: consolidated the optional VMEC roundtrip determinism gate from
+  `tests/unit/geometry/test_vmec_roundtrip_gate.py` into
+  `tests/unit/geometry/test_vmec_eik.py`, which already owns runtime VMEC EIK
+  request/build/cache behavior. Developer docs now run the optional gate with
+  `pytest -q tests/unit/geometry/test_vmec_eik.py -k roundtrip`, and the package
+  architecture test baseline tightened from 163 to 162. The validation coverage
+  manifest now tracks the consolidated VMEC EIK owner. The VMEC EIK shard,
+  Python lint check, stale-reference scan, and architecture manifest passed
+  locally.

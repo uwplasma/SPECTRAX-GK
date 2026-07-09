@@ -1592,7 +1592,6 @@ fast_tests = [
   "tests/unit/geometry/test_geometry_backend_vmec_helpers.py",
   "tests/unit/geometry/test_miller_eik.py",
   "tests/unit/geometry/test_vmec_eik.py",
-  "tests/unit/geometry/test_vmec_roundtrip_gate.py",
   "tests/tools/campaigns/test_campaign_gate_commands.py",
 ]
 artifact_paths = [

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import netCDF4 as nc
+import numpy as np
 import pytest
 from unittest.mock import MagicMock
 from dataclasses import replace
@@ -20,6 +21,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
+from spectraxgk.geometry import load_imported_geometry_netcdf
 from spectraxgk.geometry.vmec_eik import (
     build_vmec_geometry_request,
     default_vmec_eik_output_path,
@@ -113,6 +115,55 @@ def test_build_vmec_geometry_request_expands_env_vmec_file(
     request = build_vmec_geometry_request(cfg)
 
     assert request.vmec_file == str(vmec_path.resolve())
+
+
+@pytest.mark.integration
+def test_vmec_roundtrip_gate_is_deterministic(tmp_path: Path) -> None:
+    vmec_file = os.environ.get("SPECTRAXGK_VMEC_FILE", "").strip()
+    if not vmec_file:
+        pytest.skip("Set SPECTRAXGK_VMEC_FILE to enable VMEC roundtrip parity gate.")
+
+    geometry_helper_repo = (
+        os.environ.get("SPECTRAXGK_GEOMETRY_HELPER_REPO", "").strip() or None
+    )
+    cfg = _vmec_runtime_cfg(tmp_path)
+    cfg = replace(
+        cfg,
+        grid=replace(cfg.grid, Nz=64, ntheta=64),
+        geometry=replace(
+            cfg.geometry,
+            vmec_file=vmec_file,
+            geometry_file=None,
+            npol=1.0,
+            alpha=0.0,
+            geometry_helper_repo=geometry_helper_repo,
+        ),
+    )
+
+    out1 = tmp_path / "geom1.eik.nc"
+    out2 = tmp_path / "geom2.eik.nc"
+    generate_runtime_vmec_eik(cfg, output_path=out1, force=True)
+    generate_runtime_vmec_eik(cfg, output_path=out2, force=True)
+
+    g1 = load_imported_geometry_netcdf(out1)
+    g2 = load_imported_geometry_netcdf(out2)
+
+    # This is a determinism gate, not a physics gate: any drift here will break
+    # VMEC-backed parity workflows in hard-to-debug ways.
+    for name in (
+        "theta",
+        "bmag_profile",
+        "gds2_profile",
+        "gds21_profile",
+        "gds22_profile",
+        "cv_profile",
+        "gb_profile",
+        "jacobian_profile",
+        "grho_profile",
+    ):
+        a = np.asarray(getattr(g1, name))
+        b = np.asarray(getattr(g2, name))
+        np.testing.assert_allclose(a, b, rtol=0.0, atol=0.0)
 
 
 def test_build_vmec_geometry_request_infers_npol_from_nperiod(tmp_path: Path) -> None:

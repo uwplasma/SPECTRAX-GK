@@ -1472,13 +1472,13 @@ benchmark figures move):
 
      SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/unit/parallel/test_device_parity_gate.py
 
-- **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_roundtrip_gate.py``
+- **VMEC roundtrip determinism** (optional): ``tests/unit/geometry/test_vmec_eik.py -k roundtrip``
   regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the
   imported geometry arrays are bitwise identical. Enable explicitly:
 
   .. code-block:: bash
 
-     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/unit/geometry/test_vmec_roundtrip_gate.py
+     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/unit/geometry/test_vmec_eik.py -k roundtrip
 
 For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
