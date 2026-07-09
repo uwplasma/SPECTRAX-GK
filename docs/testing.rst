@@ -499,8 +499,8 @@ The tracked QA/ESS profile-gradient launch plan is
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 Use ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` to turn that
 multi-control launch plan into a machine-readable status artifact and
-``tools/campaigns/run_overdetermined_nonlinear_gradient_campaign.py`` to run all nested
-long-window tasks through one shared CPU/GPU worker queue. The checker must
+``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` to run all
+nested long-window tasks through one shared CPU/GPU worker queue. The checker must
 remain fail-closed until the VMEC states, nonlinear runtime outputs, ensemble
 gates, central finite-difference gates, and candidate ranking all exist and
 pass. Runtime outputs are only counted complete when their recorded

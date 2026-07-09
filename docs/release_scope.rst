@@ -422,7 +422,7 @@ Quasilinear model-selection state:
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
 - ``tools/release/check_overdetermined_nonlinear_gradient_campaign.py`` and
-  ``tools/campaigns/run_overdetermined_nonlinear_gradient_campaign.py`` make that
+  ``tools/campaigns/run_nonlinear_gradient_direct_campaign.py overdetermined`` make that
   launch contract executable. The current status artifact,
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
   records that all three VMEC-JAX re-equilibrated controls are ready for

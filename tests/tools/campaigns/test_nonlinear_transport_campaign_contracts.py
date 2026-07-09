@@ -11,7 +11,7 @@ from support.paths import load_campaign_tool
 
 release_finalizer = load_campaign_tool("finalize_nonlinear_transport_matrix_release")
 over_writer = load_campaign_tool("write_overdetermined_nonlinear_gradient_campaign")
-over_runner = load_campaign_tool("run_overdetermined_nonlinear_gradient_campaign")
+over_runner = load_campaign_tool("run_nonlinear_gradient_direct_campaign")
 over_post = load_campaign_tool("postprocess_overdetermined_nonlinear_gradient_campaign")
 gradient_post = load_campaign_tool("run_nonlinear_gradient_manifest_postprocess")
 
@@ -388,7 +388,17 @@ def test_overdetermined_runner_preserves_task_order_and_filters_dry_runs(
     ]
 
     rc = over_runner.main(
-        [str(manifest_path), "--control", "zbs_1_1", "--gpu", "0", "--gpu", "1", "--dry-run"]
+        [
+            "overdetermined",
+            str(manifest_path),
+            "--control",
+            "zbs_1_1",
+            "--gpu",
+            "0",
+            "--gpu",
+            "1",
+            "--dry-run",
+        ]
     )
     out = capsys.readouterr().out
     assert rc == 0
