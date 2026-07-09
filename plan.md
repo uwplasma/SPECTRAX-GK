@@ -2966,3 +2966,15 @@ following:
   files. Term-operator tests, the dedicated terms coverage gate, release tests,
   stale-reference scans, ruff, py_compile, validation/differentiable manifests,
   and architecture checks passed locally.
+
+- 2026-07-08: folded `artifacts/validation.py` into `artifacts/io.py`, so
+  finite-value artifact validation now lives with the runtime artifact path and
+  serialization helpers instead of in a standalone 42-line shard. The public
+  `spectraxgk.artifacts` facade still exports `validate_finite_array` and
+  `validate_finite_runtime_result`, while runtime artifact handoff imports them
+  from the IO owner. Updated API/code-structure docs, validation and
+  differentiable refactor manifests, regenerated validation metadata, removed
+  stale release assertions, and tightened the source topology baseline to 270.
+  Artifact integration tests, release tests, stale-reference scans, ruff,
+  py_compile, validation/differentiable manifests, and architecture checks
+  passed locally.

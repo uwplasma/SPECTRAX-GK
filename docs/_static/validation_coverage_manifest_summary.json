@@ -30,7 +30,6 @@
     "spectraxgk.geometry_backends.vmec",
     "spectraxgk.geometry.differentiable",
     "spectraxgk.workflows.runtime.artifacts",
-    "spectraxgk.artifacts.validation",
     "spectraxgk.artifacts.io",
     "spectraxgk.artifacts.linear",
     "spectraxgk.artifacts.nonlinear",
@@ -75,12 +74,12 @@
     "spectraxgk.parallel.__init__",
     "spectraxgk.parallel.decomposition"
   ],
-  "n_direct_modules": 94,
+  "n_direct_modules": 93,
   "n_excluded_modules": 20,
-  "n_high_priority_open": 74,
-  "n_modules": 94,
+  "n_high_priority_open": 73,
+  "n_modules": 93,
   "n_owned_modules": 157,
-  "n_package_modules": 271,
+  "n_package_modules": 270,
   "owned_modules_by_owner": {
     "spectraxgk.api.configuration": [
       "spectraxgk.api.artifacts",
@@ -108,7 +107,6 @@
     "spectraxgk.artifacts.plotting": [],
     "spectraxgk.artifacts.runtime_plots": [],
     "spectraxgk.artifacts.spectral_layout": [],
-    "spectraxgk.artifacts.validation": [],
     "spectraxgk.artifacts.zonal_plots": [],
     "spectraxgk.benchmarks": [
       "spectraxgk.benchmarking.shared",
@@ -965,27 +963,13 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
-      "module": "spectraxgk.artifacts.validation",
-      "n_artifacts": 2,
-      "n_fast_tests": 1,
-      "n_next_tests": 1,
-      "n_numerics_contracts": 1,
-      "n_owned_modules": 0,
-      "n_physics_contracts": 1,
-      "n_reference_anchors": 2,
-      "path": "src/spectraxgk/artifacts/validation.py",
-      "status": "active"
-    },
-    {
-      "coverage_priority": "high",
-      "coverage_target_percent": 95.0,
       "module": "spectraxgk.artifacts.io",
       "n_artifacts": 2,
       "n_fast_tests": 1,
-      "n_next_tests": 2,
-      "n_numerics_contracts": 2,
+      "n_next_tests": 3,
+      "n_numerics_contracts": 3,
       "n_owned_modules": 0,
-      "n_physics_contracts": 2,
+      "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/artifacts/io.py",
       "status": "active"

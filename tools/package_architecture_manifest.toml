@@ -50,7 +50,7 @@ name = "installable_source_python_files"
 path = "src/spectraxgk"
 pattern = "*.py"
 recursive = true
-baseline = 271
+baseline = 270
 target = 100
 
 [[topology_policy.counts]]

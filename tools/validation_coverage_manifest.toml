@@ -1735,34 +1735,6 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.artifacts.validation"
-path = "src/spectraxgk/artifacts/validation.py"
-owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
-status = "active"
-coverage_priority = "high"
-coverage_target_percent = 95.0
-reference_anchors = [
-  "publication panel scripts and docs artifact refresh workflow",
-  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
-]
-physics_contracts = [
-  "artifact validation rejects nonfinite nonlinear state and field payloads before persisted output is trusted",
-]
-numerics_contracts = [
-  "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
-]
-fast_tests = [
-  "tests/integration/runtime/test_runtime_artifacts.py",
-]
-artifact_paths = [
-  "docs/_static/benchmark_readme_panel.png",
-  "docs/_static/runtime_memory_benchmark.png",
-]
-next_tests = [
-  "add direct finite-value rejection tests for future field containers",
-]
-
-[[modules]]
 module = "spectraxgk.artifacts.io"
 path = "src/spectraxgk/artifacts/io.py"
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
@@ -1776,10 +1748,12 @@ reference_anchors = [
 physics_contracts = [
   "artifact path normalization preserves documented output bundles for linear, nonlinear, and quasilinear runs",
   "state arrays are persisted next to summary/time-series artifacts without changing solver results",
+  "artifact validation rejects nonfinite nonlinear state, field, and diagnostic payloads before persisted output is trusted",
 ]
 numerics_contracts = [
   "CSV writers preserve column order and finite numeric arrays used by plotting reload tests",
   "series flattening preserves scalar time traces and averages higher-rank diagnostic channels only along non-time axes",
+  "finite-value checks cover optional arrays without forcing diagnostics-free runs to materialize missing data",
 ]
 fast_tests = [
   "tests/integration/runtime/test_runtime_artifacts.py",
@@ -1791,6 +1765,7 @@ artifact_paths = [
 next_tests = [
   "add backward-compatible reload tests for older linear summary and quasilinear spectrum bundles",
   "add a direct malformed-shape flattening test for multi-channel diagnostic CSV output",
+  "add direct finite-value rejection tests for future field containers",
 ]
 
 [[modules]]

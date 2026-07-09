@@ -904,13 +904,6 @@ Runtime Artifact Nonlinear Writers
    :members:
    :private-members:
 
-Runtime Artifact Validation
----------------------------
-
-.. automodule:: spectraxgk.artifacts.validation
-   :members:
-   :private-members:
-
 NetCDF Spectral Layout
 ----------------------
 

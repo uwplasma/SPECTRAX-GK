@@ -609,8 +609,8 @@ Completed extractions:
   and evidence-gap reporting remain fail-closed so production
   nonlinear-gradient promotion cannot be inferred from startup, pilot, reduced,
   or single-window artifacts.
-- runtime artifact read/write, generic I/O helpers, linear/quasilinear
-  artifact writers, generic nonlinear table writers, dealiased-axis
+- runtime artifact read/write, generic I/O and finite-value validation helpers,
+  linear/quasilinear artifact writers, generic nonlinear table writers, dealiased-axis
   layout, NetCDF output-bundle orchestration, NetCDF diagnostic-history schema
   writing with staged Phi2, base species-history, split electromagnetic,
   zonal-field, resolved species-spectra, and turbulent-heating helpers, NetCDF

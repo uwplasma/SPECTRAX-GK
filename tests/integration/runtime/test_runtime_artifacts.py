@@ -73,7 +73,7 @@ from spectraxgk.workflows.runtime.artifacts import (
     write_runtime_linear_artifacts,
     write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.artifacts.validation import (
+from spectraxgk.artifacts.io import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
@@ -99,6 +99,10 @@ def test_runtime_artifacts_facade_reexports_split_helper_contracts() -> None:
     assert runtime_artifacts._write_csv is artifact_io._write_csv
     assert runtime_artifacts._write_state is artifact_io._write_state
     assert runtime_artifacts._netcdf_bundle_base is artifact_io._netcdf_bundle_base
+    assert artifact_package.validate_finite_array is artifact_io.validate_finite_array
+    assert artifact_package.validate_finite_runtime_result is (
+        artifact_io.validate_finite_runtime_result
+    )
     assert (
         runtime_artifacts._is_netcdf_output_target
         is artifact_io._is_netcdf_output_target

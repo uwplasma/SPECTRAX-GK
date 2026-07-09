@@ -1149,24 +1149,11 @@ fast_tests = ["tests/integration/runtime/test_cli.py"]
 doc_pages = ["docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
 
 [[phase1_split_modules]]
-module = "spectraxgk.artifacts.validation"
-source_path = "src/spectraxgk/artifacts/validation.py"
-facade_module = "spectraxgk.artifacts"
-status = "active"
-responsibility = "finite-value validation for runtime artifact state, field, and diagnostics payloads"
-moved_exports = [
-  "validate_finite_array",
-  "validate_finite_runtime_result",
-]
-fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py", "tests/integration/runtime/test_runtime_helpers.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
-
-[[phase1_split_modules]]
 module = "spectraxgk.artifacts.io"
 source_path = "src/spectraxgk/artifacts/io.py"
-facade_module = "spectraxgk.workflows.runtime.artifacts"
+facade_module = "spectraxgk.workflows.runtime.artifacts and spectraxgk.artifacts"
 status = "active"
-responsibility = "runtime artifact path normalization, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
+responsibility = "runtime artifact path normalization, finite-value artifact validation, parent creation, JSON/CSV writing, series flattening, and state-array persistence helpers"
 moved_exports = [
   "_artifact_base",
   "_is_netcdf_output_target",
@@ -1176,6 +1163,8 @@ moved_exports = [
   "_write_json",
   "_write_csv",
   "_write_state",
+  "validate_finite_array",
+  "validate_finite_runtime_result",
 ]
 fast_tests = ["tests/integration/runtime/test_runtime_artifacts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
