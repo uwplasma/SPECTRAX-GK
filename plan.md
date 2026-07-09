@@ -2935,3 +2935,13 @@ following:
   validation coverage metadata, and tightened the source topology baseline to
   273. Operator tests, release tests, ruff, py_compile, and architecture checks
   passed locally.
+
+- 2026-07-08: consolidated four small release-policy test files into
+  `tests/release/test_release_manifests.py`, covering differentiable-refactor,
+  package-architecture, performance-optimization, and refactor-coverage
+  manifest contracts from one release-manifest owner. Removed the old one-file
+  release tests, updated the CI quick-test matrix to reference the consolidated
+  path, verified the matrix has no missing hardcoded pytest paths, and
+  tightened the test topology baseline to 220. Focused manifest tests, the full
+  `tests/release` shard, ruff, py_compile, validation-coverage summary
+  generation, and package-architecture checks passed locally.
