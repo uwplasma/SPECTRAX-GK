@@ -26,7 +26,7 @@ maps to a concrete cache-construction phase.
 
 .. code-block:: bash
 
-   python tools/profiling/profile_linear_cache_build.py \
+   python tools/profiling/profile_startup_and_cache.py linear-cache \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --Nl 4 --Nm 8 \
      --json-out tools_out/linear_cache_cyclone_gpu.json \
@@ -1292,7 +1292,7 @@ For cold-start deep dives, use the dedicated startup profiler:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_runtime_startup.py \
+   python tools/profiling/profile_startup_and_cache.py runtime-startup \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --ky 0.3 --Nl 4 --Nm 8 --compile-steps 1 \
      --json-out tools_out/startup_cyclone_gpu.json \
@@ -1343,7 +1343,7 @@ To break the cache-construction lump down further, use:
 
 .. code-block:: bash
 
-   python tools/profiling/profile_linear_cache_build.py \
+   python tools/profiling/profile_startup_and_cache.py linear-cache \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --Nl 4 --Nm 8 \
      --json-out tools_out/linear_cache_cyclone_gpu.json \

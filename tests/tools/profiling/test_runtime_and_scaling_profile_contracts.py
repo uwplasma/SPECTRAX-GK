@@ -10,11 +10,11 @@ import numpy as np
 from support.paths import REPO_ROOT, load_profiling_tool
 from tools.profiling import profile_linear_rhs_parallel_slices as linear_slices
 from tools.profiling._profiler_options import make_profile_options
-from tools.profiling.profile_linear_cache_build import build_low_rank_moment_cache
-from tools.profiling.profile_runtime_startup import (
+from tools.profiling.profile_startup_and_cache import (
     PhaseTiming,
     _write_phase_csv,
     _write_phase_json,
+    build_low_rank_moment_cache,
 )
 
 runtime_kernels = load_profiling_tool("profile_runtime_kernels")

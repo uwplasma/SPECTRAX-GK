@@ -58,8 +58,7 @@ priority = "high"
 platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear"]
 profiling_tools = [
-  "tools/profiling/profile_runtime_startup.py",
-  "tools/profiling/profile_linear_cache_build.py",
+  "tools/profiling/profile_startup_and_cache.py",
 ]
 metrics = [
   "startup_total_s",
@@ -69,8 +68,7 @@ metrics = [
 ]
 artifact_paths = [
   "docs/performance.rst",
-  "tools/profiling/profile_runtime_startup.py",
-  "tools/profiling/profile_linear_cache_build.py",
+  "tools/profiling/profile_startup_and_cache.py",
 ]
 bottleneck_hypotheses = [
   "compile_first_integrator_run is the largest remaining cold-start cost",
@@ -180,7 +178,7 @@ platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
   "benchmarks/performance/benchmark_runtime_memory.py",
-  "tools/profiling/profile_runtime_startup.py",
+  "tools/profiling/profile_startup_and_cache.py",
 ]
 metrics = [
   "peak_rss_mb",
