@@ -19,7 +19,7 @@ ROOT = REPO_ROOT
 OUTPUT_TARGET_SCRIPT = ROOT / "tools" / "release" / "check_nonlinear_runtime_outputs.py"
 output_target = load_release_tool("check_nonlinear_runtime_outputs")
 window_ensemble = load_release_tool("check_nonlinear_window_ensemble")
-window_readiness = load_release_tool("check_nonlinear_window_ensemble_readiness")
+window_readiness = window_ensemble
 compact_bundle = load_campaign_tool("compact_replicate_ensemble_bundle")
 
 
@@ -223,7 +223,7 @@ def test_readiness_tool_writes_reports_and_requires_seed_timestep_replicates(
     reports_dir = tmp_path / "reports"
 
     rc = window_readiness.main(
-        [str(summary), "--out-json", str(out_json), "--reports-dir", str(reports_dir)]
+        ["readiness", str(summary), "--out-json", str(out_json), "--reports-dir", str(reports_dir)]
     )
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     assert rc == 1
@@ -250,7 +250,7 @@ def test_readiness_tool_writes_reports_and_requires_seed_timestep_replicates(
         )
     passed_json = tmp_path / "manifest_passed.json"
     rc = window_readiness.main(
-        [*[str(path) for path in summaries], "--out-json", str(passed_json)]
+        ["readiness", *[str(path) for path in summaries], "--out-json", str(passed_json)]
     )
     passed_payload = json.loads(passed_json.read_text(encoding="utf-8"))
     assert rc == 0

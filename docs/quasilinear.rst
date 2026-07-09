@@ -595,7 +595,7 @@ point, at least one holdout point, finite passed nonlinear late-window
 convergence metadata for every holdout, and the holdout mean-relative-error
 gate passes. The window metadata comes from
 ``spectraxgk.diagnostics.transport_windows`` or
-``tools/release/check_nonlinear_window_convergence.py`` and records the transient
+``tools/release/check_nonlinear_window_ensemble.py convergence`` and records the transient
 cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
 counts, and source-artifact provenance. Otherwise the claim is demoted to
 ``calibration_dataset`` or ``training_or_audit_only``. This keeps README, docs,
@@ -1606,7 +1606,7 @@ the case is admissible. The next promotion step is replicated nonlinear
 transport evidence: use ``--seed-variant`` for distinct randomized initial
 conditions and ``--dt-variant`` for fixed-step sensitivity checks. The generated
 TOMLs carry explicit seed/timestep metadata so
-``tools/release/check_nonlinear_window_ensemble_readiness.py`` can fail closed until
+``tools/release/check_nonlinear_window_ensemble.py readiness`` can fail closed until
 each admitted case has at least two passed seed and timestep windows.
 
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png

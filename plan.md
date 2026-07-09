@@ -3590,3 +3590,15 @@ following:
   shard, nonlinear artifact shard, Python lint check, validation manifest,
   release tests, compile check, command smoke check, diff hygiene, and
   architecture manifest passed locally.
+
+- 2026-07-09: folded
+  `tools/release/check_nonlinear_window_convergence.py` and
+  `tools/release/check_nonlinear_window_ensemble_readiness.py` into
+  `tools/release/check_nonlinear_window_ensemble.py` as the `convergence` and
+  `readiness` subcommands. Nonlinear late-window convergence, replicate
+  ensemble robustness, and ensemble-readiness manifests now share one
+  transport-window release-gate owner while preserving the default ensemble
+  command. The package architecture tool baseline tightened from 206 to 204.
+  The quasilinear/nonlinear window validation shard, Python lint check,
+  validation manifest, release tests, compile check, command-help smoke checks,
+  diff hygiene, and architecture manifest passed locally.

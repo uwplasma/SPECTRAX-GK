@@ -31,7 +31,7 @@ from spectraxgk.diagnostics.transport_windows import (
 
 
 def _load_tool_module():
-    return load_release_tool("check_nonlinear_window_convergence")
+    return load_release_tool("check_nonlinear_window_ensemble")
 
 
 def _saturated_trace() -> tuple[np.ndarray, np.ndarray]:
@@ -282,7 +282,7 @@ def test_small_window_and_nan_late_window_fail() -> None:
     assert "finite_late_window" in nan_failed
 
 
-def test_check_nonlinear_window_convergence_tool_writes_json(tmp_path: Path) -> None:
+def test_nonlinear_window_convergence_subcommand_writes_json(tmp_path: Path) -> None:
     mod = _load_tool_module()
     t, heat = _saturated_trace()
     csv = tmp_path / "trace.csv"
@@ -297,6 +297,7 @@ def test_check_nonlinear_window_convergence_tool_writes_json(tmp_path: Path) -> 
     assert (
         mod.main(
             [
+                "convergence",
                 "--csv",
                 str(csv),
                 "--out-json",
@@ -324,7 +325,8 @@ def test_nonlinear_window_script_imports_before_editable_install() -> None:
     completed = subprocess.run(
         [
             sys.executable,
-            "tools/release/check_nonlinear_window_convergence.py",
+            "tools/release/check_nonlinear_window_ensemble.py",
+            "convergence",
             "--help",
         ],
         cwd=root,

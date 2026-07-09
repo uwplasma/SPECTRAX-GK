@@ -301,7 +301,7 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``6.49``.
-- ``tools/release/check_nonlinear_window_convergence.py`` and
+- ``tools/release/check_nonlinear_window_ensemble.py convergence`` and
   ``spectraxgk.diagnostics.transport_windows`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
@@ -313,7 +313,7 @@ Quasilinear model-selection state:
   mutually consistent late means before a nonlinear turbulent-flux optimization
   artifact can claim robustness. ``tools/release/check_nonlinear_window_ensemble.py``
   is the tracked artifact wrapper for this gate.
-- ``tools/release/check_nonlinear_window_ensemble_readiness.py`` converts tracked
+- ``tools/release/check_nonlinear_window_ensemble.py readiness`` converts tracked
   transport-window summaries into explicit convergence-report JSON files and a
   readiness manifest. The older global
   ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` remains a
