@@ -1166,7 +1166,6 @@ fast_tests = [
   "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection.py",
   "tests/unit/quasilinear/test_quasilinear_model_selection_extra.py",
-  "tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py",
   "tests/validation/stellarator/test_external_holdout_plan.py",
 ]
 artifact_paths = [
@@ -1216,7 +1215,6 @@ fast_tests = [
   "tests/validation/quasilinear/test_quasilinear_promotion_guardrails.py",
   "tests/release/test_check_quasilinear_calibration_inputs.py",
   "tests/validation/stellarator/test_check_external_vmec_high_grid_admission.py",
-  "tests/tools/artifacts/test_quasilinear_artifact_plots.py",
   "tests/tools/artifacts/test_nonlinear_artifact_reports.py",
   "tests/tools/campaigns/test_nonlinear_transport_config_writer_contracts.py",
   "tests/tools/artifacts/test_vmec_misc_artifact_reports.py",

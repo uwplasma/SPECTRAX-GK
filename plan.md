@@ -3395,3 +3395,13 @@ following:
   package architecture test baseline tightened from 158 to 157. The reference
   comparison shard, Python lint check, stale-reference scan, and architecture
   manifest passed locally.
+
+- 2026-07-08: consolidated the quasilinear holdout-gap report tests from
+  `tests/tools/artifacts/test_build_quasilinear_holdout_gap_report.py` into
+  `tests/tools/artifacts/test_quasilinear_artifact_plots.py`, where
+  quasilinear calibration, uncertainty, regularization, and model-development
+  artifact contracts already live. The validation coverage manifest now tracks
+  the consolidated quasilinear artifact owner once, and the package
+  architecture test baseline tightened from 157 to 156. The consolidated
+  quasilinear artifact shard, Python lint check, validation manifest, release
+  tests, stale-reference scan, and architecture manifest passed locally.
