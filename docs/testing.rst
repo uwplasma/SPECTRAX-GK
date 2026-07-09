@@ -190,7 +190,7 @@ growth-rate extraction pipeline:
   and :func:`spectraxgk.benchmarks.run_cyclone_scan`.
 - Reduced ky regression with tightened tolerances on the field-aligned grid.
 
-These tests live in ``tests/validation/benchmarks/test_benchmarks.py`` and ``tests/unit/operators/test_full_operator.py``.
+These tests live in ``tests/validation/benchmarks/test_benchmarks.py`` and ``tests/unit/operators/test_operator_kernels.py``.
 
 Literature-anchored response and spectrum tests
 -----------------------------------------------

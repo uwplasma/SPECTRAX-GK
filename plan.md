@@ -3116,8 +3116,8 @@ following:
   architecture test baseline to 193. The consolidated parallel artifact shard
   passed locally.
 
-- 2026-07-08: folded the tiny linear-operator package reexport check into
-  `tests/unit/operators/test_operators.py` and the standalone Miller NetCDF
+- 2026-07-08: folded the tiny linear-operator package reexport check, now
+  owned by `tests/unit/operators/test_operator_kernels.py`, and the standalone Miller NetCDF
   fallback check into `tests/unit/geometry/test_geometry_miller_lowlevel.py`.
   This removes two one-off files while keeping operator facade and Miller
   standalone-writeout coverage. Tightened the package architecture test baseline
@@ -3257,4 +3257,14 @@ following:
   one-off device-z test file and tightened the package architecture test baseline
   to 168. The full profiling shard, release tests, ruff, py_compile,
   stale-reference scan, and architecture/refactor/validation/performance
+  manifests passed locally.
+
+- 2026-07-08: consolidated small operator-kernel tests into
+  `tests/unit/operators/test_operator_kernels.py`. Hermite streaming,
+  gyroaveraging coefficients, hyperdiffusion, and the reduced Cyclone
+  full-operator scan now share one focused operator owner instead of four
+  one-off files. Updated CI quick-test paths and testing docs, removed stale
+  test-file references, and tightened the package architecture test baseline to
+  165. The consolidated operator shard, full operator-unit shard, workflow YAML
+  parse, ruff, py_compile, release tests, and architecture/refactor/validation
   manifests passed locally.
