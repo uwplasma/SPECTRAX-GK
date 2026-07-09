@@ -17,24 +17,20 @@ compiled integrator.
 Cache profiling
 ---------------
 
-We include a small timing harness that compares cached and uncached RHS
-evaluation on a modest grid:
+Cache profiling uses the maintained cache-build subphase profiler, not the old
+cached-versus-uncached local timing probe. The profiler decomposes
+``build_linear_cache()`` into geometry loading, spectral-grid construction,
+gyroaverages, Laguerre transforms, drift coefficients, damping factors, and the
+final cache assembly. This makes performance work actionable because each row
+maps to a concrete cache-construction phase.
 
 .. code-block:: bash
 
-   python tools/profiling/profile_linear_cache.py
-
-On a reference CPU run (Nx=Ny=16, Nz=32, Nl=2, Nm=4), this reported:
-
-.. code-block:: text
-
-   uncached_s=0.000426
-   cached_s=0.000455
-   speedup=0.94x
-
-The exact speedup depends on hardware and problem size. As more geometry and
-operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may
-shift; in this run the cached path was roughly cost-neutral.
+   python tools/profiling/profile_linear_cache_build.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --Nl 4 --Nm 8 \
+     --json-out tools_out/linear_cache_cyclone_gpu.json \
+     --csv-out tools_out/linear_cache_cyclone_gpu.csv
 
 No speedup claim should be made from a local profile, scaling panel, or
 parallelization artifact unless the matching numerical-identity gate and

@@ -3130,3 +3130,10 @@ following:
   runtime runner owner, regenerated validation metadata, and tightened the
   package architecture test baseline to 189. The folded runtime runner/helper
   shard passed locally.
+
+- 2026-07-08: removed the obsolete `tools/profiling/profile_linear_cache.py`
+  cached-versus-uncached local timing probe. Performance docs now point at the
+  maintained `tools/profiling/profile_linear_cache_build.py` subphase profiler,
+  which is tracked by the performance manifest and maps timings to actionable
+  cache-construction phases. Tightened the package architecture tool baseline
+  to 219.
