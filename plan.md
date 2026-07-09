@@ -3326,3 +3326,15 @@ following:
   namespace-package resolution, matching the existing `tools/release` layout.
   Tool Python files dropped from 218 to 213 and flat top-level tool Python
   files dropped from 1 to 0.
+  Namespace import checks, representative tool tests, release tests, Sphinx
+  docs, repository inventory, and the architecture manifest passed locally.
+
+- 2026-07-08: consolidated the one-test parallelization example file
+  `tests/unit/parallel/test_parallelization_examples.py` into
+  `tests/integration/examples/test_examples.py`, where shipped example workflows
+  are already validated. The core parallel shard now remains focused on
+  lower-level parallel kernels/contracts, while the independent-ky runtime batch
+  example is tested with the other user-facing examples. Removed the stale CI
+  matrix path and tightened the package architecture test baseline from 164 to
+  163. The moved example test, core parallel tests, Python lint check, workflow
+  YAML parse, stale-reference scan, and architecture manifest passed locally.

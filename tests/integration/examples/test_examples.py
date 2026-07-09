@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
 
+from support.paths import REPO_ROOT, load_repo_script
 from examples.theory_and_demos.autodiff_inverse_growth import run_demo as run_inverse_growth_demo
 from examples.theory_and_demos.autodiff_inverse_twomode import run_demo as run_twomode_demo
 from examples.theory_and_demos.quasilinear_implicit_sensitivity import (
@@ -21,6 +23,22 @@ from spectraxgk.solvers.time.runners import (
     integrate_nonlinear_from_config,
 )
 from spectraxgk.terms.config import TermConfig
+
+
+_PARALLEL_EXAMPLE = (
+    REPO_ROOT / "examples" / "parallelization" / "independent_ky_runtime_batch_scan.py"
+)
+_PARALLEL_CONFIG = (
+    REPO_ROOT / "examples" / "parallelization" / "runtime_batch_ky_scan.toml"
+)
+
+
+def _load_parallel_example_module():
+    return load_repo_script(
+        _PARALLEL_EXAMPLE.relative_to(REPO_ROOT),
+        module_name="independent_ky_runtime_batch_scan",
+        write_bytecode=False,
+    )
 
 
 def test_autodiff_inverse_growth_demo_summary(tmp_path: Path) -> None:
@@ -94,6 +112,41 @@ def test_quasilinear_implicit_sensitivity_demo_summary(tmp_path: Path) -> None:
     jac_impl = np.asarray(summary["jacobian_implicit"], dtype=float)
     jac_fd = np.asarray(summary["jacobian_fd"], dtype=float)
     np.testing.assert_allclose(jac_impl, jac_fd, rtol=5.0e-2, atol=2.0e-3)
+
+
+def test_runtime_batch_ky_scan_example_uses_independent_workers(
+    monkeypatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    example = _load_parallel_example_module()
+    calls: list[float] = []
+
+    def _unexpected_combined_batch(*_args, **_kwargs):
+        raise AssertionError(
+            "strategy='batch' example must not use the combined-ky solver path"
+        )
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        calls.append(ky)
+        return SimpleNamespace(gamma=1.0 + ky, omega=-(2.0 + ky), quasilinear=None)
+
+    monkeypatch.setattr(runtime, "_run_runtime_scan_batch", _unexpected_combined_batch)
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+
+    scan = example.run_example(_PARALLEL_CONFIG)
+
+    np.testing.assert_allclose(sorted(calls), [0.1, 0.2, 0.3])
+    np.testing.assert_allclose(scan.ky, [0.1, 0.2, 0.3])
+    np.testing.assert_allclose(scan.gamma, [1.1, 1.2, 1.3])
+    np.testing.assert_allclose(scan.omega, [-2.1, -2.2, -2.3])
+    assert scan.parallel is not None
+    assert scan.parallel["source"] == "runtime_config"
+    assert scan.parallel["requested_workers"] == 2
+    assert scan.parallel["effective_workers"] == 2
+    assert scan.parallel["executor"] == "thread"
+    assert "independent ky workers" in scan.parallel["identity_contract"]
 
 
 def test_example_smoke_diffrax() -> None:
