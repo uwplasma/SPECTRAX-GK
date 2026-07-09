@@ -47,7 +47,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/release/check_quasilinear_promotion_guardrails.py",
                 "tools/release/check_vmec_boozer_differentiability_claim.py",
                 "tools/artifacts/build_parallelization_completion_status.py",
-                "tools/artifacts/build_technical_release_status.py",
+                "tools/release/check_release_readiness.py technical-status",
                 "tools/release/check_release_readiness.py",
             ]
         ),
@@ -85,7 +85,7 @@ coverage:
         "tools/release/check_quasilinear_promotion_guardrails.py\n"
         "tools/release/check_vmec_boozer_differentiability_claim.py\n"
         "tools/artifacts/build_parallelization_completion_status.py\n"
-        "tools/artifacts/build_technical_release_status.py\n"
+        "tools/release/check_release_readiness.py technical-status\n"
         "tools/release/check_release_readiness.py\n"
         "gh-action-pypi-publish\n",
         encoding="utf-8",

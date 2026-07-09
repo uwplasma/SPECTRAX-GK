@@ -9,20 +9,16 @@ import pytest
 import yaml
 
 from support.paths import load_release_tool
-from tools.artifacts.build_technical_release_status import (
-    LANES,
-    build_technical_release_status,
-)
 from tools.release.check_release_readiness import (
+    LANES,
     ReleaseVersionError,
+    build_technical_release_status,
     default_tag_from_github_env,
     normalize_tag,
     read_project_version,
     read_source_version,
     validate_release_version,
 )
-
-
 def _write_version_files(
     root: Path, *, project: str = "1.2.3", source: str = "1.2.3"
 ) -> None:
