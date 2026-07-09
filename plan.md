@@ -3455,3 +3455,11 @@ following:
   wide-coverage planner smoke check, stale-reference scan with only historical
   plan-log hits, compile check, diff hygiene, and architecture manifest passed
   locally.
+
+- 2026-07-08: removed two undocumented public API compatibility aliases:
+  `LinearExplicitTimeConfig` and `integrate_nonlinear_diagnostics`. Users and
+  examples should use the canonical names `ExplicitTimeConfig` and
+  `integrate_nonlinear_explicit_diagnostics`, which remain exported through the
+  lazy public API. The core public-API contract shard, direct alias-removal
+  import check, Python lint check, release tests, compile check, diff hygiene,
+  and architecture manifest passed locally.
