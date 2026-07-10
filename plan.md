@@ -117,7 +117,7 @@ use mathematical names independent of comparison provenance.
 | Source consolidation | 59% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
-| Nonlinear GPU performance | 75% | Profile compile-stable sampled diagnostics, then optimize only measured GPU synchronization or materialization bottlenecks. |
+| Nonlinear GPU performance | 77% | Land a reusable prepared nonlinear runner so repeated Python/optimization calls reuse one compiled diagnostic scan; then profile synchronization and materialization. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 84% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
 | Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
@@ -128,8 +128,11 @@ use mathematical names independent of comparison provenance.
 1. **Freeze the required-core comparison contract.** Record exact equations,
    normalization, geometry arrays, grid layout, initialization, timestepping,
    precision, and diagnostics for each promoted linear/nonlinear comparison.
-2. **Correct nonlinear execution and profiling.** Remove unused RHS evaluations,
-   keep CFL and sampling device-resident, report only active-sharding speedups,
+2. **Correct nonlinear execution and profiling.** Add a prepared nonlinear
+   simulation object whose dynamic state/cache/parameter pytrees enter stable
+   JIT boundaries, while methods, layouts, and output schemas are explicit
+   static policies. Require an identical repeated call to compile the scan once.
+   Keep CFL and sampling device-resident, report only active-sharding speedups,
    and separate cold, fixed-overhead, warm-throughput, utilization, and memory.
 3. **Benchmark facade shrink.** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
@@ -140,6 +143,9 @@ use mathematical names independent of comparison provenance.
 5. **Close required-core physics gates.** Maintain state-level short gates and
    converged long-window gates for axisymmetric/stellarator, electrostatic/
    electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
+   Treat equilibrium ExB flow shear as the next complete physics extension:
+   zero-shear recovery, analytic shearing-wave evolution, remap/phase identity,
+   linear mode suppression, nonlinear transport, and matched comparison gates.
 6. **Add collision-operator extensibility.** Land a protocol with a complete
    RHS contribution plus an optional mathematically valid split step; do not
    model field-particle terms as diagonal damping. Preserve the current
@@ -160,6 +166,25 @@ use mathematical names independent of comparison provenance.
 10. **Docs and release pass.** Regenerate referenced figures/tables, run fast
    release tests, package build, docs build, package-wide coverage gate, then bump
    version and tag only when CI is green.
+
+## GX-Informed Gap Assessment
+
+The source audit at revision `bc2fe552` is a design input, not a mandate to
+copy every feature. GX prioritizes species decomposition, then Hermite
+decomposition, exchanges one or two Hermite ghost layers, and reduces field
+moments through MPI/NCCL collectives while keeping perpendicular FFTs local.
+That topology is the reference design for the production parallel lane.
+
+| Capability | SPECTRAX-GK assessment | Decision |
+| --- | --- | --- |
+| Standard electrostatic/electromagnetic full gyrokinetics | implemented with scoped linear/nonlinear parity gates | required core |
+| Boltzmann and kinetic species, Miller/VMEC, linked/periodic boundaries | implemented with scoped validation | required core |
+| Equilibrium ExB flow shear | missing | add as a fully gated research extension |
+| Species/Hermite multi-device execution | kernels/plans exist; production routing absent | implement after prepared-runner stabilization |
+| Linearized Landau/Sugama collisions | missing; current model is a limited conserving Dougherty-like operator | add through a collision protocol and literature gates |
+| Long-wavelength reduced field solve and Beer/Smith closures | missing | optional, only with a scientific owner |
+| KREHM, Vlasov--Poisson, collisional-ETG, forcing, Trinity coupling | not complete equations in SPECTRAX-GK | keep out of scope; remove orphan compatibility fragments |
+| JAX autodiff, implicit gradients, UQ, in-memory VMEC/Boozer optimization | SPECTRAX-GK extensions | retain and strengthen conditioning/FD/performance gates |
 
 ## Recent Implementation Log
 
@@ -237,6 +262,14 @@ use mathematical names independent of comparison provenance.
   `[output] resolved_diagnostics = false`. Publication/restart artifacts keep
   the resolved default, while scalar-only production runs can opt out of
   expensive spectral histories without changing scalar transport channels.
+- 2026-07-09: Compile logging on three identical compact Cyclone calls showed
+  that the nonlinear diagnostic scan compiled three times; each scan compile
+  took about one second and the two nominal warm calls still took about
+  `2.28 s` for only two steps. The next performance/API milestone is therefore
+  a prepared nonlinear simulation with a stable compiled diagnostic entry
+  point. The same GX source audit promoted equilibrium ExB flow shear to a
+  separately gated research extension and kept unrelated reduced systems out
+  of scope.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

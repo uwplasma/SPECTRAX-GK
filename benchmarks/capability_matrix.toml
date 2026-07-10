@@ -73,6 +73,14 @@ comparison_owner = "src/nonlinear.cu and src/exb.cu"
 evidence = "operator identity, de-aliasing, invariant, and nonlinear transport-window gates"
 
 [[capabilities]]
+id = "equilibrium_exb_flow_shear"
+group = "optional_extension"
+status = "planned_research_lane"
+spectrax_owner = "future sheared-coordinate grid and time-step policy"
+comparison_owner = "src/exb.cu plus sheared perpendicular-grid phase updates"
+evidence = "requires zero-shear recovery, shearing-wave kx evolution, remap/phase identity, linear suppression, nonlinear transport, and matched comparison gates"
+
+[[capabilities]]
 id = "initial_value_time_integration"
 group = "required_core"
 status = "validated"

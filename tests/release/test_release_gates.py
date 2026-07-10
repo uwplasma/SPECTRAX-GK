@@ -1884,6 +1884,7 @@ def test_benchmark_capability_matrix_is_complete_and_fail_closed() -> None:
     )
     assert by_id["jax_autodiff_and_implicit_gradients"]["group"] == "differentiable_extension"
     assert by_id["species_hermite_multi_device_decomposition"]["status"] == "planned"
+    assert by_id["equilibrium_exb_flow_shear"]["status"] == "planned_research_lane"
     assert by_id["specialized_reduced_equation_sets"]["status"] == "not_shipped"
 
     required = payload["matched_comparison_contract"]["required_fields"]

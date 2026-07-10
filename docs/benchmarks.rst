@@ -102,6 +102,10 @@ actually use the same physical and numerical contract.
    * - VMEC exact-periodic, continuous-drift, and fixed-aspect boundaries
      - validated, scoped
      - policy tests plus fixed-aspect W7-X/HSX comparison lanes
+   * - Equilibrium :math:`E\times B` flow shear
+     - planned research lane
+     - zero-shear recovery, shearing-wave, remap/phase, linear suppression,
+       nonlinear transport, and matched comparison gates are required
    * - Specialized KREHM, Vlasov--Poisson, collisional-ETG, and Beer/Smith closures
      - not shipped
      - separate reduced models are outside the full-gyrokinetic release claim
@@ -139,6 +143,12 @@ system, not GX's optional KREHM, Vlasov--Poisson, collisional-ETG, forcing,
 transport-coupling, or Beer/Smith closure paths. Conversely, differentiable
 eigen/objective solves and the in-memory JAX geometry chain are SPECTRAX-GK
 extensions rather than comparison requirements.
+
+The audit also identifies equilibrium :math:`E\times B` flow shear as a
+scientifically useful missing extension rather than a compatibility checkbox.
+It must enter through a sheared-coordinate grid/time policy and complete
+operator, timestep, transport, and comparison gates; adding only an input key
+or a phase factor would not constitute support.
 
 Tracked results index
 ---------------------
