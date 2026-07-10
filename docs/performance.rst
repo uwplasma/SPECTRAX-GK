@@ -1065,6 +1065,34 @@ can request the compact route explicitly with
 ``[output] resolved_diagnostics = false`` when mode-resolved spectra are not
 needed.
 
+Repeated Python simulations should prepare the explicit nonlinear diagnostic
+scan once instead of rebuilding its closure for every objective or ensemble
+evaluation:
+
+.. code-block:: python
+
+   from spectraxgk.nonlinear import prepare_nonlinear_explicit_diagnostics
+
+   simulation = prepare_nonlinear_explicit_diagnostics(
+       initial_state, grid, geometry, parameters,
+       dt=0.02, steps=400, resolved_diagnostics=False,
+   )
+   time, diagnostics, final_state, fields = simulation.run()
+
+``simulation.run(new_initial_state)`` reuses the compiled scan for states with
+the same shape and dtype. Geometry, parameters, method, and diagnostic schema
+are fixed by this first prepared contract. A later dynamic-parameter contract
+is required before claiming compile-once stellarator optimization across
+changing equilibria.
+
+On the shipped ``64x64x24`` Cyclone setup, a three-call CPU compile-log gate
+records exactly one ``jit(run_raw)`` compilation. The first two-step call takes
+``3.25 s`` including compilation; repeated calls take ``0.297 s`` and
+``0.290 s``. Rebuilding the runtime closure took ``2.27--2.29 s`` for the same
+nominal warm calls. This is a repeated Python-call improvement for fixed
+geometry/model policy, not an end-to-end executable or long-run throughput
+claim.
+
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple
 forced CPU devices. The profiling tool therefore skips active multi-device CPU

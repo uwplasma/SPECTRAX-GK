@@ -270,6 +270,17 @@ That topology is the reference design for the production parallel lane.
   point. The same GX source audit promoted equilibrium ExB flow shear to a
   separately gated research extension and kept unrelated reduced systems out
   of scope.
+- 2026-07-09: Added a first `PreparedExplicitNonlinearDiagnostics` contract.
+  It keeps one stable compiled scan across repeated same-signature Python calls
+  and accepts replacement initial states. A direct-versus-prepared trajectory
+  and scalar-transport identity test protects the new path. Geometry and model
+  parameters remain fixed in this tranche; making those pytrees dynamic is the
+  next differentiable-optimization milestone.
+- 2026-07-09: The benchmark-size `64x64x24` Cyclone compile-log gate records
+  one `jit(run_raw)` compile across three prepared calls. The first two-step
+  call takes `3.25 s`; repeats take `0.297 s` and `0.290 s`, versus
+  `2.27-2.29 s` when the runtime scan closure is rebuilt. This closes the
+  compile-stability defect for fixed-policy repeated Python calls.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

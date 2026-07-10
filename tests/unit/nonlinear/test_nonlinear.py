@@ -18,6 +18,7 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_explicit_diagnostics,
     integrate_nonlinear_explicit_diagnostics_state,
     integrate_nonlinear_imex_cached,
+    prepare_nonlinear_explicit_diagnostics,
 )
 from spectraxgk.terms.config import TermConfig
 
@@ -107,6 +108,57 @@ def test_integrate_nonlinear_explicit_diagnostics_shapes():
     assert np.asarray(diag.particle_flux_species_t).shape == (3, 1)
     assert np.isfinite(np.asarray(diag.dt_mean))
     assert np.isfinite(np.asarray(diag.dt_t)).all()
+
+
+def test_prepared_nonlinear_diagnostics_reuses_compiled_scan():
+    """A prepared diagnostic simulation should compile once per state signature."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    state = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    prepared = prepare_nonlinear_explicit_diagnostics(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        resolved_diagnostics=False,
+    )
+
+    first = prepared.run()
+    cache_size = prepared._run_raw._cache_size()
+    second = prepared.run()
+    direct = integrate_nonlinear_explicit_diagnostics_state(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        resolved_diagnostics=False,
+    )
+
+    assert cache_size == 1
+    assert prepared._run_raw._cache_size() == cache_size
+    for first_value, second_value in zip(first[:1] + first[2:], second[:1] + second[2:]):
+        for first_leaf, second_leaf in zip(
+            jax.tree_util.tree_leaves(first_value),
+            jax.tree_util.tree_leaves(second_value),
+        ):
+            np.testing.assert_allclose(np.asarray(first_leaf), np.asarray(second_leaf))
+    np.testing.assert_allclose(np.asarray(first[0]), np.asarray(direct[0]))
+    np.testing.assert_allclose(
+        np.asarray(first[1].heat_flux_t), np.asarray(direct[1].heat_flux_t)
+    )
+    np.testing.assert_allclose(np.asarray(first[2]), np.asarray(direct[2]))
 
 
 def test_integrate_nonlinear_imex_diagnostics_shapes():
