@@ -117,17 +117,17 @@ axis = " KY "
     assert cfg.parallel.axis == "ky"
 
 
-def test_toml_shorthand_policy_resolves_runtime_and_named_cases(
+def test_toml_shorthand_policy_uses_one_runtime_command(
     tmp_path: Path,
 ) -> None:
     cfg_path = tmp_path / "case.toml"
     cfg_path.write_text("[physics]\n", encoding="utf-8")
 
     assert is_runtime_toml({"physics": {}}) is True
-    assert is_runtime_toml({"case": "cyclone"}) is False
+    assert is_runtime_toml({"case": "cyclone"}) is True
     assert is_runtime_toml({}) is True
     assert toml_shorthand_command({"physics": {}}) == "run"
-    assert toml_shorthand_command({"case": "cyclone"}) == "run-linear"
+    assert toml_shorthand_command({"case": "cyclone"}) == "run"
     assert direct_config_shorthand_args(
         [str(cfg_path), "--no-progress"],
         load_toml_func=lambda _path: {"physics": {}},
@@ -135,7 +135,7 @@ def test_toml_shorthand_policy_resolves_runtime_and_named_cases(
     assert direct_config_shorthand_args(
         [str(cfg_path), "--plot"],
         load_toml_func=lambda _path: {"case": "cyclone"},
-    ) == ["run-linear", "--config", str(cfg_path), "--plot"]
+    ) == ["run", "--config", str(cfg_path), "--plot"]
     assert direct_config_shorthand_args([]) is None
     assert direct_config_shorthand_args(["--version"]) is None
     assert direct_config_shorthand_args(["run", "--config", str(cfg_path)]) is None

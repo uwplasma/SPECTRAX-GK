@@ -115,13 +115,13 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 59% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Source consolidation | 64% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 86% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
-| Docs/readme release pass | 92% | Keep README concise and complete the developer/API updates as source owners move. |
+| Docs/readme release pass | 94% | Keep README concise and complete the developer/API updates as source owners move. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
 ## Prioritized Implementation Steps
@@ -298,6 +298,15 @@ That topology is the reference design for the production parallel lane.
   Release, quasilinear, QA-optimization, relative-link, and public-import gates
   pass. The rewrite also corrected a stale `spectraxgk.grids` import to the
   actual `spectraxgk.core.grid` owner and added a regression test.
+- 2026-07-10: Removed the orphan named-case executable stack after confirming
+  that every tracked TOML input uses the unified runtime schema. The no-input
+  demo now exercises the same runtime configuration and solver path as ordinary
+  Python and executable runs. This tranche removed one installed module and
+  1,219 net lines across source/tests, retained local output and progress/ETA,
+  and completed the real CPU demo in 10.1 s with 100 saved samples and a finite
+  fitted mode (gamma=0.085141, omega=0.291379). Focused runtime tests, docs,
+  package build, architecture, coverage-manifest, and release-readiness gates
+  pass.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

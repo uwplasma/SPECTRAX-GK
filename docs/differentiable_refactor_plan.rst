@@ -379,9 +379,9 @@ High-Risk Module Split Plan
   runtime context setup, diagnostics routing, adaptive chunks,
   fixed-mode/source policy, final-state integration, and result assembly. The
   default no-input educational demo now delegates to
-  ``spectraxgk.workflows.demo``; named Cyclone/ETG linear executable workflows
-  now delegate to ``spectraxgk.workflows.named_cases``; and runtime linear,
-  scan, nonlinear, and saved-output plotting executable command bodies now delegate to
+  ``spectraxgk.workflows.demo`` and uses the same runtime configuration and
+  solver path as every other executable run. Runtime linear, scan, nonlinear,
+  and saved-output plotting executable command bodies delegate to
   ``spectraxgk.workflows.runtime.commands`` so parser dispatch stays separate from
   simulation, plotting, path override, and artifact side effects.
   Non-promoted reduced-model runtime paths have been retired from main, so

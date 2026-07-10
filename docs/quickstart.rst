@@ -46,7 +46,7 @@ numerical case explicitly:
 
 .. code-block:: bash
 
-   spectraxgk run-linear --config spectraxgk_default_linear.toml --progress
+   spectraxgk spectraxgk_default_linear.toml --progress
 
 When progress output is enabled (for example on a TTY or with the explicit
 progress flags), the executable prints live status lines with step/time

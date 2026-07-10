@@ -225,7 +225,6 @@ path = "src/spectraxgk/workflows/cases.py"
 owned_modules = [
   "spectraxgk.workflows.demo",
   "spectraxgk.workflows.linear",
-  "spectraxgk.workflows.named_cases",
   "spectraxgk.workflows.nonlinear",
   "spectraxgk.workflows.runtime.commands",
 ]
