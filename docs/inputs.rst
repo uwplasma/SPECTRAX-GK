@@ -555,6 +555,12 @@ The ``[output]`` section controls runtime artifact layout and restart behavior:
 * ``restart_scale``: multiplicative scale applied to the loaded restart state.
 * ``append_on_restart``: append continued diagnostic history to the existing
   ``*.out.nc`` file instead of replacing it.
+* ``resolved_diagnostics``: materialize mode-resolved spectra in nonlinear
+  diagnostic history. It defaults to ``true`` for publication and restart
+  artifacts. Set it to ``false`` when only scalar time traces such as heat and
+  particle fluxes, free energy, field energy, growth rate, and frequency are
+  required. The compact path preserves those scalar channels while avoiding
+  the larger spectral-history arrays.
 * ``nsave``: checkpoint cadence fallback, in steps, for nonlinear NetCDF
   bundles when ``time.nstep_restart`` is not set.
 

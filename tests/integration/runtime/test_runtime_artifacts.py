@@ -1547,7 +1547,12 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
     restart_path = tmp_path / "direct.restart.nc"
     cfg = RuntimeConfig(
         time=TimeConfig(dt=0.1, t_max=1.2, fixed_dt=True, diagnostics=True),
-        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=5),
+        output=RuntimeOutputConfig(
+            path=str(out_path),
+            save_for_restart=True,
+            nsave=5,
+            resolved_diagnostics=False,
+        ),
     )
 
     def _diag(sample_t: float) -> SimulationDiagnostics:
@@ -1573,6 +1578,7 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
                 "init_file_mode": run_cfg.init.init_file_mode,
                 "steps": chunk_steps,
                 "return_state": kwargs["return_state"],
+                "resolved_diagnostics": kwargs["resolved_diagnostics"],
             }
         )
         return RuntimeNonlinearResult(
@@ -1616,6 +1622,7 @@ def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> No
     assert calls[1]["init_file"] == str(restart_path)
     assert calls[1]["init_file_mode"] == "replace"
     assert all(call["return_state"] is True for call in calls)
+    assert all(call["resolved_diagnostics"] is False for call in calls)
     assert writes == pytest.approx([0.5, 1.0, 1.2])
     assert float(np.asarray(result.diagnostics.t)[-1]) == pytest.approx(1.2)
 

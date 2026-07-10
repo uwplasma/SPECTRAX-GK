@@ -228,8 +228,15 @@ use mathematical names independent of comparison provenance.
 - 2026-07-09: Corrected the end-to-end runtime profiler to use an existing
   nonlinear input and block every returned JAX leaf before stopping timers.
   Added bounded repeat reporting. The shipped `64x64x24` Cyclone input takes
-  `6.05 s` warm for 20 CPU steps at diagnostic stride 10; an office A4000
-  matched run is the next profiling gate.
+  `6.05 s` warm for 20 CPU steps at diagnostic stride 10. The matched office
+  A4000 run takes `9.78 s` with resolved spectra and `8.69 s` with compact
+  scalar diagnostics; final-state-only integration takes `0.263 s`. This
+  localizes the next optimization target to synchronized diagnostics and
+  runtime materialization rather than the compiled fixed-step update.
+- 2026-07-09: Exposed compact nonlinear artifact output through
+  `[output] resolved_diagnostics = false`. Publication/restart artifacts keep
+  the resolved default, while scalar-only production runs can opt out of
+  expensive spectral histories without changing scalar transport channels.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

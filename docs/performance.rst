@@ -1054,8 +1054,16 @@ stopping its timer and validates that its default input exists. It also accepts
 ``64x64x24`` CPU input, a bounded 20-step run at
 ``sample_stride=diagnostics_stride=10`` takes ``6.05 s`` warm after a
 ``12.84 s`` cold pass. This is a profiler baseline, not a publication runtime
-row; the matched A4000 measurement and diagnostic breakdown determine the next
-optimization.
+row. The matched office A4000 run takes ``9.78 s`` warm with resolved spectra
+and ``8.69 s`` with compact scalar diagnostics. The compact route therefore
+saves about 11% on this moderate GPU workload, while the matched local CPU
+improvement is about 3%. A final-state-only fixed-step GPU integration takes
+``0.263 s`` on the same grid, showing that setup, synchronization, and
+diagnostic materialization dominate this short end-to-end workload. These are
+profiling results, not universal GPU speedup claims. Artifact-producing runs
+can request the compact route explicitly with
+``[output] resolved_diagnostics = false`` when mode-resolved spectra are not
+needed.
 
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple
