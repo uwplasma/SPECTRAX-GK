@@ -373,6 +373,12 @@ That topology is the reference design for the production parallel lane.
   Laguerre gate passes at 0.087% maximum scalar difference and 1.73x runtime
   ratio. An exact FFT batching experiment was neutral and was reverted rather
   than retaining extra code without measured benefit.
+- 2026-07-10: Re-ran the historical prepared-runtime revision and current
+  revision back-to-back with the original office JAX 0.6.2 environment; both
+  measure about 1.47 seconds rather than the tracked 0.465-second GPU value.
+  This rules out a current code regression and identifies uncontrolled node or
+  GPU operating state in the old 8.77x claim. The README no longer promotes
+  that ratio, and the detailed docs retain it only as historical provenance.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
