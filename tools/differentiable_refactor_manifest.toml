@@ -121,11 +121,9 @@ module = "spectraxgk.config"
 source_path = "src/spectraxgk/config.py"
 facade_module = "spectraxgk.config"
 status = "closed"
-responsibility = "benchmark-family case presets for Cyclone, ETG, KBM, TEM, and kinetic-electron operating points"
+responsibility = "benchmark-family case presets for Cyclone, KBM, TEM, and kinetic-electron operating points"
 moved_exports = [
   "CycloneBaseCase",
-  "ETGBaseCase",
-  "ETGModelConfig",
   "KBMBaseCase",
   "KineticElectronBaseCase",
   "KineticElectronModelConfig",

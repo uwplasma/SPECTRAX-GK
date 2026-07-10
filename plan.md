@@ -115,7 +115,7 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 90% | Continue with the next named benchmark family in the facade; ETG and Cyclone now share the canonical runtime and have no specialized solver. |
+| Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -479,6 +479,20 @@ That topology is the reference design for the production parallel lane.
   generation now consumes the reviewed table instead of owning a duplicate
   simulation path, and visual QA uses open markers and sparse linear ticks so
   overlapping curves remain legible.
+- 2026-07-10: Audited the remaining 6,306-line benchmark facade rather than
+  deleting another family blindly. KBM requires a generic parameter-scan
+  abstraction because its tracked scan varies beta rather than `ky`; TEM and
+  kinetic-electron cases still lack canonical runtime TOMLs. These are now
+  explicit migration prerequisites. The code-structure guide was reduced from
+  an implementation diary to a concise ownership contract, and stale retired
+  ETG presets were removed from the differentiable manifest.
+- 2026-07-10: Fixed the documented nonlinear-sharding profiler entry point and
+  rejected its zero-bracket initial condition. A fresh `(4,8,32,32,64)`
+  interacting-multimode run on two A4000 GPUs shows that both whole-state `ky`
+  and `kx` placement are slower than serial and fail physical trajectory/RHS
+  identity. The profiler now refuses zero nonlinear activity. This closes the
+  false-positive diagnostic route; production work must implement explicit
+  communication-complete FFT/bracket decomposition rather than relaxing gates.
 
 ## Validation Commands For This Tranche
 

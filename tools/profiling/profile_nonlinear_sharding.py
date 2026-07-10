@@ -33,7 +33,11 @@ from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cache
 from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
 from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
-from tools.profiling._profiler_options import git_source_state
+
+try:
+    from tools.profiling._profiler_options import git_source_state
+except ModuleNotFoundError:  # Direct ``python tools/profiling/...`` execution.
+    from _profiler_options import git_source_state
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -138,7 +142,17 @@ def _build_problem(args: argparse.Namespace) -> tuple[jnp.ndarray, Any, LinearPa
     params = LinearParams()
     shape = (int(args.nl), int(args.nm), grid.ky.size, grid.kx.size, grid.z.size)
     G0 = jnp.zeros(shape, dtype=jnp.complex64)
-    G0 = G0.at[0, 0, 0, 0, :].set(jnp.asarray(args.amplitude, dtype=G0.dtype))
+    z = jnp.arange(grid.z.size, dtype=jnp.float32)
+    phase = 2.0 * jnp.pi * z / max(int(grid.z.size), 1)
+    amplitude = jnp.asarray(args.amplitude, dtype=G0.real.dtype)
+    if grid.ky.size < 3 or grid.kx.size < 3:
+        raise ValueError("nonlinear profile requires at least three ky and kx modes")
+    G0 = G0.at[0, 0, 1, 1, :].set(amplitude * (1.0 + 0.25j) * jnp.exp(1j * phase))
+    G0 = G0.at[0, 0, 2, 2, :].set(0.7 * amplitude * (1.0 - 0.4j) * jnp.exp(-2j * phase))
+    if int(args.nl) > 1 and int(args.nm) > 1:
+        G0 = G0.at[1, 1, 1, 2, :].set(
+            0.35 * amplitude * (1.0 + 0.1j) * jnp.exp(3j * phase)
+        )
     cache = build_linear_cache(grid, geom, params, int(args.nl), int(args.nm))
     return G0, cache, params
 
@@ -224,6 +238,36 @@ def _nonlinear_diagnostic_identity_metrics(
         "max_abs_phi_error": phi_abs,
         "max_rel_phi_error": phi_rel,
     }
+
+
+def _initial_nonlinear_activity(
+    state: Any, cache: Any, params: LinearParams, *, laguerre_mode: str
+) -> float:
+    """Return the maximum pure nonlinear RHS magnitude for profile admission."""
+
+    nonlinear_only = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=1.0,
+    )
+    rhs, _fields = nonlinear_rhs_cached(
+        state,
+        cache,
+        params,
+        nonlinear_only,
+        compressed_real_fft=True,
+        laguerre_mode=laguerre_mode,
+    )
+    _block_until_ready(rhs)
+    return float(np.max(np.abs(np.asarray(rhs))))
 
 
 def _sharding_specs(primary: str, extra: str | None) -> list[str]:
@@ -320,7 +364,6 @@ def _candidate_failure(
     if skip_reason is not None:
         row["skip_reason"] = str(skip_reason)
     return row
-
 
 
 def _json_clean(value: Any) -> Any:
@@ -929,6 +972,7 @@ def main_sweep(argv: list[str] | None = None) -> int:
     )
     return 0 if bool(summary["identity_passed"]) else 2
 
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
@@ -984,6 +1028,13 @@ def main_profile(argv: list[str] | None = None) -> int:
     terms = TermConfig(
         nonlinear=1.0, collisions=0.0, hypercollisions=0.0, apar=0.0, bpar=0.0
     )
+    nonlinear_activity = _initial_nonlinear_activity(
+        G0, cache, params, laguerre_mode=str(args.laguerre_mode)
+    )
+    if not math.isfinite(nonlinear_activity) or nonlinear_activity <= 0.0:
+        raise RuntimeError(
+            "nonlinear sharding profile requires a finite, nonzero nonlinear RHS"
+        )
     sharding_specs = _sharding_specs(str(args.sharding), args.sharding_options)
 
     def serial_run():
@@ -1151,6 +1202,7 @@ def main_profile(argv: list[str] | None = None) -> int:
         "steps": int(args.steps),
         "method": str(args.method),
         "laguerre_mode": str(args.laguerre_mode),
+        "initial_nonlinear_rhs_max": nonlinear_activity,
         "warmups": int(source_contract["timing_warmup_repeat"]["warmups"]),
         "repeats": int(source_contract["timing_warmup_repeat"]["repeats"]),
         "serial_times_s": serial_times,
@@ -1180,7 +1232,6 @@ def main_profile(argv: list[str] | None = None) -> int:
     )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0 if payload["identity_gate_pass"] else 2
-
 
 
 def main(argv: list[str] | None = None) -> int:

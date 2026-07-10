@@ -708,104 +708,20 @@ entry point for runtime workflows and tests, but the implementation no longer
 mixes restart I/O, moment normalization policy, and phi-inversion cache setup in
 one long branch.
 
-The benchmark helper split now uses focused domain modules directly.
-Benchmark case presets live directly in ``spectraxgk.config`` so user-facing
-configuration objects do not depend on the temporary validation package.
-Benchmark initial conditions, reference containers and CSV loaders, species-to-
-``LinearParams`` construction, reference hypercollision/end-damping policy,
-normalization constants, Krylov defaults, solver-selection policy, scan
-batching, and scan-window policy live in the internal
-``spectraxgk.benchmarking.shared`` owner and are re-exported by the public
-``spectraxgk.benchmarks`` facade where legacy tests and documented workflows
-still import them. Fit-signal selection and
-diagnostic growth-rate normalization live in
-``spectraxgk.diagnostics.growth_rates``. Import-identity tests pin the old helper
-symbols to their consolidated owners before larger benchmark-family runners are
-moved. KBM beta-scan, single-point, and ky-scan implementations now live in
-the public ``spectraxgk.benchmarks`` owner, which also owns the explicit-time
-diagnostic fallback ladder and multi-target Krylov policy used by the beta-scan
-runner. Its beta-scan Krylov path shares one forwarded-key policy for
-multi-target branch selection and continuation/shifted solves, so target and
-shift variants cannot silently diverge. Multi-target transition-threshold and
-fastest-growth fallback candidate selection lives in a focused local helper so
-the solver path keeps branch-choice policy separate from solve orchestration.
-The explicit-time fallback ladder, saved-time auto-fit branch, and
-Diffrax-streaming window resolution share the scan fit-window policy, so
-beta-scan fit knobs are not duplicated across time-integration paths.
-Saved-time KBM beta samples also use one dispatcher for
-non-Diffrax time-config and no-config integration, with stride resolution kept
-explicit before fitting; Diffrax-streaming samples read the same
-``ScanFitWindowPolicy`` for their resolved fit window. The single-point runner delegates
-explicit-time diagnostics and single/multi-target Krylov branch selection to
-``spectraxgk.benchmarks`` while retaining geometry
-setup, state/cache construction, saved/configured trajectory integration,
-saved-signal fitting, and result packaging through focused helper seams in the
-public owner. The public beta runner still owns per-beta setup and time/diffrax
-fallback.
-Single-point KBM dispatch now passes one explicit run-options object through
-the explicit-time, Krylov, and saved-time helper paths, keeping solver selection
-separate from the numerical fitting and trajectory code that remains local to
-the public benchmark owner.
-``spectraxgk.benchmarks`` remains the public facade for
-``run_kbm_linear``, ``run_kbm_scan``, and ``run_kbm_beta_scan``. The TEM benchmark family follows the same pattern in
-``spectraxgk.benchmarks`` for ``run_tem_linear`` and ``run_tem_scan``.
-The KBM beta-scan owner keeps patchable numerical hooks local while staging
-shared setup, fit-window policy construction, kinetic-species index validation,
-per-beta state/cache construction, solver-path dispatch, Krylov continuation
-updates, and result packing through focused private helpers. The public benchmark owner remains responsible for explicit-time, Krylov,
-streaming, and saved-time fitting details.
-The KBM single-point saved-time direct-fit path shares one automatic-fit keyword
-policy between primary auto-window fitting and invalid-window fallback fitting,
-and configured-time versus fixed-time integration is split before signal
-selection so stride and density-output policy cannot drift.
-The TEM public owner now keeps setup, parameter construction, and species
-validation local while ``spectraxgk.benchmarks`` owns the
-TEM single-ky Krylov path, saved-time fit path, streaming scan branch, and scan
-batch loop through an explicit hook bundle. The TEM Krylov path shares one
-forwarded-key policy for dominant-eigenpair configuration, matching the KBM
-benchmark-path guard against target/shift policy drift. The TEM single-ky
-saved-time path shares one automatic-fit keyword policy between primary
-auto-window fitting and invalid-window fallback fitting. The same single-ky
-time path resolves time-config, ``dt``/``steps``, and stride once before
-dispatching to density diagnostics, configured ``phi``, or explicit ``phi``
-integration, so those saved-time branches cannot drift. TEM scan streaming
-also resolves its fit window through the same ``ScanFitWindowPolicy`` used by
-saved-time scan fitting.
-Kinetic-electron ITG/TEM single-ky and ky-scan runner ownership has moved into the public ``spectraxgk.benchmarks`` facade. The kinetic owner keeps setup normalization, species-index validation, selected-state construction, Krylov solving, configured and unconfigured time-history integration, streaming and sampled-signal fitting, scan batching, and result packing beside the public ``run_kinetic_linear`` and ``run_kinetic_scan`` APIs.
-The kinetic scan path carries separate run-options, fit-options, and output
-containers through a single batch router, keeping Krylov, Diffrax streaming, and
-sampled-history branches testable without changing the public scan signature.
-The promoted ETG example and root benchmark use the unified runtime config,
-time integrator, and scan API. Their Boltzmann-ion response, drift
-normalization, parallel hypercollision policy, velocity resolution, timestep,
-and fit window are explicit in ``examples/linear/axisymmetric/etg.toml``.
-The former ``run_etg_linear`` and ``run_etg_scan`` implementations have been
-deleted after maintainer figure/table callers moved to ``run_runtime_linear``
-and ``run_runtime_scan``. ETG therefore has one solver policy and one public
-configuration path rather than a benchmark-specific compatibility branch.
-Cyclone single-mode and scan implementations now live in
-``spectraxgk.benchmarks`` and are exposed through the same public facade. The single-mode runner
-keeps public setup and solver fallback orchestration local while staging
-default parameter/term construction, reference-aligned geometry policy,
-fit-signal validation, resolved run setup, time/Krylov dispatch, and
-``CycloneRunResult`` packing into private helpers. It keeps Krylov seeding/branch selection and time-integration fit policy local to ``spectraxgk.benchmarks``. The Krylov path separates explicit frequency-seed fitting, primary/reduced seed fallback, shift-target construction, dominant-eigenpair option forwarding, branch-guard selection, field packing, and normalization into named stages. The time path separates runtime-config resolution, reference-aligned explicit integration, configured/unconfigured fixed-step integration, shared automatic-window keyword packing, and saved-trace fitting into named stages. The scan runner delegates
-Krylov branch-following, reference-aligned explicit-time reselection, and
-standard saved-time/streaming scan execution to
-``spectraxgk.benchmarks`` through an explicit
-hook bundle while keeping scan setup, default species/term policy,
-reference-aligned normalization, fit-window policy packing, ky-batch selection,
-and branch dispatch in focused local helpers. Trace-seed branch initialization, Krylov branch following, and reference-aligned explicit-time reselection now live in ``spectraxgk.benchmarks`` so the scan has one patchable branch-policy owner. The Cyclone single-mode time path shares
-one local automatic-fit keyword policy between automatic signal selection and
-direct signal fitting, avoiding drift in late-window fit semantics. The Cyclone
-scan time path now keeps batch construction, per-batch time-configuration
-resolution, Diffrax streaming fits, saved/configured trajectory integration,
-and per-ky fit/appending policy as explicit helper seams inside the same branch
-owner. The saved-time scan path carries separate run-options, fit-options, and
-output containers through a single batch router, so future fit-policy changes
-can be tested without modifying scan setup or result packing.
-Family-specific branch tests now patch the
-family owner modules directly, and examples/downstream scripts keep importing
-through ``spectraxgk.benchmarks``.
+The benchmark stack has two explicit roles:
+
+- ``spectraxgk.benchmarking.shared`` owns compact reference containers, CSV
+  loaders, normalization constants, and comparison-only defaults.
+- Canonical TOML inputs plus ``run_runtime_linear`` and ``run_runtime_scan``
+  own promoted solver execution. ETG and Cyclone use only this path; artifact
+  figures consume reviewed tables rather than launching a second hidden solve.
+
+``spectraxgk.benchmarks`` remains a transitional facade for KBM, TEM, and
+kinetic-electron branch-following runners while those families are migrated to
+the canonical runtime. New examples must not add named-case execution APIs.
+External-code names and raw reference handling stay in root ``benchmarks/`` or
+``tools/comparison``; reusable source modules use physics and numerical names.
+
 
 Quasilinear calibration now lives in
 ``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point

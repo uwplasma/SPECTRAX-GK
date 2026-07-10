@@ -5,12 +5,15 @@ import json
 import math
 from pathlib import Path
 import subprocess
+import sys
+from types import SimpleNamespace
 
 import jax
 import jax.numpy as jnp
 import pytest
 
 from spectraxgk.terms.config import FieldState
+from spectraxgk.terms.config import TermConfig
 
 
 def _load_sharding_tool_module():
@@ -31,6 +34,59 @@ def test_profile_nonlinear_sharding_parser_defaults_to_tracked_artifact() -> Non
     assert (
         mod._artifact_path_for_contract(args.out_json)
         == "docs/_static/nonlinear_sharding_profile.json"
+    )
+
+
+def test_profile_nonlinear_sharding_documented_script_entrypoint() -> None:
+    root = Path(__file__).resolve().parents[3]
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(root / "tools/profiling/profile_nonlinear_sharding.py"),
+            "--help",
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "numerical identity gate" in result.stdout
+
+
+def test_profile_nonlinear_sharding_problem_excites_nonlinear_bracket() -> None:
+    mod = _load_sharding_tool_module()
+    args = SimpleNamespace(nx=8, ny=8, nz=12, nl=2, nm=3, amplitude=1.0e-4)
+    state, cache, params = mod._build_problem(args)
+    nonlinear_terms = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+        nonlinear=1.0,
+    )
+    rhs, _fields = mod.nonlinear_rhs_cached(
+        state,
+        cache,
+        params,
+        nonlinear_terms,
+        compressed_real_fft=True,
+        laguerre_mode="grid",
+    )
+
+    assert int(jnp.count_nonzero(jnp.abs(state) > 0.0)) > int(args.nz)
+    assert float(jnp.max(jnp.abs(rhs))) > 0.0
+    assert (
+        mod._initial_nonlinear_activity(state, cache, params, laguerre_mode="grid")
+        > 0.0
     )
 
 
@@ -225,7 +281,9 @@ def _load_device_z_pencil_tool_module():
     return load_profiling_tool("profile_device_z_pencil_transport_window")
 
 
-def test_nonlinear_sharding_sweep_subcommand_parser_defaults_to_bounded_artifact() -> None:
+def test_nonlinear_sharding_sweep_subcommand_parser_defaults_to_bounded_artifact() -> (
+    None
+):
     mod = _load_sweep_tool_module()
 
     args = mod.build_sweep_parser().parse_args([])
