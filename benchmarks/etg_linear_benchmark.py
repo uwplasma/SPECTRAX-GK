@@ -10,12 +10,11 @@ from spectraxgk import (
     fit_growth_rate_auto,
     growth_fit_figure,
     linear_validation_figure,
-    load_etg_reference,
     normalize_eigenfunction,
-    run_etg_linear,
     run_scan_and_mode,
     scan_comparison_figure,
 )
+from spectraxgk.benchmarks import load_etg_reference, run_etg_linear
 from spectraxgk.solvers.linear.krylov import KrylovConfig
 
 

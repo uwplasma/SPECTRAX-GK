@@ -112,7 +112,7 @@ use mathematical names independent of comparison provenance.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
+| Capability/parity specification | 98% | Close the newly reproduced ETG branch-selection mismatch, then keep source fingerprints and the machine-readable matrix synchronized. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 67% | Migrate the remaining named benchmark drivers to unified runtime, then delete each duplicated case solver after its parity gate passes. |
@@ -348,6 +348,13 @@ That topology is the reference design for the production parallel lane.
   ``run_runtime_linear``. This also corrected the example's transposed
   Laguerre/Hermite resolution. A real single-mode CPU execution completed in
   23.1 seconds and generated both validation figures.
+- 2026-07-10: Attempted the same unified-runtime migration for ETG and rejected
+  it after real execution. At ``ky=15``, both the direct runtime Krylov policy
+  and the retained specialized driver select branches far from the tracked
+  reference; fixed ``dt=0.01`` time integration is unstable. ETG therefore
+  remains an explicit branch-selection/parity blocker rather than being hidden
+  by an API refactor. The retained driver now imports its comparison-only API
+  from ``spectraxgk.benchmarks`` and all root benchmark ``--help`` paths pass.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
