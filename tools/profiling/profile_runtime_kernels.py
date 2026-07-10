@@ -217,6 +217,16 @@ def main_cyclone(argv: list[str] | None = None) -> int:
     from spectraxgk.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)
+    dt_effective = float(cfg.time.dt if args.dt is None else args.dt)
+    method_effective = str(cfg.time.method if args.method is None else args.method)
+    sample_stride_effective = int(
+        cfg.time.sample_stride if args.sample_stride is None else args.sample_stride
+    )
+    diagnostics_stride_effective = int(
+        cfg.time.diagnostics_stride
+        if args.diagnostics_stride is None
+        else args.diagnostics_stride
+    )
 
     if args.reuse_prepared_simulation:
         if args.steps is None:
@@ -241,26 +251,14 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             Nm=args.Nm,
             nspecies=len(cfg.species),
         )
-        dt_use = float(cfg.time.dt if args.dt is None else args.dt)
-        method_use = str(cfg.time.method if args.method is None else args.method)
-        sample_stride = int(
-            cfg.time.sample_stride
-            if args.sample_stride is None
-            else args.sample_stride
-        )
-        diagnostics_stride = int(
-            cfg.time.diagnostics_stride
-            if args.diagnostics_stride is None
-            else args.diagnostics_stride
-        )
         prepared_kwargs = build_runtime_nonlinear_diagnostics_kwargs(
             cfg,
-            dt=dt_use,
+            dt=dt_effective,
             steps=int(args.steps),
-            method=method_use,
+            method=method_effective,
             term_config=terms,
-            sample_stride=sample_stride,
-            diagnostics_stride=diagnostics_stride,
+            sample_stride=sample_stride_effective,
+            diagnostics_stride=diagnostics_stride_effective,
             laguerre_mode=str(cfg.time.laguerre_nonlinear_mode),
             ky_index=ky_index,
             kx_index=kx_index,
@@ -355,12 +353,18 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             "nl": int(args.Nl),
             "nm": int(args.Nm),
             "steps": args.steps,
-            "dt": args.dt,
-            "method": args.method,
-            "sample_stride": args.sample_stride,
-            "diagnostics_stride": args.diagnostics_stride,
+            "dt": dt_effective,
+            "method": method_effective,
+            "fixed_dt": bool(cfg.time.fixed_dt),
+            "sample_stride": sample_stride_effective,
+            "diagnostics_stride": diagnostics_stride_effective,
             "resolved_diagnostics": bool(args.resolved_diagnostics),
             "reuse_prepared_simulation": bool(args.reuse_prepared_simulation),
+            "software": {
+                "python": sys.version.split()[0],
+                "jax": str(getattr(jax, "__version__", "unknown")),
+                "numpy": str(np.__version__),
+            },
             "warmup_time_s": float(t1 - t0),
             "run_times_s": run_times,
             "run_median_s": run_median,
