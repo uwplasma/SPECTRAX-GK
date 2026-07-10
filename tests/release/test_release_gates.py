@@ -2229,6 +2229,24 @@ def test_claim_scope_pages_keep_required_quasilinear_boundaries() -> None:
     assert not missing
 
 
+def test_readme_python_quickstart_imports_exist() -> None:
+    """Keep the concise README example on the installed public import surface."""
+
+    from spectraxgk import (
+        CycloneBaseCase,
+        LinearParams,
+        integrate_linear_from_config,
+    )
+    from spectraxgk.core.grid import build_spectral_grid
+    from spectraxgk.geometry import SAlphaGeometry
+
+    assert CycloneBaseCase is not None
+    assert LinearParams is not None
+    assert integrate_linear_from_config is not None
+    assert build_spectral_grid is not None
+    assert SAlphaGeometry is not None
+
+
 def test_claim_scope_pages_avoid_promoted_unscoped_claims() -> None:
     violations: list[str] = []
     for path in REQUIRED_PHRASES:

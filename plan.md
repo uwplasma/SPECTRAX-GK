@@ -50,7 +50,7 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-09.
+Date: 2026-07-10.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
@@ -59,6 +59,7 @@ Date: 2026-07-09.
 | Public/compatibility facade maximum | 12512 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
+| README lines | 261 | <=350 user-facing lines | closed |
 | Tracked files above 2 MB | 0 | 0 | closed |
 | Fast release-surface coverage | local pass | pass | closed for current tranche |
 | Package-wide coverage | above 95% in CI gate | >=95% | release gate retained |
@@ -120,7 +121,7 @@ use mathematical names independent of comparison provenance.
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 86% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
-| Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
+| Docs/readme release pass | 92% | Keep README concise and complete the developer/API updates as source owners move. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
 ## Prioritized Implementation Steps
@@ -291,6 +292,12 @@ That topology is the reference design for the production parallel lane.
   reduced equation set. Standard full-gyrokinetic field-energy diagnostics and
   their geometry-weighted/resolved-sum gates remain unchanged. This applies the
   rule that an orphan diagnostic is not a supported physics capability.
+- 2026-07-10: Replaced the 1294-line README with a 261-line user-facing entry
+  point containing installation, executable/Python quickstarts, six headline
+  evidence panels, conservative claim scope, and links to detailed docs.
+  Release, quasilinear, QA-optimization, relative-link, and public-import gates
+  pass. The rewrite also corrected a stale `spectraxgk.grids` import to the
+  actual `spectraxgk.core.grid` owner and added a regression test.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
