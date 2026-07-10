@@ -4,18 +4,21 @@ from pathlib import Path
 import numpy as np
 
 from spectraxgk import (
-    CycloneBaseCase,
     LinearValidationPanel,
-    extract_mode_time_series,
-    fit_growth_rate_auto,
     growth_fit_figure,
     linear_validation_figure,
-    load_cyclone_reference,
+    load_runtime_from_toml,
     normalize_eigenfunction,
-    run_cyclone_linear,
-    run_scan_and_mode,
+    run_runtime_linear,
+    run_runtime_scan,
     scan_comparison_figure,
 )
+from spectraxgk.benchmarks import load_cyclone_reference
+
+
+CONFIG = Path("examples/linear/axisymmetric/cyclone.toml")
+N_LAGUERRE = 16
+N_HERMITE = 48
 
 
 def main() -> None:
@@ -28,7 +31,7 @@ def main() -> None:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    cfg = CycloneBaseCase()
+    cfg, _ = load_runtime_from_toml(CONFIG)
     ref = load_cyclone_reference()
     ky_values = np.array([float(args.ky)]) if args.ky is not None else np.asarray(ref.ky)
 
@@ -41,30 +44,47 @@ def main() -> None:
         min_amp_fraction=0.0,
     )
 
-    scan_result = run_scan_and_mode(
-        ky_values=ky_values,
-        linear_fn=run_cyclone_linear,
-        cfg=cfg,
-        Nl=48,
-        Nm=16,
+    scan = run_runtime_scan(
+        cfg,
+        ky_values,
+        Nl=N_LAGUERRE,
+        Nm=N_HERMITE,
         dt=0.002,
         steps=5000,
         method="imex2",
-        solver="auto",
-        mode_solver="auto",
-        krylov_cfg=None,
-        window_kw=window_kw,
+        solver="time",
+        batch_ky=True,
         auto_window=True,
+        fit_signal="phi",
+        mode_method="z_index",
+        **window_kw,
+    )
+    ky_selected = float(scan.ky[int(np.nanargmax(scan.gamma))])
+    mode = run_runtime_linear(
+        cfg=cfg,
+        ky_target=ky_selected,
+        Nl=N_LAGUERRE,
+        Nm=N_HERMITE,
+        dt=0.002,
+        steps=5000,
+        method="imex2",
+        solver="time",
+        auto_window=True,
+        fit_signal="phi",
+        mode_method="z_index",
+        **window_kw,
     )
 
-    eig = normalize_eigenfunction(scan_result.eigenfunction, scan_result.grid.z)
+    if mode.eigenfunction is None or mode.z is None or mode.t is None or mode.signal is None:
+        raise RuntimeError("time-integrated runtime diagnostics are required")
+    eig = normalize_eigenfunction(mode.eigenfunction, mode.z)
     panel = LinearValidationPanel(
         name="Cyclone",
-        z=scan_result.grid.z,
+        z=mode.z,
         eigenfunction=eig,
-        x=scan_result.scan.ky,
-        gamma=scan_result.scan.gamma,
-        omega=scan_result.scan.omega,
+        x=scan.ky,
+        gamma=scan.gamma,
+        omega=scan.omega,
         x_label=r"$k_y \rho_i$",
         x_ref=ref.ky,
         gamma_ref=ref.gamma,
@@ -75,9 +95,9 @@ def main() -> None:
     fig.savefig(outdir / "cyclone_validation.png", dpi=200)
 
     fig, _axes = scan_comparison_figure(
-        scan_result.scan.ky,
-        scan_result.scan.gamma,
-        scan_result.scan.omega,
+        scan.ky,
+        scan.gamma,
+        scan.omega,
         r"$k_y \rho_i$",
         "Cyclone comparison",
         x_ref=ref.ky,
@@ -88,22 +108,13 @@ def main() -> None:
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
 
     if not args.no_fit:
-        ky_sel = scan_result.ky_selected
-        run = run_cyclone_linear(
-            ky_target=ky_sel,
-            cfg=cfg,
-            Nl=48,
-            Nm=16,
-            dt=0.002,
-            steps=5000,
-            method="imex2",
-            solver="auto",
-            auto_window=True,
-            **window_kw,
+        fig, _axes = growth_fit_figure(
+            mode.t,
+            mode.signal,
+            tmin=mode.fit_window_tmin,
+            tmax=mode.fit_window_tmax,
+            title="Cyclone fit window",
         )
-        signal = extract_mode_time_series(run.phi_t, run.selection, method="project")
-        _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal, **window_kw)
-        fig, _axes = growth_fit_figure(run.t, signal, tmin=tmin, tmax=tmax, title="Cyclone fit window")
         fig.savefig(outdir / "cyclone_fit_window.png", dpi=200)
 
 

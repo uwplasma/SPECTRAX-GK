@@ -115,7 +115,7 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 66% | Keep named cases comparison-only, migrate maintained benchmark drivers to the unified runtime, then delete each duplicated case solver after its parity gate passes. |
+| Source consolidation | 67% | Migrate the remaining named benchmark drivers to unified runtime, then delete each duplicated case solver after its parity gate passes. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 15% | Route the operator through full integration, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -343,6 +343,11 @@ That topology is the reference design for the production parallel lane.
   not a speedup claim. Named benchmark solvers and reference tables were also
   removed from the general top-level API and remain explicitly available from
   ``spectraxgk.benchmarks``; the quickstart now teaches the unified runtime API.
+- 2026-07-10: Migrated the root Cyclone benchmark driver from the specialized
+  named-case solver to canonical TOML plus ``run_runtime_scan`` and
+  ``run_runtime_linear``. This also corrected the example's transposed
+  Laguerre/Hermite resolution. A real single-mode CPU execution completed in
+  23.1 seconds and generated both validation figures.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
