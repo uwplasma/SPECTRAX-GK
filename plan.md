@@ -332,7 +332,9 @@ That topology is the reference design for the production parallel lane.
   observable gives gamma=0.09076 and omega=0.27828 versus late-window reference
   means 0.09582 and 0.28106 (5.3% and 1.0% relative errors). The canonical
   Cyclone TOML now records that observable and `kz`-proportional dissipation;
-  the duplicate `runtime_cyclone.toml` was deleted.
+  the duplicate `runtime_cyclone.toml` was deleted. Explicit-time executable
+  runs now reject non-divisible `steps/sample_stride` values before geometry
+  and cache setup instead of failing after compilation work begins.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

@@ -297,6 +297,25 @@ def test_runtime_command_option_helpers_normalize_cli_and_toml_values() -> None:
     )
 
 
+def test_runtime_linear_command_rejects_invalid_sampling_before_setup() -> None:
+    args = SimpleNamespace(
+        ky=None,
+        Nl=None,
+        Nm=None,
+        solver="time",
+        fit_signal=None,
+        method="rk4",
+        dt=0.1,
+        steps=17,
+        sample_stride=4,
+        progress=False,
+        no_progress=True,
+    )
+
+    with pytest.raises(ValueError, match="must be divisible by sample_stride"):
+        runtime_commands._resolve_linear_command_options(args, _base_cfg(), {})
+
+
 def test_runtime_case_option_helpers_resolve_python_overrides() -> None:
     raw = {
         "run": {
