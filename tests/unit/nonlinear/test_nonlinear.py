@@ -48,6 +48,48 @@ def test_integrate_nonlinear_checkpoint_runs():
     assert fields_t.phi.shape[0] == 2
 
 
+def test_explicit_nonlinear_integrator_applies_custom_collision_each_step():
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G0 = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+
+    class DragCollision:
+        def apply(self, state, _cache, _parameters):
+            return -3.0 * state
+
+    terms = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.25,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        nonlinear=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    G_final = integrate_nonlinear(
+        G0,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="euler",
+        terms=terms,
+        compressed_real_fft=False,
+        return_fields=False,
+        collision_operator=DragCollision(),
+    )
+    np.testing.assert_allclose(np.asarray(G_final), 0.925**2, atol=1.0e-6)
+
+
 def test_nonlinear_imex_reuses_prebuilt_operator():
     """Prebuilt IMEX operator should be reusable for the same state shape."""
 

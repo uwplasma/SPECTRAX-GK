@@ -1076,7 +1076,7 @@ def test_laguerre_transform_helpers_roundtrip():
     assert np.allclose(np.asarray(restored), G, rtol=1.0e-6, atol=1.0e-6)
 
 
-def test_gx_precomputed_bessel_helpers_match_direct():
+def test_precomputed_bessel_helpers_match_direct_evaluation():
     field = jnp.asarray([[[1.0 + 0.5j]]], dtype=jnp.complex64)
     b = jnp.asarray([[[0.05]]], dtype=jnp.float32)
     roots = jnp.asarray([0.0, 1.5], dtype=jnp.float32)

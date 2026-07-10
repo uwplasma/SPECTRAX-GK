@@ -658,6 +658,104 @@ def test_linear_cache_matches_rhs():
     assert jnp.allclose(phi0, phi1)
 
 
+def test_linear_cached_rhs_replaces_builtin_collision_operator():
+    """A custom collision model replaces collisions but not other terms."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.25,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    class DragCollision:
+        def apply(self, state, _cache, _parameters):
+            return -3.0 * state
+
+    dG, _ = linear_rhs_cached(
+        G,
+        cache,
+        params,
+        terms=terms,
+        collision_operator=DragCollision(),
+    )
+    np.testing.assert_allclose(np.asarray(dG), -0.75, atol=1.0e-6)
+
+
+def test_linear_cached_rhs_rejects_invalid_collision_shape():
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=2)
+
+    class InvalidCollision:
+        def apply(self, state, _cache, _parameters):
+            return state[..., 0]
+
+    with pytest.raises(ValueError, match="same state shape"):
+        linear_rhs_cached(
+            G,
+            cache,
+            params,
+            terms=LinearTerms(collisions=1.0),
+            collision_operator=InvalidCollision(),
+        )
+
+
+def test_linear_integrator_applies_custom_collision_each_step():
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G0 = jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+
+    class DragCollision:
+        def apply(self, state, _cache, _parameters):
+            return -3.0 * state
+
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.25,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    G_final, _ = integrate_linear(
+        G0,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="euler",
+        terms=terms,
+        collision_operator=DragCollision(),
+    )
+    np.testing.assert_allclose(np.asarray(G_final), 0.925**2, atol=1.0e-6)
+
+
 def test_linear_cache_tree_roundtrip():
     """LinearCache pytree should round-trip through flatten/unflatten."""
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
@@ -929,7 +1027,7 @@ def test_energy_operator_and_drive_coeffs():
     assert jnp.allclose(coeffs[1:, :], 0.0)
 
 
-def test_gx_mirror_curvature_activation():
+def test_mirror_curvature_terms_activate_with_drift_scale():
     """Drift/mirror terms should activate when omega_d_scale is nonzero."""
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -983,7 +1081,7 @@ def test_gx_mirror_curvature_activation():
     assert jnp.max(jnp.abs(dG_on)) > 0.0
 
 
-def test_gx_diamagnetic_drive_populates_m2():
+def test_diamagnetic_drive_populates_second_hermite_moment():
     """Diamagnetic drive should populate the m=2 component when enabled."""
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -1039,7 +1137,7 @@ def test_gx_diamagnetic_drive_populates_m2():
     assert jnp.allclose(dG_on[:, 1, ...], 0.0)
 
 
-def test_gx_drive_vanishes_for_ky_zero():
+def test_diamagnetic_drive_vanishes_for_zonal_mode():
     """Diamagnetic drive should vanish for the ky=0 mode."""
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)

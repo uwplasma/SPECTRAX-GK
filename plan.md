@@ -117,7 +117,7 @@ use mathematical names independent of comparison provenance.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 67% | Migrate the remaining named benchmark drivers to unified runtime, then delete each duplicated case solver after its parity gate passes. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
-| Advanced collision operators | 15% | Route the operator through full integration, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
+| Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 87% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
@@ -355,6 +355,17 @@ That topology is the reference design for the production parallel lane.
   remains an explicit branch-selection/parity blocker rather than being hidden
   by an API refactor. The retained driver now imports its comparison-only API
   from ``spectraxgk.benchmarks`` and all root benchmark ``--help`` paths pass.
+- 2026-07-10: Extended the structural custom-collision contract through the
+  linear cached RHS and serial explicit/IMEX integration. The hook replaces
+  built-in collisions without disabling hypercollisions, validates output
+  shape, and passes a real two-step damping gate. Unsupported implicit and
+  decomposed routes now fail explicitly. Numerics documentation records the
+  JAX boundary, and non-comparison operator tests use physical terminology.
+- 2026-07-10: Routed the same custom-collision contract through serial explicit
+  nonlinear state integration. A physical two-step gate matches the analytical
+  damping factor exactly. The active extension-point and numerics docs now
+  distinguish supported state paths from pending diagnostic, implicit, and
+  decomposed routes.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

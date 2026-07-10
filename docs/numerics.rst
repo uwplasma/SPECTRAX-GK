@@ -246,6 +246,26 @@ Implementation note:
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
 
+Custom collision operators
+--------------------------
+
+Python workflows may supply any JAX-compatible object implementing
+``apply(state, cache, parameters)`` to ``linear_rhs``, ``linear_rhs_cached``,
+``integrate_linear``, or ``nonlinear_rhs_cached`` through the
+``collision_operator`` keyword. The returned array is the unit-weight
+collisional contribution and must match the distribution-state shape. The
+configured collision term weight multiplies this contribution; built-in
+collisions are disabled, while hypercollisions remain independent.
+
+Custom operators currently support serial explicit and IMEX linear
+integration, cached nonlinear RHS evaluation, and serial explicit nonlinear
+state integration. Implicit solves, diagnostic scans, and decomposed state
+integration reject this option until their operator, observable, and
+preconditioner contracts can include the same model exactly. This boundary is
+appropriate for differentiable collision-model research because state, cache,
+and parameter arrays remain inside the JAX trace while artifact writing and
+configuration parsing remain outside it.
+
 Gyroaverage and polarization
 ----------------------------
 
