@@ -117,7 +117,7 @@ use mathematical names independent of comparison provenance.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 64% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
-| Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
+| Advanced collision operators | 15% | Route the operator through full integration, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 86% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
@@ -318,6 +318,12 @@ That topology is the reference design for the production parallel lane.
   time loop and agrees with centered finite differences to 2% while the docs
   state exactly which cache-dependent geometry and velocity parameters remain
   fixed.
+- 2026-07-10: Wired the structural `CollisionOperator` into the cached
+  nonlinear RHS. A supplied JAX callback replaces only the built-in collision
+  contribution, preserves independent hypercollisions, is multiplied by the
+  configured collision weight, and must preserve the state shape. Unit tests
+  cover replacement/no-double-counting and invalid shapes; docs keep Sugama and
+  full linearized Coulomb models explicitly unpromoted pending invariant gates.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

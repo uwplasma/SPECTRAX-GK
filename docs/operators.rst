@@ -195,14 +195,36 @@ Claim boundary and extension plan
 This is a conserving Lenard--Bernstein/Dougherty-like model, not a complete
 linearized gyrokinetic Landau operator. The low-order field-particle correction
 is important: the operator cannot be represented only by a diagonal damping
-array. The implementation contract for future collision models therefore has
-two paths:
+array. The implementation contract for collision extensions therefore has two
+paths:
 
-- ``contribution(state, fields, cache, species)`` for the complete RHS,
+- ``apply(state, cache, parameters)`` for the complete unit-weight RHS,
   including low-rank or dense field-particle terms;
 - an optional ``split_step`` only when the model supplies a mathematically
   valid exact or implicit update. Diagonal hypercollision splitting must not be
   reused for a non-diagonal conserving operator.
+
+The first path is available from Python through
+``nonlinear_rhs_cached(..., collision_operator=operator)``. The callback must
+return a JAX array with the state shape. SPECTRAX-GK removes the built-in
+collision contribution before adding ``terms.collisions * operator.apply(...)``;
+hypercollisions remain independent:
+
+.. code-block:: python
+
+   class CollisionModel:
+       def apply(self, state, cache, parameters):
+           return collision_rhs(state, cache, parameters)
+
+   rhs, fields = nonlinear_rhs_cached(
+       state, cache, parameters, terms,
+       collision_operator=CollisionModel(),
+   )
+
+The callback is traced by JAX, so its array operations remain differentiable.
+This is an extension contract, not a claim that a Sugama or full linearized
+Coulomb model is already shipped. TOML selection and split integration remain
+disabled until an operator passes the conservation and entropy gates below.
 
 The next model tier is a species-coupled conserving Dougherty operator. The
 research tier after that is the linearized gyrokinetic Sugama/Coulomb operator

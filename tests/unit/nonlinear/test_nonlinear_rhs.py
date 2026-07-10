@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 from spectraxgk.operators.nonlinear.rhs import (
     linear_rhs_jit_for_terms_impl,
@@ -82,6 +83,67 @@ def test_nonlinear_rhs_cached_impl_skips_bracket_when_disabled() -> None:
     assert calls == {"linear": 1, "nonlinear": 0}
     np.testing.assert_allclose(np.asarray(rhs), 2.0)
     assert rhs_fields is fields
+
+
+def test_nonlinear_rhs_cached_impl_accepts_custom_collision_operator() -> None:
+    G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64))
+    seen: dict[str, object] = {}
+
+    def linear_rhs(G_in, _cache, _params, terms, **_kwargs):
+        seen["linear_collision_weight"] = terms.collisions
+        seen["hypercollision_weight"] = terms.hypercollisions
+        return 2.0 * G_in, fields
+
+    class DragCollision:
+        def apply(self, state, cache, parameters):
+            seen["cache"] = cache
+            seen["parameters"] = parameters
+            return -3.0 * state
+
+    cache = _minimal_cache()
+    parameters = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]))
+    rhs, _ = nonlinear_rhs_cached_impl(
+        G,
+        cache,
+        parameters,
+        TermConfig(collisions=0.25, hypercollisions=0.75, nonlinear=0.0),
+        collision_operator=DragCollision(),
+        electrostatic_rhs_fn=linear_rhs,
+        full_rhs_fn=linear_rhs,
+    )
+
+    assert seen["linear_collision_weight"] == 0.0
+    assert seen["hypercollision_weight"] == 0.75
+    assert seen["cache"] is cache
+    assert seen["parameters"] is parameters
+    np.testing.assert_allclose(np.asarray(rhs), 1.25)
+
+
+def test_nonlinear_rhs_cached_impl_rejects_invalid_collision_shape() -> None:
+    G = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64))
+
+    class InvalidCollision:
+        def apply(self, state, _cache, _parameters):
+            return state[..., 0]
+
+    with pytest.raises(ValueError, match="same state shape"):
+        nonlinear_rhs_cached_impl(
+            G,
+            _minimal_cache(),
+            SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+            TermConfig(collisions=1.0, nonlinear=0.0),
+            collision_operator=InvalidCollision(),
+            electrostatic_rhs_fn=lambda state, *_args, **_kwargs: (
+                jnp.zeros_like(state),
+                fields,
+            ),
+            full_rhs_fn=lambda state, *_args, **_kwargs: (
+                jnp.zeros_like(state),
+                fields,
+            ),
+        )
 
 
 def test_nonlinear_rhs_cached_impl_forwards_physical_bracket_payload() -> None:
