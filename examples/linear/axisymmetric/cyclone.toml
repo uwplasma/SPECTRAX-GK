@@ -60,8 +60,8 @@ nu_hermite = 1.0
 nu_laguerre = 2.0
 nu_hyper = 0.0
 p_hyper = 4.0
-hypercollisions_const = 1.0
-hypercollisions_kz = 0.0
+hypercollisions_const = 0.0
+hypercollisions_kz = 1.0
 damp_ends_amp = 0.1
 damp_ends_widthfrac = 0.125
 
@@ -105,4 +105,4 @@ max_fraction = 0.6
 end_fraction = 0.8
 max_amp_fraction = 0.8
 late_penalty = 0.3
-mode_method = "project"
+mode_method = "z_index"

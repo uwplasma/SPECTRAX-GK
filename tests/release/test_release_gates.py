@@ -2175,7 +2175,7 @@ REQUIRED_PHRASES = {
         "Production nonlinear optimization is promoted only for the selected optimized-equilibrium audit",
     ),
     "README.md": (
-        "not a runtime/TOML universal absolute-flux predictor",
+        "not a runtime/TOML absolute-flux predictor",
         "declared Solovev and shaped-pressure stress outliers",
         "W7-X zonal long-window recurrence/damping and W7-X TEM / kinetic-electron extensions are deferred",
         "converged post-transient heat-flux windows",

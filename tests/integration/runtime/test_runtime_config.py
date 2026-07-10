@@ -288,9 +288,8 @@ def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
 def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -> None:
     cfg_dir = REPO_ROOT / "examples" / "linear" / "axisymmetric"
     expected = {
-        "cyclone.toml": (1.0, 2.0, 1.0, 0.0),
+        "cyclone.toml": (1.0, 2.0, 0.0, 1.0),
         "etg.toml": (1.0, 2.0, 1.0, 0.0),
-        "runtime_cyclone.toml": (1.0, 2.0, 1.0, 0.0),
         "runtime_etg.toml": (1.0, 2.0, 1.0, 0.0),
         "runtime_kaw.toml": (1.0, 2.0, 0.0, 1.0),
         "runtime_kbm.toml": (1.0, 2.0, 1.0, 0.0),
@@ -301,6 +300,9 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
         assert cfg.collisions.nu_laguerre == pytest.approx(nu_l), name
         assert cfg.collisions.hypercollisions_const == pytest.approx(hyper_const), name
         assert cfg.collisions.hypercollisions_kz == pytest.approx(hyper_kz), name
+
+    _cfg, cyclone_raw = load_runtime_from_toml(cfg_dir / "cyclone.toml")
+    assert cyclone_raw["fit"]["mode_method"] == "z_index"
 
 
 def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> None:

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from spectraxgk.runtime import run_linear_case
 
-CONFIG = Path(__file__).resolve().parent / "runtime_cyclone.toml"
+CONFIG = Path(__file__).resolve().parent / "cyclone.toml"
 
 
 def main() -> int:

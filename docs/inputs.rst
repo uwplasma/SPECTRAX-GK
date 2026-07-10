@@ -97,7 +97,7 @@ Equivalent executable flags are available for single-point runtime runs:
 .. code-block:: bash
 
    spectraxgk run-runtime-linear \
-     --config examples/linear/axisymmetric/runtime_cyclone.toml \
+     --config examples/linear/axisymmetric/cyclone.toml \
      --quasilinear \
      --ql-mode saturated \
      --ql-saturation-rule mixing_length \

@@ -249,7 +249,7 @@ fast_tests = [
   "tests/integration/runtime/test_runtime_config.py",
 ]
 artifact_paths = [
-  "examples/linear/axisymmetric/runtime_cyclone.toml",
+  "examples/linear/axisymmetric/cyclone.toml",
   "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml",
 ]
 next_tests = [

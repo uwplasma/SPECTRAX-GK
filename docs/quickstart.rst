@@ -24,7 +24,7 @@ Executable demo
    spectraxgk
    spectrax-gk
    spectraxgk examples/linear/axisymmetric/cyclone.toml
-   spectraxgk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
+   spectraxgk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out cyclone_runtime
    spectraxgk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
    spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
    spectraxgk --plot spectraxgk_default_linear.summary.json

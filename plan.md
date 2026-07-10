@@ -324,6 +324,15 @@ That topology is the reference design for the production parallel lane.
   configured collision weight, and must preserve the state shape. Unit tests
   cover replacement/no-double-counting and invalid shapes; docs keep Sugama and
   full linearized Coulomb models explicitly unpromoted pending invariant gates.
+- 2026-07-10: Restored the office comparison-code runtime environment using the
+  locally built parallel NetCDF/HDF5, OpenMPI, CUDA tensor, NCCL, and GSL
+  libraries, then completed a fresh bounded Cyclone linear comparison on one
+  A4000. The unified runtime initially exposed a diagnostic mismatch: projected
+  fitting understated growth by 23%. Using the benchmark-aligned midplane
+  observable gives gamma=0.09076 and omega=0.27828 versus late-window reference
+  means 0.09582 and 0.28106 (5.3% and 1.0% relative errors). The canonical
+  Cyclone TOML now records that observable and `kz`-proportional dissipation;
+  the duplicate `runtime_cyclone.toml` was deleted.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

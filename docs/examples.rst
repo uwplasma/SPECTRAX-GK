@@ -80,7 +80,7 @@ lanes:
 
 .. code-block:: bash
 
-   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_cyclone.toml
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/cyclone.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
    python examples/linear/axisymmetric/etg_linear_auto.py --outdir tools_out/etg_auto
@@ -92,7 +92,7 @@ lanes:
    spectrax-gk run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
-   spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml
+   spectrax-gk examples/linear/axisymmetric/cyclone.toml
 
 For a bounded runtime-configured independent ``k_y`` scan that uses
 ``[parallel] strategy = "batch"`` without changing the single-``k_y`` solver

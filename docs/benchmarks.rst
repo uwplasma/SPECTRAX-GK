@@ -260,6 +260,16 @@ answers two questions:
 - which branches and diagnostics are being tracked for validation,
 - which shipped cases have measured CPU/GPU/runtime-memory coverage.
 
+A fresh bounded Cyclone check on 2026-07-10 used RK4 to ``t=20`` at
+``ky=0.3``, ``N_l=16``, and ``N_m=48`` on an RTX A4000. The reference
+late-window mean was ``gamma=0.09582`` and ``omega=0.28106``; the unified
+runtime with the benchmark-aligned midplane observable returned
+``gamma=0.09076`` and ``omega=0.27828``. Relative errors are 5.3% and 1.0%,
+respectively. The compact machine-readable record is
+``docs/_static/cyclone_runtime_parity_refresh.json``. Its wall times must not be
+read as a speedup: the reference invocation advanced 12 ky modes, while the
+SPECTRAX-GK invocation advanced one.
+
 Primary publication set
 -----------------------
 
