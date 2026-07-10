@@ -1098,6 +1098,17 @@ nominal warm calls. This is a repeated Python-call improvement for fixed
 geometry/model policy, not an end-to-end executable or long-run throughput
 claim.
 
+The matched clean-revision prepared profiles are tracked as
+``prepared_nonlinear_runtime_cpu_profile.json`` and
+``prepared_nonlinear_runtime_gpu_profile.json``. Both use adaptive RK3, 20
+steps, diagnostic stride 10, and compact scalar diagnostics. Their warm medians
+are ``4.078 s`` on the local CPU and ``0.4648 s`` on one office RTX A4000, so
+the accelerator is ``8.77x`` faster on this prepared workload. The ordinary
+rebuilt-runtime A4000 path took ``8.69 s`` because it compiled a fresh scan on
+each nominal repeat. The supported claim is therefore compile-once Python
+throughput for fixed geometry/model policy, not lower executable cold-start
+latency and not multi-GPU speedup.
+
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple
 forced CPU devices. The profiling tool therefore skips active multi-device CPU

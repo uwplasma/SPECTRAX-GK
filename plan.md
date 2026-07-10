@@ -117,9 +117,9 @@ use mathematical names independent of comparison provenance.
 | Source consolidation | 59% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
 | Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
-| Nonlinear GPU performance | 77% | Land a reusable prepared nonlinear runner so repeated Python/optimization calls reuse one compiled diagnostic scan; then profile synchronization and materialization. |
+| Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
-| Performance/release claims | 84% | Keep only profiler-backed claims; refresh matched runtime/memory panel after integrator and topology corrections. |
+| Performance/release claims | 86% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
 | Docs/readme release pass | 80% | Update code-structure, benchmark, performance, and optimization docs after each grouped consolidation. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
@@ -281,6 +281,11 @@ That topology is the reference design for the production parallel lane.
   call takes `3.25 s`; repeats take `0.297 s` and `0.290 s`, versus
   `2.27-2.29 s` when the runtime scan closure is rebuilt. This closes the
   compile-stability defect for fixed-policy repeated Python calls.
+- 2026-07-09: Added clean-revision CPU/A4000 prepared-runtime artifacts at
+  `8d2baf4e`. Matched adaptive RK3 20-step compact runs take `4.078 s` on the
+  local CPU and `0.4648 s` on one A4000, an `8.77x` GPU throughput advantage.
+  The earlier `8.69 s` nominal warm GPU result rebuilt and recompiled its scan;
+  it did not measure steady prepared execution.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

@@ -32,6 +32,33 @@ def test_cyclone_runtime_profiler_default_config_exists() -> None:
     assert args.out is None
 
 
+def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
+    cpu = json.loads(
+        (REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_cpu_profile.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    gpu = json.loads(
+        (REPO_ROOT / "docs/_static/prepared_nonlinear_runtime_gpu_profile.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    for profile in (cpu, gpu):
+        assert profile["git_revision"] == cpu["git_revision"]
+        assert profile["git_dirty"] is False
+        assert profile["reuse_prepared_simulation"] is True
+        assert profile["resolved_diagnostics"] is False
+        assert profile["steps"] == 20
+        assert profile["method"] == "rk3"
+        assert profile["fixed_dt"] is False
+        assert profile["sample_stride"] == 10
+        assert profile["diagnostics_stride"] == 10
+    assert cpu["backend"] == "cpu"
+    assert gpu["backend"] == "gpu"
+    assert cpu["run_median_s"] / gpu["run_median_s"] >= 5.0
+
+
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:
     opts = make_profile_options()
     assert opts.python_tracer_level == 0
