@@ -115,7 +115,7 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 70% | Remove the now-redundant ETG case solver after direct callers migrate, then continue moving named benchmark drivers to unified runtime. |
+| Source consolidation | 71% | Migrate maintainer ETG table/figure callers, then delete the redundant specialized ETG solver and its branch-only tests. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -392,6 +392,11 @@ That topology is the reference design for the production parallel lane.
   ``(3.8782,-26.5447)``. The refreshed reference replaces a stale high-ky
   growth row. The ETG root benchmark now uses the unified runtime API and the
   obsolete tuned propagator policy is no longer part of the publication driver.
+- 2026-07-10: Deleted the obsolete ``etg_linear_auto.py`` example, which still
+  selected the rejected Krylov/IMEX path. User documentation now points to one
+  config-backed ETG runtime example and one publication benchmark. The
+  architecture docs mark the remaining specialized ETG facade as temporary
+  maintainer migration debt instead of presenting duplicate policy as design.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

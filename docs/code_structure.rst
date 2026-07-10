@@ -775,23 +775,14 @@ Kinetic-electron ITG/TEM single-ky and ky-scan runner ownership has moved into t
 The kinetic scan path carries separate run-options, fit-options, and output
 containers through a single batch router, keeping Krylov, Diffrax streaming, and
 sampled-history branches testable without changing the public scan signature.
-ETG single-point and scan implementations now live directly in
-``spectraxgk.benchmarks``. The ETG owner keeps geometry/species setup,
-electrostatic term defaults, fit-window policy construction, ky-batch state
-construction, Krylov continuation, streaming fit, saved-signal integration,
-fallback fitting, and per-batch result packaging beside the documented
-``run_etg_linear`` and ``run_etg_scan`` APIs.
-ETG single-point and scan Krylov paths share one forwarded-key policy, with
-scan continuation overrides applied explicitly for carried shifts. The ETG
-single-point saved-time direct-fit path also shares one automatic-fit keyword
-policy between primary auto-window fitting and invalid-window fallback fitting.
-The single-point runner keeps patchable solver hooks in the public ETG module
-but now separates setup, Krylov result packing, time-configuration resolution,
-streaming-density fitting, configured/unconfigured saved-history integration,
-and saved-trace fitting into focused helpers. The saved-time path carries one
-private fit-policy object through those stages so ``phi``, density, automatic,
-and reference-window fits cannot silently diverge in their normalization or
-window-selection rules. ETG scan internals carry separate batch and fit context objects through staged streaming, configured-history, unconfigured-history, direct-fit, auto-fit, and Krylov-fallback helpers, keeping each numerical branch locally auditable.
+The promoted ETG example and root benchmark use the unified runtime config,
+time integrator, and scan API. Their Boltzmann-ion response, drift
+normalization, parallel hypercollision policy, velocity resolution, timestep,
+and fit window are explicit in ``examples/linear/axisymmetric/etg.toml``.
+Legacy ``run_etg_linear`` and ``run_etg_scan`` entry points remain temporarily
+inside ``spectraxgk.benchmarks`` only for maintainer artifact migration; they
+are not the validated user path and will be deleted once those direct callers
+move to ``run_runtime_linear`` and ``run_runtime_scan``.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.benchmarks`` and are exposed through the same public facade. The single-mode runner
 keeps public setup and solver fallback orchestration local while staging

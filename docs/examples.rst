@@ -83,7 +83,7 @@ lanes:
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/cyclone.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
-   python examples/linear/axisymmetric/etg_linear_auto.py --outdir tools_out/etg_auto
+   python benchmarks/etg_linear_benchmark.py --outdir tools_out/etg
 
    spectrax-gk run-runtime-linear \
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
@@ -447,7 +447,6 @@ discussion:
 .. code-block:: bash
 
    python benchmarks/cyclone_linear_benchmark.py
-   python examples/linear/axisymmetric/etg_linear_auto.py
    python benchmarks/etg_linear_benchmark.py
    python benchmarks/kbm_beta_scan.py
    python benchmarks/kinetic_linear_benchmark.py
