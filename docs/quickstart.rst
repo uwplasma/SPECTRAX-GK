@@ -155,12 +155,18 @@ Python demo
 
 .. code-block:: python
 
-   from spectraxgk import load_cyclone_reference, run_cyclone_linear
+   from spectraxgk import load_runtime_from_toml, run_runtime_linear
 
-   ref = load_cyclone_reference()
-   result = run_cyclone_linear(ky_target=0.3, method="rk4")
+   config, _ = load_runtime_from_toml(
+       "examples/linear/axisymmetric/cyclone.toml"
+   )
+   result = run_runtime_linear(config, ky_target=0.3)
 
    print(result.gamma, result.omega)
+
+Named comparison cases and their tracked reference tables are intentionally
+kept in :mod:`spectraxgk.benchmarks`; ordinary simulations use the unified
+runtime API above.
 
 Run from TOML
 -------------

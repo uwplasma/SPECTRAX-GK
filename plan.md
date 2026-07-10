@@ -115,12 +115,12 @@ use mathematical names independent of comparison provenance.
 | Capability/parity specification | 98% | Keep source fingerprints and the machine-readable matrix synchronized with promoted benchmark gates. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 64% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
+| Source consolidation | 66% | Keep named cases comparison-only, migrate maintained benchmark drivers to the unified runtime, then delete each duplicated case solver after its parity gate passes. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 15% | Route the operator through full integration, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
-| Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
-| Performance/release claims | 86% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
+| Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
+| Performance/release claims | 87% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
 | Docs/readme release pass | 94% | Keep README concise and complete the developer/API updates as source owners move. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
@@ -335,6 +335,14 @@ That topology is the reference design for the production parallel lane.
   the duplicate `runtime_cyclone.toml` was deleted. Explicit-time executable
   runs now reject non-divisible `steps/sample_stride` values before geometry
   and cache setup instead of failing after compilation work begins.
+- 2026-07-10: Corrected combined linear ``ky`` scans to slice a compact
+  linear-only grid instead of inheriting the nonlinear two-thirds dealias
+  mask. A physical regression now includes a high mode outside that mask and
+  matches independent serial integration; the fresh 11-mode A4000 run retains
+  all requested modes. Cold-process timing is recorded as diagnostic evidence,
+  not a speedup claim. Named benchmark solvers and reference tables were also
+  removed from the general top-level API and remain explicitly available from
+  ``spectraxgk.benchmarks``; the quickstart now teaches the unified runtime API.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
