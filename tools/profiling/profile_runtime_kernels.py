@@ -25,9 +25,12 @@ import jax.numpy as jnp
 import numpy as np
 
 try:
-    from tools.profiling._profiler_options import make_profile_options
+    from tools.profiling._profiler_options import git_source_state, make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
-    from _profiler_options import make_profile_options  # type: ignore[import-not-found,no-redef]
+    from _profiler_options import (  # type: ignore[import-not-found,no-redef]
+        git_source_state,
+        make_profile_options,
+    )
 
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.geometry import apply_imported_geometry_grid_defaults
@@ -69,6 +72,7 @@ HLO_TOKENS = (
     "divide",
     "select",
 )
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _block_tree(tree: Any) -> None:
@@ -199,6 +203,7 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
     parser.add_argument("--python-tracer-level", type=int, default=0)
     parser.add_argument("--host-tracer-level", type=int, default=0)
     parser.add_argument("--warmup-only", action="store_true", default=False)
+    parser.add_argument("--out", type=Path, default=None)
     return parser
 
 
@@ -341,6 +346,26 @@ def main_cyclone(argv: list[str] | None = None) -> int:
         f"warmup_time_s={t1 - t0:.3f} run_time_s={run_median:.3f} "
         f"run_times_s={','.join(f'{value:.6f}' for value in run_times)}"
     )
+    if args.out is not None:
+        payload = {
+            **git_source_state(ROOT),
+            "backend": jax.default_backend(),
+            "devices": [str(device) for device in jax.devices()],
+            "config": str(args.config),
+            "nl": int(args.Nl),
+            "nm": int(args.Nm),
+            "steps": args.steps,
+            "dt": args.dt,
+            "method": args.method,
+            "sample_stride": args.sample_stride,
+            "diagnostics_stride": args.diagnostics_stride,
+            "resolved_diagnostics": bool(args.resolved_diagnostics),
+            "reuse_prepared_simulation": bool(args.reuse_prepared_simulation),
+            "warmup_time_s": float(t1 - t0),
+            "run_times_s": run_times,
+            "run_median_s": run_median,
+        }
+        _write_summary_json(payload, args.out)
     return 0
 
 

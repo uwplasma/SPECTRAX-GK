@@ -33,6 +33,7 @@ from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cache
 from spectraxgk.parallel.integrators import integrate_nonlinear_sharded
 from spectraxgk.parallel.state import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
+from tools.profiling._profiler_options import git_source_state
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -86,26 +87,7 @@ def _software_versions() -> dict[str, str]:
 def _git_source_state() -> dict[str, Any]:
     """Return reproducible source provenance without requiring Git at runtime."""
 
-    try:
-        revision = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=ROOT,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        dirty = bool(
-            subprocess.run(
-                ["git", "status", "--porcelain"],
-                cwd=ROOT,
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return {"git_revision": "unknown", "git_dirty": None}
-    return {"git_revision": revision, "git_dirty": dirty}
+    return git_source_state(ROOT)
 
 
 def _source_contract(
