@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 from contextlib import redirect_stdout
-from pathlib import Path
 
 import jax.numpy as jnp
 import numpy as np
@@ -324,12 +323,8 @@ def test_velocity_basis_orthonormality_and_validation() -> None:
     assert l0.shape == (1, 2)
 
 
-def test_species_builder_and_runtime_toml_core_contracts(tmp_path: Path) -> None:
+def test_species_builder_core_contracts() -> None:
     from spectraxgk.core.species import Species, build_linear_params
-    from spectraxgk.workflows.runtime.toml import (
-        load_case_from_toml,
-        load_linear_terms_from_toml,
-    )
 
     ion = Species(
         charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=2.0, fprim=1.0
@@ -343,30 +338,6 @@ def test_species_builder_and_runtime_toml_core_contracts(tmp_path: Path) -> None
     assert np.isclose(params.vth[0], 1.0)
     assert np.isclose(params.tz[1], -1.0)
     assert params.beta == 1.0e-4
-
-    flag_path = tmp_path / "case_flag.toml"
-    flag_path.write_text('case = "cyclone"\nreference_alignment = true\n', encoding="utf-8")
-    case_name, cfg, _data = load_case_from_toml(flag_path)
-    assert case_name == "cyclone"
-    assert cfg.reference_aligned is True
-
-    table_path = tmp_path / "case_table.toml"
-    table_path.write_text(
-        'case = "cyclone"\n\n[reference_alignment]\nenabled = false\n',
-        encoding="utf-8",
-    )
-    case_name, cfg, _data = load_case_from_toml(table_path)
-    assert case_name == "cyclone"
-    assert cfg.reference_aligned is False
-
-    terms = load_linear_terms_from_toml(
-        {"terms": {"streaming": 0.0, "apar": 0.0, "bpar": 0.0, "nonlinear": 0.0}}
-    )
-    assert terms is not None
-    assert terms.streaming == 0.0
-    assert terms.apar == 0.0
-    assert terms.bpar == 0.0
-
 
 def test_normalization_and_benchmark_public_contracts() -> None:
     import spectraxgk.benchmarks as benchmark_defaults

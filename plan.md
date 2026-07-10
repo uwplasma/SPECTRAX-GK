@@ -307,6 +307,11 @@ That topology is the reference design for the production parallel lane.
   fitted mode (gamma=0.085141, omega=0.291379). Focused runtime tests, docs,
   package build, architecture, coverage-manifest, and release-readiness gates
   pass.
+- 2026-07-10: Removed the remaining named-case TOML parser, private solver
+  section loaders, and three public compatibility exports. All maintained
+  inputs now enter through `load_runtime_from_toml`; focused core, runtime
+  configuration, executable, and public-API tests pass. This removes another
+  118 net lines and leaves one documented input schema.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
