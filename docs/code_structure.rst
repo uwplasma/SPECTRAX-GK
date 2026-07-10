@@ -779,10 +779,10 @@ The promoted ETG example and root benchmark use the unified runtime config,
 time integrator, and scan API. Their Boltzmann-ion response, drift
 normalization, parallel hypercollision policy, velocity resolution, timestep,
 and fit window are explicit in ``examples/linear/axisymmetric/etg.toml``.
-Legacy ``run_etg_linear`` and ``run_etg_scan`` entry points remain temporarily
-inside ``spectraxgk.benchmarks`` only for maintainer artifact migration; they
-are not the validated user path and will be deleted once those direct callers
-move to ``run_runtime_linear`` and ``run_runtime_scan``.
+The former ``run_etg_linear`` and ``run_etg_scan`` implementations have been
+deleted after maintainer figure/table callers moved to ``run_runtime_linear``
+and ``run_runtime_scan``. ETG therefore has one solver policy and one public
+configuration path rather than a benchmark-specific compatibility branch.
 Cyclone single-mode and scan implementations now live in
 ``spectraxgk.benchmarks`` and are exposed through the same public facade. The single-mode runner
 keeps public setup and solver fallback orchestration local while staging

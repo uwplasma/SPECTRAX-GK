@@ -6,7 +6,6 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
-import jax.numpy as jnp
 
 import spectraxgk.diagnostics.growth_rates as growth_rate_diagnostics
 import spectraxgk.benchmarks as benchmark_kbm_beta
@@ -24,8 +23,6 @@ from spectraxgk.benchmarks import (
     load_tem_reference,
     run_cyclone_linear,
     run_cyclone_scan,
-    run_etg_linear,
-    run_etg_scan,
     run_kbm_linear,
     run_kbm_beta_scan,
     run_kbm_scan,
@@ -37,8 +34,6 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import (
     CycloneBaseCase,
-    ETGBaseCase,
-    ETGModelConfig,
     GridConfig,
     InitializationConfig,
     KBMBaseCase,
@@ -48,9 +43,8 @@ from spectraxgk.config import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid
-from spectraxgk.linear import LinearParams, LinearTerms
+from spectraxgk.linear import LinearParams
 from spectraxgk.solvers.linear.krylov import KrylovConfig
-from spectraxgk.core.species import Species, build_linear_params
 
 pytestmark = pytest.mark.integration
 
@@ -852,58 +846,10 @@ def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_reference_growth_u
     assert np.isclose(scan.omega[0], 0.8)
 
 
-@pytest.mark.slow
-def test_etg_growth_positive_for_gradients():
-    """ETG growth rate should remain positive across R/LTe variations."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg_low = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=4.0))
-    cfg_high = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=8.0))
-    low = run_etg_linear(
-        cfg=cfg_low,
-        ky_target=3.0,
-        Nl=3,
-        Nm=6,
-        steps=80,
-        dt=0.003,
-        method="rk4",
-        solver="time",
-    )
-    high = run_etg_linear(
-        cfg=cfg_high,
-        ky_target=3.0,
-        Nl=3,
-        Nm=6,
-        steps=80,
-        dt=0.003,
-        method="rk4",
-        solver="time",
-    )
-    assert low.gamma > 0.0
-    assert high.gamma > 0.0
-    assert high.gamma > 0.1 * low.gamma
 
 
-def test_etg_frequency_sign():
-    """ETG frequency should align with the electron diamagnetic direction."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    result = run_etg_linear(
-        cfg=cfg, ky_target=3.0, Nl=3, Nm=6, steps=80, dt=0.003, method="rk4"
-    )
-    assert np.isfinite(result.omega)
-    assert result.omega < 0.0
 
 
-def test_etg_scan_shapes():
-    """ETG scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=6.28, Ly=6.28)
-    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    ky_values = np.array([3.0, 4.0])
-    scan = run_etg_scan(
-        ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.003, method="rk4"
-    )
-    assert scan.ky.shape == ky_values.shape
-    assert scan.gamma.shape == ky_values.shape
 
 
 def test_kinetic_linear_smoke():
@@ -1767,58 +1713,8 @@ def test_select_kbm_solver_auto_lock():
     )
 
 
-def test_etg_scan_manual_window():
-    """Manual window path should be exercised for ETG scans."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    ky_values = np.array([3.0])
-    scan = run_etg_scan(
-        ky_values,
-        cfg=cfg,
-        Nl=3,
-        Nm=6,
-        steps=60,
-        dt=0.02,
-        method="rk4",
-        solver="time",
-        auto_window=False,
-        tmin=0.05,
-        tmax=0.15,
-    )
-    assert np.isfinite(scan.gamma[0])
 
 
-def test_etg_manual_window():
-    """Manual window path should be exercised for ETG fits."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    result = run_etg_linear(
-        cfg=cfg,
-        ky_target=3.0,
-        Nl=3,
-        Nm=6,
-        steps=60,
-        dt=0.02,
-        method="rk4",
-        solver="time",
-        fit_signal="phi",
-        terms=LinearTerms(
-            streaming=0.0,
-            mirror=0.0,
-            curvature=0.0,
-            gradb=0.0,
-            diamagnetic=0.0,
-            collisions=0.0,
-            hypercollisions=0.0,
-            end_damping=0.0,
-            apar=0.0,
-            bpar=0.0,
-        ),
-        auto_window=False,
-        tmin=0.05,
-        tmax=0.15,
-    )
-    assert np.isfinite(result.gamma)
 
 
 def test_tem_run_density_fit():
@@ -2008,21 +1904,6 @@ def test_benchmark_krylov_smoke_finite():
     assert np.isfinite(cyclone.gamma)
     assert np.isfinite(cyclone.omega)
 
-    etg_grid = GridConfig(
-        Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=0.2
-    )
-    etg_cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=6.0))
-    etg = run_etg_linear(
-        cfg=etg_cfg,
-        ky_target=3.0,
-        Nl=4,
-        Nm=4,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    assert np.isfinite(etg.gamma)
-    assert np.isfinite(etg.omega)
-
     kin_grid = GridConfig(
         Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
     )
@@ -2068,211 +1949,3 @@ def test_benchmark_krylov_smoke_finite():
     )
     assert np.isfinite(tem.gamma)
     assert np.isfinite(tem.omega)
-
-
-def test_etg_linear_with_params():
-    """ETG harness should accept explicit parameter overrides."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    model = ETGModelConfig(R_over_LTe=6.0)
-    cfg = ETGBaseCase(grid=grid, model=model)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = build_linear_params(
-        [
-            Species(
-                charge=1.0,
-                mass=1.0,
-                density=1.0,
-                temperature=1.0,
-                tprim=model.R_over_LTi,
-                fprim=model.R_over_Ln,
-            ),
-            Species(
-                charge=-1.0,
-                mass=1.0 / model.mass_ratio,
-                density=1.0,
-                temperature=model.Te_over_Ti,
-                tprim=model.R_over_LTe,
-                fprim=model.R_over_Ln,
-            ),
-        ],
-        kpar_scale=float(geom.gradpar()),
-        rho_star=1.0,
-    )
-    result = run_etg_linear(
-        cfg=cfg, params=params, ky_target=3.0, Nl=3, Nm=6, steps=60, dt=0.02
-    )
-    assert np.isfinite(result.gamma)
-
-
-def test_etg_scan_with_params():
-    """ETG scan should accept explicit parameter overrides."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    model = ETGModelConfig(R_over_LTe=6.0)
-    cfg = ETGBaseCase(grid=grid, model=model)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = build_linear_params(
-        [
-            Species(
-                charge=1.0,
-                mass=1.0,
-                density=1.0,
-                temperature=1.0,
-                tprim=model.R_over_LTi,
-                fprim=model.R_over_Ln,
-            ),
-            Species(
-                charge=-1.0,
-                mass=1.0 / model.mass_ratio,
-                density=1.0,
-                temperature=model.Te_over_Ti,
-                tprim=model.R_over_LTe,
-                fprim=model.R_over_Ln,
-            ),
-        ],
-        kpar_scale=float(geom.gradpar()),
-        rho_star=1.0,
-    )
-    scan = run_etg_scan(
-        np.array([3.0]),
-        cfg=cfg,
-        params=params,
-        Nl=3,
-        Nm=6,
-        steps=60,
-        dt=0.02,
-        method="rk4",
-    )
-    assert np.isfinite(scan.gamma[0])
-
-
-def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
-    from types import SimpleNamespace
-    import spectraxgk.benchmarks as benchmark_etg_linear
-
-    captured = {}
-
-    def fake_dominant_eigenpair(G0, cache, params, terms=None, **_kwargs):
-        captured["terms"] = terms
-        return jnp.asarray(0.2 - 0.3j, dtype=jnp.complex64), jnp.zeros_like(G0)
-
-    def fake_compute_fields_cached(vec, cache, params, terms=None):
-        return SimpleNamespace(phi=jnp.zeros(vec.shape[-3:], dtype=jnp.complex64))
-
-    monkeypatch.setattr(
-        benchmark_etg_linear, "dominant_eigenpair", fake_dominant_eigenpair
-    )
-    monkeypatch.setattr(
-        benchmark_etg_linear, "compute_fields_cached", fake_compute_fields_cached
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
-    cfg = ETGBaseCase(
-        grid=grid,
-        model=ETGModelConfig(
-            R_over_LTi=0.0,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            R_over_Lni=0.0,
-            R_over_Lne=0.8,
-            adiabatic_ions=False,
-            mass_ratio=3670.0,
-        ),
-    )
-    out = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=2, Nm=2, solver="krylov")
-
-    assert np.isfinite(out.gamma)
-    assert captured["terms"] == LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0)
-
-
-def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
-    import spectraxgk.benchmarks as benchmark_etg_scan
-
-    captured = {}
-
-    def fake_dominant_eigenpair(G0, cache, params, terms=None, **_kwargs):
-        idx = int(captured.get("calls", 0))
-        captured["calls"] = idx + 1
-        captured.setdefault("terms", []).append(terms)
-        eig = jnp.asarray((0.1 + idx) - 0.2j, dtype=jnp.complex64)
-        return eig, jnp.zeros_like(G0)
-
-    monkeypatch.setattr(
-        benchmark_etg_scan, "dominant_eigenpair", fake_dominant_eigenpair
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
-    cfg = ETGBaseCase(
-        grid=grid,
-        model=ETGModelConfig(
-            R_over_LTi=0.0,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            R_over_Lni=0.0,
-            R_over_Lne=0.8,
-            adiabatic_ions=False,
-            mass_ratio=3670.0,
-        ),
-    )
-    scan = run_etg_scan(np.array([3.0, 4.0]), cfg=cfg, Nl=2, Nm=2, solver="krylov")
-
-    assert np.all(np.isfinite(scan.gamma))
-    assert captured["calls"] == 2
-    assert captured["terms"] == [
-        LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
-        LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
-    ]
-
-
-def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
-    import spectraxgk.benchmarks as benchmark_etg_scan
-
-    calls: list[dict[str, object]] = []
-
-    def fake_dominant_eigenpair(G0, cache, params, terms=None, **kwargs):
-        calls.append(dict(kwargs))
-        eig = jnp.asarray((0.2 + 0.1 * len(calls)) - 0.3j, dtype=jnp.complex64)
-        vec = jnp.ones_like(G0) * (1.0 + 0.0j)
-        return eig, vec
-
-    monkeypatch.setattr(
-        benchmark_etg_scan, "dominant_eigenpair", fake_dominant_eigenpair
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
-    cfg = ETGBaseCase(
-        grid=grid,
-        model=ETGModelConfig(
-            R_over_LTi=0.0,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            R_over_Lni=0.0,
-            R_over_Lne=0.8,
-            adiabatic_ions=False,
-            mass_ratio=3670.0,
-        ),
-    )
-    kcfg = KrylovConfig(
-        method="shift_invert",
-        shift=None,
-        shift_source="target",
-        shift_selection="targeted",
-        mode_family="etg",
-        continuation=True,
-        continuation_selection="overlap",
-    )
-
-    scan = run_etg_scan(
-        np.array([3.0, 4.0]),
-        cfg=cfg,
-        Nl=2,
-        Nm=2,
-        solver="krylov",
-        krylov_cfg=kcfg,
-    )
-
-    assert np.all(np.isfinite(scan.gamma))
-    assert len(calls) == 2
-    assert calls[0]["shift_selection"] == "targeted"
-    assert complex(calls[1]["shift"]) == pytest.approx(complex(0.3, -0.3))
-    assert calls[1]["shift_selection"] == "shift"
-    assert calls[1]["select_overlap"] is True

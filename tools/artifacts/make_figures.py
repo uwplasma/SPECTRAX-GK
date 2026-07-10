@@ -27,7 +27,6 @@ from spectraxgk.diagnostics.analysis import (
 )
 from spectraxgk.benchmarks import (
     CYCLONE_KRYLOV_DEFAULT,
-    ETG_KRYLOV_DEFAULT,
     KBM_KRYLOV_DEFAULT,
     KINETIC_KRYLOV_DEFAULT,
     TEM_KRYLOV_DEFAULT,
@@ -44,19 +43,13 @@ from spectraxgk.benchmarks import (
     load_kbm_reference,
     LinearScanResult,
     run_cyclone_scan,
-    run_etg_linear,
-    run_etg_scan,
     run_kinetic_scan,
     run_kbm_beta_scan,
     run_tem_scan,
 )
-from spectraxgk.config import (
-    CycloneBaseCase,
-    ETGBaseCase,
-    ETGModelConfig,
-    GridConfig,
-    TimeConfig,
-)
+from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
+from spectraxgk.runtime import run_runtime_scan
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import SpectralGrid, build_spectral_grid, select_ky_grid
 from spectraxgk.solvers.time.explicit import (
@@ -103,50 +96,8 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
-def _etg_benchmark_case() -> ETGBaseCase:
-    return ETGBaseCase(
-        grid=GridConfig(
-            Nx=1,
-            Ny=16,
-            Nz=64,
-            Lx=6.28,
-            Ly=0.628,
-            ntheta=32,
-            nperiod=2,
-        ),
-        model=ETGModelConfig(
-            R_over_LTi=0.0,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            R_over_Lni=0.0,
-            R_over_Lne=0.8,
-            Te_over_Ti=1.0,
-            mass_ratio=3670.0,
-            nu_i=0.0,
-            nu_e=0.0,
-            beta=1.0e-5,
-            adiabatic_ions=False,
-        ),
-    )
-
-
-def _etg_resolution_policy(ky: float) -> tuple[int, int]:
-    """Per-ky Hermite/Laguerre resolution for ETG scans."""
-
-    if ky < 10.0:
-        return 48, 16
-    return 48, 16
-
-
-def _etg_krylov_policy(ky: float) -> KrylovConfig:
-    if ky < 10.0:
-        return ETG_KRYLOV_LOW
-    return ETG_KRYLOV
-
-
 CYCLONE_SCAN_SOLVER = "time"
 KINETIC_SCAN_SOLVER = "time"
-ETG_SCAN_SOLVER = "time"
 KBM_SCAN_SOLVER = "time"
 TEM_SCAN_SOLVER = "time"
 MODE_SOLVER = "time"
@@ -155,21 +106,6 @@ DIAGNOSTIC_NORM = "rho_star"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
 KINETIC_KRYLOV = KINETIC_KRYLOV_DEFAULT
-ETG_KRYLOV = ETG_KRYLOV_DEFAULT
-ETG_KRYLOV_LOW = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    omega_min_factor=0.0,
-    omega_target_factor=0.0,
-    omega_cap_factor=2.0,
-    omega_sign=-1,
-    power_iters=80,
-    power_dt=0.002,
-    shift_maxiter=40,
-    shift_restart=12,
-    shift_tol=2.0e-3,
-)
 KBM_KRYLOV = KBM_KRYLOV_DEFAULT
 TEM_KRYLOV = TEM_KRYLOV_DEFAULT
 
@@ -633,13 +569,15 @@ def _cyclone_reference_scan(
     ky_out: list[float] = []
     iterator = tqdm(ky_values, desc="Cyclone GX ky scan") if progress else ky_values
     for ky in iterator:
-        gamma, omega, _t, _phi_t, _sel, _tmin, _tmax, _grid = _run_cyclone_reference_case(
-            ky=float(ky),
-            cfg=cfg,
-            geom=geom,
-            window_kw=window_kw,
-            verbose=verbose,
-            progress=progress,
+        gamma, omega, _t, _phi_t, _sel, _tmin, _tmax, _grid = (
+            _run_cyclone_reference_case(
+                ky=float(ky),
+                cfg=cfg,
+                geom=geom,
+                window_kw=window_kw,
+                verbose=verbose,
+                progress=progress,
+            )
         )
         ky_out.append(float(ky))
         gammas.append(float(gamma))
@@ -728,8 +666,6 @@ def _scan_and_mode(
             krylov_cfg = CYCLONE_KRYLOV
         elif scan_fn is run_kinetic_scan:
             krylov_cfg = KINETIC_KRYLOV
-        elif scan_fn is run_etg_scan:
-            krylov_cfg = ETG_KRYLOV
         elif scan_fn is run_tem_scan:
             krylov_cfg = TEM_KRYLOV
     if verbose or progress:
@@ -809,48 +745,27 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
     if mismatch_csv.exists():
         etg_scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
     else:
-        cfg_etg = _etg_benchmark_case()
-        etg_ky = np.asarray(etg_ref.ky)
-        etg_time = TimeConfig(
-            t_max=2.4,
-            dt=2.0e-4,
-            method="imex2",
-            use_diffrax=False,
-            progress_bar=False,
-            sample_stride=10,
+        cfg_etg, _ = load_runtime_from_toml(
+            ROOT / "examples/linear/axisymmetric/etg.toml"
         )
-        etg_steps = int(round(etg_time.t_max / etg_time.dt))
-        etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
-            run_etg_scan,
-            run_etg_linear,
-            etg_ky,
+        etg_ky = np.asarray(etg_ref.ky)
+        etg_scan = run_runtime_scan(
             cfg_etg,
+            etg_ky,
             Nl=24,
             Nm=8,
-            steps=etg_steps,
-            dt=etg_time.dt,
-            window_kw=WINDOWS["etg"],
-            scan_solver=ETG_SCAN_SOLVER,
-            mode_solver=MODE_SOLVER,
-            mode_method=MODE_METHOD,
-            auto_window=True,
-            tmin=None,
-            tmax=None,
-            scan_kwargs={
-                "fit_signal": "phi",
-                "mode_method": "z_index",
-                "time_cfg": etg_time,
-            },
-            mode_kwargs={
-                "fit_signal": "phi",
-                "mode_method": "z_index",
-                "time_cfg": etg_time,
-            },
-            verbose=verbose,
-            progress=progress,
-            label="ETG panel",
-            resolution_policy=_etg_resolution_policy,
-            krylov_policy=_etg_krylov_policy,
+            solver="time",
+            batch_ky=True,
+            method=cfg_etg.time.method,
+            dt=cfg_etg.time.dt,
+            steps=int(round(cfg_etg.time.t_max / cfg_etg.time.dt)),
+            sample_stride=cfg_etg.time.sample_stride,
+            auto_window=False,
+            tmin=1.0,
+            tmax=cfg_etg.time.t_max,
+            fit_signal="phi",
+            mode_method="z_index",
+            show_progress=progress,
         )
     fig, _axes = scan_comparison_figure(
         etg_scan.ky,
