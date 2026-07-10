@@ -23,7 +23,6 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    CYCLONE_KRYLOV_DEFAULT,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
     KINETIC_KRYLOV_REFERENCE_ALIGNED,
@@ -37,10 +36,7 @@ from spectraxgk.benchmarks import (
     load_etg_reference,
     load_kbm_reference,
     load_tem_reference,
-    CycloneScanResult,
     LinearScanResult,
-    run_cyclone_linear,
-    run_cyclone_scan,
     run_kinetic_linear,
     run_kbm_beta_scan,
     run_tem_linear,
@@ -70,7 +66,6 @@ from spectraxgk.diagnostics.analysis import (
     select_ky_index,
 )
 
-CYCLONE_SOLVER = "time"
 KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "time"
 KBM_SOLVER = "time"
@@ -79,7 +74,6 @@ DIAGNOSTIC_NORM = "rho_star"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 
 
-CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
 KINETIC_KRYLOV = KINETIC_KRYLOV_REFERENCE_ALIGNED
 KBM_KRYLOV = KBM_KRYLOV_DEFAULT
 TEM_KRYLOV = TEM_KRYLOV_DEFAULT
@@ -293,25 +287,6 @@ def _write_kbm_public_mismatch_table(
     kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
     kbm_table.write_text(
         "\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8"
-    )
-
-
-def _cyclone_refresh_grid(ref: LinearScanResult) -> GridConfig:
-    nky = int(np.asarray(ref.ky).size)
-    if nky < 2:
-        raise ValueError(
-            "Cyclone reference must contain at least two positive ky points"
-        )
-    return GridConfig(
-        Nx=1,
-        Ny=3 * (nky - 1) + 1,
-        Nz=96,
-        Lx=62.8,
-        Ly=62.8,
-        y0=20.0,
-        ntheta=32,
-        nperiod=2,
-        boundary="linked",
     )
 
 
@@ -893,8 +868,8 @@ CYCLONE_PUBLIC_TIME = TimeConfig(
     progress_bar=False,
     fixed_dt=True,
 )
-CYCLONE_PUBLIC_NL = 6
-CYCLONE_PUBLIC_NM = 12
+CYCLONE_PUBLIC_NL = 16
+CYCLONE_PUBLIC_NM = 48
 
 
 def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
@@ -1051,7 +1026,7 @@ def _cyclone_reference_scan(
 
 def _cyclone_reference_mismatch_scan(
     ref: LinearScanResult,
-    cfg: CycloneBaseCase,
+    cfg,
     *,
     verbose: bool,
     progress: bool,
@@ -1059,23 +1034,15 @@ def _cyclone_reference_mismatch_scan(
     _log("\n=== Cyclone mismatch scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
     _log(
-        "Numerics: fixed-step Tsit5 public benchmark scan",
+        "Numerics: canonical TOML-backed combined-ky runtime scan",
         verbose=verbose,
         use_tqdm=progress,
     )
-    _log(f"Window params: {WINDOWS['cyclone']}", verbose=verbose, use_tqdm=progress)
-    steps = _scale_steps(
-        np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000
-    )
-    scan = run_cyclone_scan(
+    scan = _runtime_cyclone_scan(
+        cfg,
         np.asarray(ref.ky),
-        cfg=cfg,
         Nl=CYCLONE_PUBLIC_NL,
         Nm=CYCLONE_PUBLIC_NM,
-        dt=0.01,
-        steps=steps,
-        time_cfg=CYCLONE_PUBLIC_TIME,
-        **WINDOWS["cyclone"],
     )
     for ky_val, gamma_val, omega_val in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky_val)))
@@ -1098,6 +1065,54 @@ def _cyclone_reference_mismatch_scan(
         ky=np.asarray(scan.ky),
         gamma=np.asarray(scan.gamma),
         omega=np.asarray(scan.omega),
+    )
+
+
+def _runtime_cyclone_scan(
+    cfg,
+    ky_values: np.ndarray,
+    *,
+    Nl: int,
+    Nm: int,
+    progress: bool = False,
+) -> LinearScanResult:
+    ky = np.asarray(ky_values, dtype=float)
+    gamma = np.empty_like(ky)
+    omega = np.empty_like(ky)
+
+    # Slowly growing low-ky modes need twice the transient horizon. Keeping the
+    # two groups batched avoids paying that cost for the converged main branch.
+    for mask, steps in ((ky < 0.15, 17160), (ky >= 0.15, 8580)):
+        if not np.any(mask):
+            continue
+        scan = run_runtime_scan(
+            cfg,
+            ky[mask],
+            Nl=Nl,
+            Nm=Nm,
+            dt=0.004663,
+            steps=steps,
+            method="rk4",
+            solver="time",
+            batch_ky=True,
+            sample_stride=10,
+            auto_window=True,
+            fit_signal="phi",
+            mode_method="z_index",
+            window_fraction=0.3,
+            min_points=80,
+            start_fraction=0.58,
+            growth_weight=0.0,
+            require_positive=True,
+            min_amp_fraction=0.05,
+            show_progress=progress,
+        )
+        gamma[mask] = np.asarray(scan.gamma)
+        omega[mask] = np.asarray(scan.omega)
+    return LinearScanResult(
+        ky=ky,
+        gamma=gamma,
+        omega=omega,
     )
 
 
@@ -1350,6 +1365,83 @@ def _run_kinetic_tables(
     )
 
 
+def _write_cyclone_runtime_tables(
+    *, outdir: Path, minimal: bool, verbose: bool, progress: bool
+) -> None:
+    cfg, _ = load_runtime_from_toml(ROOT / "examples/linear/axisymmetric/cyclone.toml")
+    ref = _cyclone_refresh_reference(load_cyclone_reference())
+    mismatch = _cyclone_reference_mismatch_scan(
+        ref, cfg, verbose=verbose, progress=progress
+    )
+    (outdir / "cyclone_mismatch_table.csv").write_text(
+        "\n".join(_build_rows(mismatch, ref)) + "\n", encoding="utf-8"
+    )
+    if minimal:
+        return
+
+    ky_convergence = np.array([0.3, 0.4])
+    low = _runtime_cyclone_scan(cfg, ky_convergence, Nl=8, Nm=24, progress=progress)
+    high = _runtime_cyclone_scan(cfg, ky_convergence, Nl=16, Nm=48, progress=progress)
+    (outdir / "cyclone_scan_table_lowres.csv").write_text(
+        "\n".join(_build_rows(low, ref)) + "\n", encoding="utf-8"
+    )
+    (outdir / "cyclone_scan_table_highres.csv").write_text(
+        "\n".join(_build_rows(high, ref)) + "\n", encoding="utf-8"
+    )
+    convergence_rows = [
+        "ky,gamma_low,gamma_high,omega_low,omega_high,rel_gamma_change,rel_omega_change"
+    ]
+    for ky, g_lo, g_hi, w_lo, w_hi in zip(
+        low.ky, low.gamma, high.gamma, low.omega, high.omega
+    ):
+        rel_g = (g_hi - g_lo) / g_hi if g_hi != 0.0 else np.nan
+        rel_w = (w_hi - w_lo) / w_hi if w_hi != 0.0 else np.nan
+        convergence_rows.append(
+            f"{ky:.3f},{g_lo:.6f},{g_hi:.6f},{w_lo:.6f},{w_hi:.6f},{rel_g:.3f},{rel_w:.3f}"
+        )
+    (outdir / "cyclone_scan_convergence.csv").write_text(
+        "\n".join(convergence_rows) + "\n", encoding="utf-8"
+    )
+
+    full = _runtime_cyclone_scan(
+        cfg, np.array([0.2, 0.3, 0.4]), Nl=16, Nm=48, progress=progress
+    )
+    full_rows = [
+        "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
+    ]
+    for ky, gamma, omega in zip(full.ky, full.gamma, full.omega):
+        idx = int(np.argmin(np.abs(ref.ky - ky)))
+        gamma_ref = float(ref.gamma[idx])
+        omega_ref = float(ref.omega[idx])
+        rel_gamma = (abs(gamma) - gamma_ref) / gamma_ref
+        rel_omega = (abs(omega) - abs(omega_ref)) / abs(omega_ref)
+        full_rows.append(
+            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},"
+            f"{abs(gamma):.6f},{abs(omega):.6f},{rel_gamma:.3f},{rel_omega:.3f}"
+        )
+    (outdir / "cyclone_full_operator_scan_table.csv").write_text(
+        "\n".join(full_rows) + "\n", encoding="utf-8"
+    )
+
+    rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
+    for rho in (0.8, 1.0, 1.2):
+        rho_cfg = replace(
+            cfg, normalization=replace(cfg.normalization, rho_star=float(rho))
+        )
+        scan = _runtime_cyclone_scan(rho_cfg, full.ky, Nl=16, Nm=48, progress=progress)
+        ref_indices = [int(np.argmin(np.abs(ref.ky - ky))) for ky in scan.ky]
+        gamma_ref = np.asarray(ref.gamma)[ref_indices]
+        omega_ref = np.asarray(ref.omega)[ref_indices]
+        gamma_ratio = np.mean(np.abs(scan.gamma) / np.maximum(gamma_ref, 1.0e-30))
+        omega_ratio = np.mean(
+            np.abs(scan.omega) / np.maximum(np.abs(omega_ref), 1.0e-30)
+        )
+        rho_rows.append(f"{rho:.2f},{gamma_ratio:.3f},{omega_ratio:.3f}")
+    (outdir / "cyclone_rhostar_convergence.csv").write_text(
+        "\n".join(rho_rows) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> int:
     args = _parse_args()
     if args.lastvalue_scan is not None or args.lastvalue_out is not None:
@@ -1375,184 +1467,13 @@ def main() -> int:
         _run_etg_tables(outdir=outdir, verbose=verbose, progress=progress)
         return 0
 
-    ref_full = load_cyclone_reference()
-    ref = _cyclone_refresh_reference(ref_full)
-    if args.refresh_minimal:
-        cfg = CycloneBaseCase(grid=_cyclone_refresh_grid(ref_full))
-        cyclone_mismatch = _cyclone_reference_mismatch_scan(
-            ref,
-            cfg,
-            verbose=verbose,
-            progress=progress,
-        )
-        (outdir / "cyclone_mismatch_table.csv").write_text(
-            "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
-        )
-        return 0
-    ky_subset = np.array([0.3, 0.4])
-    cfg = CycloneBaseCase(grid=_cyclone_refresh_grid(ref_full))
-
-    ky_low, g_low, w_low = _scan_linear_verbose(
-        ky_values=ky_subset,
-        run_linear_fn=run_cyclone_linear,
-        cfg=cfg,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=5000,
-        method="imex2",
-        solver=CYCLONE_SOLVER,
-        krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone low-res",
-        ref=ref,
+    _write_cyclone_runtime_tables(
+        outdir=outdir,
+        minimal=bool(args.refresh_minimal),
         verbose=verbose,
         progress=progress,
     )
-    ky_high, g_high, w_high = _scan_linear_verbose(
-        ky_values=ky_subset,
-        run_linear_fn=run_cyclone_linear,
-        cfg=cfg,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=5000,
-        method="imex2",
-        solver=CYCLONE_SOLVER,
-        krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone high-res",
-        ref=ref,
-        verbose=verbose,
-        progress=progress,
-    )
-    low_scan = CycloneScanResult(ky=ky_low, gamma=g_low, omega=w_low)
-    high_scan = CycloneScanResult(ky=ky_high, gamma=g_high, omega=w_high)
-
-    (outdir / "cyclone_scan_table_lowres.csv").write_text(
-        "\n".join(_build_rows(low_scan, ref)) + "\n", encoding="utf-8"
-    )
-    (outdir / "cyclone_scan_table_highres.csv").write_text(
-        "\n".join(_build_rows(high_scan, ref)) + "\n", encoding="utf-8"
-    )
-
-    conv_rows = [
-        "ky,gamma_low,gamma_high,omega_low,omega_high,rel_gamma_change,rel_omega_change"
-    ]
-    for ky, g_lo, g_hi, w_lo, w_hi in zip(ky_low, g_low, g_high, w_low, w_high):
-        rel_g = (g_hi - g_lo) / g_hi if g_hi != 0.0 else np.nan
-        rel_w = (w_hi - w_lo) / w_hi if w_hi != 0.0 else np.nan
-        row = f"{ky:.3f},{g_lo:.6f},{g_hi:.6f},{w_lo:.6f},{w_hi:.6f},{rel_g:.3f},{rel_w:.3f}"
-        conv_rows.append(row)
-        _log(f"[Cyclone conv] {row}", verbose=verbose, use_tqdm=progress)
-    (outdir / "cyclone_scan_convergence.csv").write_text(
-        "\n".join(conv_rows) + "\n", encoding="utf-8"
-    )
-
-    full_cfg = CycloneBaseCase()
-    full_geom = SAlphaGeometry.from_config(full_cfg.geometry)
-    full_params = LinearParams(
-        R_over_Ln=full_cfg.model.R_over_Ln,
-        R_over_LTi=full_cfg.model.R_over_LTi,
-        omega_d_scale=1.0,
-        omega_star_scale=1.0,
-        rho_star=1.0,
-        kpar_scale=float(full_geom.gradpar()),
-    )
-    full_ky, full_g, full_w = _scan_linear_verbose(
-        ky_values=np.array([0.2, 0.3, 0.4]),
-        run_linear_fn=run_cyclone_linear,
-        cfg=full_cfg,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=5000,
-        method="imex2",
-        solver=CYCLONE_SOLVER,
-        krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone full-operator",
-        run_kwargs={"params": full_params, "terms": LinearTerms()},
-        ref=ref,
-        verbose=verbose,
-        progress=progress,
-    )
-    full_rows = [
-        "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
-    ]
-    for ky, gamma, omega in zip(full_ky, full_g, full_w):
-        idx = int(np.argmin(np.abs(ref.ky - ky)))
-        gamma_ref = float(ref.gamma[idx])
-        omega_ref = float(ref.omega[idx])
-        gamma_abs = abs(float(gamma))
-        omega_abs = abs(float(omega))
-        rel_gamma = (gamma_abs - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-        rel_omega = (omega_abs - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
-        row = (
-            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},"
-            f"{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
-        )
-        full_rows.append(row)
-        _log(f"[Cyclone full] {row}", verbose=verbose, use_tqdm=progress)
-    (outdir / "cyclone_full_operator_scan_table.csv").write_text(
-        "\n".join(full_rows) + "\n", encoding="utf-8"
-    )
-
-    rho_values = np.array([0.8, 1.0, 1.2])
-    rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
-    for rho in rho_values:
-        params = LinearParams(
-            R_over_Ln=full_cfg.model.R_over_Ln,
-            R_over_LTi=full_cfg.model.R_over_LTi,
-            omega_d_scale=1.0,
-            omega_star_scale=1.0,
-            rho_star=float(rho),
-            kpar_scale=float(full_geom.gradpar()),
-        )
-        scan_ky, scan_g, scan_w = _scan_linear_verbose(
-            ky_values=np.array([0.2, 0.3, 0.4]),
-            run_linear_fn=run_cyclone_linear,
-            cfg=full_cfg,
-            Nl=48,
-            Nm=16,
-            dt=0.002,
-            steps=5000,
-            method="imex2",
-            solver=CYCLONE_SOLVER,
-            krylov_cfg=CYCLONE_KRYLOV,
-            window_kw=WINDOWS["cyclone"],
-            label=f"Cyclone rho_star={rho:.2f}",
-            run_kwargs={"params": params, "terms": LinearTerms()},
-            ref=ref,
-            verbose=verbose,
-            progress=progress,
-        )
-        rel_g = []
-        rel_w = []
-        for ky, gamma, omega in zip(scan_ky, scan_g, scan_w):
-            idx = int(np.argmin(np.abs(ref.ky - ky)))
-            gamma_ref = float(ref.gamma[idx])
-            omega_ref = float(ref.omega[idx])
-            rel_g.append(abs(float(gamma)) / gamma_ref if gamma_ref != 0.0 else np.nan)
-            rel_w.append(abs(float(omega)) / omega_ref if omega_ref != 0.0 else np.nan)
-        row = f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}"
-        rho_rows.append(row)
-        _log(f"[Cyclone rho_star] {row}", verbose=verbose, use_tqdm=progress)
-    (outdir / "cyclone_rhostar_convergence.csv").write_text(
-        "\n".join(rho_rows) + "\n", encoding="utf-8"
-    )
-
-    # Mismatch tables against reference data (full ky list) using GX-balanced runs
-    cyclone_mismatch = _cyclone_reference_mismatch_scan(
-        ref,
-        cfg,
-        verbose=verbose,
-        progress=progress,
-    )
-    (outdir / "cyclone_mismatch_table.csv").write_text(
-        "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
-    )
-    if args.case == "cyclone":
+    if args.case == "cyclone" or args.refresh_minimal:
         return 0
 
     _run_etg_tables(outdir=outdir, verbose=verbose, progress=progress)

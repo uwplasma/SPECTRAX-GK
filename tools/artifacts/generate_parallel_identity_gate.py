@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from dataclasses import replace
 import json
 import math
 import os
@@ -16,14 +17,7 @@ from typing import Any, Mapping
 import matplotlib
 import numpy as np
 
-from spectraxgk.benchmarks import CycloneScanResult, run_cyclone_scan
-from spectraxgk.config import (
-    CycloneBaseCase,
-    GeometryConfig,
-    GridConfig,
-    InitializationConfig,
-    TimeConfig,
-)
+from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.artifacts.plotting import set_plot_style
 from spectraxgk.runtime import RuntimeLinearScanResult, run_runtime_scan
 from spectraxgk.workflows.runtime.config import (
@@ -33,6 +27,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
 matplotlib.use("Agg")
@@ -80,16 +75,16 @@ def _timed_cyclone_scan(
     ky_values: np.ndarray,
     *,
     ky_batch: int,
-    cfg: CycloneBaseCase,
+    cfg: RuntimeConfig,
     steps: int,
     dt: float,
     nlaguerre: int,
     nhermite: int,
-) -> tuple[CycloneScanResult, float]:
+) -> tuple[RuntimeLinearScanResult, float]:
     start = time.perf_counter()
-    result = run_cyclone_scan(
+    result = run_runtime_scan(
+        cfg,
         ky_values,
-        cfg=cfg,
         Nl=nlaguerre,
         Nm=nhermite,
         dt=dt,
@@ -102,9 +97,8 @@ def _timed_cyclone_scan(
         tmin=0.2 * dt * steps,
         tmax=0.9 * dt * steps,
         min_points=4,
-        ky_batch=ky_batch,
-        fixed_batch_shape=True,
-        use_jit=True,
+        batch_ky=ky_batch > 1,
+        require_positive=False,
     )
     return result, time.perf_counter() - start
 
@@ -126,8 +120,14 @@ def build_parallel_ky_scan_gate(
 ) -> dict[str, object]:
     """Run serial and batched Cyclone scans and build identity-gate metadata."""
 
-    cfg = CycloneBaseCase(
-        grid=GridConfig(Nx=nx, Ny=ny, Nz=nz, ntheta=nz, nperiod=1, y0=10.0)
+    base_cfg, _ = load_runtime_from_toml(
+        REPO_ROOT / "examples/linear/axisymmetric/cyclone.toml"
+    )
+    cfg = replace(
+        base_cfg,
+        grid=replace(
+            base_cfg.grid, Nx=nx, Ny=ny, Nz=nz, ntheta=nz, nperiod=1, y0=10.0
+        ),
     )
     serial, serial_elapsed = _timed_cyclone_scan(
         ky_values,

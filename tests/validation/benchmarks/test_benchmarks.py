@@ -15,14 +15,11 @@ import spectraxgk.benchmarks as benchmark_tem
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
-    compare_cyclone_to_reference,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
     load_kbm_reference,
     load_tem_reference,
-    run_cyclone_linear,
-    run_cyclone_scan,
     run_kbm_linear,
     run_kbm_beta_scan,
     run_kbm_scan,
@@ -545,305 +542,30 @@ def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
     assert not reference_init.gaussian_init
 
 
-def test_benchmark_linear_entrypoints_reject_invalid_scan_options() -> None:
-    """Entry points should reject invalid fit and batching options before launching solves."""
-
-    cfg = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
-    )
-    with pytest.raises(ValueError, match="fit_signal"):
-        run_cyclone_linear(cfg=cfg, ky_target=0.2, Nl=2, Nm=2, fit_signal="bad")
-    with pytest.raises(ValueError, match="fit_signal"):
-        run_cyclone_scan(np.array([0.2]), cfg=cfg, Nl=2, Nm=2, fit_signal="bad")
-    with pytest.raises(ValueError, match="ky_batch"):
-        run_cyclone_scan(np.array([0.2]), cfg=cfg, Nl=2, Nm=2, ky_batch=0)
 
 
-@pytest.mark.slow
-def test_run_cyclone_linear_shapes():
-    """Smoke test for the Cyclone linear runner on a tiny grid."""
-    grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(
-        cfg=cfg, ky_target=0.1, steps=5, dt=0.1, method="rk4", solver="time"
-    )
-    assert result.phi_t.shape[0] == 5
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
 
 
-@pytest.mark.slow
-def test_run_cyclone_linear_defaults():
-    """Default cfg/params path should run without error."""
-    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(
-        cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time"
-    )
-    assert result.phi_t.shape[0] == 3
 
 
-def test_run_cyclone_linear_manual_window():
-    """Manual fit windows should exercise the explicit fit path."""
-    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(
-        cfg=cfg,
-        steps=5,
-        dt=0.1,
-        method="rk2",
-        solver="time",
-        reference_aligned=False,
-        auto_window=False,
-        tmin=0.1,
-        tmax=0.3,
-    )
-    assert np.isfinite(result.gamma)
 
 
-@pytest.mark.slow
-def test_run_cyclone_linear_full_operator_smoke():
-    """Full operator path should execute without NaNs on a tiny run."""
-    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(
-        cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time"
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
 
 
-@pytest.mark.slow
-def test_cyclone_scan_and_compare():
-    """Scan helper should return arrays and comparison should report errors."""
-    grid = GridConfig(Nx=6, Ny=12, Nz=8, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    ky_values = np.array([0.2, 0.3])
-    scan = run_cyclone_scan(
-        ky_values, cfg=cfg, steps=3, dt=0.1, method="euler", solver="time"
-    )
-    assert scan.ky.shape == ky_values.shape
-    ref = load_cyclone_reference()
-    result = run_cyclone_linear(
-        cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler", solver="time"
-    )
-    comparison = compare_cyclone_to_reference(result, ref)
-    assert comparison.ky > 0.0
-    assert np.isfinite(comparison.rel_gamma)
 
 
-def test_cyclone_scan_fixed_batch_shape_matches_unpadded():
-    """Fixed-shape ky batching should match unpadded batching outputs."""
-
-    grid = GridConfig(Nx=6, Ny=16, Nz=8, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    ky_values = np.array([0.2, 0.3, 0.4])
-    kwargs = dict(
-        cfg=cfg,
-        steps=3,
-        dt=0.1,
-        method="euler",
-        solver="time",
-        ky_batch=2,
-        tmin=0.0,
-        tmax=0.3,
-    )
-    scan_fixed = run_cyclone_scan(ky_values, fixed_batch_shape=True, **kwargs)
-    scan_unpadded = run_cyclone_scan(ky_values, fixed_batch_shape=False, **kwargs)
-    assert np.allclose(scan_fixed.ky, scan_unpadded.ky)
-    assert np.all(np.isfinite(scan_fixed.gamma))
-    assert np.all(np.isfinite(scan_fixed.omega))
-    assert np.allclose(scan_fixed.gamma, scan_unpadded.gamma, rtol=1.0e-5, atol=1.0e-6)
-    assert np.allclose(scan_fixed.omega, scan_unpadded.omega, rtol=1.0e-5, atol=1.0e-6)
 
 
-def test_cyclone_scan_manual_window():
-    """Manual fit windows should exercise the explicit scan fit path."""
-    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid)
-    ky_values = np.array([0.2])
-    scan = run_cyclone_scan(
-        ky_values,
-        cfg=cfg,
-        steps=5,
-        dt=0.1,
-        method="rk2",
-        solver="time",
-        auto_window=False,
-        tmin=0.1,
-        tmax=0.3,
-    )
-    assert scan.ky.shape == ky_values.shape
 
 
-@pytest.mark.slow
-def test_cyclone_physics_regression():
-    """Cyclone growth rates should track published values at ky rho_i = 0.3."""
-    cfg = CycloneBaseCase()
-    krylov_cfg = KrylovConfig(method="power", power_iters=30, power_dt=0.05)
-    result = run_cyclone_linear(
-        cfg=cfg,
-        ky_target=0.3,
-        Nl=4,
-        Nm=8,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-        reference_aligned=False,
-    )
-    ref = load_cyclone_reference()
-    idx = int(np.argmin(np.abs(ref.ky - 0.3)))
-    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.35)
-    assert np.isclose(result.omega, ref.omega[idx], rtol=0.2)
 
 
-@pytest.mark.slow
-def test_cyclone_scan_regression():
-    """Reduced ky scan should remain within reference trends."""
-    cfg = CycloneBaseCase()
-    krylov_cfg = KrylovConfig(method="power", power_iters=30, power_dt=0.05)
-    ky_values = np.array([0.3])
-    scan = run_cyclone_scan(
-        ky_values,
-        cfg=cfg,
-        Nl=4,
-        Nm=8,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    ref = load_cyclone_reference()
-    for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
-        idx = int(np.argmin(np.abs(ref.ky - ky)))
-        assert np.isclose(gamma, ref.gamma[idx], rtol=0.4)
-        assert np.isclose(omega, ref.omega[idx], rtol=0.2)
 
 
-@pytest.mark.slow
-def test_cyclone_krylov_smoke():
-    """Krylov solver should return finite eigenvalues on a small scan."""
-    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    krylov_cfg = KrylovConfig(method="power", power_iters=40, power_dt=0.05)
-    result = run_cyclone_linear(
-        cfg=cfg,
-        ky_target=0.3,
-        Nl=4,
-        Nm=8,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
 
 
-def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
-    import spectraxgk.benchmarks as benchmark_cyclone_linear
-
-    def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
-        phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
-        density_t = np.ones_like(phi_t)
-        return np.array([0.0, 0.1], dtype=float), phi_t, density_t
-
-    monkeypatch.setattr(
-        benchmark_cyclone_linear,
-        "_select_fit_signal_auto",
-        lambda *args, **kwargs: (np.ones_like(args[0]), "phi", np.nan, np.nan),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_linear,
-        "integrate_linear_diagnostics",
-        _fake_integrate_linear_diagnostics,
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_linear,
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            ValueError("seed unavailable in branch test")
-        ),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_linear,
-        "dominant_eigenpair",
-        lambda G0, *_args, **_kwargs: (0.2 - 0.3j, np.zeros_like(np.asarray(G0))),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_linear,
-        "compute_fields_cached",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            phi=np.zeros((1, 1, 8), dtype=np.complex64)
-        ),
-    )
-
-    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
-    cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(
-        cfg=cfg,
-        ky_target=0.1,
-        Nl=2,
-        Nm=2,
-        steps=2,
-        dt=0.1,
-        method="rk4",
-        solver="auto",
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
 
 
-def test_cyclone_scan_explicit_time_falls_back_to_krylov_when_reference_growth_unavailable(
-    monkeypatch,
-):
-    import spectraxgk.benchmarks as benchmark_cyclone_scan
-
-    monkeypatch.setattr(
-        benchmark_cyclone_scan, "build_linear_cache", lambda *_args, **_kwargs: object()
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_scan,
-        "integrate_linear_explicit",
-        lambda *_args, **_kwargs: (
-            np.array([0.0, 0.1], dtype=float),
-            np.ones((2, 1, 1, 8), dtype=np.complex64),
-            np.zeros((2, 1, 1), dtype=float),
-            np.zeros((2, 1, 1), dtype=float),
-        ),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_scan,
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            ValueError("No finite instantaneous growth-rate samples available")
-        ),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_scan,
-        "dominant_eigenpair",
-        lambda *_args, **_kwargs: (
-            0.3 - 0.8j,
-            np.ones((1, 2, 2, 1, 1, 8), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        benchmark_cyclone_scan,
-        "_normalize_growth_rate",
-        lambda gamma, omega, *_args, **_kwargs: (float(gamma), float(omega)),
-    )
-
-    cfg = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=8, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
-    )
-    scan = run_cyclone_scan(
-        np.array([0.3]),
-        cfg=cfg,
-        Nl=2,
-        Nm=2,
-        dt=np.array([0.1]),
-        steps=np.array([2]),
-        method="imex2",
-        solver="auto",
-    )
-
-    assert np.isclose(scan.gamma[0], 0.3)
-    assert np.isclose(scan.omega[0], 0.8)
 
 
 
@@ -1888,21 +1610,6 @@ def test_benchmark_krylov_smoke_finite():
         shift_source="target",
         omega_cap_factor=5.0,
     )
-
-    small_grid = GridConfig(
-        Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=2.0
-    )
-    cyclone_cfg = CycloneBaseCase(grid=small_grid)
-    cyclone = run_cyclone_linear(
-        cfg=cyclone_cfg,
-        ky_target=0.3,
-        Nl=4,
-        Nm=4,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    assert np.isfinite(cyclone.gamma)
-    assert np.isfinite(cyclone.omega)
 
     kin_grid = GridConfig(
         Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0

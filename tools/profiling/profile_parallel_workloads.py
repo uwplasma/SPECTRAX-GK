@@ -122,12 +122,17 @@ def args_global_omega_atol() -> float:
 
 
 def _run_solver_chunk(args: argparse.Namespace) -> dict[str, Any]:
-    from spectraxgk.benchmarks import run_cyclone_scan
-    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.runtime import run_runtime_scan
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
     ky = np.asarray(args.worker_ky, dtype=float)
-    cfg = CycloneBaseCase(
-        grid=GridConfig(
+    base_cfg, _ = load_runtime_from_toml(
+        REPO_ROOT / "examples/linear/axisymmetric/cyclone.toml"
+    )
+    cfg = replace(
+        base_cfg,
+        grid=replace(
+            base_cfg.grid,
             Nx=int(args.nx),
             Ny=int(args.ny),
             Nz=int(args.nz),
@@ -142,9 +147,9 @@ def _run_solver_chunk(args: argparse.Namespace) -> dict[str, Any]:
     last = None
     for repeat_index in range(int(args.warmups) + int(args.repeats)):
         start = time.perf_counter()
-        result = run_cyclone_scan(
+        result = run_runtime_scan(
+            cfg,
             ky,
-            cfg=cfg,
             Nl=int(args.nl),
             Nm=int(args.nm),
             dt=float(args.dt),
@@ -157,10 +162,7 @@ def _run_solver_chunk(args: argparse.Namespace) -> dict[str, Any]:
             tmin=tmin,
             tmax=tmax,
             min_points=int(args.min_points),
-            ky_batch=1,
-            fixed_batch_shape=False,
-            use_jit=True,
-            mode_only=True,
+            batch_ky=False,
             require_positive=False,
         )
         elapsed = time.perf_counter() - start
@@ -465,13 +467,18 @@ def _quasilinear_reduced_observables(
 
 
 def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
-    from spectraxgk.benchmarks import run_cyclone_scan
-    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.runtime import run_runtime_scan
+    from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
     gradients = np.asarray(args.worker_gradients, dtype=float)
     ky = np.asarray(args.ky, dtype=float)
-    base_cfg = CycloneBaseCase(
-        grid=GridConfig(
+    runtime_cfg, _ = load_runtime_from_toml(
+        REPO_ROOT / "examples/linear/axisymmetric/cyclone.toml"
+    )
+    base_cfg = replace(
+        runtime_cfg,
+        grid=replace(
+            runtime_cfg.grid,
             Nx=int(args.nx),
             Ny=int(args.ny),
             Nz=int(args.nz),
@@ -489,11 +496,12 @@ def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
         members: list[dict[str, Any]] = []
         for gradient in gradients:
             cfg = replace(
-                base_cfg, model=replace(base_cfg.model, R_over_LTi=float(gradient))
+                base_cfg,
+                species=(replace(base_cfg.species[0], tprim=float(gradient)),),
             )
-            result = run_cyclone_scan(
+            result = run_runtime_scan(
+                cfg,
                 ky,
-                cfg=cfg,
                 Nl=int(args.nl),
                 Nm=int(args.nm),
                 dt=float(args.dt),
@@ -506,10 +514,7 @@ def _run_ensemble_chunk(args: argparse.Namespace) -> dict[str, Any]:
                 tmin=tmin,
                 tmax=tmax,
                 min_points=int(args.min_points),
-                ky_batch=1,
-                fixed_batch_shape=False,
-                use_jit=True,
-                mode_only=True,
+                batch_ky=False,
                 require_positive=False,
             )
             ql = _quasilinear_reduced_observables(result.ky, result.gamma, result.omega)

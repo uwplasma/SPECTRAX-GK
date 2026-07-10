@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from dataclasses import replace
 from types import SimpleNamespace
 
@@ -8,7 +7,6 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import (
-    CycloneBaseCase,
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
@@ -17,8 +15,6 @@ from spectraxgk.linear import LinearTerms
 from spectraxgk.benchmarks import (
     KrylovConfig,
     compare_cyclone_to_reference,
-    run_cyclone_linear,
-    run_cyclone_scan,
     run_kinetic_scan,
     run_kinetic_linear,
     run_kbm_beta_scan,
@@ -26,10 +22,6 @@ from spectraxgk.benchmarks import (
     run_kbm_scan,
     run_tem_scan,
     run_tem_linear,
-)
-import spectraxgk.benchmarks as cyclone_branches
-from spectraxgk.benchmarks import (
-    _resolve_time_branch_growth,
 )
 
 
@@ -77,7 +69,18 @@ def _fake_initial_condition(grid, *args, **kwargs):
 
 
 def _benchmark_module_attr(module: str, attr: str) -> str:
-    if module in {"cyclone_linear", "cyclone_scan", "cyclone_scan_branches", "etg_linear", "etg_scan", "kinetic_linear", "kinetic_scan", "kbm_beta", "kbm_linear", "tem"}:
+    if module in {
+        "cyclone_linear",
+        "cyclone_scan",
+        "cyclone_scan_branches",
+        "etg_linear",
+        "etg_scan",
+        "kinetic_linear",
+        "kinetic_scan",
+        "kbm_beta",
+        "kbm_linear",
+        "tem",
+    }:
         return f"spectraxgk.benchmarks.{attr}"
     return f"spectraxgk.benchmarks.{attr}"
 
@@ -113,12 +116,16 @@ def _patch_salpha_scaffold(
 ) -> None:
     _patch_attr(monkeypatch, module, "build_spectral_grid", lambda cfg: _grid_full())
     _patch_attr(monkeypatch, module, "select_ky_grid", select_grid)
-    _patch_attr(monkeypatch, module, "SAlphaGeometry.from_config", _fake_salpha_geometry)
+    _patch_attr(
+        monkeypatch, module, "SAlphaGeometry.from_config", _fake_salpha_geometry
+    )
     _patch_attr(monkeypatch, module, "_build_initial_condition", init)
     if with_cache:
         _patch_attr(monkeypatch, module, "build_linear_cache", _fake_cache)
     if with_normalization:
-        _patch_attr(monkeypatch, module, "_normalize_growth_rate", _identity_normalization)
+        _patch_attr(
+            monkeypatch, module, "_normalize_growth_rate", _identity_normalization
+        )
 
 
 def _patch_krylov_output(
@@ -135,285 +142,9 @@ def _patch_krylov_output(
         lambda *args, **kwargs: (eig, np.ones(shape, dtype=np.complex64)),
     )
     _patch_attr(monkeypatch, module, "compute_fields_cached", _fake_fields)
-    _patch_attr(monkeypatch, module, "linear_terms_to_term_config", lambda terms: object())
-
-
-def test_cyclone_krylov_branch_has_single_canonical_owner() -> None:
-    assert inspect.getmodule(cyclone_branches.run_krylov_cyclone_scan) is (
-        cyclone_branches
-    )
-
-
-def test_run_cyclone_linear_auto_falls_back_to_krylov(monkeypatch) -> None:
-    status: list[str] = []
-    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
     _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "integrate_linear",
-        lambda *args, **kwargs: (
-            np.arange(3),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-        ),
+        monkeypatch, module, "linear_terms_to_term_config", lambda terms: object()
     )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "_select_fit_signal_auto",
-        lambda *args, **kwargs: (np.ones(3, dtype=np.complex64), "phi", -0.1, 0.2),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0]),
-            np.ones((2, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (0.3, -0.2, None, None, 0.5),
-    )
-    _patch_krylov_output(monkeypatch, "cyclone_linear", 0.4 + 0.1j)
-
-    result = run_cyclone_linear(
-        cfg=CycloneBaseCase(),
-        solver="auto",
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-        fit_signal="auto",
-        status_callback=status.append,
-    )
-
-    assert result.gamma == 0.3
-    assert result.omega == -0.2
-    assert any("building spectral grid" in msg for msg in status)
-
-
-def test_run_cyclone_linear_krylov_uses_reference_seed_and_branch_guard(
-    monkeypatch,
-) -> None:
-    status: list[str] = []
-    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0, 2.0]),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (0.45, -0.25, None, None, 1.0),
-    )
-
-    def _fake_eigenpair(*args, **kwargs):
-        assert kwargs["shift"] == pytest.approx(complex(0.45, 0.25))
-        return 0.01 + 1.2j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)
-
-    _patch_attr(monkeypatch, "cyclone_linear", "dominant_eigenpair", _fake_eigenpair)
-    _patch_attr(monkeypatch, "cyclone_linear", "compute_fields_cached", _fake_fields)
-    _patch_attr(
-        monkeypatch, "cyclone_linear", "linear_terms_to_term_config", lambda terms: object()
-    )
-
-    result = run_cyclone_linear(
-        cfg=CycloneBaseCase(),
-        solver="krylov",
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-        status_callback=status.append,
-    )
-
-    assert result.gamma == pytest.approx(0.45)
-    assert result.omega == pytest.approx(0.25)
-    assert result.t.tolist() == [0.0]
-    assert any("estimating frequency seed" in msg for msg in status)
-    assert any("Krylov solve complete" in msg for msg in status)
-
-
-def test_cyclone_time_branch_growth_uses_krylov_fallback_only_when_needed() -> None:
-    calls: list[dict[str, object]] = []
-
-    def _fallback(**kwargs):
-        calls.append(dict(kwargs))
-        return SimpleNamespace(gamma=0.42, omega=-0.19)
-
-    hooks = SimpleNamespace(run_cyclone_linear=_fallback)
-    gamma, omega = _resolve_time_branch_growth(
-        0.31,
-        -0.17,
-        ky_value=0.3,
-        n_laguerre=4,
-        n_hermite=8,
-        dt=0.05,
-        steps=40,
-        method="rk2",
-        params=SimpleNamespace(rho_star=1.0),
-        cfg=CycloneBaseCase(),
-        time_cfg=SimpleNamespace(dt=0.05),
-        krylov_cfg=KrylovConfig(),
-        diagnostic_norm="physical",
-        auto_solver=True,
-        require_positive=True,
-        hooks=hooks,  # type: ignore[arg-type]
-        show_progress=False,
-    )
-
-    assert (gamma, omega) == (0.31, -0.17)
-    assert calls == []
-
-    gamma, omega = _resolve_time_branch_growth(
-        -0.01,
-        -0.17,
-        ky_value=0.3,
-        n_laguerre=4,
-        n_hermite=8,
-        dt=0.05,
-        steps=40,
-        method="rk2",
-        params=SimpleNamespace(rho_star=1.0),
-        cfg=CycloneBaseCase(),
-        time_cfg=SimpleNamespace(dt=0.05),
-        krylov_cfg=KrylovConfig(),
-        diagnostic_norm="physical",
-        auto_solver=True,
-        require_positive=True,
-        hooks=hooks,  # type: ignore[arg-type]
-        show_progress=True,
-    )
-
-    assert (gamma, omega) == (0.42, -0.19)
-    assert len(calls) == 1
-    assert calls[0]["ky_target"] == pytest.approx(0.3)
-    assert calls[0]["solver"] == "krylov"
-    assert calls[0]["fit_signal"] == "phi"
-    assert calls[0]["Nl"] == 4
-    assert calls[0]["Nm"] == 8
-    assert calls[0]["dt"] == pytest.approx(0.05)
-    assert calls[0]["steps"] == 40
-    assert calls[0]["show_progress"] is True
-
-
-def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
-    monkeypatch,
-) -> None:
-    status: list[str] = []
-    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0, 2.0]),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    seed_values = iter(
-        [ValueError("primary seed failed"), (0.33, -0.18, None, None, 1.0)]
-    )
-
-    def _fake_growth(*args, **kwargs):
-        value = next(seed_values)
-        if isinstance(value, Exception):
-            raise value
-        return value
-
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "instantaneous_growth_rate_from_phi",
-        _fake_growth,
-    )
-    _patch_krylov_output(monkeypatch, "cyclone_linear", 0.02 + 0.9j)
-
-    result = run_cyclone_linear(
-        cfg=CycloneBaseCase(),
-        solver="krylov",
-        Nl=4,
-        Nm=4,
-        dt=0.1,
-        steps=3,
-        status_callback=status.append,
-    )
-
-    assert result.gamma == pytest.approx(0.33)
-    assert result.omega == pytest.approx(0.18)
-    assert any("retrying reduced Hermite-Laguerre seed" in msg for msg in status)
-
-
-def test_run_cyclone_linear_reference_aligned_time_path_uses_reference_contract(
-    monkeypatch,
-) -> None:
-    captured: dict[str, object] = {}
-    _patch_salpha_scaffold(monkeypatch, "cyclone_linear")
-
-    def _fake_reference_integrator(*args, **kwargs):
-        captured["time_cfg"] = args[5]
-        captured["mode_method"] = kwargs["mode_method"]
-        return (
-            np.array([0.0, 0.1, 0.2]),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        )
-
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "integrate_linear_explicit",
-        _fake_reference_integrator,
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_linear",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (0.31, -0.17, None, None, 0.1),
-    )
-
-    result = run_cyclone_linear(
-        cfg=CycloneBaseCase(),
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        solver="time",
-        reference_aligned=True,
-        mode_method="project",
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=2,
-    )
-
-    assert captured["mode_method"] == "z_index"
-    assert captured["time_cfg"].fixed_dt is True
-    assert captured["time_cfg"].sample_stride == 1
-    assert result.gamma == pytest.approx(0.31)
-    assert result.omega == pytest.approx(-0.17)
-
-
-
-
-
-
 
 
 def test_run_kbm_linear_explicit_time_uses_omega_series_fallback(monkeypatch) -> None:
@@ -520,9 +251,7 @@ def test_run_kbm_beta_scan_multi_target_resolves_near_marginal_branch(
         target_calls.append(float(kwargs["omega_target_factor"]))
         return next(eigs), np.zeros_like(np.asarray(G0))
 
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.dominant_eigenpair", _fake_eigenpair
-    )
+    monkeypatch.setattr("spectraxgk.benchmarks.dominant_eigenpair", _fake_eigenpair)
 
     scan = run_kbm_beta_scan(
         np.array([0.015]),
@@ -558,191 +287,6 @@ def test_compare_cyclone_to_reference_handles_zero_reference() -> None:
     comparison = compare_cyclone_to_reference(result, reference)
     assert np.isnan(comparison.rel_gamma)
     assert np.isnan(comparison.rel_omega)
-
-
-def test_run_cyclone_scan_krylov_mode_follow(monkeypatch) -> None:
-    _patch_salpha_scaffold(
-        monkeypatch,
-        "cyclone_scan",
-        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0]),
-            np.ones((2, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no seed")),
-    )
-    vals = iter(
-        [
-            (0.3 + 0.1j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)),
-            (0.4 + 0.2j, np.ones((2, 2, 1, 1, 3), dtype=np.complex64)),
-        ]
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "dominant_eigenpair",
-        lambda *args, **kwargs: next(vals),
-    )
-
-    scan = run_cyclone_scan(
-        np.array([0.2, 0.3]),
-        cfg=CycloneBaseCase(),
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        solver="krylov",
-        Nl=2,
-        Nm=2,
-        mode_follow=True,
-    )
-    np.testing.assert_allclose(scan.gamma, [0.3, 0.4])
-    np.testing.assert_allclose(scan.omega, [-0.1, -0.2])
-
-
-def test_run_cyclone_scan_plain_krylov_branch(monkeypatch) -> None:
-    _patch_salpha_scaffold(monkeypatch, "cyclone_scan")
-    vals = iter(
-        [
-            (0.21 + 0.09j, np.zeros((2, 2, 1, 1, 3), dtype=np.complex64)),
-            (0.31 - 0.11j, np.zeros((2, 2, 1, 1, 3), dtype=np.complex64)),
-        ]
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "dominant_eigenpair",
-        lambda *args, **kwargs: next(vals),
-    )
-
-    scan = run_cyclone_scan(
-        np.array([0.2, 0.3]),
-        cfg=CycloneBaseCase(),
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        solver="krylov",
-        mode_follow=False,
-        Nl=2,
-        Nm=2,
-        ky_batch=1,
-    )
-
-    np.testing.assert_allclose(scan.gamma, [0.21, 0.31])
-    np.testing.assert_allclose(scan.omega, [-0.09, 0.11])
-
-
-def test_run_cyclone_scan_diffrax_streaming_time_config_batch(monkeypatch) -> None:
-    cfg0 = CycloneBaseCase()
-    cfg = replace(
-        cfg0,
-        time=replace(
-            cfg0.time,
-            use_diffrax=True,
-            dt=0.1,
-            t_max=0.2,
-            sample_stride=1,
-            diffrax_max_steps=8,
-        ),
-    )
-    _patch_salpha_scaffold(
-        monkeypatch, "cyclone_scan", select_grid=_select_grid_dynamic
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "_resolve_streaming_window",
-        lambda *args, **kwargs: (0.0, 0.2),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear_diffrax_streaming",
-        lambda *args, **kwargs: (
-            np.zeros((2, 2, 2, 1, 3), dtype=np.complex64),
-            np.array([0.12, 0.18]),
-            np.array([-0.04, -0.06]),
-        ),
-    )
-
-    scan = run_cyclone_scan(
-        np.array([0.2, 0.3]),
-        cfg=cfg,
-        time_cfg=cfg.time,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        solver="time",
-        fit_signal="phi",
-        streaming_fit=True,
-        Nl=2,
-        Nm=2,
-        ky_batch=2,
-        mode_follow=False,
-    )
-
-    np.testing.assert_allclose(scan.gamma, [0.12, 0.18])
-    np.testing.assert_allclose(scan.omega, [-0.04, -0.06])
-
-
-def test_run_cyclone_scan_time_config_auto_signal_fallback(monkeypatch) -> None:
-    cfg0 = CycloneBaseCase()
-    cfg = replace(
-        cfg0,
-        time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.2, sample_stride=1),
-    )
-    _patch_salpha_scaffold(monkeypatch, "cyclone_scan")
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear_from_config",
-        lambda *args, **kwargs: (
-            np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
-            (
-                np.ones((2, 1, 1, 3), dtype=np.complex64),
-                2.0 * np.ones((2, 1, 1, 3), dtype=np.complex64),
-            ),
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "_select_fit_signal_auto",
-        lambda *args, **kwargs: (np.ones(2, dtype=np.complex64), "phi", -0.2, -0.05),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "run_cyclone_linear",
-        lambda *args, **kwargs: SimpleNamespace(gamma=0.44, omega=-0.22),
-    )
-
-    scan = run_cyclone_scan(
-        np.array([0.3]),
-        cfg=cfg,
-        time_cfg=cfg.time,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        solver="auto",
-        fit_signal="auto",
-        reference_aligned=False,
-        require_positive=True,
-        Nl=2,
-        Nm=2,
-        ky_batch=1,
-        mode_follow=False,
-    )
-
-    np.testing.assert_allclose(scan.gamma, [0.44])
-    np.testing.assert_allclose(scan.omega, [-0.22])
 
 
 def test_run_kinetic_linear_time_density_path(monkeypatch) -> None:
@@ -949,118 +493,6 @@ def test_run_tem_linear_rejects_invalid_fit_signal_and_time_density(
     )
     assert result.gamma == 0.2
     assert result.omega == -0.1
-
-
-def test_run_cyclone_scan_auto_explicit_time_falls_back_to_krylov(monkeypatch) -> None:
-    _patch_salpha_scaffold(
-        monkeypatch,
-        "cyclone_scan",
-        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "_apply_reference_hypercollisions",
-        lambda params, **kwargs: params,
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0]),
-            np.ones((2, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("no fit")),
-    )
-    _patch_krylov_output(monkeypatch, "cyclone_scan", 0.25 + 0.4j)
-
-    scan = run_cyclone_scan(
-        np.array([0.3]),
-        cfg=CycloneBaseCase(),
-        solver="auto",
-        reference_aligned=True,
-        Nl=2,
-        Nm=2,
-    )
-
-    np.testing.assert_allclose(scan.gamma, [0.25])
-    np.testing.assert_allclose(scan.omega, [0.4])
-
-
-def test_run_cyclone_scan_explicit_time_reselects_branch_with_previous_frequency(
-    monkeypatch,
-) -> None:
-    _patch_salpha_scaffold(
-        monkeypatch,
-        "cyclone_scan",
-        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear_explicit",
-        lambda *args, **kwargs: (
-            np.array([0.0, 1.0]),
-            np.ones((2, 1, 1, 3), dtype=np.complex64),
-            None,
-            None,
-        ),
-    )
-    growth_values = iter(
-        [
-            (0.10, -0.20, None, None, 1.0),
-            (0.12, 0.30, None, None, 1.0),
-            (0.11, 0.10, None, None, 1.0),
-        ]
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "instantaneous_growth_rate_from_phi",
-        lambda *args, **kwargs: next(growth_values),
-    )
-    _patch_krylov_output(monkeypatch, "cyclone_scan", 0.13 - 0.38j)
-
-    scan = run_cyclone_scan(
-        np.array([0.2, 0.3, 0.4]),
-        cfg=CycloneBaseCase(),
-        solver="explicit_time",
-        reference_aligned=True,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=np.array([0.1, 0.1, 0.1]),
-        steps=np.array([2, 2, 2]),
-    )
-
-    np.testing.assert_allclose(scan.omega, [0.2, 0.3, 0.38])
-    np.testing.assert_allclose(scan.gamma, [0.10, 0.12, 0.13])
-
-
-def test_run_cyclone_scan_empty_explicit_time_returns_empty(monkeypatch) -> None:
-    _patch_attr(monkeypatch, "cyclone_scan", "build_spectral_grid", lambda cfg: _grid_full())
-    _patch_attr(monkeypatch, "cyclone_scan", "SAlphaGeometry.from_config", _fake_salpha_geometry)
-
-    scan = run_cyclone_scan(
-        np.asarray([]),
-        cfg=CycloneBaseCase(),
-        solver="explicit_time",
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-    )
-
-    assert scan.ky.size == 0
-    assert scan.gamma.size == 0
-    assert scan.omega.size == 0
 
 
 def test_run_kbm_scan_forwards_per_mode_arrays(monkeypatch) -> None:
@@ -1376,9 +808,7 @@ def test_run_kbm_beta_scan_explicit_time_diagnostic_fallback_ladder(
         "spectraxgk.benchmarks.extract_mode_time_series",
         lambda *args, **kwargs: np.ones(2, dtype=np.complex64),
     )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto", _fake_fit
-    )
+    monkeypatch.setattr("spectraxgk.benchmarks.fit_growth_rate_auto", _fake_fit)
 
     observed_gamma = []
     observed_omega = []
@@ -1742,9 +1172,7 @@ def test_run_tem_scan_time_config_mode_only_extracts_columns(monkeypatch) -> Non
         "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.select_ky_grid", _select_grid_dynamic
-    )
+    monkeypatch.setattr("spectraxgk.benchmarks.select_ky_grid", _select_grid_dynamic)
     monkeypatch.setattr(
         "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
@@ -1871,9 +1299,7 @@ def test_run_tem_scan_diffrax_streaming_batch(monkeypatch) -> None:
         "spectraxgk.benchmarks.build_spectral_grid",
         lambda cfg: _grid_full(),
     )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.select_ky_grid", _select_grid_dynamic
-    )
+    monkeypatch.setattr("spectraxgk.benchmarks.select_ky_grid", _select_grid_dynamic)
     monkeypatch.setattr(
         "spectraxgk.benchmarks.SAlphaGeometry.from_config",
         lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
@@ -1923,362 +1349,3 @@ def test_run_tem_scan_rejects_invalid_batch_and_species_indices() -> None:
         run_tem_scan(np.array([0.2]), init_species_index=-1)
     with pytest.raises(ValueError):
         run_tem_scan(np.array([0.2]), density_species_index=2)
-
-
-
-
-
-
-
-
-
-
-def test_run_cyclone_linear_time_cached_uses_integrate_linear_output(
-    monkeypatch,
-) -> None:
-    cfg0 = CycloneBaseCase()
-    cfg = replace(
-        cfg0,
-        time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.3, sample_stride=1),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.integrate_linear",
-        lambda *args, **kwargs: (
-            np.zeros((3, 2, 2, 1, 1, 3), dtype=np.complex64),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._select_fit_signal",
-        lambda *args, **kwargs: np.array(
-            [1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j], dtype=np.complex64
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto",
-        lambda *args, **kwargs: (0.21, -0.07, 0.0, 0.2),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
-
-    result = run_cyclone_linear(
-        cfg=cfg,
-        solver="time",
-        fit_signal="phi",
-        reference_aligned=False,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-    )
-
-    np.testing.assert_allclose(result.t, [0.0, 0.1, 0.2])
-    assert result.gamma == 0.21
-    assert result.omega == -0.07
-
-
-def test_run_cyclone_linear_time_config_auto_signal_records_density(
-    monkeypatch,
-) -> None:
-    cfg0 = CycloneBaseCase()
-    time_cfg = replace(cfg0.time, use_diffrax=False, dt=0.2, t_max=0.6, sample_stride=2)
-    status: list[str] = []
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-
-    def _fake_from_config(*args, **kwargs):
-        assert kwargs["save_field"] == "phi+density"
-        assert kwargs["density_species_index"] == 0
-        phi = np.ones((3, 1, 1, 3), dtype=np.complex64)
-        density = 2.0 * phi
-        return np.zeros((3, 2, 2, 1, 1, 3), dtype=np.complex64), (phi, density)
-
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.integrate_linear_from_config",
-        _fake_from_config,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._select_fit_signal_auto",
-        lambda *args, **kwargs: (
-            np.ones(3, dtype=np.complex64),
-            "density",
-            np.nan,
-            np.nan,
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
-
-    result = run_cyclone_linear(
-        cfg=cfg0,
-        time_cfg=time_cfg,
-        solver="time",
-        fit_signal="auto",
-        reference_aligned=False,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-        sample_stride=2,
-        status_callback=status.append,
-    )
-
-    np.testing.assert_allclose(result.t, [0.0, 0.2, 0.4])
-    assert result.gamma == 0.0
-    assert result.omega == 0.0
-    assert any("automatic fit selected signal 'density'" in msg for msg in status)
-
-
-def test_run_cyclone_linear_density_fit_uses_diagnostics_integrator(
-    monkeypatch,
-) -> None:
-    cfg0 = CycloneBaseCase()
-    cfg = replace(cfg0, time=replace(cfg0.time, use_diffrax=False))
-    status: list[str] = []
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_spectral_grid",
-        lambda cfg: _grid_full(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.select_ky_grid",
-        lambda grid, idx: _grid_sel(),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
-        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._build_initial_condition",
-        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.build_linear_cache",
-        lambda *args, **kwargs: SimpleNamespace(),
-    )
-
-    def _fake_diagnostics(*args, **kwargs):
-        assert kwargs["species_index"] == 0
-        assert kwargs["record_hl_energy"] is False
-        phi = np.ones((3, 1, 1, 3), dtype=np.complex64)
-        density = 3.0 * phi
-        return np.zeros((3, 2, 2, 1, 1, 3), dtype=np.complex64), phi, density
-
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.integrate_linear_diagnostics",
-        _fake_diagnostics,
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._select_fit_signal",
-        lambda *args, **kwargs: np.array(
-            [1.0 + 0.0j, 3.0 + 0.0j, 9.0 + 0.0j], dtype=np.complex64
-        ),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto",
-        lambda *args, **kwargs: (0.31, -0.13, 0.0, 0.2),
-    )
-    monkeypatch.setattr(
-        "spectraxgk.benchmarks._normalize_growth_rate",
-        lambda g, o, params, norm: (g, o),
-    )
-
-    result = run_cyclone_linear(
-        cfg=cfg,
-        solver="time",
-        fit_signal="density",
-        reference_aligned=False,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-        sample_stride=1,
-        status_callback=status.append,
-    )
-
-    assert result.gamma == 0.31
-    assert result.omega == -0.13
-    assert any("explicit diagnostics integrator" in msg for msg in status)
-
-
-def test_run_cyclone_scan_time_cached_uses_integrate_linear_output(monkeypatch) -> None:
-    cfg0 = CycloneBaseCase()
-    cfg = replace(
-        cfg0,
-        time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.3, sample_stride=1),
-    )
-    _patch_salpha_scaffold(
-        monkeypatch,
-        "cyclone_scan",
-        init=lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "integrate_linear",
-        lambda *args, **kwargs: (
-            np.zeros((3, 2, 2, 1, 1, 3), dtype=np.complex64),
-            np.ones((3, 1, 1, 3), dtype=np.complex64),
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "extract_mode_time_series",
-        lambda arr, sel, method: np.array(
-            [1.0 + 0.0j, 2.0 + 0.0j, 4.0 + 0.0j], dtype=np.complex64
-        ),
-    )
-    _patch_attr(
-        monkeypatch,
-        "cyclone_scan",
-        "fit_growth_rate_auto",
-        lambda *args, **kwargs: (0.19, -0.05, 0.0, 0.2),
-    )
-
-    scan = run_cyclone_scan(
-        np.array([0.3]),
-        cfg=cfg,
-        solver="time",
-        fit_signal="phi",
-        reference_aligned=False,
-        params=SimpleNamespace(rho_star=1.0),
-        terms=LinearTerms(),
-        Nl=2,
-        Nm=2,
-        dt=0.1,
-        steps=3,
-        ky_batch=1,
-    )
-
-    np.testing.assert_allclose(scan.ky, [0.3])
-    np.testing.assert_allclose(scan.gamma, [0.19])
-    np.testing.assert_allclose(scan.omega, [-0.05])
-
-
-def test_cyclone_scan_seed_policy_rejects_weak_and_accepts_mismatched_seed() -> None:
-    from spectraxgk.benchmarks import (
-        seed_shift,
-        use_explicit_seed,
-    )
-
-    assert seed_shift(
-        0.2 - 0.4j, omega_ok=True, seed_ok=True, gamma_seed=0.1, omega_seed=0.3
-    ) == pytest.approx(0.2 - 0.4j)
-    assert seed_shift(
-        None, omega_ok=True, seed_ok=True, gamma_seed=0.1, omega_seed=0.3
-    ) == pytest.approx(0.1 - 0.3j)
-    assert (
-        seed_shift(None, omega_ok=False, seed_ok=True, gamma_seed=0.1, omega_seed=0.3)
-        is None
-    )
-
-    assert not use_explicit_seed(
-        0.1,
-        0.3,
-        seed_ok=False,
-        gamma_seed=0.12,
-        omega_seed=0.31,
-    )
-    assert not use_explicit_seed(
-        0.1,
-        0.3,
-        seed_ok=True,
-        gamma_seed=0.0,
-        omega_seed=0.31,
-    )
-    assert use_explicit_seed(
-        -0.01,
-        0.8,
-        seed_ok=True,
-        gamma_seed=0.12,
-        omega_seed=0.31,
-    )
-
-
-def test_cyclone_explicit_reselection_policy_tracks_continuation_branch() -> None:
-    from spectraxgk.benchmarks import (
-        choose_reselected_frequency,
-        explicit_reselection_target,
-    )
-
-    assert (
-        explicit_reselection_target(
-            explicit_growth_ok=False,
-            prev_omega=0.5,
-            prev_prev_omega=0.4,
-        )
-        is None
-    )
-    assert explicit_reselection_target(
-        explicit_growth_ok=True,
-        prev_omega=0.5,
-        prev_prev_omega=0.4,
-    ) == pytest.approx(0.6)
-    assert explicit_reselection_target(
-        explicit_growth_ok=True,
-        prev_omega=0.35,
-        prev_prev_omega=0.4,
-    ) == pytest.approx(0.35)
-
-    assert choose_reselected_frequency(
-        gamma=0.1,
-        omega=0.2,
-        gamma_k=0.11,
-        omega_k=0.59,
-        target_omega=0.6,
-    ) == pytest.approx((0.11, 0.59))
-    assert choose_reselected_frequency(
-        gamma=0.1,
-        omega=0.58,
-        gamma_k=-0.5,
-        omega_k=0.6,
-        target_omega=0.6,
-    ) == pytest.approx((0.1, 0.58))

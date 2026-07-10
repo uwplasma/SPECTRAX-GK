@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from spectraxgk.benchmarks import run_cyclone_scan
-from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.config import GridConfig
 from spectraxgk.core.grid import build_spectral_grid
 from spectraxgk.core.velocity import J_l_all, gamma0, sum_Jl2
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
+from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.operators import hermite_streaming
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import TermConfig
+from spectraxgk.runtime import run_runtime_scan
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
 def test_streaming_zero_kpar() -> None:
@@ -199,28 +202,28 @@ def test_full_operator_scan_relaxed() -> None:
         ntheta=32,
         nperiod=2,
     )
-    cfg = CycloneBaseCase(grid=grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    ky_values = np.array([0.2, 0.3, 0.4])
-    params = LinearParams(
-        R_over_Ln=cfg.model.R_over_Ln,
-        R_over_LTi=cfg.model.R_over_LTi,
-        omega_d_scale=1.0,
-        omega_star_scale=1.0,
-        rho_star=1.0,
-        kpar_scale=float(geom.gradpar()),
+    base_cfg, _ = load_runtime_from_toml(
+        "examples/linear/axisymmetric/cyclone.toml"
     )
+    cfg = replace(base_cfg, grid=grid)
+    ky_values = np.array([0.2, 0.3, 0.4])
 
-    scan = run_cyclone_scan(
+    scan = run_runtime_scan(
+        cfg,
         ky_values,
-        cfg=cfg,
         Nl=4,
         Nm=8,
         steps=200,
-        dt=0.02,
-        method="rk4",
-        terms=LinearTerms(),
-        params=params,
+        dt=0.002,
+        method="imex2",
+        solver="time",
+        batch_ky=True,
+        sample_stride=2,
+        auto_window=False,
+        tmin=0.1,
+        tmax=0.4,
+        min_points=10,
+        require_positive=False,
     )
 
     for gamma, omega in zip(scan.gamma, scan.omega, strict=True):

@@ -113,9 +113,9 @@ use mathematical names independent of comparison provenance.
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
-| Tool consolidation | 65% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
+| Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 81% | Continue with the next named benchmark family in the facade; ETG now has no specialized solver or config preset. |
+| Source consolidation | 90% | Continue with the next named benchmark family in the facade; ETG and Cyclone now share the canonical runtime and have no specialized solver. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -466,6 +466,19 @@ That topology is the reference design for the production parallel lane.
   into `tools/artifacts/build_nonlinear_transport_admission.py prelaunch`,
   reducing tool count from 135 to 134 and keeping landscape, prelaunch,
   campaign, and redesign policy in one nonlinear transport owner.
+- 2026-07-10: Removed the 4,150-line specialized Cyclone execution stack from
+  `spectraxgk.benchmarks`. Artifact generation, operator validation, profiling,
+  and parallel identity gates now load the canonical Cyclone TOML and call the
+  shared runtime. A real four-mode serial-versus-combined scan agrees to
+  `7.8e-16` maximum relative growth error; runtime timing remains diagnostic
+  until a large, warm workload demonstrates speedup.
+- 2026-07-10: Rebuilt the publication Cyclone spectrum on one office A4000
+  after rejecting a startup-contaminated `t=10` artifact. The accepted RK4
+  policy uses `t=80` only below `ky=0.15` and `t=40` elsewhere; all eight
+  points pass with at most 8.5% growth and 5.2% frequency error. Figure
+  generation now consumes the reviewed table instead of owning a duplicate
+  simulation path, and visual QA uses open markers and sparse linear ticks so
+  overlapping curves remain legible.
 
 ## Validation Commands For This Tranche
 

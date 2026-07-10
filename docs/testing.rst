@@ -194,8 +194,11 @@ Benchmark regression tests validate the Cyclone base case reference dataset and
 growth-rate extraction pipeline:
 
 - Loading the reference CSV via :func:`spectraxgk.benchmarks.load_cyclone_reference`.
-- Running short linear scans via :func:`spectraxgk.benchmarks.run_cyclone_linear`
-  and :func:`spectraxgk.benchmarks.run_cyclone_scan`.
+- Running short linear scans from the canonical
+  ``examples/linear/axisymmetric/cyclone.toml`` input via
+  :func:`spectraxgk.runtime.run_runtime_scan`.
+- Requiring independent-mode and combined-:math:`k_y` execution to agree at
+  machine precision before either path is used for performance measurements.
 - Reduced ky regression with tightened tolerances on the field-aligned grid.
 
 These tests live in ``tests/validation/benchmarks/test_benchmarks.py`` and ``tests/unit/operators/test_operator_kernels.py``.
