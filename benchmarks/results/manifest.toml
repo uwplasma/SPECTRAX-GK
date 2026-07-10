@@ -67,11 +67,3 @@ source_manifest = "tools/benchmark_atlas_manifest.toml"
 regenerate = "python tools/artifacts/make_benchmark_atlas.py"
 docs_page = "docs/benchmarks.rst"
 claim_scope = "manifest of small tracked benchmark inputs"
-
-[[table]]
-name = "Fresh bounded Cyclone linear parity refresh"
-path = "docs/_static/cyclone_runtime_parity_refresh.json"
-source_manifest = "examples/linear/axisymmetric/cyclone.toml"
-regenerate = "run the bounded commands documented in docs/benchmarks.rst"
-docs_page = "docs/benchmarks.rst"
-claim_scope = "single-mode growth/frequency parity; wall times are not directly comparable"
