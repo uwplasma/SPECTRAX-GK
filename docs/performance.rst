@@ -135,6 +135,11 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
      --xla-dump-dir /tmp/spectrax_nl_xla \
      --steps 400 --dt 0.0377 --Nl 4 --Nm 8
 
+For repeated Python objective or ensemble calls with fixed geometry and model
+policy, add ``--reuse-prepared-simulation`` and an explicit ``--steps``. The
+ordinary command remains the executable-style end-to-end startup profile; the
+prepared mode measures compile-once repeated-call throughput.
+
 The trace directory can be opened with Perfetto. For GPU profiling, set
 ``JAX_PLATFORM_NAME=gpu`` before invoking the script.
 JAX writes the trace under

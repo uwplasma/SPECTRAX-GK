@@ -35,7 +35,9 @@ from spectraxgk.linear import build_linear_cache, linear_rhs_cached
 from spectraxgk.nonlinear import nonlinear_rhs_cached
 from spectraxgk.runtime import (
     _build_initial_condition,
+    _runtime_external_phi,
     _select_nonlinear_mode_indices,
+    build_runtime_nonlinear_diagnostics_kwargs,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -185,6 +187,11 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
         action=argparse.BooleanOptionalAction,
         default=True,
     )
+    parser.add_argument(
+        "--reuse-prepared-simulation",
+        action="store_true",
+        help="Prepare one explicit scan and reuse its compiled executable across repeats.",
+    )
     parser.add_argument("--trace-dir", type=Path, default=None)
     parser.add_argument("--memory-profile", type=Path, default=None)
     parser.add_argument("--xla-dump-dir", type=Path, default=None)
@@ -201,26 +208,99 @@ def main_cyclone(argv: list[str] | None = None) -> int:
 
     from jax import profiler
 
+    from spectraxgk.nonlinear import prepare_nonlinear_explicit_diagnostics
     from spectraxgk.runtime import run_runtime_nonlinear
 
     cfg, _data = load_runtime_from_toml(args.config)
 
-    def _run():
-        result = run_runtime_nonlinear(
-            cfg,
+    if args.reuse_prepared_simulation:
+        if args.steps is None:
+            raise ValueError("--reuse-prepared-simulation requires --steps")
+        geom = build_runtime_geometry(cfg)
+        grid = build_spectral_grid(apply_imported_geometry_grid_defaults(geom, cfg.grid))
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
+        terms = build_runtime_term_config(cfg)
+        ky_index, kx_index = _select_nonlinear_mode_indices(
+            grid,
             ky_target=args.ky,
+            kx_target=None,
+            use_dealias_mask=bool(cfg.time.nonlinear_dealias),
+        )
+        initial_state = _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=kx_index,
             Nl=args.Nl,
             Nm=args.Nm,
-            dt=args.dt,
-            steps=args.steps,
-            method=args.method,
-            sample_stride=args.sample_stride,
-            diagnostics_stride=args.diagnostics_stride,
-            diagnostics=True,
-            resolved_diagnostics=args.resolved_diagnostics,
+            nspecies=len(cfg.species),
         )
-        _block_tree(result)
-        return result
+        dt_use = float(cfg.time.dt if args.dt is None else args.dt)
+        method_use = str(cfg.time.method if args.method is None else args.method)
+        sample_stride = int(
+            cfg.time.sample_stride
+            if args.sample_stride is None
+            else args.sample_stride
+        )
+        diagnostics_stride = int(
+            cfg.time.diagnostics_stride
+            if args.diagnostics_stride is None
+            else args.diagnostics_stride
+        )
+        prepared_kwargs = build_runtime_nonlinear_diagnostics_kwargs(
+            cfg,
+            dt=dt_use,
+            steps=int(args.steps),
+            method=method_use,
+            term_config=terms,
+            sample_stride=sample_stride,
+            diagnostics_stride=diagnostics_stride,
+            laguerre_mode=str(cfg.time.laguerre_nonlinear_mode),
+            ky_index=ky_index,
+            kx_index=kx_index,
+            fixed_dt=bool(cfg.time.fixed_dt),
+            fixed_mode_ky_index=(
+                cfg.expert.iky_fixed if cfg.expert.fixed_mode else None
+            ),
+            fixed_mode_kx_index=(
+                cfg.expert.ikx_fixed if cfg.expert.fixed_mode else None
+            ),
+            external_phi=_runtime_external_phi(cfg),
+            resolved_diagnostics=bool(args.resolved_diagnostics),
+            show_progress=False,
+        )
+        prepared = prepare_nonlinear_explicit_diagnostics(
+            initial_state,
+            grid,
+            geom,
+            params,
+            **prepared_kwargs,
+        )
+
+        def _run():
+            result = prepared.run()
+            _block_tree(result)
+            return result
+
+    else:
+
+        def _run():
+            result = run_runtime_nonlinear(
+                cfg,
+                ky_target=args.ky,
+                Nl=args.Nl,
+                Nm=args.Nm,
+                dt=args.dt,
+                steps=args.steps,
+                method=args.method,
+                sample_stride=args.sample_stride,
+                diagnostics_stride=args.diagnostics_stride,
+                diagnostics=True,
+                resolved_diagnostics=args.resolved_diagnostics,
+            )
+            _block_tree(result)
+            return result
 
     t0 = time.perf_counter()
     with profiler.TraceAnnotation("spectrax_warmup"):

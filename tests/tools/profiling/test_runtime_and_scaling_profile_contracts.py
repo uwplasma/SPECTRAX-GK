@@ -28,6 +28,7 @@ def test_cyclone_runtime_profiler_default_config_exists() -> None:
     assert (REPO_ROOT / args.config).is_file()
     assert args.repeats == 1
     assert args.resolved_diagnostics is True
+    assert args.reuse_prepared_simulation is False
 
 
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:
