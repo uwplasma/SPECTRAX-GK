@@ -289,8 +289,8 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
     cfg_dir = REPO_ROOT / "examples" / "linear" / "axisymmetric"
     expected = {
         "cyclone.toml": (1.0, 2.0, 0.0, 1.0),
-        "etg.toml": (1.0, 2.0, 1.0, 0.0),
-        "runtime_etg.toml": (1.0, 2.0, 1.0, 0.0),
+        "etg.toml": (1.0, 2.0, 0.0, 1.0),
+        "runtime_etg.toml": (1.0, 2.0, 0.0, 1.0),
         "runtime_kaw.toml": (1.0, 2.0, 0.0, 1.0),
         "runtime_kbm.toml": (1.0, 2.0, 1.0, 0.0),
     }
@@ -303,6 +303,14 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
 
     _cfg, cyclone_raw = load_runtime_from_toml(cfg_dir / "cyclone.toml")
     assert cyclone_raw["fit"]["mode_method"] == "z_index"
+
+    for name in ("etg.toml", "runtime_etg.toml"):
+        cfg, raw = load_runtime_from_toml(cfg_dir / name)
+        assert cfg.time.method == "rk4", name
+        assert cfg.time.dt == pytest.approx(1.6e-4), name
+        assert cfg.time.t_max == pytest.approx(2.0), name
+        assert raw["run"]["solver"] == "time", name
+        assert raw["scan"]["solver"] == "time", name
 
 
 def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> None:

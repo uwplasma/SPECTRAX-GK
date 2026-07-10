@@ -393,6 +393,38 @@ def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> No
     with pytest.raises(ValueError, match="adiabatic_electrons"):
         startup.build_runtime_linear_params(conflict, Nm=2, geom=fake_geom)
 
+    electron_cfg = replace(
+        _base_runtime_cfg(),
+        physics=RuntimePhysicsConfig(
+            adiabatic_electrons=False, adiabatic_ions=True, tau_e=1.25
+        ),
+        species=(
+            RuntimeSpeciesConfig(name="electron", charge=-1.0, kinetic=True),
+        ),
+    )
+    electron_params = startup.build_runtime_linear_params(
+        electron_cfg, Nm=2, geom=fake_geom
+    )
+    assert float(electron_params.tau_e) == pytest.approx(1.25)
+
+    kinetic_ion_conflict = replace(
+        electron_cfg,
+        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),),
+    )
+    with pytest.raises(ValueError, match="adiabatic_ions"):
+        startup.build_runtime_linear_params(
+            kinetic_ion_conflict, Nm=2, geom=fake_geom
+        )
+
+    double_adiabatic = replace(
+        electron_cfg,
+        physics=RuntimePhysicsConfig(
+            adiabatic_electrons=True, adiabatic_ions=True, tau_e=1.0
+        ),
+    )
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        startup.build_runtime_linear_params(double_adiabatic, Nm=2, geom=fake_geom)
+
 
 def test_runtime_hypercollision_explicit_override_is_preserved() -> None:
     cfg = replace(

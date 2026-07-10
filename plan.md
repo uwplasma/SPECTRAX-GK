@@ -112,10 +112,10 @@ use mathematical names independent of comparison provenance.
 
 | Lane | Completion | Next concrete action |
 | --- | ---: | --- |
-| Capability/parity specification | 98% | Close the newly reproduced ETG branch-selection mismatch, then keep source fingerprints and the machine-readable matrix synchronized. |
+| Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 67% | Migrate the remaining named benchmark drivers to unified runtime, then delete each duplicated case solver after its parity gate passes. |
+| Source consolidation | 70% | Remove the now-redundant ETG case solver after direct callers migrate, then continue moving named benchmark drivers to unified runtime. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -379,6 +379,19 @@ That topology is the reference design for the production parallel lane.
   This rules out a current code regression and identifies uncontrolled node or
   GPU operating state in the old 8.77x claim. The README no longer promotes
   that ratio, and the detailed docs retain it only as historical provenance.
+- 2026-07-10: Closed the canonical linear ETG runtime mismatch against a fresh
+  office comparison run. Runtime startup had omitted the Boltzmann-ion
+  quasineutrality coefficient, both ETG TOMLs selected the wrong constant
+  hypercollision policy, and the normalization retained an empirical 0.95
+  curvature factor. With the physical coefficient, the ``|k_z|``
+  hypercollision route, unit drift scaling, and converged RK4 integration,
+  SPECTRAX-GK gives ``(gamma, omega)=(4.0028,-8.7067)`` at ``ky=10`` versus
+  ``(4.0036,-8.7262)`` in the fresh comparison, and
+  ``(5.7306,-13.7039)`` at ``ky=15`` versus ``(5.7261,-13.7050)``. The ETG
+  ``ky=30`` result is ``(3.8807,-26.5449)`` versus
+  ``(3.8782,-26.5447)``. The refreshed reference replaces a stale high-ky
+  growth row. The ETG root benchmark now uses the unified runtime API and the
+  obsolete tuned propagator policy is no longer part of the publication driver.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

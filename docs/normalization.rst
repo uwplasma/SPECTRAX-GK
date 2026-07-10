@@ -228,5 +228,5 @@ Programmatic usage
    from spectraxgk.diagnostics.normalization import get_normalization_contract
 
    contract = get_normalization_contract("etg")
-   # contract.omega_d_scale == 0.95
-   # contract.omega_star_scale == 0.8
+   # contract.omega_d_scale == 1.0
+   # contract.omega_star_scale == 1.0
