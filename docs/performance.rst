@@ -1243,6 +1243,20 @@ ratios were:
 
 Because HSX is slower in both bounded gates, the spectral mode should be
 treated as a validated optional engineering mode, not a global fast default.
+
+A July 10, 2026 follow-up extended the Cyclone A4000 comparison from two steps
+to 400 steps (``t=20``) with a stricter five-percent gate. The spectral route
+passed with ``8.71e-4`` maximum relative scalar difference, ``1.78e-4``
+heat-flux endpoint difference, and a ``1.73x`` end-to-end runtime ratio. A
+matched kernel split measured grid-mode ``nonlinear_bracket=1.91e-2 s`` and
+``full_rhs=2.74e-2 s`` versus spectral-mode ``4.59e-3 s`` and ``1.35e-2 s``.
+This strengthens the bounded Cyclone fast-toggle evidence but does not replace
+the required long saturated-window gates for W7-X, HSX, and KBM.
+
+The same refresh measured prepared 20-step wall times of ``4.55 s`` on the
+local CPU (JAX 0.9.2) and ``1.46 s`` on one office A4000 (JAX 0.4.38). Because
+those software stacks are not matched, these values are diagnostic and do not
+replace the README runtime panel or support a new CPU/GPU speedup claim.
 Production use should rerun the gate on the target case and backend before
 claiming speedup.
 

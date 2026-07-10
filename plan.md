@@ -120,7 +120,7 @@ use mathematical names independent of comparison provenance.
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
-| Performance/release claims | 87% | Add prepared CPU/GPU rows to the next matched runtime/memory panel while keeping cold executable and warm Python claims separate. |
+| Performance/release claims | 88% | Repeat prepared CPU/GPU rows on a matched software stack before refreshing the panel; keep cold executable and warm Python claims separate. |
 | Docs/readme release pass | 94% | Keep README concise and complete the developer/API updates as source owners move. |
 | CI/release hygiene | 89% | Maintain fast checks under 5 minutes locally; inspect CI only after failures complete. |
 
@@ -366,6 +366,13 @@ That topology is the reference design for the production parallel lane.
   damping factor exactly. The active extension-point and numerics docs now
   distinguish supported state paths from pending diagnostic, implicit, and
   decomposed routes.
+- 2026-07-10: Refreshed prepared nonlinear profiling on local CPU and one
+  office A4000. The unmatched JAX stacks produced 4.55-second and 1.46-second
+  20-step medians, so no README speedup was changed. Kernel splitting shows the
+  nonlinear bracket owns about 70% of GPU RHS time. A 400-step Cyclone spectral
+  Laguerre gate passes at 0.087% maximum scalar difference and 1.73x runtime
+  ratio. An exact FFT batching experiment was neutral and was reverted rather
+  than retaining extra code without measured benefit.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
