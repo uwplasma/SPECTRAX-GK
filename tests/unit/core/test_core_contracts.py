@@ -10,7 +10,6 @@ import pytest
 import spectraxgk.config as public_config
 from spectraxgk.config import (
     CycloneBaseCase,
-    ETGBaseCase,
     REFERENCE_ELECTRON_MASS,
     GeometryConfig,
     GridConfig,
@@ -559,8 +558,6 @@ def test_benchmark_case_presets_keep_stable_public_exports() -> None:
     for name in (
         "ModelConfig",
         "CycloneBaseCase",
-        "ETGModelConfig",
-        "ETGBaseCase",
         "KineticElectronModelConfig",
         "KineticElectronBaseCase",
         "KBMBaseCase",
@@ -586,15 +583,6 @@ def test_config_override():
     assert d["time"]["compressed_real_fft"] is False
 
 
-def test_etg_config_to_dict():
-    """ETG configuration should serialize to dictionaries."""
-    cfg = ETGBaseCase()
-    d = cfg.to_dict()
-    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init"}
-    assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
-    assert d["model"]["mass_ratio"] == cfg.model.mass_ratio
-
-
 def test_kinetic_config_to_dict():
     """Kinetic-electron configuration should serialize to dictionaries."""
     cfg = KineticElectronBaseCase()
@@ -605,7 +593,7 @@ def test_kinetic_config_to_dict():
 def test_reference_aligned_mass_ratio_defaults() -> None:
     """Reference-aligned benchmark defaults should use the tracked electron mass."""
 
-    for cfg in (ETGBaseCase(), KineticElectronBaseCase(), KBMBaseCase()):
+    for cfg in (KineticElectronBaseCase(), KBMBaseCase()):
         assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)
 
 

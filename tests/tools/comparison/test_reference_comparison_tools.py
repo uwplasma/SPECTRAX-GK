@@ -3099,6 +3099,55 @@ def test_ky_diagnostics_build_problem_seeds_multispecies_tem() -> None:
     assert np.allclose(np.asarray(G0[0]), 0.0)
 
 
+def test_ky_diagnostics_etg_uses_canonical_boltzmann_ion_contract() -> None:
+    from tools.comparison import ky_diagnostics as mod
+
+    cfg, _grid, _geom, params, terms, state = mod._build_problem(
+        "etg", 10.0, None, 2, 4
+    )
+
+    assert cfg.physics.adiabatic_ions is True
+    assert cfg.physics.adiabatic_electrons is False
+    assert state.shape[0] == 2  # Single-species states omit a species axis.
+    assert float(params.tau_e) == pytest.approx(1.0)
+    assert float(params.omega_d_scale) == pytest.approx(1.0)
+    assert float(params.hypercollisions_const) == pytest.approx(0.0)
+    assert float(params.hypercollisions_kz) == pytest.approx(1.0)
+    assert terms.apar == pytest.approx(0.0)
+
+
+def test_rhs_term_diagnostics_etg_uses_canonical_runtime_contract() -> None:
+    from tools.comparison import write_rhs_term_diagnostics as mod
+
+    args = type(
+        "Args",
+        (),
+        {
+            "Nx": 1,
+            "Ny": 8,
+            "Nz": 16,
+            "Lx": 6.28,
+            "Ly": 6.28,
+            "boundary": "linked",
+            "y0": 0.2,
+            "ntheta": 8,
+            "nperiod": 1,
+            "Nm": 4,
+            "drift_scale": 1.0,
+            "R_over_LTe": 6.0,
+        },
+    )()
+    cfg, params, species_index, drift_scale, drive_scale, rho_scale = (
+        mod._case_config("etg", args)
+    )
+
+    assert cfg.species[0].tprim == pytest.approx(6.0)
+    assert cfg.physics.adiabatic_ions is True
+    assert species_index == 0
+    assert float(params.tau_e) == pytest.approx(1.0)
+    assert (drift_scale, drive_scale, rho_scale) == pytest.approx((1.0, 1.0, 1.0))
+
+
 def test_write_rhs_term_diagnostics_seed_state_handles_multispecies_tem() -> None:
     from tools.comparison import write_rhs_term_diagnostics as mod
 

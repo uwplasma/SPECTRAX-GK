@@ -28,9 +28,6 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    ETG_OMEGA_D_SCALE,
-    ETG_OMEGA_STAR_SCALE,
-    ETG_RHO_STAR,
     KINETIC_OMEGA_D_SCALE,
     KINETIC_OMEGA_STAR_SCALE,
     KINETIC_RHO_STAR,
@@ -42,7 +39,6 @@ from spectraxgk.benchmarks import (
     KBM_RHO_STAR,
     _apply_reference_hypercollisions,
     _build_initial_condition,
-    _electron_only_params,
     _two_species_params,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
@@ -54,7 +50,6 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import (
     CycloneBaseCase,
-    ETGBaseCase,
     InitializationConfig,
     KineticElectronBaseCase,
     KBMBaseCase,
@@ -72,6 +67,12 @@ from spectraxgk.linear import (
 from spectraxgk.solvers.linear.krylov import KrylovConfig, dominant_eigenpair
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import TermConfig
+from spectraxgk.workflows.runtime.startup import (
+    build_runtime_geometry,
+    build_runtime_linear_params,
+    build_runtime_linear_terms,
+)
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
 def _parse_args() -> argparse.Namespace:
@@ -236,34 +237,14 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         terms = LinearTerms()
         init_species_index = 1
     elif case == "etg":
-        cfg = ETGBaseCase()
+        cfg, _ = load_runtime_from_toml(
+            ROOT / "examples/linear/axisymmetric/etg.toml"
+        )
         grid_full = build_spectral_grid(cfg.grid)
-        geom = SAlphaGeometry.from_config(cfg.geometry)
-        if getattr(cfg.model, "adiabatic_ions", False):
-            params = _electron_only_params(
-                cfg.model,
-                kpar_scale=float(geom.gradpar()),
-                omega_d_scale=ETG_OMEGA_D_SCALE,
-                omega_star_scale=ETG_OMEGA_STAR_SCALE,
-                rho_star=ETG_RHO_STAR,
-                damp_ends_amp=0.0,
-                damp_ends_widthfrac=0.0,
-                nhermite=Nm,
-            )
-            init_species_index = 0
-        else:
-            params = _two_species_params(
-                cfg.model,
-                kpar_scale=float(geom.gradpar()),
-                omega_d_scale=ETG_OMEGA_D_SCALE,
-                omega_star_scale=ETG_OMEGA_STAR_SCALE,
-                rho_star=ETG_RHO_STAR,
-                damp_ends_amp=0.0,
-                damp_ends_widthfrac=0.0,
-                nhermite=Nm,
-            )
-            init_species_index = 1
-        terms = LinearTerms()
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=Nm, geom=geom)
+        terms = build_runtime_linear_terms(cfg)
+        init_species_index = 0
     elif case == "kbm":
         cfg = KBMBaseCase()
         grid_full = build_spectral_grid(cfg.grid)

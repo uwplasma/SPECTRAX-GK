@@ -13,9 +13,6 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    ETG_OMEGA_D_SCALE,
-    ETG_OMEGA_STAR_SCALE,
-    ETG_RHO_STAR,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
@@ -26,21 +23,21 @@ from spectraxgk.benchmarks import (
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
     CycloneBaseCase,
-    ETGBaseCase,
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
     _apply_reference_hypercollisions,
     _build_initial_condition,
-    _electron_only_params,
     _two_species_params,
 )
-from spectraxgk.config import ETGModelConfig, GridConfig
+from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached
 from spectraxgk.terms.config import TermConfig
+from spectraxgk.workflows.runtime.startup import build_runtime_linear_params
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
 def _case_config(name: str, args) -> tuple[object, object, int, float, float, float]:
@@ -84,10 +81,12 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             CYCLONE_RHO_STAR,
         )
     if case == "etg":
-        model = ETGModelConfig(
-            R_over_LTe=args.R_over_LTe, adiabatic_ions=args.adiabatic_ions
+        cfg, _ = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples/linear/axisymmetric/etg.toml"
         )
-        cfg = ETGBaseCase(
+        cfg = replace(
+            cfg,
             grid=GridConfig(
                 Nx=args.Nx,
                 Ny=args.Ny,
@@ -99,42 +98,19 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 ntheta=args.ntheta,
                 nperiod=args.nperiod,
             ),
-            model=model,
+            species=(replace(cfg.species[0], tprim=float(args.R_over_LTe)),),
         )
         geom = SAlphaGeometry.from_config(
             replace(cfg.geometry, drift_scale=args.drift_scale)
         )
-        if args.adiabatic_ions:
-            params = _electron_only_params(
-                cfg.model,
-                kpar_scale=float(geom.gradpar()),
-                omega_d_scale=ETG_OMEGA_D_SCALE,
-                omega_star_scale=ETG_OMEGA_STAR_SCALE,
-                rho_star=ETG_RHO_STAR,
-                damp_ends_amp=0.0,
-                damp_ends_widthfrac=0.0,
-                nhermite=args.Nm,
-            )
-            init_species_index = 0
-        else:
-            params = _two_species_params(
-                cfg.model,
-                kpar_scale=float(geom.gradpar()),
-                omega_d_scale=ETG_OMEGA_D_SCALE,
-                omega_star_scale=ETG_OMEGA_STAR_SCALE,
-                rho_star=ETG_RHO_STAR,
-                damp_ends_amp=0.0,
-                damp_ends_widthfrac=0.0,
-                nhermite=args.Nm,
-            )
-            init_species_index = 1
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
         return (
             cfg,
             params,
-            init_species_index,
-            ETG_OMEGA_D_SCALE,
-            ETG_OMEGA_STAR_SCALE,
-            ETG_RHO_STAR,
+            0,
+            float(params.omega_d_scale),
+            float(params.omega_star_scale),
+            float(params.rho_star),
         )
     if case == "kinetic":
         cfg = KineticElectronBaseCase(
@@ -279,7 +255,6 @@ def main() -> None:
     parser.add_argument("--Nl", type=int, default=48)
     parser.add_argument("--Nm", type=int, default=16)
     parser.add_argument("--drift-scale", type=float, default=1.0)
-    parser.add_argument("--adiabatic-ions", action="store_true")
     parser.add_argument("--R_over_LTe", type=float, default=6.0)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
