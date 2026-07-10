@@ -241,9 +241,7 @@ moved_exports = [
   "_masked_abs2",
   "distribution_free_energy",
   "electrostatic_field_energy",
-  "electrostatic_field_energy_krehm",
   "magnetic_vector_potential_energy",
-  "magnetic_vector_potential_energy_krehm",
   "runtime_energy_total",
   "total_energy",
 ]

@@ -286,6 +286,11 @@ That topology is the reference design for the production parallel lane.
   local CPU and `0.4648 s` on one A4000, an `8.77x` GPU throughput advantage.
   The earlier `8.69 s` nominal warm GPU result rebuilt and recompiled its scan;
   it did not measure steady prepared execution.
+- 2026-07-09: Removed two public KREHM-only field-energy helpers and their
+  compatibility tests because SPECTRAX-GK does not ship the corresponding
+  reduced equation set. Standard full-gyrokinetic field-energy diagnostics and
+  their geometry-weighted/resolved-sum gates remain unchanged. This applies the
+  rule that an orphan diagnostic is not a supported physics capability.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.

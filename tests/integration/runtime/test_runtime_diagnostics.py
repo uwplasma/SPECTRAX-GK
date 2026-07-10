@@ -24,11 +24,9 @@ from spectraxgk.diagnostics import (
     _reduce_scalar_kykxz,
     _reduce_species_kykxz,
     magnetic_vector_potential_energy,
-    magnetic_vector_potential_energy_krehm,
     distribution_free_energy,
     distribution_free_energy_resolved,
     electrostatic_field_energy,
-    electrostatic_field_energy_krehm,
     electrostatic_field_energy_resolved,
     total_energy,
     magnetic_vector_potential_energy_resolved,
@@ -778,96 +776,6 @@ def test_zero_field_state_has_zero_transport_and_heating() -> None:
             )
         ),
         0.0,
-    )
-
-
-def test_krehm_field_energies_match_manual_formulas() -> None:
-    kx = np.asarray([-0.5, 0.5], dtype=np.float32)
-    ky = np.asarray([-0.25, 0.0, 0.25], dtype=np.float32)
-    mask = np.asarray([[1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], dtype=np.float32)
-    grid = SimpleNamespace(
-        kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask)
-    )
-    vol_fac = jnp.asarray([0.4, 0.6], dtype=jnp.float32)
-    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(
-        ky.size, kx.size, vol_fac.size
-    )
-    phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
-    apar = (0.3 - 0.2j) * phi
-    params = LinearParams(rho=jnp.asarray([1.0, 0.5], dtype=jnp.float32))
-
-    kperp2 = ky[:, None] ** 2 + kx[None, :] ** 2
-    weight = mask[:, :, None] * np.asarray(vol_fac, dtype=np.float32)[None, None, :]
-    phi2 = np.abs(np.asarray(phi)) ** 2
-    wphi_expected = 0.0
-    for rho_s in (1.0, 0.5):
-        b = 0.5 * kperp2 * (rho_s * rho_s)
-        wphi_expected += (
-            0.5
-            * (2.0 / (rho_s * rho_s))
-            * np.sum(phi2 * (1.0 - np.asarray(gamma0(b)))[:, :, None] * weight)
-        )
-    wapar_expected = 0.5 * np.sum(
-        kperp2[:, :, None] * np.abs(np.asarray(apar)) ** 2 * mask[:, :, None]
-    )
-
-    np.testing.assert_allclose(
-        np.asarray(
-            electrostatic_field_energy_krehm(
-                phi, grid, params, vol_fac, use_dealias=True
-            )
-        ),
-        wphi_expected,
-        rtol=1.0e-6,
-        atol=1.0e-6,
-    )
-    np.testing.assert_allclose(
-        np.asarray(
-            magnetic_vector_potential_energy_krehm(apar, grid, use_dealias=True)
-        ),
-        wapar_expected,
-        rtol=1.0e-6,
-        atol=1.0e-6,
-    )
-
-
-def test_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> None:
-    kx = np.asarray([-0.5, 0.5], dtype=np.float32)
-    ky = np.asarray([0.0, 0.25, 0.5], dtype=np.float32)
-    mask = np.asarray([[1.0, 1.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
-    grid = SimpleNamespace(
-        kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask)
-    )
-    vol_fac = jnp.asarray([0.25, 0.75], dtype=jnp.float32)
-    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(
-        ky.size, kx.size, vol_fac.size
-    )
-    phi = jnp.asarray(field_base + 1.0j * (field_base + 0.5), dtype=jnp.complex64)
-    params = LinearParams(rho=0.7)
-
-    fac = np.asarray([[1.0], [2.0], [2.0]], dtype=np.float32) * mask
-    kperp2 = ky[:, None] ** 2 + kx[None, :] ** 2
-    b = 0.5 * kperp2 * (0.7 * 0.7)
-    expected = (
-        0.5
-        * (2.0 / (0.7 * 0.7))
-        * np.sum(
-            np.abs(np.asarray(phi)) ** 2
-            * (1.0 - np.asarray(gamma0(b)))[:, :, None]
-            * fac[:, :, None]
-            * np.asarray(vol_fac, dtype=np.float32)[None, None, :]
-        )
-    )
-
-    np.testing.assert_allclose(
-        np.asarray(
-            electrostatic_field_energy_krehm(
-                phi, grid, params, vol_fac, use_dealias=True, compressed_real_fft=True
-            )
-        ),
-        expected,
-        rtol=1.0e-6,
-        atol=1.0e-6,
     )
 
 
