@@ -1090,6 +1090,14 @@ are fixed by this first prepared contract. A later dynamic-parameter contract
 is required before claiming compile-once stellarator optimization across
 changing equilibria.
 
+For sensitivity calculations, ``simulation.run_arrays(new_initial_state)``
+returns only JAX pytrees and skips host-side diagnostic finalization. Reverse
+mode therefore differentiates through the explicit time loop with respect to
+the initial state. Cache-dependent geometry and velocity parameters remain
+fixed: changing those values requires rebuilding the prepared simulation so
+that gyroaverages, drifts, linked-boundary maps, and collision arrays cannot
+become inconsistent with the supplied parameters.
+
 On the shipped ``64x64x24`` Cyclone setup, a three-call CPU compile-log gate
 records exactly one ``jit(run_raw)`` compilation. The first two-step call takes
 ``3.25 s`` including compilation; repeated calls take ``0.297 s`` and

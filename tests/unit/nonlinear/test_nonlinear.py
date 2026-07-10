@@ -161,6 +161,43 @@ def test_prepared_nonlinear_diagnostics_reuses_compiled_scan():
     np.testing.assert_allclose(np.asarray(first[2]), np.asarray(direct[2]))
 
 
+def test_prepared_nonlinear_arrays_support_reverse_mode_state_gradients():
+    """The raw prepared scan should remain differentiable through time stepping."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    direction = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-7
+    prepared = prepare_nonlinear_explicit_diagnostics(
+        direction,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=2,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        resolved_diagnostics=False,
+    )
+
+    def final_energy(scale: jnp.ndarray) -> jnp.ndarray:
+        final_state, _diagnostics, _fields = prepared.run_arrays(scale * direction)
+        return jnp.real(jnp.vdot(final_state, final_state))
+
+    value, gradient = jax.value_and_grad(final_energy)(jnp.asarray(1.0))
+    eps = jnp.asarray(1.0e-2)
+    centered_fd = (final_energy(1.0 + eps) - final_energy(1.0 - eps)) / (2.0 * eps)
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    assert float(value) > 0.0
+    assert float(gradient) != 0.0
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=2.0e-2, atol=1.0e-16
+    )
+
+
 def test_integrate_nonlinear_imex_diagnostics_shapes():
     """IMEX nonlinear diagnostics should return time-series arrays."""
 

@@ -116,7 +116,7 @@ use mathematical names independent of comparison provenance.
 | Tool consolidation | 60% | Fold artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 64% | Move remaining case policy out of `spectraxgk.benchmarks`, resolve `terms`/`operators` ownership, and reduce oversized domain modules without creating tiny shards. |
-| Differentiable API clarity | 72% | Define forward, reverse/checkpointed, and implicit differentiation policies; document differentiable versus executable-fast paths. |
+| Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 10% | Introduce operator protocol, conserving baseline, then Sugama and linearized Coulomb with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
 | Production parallelization | 38% | Replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
@@ -312,6 +312,12 @@ That topology is the reference design for the production parallel lane.
   inputs now enter through `load_runtime_from_toml`; focused core, runtime
   configuration, executable, and public-API tests pass. This removes another
   118 net lines and leaves one documented input schema.
+- 2026-07-10: Added `PreparedExplicitNonlinearDiagnostics.run_arrays()` as the
+  host-conversion-free differentiable boundary for repeated nonlinear scans.
+  A physical tiny-grid reverse-mode test differentiates through the explicit
+  time loop and agrees with centered finite differences to 2% while the docs
+  state exactly which cache-dependent geometry and velocity parameters remain
+  fixed.
 
 - 2026-07-09: Consolidated runtime startup and linear-cache profiling into
   `tools/profiling/profile_startup_and_cache.py`.
