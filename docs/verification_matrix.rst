@@ -627,7 +627,10 @@ smoke artifact, ``docs/_static/nonlinear_sharding_profile_office_gpu.json``, is
 identity-clean only on a tiny grid. The matched benchmark-grid artifact,
 ``docs/_static/nonlinear_sharding_profile_office_gpu_benchmark_grid.json``,
 fails final-state identity and is slower than serial. It is the controlling
-production-candidate result, so whole-state sharding remains blocked. The large combined sweep
+production-candidate result. The clean-revision interacting-multimode refresh,
+``docs/_static/nonlinear_sharding_profile_office_gpu_physical.json``, confirms
+that both ``ky`` and ``kx`` whole-state placement fail physical identity and
+are slower than serial, so whole-state sharding remains blocked. The large combined sweep
 ``docs/_static/nonlinear_sharding_strong_scaling_large.json`` is a
 profiler/identity artifact, not a production nonlinear speedup claim. The same
 diagnostic keeps ``z``-axis FFT sharding out of the release claim until it has

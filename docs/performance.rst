@@ -1017,7 +1017,9 @@ versions. The fast parallel artifact checker validates that contract whenever
 it is present; older checked-in diagnostic profiles remain scoped until they
 are refreshed with the same metadata. The
 local checked-in artifact is deliberately small and only establishes the
-control-flow and single-device identity gate. The older two-GPU office artifact
+control-flow and single-device identity gate. Its constant ``ky=0, kx=0``
+state has a zero nonlinear bracket and is superseded for physical identity
+decisions. The older two-GPU office artifact
 at ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` is likewise a
 tiny ``(4,6,8,4,16)`` smoke test: it records zero state error but no speedup.
 It must not be generalized to a transport grid. The matched benchmark-grid
@@ -1030,6 +1032,15 @@ slower than serial (``0.211x``) and fails trajectory identity
 sufficient diagnostic identity gate. Therefore whole-state nonlinear sharding is blocked from
 production routing and runtime claims. The next implementation must change the
 decomposition, not relax this gate.
+
+The clean-revision physical refresh is
+``docs/_static/nonlinear_sharding_profile_office_gpu_physical.json``. It uses
+three interacting spectral perturbations on a ``(4,8,32,32,64)`` state for 100
+RK2 steps and records a nonzero initial nonlinear RHS. On two RTX A4000 GPUs,
+serial execution takes 3.77 s, while ``ky`` and ``kx`` whole-state placement
+take 9.19 s and 7.22 s; both fail final-state and RHS identity. This artifact
+controls the current conclusion and prevents zero-bracket smoke tests from
+being promoted as nonlinear decomposition evidence.
 
 For final-state-only optimization or profiling, the explicit scan accepts
 ``return_fields=False``. This avoids one post-step RHS evaluation that exists
