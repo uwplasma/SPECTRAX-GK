@@ -429,7 +429,10 @@ def test_runtime_scan_batch_matches_serial() -> None:
             contract="cyclone", diagnostic_norm="none"
         ),
     )
-    ky_vals = [0.1, 0.2]
+    full_grid = build_spectral_grid(cfg.grid)
+    # The second mode lies outside the nonlinear two-thirds mask. Linear batch
+    # scans must retain it and match independent single-mode integrations.
+    ky_vals = [float(full_grid.ky[1]), float(full_grid.ky[2])]
     serial = run_runtime_scan(
         cfg,
         ky_values=ky_vals,
