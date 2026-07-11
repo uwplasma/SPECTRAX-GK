@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
-| Structured solver ownership | 35% | Review SOLVAX PR 2, run GPU identity/performance gates, publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
+| Structured solver ownership | 45% | Complete SOLVAX PR 2 CI/review and publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -282,6 +282,16 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Completed the first office GPU gate for SOLVAX PR 2 on one
+  RTX A4000. Complex matrix-free GMRES at ``n=1024`` converged in eight
+  iterations with ``7.24e-11`` relative residual and 17.7 ms warm runtime;
+  the fused complex tridiagonal solve at shape ``(256, 2048)`` reached
+  ``2.41e-16`` relative residual in 3.63 ms warm; and 64-by-8 block Thomas
+  reached ``2.09e-16`` in 2.69 ms warm. A CPU-only backend-selection test was
+  correctly guarded on CUDA, after which the GPU tridiagonal family passed
+  25 tests with one expected skip. These are compatibility measurements, not
+  SPECTRAX-GK speedup claims. Manual test/docs dispatch was added because the
+  draft PR initially produced no automatic check runs.
 - 2026-07-11: Implemented the first SOLVAX compatibility tranche in draft PR
   2 (commit ``632f14b``). Complex GMRES/GCROT now use scaled unitary Givens
   rotations and Hermitian projections; complex Aitken/Anderson use real
