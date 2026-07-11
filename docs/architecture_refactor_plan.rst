@@ -256,6 +256,39 @@ Simplicity anti-patterns to avoid:
 - tests that patch private names across many unrelated modules;
 - performance wrappers that change array layout without identity gates.
 
+Structured Numerical Algebra Ownership
+--------------------------------------
+
+Reusable structured algebra belongs in `SOLVAX <https://github.com/uwplasma/SOLVAX>`_;
+gyrokinetic policy remains in SPECTRAX-GK. In practical terms, SOLVAX may own
+batched banded/tridiagonal solves, matrix-free Krylov algorithms, recycled
+subspaces, fixed-point acceleration, implicit-solve differentiation, and
+memory-chunked Jacobian construction. SPECTRAX-GK must continue to own the
+physical operator, normalization, array layout, boundary conditions,
+preconditioner coefficients, tolerances, eigenbranch tracking, transport
+windows, and acceptance diagnostics.
+
+This is a deletion boundary, not permission to create wrappers around every
+SOLVAX function. At most one focused algebra adapter may translate
+SPECTRAX-GK layouts and policies. Once a migrated path passes identity,
+physics, differentiation, and performance gates, the superseded local
+algorithm and its duplicate unit tests are deleted. A fallback copy is not
+retained in the installed package.
+
+Adoption order is risk-based:
+
+1. backend-aware batched tridiagonal line solves;
+2. memory-chunked Jacobians for geometry sensitivity and UQ;
+3. complex GMRES/GCROT and implicit solve differentiation;
+4. deterministic fixed-point acceleration;
+5. additional generic Arnoldi or preconditioner ownership only when it reduces
+   total code and preserves the public physics contract.
+
+The root ``plan.md`` is authoritative for version pins, current blockers,
+deletion targets, examples, CI rows, and acceptance gates. Documentation must
+not claim a SOLVAX-backed production path before the corresponding published
+release and SPECTRAX-GK physical gates exist.
+
 Architecture Principles
 -----------------------
 

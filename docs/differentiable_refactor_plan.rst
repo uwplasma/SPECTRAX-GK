@@ -580,6 +580,23 @@ Every promoted differentiable workflow should declare:
 - whether the observable is a production physics observable or a reduced
   differentiable proxy.
 
+Generic structured derivatives should use reviewed SOLVAX primitives when
+their contracts pass the required dtype and transformation gates. In
+particular, memory-chunked Jacobians are preferred when an unchunked
+``jacfwd``/``jacrev`` materialization is the measured memory bottleneck, and
+implicit linear/root solve rules are preferred for converged solves whose
+residual equation and transpose are explicit. SPECTRAX-GK still owns branch
+locality, adaptive-controller assumptions, turbulent-window statistics, and
+finite-difference acceptance. A solver dependency cannot turn an
+ill-conditioned or non-converged physical observable into a valid derivative.
+
+Before replacing a local path, require real and complex dtype coverage as
+appropriate, JIT/vmap/JVP/VJP checks, transpose or Hermitian-adjoint identity,
+finite-difference agreement, and a physical observable gate. The currently
+audited SOLVAX release candidate does not yet satisfy complex Krylov and complex
+fixed-point requirements, so those migrations remain blocked while
+tridiagonal and chunked-Jacobian evaluations proceed first.
+
 Recommended default choices:
 
 - low-dimensional geometry or scalar scans: ``jax.jvp`` and finite differences;

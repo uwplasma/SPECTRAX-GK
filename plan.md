@@ -50,13 +50,13 @@ explicitly verified differentiable workflows for analysis and optimization.
 
 ## Current State
 
-Date: 2026-07-10.
+Date: 2026-07-11.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 228 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8 including a 10464-line facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 10464 lines | <=500 lines | active |
+| Installable source Python files | 227 | reviewed domain ownership | active |
+| Source modules above 1000 lines | 8, led by the 6306-line benchmark facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 6306 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
@@ -108,6 +108,94 @@ External-code names remain confined to comparison inputs, benchmark tooling,
 validation documentation, and figures/tables. Source-level physics and numerics
 use mathematical names independent of comparison provenance.
 
+## SOLVAX Ownership And Integration
+
+SOLVAX owns reusable structured numerical algebra; SPECTRAX-GK owns the
+gyrokinetic equations, normalization, state layout, branch selection,
+convergence policy, and physical diagnostics. This boundary is intended to
+delete generic solver code from SPECTRAX-GK, not add a second abstraction layer.
+
+The integration is pinned to reviewed releases, never an unversioned Git
+dependency. The 2026-07-11 audit used SOLVAX ``38bb094`` (source version
+``0.4.0``). PyPI still publishes ``0.2.0``, so no production dependency is
+added until a compatible release exists. The local source suite passes 192
+tests on JAX 0.9.2, with two known compatibility failures in block-Thomas
+linear transpose and mixed-precision block Jacobi. Complex tridiagonal solves
+work; complex GMRES and complex Aitken do not. Those are release blockers for
+the corresponding SPECTRAX-GK paths, not tolerances to hide locally.
+
+| Owner | Retained responsibility | Candidate SOLVAX primitive | Admission gate |
+| --- | --- | --- | --- |
+| SPECTRAX-GK geometry/objectives | observable definitions, parameter pytrees, conditioning, FD policy | chunked ``jacfwd``/``jacrev`` | dense-JAX identity, JIT/JVP/VJP, peak-memory and wall-time evidence |
+| SPECTRAX-GK implicit preconditioner | Hermite-line coefficients, linked-boundary assembly, coarse projection | backend-aware batched tridiagonal solve | CPU/GPU residual, x32/x64, complex64/128, linked/periodic identity |
+| SPECTRAX-GK linear/IMEX policy | gyrokinetic operator, tolerances, branch and fallback policy | GMRES, GCROT, implicit linear solve | complex adjoint support, residual history, breakdown, AD/FD, physics parity |
+| SPECTRAX-GK nonlinear/optimization policy | physical residual and late-window acceptance | Aitken/Anderson and implicit root solve | real/complex dtype, convergence basin, deterministic replay, tangent/FD gate |
+| SPECTRAX-GK continuation | ``ky``/beta/geometry branch identity | recycled GCROT | branch continuity, cold/warm iteration count, no false convergence |
+
+Implementation proceeds in five bounded tranches:
+
+1. **Compatibility contract upstream.** Add supported-minimum and current-JAX
+   CI rows, Python 3.10--3.12, import-origin/version checks, complex64/128
+   Krylov and adjoint tests, CPU/GPU structured-solve tests, and fix the two
+   current JAX 0.9.2 failures. Implement mathematically correct complex Givens,
+   conjugate inner products, transpose/Hermitian-adjoint contracts, and real
+   relaxation scalars for complex fixed-point states. Keep this work in one
+   SOLVAX draft PR until all gates and docs pass.
+2. **Low-risk primitives.** After a reviewed SOLVAX release, add a bounded
+   dependency and replace the two Hermite-line tridiagonal implementations.
+   Use memory-chunked Jacobians in VMEC/Boozer sensitivity and UQ workflows
+   where measured peak memory decreases without changing values. One focused
+   SPECTRAX-GK algebra adapter may normalize shapes and policies; no fallback
+   copy of SOLVAX algorithms is retained.
+3. **Complex implicit/Krylov migration.** Replace the three generic GMRES
+   routes only after complex and adjoint gates pass. Compare operator action,
+   preconditioned residuals, iteration counts, branch identity, gradients,
+   compile time, warm throughput, and memory before deleting local generic
+   implementations. Retain physics-specific eigenbranch and fallback logic.
+4. **Continuation and fixed-point acceleration.** Gate GCROT recycling across
+   ordered ``ky``, beta, and geometry scans. Gate Aitken/Anderson on IMEX and
+   converged optimization residuals; do not use them for noisy turbulent
+   transport windows. Promote only methods that reduce total operator calls
+   without changing accepted physics observables.
+5. **Delete and document.** Remove superseded local Krylov/direct-solve tests
+   and implementation, targeting 500--900 source lines in the first migration
+   and a further 200--400 only if Arnoldi/continuation ownership also moves.
+   Update API docs, numerics equations, dependency rationale, examples, and
+   profiler artifacts in the same commit that changes ownership.
+
+Required examples and evidence are deliberately small in number:
+
+- SOLVAX: complex matrix-free GMRES with implicit gradient, recycled parameter
+  continuation, batched complex tridiagonal line solve on CPU/GPU, and a
+  memory-chunked Jacobian benchmark;
+- SPECTRAX-GK: implicit linear ITG solve, KBM beta continuation, VMEC/Boozer
+  sensitivity with bounded Jacobian memory, and an accelerated deterministic
+  fixed-point example;
+- one publication-quality solver panel comparing residual/iteration history,
+  warm runtime, and peak memory. README receives only a concise result after
+  all gates pass; equations, algorithms, limitations, and reproduction commands
+  live in the numerical and differentiability documentation.
+
+CI acceptance is non-negotiable: ruff, package build, docs with warnings as
+errors, >=95% package coverage, supported-minimum/current JAX, CPU x32/x64,
+complex64/128, JIT/vmap/JVP/VJP/VJP-transpose, and import-origin/version checks.
+GPU gates run on office before any performance claim and record device,
+software stack, compilation, warm throughput, memory, residual, and physical
+identity. Every local command remains bounded below five minutes; long physics
+and accelerator campaigns are explicit external artifacts.
+
+Code contributed to either repository follows the useful parts of SOLVAX's
+current style: one numerical responsibility per module, pure array functions,
+explicit public exports, typed signatures, mathematical docstrings with shapes
+and references, import-safe optional backends, and one focused test family per
+module. SPECTRAX-GK does not mirror SOLVAX's file tree or expose solver knobs at
+the physics API indiscriminately. User-facing options remain a small set of
+physical/numerical policies with stable defaults; expert solver configuration
+is grouped under one typed configuration object. Examples are executable,
+deterministic, bounded, and build their figures from saved machine-readable
+data. CI follows SOLVAX's separate test/docs/publish workflows, extended with
+the compatibility matrix and SPECTRAX-GK physics gates above.
+
 ## Open Lanes And Progress
 
 | Lane | Completion | Next concrete action |
@@ -116,6 +204,7 @@ use mathematical names independent of comparison provenance.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
+| Structured solver ownership | 15% | Land SOLVAX complex/JAX compatibility gates, publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -129,25 +218,29 @@ use mathematical names independent of comparison provenance.
 1. **Freeze the required-core comparison contract.** Record exact equations,
    normalization, geometry arrays, grid layout, initialization, timestepping,
    precision, and diagnostics for each promoted linear/nonlinear comparison.
-2. **Correct nonlinear execution and profiling.** Add a prepared nonlinear
+2. **Close the SOLVAX compatibility contract.** Fix current-JAX transpose and
+   mixed-precision failures upstream, add complex Krylov/adjoint/fixed-point
+   gates, publish a reviewed release, and migrate tridiagonal plus chunked
+   Jacobian paths first. Do not add local compatibility copies.
+3. **Correct nonlinear execution and profiling.** Add a prepared nonlinear
    simulation object whose dynamic state/cache/parameter pytrees enter stable
    JIT boundaries, while methods, layouts, and output schemas are explicit
    static policies. Require an identical repeated call to compile the scan once.
    Keep CFL and sampling device-resident, report only active-sharding speedups,
    and separate cold, fixed-overhead, warm-throughput, utilization, and memory.
-3. **Benchmark facade shrink.** Keep stable benchmark result contracts in
+4. **Benchmark facade shrink.** Keep stable benchmark result contracts in
    `spectraxgk.benchmarks`; move case-policy and manuscript-like benchmark
    drivers to root `benchmarks` or maintainer tools.
-4. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
+5. **Source ownership cleanup.** Keep imported Miller/VMEC geometry in `geometry`, choose
    a single public mathematical-kernel namespace for `terms`/`operators`, and
    consolidate objective helper shards into fewer family modules.
-5. **Close required-core physics gates.** Maintain state-level short gates and
+6. **Close required-core physics gates.** Maintain state-level short gates and
    converged long-window gates for axisymmetric/stellarator, electrostatic/
    electromagnetic, adiabatic/kinetic-electron, and restart/spectral diagnostics.
    Treat equilibrium ExB flow shear as the next complete physics extension:
    zero-shear recovery, analytic shearing-wave evolution, remap/phase identity,
    linear mode suppression, nonlinear transport, and matched comparison gates.
-6. **Add collision-operator extensibility.** Land a protocol with a complete
+7. **Add collision-operator extensibility.** Land a protocol with a complete
    RHS contribution plus an optional mathematically valid split step; do not
    model field-particle terms as diagonal damping. Preserve the current
    conserving Lenard--Bernstein/Dougherty-like result, then add species-coupled
@@ -155,16 +248,16 @@ use mathematical names independent of comparison provenance.
    null-space, particle/total-momentum/total-energy conservation, adjointness,
    entropy production, collisional ITG, zonal damping, conductivity, and
    velocity-resolution evidence.
-7. **Formalize differentiation.** Use forward JVPs for few design parameters,
+8. **Formalize differentiation.** Use forward JVPs for few design parameters,
    reverse checkpointing for many-parameter scalar objectives, and implicit JVP/
    VJP rules for converged eigen/root solves. Adaptive and turbulent objectives
    require tolerance/window/seed refinement plus AD/finite-difference checks.
-8. **Implement production parallelism.** Decompose species first and Hermite
+9. **Implement production parallelism.** Decompose species first and Hermite
    moments second, exchange Hermite halos explicitly, reduce field moments with
    collectives, and keep perpendicular FFTs local until memory requires pencils.
-9. **Tool pruning and test normalization.** Delete unreferenced tools, group
+10. **Tool pruning and test normalization.** Delete unreferenced tools, group
    artifact commands, and use table-driven domain tests with shared fixtures.
-10. **Docs and release pass.** Regenerate referenced figures/tables, run fast
+11. **Docs and release pass.** Regenerate referenced figures/tables, run fast
    release tests, package build, docs build, package-wide coverage gate, then bump
    version and tag only when CI is green.
 
@@ -189,6 +282,16 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Pulled SOLVAX through ``38bb094`` and audited its source, tests,
+  documentation, examples, CI, and published-package status against the three
+  SPECTRAX-GK GMRES routes, two Hermite-line tridiagonal solves, geometry/UQ
+  Jacobians, and deterministic fixed-point policies. The source suite passes
+  192 tests on local JAX 0.9.2; block-Thomas linear transpose and mixed-precision
+  block Jacobi still fail, PyPI trails source version 0.4.0 at 0.2.0, and
+  complex GMRES/Aitken remain unsupported. The plan therefore establishes one
+  solver-ownership boundary and stages tridiagonal/chunked-autodiff adoption
+  before complex Krylov migration, with explicit deletion, CI, examples,
+  documentation, physical-identity, and GPU-profile gates.
 - 2026-07-09: Audited a clean comparison-code build and SPECTRAX-GK on office
   RTX A4000 GPUs. The isolated SPECTRAX nonlinear RHS is GPU-efficient, but the
   full integrator is dominated by fixed overhead and low device occupancy; the
