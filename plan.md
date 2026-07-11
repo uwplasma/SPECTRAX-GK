@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
-| Structured solver ownership | 15% | Land SOLVAX complex/JAX compatibility gates, publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
+| Structured solver ownership | 35% | Review SOLVAX PR 2, run GPU identity/performance gates, publish the reviewed release, then migrate tridiagonal and chunked-Jacobian paths before Krylov. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -282,6 +282,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Implemented the first SOLVAX compatibility tranche in draft PR
+  2 (commit ``632f14b``). Complex GMRES/GCROT now use scaled unitary Givens
+  rotations and Hermitian projections; complex Aitken/Anderson use real
+  safeguards and the correct residual Gram matrix; Jacobi factors are explicit
+  PyTrees for real mixed-precision execution; and block Thomas again supports
+  ``linear_transpose`` on JAX 0.9 through a transform-safe recurrence. Current
+  JAX passes 201 tests at 98.54% coverage; the validated minimum stack (JAX
+  0.4.38, Equinox 0.11.12, Lineax 0.0.8) passes 200 tests. The complex implicit
+  gradient example agrees with central differences to ``5.8e-12``. SPECTRAX-GK
+  still does not depend on the source branch: review, office GPU gates, merge,
+  and a published SOLVAX release precede the low-risk downstream migration.
 - 2026-07-11: Pulled SOLVAX through ``38bb094`` and audited its source, tests,
   documentation, examples, CI, and published-package status against the three
   SPECTRAX-GK GMRES routes, two Hermite-line tridiagonal solves, geometry/UQ
