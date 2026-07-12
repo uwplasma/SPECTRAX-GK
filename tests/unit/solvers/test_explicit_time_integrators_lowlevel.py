@@ -118,6 +118,7 @@ def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:
     time_cfg = SimpleNamespace(
         dt=0.02, t_max=2.0, sample_stride=3, fixed_dt=False,
         dt_min=1.0e-6, dt_max=0.04, cfl=0.7, method="rk2", cfl_fac=None,
+        use_dealias_mask=True,
     )
     t, phi = eti.integrate_linear_explicit_from_config(
         jnp.ones((1,)), object(), object(), object(), time_cfg,
@@ -129,6 +130,7 @@ def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:
     assert config.t_max == pytest.approx(2.0)
     assert config.sample_stride == 3
     assert config.fixed_dt is False
+    assert config.use_dealias_mask is True
     assert config.dt_max == pytest.approx(0.04)
     assert config.cfl == pytest.approx(0.7)
     assert captured["cache"] == "cache"
