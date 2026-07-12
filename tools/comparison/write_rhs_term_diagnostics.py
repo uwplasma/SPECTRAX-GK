@@ -24,7 +24,6 @@ from spectraxgk.benchmarks import (
     TEM_RHO_STAR,
     CycloneBaseCase,
     KBMBaseCase,
-    KineticElectronBaseCase,
     _apply_reference_hypercollisions,
     _build_initial_condition,
     _two_species_params,
@@ -115,7 +114,15 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
             float(params.rho_star),
         )
     if case == "kinetic":
-        cfg = KineticElectronBaseCase(
+        cfg, _raw = load_runtime_from_toml(
+            Path(__file__).resolve().parents[2]
+            / "examples"
+            / "linear"
+            / "axisymmetric"
+            / "runtime_kinetic_electron.toml"
+        )
+        cfg = replace(
+            cfg,
             grid=GridConfig(
                 Nx=args.Nx,
                 Ny=args.Ny,
@@ -126,21 +133,11 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
                 y0=args.y0,
                 ntheta=args.ntheta,
                 nperiod=args.nperiod,
-            )
+            ),
+            geometry=replace(cfg.geometry, drift_scale=args.drift_scale),
         )
-        geom = SAlphaGeometry.from_config(
-            replace(cfg.geometry, drift_scale=args.drift_scale)
-        )
-        params = _two_species_params(
-            cfg.model,
-            kpar_scale=float(geom.gradpar()),
-            omega_d_scale=KINETIC_OMEGA_D_SCALE,
-            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
-            rho_star=KINETIC_RHO_STAR,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-            nhermite=args.Nm,
-        )
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
         return (
             cfg,
             params,

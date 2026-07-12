@@ -28,9 +28,6 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    KINETIC_OMEGA_D_SCALE,
-    KINETIC_OMEGA_STAR_SCALE,
-    KINETIC_RHO_STAR,
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
@@ -48,7 +45,6 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import (
     CycloneBaseCase,
     InitializationConfig,
-    KineticElectronBaseCase,
     KBMBaseCase,
 )
 from spectraxgk.solvers.time.diffrax_linear import integrate_linear_diffrax
@@ -217,20 +213,17 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         params = _apply_reference_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()
     elif case == "kinetic":
-        cfg = KineticElectronBaseCase()
-        grid_full = build_spectral_grid(cfg.grid)
-        geom = SAlphaGeometry.from_config(cfg.geometry)
-        params = _two_species_params(
-            cfg.model,
-            kpar_scale=float(geom.gradpar()),
-            omega_d_scale=KINETIC_OMEGA_D_SCALE,
-            omega_star_scale=KINETIC_OMEGA_STAR_SCALE,
-            rho_star=KINETIC_RHO_STAR,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-            nhermite=Nm,
+        cfg, _raw = load_runtime_from_toml(
+            ROOT
+            / "examples"
+            / "linear"
+            / "axisymmetric"
+            / "runtime_kinetic_electron.toml"
         )
-        terms = LinearTerms()
+        grid_full = build_spectral_grid(cfg.grid)
+        geom = build_runtime_geometry(cfg)
+        params = build_runtime_linear_params(cfg, Nm=Nm, geom=geom)
+        terms = build_runtime_linear_terms(cfg)
         init_species_index = 1
     elif case == "etg":
         cfg, _ = load_runtime_from_toml(ROOT / "examples/linear/axisymmetric/etg.toml")

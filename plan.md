@@ -55,8 +55,8 @@ Date: 2026-07-12.
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
 | Installable source Python files | 227 | reviewed domain ownership | active |
-| Source modules above 1000 lines | 8, led by the 5029-line benchmark facade | 0 unreviewed | active |
-| Public/compatibility facade maximum | 5029 lines | <=500 lines | active |
+| Source modules above 1000 lines | 8, led by the 3549-line benchmark facade | 0 unreviewed | active |
+| Public/compatibility facade maximum | 3549 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
 | Test Python files | 98 | domain-organized; no duplicate behavior | closed for count, active for structure |
 | README lines | 261 | <=350 user-facing lines | closed |
@@ -203,7 +203,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Capability/parity specification | 99% | Keep source fingerprints and the machine-readable matrix synchronized; retain ETG as a time-integrated gate until its Krylov branch selector is independently repaired. |
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
-| Source consolidation | 93% | Add a generic parameter-scan runtime for KBM beta and migrate the kinetic-electron runner to its canonical TOML before deleting those transitional engines. |
+| Source consolidation | 95% | Add a generic runtime parameter scan for KBM beta, preserve branch-continuation gates, then delete the final named benchmark engine. |
 | Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
@@ -282,6 +282,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-12: Migrated the reference-aligned kinetic-electron scan to a
+  canonical runtime TOML and deleted its named linear/scan engine, hidden seed
+  override, public case dataclass, and implementation-only tests. The effective
+  ``1e-3`` electron-density seed and linked-boundary damping are now explicit.
+  All parameter leaves are identical; old/new states differ only by a fitted
+  global complex phase and the phase-aligned RHS relative error is below
+  ``2e-6`` (``6.7e-8`` in x64). This removes 2,120 net lines and reduces the
+  benchmark facade from 5,029 to 3,549 lines. Public-export, non-slow benchmark,
+  tool-entry, typing, and operator gates pass.
 - 2026-07-12: Completed the TEM execution migration and deleted the named TEM
   runner family, request/setup dataclasses, hook tables, public case dataclasses,
   and implementation-only tests. The root benchmark and three maintainer tools

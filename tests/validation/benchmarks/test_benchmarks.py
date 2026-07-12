@@ -10,7 +10,6 @@ import pytest
 import spectraxgk.diagnostics.growth_rates as growth_rate_diagnostics
 import spectraxgk.benchmarks as benchmark_kbm_beta
 import spectraxgk.benchmarks as benchmark_kbm_linear
-import spectraxgk.benchmarks as benchmark_kinetic
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.diagnostics.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
@@ -22,8 +21,6 @@ from spectraxgk.benchmarks import (
     run_kbm_linear,
     run_kbm_beta_scan,
     run_kbm_scan,
-    run_kinetic_linear,
-    run_kinetic_scan,
     select_kbm_solver_auto,
 )
 from spectraxgk.config import (
@@ -31,7 +28,6 @@ from spectraxgk.config import (
     GridConfig,
     InitializationConfig,
     KBMBaseCase,
-    KineticElectronBaseCase,
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -503,8 +499,8 @@ def test_benchmark_kinetic_parameter_helpers_validate_and_override() -> None:
     assert electron_only.p_hyper_m == pytest.approx(3.0)
 
 
-def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
-    """KBM branch-continuity and kinetic initialization policies should be explicit."""
+def test_benchmark_kbm_multi_target_policy() -> None:
+    """KBM branch-continuity policy should be explicit."""
 
     kcfg = benchmarks.KBM_KRYLOV_DEFAULT
     assert benchmarks._kbm_use_multi_target_krylov(kcfg, [0.8, 1.0], shift=None)
@@ -520,22 +516,6 @@ def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
         replace(kcfg, shift_selection="shift"), [1.0], shift=None
     )
 
-    default_init = KineticElectronBaseCase().init
-    assert (
-        benchmarks._kinetic_reference_init_cfg(default_init, reference_aligned=False)
-        is default_init
-    )
-    explicit = replace(default_init, init_amp=2.0e-3)
-    assert (
-        benchmarks._kinetic_reference_init_cfg(explicit, reference_aligned=True)
-        is explicit
-    )
-    reference_init = benchmarks._kinetic_reference_init_cfg(
-        default_init, reference_aligned=True
-    )
-    assert reference_init.init_field == "density"
-    assert reference_init.init_amp == pytest.approx(1.0e-3)
-    assert not reference_init.gaussian_init
 
 
 
@@ -568,29 +548,6 @@ def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
 
 
 
-
-
-def test_kinetic_linear_smoke():
-    """Kinetic-electron ITG/TEM benchmark should run and return finite outputs."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
-    cfg = KineticElectronBaseCase(grid=grid)
-    result = run_kinetic_linear(
-        cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
-    )
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
-
-
-def test_kinetic_scan_shapes():
-    """Kinetic-electron scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
-    cfg = KineticElectronBaseCase(grid=grid)
-    ky_values = np.array([0.3, 0.4])
-    scan = run_kinetic_scan(
-        ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4"
-    )
-    assert scan.ky.shape == ky_values.shape
-    assert scan.gamma.shape == ky_values.shape
 
 
 
@@ -1417,116 +1374,6 @@ def test_select_kbm_solver_auto_lock():
 
 
 
-def test_kinetic_linear_defaults_to_reference_aligned_contract(monkeypatch):
-    """Kinetic benchmark defaults should keep the reference-aligned electrostatic contract."""
-    captured: dict[str, object] = {}
-
-    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
-        captured["terms"] = terms
-        captured["params"] = _params
-        captured["mode_family"] = _kwargs.get("mode_family")
-        captured["omega_sign"] = _kwargs.get("omega_sign")
-        captured["shift_source"] = _kwargs.get("shift_source")
-        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
-        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
-
-    monkeypatch.setattr(
-        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
-    )
-    monkeypatch.setattr(
-        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
-    cfg = KineticElectronBaseCase(grid=grid)
-    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
-    terms = captured["terms"]
-    params = captured["params"]
-    assert terms is not None
-    assert terms.bpar == 0.0
-    assert float(params.damp_ends_amp) == pytest.approx(
-        benchmarks.REFERENCE_DAMP_ENDS_AMP
-    )
-    assert float(params.damp_ends_widthfrac) == pytest.approx(
-        benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC
-    )
-    assert float(params.nu_hyper_l) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_L)
-    assert float(params.nu_hyper_m) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_M)
-    assert captured["mode_family"] == "cyclone"
-    assert captured["omega_sign"] == 1
-    assert captured["shift_source"] == "history"
-
-
-def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
-    """Default kinetic reference-aligned helpers should restore the historical density seed."""
-
-    captured: dict[str, object] = {}
-
-    def _fake_build_initial_condition(_grid, _geom, *, init_cfg, **_kwargs):
-        captured["init_cfg"] = init_cfg
-        return np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
-        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
-        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
-
-    monkeypatch.setattr(
-        benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition
-    )
-    monkeypatch.setattr(
-        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
-    )
-    monkeypatch.setattr(
-        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
-    cfg = KineticElectronBaseCase(grid=grid)
-    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
-
-    init_cfg = captured["init_cfg"]
-    assert init_cfg.init_field == "density"
-    assert init_cfg.init_amp == pytest.approx(1.0e-3)
-    assert init_cfg.gaussian_init is False
-
-
-def test_kinetic_linear_respects_explicit_user_seed(monkeypatch):
-    """Explicit kinetic init overrides should not be replaced by the legacy parity seed."""
-
-    captured: dict[str, object] = {}
-
-    def _fake_build_initial_condition(_grid, _geom, *, init_cfg, **_kwargs):
-        captured["init_cfg"] = init_cfg
-        return np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
-        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
-
-    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
-        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
-
-    monkeypatch.setattr(
-        benchmark_kinetic, "_build_initial_condition", _fake_build_initial_condition
-    )
-    monkeypatch.setattr(
-        benchmark_kinetic, "dominant_eigenpair", _fake_dominant_eigenpair
-    )
-    monkeypatch.setattr(
-        benchmark_kinetic, "compute_fields_cached", _fake_compute_fields_cached
-    )
-
-    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
-    custom_init = InitializationConfig(
-        init_field="density", init_amp=1.0e-7, gaussian_init=True
-    )
-    cfg = KineticElectronBaseCase(grid=grid, init=custom_init)
-    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
-
-    assert captured["init_cfg"] == custom_init
 
 
 
@@ -1543,21 +1390,6 @@ def test_benchmark_krylov_smoke_finite():
         shift_source="target",
         omega_cap_factor=5.0,
     )
-
-    kin_grid = GridConfig(
-        Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0
-    )
-    kin_cfg = KineticElectronBaseCase(grid=kin_grid)
-    kin = run_kinetic_linear(
-        cfg=kin_cfg,
-        ky_target=0.3,
-        Nl=4,
-        Nm=4,
-        solver="krylov",
-        krylov_cfg=krylov_cfg,
-    )
-    assert np.isfinite(kin.gamma)
-    assert np.isfinite(kin.omega)
 
     kbm_grid = GridConfig(
         Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0

@@ -425,6 +425,12 @@ The current extended panel covers:
 - TEM (literature-backed stress lane)
 - KBM Miller exact late growth window
 
+The kinetic-electron scan is defined by
+``examples/linear/axisymmetric/runtime_kinetic_electron.toml`` and runs through
+the unified runtime API. Its effective reference seed, linked-boundary damping,
+species, and electromagnetic toggles are explicit in that file rather than
+being applied by a hidden benchmark wrapper.
+
 .. figure:: _static/benchmark_extended_linear_panel.png
    :width: 90%
    :align: center

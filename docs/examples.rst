@@ -452,6 +452,11 @@ discussion:
    python benchmarks/kinetic_linear_benchmark.py
    python benchmarks/tem_linear_benchmark.py
 
+The kinetic-electron script loads
+``examples/linear/axisymmetric/runtime_kinetic_electron.toml``. The same input
+can be run directly with
+``spectraxgk examples/linear/axisymmetric/runtime_kinetic_electron.toml``.
+
 The TEM script loads ``examples/linear/axisymmetric/runtime_tem.toml``; users
 can run the same single-mode case directly with
 ``spectraxgk examples/linear/axisymmetric/runtime_tem.toml``.

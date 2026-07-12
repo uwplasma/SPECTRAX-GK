@@ -37,13 +37,11 @@ from spectraxgk.benchmarks import (
     load_kbm_reference,
     load_tem_reference,
     LinearScanResult,
-    run_kinetic_linear,
     run_kbm_beta_scan,
 )
 from spectraxgk.config import (
     CycloneBaseCase,
     GridConfig,
-    KineticElectronBaseCase,
     KBMBaseCase,
     TimeConfig,
 )
@@ -1354,7 +1352,11 @@ def _run_kinetic_tables(
     kinetic_ttotal = kinetic_dt * kinetic_steps
     kinetic_tmin = 0.6 * kinetic_ttotal
     kinetic_tmax = 0.95 * kinetic_ttotal
-    kinetic_cfg = KineticElectronBaseCase(
+    kinetic_cfg, _raw = load_runtime_from_toml(
+        ROOT / "examples" / "linear" / "axisymmetric" / "runtime_kinetic_electron.toml"
+    )
+    kinetic_cfg = replace(
+        kinetic_cfg,
         grid=GridConfig(
             Nx=1,
             Ny=kinetic_ny,
@@ -1364,11 +1366,11 @@ def _run_kinetic_tables(
             y0=10.0,
             ntheta=32,
             nperiod=2,
-        )
+        ),
     )
     kin_ky, kin_g, kin_w = _scan_linear_verbose(
         ky_values=kinetic_ref.ky,
-        run_linear_fn=run_kinetic_linear,
+        run_linear_fn=_run_runtime_linear_adapter,
         cfg=kinetic_cfg,
         Nl=48,
         Nm=16,

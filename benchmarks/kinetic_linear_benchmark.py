@@ -1,8 +1,17 @@
 import argparse
+from dataclasses import replace
+from pathlib import Path
 
-from spectraxgk.benchmarks import load_cyclone_reference_kinetic, run_kinetic_scan
-from spectraxgk.config import TimeConfig
 from spectraxgk.artifacts.plotting import scan_comparison_figure
+from spectraxgk.benchmarks import load_cyclone_reference_kinetic
+from spectraxgk.runtime import run_runtime_scan
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+
+
+ROOT = Path(__file__).resolve().parents[1]
+KINETIC_CONFIG = (
+    ROOT / "examples" / "linear" / "axisymmetric" / "runtime_kinetic_electron.toml"
+)
 
 
 def main() -> None:
@@ -20,17 +29,24 @@ def main() -> None:
 
     ref = load_cyclone_reference_kinetic()
     ky_vals = ref.ky
-    dt = 0.01
-    steps = 800
-    time_cfg = TimeConfig(
-        t_max=dt * steps,
-        dt=dt,
-        method="rk2",
-        use_diffrax=not args.no_diffrax,
-        diffrax_solver=args.solver,
-        diffrax_adaptive=not args.no_adaptive,
+    cfg, _raw = load_runtime_from_toml(KINETIC_CONFIG)
+    cfg = replace(
+        cfg,
+        time=replace(
+            cfg.time,
+            t_max=8.0,
+            use_diffrax=not args.no_diffrax,
+            diffrax_solver=args.solver,
+            diffrax_adaptive=not args.no_adaptive,
+        ),
     )
-    scan = run_kinetic_scan(ky_vals, Nl=12, Nm=32, time_cfg=time_cfg)
+    scan = run_runtime_scan(
+        cfg,
+        ky_vals,
+        Nl=12,
+        Nm=32,
+        solver="auto",
+    )
     fig, _axes = scan_comparison_figure(
         scan.ky,
         scan.gamma,

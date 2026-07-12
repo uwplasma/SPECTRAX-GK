@@ -14,7 +14,6 @@ from spectraxgk.config import (
     GeometryConfig,
     GridConfig,
     KBMBaseCase,
-    KineticElectronBaseCase,
     ModelConfig,
     TimeConfig,
     explicit_method_default_cfl_fac,
@@ -558,7 +557,6 @@ def test_benchmark_case_presets_keep_stable_public_exports() -> None:
         "ModelConfig",
         "CycloneBaseCase",
         "KineticElectronModelConfig",
-        "KineticElectronBaseCase",
         "KBMBaseCase",
     ):
         assert hasattr(public_config, name)
@@ -578,20 +576,11 @@ def test_config_override():
     assert d["model"]["R_over_LTe"] == 1.0
     assert d["time"]["dt"] == 0.05
     assert d["time"]["compressed_real_fft"] is False
-
-
-def test_kinetic_config_to_dict():
-    """Kinetic-electron configuration should serialize to dictionaries."""
-    cfg = KineticElectronBaseCase()
-    d = cfg.to_dict()
-    assert d["model"]["R_over_LTi"] == cfg.model.R_over_LTi
-
-
 def test_reference_aligned_mass_ratio_defaults() -> None:
     """Reference-aligned benchmark defaults should use the tracked electron mass."""
 
-    for cfg in (KineticElectronBaseCase(), KBMBaseCase()):
-        assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)
+    cfg = KBMBaseCase()
+    assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)
 
 
 def test_kbm_config_to_dict():

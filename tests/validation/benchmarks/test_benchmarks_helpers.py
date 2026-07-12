@@ -21,7 +21,6 @@ from spectraxgk.diagnostics.growth_rates import (
 from spectraxgk.benchmarks import (
     _build_gaussian_profile,
     _build_initial_condition,
-    _kinetic_reference_init_cfg,
 )
 from spectraxgk.benchmarks import (
     CycloneReference,
@@ -46,10 +45,7 @@ from spectraxgk.benchmarks import (
     _reference_hypercollision_power,
     _two_species_params,
 )
-from spectraxgk.config import (
-    InitializationConfig,
-    KineticElectronBaseCase as KineticBaseConfig,
-)
+from spectraxgk.config import InitializationConfig
 from spectraxgk.linear import LinearParams
 from spectraxgk.solvers.linear.krylov import KrylovConfig
 
@@ -720,18 +716,7 @@ def test_build_initial_condition_field_map_and_zonal_mode_safety() -> None:
         assert np.count_nonzero(seeded_slice) == 0
 
 
-def test_kinetic_init_and_kbm_target_helpers() -> None:
-    default_init = KineticBaseConfig().init
-    replaced = _kinetic_reference_init_cfg(default_init, reference_aligned=True)
-    assert replaced.init_amp == pytest.approx(1.0e-3)
-    assert replaced.gaussian_init is False
-    assert (
-        _kinetic_reference_init_cfg(default_init, reference_aligned=False)
-        == default_init
-    )
-    custom = InitializationConfig(init_field="upar", init_amp=2.0)
-    assert _kinetic_reference_init_cfg(custom, reference_aligned=True) == custom
-
+def test_kbm_target_helpers() -> None:
     kcfg = KrylovConfig(
         method="shift_invert", mode_family="kbm", shift_selection="target"
     )

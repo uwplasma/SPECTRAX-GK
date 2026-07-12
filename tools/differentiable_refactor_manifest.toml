@@ -125,7 +125,6 @@ responsibility = "benchmark-family case presets for Cyclone, KBM, TEM, and kinet
 moved_exports = [
   "CycloneBaseCase",
   "KBMBaseCase",
-  "KineticElectronBaseCase",
   "KineticElectronModelConfig",
   "ModelConfig",
 ]
