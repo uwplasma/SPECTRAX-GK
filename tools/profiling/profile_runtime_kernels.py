@@ -238,6 +238,7 @@ def build_cyclone_parser() -> argparse.ArgumentParser:
 def main_cyclone(argv: list[str] | None = None) -> int:
     args = build_cyclone_parser().parse_args(argv)
     _configure_xla(args)
+    source_state = git_source_state(ROOT)
 
     from jax import profiler
 
@@ -376,7 +377,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
     )
     if args.out is not None:
         payload = {
-            **git_source_state(ROOT),
+            **source_state,
             "backend": jax.default_backend(),
             "devices": [str(device) for device in jax.devices()],
             "config": str(args.config),
