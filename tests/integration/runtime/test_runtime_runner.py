@@ -59,6 +59,7 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeTermsConfig,
 )
 from spectraxgk.workflows.runtime.orchestration_scan import run_runtime_parameter_scan
+from spectraxgk.workflows.runtime.diagnostics import refit_runtime_linear_trajectory
 from spectraxgk.workflows.runtime.results import RuntimeParameterScanResult
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import FieldState
@@ -4436,3 +4437,31 @@ def test_runtime_explicit_time_routes_cfl_trajectory(monkeypatch) -> None:
     assert captured["time_cfg"].fixed_dt is False
     assert captured["kwargs"]["Nl"] == 2
     assert captured["kwargs"]["Nm"] == 2
+
+
+def test_runtime_trajectory_can_be_refit_without_integration() -> None:
+    t = np.linspace(0.01, 2.0, 200)
+    z = np.linspace(-np.pi, np.pi, 8, endpoint=False)
+    mode = 1.0 + 0.2 * np.cos(z)
+    history = (
+        np.exp((0.25 - 0.6j) * t)[:, None, None, None]
+        * mode[None, None, None, :]
+    )
+    result = RuntimeLinearResult(
+        ky=0.3, gamma=0.0, omega=0.0,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=4),
+        t=t, z=z, field_history=history,
+    )
+
+    refit = refit_runtime_linear_trajectory(
+        result, mode_method="svd", auto_window=False, tmin=0.4, tmax=1.8
+    )
+    assert refit.gamma == pytest.approx(0.25, rel=1.0e-6)
+    assert abs(refit.omega) == pytest.approx(0.6, rel=1.0e-6)
+    assert refit.field_history is history
+    assert refit.eigenfunction is not None
+
+    with pytest.raises(ValueError, match="field_history"):
+        refit_runtime_linear_trajectory(
+            replace(result, field_history=None), mode_method="project"
+        )

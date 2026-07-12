@@ -47,7 +47,10 @@ Quick driver examples:
 The KBM plotting driver reads the reviewed fixed-beta ``ky`` comparison table.
 Use ``tools/comparison/compare_gx_kbm.py`` with a matched external output to
 regenerate that table; branch selection remains a transitional time-history
-policy until the generic runtime reproduces the full scan.
+policy until the generic runtime reproduces the full scan. The generic runtime
+now provides the same CFL-controlled trajectory and can refit multiple branch
+extractors from one stored field history; the remaining gate is the converged
+full-grid replay, not missing runtime functionality.
 
 Regenerate the atlas figures with:
 

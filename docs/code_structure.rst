@@ -737,6 +737,13 @@ For spectra with competing branches, ``candidate_options`` declares the
 per-point solver targets and ``select_candidate`` chooses the retained result;
 only that result is continued.
 
+Time-domain linear results retain the selected-``k_y`` field history.
+``refit_runtime_linear_trajectory`` applies another fit window or mode
+extractor to that stored trajectory without repeating the simulation. This is
+the preferred path for branch audits: integration cost is paid once, while
+``z_index``, ``max``, ``project``, and ``svd`` diagnostics remain independently
+reviewable.
+
 
 Quasilinear calibration now lives in
 ``spectraxgk.diagnostics.quasilinear_calibration``. It owns calibration-point
