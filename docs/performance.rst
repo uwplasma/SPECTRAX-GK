@@ -1126,19 +1126,18 @@ nominal warm calls. This is a repeated Python-call improvement for fixed
 geometry/model policy, not an end-to-end executable or long-run throughput
 claim.
 
-The historical clean-revision prepared profiles are tracked as
+The current controlled prepared profiles are tracked as
 ``prepared_nonlinear_runtime_cpu_profile.json`` and
-``prepared_nonlinear_runtime_gpu_profile.json``. Both use adaptive RK3, 20
-steps, diagnostic stride 10, and compact scalar diagnostics. Their warm medians
-at capture time were ``4.078 s`` on the local CPU and ``0.4648 s`` on one
-office RTX A4000. The ordinary
-rebuilt-runtime A4000 path took ``8.69 s`` because it compiled a fresh scan on
-each nominal repeat. The supported claim is therefore compile-once Python
-reuse for fixed geometry/model policy, not a current ``8.77x`` hardware
-speedup: a July 10 rerun of both the historical and current revisions on the
-same A4000/JAX 0.6.2 environment measured about ``1.47 s``. The old GPU timing
-is retained as provenance but should not be used as a current performance
-claim until controlled node-state repeats recover it.
+``prepared_nonlinear_runtime_gpu_profile.json``. Both use commit ``ec2029f8``,
+Python 3.10.12, JAX 0.6.2, NumPy 2.2.4, adaptive RK3, 200 steps, diagnostic
+stride 10, and compact scalar diagnostics on the same office node. The CPU
+warm run takes ``108.864 s`` and one RTX A4000 takes ``9.557 s``, a measured
+``11.39x`` device-throughput ratio after separate compilation. This is not an
+end-to-end executable or multi-GPU scaling claim. The final-state norm is
+identical at recorded precision; timestep, potential, and heat-flux norms
+agree within ``3.8e-6`` relative. The profiler and artifact gate now require
+these numerical fingerprints, matched software/configuration, and at least a
+``5x`` ratio before the row can remain promoted.
 
 Current JAX/XLA CPU backends can abort inside FFT layout/collective code when
 the nonlinear whole-state ``pjit`` path shards the packed state over multiple

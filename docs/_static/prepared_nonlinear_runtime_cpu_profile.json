@@ -8,23 +8,71 @@
   "dt": 0.01,
   "fixed_dt": false,
   "git_dirty": false,
-  "git_revision": "8d2baf4e861fe44fb285cb16d289ad61e3b7e467",
+  "git_revision": "ec2029f8aa8205053ea5d1ed70ae4494528ed1c1",
   "method": "rk3",
   "nl": 4,
   "nm": 8,
   "resolved_diagnostics": false,
+  "result_summary": {
+    "dt": {
+      "finite_fraction": 1.0,
+      "l2_norm": 0.12653478980064392,
+      "max_abs": 0.001250803004950285,
+      "shape": [
+        1,
+        4,
+        8,
+        64,
+        64,
+        24
+      ],
+      "sum_imag": -1.291814264066382e-10,
+      "sum_real": 0.330221522938571
+    },
+    "final_state": {
+      "finite_fraction": 1.0,
+      "l2_norm": 11.751726150512695,
+      "max_abs": 4.3583245277404785,
+      "shape": [
+        21
+      ],
+      "sum_imag": 0.0,
+      "sum_real": 46.19821972772479
+    },
+    "heat_flux": {
+      "finite_fraction": 1.0,
+      "l2_norm": 0.00010248759645037353,
+      "max_abs": 3.0474713639705442e-05,
+      "shape": [
+        21
+      ],
+      "sum_imag": 0.0,
+      "sum_real": 0.0004278446473620079
+    },
+    "phi": {
+      "finite_fraction": 1.0,
+      "l2_norm": 0.04132673516869545,
+      "max_abs": 0.0007708911434747279,
+      "shape": [
+        64,
+        64,
+        24
+      ],
+      "sum_imag": 9.904022046924865e-13,
+      "sum_real": 0.33056641042311297
+    }
+  },
   "reuse_prepared_simulation": true,
-  "run_median_s": 4.0783251244574785,
+  "run_median_s": 108.86422952899011,
   "run_times_s": [
-    4.080351457931101,
-    4.076298790983856
+    108.86422952899011
   ],
   "sample_stride": 10,
   "software": {
-    "jax": "0.9.2",
-    "numpy": "2.4.4",
-    "python": "3.11.14"
+    "jax": "0.6.2",
+    "numpy": "2.2.4",
+    "python": "3.10.12"
   },
-  "steps": 20,
-  "warmup_time_s": 7.408114166930318
+  "steps": 200,
+  "warmup_time_s": 115.52286390500376
 }

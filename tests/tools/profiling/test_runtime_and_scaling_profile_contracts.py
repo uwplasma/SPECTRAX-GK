@@ -66,14 +66,28 @@ def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
         assert profile["git_dirty"] is False
         assert profile["reuse_prepared_simulation"] is True
         assert profile["resolved_diagnostics"] is False
-        assert profile["steps"] == 20
+        assert profile["steps"] == 200
         assert profile["method"] == "rk3"
         assert profile["fixed_dt"] is False
         assert profile["sample_stride"] == 10
         assert profile["diagnostics_stride"] == 10
+        assert profile["software"] == cpu["software"]
+        assert "result_summary" in profile
     assert cpu["backend"] == "cpu"
     assert gpu["backend"] == "gpu"
     assert cpu["run_median_s"] / gpu["run_median_s"] >= 5.0
+    for name in ("final_state", "phi", "heat_flux", "dt"):
+        assert cpu["result_summary"][name]["shape"] == gpu["result_summary"][name][
+            "shape"
+        ]
+        assert cpu["result_summary"][name]["finite_fraction"] == 1.0
+        assert gpu["result_summary"][name]["finite_fraction"] == 1.0
+        np.testing.assert_allclose(
+            cpu["result_summary"][name]["l2_norm"],
+            gpu["result_summary"][name]["l2_norm"],
+            rtol=1.0e-5,
+            atol=1.0e-12,
+        )
 
 
 def test_make_profile_options_defaults_disable_python_and_host_tracers() -> None:
