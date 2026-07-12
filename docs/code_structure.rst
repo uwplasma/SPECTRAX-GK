@@ -731,6 +731,9 @@ state into the next solve. Case-specific branch targets and acceptance rules
 remain callback policy rather than hidden runtime behavior. Continuation scans
 are intentionally sequential because adjacent points depend on one another;
 independent parameter ensembles should instead use the parallel batch APIs.
+For spectra with competing branches, ``candidate_options`` declares the
+per-point solver targets and ``select_candidate`` chooses the retained result;
+only that result is continued.
 
 
 Quasilinear calibration now lives in

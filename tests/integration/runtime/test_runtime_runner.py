@@ -4356,3 +4356,45 @@ def test_runtime_linear_rejects_incompatible_initial_state_shape() -> None:
             cfg, ky_target=0.3, Nl=2, Nm=2, solver="time", steps=1,
             initial_state=np.zeros((1, 2, 2, 1, 1, 1)),
         )
+
+
+def test_runtime_parameter_scan_selects_one_candidate_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = _base_runtime_cfg()
+    calls: list[float] = []
+
+    def fake_run(_cfg, **kwargs):
+        target = float(kwargs["krylov_cfg"])
+        calls.append(target)
+        return RuntimeLinearResult(
+            ky=0.3, gamma=target, omega=-target,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            state=np.asarray([target]),
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", fake_run)
+    result = run_runtime_parameter_scan(
+        cfg, [0.01, 0.02], parameter_name="beta",
+        update_config=lambda base, _value, _index: base,
+        candidate_options=lambda _value, _index, _previous: (
+            {"krylov_cfg": 0.7}, {"krylov_cfg": 1.5}
+        ),
+        select_candidate=lambda value, _index, _candidates, _previous: (
+            0 if value < 0.015 else 1
+        ),
+        continuation=True,
+    )
+
+    assert calls == [0.7, 1.5, 0.7, 1.5]
+    np.testing.assert_allclose(result.gamma, [0.7, 1.5])
+
+    with pytest.raises(IndexError, match="out-of-range"):
+        run_runtime_parameter_scan(
+            cfg, [0.01], parameter_name="beta",
+            update_config=lambda base, _value, _index: base,
+            candidate_options=lambda *_args: ({"krylov_cfg": 0.7},),
+            select_candidate=lambda *_args: 2,
+        )
