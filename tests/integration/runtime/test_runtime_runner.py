@@ -39,7 +39,6 @@ from spectraxgk.runtime import (
     _infer_runtime_nonlinear_steps,
     RuntimeLinearResult,
     RuntimeLinearScanResult,
-    RuntimeParameterScanResult,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -47,7 +46,6 @@ from spectraxgk.runtime import (
     run_nonlinear_case,
     run_runtime_linear,
     run_runtime_nonlinear,
-    run_runtime_parameter_scan,
     run_runtime_scan,
 )
 from spectraxgk.workflows.runtime.config import (
@@ -60,6 +58,8 @@ from spectraxgk.workflows.runtime.config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
+from spectraxgk.workflows.runtime.orchestration_scan import run_runtime_parameter_scan
+from spectraxgk.workflows.runtime.results import RuntimeParameterScanResult
 from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import FieldState
 

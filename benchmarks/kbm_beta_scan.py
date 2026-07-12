@@ -4,7 +4,7 @@ from pathlib import Path
 
 from spectraxgk.benchmarks import load_kbm_reference
 from spectraxgk.artifacts.plotting import scan_comparison_figure
-from spectraxgk.runtime import run_runtime_parameter_scan
+from spectraxgk import run_runtime_parameter_scan
 from spectraxgk.solvers.linear.krylov import KrylovConfig
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
