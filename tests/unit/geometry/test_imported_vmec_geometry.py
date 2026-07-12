@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import spectraxgk.geometry.vmec_boozer_derivatives as vmec_derivatives
 import spectraxgk.geometry.backend_discovery as vmec_backend_discovery
 import spectraxgk.geometry.imported_vmec as vmec_facade
 import spectraxgk.geometry.vmec_field_line_sampling as vmec_fieldline_numerics
@@ -885,7 +886,7 @@ def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
     alpha_arr = np.array([0.0, 0.5])
     iota = np.array([0.5, 1.0])
 
-    theta_b, phi_b = vmec_fieldlines._fieldline_boozer_coordinates(
+    theta_b, phi_b = vmec_derivatives._fieldline_boozer_coordinates(
         theta1d, alpha_arr, iota
     )
 
@@ -902,7 +903,7 @@ def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
     rmnc_b = np.array([[1.0]])
     zmns_b = np.array([[0.25]])
 
-    assert not vmec_fieldlines._axisym_flip_required(
+    assert not vmec_derivatives._axisym_flip_required(
         isaxisym=False,
         xm_b=xm,
         xn_b=xn,
@@ -911,7 +912,7 @@ def test_vmec_fieldline_helper_coordinates_and_axisym_flip_policy() -> None:
         rmnc_b=rmnc_b,
         zmns_b=zmns_b,
     )
-    assert vmec_fieldlines._axisym_flip_required(
+    assert vmec_derivatives._axisym_flip_required(
         isaxisym=True,
         xm_b=xm,
         xn_b=xn,
@@ -927,13 +928,13 @@ def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
     phi_grid = np.linspace(-np.pi, np.pi, 19)
     constant = np.full((phi_grid.size, theta_grid.size), 2.5)
 
-    assert vmec_fieldlines._surface_average_2d(
+    assert vmec_derivatives._surface_average_2d(
         constant, theta_grid, phi_grid
     ) == pytest.approx(2.5)
 
     theta = np.linspace(-np.pi, np.pi, 17)
     fieldline = theta[None, None, :]
-    centered = vmec_fieldlines._centered_fieldline_integral(
+    centered = vmec_derivatives._centered_fieldline_integral(
         np.ones_like(fieldline), fieldline, theta
     )
     np.testing.assert_allclose(centered[0, 0], theta, atol=1.0e-12)
@@ -942,7 +943,7 @@ def test_vmec_fieldline_helper_surface_average_and_centered_integral() -> None:
 def test_vmec_fieldline_reference_scale_and_override_policies() -> None:
     vs = SimpleNamespace(Aminor_p=2.0, raxis_cc=np.array([3.5]))
 
-    L_reference, B_reference, R_mag_ax = vmec_fieldlines._validated_reference_scales(
+    L_reference, B_reference, R_mag_ax = vmec_derivatives._validated_reference_scales(
         vs, edge_toroidal_flux_over_2pi=-4.0
     )
 
@@ -951,21 +952,21 @@ def test_vmec_fieldline_reference_scale_and_override_policies() -> None:
     assert R_mag_ax == pytest.approx(3.5)
 
     with pytest.raises(ValueError, match="positive finite minor radius"):
-        vmec_fieldlines._validated_reference_scales(
+        vmec_derivatives._validated_reference_scales(
             SimpleNamespace(Aminor_p=0.0, raxis_cc=np.array([3.5])),
             edge_toroidal_flux_over_2pi=-4.0,
         )
 
-    assert vmec_fieldlines._input_iota_shear(
+    assert vmec_derivatives._input_iota_shear(
         np.array([0.62]), np.array([0.0]), None, None
     ) == (pytest.approx(0.62), pytest.approx(1.0e-8))
-    assert vmec_fieldlines._input_iota_shear(
+    assert vmec_derivatives._input_iota_shear(
         np.array([0.62]), np.array([0.2]), 0.7, 0.3
     ) == (pytest.approx(0.7), pytest.approx(0.3))
 
 
 def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
-    d_iota_d_s_1, sfac = vmec_fieldlines._hngc_shear_correction(
+    d_iota_d_s_1, sfac = vmec_derivatives._hngc_shear_correction(
         s_val=0.5,
         iota=np.array([0.6]),
         shat=np.array([0.2]),
@@ -977,7 +978,7 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
     np.testing.assert_allclose(d_iota_d_s_1, np.array([-0.16]))
     assert sfac == pytest.approx(0.5)
 
-    disabled_shear, disabled_sfac = vmec_fieldlines._hngc_shear_correction(
+    disabled_shear, disabled_sfac = vmec_derivatives._hngc_shear_correction(
         s_val=0.5,
         iota=np.array([0.6]),
         shat=np.array([0.2]),
@@ -989,7 +990,7 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
     np.testing.assert_allclose(disabled_shear, np.zeros(1))
     assert disabled_sfac == pytest.approx(1.0)
 
-    d_pressure_d_s_1, pfac = vmec_fieldlines._hngc_pressure_correction(
+    d_pressure_d_s_1, pfac = vmec_derivatives._hngc_pressure_correction(
         s_val=0.25,
         betaprim=0.2,
         B_reference=2.0,
@@ -1000,11 +1001,11 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
     drive = 0.2 * 2.0**2 / (4.0 * np.sqrt(0.25))
     np.testing.assert_allclose(
         d_pressure_d_s_1,
-        np.array([drive - vmec_fieldlines._MU_0 * 0.5]),
+        np.array([drive - vmec_fieldline_numerics._MU_0 * 0.5]),
     )
-    assert pfac == pytest.approx(drive / (vmec_fieldlines._MU_0 * 0.5))
+    assert pfac == pytest.approx(drive / (vmec_fieldline_numerics._MU_0 * 0.5))
 
-    floored_pressure, floored_pfac = vmec_fieldlines._hngc_pressure_correction(
+    floored_pressure, floored_pfac = vmec_derivatives._hngc_pressure_correction(
         s_val=0.25,
         betaprim=0.2,
         B_reference=2.0,
@@ -1013,9 +1014,9 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
     )
 
     np.testing.assert_allclose(floored_pressure, np.array([drive]))
-    assert floored_pfac == pytest.approx(drive / (vmec_fieldlines._MU_0 * 1.0e-8))
+    assert floored_pfac == pytest.approx(drive / (vmec_fieldline_numerics._MU_0 * 1.0e-8))
 
-    disabled_pressure, disabled_pfac = vmec_fieldlines._hngc_pressure_correction(
+    disabled_pressure, disabled_pfac = vmec_derivatives._hngc_pressure_correction(
         s_val=0.25,
         betaprim=0.2,
         B_reference=2.0,
@@ -1028,7 +1029,7 @@ def test_vmec_fieldline_hngc_shear_and_pressure_correction_policies() -> None:
 
 
 def test_vmec_fieldline_helper_flux_surface_hngc_averages() -> None:
-    d1, d2 = vmec_fieldlines._flux_surface_hngc_averages(
+    d1, d2 = vmec_derivatives._flux_surface_hngc_averages(
         xm_b=np.array([0.0, 1.0]),
         xn_b=np.array([0.0, 0.0]),
         flipit=False,
