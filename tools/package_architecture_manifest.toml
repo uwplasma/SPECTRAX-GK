@@ -129,9 +129,3 @@ path = "geometry/imported_miller.py"
 baseline_lines = 1173
 target_lines = 1000
 reason = "share imported-geometry parsing and normalization kernels"
-
-[[complexity_policy.exceptions]]
-path = "diagnostics/nonlinear_transport_optimization.py"
-baseline_lines = 1020
-target_lines = 1000
-reason = "move campaign-specific admission policy out of installed diagnostics"

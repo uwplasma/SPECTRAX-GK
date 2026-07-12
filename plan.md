@@ -747,3 +747,8 @@ under 5 minutes.
   immutable holdout configuration itself, so direct and factory construction
   enforce the same non-negative threshold. Focused scalar/aggregate holdout
   tests and the architecture checker pass.
+- 2026-07-12: Closed the nonlinear transport-optimization report complexity
+  exception without adding modules. Removed two stale intermediate export
+  declarations left by earlier assembly, retained one authoritative public
+  contract, and passed all 13 production guard, replicated-window, reduction,
+  uncertainty, and scope tests. The module now meets the 1,000-line budget.
