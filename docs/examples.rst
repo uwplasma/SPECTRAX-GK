@@ -452,6 +452,10 @@ discussion:
    python benchmarks/kinetic_linear_benchmark.py
    python benchmarks/tem_linear_benchmark.py
 
+The TEM script loads ``examples/linear/axisymmetric/runtime_tem.toml``; users
+can run the same single-mode case directly with
+``spectraxgk examples/linear/axisymmetric/runtime_tem.toml``.
+
 Foundational demos
 ------------------
 

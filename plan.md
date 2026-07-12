@@ -282,6 +282,15 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-12: Added the canonical runtime-configured TEM stress case and moved
+  the root TEM benchmark script onto the unified runtime scan. The audit found
+  and fixed a runtime initializer discrepancy: single-mode Gaussian envelopes
+  were previously honored only for potential seeding, while density and other
+  moments silently used constant parallel profiles. The non-potential path now
+  uses the configured Gaussian with the established complex phase, while the
+  real target-potential convention is unchanged. The shipped TOML agrees with
+  the transitional TEM path in every generated parameter leaf, initial state
+  to ``6.8e-21`` absolute L2, and the full assembled complex RHS.
 - 2026-07-11: Removed the final local GMRES keyword adapter and now import
   ``solvax.gmres`` directly in the linear and nonlinear implicit owners. The
   upstream generic algebra test was removed while SPECTRAX-GK trajectory and

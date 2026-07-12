@@ -2061,7 +2061,7 @@ def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> Non
     assert int(np.count_nonzero(nonzero)) > 1
 
 
-def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
+def test_runtime_gaussian_single_moment_uses_configured_parallel_envelope() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         grid=GridConfig(
@@ -2095,10 +2095,9 @@ def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
 
     seeded = g0[0, 0, 0, ky_index, 0, :]
     z = np.asarray(grid.z, dtype=float)
-    z_period = _periodic_zp_from_grid(z)
-    expected = np.cos(cfg.init.kpar_init * z / z_period)
+    expected = np.exp(-((z / cfg.init.gaussian_width) ** 2))
     assert np.allclose(seeded.real, expected)
-    assert np.allclose(seeded.imag, 0.0)
+    assert np.allclose(seeded.imag, expected)
 
 
 def test_runtime_full_ky_initial_condition_mirrors_negative_ky_block() -> None:

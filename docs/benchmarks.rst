@@ -445,6 +445,13 @@ excluding the near-zero reference denominator, one growth-rate sign mismatch,
 three frequency sign mismatches, and a frequency-branch Spearman coefficient
 near ``-0.986``.
 
+The authoritative executable input is
+``examples/linear/axisymmetric/runtime_tem.toml``. It uses the unified runtime
+schema, including electron-only Gaussian moment initialization, and
+``benchmarks/tem_linear_benchmark.py`` runs that file through the same runtime
+scan path exposed to users. A state/parameter/RHS identity test protects the
+migration from the former case-specific runner.
+
 Case groups
 -----------
 

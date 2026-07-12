@@ -1,8 +1,15 @@
 import argparse
+from dataclasses import replace
+from pathlib import Path
 
-from spectraxgk.benchmarks import load_tem_reference, run_tem_scan
-from spectraxgk.config import TimeConfig
 from spectraxgk.artifacts.plotting import scan_comparison_figure
+from spectraxgk.benchmarks import load_tem_reference
+from spectraxgk.runtime import run_runtime_scan
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
+
+
+ROOT = Path(__file__).resolve().parents[1]
+TEM_CONFIG = ROOT / "examples" / "linear" / "axisymmetric" / "runtime_tem.toml"
 
 
 def main() -> None:
@@ -18,21 +25,22 @@ def main() -> None:
 
     ref = load_tem_reference()
     ky_vals = ref.ky
-    dt = 0.01
-    steps = 800
-    time_cfg = TimeConfig(
-        t_max=dt * steps,
-        dt=dt,
-        method="rk2",
-        use_diffrax=not args.no_diffrax,
-        diffrax_solver=args.solver,
-        diffrax_adaptive=not args.no_adaptive,
+    cfg, _raw = load_runtime_from_toml(TEM_CONFIG)
+    cfg = replace(
+        cfg,
+        time=replace(
+            cfg.time,
+            use_diffrax=not args.no_diffrax,
+            diffrax_solver=args.solver,
+            diffrax_adaptive=not args.no_adaptive,
+        ),
     )
-    scan = run_tem_scan(
+    scan = run_runtime_scan(
+        cfg,
         ky_vals,
         Nl=12,
         Nm=32,
-        time_cfg=time_cfg,
+        solver="auto",
     )
     fig, _axes = scan_comparison_figure(
         scan.ky,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields
 import math
 from pathlib import Path
 import subprocess
@@ -26,7 +27,7 @@ from benchmarks.performance.benchmark_runtime_memory import (
 )
 from spectraxgk.core.velocity import J_l_all, single_precision_factorial
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.linear import LinearParams, LinearTerms
 from spectraxgk.terms import linear_dissipation as linear_dissipation_module
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
@@ -38,7 +39,12 @@ from spectraxgk.terms.linear_terms import (
     streaming_contribution,
 )
 from spectraxgk.benchmarks import (
+    TEM_OMEGA_D_SCALE,
+    TEM_OMEGA_STAR_SCALE,
+    TEM_RHO_STAR,
     ScanFitWindowPolicy,
+    _build_initial_condition as build_benchmark_initial_condition,
+    _two_species_params,
     apply_auto_fit_scan_policy,
     indexed_float_value,
     indexed_scan_value,
@@ -48,12 +54,106 @@ from spectraxgk.benchmarks import (
     scan_window_valid,
     should_use_ky_batch,
 )
+from spectraxgk.config import TEMBaseCase
+from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
+from spectraxgk.operators.linear.cache_builder import build_linear_cache
+from spectraxgk.operators.linear.rhs import linear_rhs_cached
+from spectraxgk.runtime import (
+    _build_initial_condition as build_runtime_initial_condition,
+    build_runtime_geometry,
+    build_runtime_linear_params,
+    build_runtime_linear_terms,
+)
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 
 
 ROOT = REPO_ROOT
 MANIFEST = ROOT / "benchmarks" / "results" / "manifest.toml"
 MAX_TRACKED_RESULT_BYTES = 1_000_000
 MAX_ROOT_BENCHMARK_PAYLOAD_BYTES = 200_000
+
+
+def test_runtime_tem_case_matches_transitional_operator_contract() -> None:
+    """The canonical runtime case must preserve the established TEM operator."""
+
+    runtime_cfg, _raw = load_runtime_from_toml(
+        ROOT / "examples" / "linear" / "axisymmetric" / "runtime_tem.toml"
+    )
+    legacy_cfg = TEMBaseCase()
+    n_laguerre, n_hermite = 2, 4
+
+    geometry = build_runtime_geometry(runtime_cfg)
+    grid_full = build_spectral_grid(runtime_cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - 0.3)))
+    grid = select_ky_grid(grid_full, ky_index)
+
+    runtime_params = build_runtime_linear_params(
+        runtime_cfg,
+        Nm=n_hermite,
+        geom=geometry,
+    )
+    legacy_params = _two_species_params(
+        legacy_cfg.model,
+        kpar_scale=float(geometry.gradpar()),
+        omega_d_scale=TEM_OMEGA_D_SCALE,
+        omega_star_scale=TEM_OMEGA_STAR_SCALE,
+        rho_star=TEM_RHO_STAR,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+        nhermite=n_hermite,
+    )
+    for field in fields(runtime_params):
+        np.testing.assert_allclose(
+            np.asarray(getattr(runtime_params, field.name)),
+            np.asarray(getattr(legacy_params, field.name)),
+            rtol=1.0e-7,
+            atol=1.0e-9,
+            err_msg=field.name,
+        )
+
+    runtime_state = build_runtime_initial_condition(
+        grid,
+        geometry,
+        runtime_cfg,
+        ky_index=0,
+        kx_index=0,
+        Nl=n_laguerre,
+        Nm=n_hermite,
+        nspecies=2,
+    )
+    legacy_single = build_benchmark_initial_condition(
+        grid,
+        geometry,
+        ky_index=0,
+        kx_index=0,
+        Nl=n_laguerre,
+        Nm=n_hermite,
+        init_cfg=legacy_cfg.init,
+    )
+    legacy_state = np.zeros_like(np.asarray(runtime_state))
+    legacy_state[1] = np.asarray(legacy_single)
+    np.testing.assert_allclose(runtime_state, legacy_state, rtol=0.0, atol=1.0e-19)
+
+    cache = build_linear_cache(
+        grid,
+        geometry,
+        runtime_params,
+        n_laguerre,
+        n_hermite,
+    )
+    runtime_rhs, _ = linear_rhs_cached(
+        runtime_state,
+        cache,
+        runtime_params,
+        terms=build_runtime_linear_terms(runtime_cfg),
+    )
+    legacy_rhs, _ = linear_rhs_cached(
+        runtime_state,
+        cache,
+        legacy_params,
+        terms=LinearTerms(bpar=0.0),
+    )
+    np.testing.assert_allclose(runtime_rhs, legacy_rhs, rtol=1.0e-6, atol=1.0e-18)
 
 
 def test_scan_policy_normalizes_keys_and_auto_fit_side_effects() -> None:
