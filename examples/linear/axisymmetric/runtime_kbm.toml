@@ -53,6 +53,7 @@ init_field = "all"
 init_amp = 1e-10
 gaussian_init = true
 gaussian_width = 0.5
+init_electrons_only = true
 
 [physics]
 linear = true
@@ -65,15 +66,15 @@ adiabatic_electrons = false
 adiabatic_ions = false
 beta = 0.3
 collisions = true
-hypercollisions = false
+hypercollisions = true
 
 [collisions]
 nu_hermite = 1.0
 nu_laguerre = 2.0
 nu_hyper = 0.0
 p_hyper = 4.0
-hypercollisions_const = 1.0
-hypercollisions_kz = 0.0
+hypercollisions_const = 0.0
+hypercollisions_kz = 1.0
 damp_ends_amp = 0.1
 damp_ends_widthfrac = 0.125
 
@@ -88,7 +89,7 @@ curvature = 1.0
 gradb = 1.0
 diamagnetic = 1.0
 collisions = 1.0
-hypercollisions = 0.0
+hypercollisions = 1.0
 end_damping = 1.0
 apar = 1.0
 bpar = 0.0

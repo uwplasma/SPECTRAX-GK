@@ -44,6 +44,14 @@ Quick driver examples:
    python -m spectraxgk.cli run-runtime-linear --config benchmarks/runtime_secondary_slab.toml
    python benchmarks/secondary_slab_workflow.py
 
+The KBM driver reads the canonical ``runtime_kbm.toml`` input and uses the
+public ordered-parameter scan API. At each beta it evaluates the documented
+low- and high-frequency Krylov targets, selects the configured transition
+branch, and continues only the selected state. A bounded ``beta=0.2``,
+``ky=0.3`` migration audit found 0.44% relative growth-rate difference and
+0.09% relative frequency difference against the transitional branch runner;
+the full beta panel remains the release-level closure gate.
+
 Regenerate the atlas figures with:
 
 .. code-block:: bash

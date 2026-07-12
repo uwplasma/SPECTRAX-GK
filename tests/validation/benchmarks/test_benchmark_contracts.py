@@ -40,6 +40,9 @@ from spectraxgk.terms.linear_terms import (
     streaming_contribution,
 )
 from spectraxgk.benchmarks import (
+    KBM_OMEGA_D_SCALE,
+    KBM_OMEGA_STAR_SCALE,
+    KBM_RHO_STAR,
     TEM_OMEGA_D_SCALE,
     TEM_OMEGA_STAR_SCALE,
     TEM_RHO_STAR,
@@ -270,6 +273,65 @@ def test_runtime_kinetic_case_matches_transitional_operator_contract() -> None:
         np.asarray(runtime_rhs) - phase_scale * np.asarray(legacy_rhs)
     ) / np.linalg.norm(np.asarray(runtime_rhs))
     assert rhs_error < 2.0e-6
+
+
+def test_runtime_kbm_case_matches_transitional_operator_contract() -> None:
+    """The canonical runtime case preserves the established KBM operator."""
+
+    runtime_cfg, _raw = load_runtime_from_toml(
+        ROOT / "examples" / "linear" / "axisymmetric" / "runtime_kbm.toml"
+    )
+    model = SimpleNamespace(
+        R_over_LTi=2.49, R_over_LTe=2.49, R_over_Ln=0.8,
+        Te_over_Ti=1.0, mass_ratio=1.0 / 0.00027,
+        nu_i=0.0, nu_e=0.0, beta=runtime_cfg.physics.beta,
+    )
+    n_laguerre, n_hermite = 2, 4
+    geometry = build_runtime_geometry(runtime_cfg)
+    grid_full = build_spectral_grid(runtime_cfg.grid)
+    grid = select_ky_grid(
+        grid_full, int(np.argmin(np.abs(np.asarray(grid_full.ky) - 0.3)))
+    )
+    runtime_params = build_runtime_linear_params(
+        runtime_cfg, Nm=n_hermite, geom=geometry
+    )
+    legacy_params = _two_species_params(
+        model, kpar_scale=float(geometry.gradpar()),
+        omega_d_scale=KBM_OMEGA_D_SCALE,
+        omega_star_scale=KBM_OMEGA_STAR_SCALE,
+        rho_star=KBM_RHO_STAR,
+        damp_ends_amp=0.1, damp_ends_widthfrac=0.125,
+        nhermite=n_hermite,
+    )
+    for field in fields(runtime_params):
+        np.testing.assert_allclose(
+            np.asarray(getattr(runtime_params, field.name)),
+            np.asarray(getattr(legacy_params, field.name)),
+            rtol=1.0e-7, atol=1.0e-9, err_msg=field.name,
+        )
+    assert build_runtime_linear_terms(runtime_cfg).hypercollisions == 1.0
+
+    runtime_state = build_runtime_initial_condition(
+        grid, geometry, runtime_cfg, ky_index=0, kx_index=0,
+        Nl=n_laguerre, Nm=n_hermite, nspecies=2,
+    )
+    legacy_single = build_benchmark_initial_condition(
+        grid, geometry, ky_index=0, kx_index=0,
+        Nl=n_laguerre, Nm=n_hermite, init_cfg=runtime_cfg.init,
+    )
+    legacy_state = np.zeros_like(np.asarray(runtime_state))
+    legacy_state[1] = np.asarray(legacy_single)
+    np.testing.assert_allclose(runtime_state, legacy_state, rtol=0.0, atol=1.0e-19)
+
+    cache = build_linear_cache(grid, geometry, runtime_params, n_laguerre, n_hermite)
+    runtime_rhs, _ = linear_rhs_cached(
+        runtime_state, cache, runtime_params,
+        terms=build_runtime_linear_terms(runtime_cfg),
+    )
+    legacy_rhs, _ = linear_rhs_cached(
+        legacy_state, cache, legacy_params, terms=LinearTerms(bpar=0.0),
+    )
+    np.testing.assert_allclose(runtime_rhs, legacy_rhs, rtol=1.0e-6, atol=1.0e-18)
 
 
 def test_scan_policy_normalizes_keys_and_auto_fit_side_effects() -> None:

@@ -452,6 +452,11 @@ discussion:
    python benchmarks/kinetic_linear_benchmark.py
    python benchmarks/tem_linear_benchmark.py
 
+``kbm_beta_scan.py`` demonstrates a stateful scalar-parameter scan with two
+targeted eigenvalue candidates per beta. Its transition rule is visible in the
+benchmark script rather than hidden in the solver, so it can be reviewed or
+changed independently of the runtime API.
+
 The kinetic-electron script loads
 ``examples/linear/axisymmetric/runtime_kinetic_electron.toml``. The same input
 can be run directly with

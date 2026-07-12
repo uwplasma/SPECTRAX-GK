@@ -292,7 +292,7 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
         "etg.toml": (1.0, 2.0, 0.0, 1.0),
         "runtime_etg.toml": (1.0, 2.0, 0.0, 1.0),
         "runtime_kaw.toml": (1.0, 2.0, 0.0, 1.0),
-        "runtime_kbm.toml": (1.0, 2.0, 1.0, 0.0),
+        "runtime_kbm.toml": (1.0, 2.0, 0.0, 1.0),
     }
     for name, (nu_h, nu_l, hyper_const, hyper_kz) in expected.items():
         cfg, _ = load_runtime_from_toml(cfg_dir / name)
