@@ -4398,3 +4398,41 @@ def test_runtime_parameter_scan_selects_one_candidate_branch(
             candidate_options=lambda *_args: ({"krylov_cfg": 0.7},),
             select_candidate=lambda *_args: 2,
         )
+
+
+def test_runtime_explicit_time_routes_cfl_trajectory(monkeypatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        time=replace(
+            _base_runtime_cfg().time,
+            t_max=1.2, dt=0.01, fixed_dt=False, cfl=0.7,
+        ),
+    )
+    captured: dict[str, object] = {}
+
+    def fake_explicit(_state, grid, _geom, _params, time_cfg, **kwargs):
+        captured.update(time_cfg=time_cfg, kwargs=kwargs)
+        t = np.linspace(0.01, 1.2, 120)
+        signal = np.exp((0.3 - 0.7j) * t)
+        phi = signal[:, None, None, None] * np.ones(
+            (1, 1, 1, int(grid.z.size)), dtype=complex
+        )
+        return t, phi
+
+    monkeypatch.setattr(
+        "spectraxgk.workflows.linear.integrate_linear_explicit_from_config",
+        fake_explicit,
+    )
+    result = run_runtime_linear(
+        cfg, ky_target=0.3, Nl=2, Nm=2, solver="explicit_time",
+        fit_signal="phi", mode_method="z_index", auto_window=False,
+        tmin=0.2, tmax=1.0, require_positive=True,
+    )
+
+    assert result.gamma == pytest.approx(0.3, rel=1.0e-6)
+    assert abs(result.omega) == pytest.approx(0.7, rel=1.0e-6)
+    assert captured["time_cfg"].fixed_dt is False
+    assert captured["kwargs"]["Nl"] == 2
+    assert captured["kwargs"]["Nm"] == 2

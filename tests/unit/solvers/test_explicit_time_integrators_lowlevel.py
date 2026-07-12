@@ -104,3 +104,34 @@ def test_linear_explicit_step_rejects_unknown_method(monkeypatch) -> None:
             0.05,
             method="bad",
         )
+
+
+def test_explicit_from_config_preserves_adaptive_controls(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(eti, "build_linear_cache", lambda *_args: "cache")
+
+    def fake_integrate(_state, _grid, cache, _params, _geom, config, *_args, **kwargs):
+        captured.update(cache=cache, config=config, kwargs=kwargs)
+        return np.asarray([0.1]), np.ones((1, 1, 1, 2)), None, None, None
+
+    monkeypatch.setattr(eti, "integrate_linear_explicit_diagnostics", fake_integrate)
+    time_cfg = SimpleNamespace(
+        dt=0.02, t_max=2.0, sample_stride=3, fixed_dt=False,
+        dt_min=1.0e-6, dt_max=0.04, cfl=0.7, method="rk2", cfl_fac=None,
+    )
+    t, phi = eti.integrate_linear_explicit_from_config(
+        jnp.ones((1,)), object(), object(), object(), time_cfg,
+        Nl=2, Nm=3, z_index=1, show_progress=True,
+    )
+
+    config = captured["config"]
+    assert config.dt == pytest.approx(0.02)
+    assert config.t_max == pytest.approx(2.0)
+    assert config.sample_stride == 3
+    assert config.fixed_dt is False
+    assert config.dt_max == pytest.approx(0.04)
+    assert config.cfl == pytest.approx(0.7)
+    assert captured["cache"] == "cache"
+    assert captured["kwargs"]["show_progress"] is True
+    np.testing.assert_allclose(t, [0.1])
+    assert phi.shape == (1, 1, 1, 2)
