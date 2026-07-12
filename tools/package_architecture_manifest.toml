@@ -113,12 +113,6 @@ target_lines = 1000
 reason = "move campaign/report assembly out of installed diagnostics"
 
 [[complexity_policy.exceptions]]
-path = "diagnostics/validation_gates.py"
-baseline_lines = 1418
-target_lines = 1000
-reason = "consolidate common gate algebra and move case policy to validation drivers"
-
-[[complexity_policy.exceptions]]
 path = "geometry/imported_miller.py"
 baseline_lines = 1173
 target_lines = 1000

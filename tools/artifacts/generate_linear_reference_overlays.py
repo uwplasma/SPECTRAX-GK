@@ -53,9 +53,9 @@ from spectraxgk.diagnostics.modes import (  # noqa: E402
 from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
     eigenfunction_gate_report,
     gate_report_to_dict,
-    infer_triple_dealiased_ny,
-    late_time_window,
 )
+from spectraxgk.artifacts.spectral_layout import infer_triple_dealiased_ny  # noqa: E402
+from spectraxgk.diagnostics.growth_windows import late_time_window  # noqa: E402
 from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions  # noqa: E402
 from spectraxgk.runtime import run_runtime_linear  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402

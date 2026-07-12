@@ -759,3 +759,12 @@ under 5 minutes.
   no source file was added. Public API identities, 36 window/ensemble/tool/
   release tests, all architecture/coverage/refactor manifests, Sphinx ``-W``,
   and wheel/sdist builds pass.
+- 2026-07-12: Closed the validation-gates complexity exception with no new
+  modules. Moved physical metric contracts/extraction into
+  ``diagnostics.analysis``, eigenfunction contracts into ``diagnostics.modes``,
+  generic time-window helpers into ``diagnostics.growth_windows``, diagnostic
+  NetCDF series loading into ``artifacts.nonlinear_diagnostics``, and real-FFT
+  grid inference into ``artifacts.spectral_layout``. ``validation_gates.py``
+  fell from 1,418 to 540 lines; every destination remains below 700 lines.
+  The complete 175-test benchmark/physics/analysis/artifact suite, architecture
+  and refactor manifests, Sphinx ``-W``, and wheel/sdist builds pass.

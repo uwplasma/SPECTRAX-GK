@@ -18,11 +18,11 @@ from pathlib import Path
 import netCDF4 as nc
 import numpy as np
 
+from spectraxgk.artifacts.nonlinear_diagnostics import load_diagnostic_time_series
 from spectraxgk.diagnostics.validation_gates import (
     evaluate_scalar_gate,
     gate_report,
     gate_report_to_dict,
-    load_diagnostic_time_series,
 )
 from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml

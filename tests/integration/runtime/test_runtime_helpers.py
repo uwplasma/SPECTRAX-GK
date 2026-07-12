@@ -29,7 +29,7 @@ from spectraxgk.workflows.runtime.results import (
 from spectraxgk.workflows.runtime.orchestration_scan import (
     run_runtime_scan_ky_task,
 )
-from spectraxgk.diagnostics.validation_gates import late_time_linear_metrics
+from spectraxgk.diagnostics.analysis import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
     GridConfig,

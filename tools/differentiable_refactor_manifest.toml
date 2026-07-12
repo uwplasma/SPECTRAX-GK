@@ -170,25 +170,9 @@ module = "spectraxgk.diagnostics.validation_gates"
 source_path = "src/spectraxgk/diagnostics/validation_gates.py"
 facade_module = "spectraxgk.diagnostics"
 status = "active"
-responsibility = "JSON-ready metric containers, diagnostic time-series artifact loading, time-window helpers, scalar tolerance evaluation, serialization, and physics/numerics gate-report builders"
+responsibility = "JSON-ready scalar tolerance evaluation, serialization, and physics/numerics acceptance-report builders"
 moved_exports = [
-  "_analytic_signal",
-  "_explicit_time_window",
-  "_leading_window",
-  "_tail_stats",
-  "_tail_window",
-  "BranchContinuationMetrics",
-  "DiagnosticTimeSeries",
-  "EigenfunctionComparisonMetrics",
-  "EigenfunctionReferenceBundle",
   "GateReport",
-  "LateTimeLinearMetrics",
-  "infer_triple_dealiased_ny",
-  "late_time_window",
-  "load_diagnostic_time_series",
-  "NonlinearHeatFluxConvergenceMetrics",
-  "NonlinearWindowMetrics",
-  "ObservedOrderMetrics",
   "ScalarGateResult",
   "ZonalFlowResponseMetrics",
   "branch_continuity_gate_report",
@@ -201,14 +185,30 @@ moved_exports = [
   "nonlinear_window_gate_report",
   "observed_order_gate_report",
   "zonal_response_gate_report",
+]
+fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+
+[[phase1_split_modules]]
+module = "spectraxgk.diagnostics.analysis"
+source_path = "src/spectraxgk/diagnostics/analysis.py"
+facade_module = "spectraxgk.api"
+status = "active"
+responsibility = "mode/growth analysis plus late-time linear, nonlinear-window, convergence-order, and branch-continuity metric extraction"
+moved_exports = [
+  "BranchContinuationMetrics",
+  "LateTimeLinearMetrics",
+  "NonlinearHeatFluxConvergenceMetrics",
+  "NonlinearWindowMetrics",
+  "ObservedOrderMetrics",
   "branch_continuity_metrics",
   "estimate_observed_order",
   "late_time_linear_metrics",
   "nonlinear_heat_flux_convergence_metrics",
   "windowed_nonlinear_metrics",
 ]
-fast_tests = ["tests/validation/physics_gates/test_validation_gates.py", "tests/validation/benchmarks/test_benchmarking.py"]
-doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/differentiable_refactor_plan.rst"]
+fast_tests = ["tests/validation/benchmarks/test_benchmarking.py", "tests/unit/diagnostics/test_analysis.py"]
+doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.geometry.backend_discovery"
@@ -366,6 +366,8 @@ facade_module = "spectraxgk.diagnostics.analysis"
 status = "active"
 responsibility = "mode selection, complex mode time-series extraction, density moments, eigenfunction extraction, phase alignment, comparison metrics, and reference-bundle IO"
 moved_exports = [
+  "EigenfunctionComparisonMetrics",
+  "EigenfunctionReferenceBundle",
   "ModeSelection",
   "ModeSelectionBatch",
   "compare_eigenfunctions",
@@ -1108,11 +1110,12 @@ module = "spectraxgk.artifacts.spectral_layout"
 source_path = "src/spectraxgk/artifacts/spectral_layout.py"
 facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
-responsibility = "NetCDF dealiased-axis layout, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
+responsibility = "NetCDF dealiased-axis layout, real-FFT grid inference, spectral real/imag packing, restart layout, species matrices, and condensed diagnostic axis helpers"
 moved_exports = [
   "_require_netcdf4",
   "_real_space_axis",
   "_dealiased_kx_count",
+  "infer_triple_dealiased_ny",
   "_dealiased_ky_count",
   "_dealiased_kx_indices",
   "_dealiased_ky_indices",
@@ -1212,8 +1215,10 @@ module = "spectraxgk.artifacts.nonlinear_diagnostics"
 source_path = "src/spectraxgk/artifacts/nonlinear_diagnostics.py"
 facade_module = "spectraxgk.workflows.runtime.artifacts"
 status = "active"
-responsibility = "nonlinear NetCDF diagnostic reload, restart-path resolution, species-time condensation, and restart-append diagnostic schema normalization"
+responsibility = "nonlinear NetCDF diagnostic-series loading, restart-path resolution, species-time condensation, and restart-append schema normalization"
 moved_exports = [
+  "DiagnosticTimeSeries",
+  "load_diagnostic_time_series",
   "_resolved_species_time",
   "_read_optional_var",
   "_resolve_restart_path",

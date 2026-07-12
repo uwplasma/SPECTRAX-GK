@@ -355,9 +355,11 @@ Completed extractions:
   The shared publication style and public imports live in
   ``artifacts/plotting.py``, which remains the stable facade for examples and
   user scripts.
-- validation gate dataclasses and JSON-ready gate helpers:
-  ``diagnostics/validation_gates.py`` owns metric containers, scalar
-  tolerance evaluation, JSON serialization, and report builders. One private
+- validation acceptance contracts and JSON-ready gate helpers:
+  ``diagnostics/validation_gates.py`` owns scalar tolerance evaluation, JSON
+  serialization, and report builders. Metric extraction and its result
+  contracts live in ``diagnostics/analysis.py``; eigenfunction comparison and
+  reference-bundle contracts live in ``diagnostics/modes.py``. One private
   upper-limit scalar-gate policy is shared for convergence, mismatch, deficit,
   and branch-jump thresholds so tolerance semantics remain auditable.
 - autodiff validation helpers:
@@ -369,16 +371,18 @@ Completed extractions:
   observable chain-rule assembly, and
   finite-difference comparison stages.
 - benchmark-harness physics metric extraction and scan/mode orchestration:
-  ``diagnostics/validation_gates.py`` and ``workflows/runtime``. Reviewed
+  ``diagnostics/analysis.py`` and ``workflows/runtime``. Reviewed
   reference tables and comparison-only policies live in
   ``benchmarking/shared.py`` behind the compact ``spectraxgk.benchmarks``
   facade. Eigenfunction normalization,
   phase alignment, comparison metrics, and reference-bundle IO live in
-  ``diagnostics/modes.py``; diagnostic time-series loading, late/leading
-  windows, analytic-signal construction, real-FFT ky-grid inference, late-time
-  linear metrics, nonlinear transport windows, heat-flux convergence,
-  observed-order checks, and branch-continuity metrics live in
-  ``diagnostics/validation_gates.py``. Zonal-flow residual/GAM metric extraction lives in
+  ``diagnostics/modes.py``; diagnostic time-series loading lives in
+  ``artifacts/nonlinear_diagnostics.py``; late/leading windows and analytic
+  signals live in ``diagnostics/growth_windows.py``; real-FFT grid inference
+  lives in ``artifacts/spectral_layout.py``. Late-time linear metrics,
+  nonlinear transport windows, heat-flux convergence, observed-order checks,
+  and branch-continuity metrics live in ``diagnostics/analysis.py``.
+  Zonal-flow residual/GAM metric extraction lives in
   ``diagnostics/zonal_validation.py``. Zonal-response metrics are staged as trace
   coercion, initial-level normalization, tail residual extraction,
   extrema/envelope detection, damping/frequency fits, and final

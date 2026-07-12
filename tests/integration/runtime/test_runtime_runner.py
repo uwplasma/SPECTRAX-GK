@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 import spectraxgk.workflows.runtime.startup as startup
-from spectraxgk.diagnostics.validation_gates import late_time_linear_metrics
+from spectraxgk.diagnostics.analysis import late_time_linear_metrics
 from spectraxgk.config import (
     CycloneBaseCase,
     GeometryConfig,

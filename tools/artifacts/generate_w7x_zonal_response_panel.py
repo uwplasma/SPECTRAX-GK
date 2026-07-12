@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
 
-from spectraxgk.diagnostics.validation_gates import load_diagnostic_time_series
+from spectraxgk.artifacts.nonlinear_diagnostics import load_diagnostic_time_series
 from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml
 from spectraxgk.artifacts.plotting import set_plot_style

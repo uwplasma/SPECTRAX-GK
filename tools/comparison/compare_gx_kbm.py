@@ -25,11 +25,8 @@ from spectraxgk.diagnostics.analysis import (
 )
 from spectraxgk.benchmarking.shared import KBM_KRYLOV_DEFAULT
 from spectraxgk.runtime import run_runtime_linear
-from spectraxgk.diagnostics.validation_gates import (
-    branch_continuity_gate_report,
-    branch_continuity_metrics,
-    gate_report_to_dict,
-)
+from spectraxgk.diagnostics.analysis import branch_continuity_metrics
+from spectraxgk.diagnostics.validation_gates import branch_continuity_gate_report, gate_report_to_dict
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
 from spectraxgk.workflows.runtime.toml import load_runtime_from_toml, load_toml

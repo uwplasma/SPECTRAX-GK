@@ -229,7 +229,7 @@ lanes, not as ad hoc notebooks.
 The first reusable tooling for this lane now exists:
 
 - :func:`spectraxgk.diagnostics.zonal_validation.zonal_flow_response_metrics`
-- :func:`spectraxgk.diagnostics.validation_gates.load_diagnostic_time_series`
+- :func:`spectraxgk.artifacts.nonlinear_diagnostics.load_diagnostic_time_series`
 - :func:`spectraxgk.diagnostics.validation_gates.evaluate_scalar_gate`
 - :func:`spectraxgk.diagnostics.validation_gates.observed_order_gate_report`
 - :func:`spectraxgk.diagnostics.validation_gates.branch_continuity_gate_report`

@@ -7,14 +7,16 @@ import pytest
 
 import spectraxgk
 import spectraxgk.diagnostics.validation_gates as validation_gates
-from spectraxgk.diagnostics.validation_gates import (
+from spectraxgk.diagnostics.analysis import (
     BranchContinuationMetrics,
-    EigenfunctionComparisonMetrics,
-    GateReport,
     LateTimeLinearMetrics,
     NonlinearHeatFluxConvergenceMetrics,
     NonlinearWindowMetrics,
     ObservedOrderMetrics,
+)
+from spectraxgk.diagnostics.modes import EigenfunctionComparisonMetrics
+from spectraxgk.diagnostics.validation_gates import (
+    GateReport,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
     branch_continuity_gate_report,
@@ -32,16 +34,16 @@ from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 
 
 def test_validation_gate_facade_points_to_focused_modules() -> None:
-    import spectraxgk.diagnostics.validation_gates as gate_reports
-    import spectraxgk.diagnostics.validation_gates as gate_types
+    import spectraxgk.diagnostics.analysis as metric_analysis
+    import spectraxgk.diagnostics.modes as mode_analysis
     import spectraxgk.diagnostics.validation_gates as gates
 
-    assert gates.LateTimeLinearMetrics is gate_types.LateTimeLinearMetrics
-    assert gates.NonlinearWindowMetrics is gate_types.NonlinearWindowMetrics
-    assert gates.GateReport is gate_types.GateReport
-    assert gates.evaluate_scalar_gate is gate_reports.evaluate_scalar_gate
-    assert gates.gate_report_to_dict is gate_reports.gate_report_to_dict
-    assert gates.observed_order_gate_report is gate_reports.observed_order_gate_report
+    assert LateTimeLinearMetrics is metric_analysis.LateTimeLinearMetrics
+    assert NonlinearWindowMetrics is metric_analysis.NonlinearWindowMetrics
+    assert EigenfunctionComparisonMetrics is mode_analysis.EigenfunctionComparisonMetrics
+    assert gates.evaluate_scalar_gate is evaluate_scalar_gate
+    assert gates.gate_report_to_dict is gate_report_to_dict
+    assert gates.observed_order_gate_report is observed_order_gate_report
 
 
 def test_validation_gate_primitives_are_public_and_owned_by_diagnostics() -> None:

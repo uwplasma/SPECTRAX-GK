@@ -19,11 +19,8 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
-from spectraxgk.diagnostics.validation_gates import (
-    estimate_observed_order,
-    gate_report_to_dict,
-    observed_order_gate_report,
-)
+from spectraxgk.diagnostics.analysis import estimate_observed_order
+from spectraxgk.diagnostics.validation_gates import gate_report_to_dict, observed_order_gate_report
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402

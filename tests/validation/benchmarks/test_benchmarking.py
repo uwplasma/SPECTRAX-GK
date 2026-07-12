@@ -18,37 +18,41 @@ from spectraxgk.diagnostics.modes import (
     phase_align_eigenfunction,
     save_eigenfunction_reference_bundle,
 )
-from spectraxgk.diagnostics.validation_gates import (
-    _analytic_signal,
-    _explicit_time_window,
-    _leading_window,
+from spectraxgk.artifacts.nonlinear_diagnostics import load_diagnostic_time_series
+from spectraxgk.artifacts.spectral_layout import infer_triple_dealiased_ny
+from spectraxgk.diagnostics.analysis import (
     BranchContinuationMetrics,
-    GateReport,
-    EigenfunctionComparisonMetrics,
     LateTimeLinearMetrics,
     NonlinearHeatFluxConvergenceMetrics,
     NonlinearWindowMetrics,
+    branch_continuity_metrics,
+    estimate_observed_order,
+    late_time_linear_metrics,
+    nonlinear_heat_flux_convergence_metrics,
+    windowed_nonlinear_metrics,
+)
+from spectraxgk.diagnostics.growth_windows import (
+    _analytic_signal,
+    _explicit_time_window,
+    _leading_window,
+    late_time_window,
+)
+from spectraxgk.diagnostics.validation_gates import (
+    GateReport,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
     branch_continuity_gate_report,
-    branch_continuity_metrics,
     eigenfunction_gate_report,
     evaluate_scalar_gate,
-    estimate_observed_order,
     gate_report,
     gate_report_to_dict,
-    infer_triple_dealiased_ny,
-    late_time_linear_metrics,
-    late_time_window,
     linear_metrics_gate_report,
-    load_diagnostic_time_series,
     nonlinear_heat_flux_convergence_gate_report,
-    nonlinear_heat_flux_convergence_metrics,
     nonlinear_window_gate_report,
     observed_order_gate_report,
-    windowed_nonlinear_metrics,
     zonal_response_gate_report,
 )
+from spectraxgk.diagnostics.modes import EigenfunctionComparisonMetrics
 from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.diagnostics.zonal_validation import zonal_flow_response_metrics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
