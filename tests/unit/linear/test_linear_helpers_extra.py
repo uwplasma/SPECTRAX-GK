@@ -24,7 +24,7 @@ import spectraxgk.solvers.linear.parallel as linear_parallel
 import spectraxgk.operators.linear.params as linear_params
 import spectraxgk.terms.linear_dissipation as linear_dissipation
 import spectraxgk.terms.linear_terms as linear_terms
-from spectraxgk.solvers.algebra import solve_gmres
+from spectraxgk.solvers import solve_gmres
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
