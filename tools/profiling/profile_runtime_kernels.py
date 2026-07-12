@@ -16,6 +16,8 @@ from dataclasses import replace
 import json
 import os
 from pathlib import Path
+import platform
+import resource
 import sys
 import time
 from typing import Any, Callable
@@ -183,6 +185,32 @@ def _prepared_result_summary(result: Any) -> dict[str, Any]:
         "phi": _array_fingerprint(fields.phi),
         "heat_flux": _array_fingerprint(diagnostics.heat_flux_t),
         "dt": _array_fingerprint(dt_series),
+    }
+
+
+def _peak_rss_bytes(peak_rss: int, *, system: str | None = None) -> int:
+    """Normalize ``ru_maxrss`` to bytes across macOS and Linux."""
+
+    platform_name = platform.system() if system is None else system
+    return int(peak_rss) if platform_name == "Darwin" else int(peak_rss) * 1024
+
+
+def _runtime_memory_summary() -> dict[str, Any]:
+    """Return host peak RSS and available JAX device allocator metrics."""
+
+    device = jax.devices()[0]
+    raw_stats = device.memory_stats() or {}
+    device_stats = {
+        key: int(raw_stats[key])
+        for key in ("bytes_in_use", "peak_bytes_in_use", "bytes_limit")
+        if key in raw_stats
+    }
+    return {
+        "host_peak_rss_bytes": _peak_rss_bytes(
+            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        ),
+        "device": str(device),
+        "device_stats": device_stats,
     }
 
 
@@ -399,6 +427,7 @@ def main_cyclone(argv: list[str] | None = None) -> int:
             "warmup_time_s": float(t1 - t0),
             "run_times_s": run_times,
             "run_median_s": run_median,
+            "memory_summary": _runtime_memory_summary(),
         }
         if args.reuse_prepared_simulation:
             payload["result_summary"] = _prepared_result_summary(last_result)

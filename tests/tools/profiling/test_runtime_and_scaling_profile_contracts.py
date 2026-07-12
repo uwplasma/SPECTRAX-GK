@@ -49,6 +49,11 @@ def test_prepared_profile_summary_fingerprints_numerical_outputs() -> None:
     np.testing.assert_allclose(summary["dt"]["max_abs"], 0.2)
 
 
+def test_runtime_profile_normalizes_peak_rss_units() -> None:
+    assert runtime_kernels._peak_rss_bytes(123, system="Darwin") == 123
+    assert runtime_kernels._peak_rss_bytes(123, system="Linux") == 123 * 1024
+
+
 def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
     cpu = json.loads(
         (
@@ -77,9 +82,9 @@ def test_prepared_nonlinear_cpu_gpu_profiles_are_matched_and_clean() -> None:
     assert gpu["backend"] == "gpu"
     assert cpu["run_median_s"] / gpu["run_median_s"] >= 5.0
     for name in ("final_state", "phi", "heat_flux", "dt"):
-        assert cpu["result_summary"][name]["shape"] == gpu["result_summary"][name][
-            "shape"
-        ]
+        assert (
+            cpu["result_summary"][name]["shape"] == gpu["result_summary"][name]["shape"]
+        )
         assert cpu["result_summary"][name]["finite_fraction"] == 1.0
         assert gpu["result_summary"][name]["finite_fraction"] == 1.0
         np.testing.assert_allclose(
