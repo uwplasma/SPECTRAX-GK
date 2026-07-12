@@ -84,11 +84,12 @@ These links are clickable in the HTML docs via the ``viewcode`` extension.
 Structured solver dependency contract
 -------------------------------------
 
-SPECTRAX-GK requires ``solvax>=0.6,<0.7``. Version 0.6 is the first admitted
+SPECTRAX-GK requires ``solvax>=0.6.1,<0.7``. Version 0.6 is the first admitted
 release because it includes complex Krylov/fixed-point support, current-JAX
 linear-transpose compatibility, complex CPU/GPU tridiagonal identity gates,
-and a supported-minimum/current dependency matrix. Generic numerical algebra
-lives in SOLVAX; gyrokinetic state layout, linked-boundary assembly,
+and a supported-minimum/current dependency matrix; version 0.6.1 adds the
+PEP 561 marker required by strict downstream type checking. Generic numerical
+algebra lives in SOLVAX; gyrokinetic state layout, linked-boundary assembly,
 preconditioner coefficients, eigenbranch tracking, transport windows, and
 physics gates remain in SPECTRAX-GK.
 

@@ -118,7 +118,8 @@ delete generic solver code from SPECTRAX-GK, not add a second abstraction layer.
 The integration is pinned to reviewed releases, never an unversioned Git
 dependency. SOLVAX 0.6.0 was reviewed in PR 2, passed its minimum/current JAX
 matrix plus office GPU compatibility gates, and was published to PyPI on
-2026-07-11. SPECTRAX-GK therefore requires ``solvax>=0.6,<0.7``. The first
+2026-07-11. The PEP 561 packaging correction was released as 0.6.1, so
+SPECTRAX-GK requires ``solvax>=0.6.1,<0.7``. The first
 downstream tranche owns only the Hermite-line tridiagonal layout conversion and
 the geometry-Jacobian chunk policy; local physics coefficients, diagnostics,
 and Krylov policy remain unchanged until their separate gates pass.
@@ -281,9 +282,17 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Released SOLVAX 0.6.1 with its PEP 561 marker after SPECTRAX-GK's
+  package-wide mypy job identified the missing distribution metadata. The
+  corrected floor passes strict analysis of all 227 installed source files,
+  architecture and differentiability manifests, warning-as-error docs, and
+  wheel metadata checks. A separate shift-invert experiment reduced
+  preconditioned inner-solve residuals below ``1e-10`` but left outer
+  eigenpair residuals above ``0.6`` through Krylov dimension 24; that path was
+  rejected rather than changing the selected physical branch.
 - 2026-07-11: Merged SOLVAX PR 2 at ``89f95ba``, tagged/published version
   0.6.0 through trusted PyPI publishing, and admitted the bounded dependency
-  ``solvax>=0.6,<0.7``. SPECTRAX-GK now delegates its two Hermite-line
+  ``solvax>=0.6.1,<0.7``. SPECTRAX-GK now delegates its two Hermite-line
   tridiagonal paths through one last-axis layout helper and exposes SOLVAX
   forward-Jacobian chunking in the existing geometry derivative-report owner;
   no fallback algorithm or new package was added. Direct fused-reference and
