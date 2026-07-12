@@ -1541,11 +1541,11 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
 
     captured: dict[str, object] = {}
 
-    def _fake_run_kbm_linear(**kwargs):
+    def _fake_run_runtime_linear(_cfg, **kwargs):
         captured.update(kwargs)
         return SimpleNamespace(gamma=0.1, omega=0.2)
 
-    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+    monkeypatch.setattr(mod, "run_runtime_linear", _fake_run_runtime_linear)
 
     args = SimpleNamespace(
         time_fit_signal="auto",
@@ -1565,7 +1565,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
 
     result = mod._run_candidate(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="krylov",
@@ -1595,11 +1595,11 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(
 
     captured: dict[str, object] = {}
 
-    def _fake_run_kbm_linear(**kwargs):
+    def _fake_run_runtime_linear(_cfg, **kwargs):
         captured.update(kwargs)
         return SimpleNamespace(gamma=0.1, omega=0.2)
 
-    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+    monkeypatch.setattr(mod, "run_runtime_linear", _fake_run_runtime_linear)
 
     args = SimpleNamespace(
         time_fit_signal="auto",
@@ -1619,7 +1619,7 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(
 
     mod._run_candidate(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -1641,11 +1641,11 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
 
     captured: dict[str, object] = {}
 
-    def _fake_run_kbm_linear(**kwargs):
+    def _fake_run_runtime_linear(_cfg, **kwargs):
         captured.update(kwargs)
         return SimpleNamespace(gamma=0.1, omega=0.2)
 
-    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+    monkeypatch.setattr(mod, "run_runtime_linear", _fake_run_runtime_linear)
 
     args = SimpleNamespace(
         time_fit_signal="auto",
@@ -1665,7 +1665,7 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
 
     mod._run_candidate(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -1688,11 +1688,11 @@ def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> Non
 
     captured: dict[str, object] = {}
 
-    def _fake_run_kbm_linear(**kwargs):
+    def _fake_run_runtime_linear(_cfg, **kwargs):
         captured.update(kwargs)
         return SimpleNamespace(gamma=0.1, omega=0.2)
 
-    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+    monkeypatch.setattr(mod, "run_runtime_linear", _fake_run_runtime_linear)
 
     args = SimpleNamespace(
         time_fit_signal="auto",
@@ -1712,7 +1712,7 @@ def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> Non
 
     mod._run_candidate(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -1770,7 +1770,7 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(
 
     result_project = mod._run_candidate_cached(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -1782,7 +1782,7 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(
     )
     result_max = mod._run_candidate_cached(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -1831,7 +1831,7 @@ def test_compare_gx_kbm_run_candidate_cached_loads_saved_trajectory(
             gamma=0.77,
             omega=1.55,
             t=result.t,
-            phi_t=result.phi_t,
+            field_history=result.field_history,
             selection=result.selection,
         )
 
@@ -1850,7 +1850,7 @@ def test_compare_gx_kbm_run_candidate_cached_loads_saved_trajectory(
 
     result = mod._run_candidate_cached(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="gx_time",
@@ -2075,11 +2075,11 @@ def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) 
 
     captured: dict[str, object] = {}
 
-    def _fake_run_kbm_linear(**kwargs):
+    def _fake_run_runtime_linear(_cfg, **kwargs):
         captured.update(kwargs)
         return SimpleNamespace(gamma=0.1, omega=0.2)
 
-    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+    monkeypatch.setattr(mod, "run_runtime_linear", _fake_run_runtime_linear)
 
     args = SimpleNamespace(
         time_fit_signal="auto",
@@ -2099,7 +2099,7 @@ def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) 
 
     mod._run_candidate(
         args,
-        cfg=object(),
+        cfg=KBMBaseCase(),
         ky_value=0.3,
         beta_value=0.015,
         solver_name="krylov",
@@ -2179,6 +2179,22 @@ fprim = [0.8, 0.8]
     assert contract.init_electrons_only is True
     assert contract.init_field == "all"
     assert contract.eps == pytest.approx(0.5 / 2.77778)
+
+
+def test_compare_gx_kbm_runtime_conversion_preserves_physical_case() -> None:
+    from tools.comparison import compare_gx_kbm as mod
+    from spectraxgk.config import KBMBaseCase
+
+    case = KBMBaseCase()
+    runtime = mod._runtime_config_from_kbm_case(case)
+
+    assert runtime.grid == case.grid
+    assert runtime.geometry == case.geometry
+    assert runtime.init == case.init
+    assert runtime.physics.beta == pytest.approx(case.model.beta)
+    assert runtime.species[0].tprim == pytest.approx(case.model.R_over_LTi)
+    assert runtime.species[1].tprim == pytest.approx(case.model.R_over_LTe)
+    assert runtime.species[1].mass == pytest.approx(1.0 / case.model.mass_ratio)
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
@@ -2802,11 +2818,11 @@ from spectraxgk.benchmarking.shared import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
-    KBMBaseCase,
     _build_initial_condition,
     _two_species_params,
-    run_kbm_linear,
 )
+from spectraxgk.benchmarks import run_kbm_linear
+from spectraxgk.config import KBMBaseCase
 from spectraxgk.core.grid import select_ky_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached

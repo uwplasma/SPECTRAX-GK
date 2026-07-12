@@ -24,7 +24,7 @@ from spectraxgk.diagnostics.analysis import (
     select_ky_index,
 )
 from spectraxgk.benchmarking.shared import KBM_KRYLOV_DEFAULT
-from spectraxgk.benchmarks import run_kbm_linear
+from spectraxgk.runtime import run_runtime_linear
 from spectraxgk.diagnostics.validation_gates import (
     branch_continuity_gate_report,
     branch_continuity_metrics,
@@ -32,12 +32,13 @@ from spectraxgk.diagnostics.validation_gates import (
 )
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.core.grid import build_spectral_grid, select_ky_grid
-from spectraxgk.workflows.runtime.toml import load_toml
+from spectraxgk.workflows.runtime.toml import load_runtime_from_toml, load_toml
 
 LATE_PROJECT_WINDOW_FRACTION = 0.3
 LATE_PROJECT_MIN_POINTS = 80
 LATE_PROJECT_START_FRACTION = 0.4
 LATE_PROJECT_GROWTH_WEIGHT = 1.0
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,35 @@ class KBMGXInputContract:
     init_field: str
     gaussian_init: bool
     init_electrons_only: bool
+
+
+def _runtime_config_from_kbm_case(cfg: KBMBaseCase):
+    """Translate one parsed comparison case into the canonical runtime contract."""
+
+    runtime_cfg, _raw = load_runtime_from_toml(
+        ROOT / "examples/linear/axisymmetric/runtime_kbm.toml"
+    )
+    ion, electron = runtime_cfg.species
+    model = cfg.model
+    return replace(
+        runtime_cfg,
+        grid=cfg.grid,
+        geometry=cfg.geometry,
+        init=cfg.init,
+        physics=replace(runtime_cfg.physics, beta=float(model.beta)),
+        species=(
+            replace(
+                ion, tprim=float(model.R_over_LTi), fprim=float(model.R_over_Ln)
+            ),
+            replace(
+                electron,
+                mass=1.0 / float(model.mass_ratio),
+                temperature=float(model.Te_over_Ti),
+                tprim=float(model.R_over_LTe),
+                fprim=float(model.R_over_Ln),
+            ),
+        ),
+    )
 
 
 def _load_kbm_reference_input_contract(path: Path) -> KBMGXInputContract:
@@ -258,6 +288,17 @@ def _trajectory_path(base_dir: Path, ky_value: float) -> Path:
     return base_dir / f"kbm_ky_{tag}_trajectory.npz"
 
 
+def _field_history(result) -> np.ndarray:
+    """Return fresh runtime fields or a historical cached trajectory."""
+
+    history = getattr(result, "field_history", None)
+    if history is None:
+        history = getattr(result, "phi_t", None)
+    if history is None:
+        raise ValueError("linear result does not contain a field trajectory")
+    return np.asarray(history)
+
+
 def _save_trajectory(path: Path, result) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     gamma_t = getattr(result, "gamma_t", None)
@@ -265,7 +306,7 @@ def _save_trajectory(path: Path, result) -> Path:
     np.savez_compressed(
         path,
         t=np.asarray(result.t, dtype=float),
-        phi_t=np.asarray(result.phi_t),
+        phi_t=_field_history(result),
         gamma_t=np.asarray(gamma_t, dtype=float) if gamma_t is not None else np.array([], dtype=float),
         omega_t=np.asarray(omega_t, dtype=float) if omega_t is not None else np.array([], dtype=float),
         ky=float(result.ky),
@@ -282,7 +323,7 @@ def _load_trajectory(path: Path):
     omega_t = np.asarray(data["omega_t"], dtype=float)
     return SimpleNamespace(
         t=np.asarray(data["t"], dtype=float),
-        phi_t=np.asarray(data["phi_t"]),
+        field_history=np.asarray(data["phi_t"]),
         gamma=float("nan"),
         omega=float("nan"),
         ky=float(np.asarray(data["ky"])),
@@ -343,7 +384,7 @@ def _extract_mode(
     tmin: float | None,
     tmax: float | None,
 ) -> np.ndarray:
-    phi_t = np.asarray(result.phi_t)
+    phi_t = _field_history(result)
     t = np.asarray(result.t, dtype=float)
     if t.size <= 1:
         return _normalize_mode(theta, np.asarray(phi_t[-1, 0, 0, :], dtype=np.complex128))
@@ -524,21 +565,27 @@ def _run_candidate(
             omega_sign=0,
             omega_target_factor=0.0,
         )
-    return run_kbm_linear(
+    runtime_cfg = _runtime_config_from_kbm_case(cfg)
+    runtime_cfg = replace(
+        runtime_cfg,
+        physics=replace(runtime_cfg.physics, beta=float(beta_value)),
+        time=replace(
+            runtime_cfg.time,
+            fixed_dt=solver_name != "gx_time",
+        ),
+    )
+    return run_runtime_linear(
+        runtime_cfg,
         ky_target=float(ky_value),
-        beta_value=float(beta_value),
         Nl=args.Nl,
         Nm=args.Nm,
         dt=args.dt,
         steps=args.steps,
         method=args.method,
-        cfg=cfg,
         solver=benchmark_solver,
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
         mode_method=mode_method_base,
-        diagnostic_norm="rho_star",
-        reference_aligned=True,
         auto_window=not args.no_auto_window,
         tmin=args.tmin,
         tmax=args.tmax,
@@ -556,7 +603,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
     mode_method_base, fit_policy = _split_mode_method_policy(mode_method)
 
     if mode_method_base in {"project", "svd"}:
-        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
+        signal = extract_mode_time_series(_field_history(result), result.selection, method=mode_method_base)
         if args.tmin is not None and args.tmax is not None:
             gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
             fit_tmin = float(args.tmin)
@@ -596,7 +643,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
 
     if args.tmin is not None and args.tmax is not None:
         try:
-            signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
+            signal = extract_mode_time_series(_field_history(result), result.selection, method=mode_method_base)
             gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
             return _replace_result(
                 result,
@@ -610,7 +657,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
 
     try:
         gamma, omega, _g_t, _o_t, _t_mid = instantaneous_growth_rate_from_phi(
-            np.asarray(result.phi_t),
+            _field_history(result),
             t,
             result.selection,
             navg_fraction=float(args.gx_avg_fraction),
@@ -626,7 +673,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             fit_window_tmax=fit_tmax,
         )
     except ValueError:
-        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
+        signal = extract_mode_time_series(_field_history(result), result.selection, method=mode_method_base)
         gamma, omega, fit_tmin, fit_tmax = fit_growth_rate_auto(
             t,
             signal,
@@ -717,8 +764,8 @@ def _recompute_time_history_growth_on_grid(
     t_dst = np.asarray(t_ref, dtype=float)
     if t_src.size <= 1:
         return result
-    phi_t = _interp_phi_t(np.asarray(result.phi_t), t_src, t_dst)
-    sampled = _replace_result(result, t=t_dst, phi_t=phi_t)
+    phi_t = _interp_phi_t(_field_history(result), t_src, t_dst)
+    sampled = _replace_result(result, t=t_dst, field_history=phi_t)
     updated = _recompute_time_history_growth(args, sampled, mode_method=mode_method)
     return _replace_result(result, gamma=float(updated.gamma), omega=float(updated.omega))
 
@@ -970,7 +1017,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default="project",
         choices=["z_index", "max", "project", "svd", "project_late", "svd_late"],
-        help="Mode-extraction method for GX-time/fallback fits. The default matches run_kbm_linear and projects onto the late-time KBM structure.",
+        help="Mode-extraction method for reference-time/fallback fits. The default projects onto the late-time KBM structure.",
     )
     parser.add_argument(
         "--eigen-method",

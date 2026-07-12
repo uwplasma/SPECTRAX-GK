@@ -15,6 +15,10 @@ import math
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
@@ -38,6 +42,7 @@ from tools.comparison.compare_gx_kbm import (  # noqa: E402
     _load_kbm_reference_input_contract,
     _normalize_mode as _normalize_kbm_mode,
     _prepare_gx_reference,
+    _runtime_config_from_kbm_case,
 )
 from spectraxgk.artifacts.plotting import eigenfunction_reference_overlay_figure  # noqa: E402
 from spectraxgk.diagnostics.modes import (  # noqa: E402
@@ -52,7 +57,7 @@ from spectraxgk.diagnostics.validation_gates import (  # noqa: E402
     late_time_window,
 )
 from spectraxgk.benchmarking.shared import _apply_reference_hypercollisions  # noqa: E402
-from spectraxgk.benchmarks import run_kbm_linear  # noqa: E402
+from spectraxgk.runtime import run_runtime_linear  # noqa: E402
 from spectraxgk.config import GridConfig, resolve_cfl_fac  # noqa: E402
 from spectraxgk.core.grid import build_spectral_grid  # noqa: E402
 from spectraxgk.core.species import build_linear_params  # noqa: E402
@@ -63,7 +68,6 @@ from spectraxgk.geometry import (  # noqa: E402
 )
 from spectraxgk.solvers.time.explicit import ExplicitTimeConfig  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
 KBM_EIGENFUNCTION_GATE_TOLERANCES = {
     "min_overlap": 0.95,
     "max_relative_l2": 0.25,
@@ -492,10 +496,14 @@ def main_kbm(argv: list[str] | None = None) -> int:
         metadata={"ky": float(args.ky)},
     )
 
-    result = run_kbm_linear(
+    runtime_cfg = _runtime_config_from_kbm_case(cfg)
+    runtime_cfg = replace(
+        runtime_cfg,
+        time=replace(runtime_cfg.time, fixed_dt=False),
+    )
+    result = run_runtime_linear(
+        runtime_cfg,
         ky_target=float(args.ky),
-        beta_value=float(beta),
-        cfg=cfg,
         Nl=int(contract.nlaguerre),
         Nm=int(contract.nhermite),
         dt=float(args.dt),
@@ -504,8 +512,6 @@ def main_kbm(argv: list[str] | None = None) -> int:
         solver="explicit_time",
         fit_signal="phi",
         mode_method="project",
-        diagnostic_norm="rho_star",
-        reference_aligned=True,
         auto_window=False,
         tmin=fit_tmin,
         tmax=fit_tmax,
@@ -517,7 +523,7 @@ def main_kbm(argv: list[str] | None = None) -> int:
         t_arr, tail_fraction=float(args.tail_fraction)
     )
     mode_sp = extract_eigenfunction(
-        np.asarray(result.phi_t),
+        np.asarray(result.field_history),
         t_arr,
         result.selection,
         z=theta_gx,
