@@ -735,3 +735,10 @@ under 5 minutes.
   import those workflows from ``spectraxgk``. The facade fell from 535 to 473
   lines, its architecture exception was removed, and five executable case
   workflow tests plus public lazy-import identity passed.
+- 2026-07-12: Closed the public-API architecture target without removing any
+  promoted capability. ``spectraxgk.api`` now derives its ordered ``__all__``
+  from the single lazy target mapping, reducing the facade from 789 to 410
+  lines while preserving all 379 export names, order, and target modules.
+  Added an invariant against duplicate or divergent exports, removed the API
+  architecture exception, and passed lazy-import, docs warnings-as-errors, and
+  wheel/sdist builds.

@@ -1652,7 +1652,7 @@ target_packages = [
   "spectraxgk.parallel.profiling",
 ]
 public_facade = "spectraxgk.operators.nonlinear.parallel"
-line_target = 900
+line_target = 500
 status = "planned"
 existing_fast_tests = ["tests/unit/parallel/test_parallel_nonlinear.py", "tests/unit/parallel/test_parallel_core.py"]
 planned_tests = [

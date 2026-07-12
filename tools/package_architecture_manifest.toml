@@ -141,9 +141,3 @@ path = "objectives/vmec_boozer_line_search.py"
 baseline_lines = 1006
 target_lines = 1000
 reason = "small remaining line-search policy consolidation"
-
-[[complexity_policy.exceptions]]
-path = "api/__init__.py"
-baseline_lines = 839
-target_lines = 500
-reason = "curate the stable public API and keep specialist report builders internal"

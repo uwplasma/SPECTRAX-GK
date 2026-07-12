@@ -186,7 +186,8 @@ Completed extractions:
 
 - compact public API registry in ``spectraxgk.api``. The root
   ``spectraxgk`` package and ``spectraxgk.api`` registry are lazy facades that
-  keep a stable documented ``__all__`` order while exporting directly from the
+  derive the stable documented ``__all__`` order from one authoritative lazy
+  target mapping while exporting directly from the
   owning configuration, geometry, solver, validation, parallelization,
   objective, and plotting modules. Pure-contract imports such as
   ``spectraxgk.parallel.decomposition`` must remain dependency-light and must

@@ -390,8 +390,11 @@ def test_public_api_facades_and_lazy_import_contracts() -> None:
     import sys
 
     import spectraxgk
+    import spectraxgk.api as public_api
     from support.paths import REPO_ROOT
 
+    assert public_api.__all__ == list(public_api._EXPORT_TARGETS)
+    assert len(public_api.__all__) == len(set(public_api.__all__))
     assert spectraxgk.ExplicitTimeConfig.__name__ == "ExplicitTimeConfig"
     assert callable(spectraxgk.integrate_nonlinear_explicit_diagnostics)
     assert "LinearExplicitTimeConfig" not in spectraxgk.__all__
