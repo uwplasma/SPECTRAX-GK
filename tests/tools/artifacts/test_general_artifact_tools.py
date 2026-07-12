@@ -1221,7 +1221,7 @@ def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(
 
 
 def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
-    monkeypatch, tmp_path: Path
+    tmp_path: Path,
 ) -> None:
     import tools.artifacts.make_tables as make_tables
 
@@ -1234,16 +1234,6 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
         )
         + "\n",
         encoding="utf-8",
-    )
-
-    monkeypatch.setattr(
-        make_tables,
-        "load_kbm_reference",
-        lambda: (_ for _ in ()).throw(
-            AssertionError(
-                "load_kbm_reference should not be called when reference mismatch csv exists"
-            )
-        ),
     )
 
     make_tables._write_kbm_public_mismatch_table(
@@ -1259,6 +1249,24 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(
 
     table_text = (tmp_path / "kbm_mismatch_table.csv").read_text(encoding="utf-8")
     assert "0.200,0.300000,0.880000,0.310000,0.890000" in table_text
+
+
+def test_write_kbm_public_mismatch_table_requires_reviewed_provenance(
+    tmp_path: Path,
+) -> None:
+    import tools.artifacts.make_tables as make_tables
+
+    with pytest.raises(FileNotFoundError, match="compare_gx_kbm.py"):
+        make_tables._write_kbm_public_mismatch_table(
+            tmp_path,
+            verbose=False,
+            progress=False,
+            stiff_spot_check=False,
+            stiff_spot_topk=0,
+            stiff_spot_dt=0.01,
+            stiff_spot_tmax=1.0,
+            stiff_spot_replace=False,
+        )
 
 
 def test_run_tem_tables_restores_fixed_late_window_contract(

@@ -26,7 +26,6 @@ from spectraxgk.benchmarking.shared import (
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
     KINETIC_KRYLOV_REFERENCE_ALIGNED,
-    KBM_KRYLOV_DEFAULT,
     TEM_KRYLOV_DEFAULT,
     _apply_reference_hypercollisions,
     _build_initial_condition,
@@ -34,15 +33,12 @@ from spectraxgk.benchmarking.shared import (
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
-    load_kbm_reference,
     load_tem_reference,
     LinearScanResult,
 )
-from spectraxgk.benchmarks import run_kbm_beta_scan
 from spectraxgk.config import (
     CycloneBaseCase,
     GridConfig,
-    KBMBaseCase,
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -64,14 +60,12 @@ from spectraxgk.diagnostics.analysis import (
 
 KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "time"
-KBM_SOLVER = "time"
 TEM_SOLVER = "time"
 DIAGNOSTIC_NORM = "rho_star"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 
 
 KINETIC_KRYLOV = KINETIC_KRYLOV_REFERENCE_ALIGNED
-KBM_KRYLOV = KBM_KRYLOV_DEFAULT
 TEM_KRYLOV = TEM_KRYLOV_DEFAULT
 
 
@@ -235,54 +229,9 @@ def _write_kbm_public_mismatch_table(
         )
         return
 
-    kbm_ref = load_kbm_reference()
-    kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
-    kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
-    kbm_cfg = KBMBaseCase(
-        grid=GridConfig(
-            Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2
-        )
-    )
-    kbm_time_cfg = TimeConfig(
-        t_max=3.0,
-        dt=0.001,
-        method="imex2",
-        use_diffrax=False,
-        progress_bar=False,
-        sample_stride=2,
-    )
-    kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
-        betas=kbm_ref.ky,
-        cfg=kbm_cfg,
-        Nl=48,
-        Nm=16,
-        dt=kbm_dt,
-        steps=kbm_steps,
-        method="imex2",
-        solver=KBM_SOLVER,
-        krylov_cfg=KBM_KRYLOV,
-        window_kw=WINDOWS["kbm"],
-        tmin=None,
-        tmax=None,
-        auto_window=True,
-        run_kwargs={
-            "fit_signal": "phi",
-            "mode_method": "z_index",
-            "time_cfg": kbm_time_cfg,
-        },
-        label="KBM mismatch",
-        ref=kbm_ref,
-        verbose=verbose,
-        progress=progress,
-        stiff_spot_check=stiff_spot_check,
-        stiff_spot_check_topk=stiff_spot_topk,
-        stiff_spot_check_dt=stiff_spot_dt,
-        stiff_spot_check_tmax=stiff_spot_tmax,
-        stiff_spot_check_replace=stiff_spot_replace,
-    )
-    kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
-    kbm_table.write_text(
-        "\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8"
+    raise FileNotFoundError(
+        "KBM publication tables require comparison/kbm_reference_mismatch.csv; "
+        "regenerate it with tools/comparison/compare_gx_kbm.py"
     )
 
 
@@ -635,267 +584,42 @@ def _scan_linear_verbose(
     return np.array(ky_out), np.array(gammas), np.array(omegas)
 
 
-def _scan_kbm_verbose(
-    *,
-    betas: np.ndarray,
-    cfg,
-    Nl: int,
-    Nm: int,
-    dt: float | np.ndarray,
-    steps: int | np.ndarray,
-    method: str,
-    solver: str,
-    krylov_cfg,
-    window_kw: dict,
-    tmin: float | np.ndarray | None = None,
-    tmax: float | np.ndarray | None = None,
-    auto_window: bool = True,
-    label: str,
-    ref=None,
-    run_kwargs: dict | None = None,
-    verbose: bool,
-    progress: bool,
-    stiff_spot_check: bool = False,
-    stiff_spot_check_topk: int = 0,
-    stiff_spot_check_dt: float = 0.01,
-    stiff_spot_check_tmax: float = 4.0,
-    stiff_spot_check_replace: bool = False,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    _log(f"\n=== {label} beta scan ===", verbose=verbose, use_tqdm=progress)
-    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
-    _log(
-        f"Numerics: Nl={Nl} Nm={Nm} method={method} solver={solver} dt={dt} steps={steps}",
-        verbose=verbose,
-        use_tqdm=progress,
-    )
-    _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
-    if run_kwargs:
-        _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
-    if tmin is not None or tmax is not None:
-        _log(
-            f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress
-        )
-
-    gammas: list[float] = []
-    omegas: list[float] = []
-    beta_out: list[float] = []
-    mismatch_scores: list[float] = []
-    ref_pairs: list[tuple[float, float]] = []
-    base_extra = dict(DEFAULT_RUN_KW)
-    if run_kwargs:
-        base_extra.update(run_kwargs)
-    iterator = tqdm(betas, desc=f"{label} beta scan") if progress else betas
-    for i, beta in enumerate(iterator):
-        dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
-        steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
-        tmin_i = _window_value(tmin, i)
-        tmax_i = _window_value(tmax, i)
-        _log(
-            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i * steps_i:.4g}",
-            verbose=verbose,
-            use_tqdm=progress,
-        )
-        extra = dict(base_extra)
-        result = run_kbm_beta_scan(
-            np.asarray([float(beta)]),
-            cfg=cfg,
-            ky_target=0.3,
-            Nl=Nl,
-            Nm=Nm,
-            dt=dt_i,
-            steps=steps_i,
-            method=method,
-            solver=solver,
-            krylov_cfg=krylov_cfg,
-            auto_window=auto_window,
-            tmin=tmin_i,
-            tmax=tmax_i,
-            **window_kw,
-            **extra,
-        )
-        gamma = float(result.gamma[0])
-        omega = float(result.omega[0])
-        gammas.append(gamma)
-        omegas.append(omega)
-        beta_out.append(float(beta))
-        msg = (
-            f"[{label}] done beta={float(beta):.4g} gamma={gamma:.6g} omega={omega:.6g}"
-        )
-        if ref is not None:
-            idx = int(np.argmin(np.abs(ref.ky - beta)))
-            gamma_ref = float(ref.gamma[idx])
-            omega_ref = float(ref.omega[idx])
-            rel_gamma = (gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-            rel_omega = (omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
-            mismatch_scores.append(float(np.nanmax(np.abs([rel_gamma, rel_omega]))))
-            ref_pairs.append((gamma_ref, omega_ref))
-            msg += (
-                f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
-                f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}"
-            )
-        _log(msg, verbose=verbose, use_tqdm=progress)
-
-    if (
-        stiff_spot_check
-        and str(solver).lower() == "krylov"
-        and ref is not None
-        and stiff_spot_check_topk > 0
-        and len(beta_out) == len(mismatch_scores)
-    ):
-        beta_arr = np.asarray(beta_out)
-        score_arr = np.asarray(mismatch_scores)
-        ranked = np.argsort(score_arr)[::-1]
-        top_idx = ranked[: int(stiff_spot_check_topk)]
-        _log(
-            f"\n[{label}] stiff spot-check (implicit + hermite-line) for {len(top_idx)} outliers",
-            verbose=verbose,
-            use_tqdm=progress,
-        )
-        for local_i in top_idx:
-            beta_val = float(beta_arr[local_i])
-            gamma_ref, omega_ref = ref_pairs[local_i]
-            gamma_k = float(gammas[local_i])
-            omega_k = float(omegas[local_i])
-            t_max = float(stiff_spot_check_tmax)
-            dt_spot = float(stiff_spot_check_dt)
-            steps_spot = max(int(round(t_max / dt_spot)), 1)
-            time_cfg_spot = TimeConfig(
-                t_max=t_max,
-                dt=dt_spot,
-                method="implicit",
-                use_diffrax=False,
-                implicit_preconditioner="hermite-line",
-                progress_bar=False,
-                sample_stride=1,
-            )
-            extra_spot = dict(base_extra)
-            extra_spot.pop("time_cfg", None)
-            spot = run_kbm_beta_scan(
-                np.asarray([beta_val]),
-                cfg=cfg,
-                ky_target=0.3,
-                Nl=Nl,
-                Nm=Nm,
-                dt=dt_spot,
-                steps=steps_spot,
-                method="implicit",
-                solver="time",
-                krylov_cfg=None,
-                time_cfg=time_cfg_spot,
-                auto_window=True,
-                tmin=None,
-                tmax=None,
-                streaming_fit=False,
-                **window_kw,
-                **extra_spot,
-            )
-            gamma_i = float(spot.gamma[0])
-            omega_i = float(spot.omega[0])
-            rel_k = (
-                abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-            )
-            rel_i = (
-                abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
-            )
-            relw_k = (
-                abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
-            )
-            relw_i = (
-                abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
-            )
-            _log(
-                f"[{label}] beta={beta_val:.4g} krylov(g={gamma_k:.4g}, w={omega_k:.4g}) "
-                f"implicit(g={gamma_i:.4g}, w={omega_i:.4g}) "
-                f"| ref(g={gamma_ref:.4g}, w={omega_ref:.4g}) "
-                f"rel_g(k={rel_k:.3g}, i={rel_i:.3g}) rel_w(k={relw_k:.3g}, i={relw_i:.3g})",
-                verbose=verbose,
-                use_tqdm=progress,
-            )
-            if stiff_spot_check_replace and (rel_i + relw_i) < (rel_k + relw_k):
-                gammas[local_i] = gamma_i
-                omegas[local_i] = omega_i
-                _log(
-                    f"[{label}] replaced krylov result at beta={beta_val:.4g} with implicit spot-check.",
-                    verbose=verbose,
-                    use_tqdm=progress,
-                )
-
-    return np.array(beta_out), np.array(gammas), np.array(omegas)
-
-
 WINDOWS = {
     "cyclone": dict(
-        window_fraction=0.3,
-        min_points=80,
-        start_fraction=0.58,
-        growth_weight=0.0,
-        require_positive=True,
-        min_amp_fraction=0.05,
-        max_fraction=0.6,
-        end_fraction=0.8,
-        max_amp_fraction=0.8,
-        late_penalty=0.3,
-        window_method="loglinear",
-        mode_method="project",
+        window_fraction=0.3, min_points=80, start_fraction=0.58,
+        growth_weight=0.0, require_positive=True, min_amp_fraction=0.05,
+        max_fraction=0.6, end_fraction=0.8, max_amp_fraction=0.8,
+        late_penalty=0.3, window_method="loglinear", mode_method="project",
     ),
     "kinetic": dict(
-        window_fraction=0.3,
-        min_points=160,
-        start_fraction=0.45,
-        growth_weight=0.1,
-        require_positive=True,
-        min_amp_fraction=0.05,
+        window_fraction=0.3, min_points=160, start_fraction=0.45,
+        growth_weight=0.1, require_positive=True, min_amp_fraction=0.05,
     ),
     "etg": dict(
-        window_fraction=0.25,
-        min_points=120,
-        start_fraction=0.4,
-        growth_weight=0.2,
-        require_positive=True,
-        min_amp_fraction=0.1,
+        window_fraction=0.25, min_points=120, start_fraction=0.4,
+        growth_weight=0.2, require_positive=True, min_amp_fraction=0.1,
     ),
     "kbm": dict(
-        window_fraction=0.3,
-        min_points=120,
-        start_fraction=0.35,
-        growth_weight=0.0,
-        require_positive=False,
-        min_amp_fraction=0.05,
+        window_fraction=0.3, min_points=120, start_fraction=0.35,
+        growth_weight=0.0, require_positive=False, min_amp_fraction=0.05,
     ),
     "tem": dict(
-        window_fraction=0.35,
-        min_points=120,
-        start_fraction=0.5,
-        growth_weight=0.2,
-        require_positive=True,
-        min_amp_fraction=0.1,
+        window_fraction=0.35, min_points=120, start_fraction=0.5,
+        growth_weight=0.2, require_positive=True, min_amp_fraction=0.1,
     ),
 }
 
 REFERENCE_CYCLONE_WINDOW = dict(
-    window_method="loglinear",
-    min_points=40,
-    start_fraction=0.1,
-    max_fraction=0.8,
-    end_fraction=0.8,
-    require_positive=True,
-    min_amp_fraction=0.05,
-    max_amp_fraction=0.8,
-    growth_weight=0.1,
+    window_method="loglinear", min_points=40, start_fraction=0.1,
+    max_fraction=0.8, end_fraction=0.8, require_positive=True,
+    min_amp_fraction=0.05, max_amp_fraction=0.8, growth_weight=0.1,
     late_penalty=0.1,
 )
 
 CYCLONE_PUBLIC_TIME = TimeConfig(
-    t_max=150.0,
-    dt=0.01,
-    use_diffrax=True,
-    diffrax_solver="Tsit5",
-    diffrax_adaptive=False,
-    diffrax_rtol=1.0e-4,
-    diffrax_atol=1.0e-7,
-    diffrax_max_steps=20000,
-    progress_bar=False,
-    fixed_dt=True,
+    t_max=150.0, dt=0.01, use_diffrax=True, diffrax_solver="Tsit5",
+    diffrax_adaptive=False, diffrax_rtol=1.0e-4, diffrax_atol=1.0e-7,
+    diffrax_max_steps=20000, progress_bar=False, fixed_dt=True,
 )
 CYCLONE_PUBLIC_NL = 16
 CYCLONE_PUBLIC_NM = 48
