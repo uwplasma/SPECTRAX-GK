@@ -282,6 +282,12 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Removed the final local GMRES keyword adapter and now import
+  ``solvax.gmres`` directly in the linear and nonlinear implicit owners. The
+  upstream generic algebra test was removed while SPECTRAX-GK trajectory and
+  forwarding tests remain. The expanded nonlinear shard caught and repaired a
+  mixed-line deletion that had dropped fixed-mode and preconditioner diagnostic
+  forwarding; strict lint/type checks and all nonlinear unit tests now pass.
 - 2026-07-11: Removed the obsolete implicit time-step backend selector after
   both linear and nonlinear paths converged on the admitted SOLVAX FGMRES.
   Tolerance, restart, iteration limit, and physical preconditioning remain
