@@ -353,14 +353,12 @@ runtime defaults for the solver or the shipped example drivers.
 Benchmark runner internals
 --------------------------
 
-``spectraxgk.benchmarks`` is currently a compatibility facade and a documented
-refactor hotspot, not the desired long-term owner of physics. Reusable fit,
-batching, result-schema, and reference-loading contracts live in
-``spectraxgk.benchmarking.shared`` and the solver/diagnostic domains. Case-level
-Cyclone, ETG, kinetic-electron, TEM, and KBM reproduction policy is being moved
-to root ``benchmarks/`` drivers. The installed facade must eventually contain
-only a curated lazy export surface; it must not own timestepping, geometry, or
-physical-operator policy.
+``spectraxgk.benchmarks`` is a compact reference-policy facade. Reusable
+reference loaders and comparison policies live in
+``spectraxgk.benchmarking.shared``; timestepping, scans, geometry, and physical
+operators use the same runtime and solver APIs as ordinary simulations.
+Case-level reproduction policy stays in root ``benchmarks/`` drivers rather
+than creating a second installed solver stack.
 
 Generic pointwise scans and representative-mode extraction are owned by
 ``spectraxgk.workflows.linear``. They deliberately call one linear solve per

@@ -444,7 +444,6 @@ fast_tests = [
   "tests/unit/linear/test_linear.py",
   "tests/unit/linear/test_linear_helpers_extra.py",
   "tests/integration/runtime/test_runtime_runner.py",
-  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
 ]
 artifact_paths = [
   "docs/_static/cyclone_resolution_observed_order.json",
@@ -1266,13 +1265,13 @@ next_tests = [
 ]
 
 [[modules]]
-module = "spectraxgk.benchmarks"
-path = "src/spectraxgk/benchmarks.py"
+module = "spectraxgk.benchmarking.shared"
+path = "src/spectraxgk/benchmarking/shared.py"
 owned_modules = [
-  "spectraxgk.benchmarking.shared",
+  "spectraxgk.benchmarks",
   "spectraxgk.diagnostics.normalization",
 ]
-owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
+owner_lane = "reference loading, fit policies, and comparison-gate inputs"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -1286,13 +1285,12 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "growth-rate fallback policy is deterministic and tested on synthetic signals",
-  "scan runners preserve ky ordering, finite filtering, and table schema",
+  "runtime scan results preserve ky ordering, finite filtering, and table schema",
 ]
 fast_tests = [
-  "tests/validation/benchmarks/test_benchmarks.py",
   "tests/validation/benchmarks/test_benchmarks_helpers.py",
-  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
   "tests/validation/benchmarks/test_benchmarking.py",
+  "tests/validation/benchmarks/test_benchmark_contracts.py",
 ]
 artifact_paths = [
   "docs/_static/benchmark_core_linear_atlas.png",
@@ -1300,7 +1298,6 @@ artifact_paths = [
   "docs/_static/validation_gate_index.json",
 ]
 next_tests = [
-  "split remaining run execution blocks behind compatibility exports",
   "add manifest-backed tests that every published benchmark figure has a gate source",
 ]
 

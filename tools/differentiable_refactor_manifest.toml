@@ -70,7 +70,7 @@ extension_points = ["Diagnostic", "TransportWindow", "SpectrumExtractor", "GateR
 [[architecture_layers]]
 name = "validation"
 responsibility = "literature gates, reference-code comparison adapters, manifests, and benchmark families"
-planned_packages = ["spectraxgk.benchmarks", "spectraxgk.diagnostics"]
+planned_packages = ["spectraxgk.benchmarking", "spectraxgk.diagnostics"]
 extension_points = ["BenchmarkFamily", "ReferenceAdapter", "PhysicsGate", "ArtifactLedger"]
 
 [[architecture_layers]]
@@ -128,7 +128,7 @@ moved_exports = [
   "KineticElectronModelConfig",
   "ModelConfig",
 ]
-fast_tests = ["tests/unit/core/test_core_contracts.py", "tests/validation/benchmarks/test_benchmarks.py"]
+fast_tests = ["tests/unit/core/test_core_contracts.py", "tests/validation/benchmarks/test_benchmark_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/inputs.rst"]
 
 [[phase1_split_modules]]
@@ -136,18 +136,19 @@ module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
 facade_module = "spectraxgk.benchmarks"
 status = "active"
-responsibility = "KBM fixed-beta ky-scan wrapper that forwards per-mode arrays into the beta-scan runner"
+responsibility = "compact facade for reviewed reference data and comparison policies"
 moved_exports = [
-  "run_kbm_scan",
+  "load_kbm_reference",
+  "select_kbm_solver_auto",
 ]
-fast_tests = ["tests/validation/benchmarks/test_benchmarks_runner_branches.py"]
+fast_tests = ["tests/validation/benchmarks/test_benchmark_contracts.py"]
 doc_pages = ["docs/api.rst", "docs/code_structure.rst"]
 
 [[phase1_split_modules]]
 module = "spectraxgk.benchmarking.shared"
 source_path = "src/spectraxgk/benchmarking/shared.py"
 facade_module = "spectraxgk.benchmarks"
-status = "active"
+status = "closed"
 responsibility = "shared benchmark reference-data loaders, result containers, scan-window policy, normalization defaults, branch solver defaults, and initial-condition helpers behind the public benchmark facade"
 moved_exports = [
   "CycloneReference",
@@ -159,9 +160,8 @@ moved_exports = [
   "select_kbm_solver_auto",
 ]
 fast_tests = [
-  "tests/validation/benchmarks/test_benchmarks.py",
   "tests/validation/benchmarks/test_benchmarks_helpers.py",
-  "tests/validation/benchmarks/test_benchmarks_runner_branches.py",
+  "tests/validation/benchmarks/test_benchmark_contracts.py",
 ]
 doc_pages = ["docs/code_structure.rst"]
 
@@ -1573,15 +1573,15 @@ doc_pages = ["docs/api.rst", "docs/code_structure.rst", "docs/quasilinear.rst"]
 [[hotspots]]
 module = "spectraxgk.benchmarks"
 source_path = "src/spectraxgk/benchmarks.py"
-current_reason = "large benchmark-family orchestration file mixing physics cases, scan policy, plotting, and reference loading"
+current_reason = "closed: execution moved to runtime and the facade now only re-exports reviewed comparison policy"
 target_packages = [
   "spectraxgk.benchmarking.shared",
   "spectraxgk.benchmarking.case_families",
 ]
 public_facade = "spectraxgk.benchmarks"
-line_target = 800
-status = "planned"
-existing_fast_tests = ["tests/validation/benchmarks/test_benchmarks.py", "tests/validation/benchmarks/test_benchmark_contracts.py"]
+line_target = 100
+status = "closed"
+existing_fast_tests = ["tests/validation/benchmarks/test_benchmark_contracts.py", "tests/validation/benchmarks/test_benchmarks_helpers.py"]
 planned_tests = [
   "case-family import identity tests",
   "reference-data schema tests",

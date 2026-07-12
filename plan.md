@@ -719,3 +719,13 @@ pytest -q -o addopts= tests/tools tests/release --maxfail=1
 
 Use narrower focused subsets during editing, and keep each local test invocation
 under 5 minutes.
+- 2026-07-12: Completed the benchmark-engine deletion tranche. Fresh KBM
+  comparison and eigenfunction-overlay execution now use the canonical runtime
+  trajectory, alternate mode fits reuse that trajectory, and historical cache
+  reading is confined to the comparison tool. Replaced the 3,549-line
+  ``spectraxgk.benchmarks`` solver stack with a 22-line reviewed-reference
+  facade and deleted 2,033 lines of branch-mocking tests for the retired
+  duplicate engine. Imported VMEC/DESC geometry coverage now exercises the
+  promoted runtime path. Coverage/refactor manifests and user documentation
+  name ``benchmarking.shared``, runtime workflows, and diagnostics as the
+  actual owners.

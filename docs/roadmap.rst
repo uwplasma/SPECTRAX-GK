@@ -349,9 +349,9 @@ runtime result assembly, pure runtime policies, linear parameter policies,
 linear linked-boundary maps, nonlinear diagnostic packing, validation-gate
 helpers, zonal-validation helpers, and nonlinear parallelization policy metadata
 are split out and tested.
-Benchmark normalization/Krylov defaults and pure benchmark helpers are also
-separated from the public runner module while preserving the
-``spectraxgk.benchmarks`` compatibility surface. The latest restart-artifact
+Benchmark normalization/Krylov defaults and pure comparison helpers now live
+behind a compact ``spectraxgk.benchmarks`` reference-policy surface; promoted
+execution uses canonical runtime workflows. The latest restart-artifact
 contract keeps NetCDF continuation appends on the persisted diagnostic schema.
 Treat this as release engineering: it supports maintenance, restart
 reproducibility, and future refactors, not a production nonlinear optimization

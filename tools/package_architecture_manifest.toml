@@ -101,12 +101,6 @@ public_facades = [
 ]
 
 [[complexity_policy.exceptions]]
-path = "benchmarks.py"
-baseline_lines = 3549
-target_lines = 500
-reason = "transitional KBM branch-continuation facade; add a generic beta scan and keep result contracts only"
-
-[[complexity_policy.exceptions]]
 path = "geometry/imported_vmec.py"
 baseline_lines = 2540
 target_lines = 1000

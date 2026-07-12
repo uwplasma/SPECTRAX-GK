@@ -179,64 +179,14 @@ High-Risk Module Split Plan
 ---------------------------
 
 ``benchmarks.py``
-  Split into benchmark-family modules, reference-data loaders, and fit policies.
-  Keep ``spectraxgk.benchmarks`` as the public facade. Required gates: Cyclone,
-  ETG, KBM, TEM, W7-X/HSX where applicable, and branch-continuity policies.
-  KBM beta scans now keep the public runner in
-  ``spectraxgk.benchmarks`` while explicit-time diagnostics fallback
-  and multi-target Krylov branch selection live in
-  ``spectraxgk.benchmarks`` with patchable hooks for
-  benchmark tests. That owner now uses one forwarded-key policy for
-  multi-target and continuation/shifted Krylov solves, and it shares the
-  scan fit-window policy between explicit-time fallback fits, saved-time
-  auto-fit selection, and Diffrax-streaming window resolution.
-  The public Krylov facade now keeps option normalization, shift-source
-  selection, target-frequency shift construction, selection flags, fallback
-  policy, and progress/status messages in named private stages while compiled
-  kernels stay in the focused eigenmode modules.
-  Saved-time KBM beta samples use one dispatcher for
-  non-Diffrax time-config and no-config integration, with stride resolution
-  kept explicit before fitting; Diffrax-streaming samples read the same
-  ``ScanFitWindowPolicy`` for their resolved fit window.
-  Multi-target transition-threshold and fastest-growth
-  fallback candidate selection is isolated from solve orchestration in a local
-  helper.
-  KBM single-point saved-time direct fits also share one automatic-fit keyword
-  policy for primary auto-window and invalid-window fallback fits. The
-  single-point owner now keeps setup, state/cache construction,
-  configured-time versus fixed-time trajectory integration, automatic signal
-  selection, and saved-signal fitting in focused helpers while explicit-time
-  diagnostics and single/multi-target Krylov paths stay in
-  ``spectraxgk.benchmarks``.
-  TEM scan paths keep the same public/focused-owner split, with one
-  forwarded-key policy for dominant-eigenpair Krylov configuration in
-  ``spectraxgk.benchmarks``. TEM single-ky saved-time fits share
-  one primary/fallback automatic-fit keyword policy in the same path module,
-  and the single-ky time path resolves time configuration before dispatching
-  to density, configured-phi, or explicit-phi integration. TEM scan streaming
-  resolves its fit window through the same ``ScanFitWindowPolicy`` used by
-  saved-time scan fitting.
-  ETG single-point and scan Krylov paths now share one forwarded-key policy in
-  ``spectraxgk.benchmarks``, with continuation-specific shift overrides
-  layered on top for scan branches. ETG single-point saved-time direct fits
-  share the same primary/fallback automatic-fit keyword policy, and the
-  single-point runner now keeps setup, Krylov result packing,
-  time-configuration resolution, and saved-trace fitting in focused helpers
-  while preserving the existing module-level monkeypatch hooks.
-  Cyclone single-mode time-path fitting now shares one automatic-fit keyword
-  policy for auto-signal and direct-signal fits in
-  ``spectraxgk.benchmarks``. Cyclone scan time branches
-  now keep batch construction, per-batch time-configuration resolution,
-  Diffrax streaming fits, saved/configured trajectory integration, and per-ky
-  fit/appending policy in focused helpers inside
-  ``spectraxgk.benchmarks``.
-  Kinetic-electron single-ky saved-time fitting shares one automatic-fit
-  keyword policy for primary auto-window and invalid-window fallback fits in
-  ``spectraxgk.benchmarks``. Kinetic-electron ky scans now share that
-  same public owner while setup normalization, batch-state construction,
-  Krylov fitting, Diffrax streaming fitting, configured trajectory
-  integration, and sampled-signal fitting remain explicit private helper
-  seams inside the facade.
+  Closed. The installed module is a compact facade for reviewed reference data,
+  normalization constants, and comparison-only branch policies. Canonical TOML
+  inputs plus ``run_runtime_linear``, ``run_runtime_scan``, and
+  ``run_runtime_parameter_scan`` own all promoted execution. Root
+  ``benchmarks/`` drivers own case-specific reproduction policy. Required
+  gates remain Cyclone, ETG, KBM, TEM, W7-X/HSX where applicable, plus branch
+  continuity and eigenfunction comparisons; these gates no longer require a
+  duplicate solver engine or module-level monkeypatch seams.
 
 ``geometry/differentiable.py``
   Split backend discovery, geometry contracts, VMEC-JAX bridge, Boozer bridge,

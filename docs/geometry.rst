@@ -163,13 +163,11 @@ The same importer is also exposed under the aliases
 ``geometry.model = "imported-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
 can reflect the provenance of a root-level ``*.eik.nc`` file without changing
 the solver-facing geometry contract.
-The linear KBM benchmark entry point now uses the same geometry builder, so
-the benchmark audit harness can exercise imported sampled geometry through
-``run_kbm_linear`` instead of only through the runtime wrappers.
-Regression coverage now runs that benchmark path explicitly for both
+The linear runtime uses the same geometry builder for KBM and ordinary cases.
+Regression coverage exercises imported sampled geometry explicitly for both
 ``"vmec-eik"`` and ``"desc-eik"`` aliases, so imported W7-X-style geometry is
-checked through both runtime and benchmark entry points. The test suite now
-locks both root-level contracts explicitly:
+checked through the promoted runtime entry point. The test suite locks both
+root-level contracts explicitly:
 
 - imported VMEC/DESC closed-interval ``*.eik.nc`` files must preserve
   ``theta_scale``/``nfp`` metadata and trim the terminal theta point

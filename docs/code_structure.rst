@@ -369,17 +369,17 @@ Completed extractions:
   observable chain-rule assembly, and
   finite-difference comparison stages.
 - benchmark-harness physics metric extraction and scan/mode orchestration:
-  ``diagnostics/validation_gates.py`` and the public
-  ``spectraxgk.benchmarks`` facade. Eigenfunction normalization,
+  ``diagnostics/validation_gates.py`` and ``workflows/runtime``. Reviewed
+  reference tables and comparison-only policies live in
+  ``benchmarking/shared.py`` behind the compact ``spectraxgk.benchmarks``
+  facade. Eigenfunction normalization,
   phase alignment, comparison metrics, and reference-bundle IO live in
   ``diagnostics/modes.py``; diagnostic time-series loading, late/leading
   windows, analytic-signal construction, real-FFT ky-grid inference, late-time
   linear metrics, nonlinear transport windows, heat-flux convergence,
   observed-order checks, and branch-continuity metrics live in
   ``diagnostics/validation_gates.py``. Zonal-flow residual/GAM metric extraction lives in
-  ``diagnostics/zonal_validation.py``. The public
-  ``spectraxgk.benchmarks`` facade keeps existing imports and test
-  monkeypatch seams stable. Zonal-response metrics are staged as trace
+  ``diagnostics/zonal_validation.py``. Zonal-response metrics are staged as trace
   coercion, initial-level normalization, tail residual extraction,
   extrema/envelope detection, damping/frequency fits, and final
   ``ZonalFlowResponseMetrics`` packing, keeping Rosenbluth-Hinton/GAM
@@ -716,13 +716,12 @@ The benchmark stack has two explicit roles:
   own promoted solver execution. ETG and Cyclone use only this path; artifact
   figures consume reviewed tables rather than launching a second hidden solve.
 
-``spectraxgk.benchmarks`` remains a transitional facade only for KBM
-time-history branch selection while its fixed-beta ``k_y`` scan is migrated to
+``spectraxgk.benchmarks`` is now a small facade for reviewed reference data and
+comparison policies. KBM time histories and fixed-beta ``k_y`` scans use
 generic runtime orchestration. The former ``kbm_beta_scan.py`` was removed
 after audit showed that it incorrectly interpreted a ``k_y`` reference table
-as beta values. TEM and kinetic-electron execution now use canonical runtime
-inputs and scan paths; their former named runners and case dataclasses have
-been removed. New examples must not add named-case execution APIs.
+as beta values. TEM and kinetic-electron execution also use canonical runtime
+inputs and scan paths. New examples must not add named-case execution APIs.
 External-code names and raw reference handling stay in root ``benchmarks/`` or
 ``tools/comparison``; reusable source modules use physics and numerical names.
 

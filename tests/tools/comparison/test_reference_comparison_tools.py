@@ -2821,7 +2821,6 @@ from spectraxgk.benchmarking.shared import (
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.benchmarks import run_kbm_linear
 from spectraxgk.config import KBMBaseCase
 from spectraxgk.core.grid import select_ky_grid
 from spectraxgk.linear import build_linear_cache
@@ -3035,9 +3034,12 @@ def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(
     assert term_cfg.end_damping == 0.0
 
 
-def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(
+def test_runtime_linear_accepts_vmec_and_desc_eik_geometry_aliases(
     tmp_path: Path,
 ) -> None:
+    from spectraxgk.runtime import run_runtime_linear
+    from tools.comparison.compare_gx_kbm import _runtime_config_from_kbm_case
+
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -3090,9 +3092,10 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(
                 geometry_file=str(path),
             ),
         )
-        result = run_kbm_linear(
+        runtime_cfg = _runtime_config_from_kbm_case(cfg_nc)
+        result = run_runtime_linear(
+            runtime_cfg,
             ky_target=0.3,
-            cfg=cfg_nc,
             Nl=4,
             Nm=6,
             dt=0.01,

@@ -155,7 +155,7 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
             return data_dir / parts[-1]
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.resources.files",
+        "spectraxgk.benchmarking.shared.resources.files",
         lambda _pkg: FakeFiles(),
     )
     ref = _load_reference_with_header("demo.csv")

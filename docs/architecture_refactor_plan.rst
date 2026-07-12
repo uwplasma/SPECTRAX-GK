@@ -83,21 +83,17 @@ and campaign code:
   ``.DS_Store`` files.
 
 The next refactor should therefore delete, merge, or move non-promoted code
-before adding new modules. In particular, ``spectraxgk.benchmarks`` should
-shrink to a small public facade, tool scripts should consolidate inside their
+before adding new modules. ``spectraxgk.benchmarks`` has now shrunk to a
+22-line reference-policy facade; tool scripts should consolidate inside their
 purpose-specific folders, one-file-per-tool tests should become parametrized
 family tests, and retired/non-promoted workflows should not remain on ``main``
 unless they are promoted and documented.
 
-The 2026-07-09 comparison and GPU audit replaced raw file-count completion with
-complexity and capability gates. The current tree has 228 source Python files,
-98 test Python files, and 134 maintainer-tool Python files. Ten source hotspots
-have reviewed no-regression baselines and finite reduction targets in
-``tools/package_architecture_manifest.toml``. The largest is the 13,209-line
-``spectraxgk.benchmarks`` compatibility facade, which must shrink to a small
-result-contract facade instead of absorbing more case policy. New unreviewed
-modules above 1,000 lines or public facades above 500 lines now fail the
-architecture checker.
+The comparison and GPU audit replaced raw file-count completion with
+complexity and capability gates. Source hotspots have reviewed no-regression
+baselines and finite reduction targets in
+``tools/package_architecture_manifest.toml``. New unreviewed modules above
+1,000 lines or public facades above 500 lines fail the architecture checker.
 
 Current Consolidation Decision
 ------------------------------
@@ -125,13 +121,9 @@ The target ownership is:
 
 This means the next implementation order is:
 
-1. Define the small stable ``spectraxgk.benchmarks`` public surface and move
-   benchmark/campaign implementation out of installable runtime packages and
-   split the large ``spectraxgk.benchmarks`` facade into cleaner owners. The
-   first internal owner is ``spectraxgk.benchmarking.shared`` for reference
-   data, result containers, initial-condition helpers, and common scan/fit
-   policies; case-family runners stay behind the public facade until their
-   tests and docs are pinned.
+1. Keep the completed small ``spectraxgk.benchmarks`` reference-policy surface;
+   all benchmark execution uses canonical runtime workflows and root
+   ``benchmarks/`` drivers.
 2. Collapse tool scripts by capability, especially artifact/status builders
    that only differ by labels, case names, or output paths.
 3. Collapse tests by physical contract and shared fixtures, especially the
@@ -771,10 +763,10 @@ The test tree should mirror the source tree:
      validation/
      import_contracts/
 
-Large top-level tests should be split by behavior, not by original file name.
-For example, ``test_runtime_runner.py`` should become focused workflow, config,
-progress, artifact-handoff, and executable tests. ``test_benchmarks.py`` should
-become validation-family tests under ``tests/validation/benchmarks``.
+Large tests are split by behavior rather than by original file name. Runtime
+coverage is organized into focused workflow, config, progress,
+artifact-handoff, and executable tests; reference and comparison gates live
+under ``tests/validation/benchmarks``.
 
 First Concrete Tranche
 ----------------------

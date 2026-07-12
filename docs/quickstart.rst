@@ -164,9 +164,8 @@ Python demo
 
    print(result.gamma, result.omega)
 
-Named comparison cases and their tracked reference tables are intentionally
-kept in :mod:`spectraxgk.benchmarks`; ordinary simulations use the unified
-runtime API above.
+Tracked comparison tables are available through :mod:`spectraxgk.benchmarks`;
+all simulations use the unified runtime API above.
 
 Run from TOML
 -------------
