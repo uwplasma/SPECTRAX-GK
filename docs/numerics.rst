@@ -61,8 +61,10 @@ The implementation leverages the following JAX primitives:
 - **Loop fusion**: ``jax.lax.scan`` drives the time integration loop.
 - **FFT grids**: ``jax.numpy.fft.fftfreq`` is used in
   :func:`spectraxgk.core.grid.build_spectral_grid`.
-- **Sparse Krylov solver**: ``jax.scipy.sparse.linalg.gmres`` is used for the
-  implicit linear solve in :func:`spectraxgk.linear.integrate_linear`.
+- **Sparse Krylov solver**: ``solvax.gmres`` is used for implicit linear and
+  nonlinear IMEX time steps through one shared SPECTRAX-GK policy adapter.
+  Shift-invert eigenmode extraction temporarily retains the prior JAX GMRES
+  route because its branch-continuity gate has not passed with the replacement.
 - **Backend-aware Hermite line solve**: ``solvax.tridiagonal_solve`` uses a
   deterministic Thomas recurrence on CPU and the fused JAX/vendor path on
   accelerators. SPECTRAX-GK moves only the Hermite system axis; all remaining
@@ -90,11 +92,17 @@ lives in SOLVAX; gyrokinetic state layout, linked-boundary assembly,
 preconditioner coefficients, eigenbranch tracking, transport windows, and
 physics gates remain in SPECTRAX-GK.
 
-The initial migration intentionally covers only the Hermite-line tridiagonal
-solve and memory-chunked geometry Jacobians. GMRES/GCROT replacement remains a
-separate gate because it must preserve iteration policy, branch selection,
-electromagnetic complex-state behavior, and long-window observables before the
-local implementation can be deleted.
+The admitted migration covers the Hermite-line tridiagonal solve,
+memory-chunked geometry Jacobians, and implicit linear/nonlinear time-step
+GMRES. New configurations use ``implicit_solve_method="gmres"``. The older
+``"batched"`` and ``"incremental"`` values are transitional aliases for the
+same SOLVAX FGMRES and no longer choose separate algorithms.
+
+Shift-invert remains explicitly excluded. In its current streaming test, both
+inner solvers stagnate above the requested tolerance and their small solution
+difference changes the selected outer eigenbranch. The prior JAX route remains
+in that one call site until preconditioning/recycling improvements pass inner
+residual, eigenpair residual, eigenvalue, and eigenvector-overlap gates.
 
 Time integration algorithms
 ---------------------------

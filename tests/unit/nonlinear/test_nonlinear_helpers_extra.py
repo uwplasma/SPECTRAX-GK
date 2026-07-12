@@ -1783,10 +1783,10 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(
     gmres_calls: list[int] = []
 
     monkeypatch.setattr(
-        "spectraxgk.solvers.nonlinear.imex.jax.scipy.sparse.linalg.gmres",
-        lambda matvec, rhs, **kwargs: (
-            gmres_calls.append(rhs.size) or rhs,
-            SimpleNamespace(success=True),
+        "spectraxgk.solvers.nonlinear.imex.solve_gmres",
+        lambda matvec, rhs, **kwargs: SimpleNamespace(
+            x=gmres_calls.append(rhs.size) or rhs,
+            converged=True,
         ),
     )
     monkeypatch.setattr(

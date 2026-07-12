@@ -16,7 +16,8 @@ available:
   hyper-diffusion damping implicitly while keeping the drift/streaming terms
   explicit.
 - ``method="implicit"``: a backward-Euler solve using a matrix-free GMRES
-  iteration. This is slower but robust for stiff linear runs. A few stabilized
+  iteration provided by SOLVAX. This is slower but robust for stiff linear runs.
+  The same shared policy is used by nonlinear IMEX time steps. A few stabilized
   fixed-point sub-iterations provide an initial guess and a diagonal
   preconditioner based on the damping terms and drift/mirror diagonals
   (cv/gb/bgrad) accelerates convergence for higher-order scans. For
@@ -27,6 +28,12 @@ available:
   gyrokinetic coefficients and linked-chain layout. CPU execution uses a
   deterministic Thomas recurrence, while accelerator execution uses the fused
   backend selected by SOLVAX.
+
+New Python/TOML configurations should use ``implicit_solve_method="gmres"``.
+The historical ``"batched"`` and ``"incremental"`` spellings are accepted as
+temporary aliases only; they invoke the same complex unitary-Givens FGMRES.
+Shift-invert eigenmode extraction is not yet migrated because its
+branch-continuity gate remains open.
 
 Optional damping
 ----------------

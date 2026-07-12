@@ -24,6 +24,7 @@ import spectraxgk.solvers.linear.parallel as linear_parallel
 import spectraxgk.operators.linear.params as linear_params
 import spectraxgk.terms.linear_dissipation as linear_dissipation
 import spectraxgk.terms.linear_terms as linear_terms
+from spectraxgk.solvers.algebra import solve_gmres
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -137,6 +138,68 @@ def test_structured_tridiagonal_last_axis_matches_fused_reference_and_jvp() -> N
         rtol=tolerance,
         atol=tolerance,
     )
+
+
+@pytest.mark.parametrize("method", ["gmres", "solvax", "batched", "incremental"])
+def test_shared_complex_gmres_matches_previous_batched_solution(method: str) -> None:
+    dtype = jnp.complex128 if jax.config.read("jax_enable_x64") else jnp.complex64
+    real_dtype = jnp.float64 if jax.config.read("jax_enable_x64") else jnp.float32
+    size = 48
+    index = jnp.arange(size, dtype=real_dtype)
+    diagonal = (2.5 + 0.1j + 0.01 * index).astype(dtype)
+    rhs = (jnp.cos(index) + 1j * jnp.sin(0.2 * index)).astype(dtype)
+
+    def matvec(vector):
+        return diagonal * vector + (0.08 - 0.03j) * jnp.roll(vector, 1)
+
+    preconditioner = lambda vector: vector / diagonal  # noqa: E731
+    tolerance = 2.0e-6 if dtype == jnp.complex64 else 1.0e-11
+    solution = jax.jit(
+        lambda value: solve_gmres(
+            matvec,
+            value,
+            x0=jnp.zeros_like(value),
+            preconditioner=preconditioner,
+            tolerance=tolerance,
+            max_restarts=8,
+            restart=12,
+            method=method,
+        )
+    )(rhs)
+    previous, _ = jax.scipy.sparse.linalg.gmres(
+        matvec,
+        rhs,
+        x0=jnp.zeros_like(rhs),
+        tol=tolerance,
+        maxiter=8,
+        restart=12,
+        M=preconditioner,
+        solve_method="batched",
+    )
+    relative_residual = jnp.linalg.norm(matvec(solution.x) - rhs) / jnp.linalg.norm(rhs)
+    comparison_tolerance = 2.0e-5 if dtype == jnp.complex64 else 1.0e-9
+    assert solution.converged
+    assert float(relative_residual) <= 2.0 * tolerance
+    np.testing.assert_allclose(
+        solution.x,
+        previous,
+        rtol=comparison_tolerance,
+        atol=comparison_tolerance,
+    )
+
+
+def test_shared_gmres_rejects_unknown_method() -> None:
+    with pytest.raises(ValueError, match="GMRES method"):
+        solve_gmres(
+            lambda value: value,
+            jnp.ones(2),
+            x0=None,
+            preconditioner=None,
+            tolerance=1.0e-6,
+            max_restarts=2,
+            restart=2,
+            method="unknown",
+        )
 
 
 def test_linear_linked_helpers_preserve_public_exports() -> None:
@@ -1397,8 +1460,8 @@ def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
         ),
     )
     monkeypatch.setattr(
-        "spectraxgk.solvers.linear.implicit.gmres",
-        lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
+        "spectraxgk.solvers.linear.implicit.solve_gmres",
+        lambda matvec, rhs, **kwargs: SimpleNamespace(x=rhs, converged=True),
     )
     monkeypatch.setattr(
         "spectraxgk.solvers.linear.implicit.linear_rhs_cached",

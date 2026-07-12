@@ -54,7 +54,7 @@ Date: 2026-07-11.
 
 | Area | Current state | Target | Status |
 | --- | ---: | ---: | --- |
-| Installable source Python files | 227 | reviewed domain ownership | active |
+| Installable source Python files | 228 | reviewed domain ownership | active |
 | Source modules above 1000 lines | 8, led by the 6306-line benchmark facade | 0 unreviewed | active |
 | Public/compatibility facade maximum | 6306 lines | <=500 lines | active |
 | Tool Python files | 134 | grouped commands; no duplicate owners | active |
@@ -203,7 +203,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
-| Structured solver ownership | 70% | Run the physical implicit-line GPU gate, then evaluate complex Krylov replacement before deleting local generic solver code. |
+| Structured solver ownership | 80% | Profile migrated time-step GMRES on GPU, strengthen shift-invert preconditioning/branch gates, then delete only the superseded local generic code. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -301,6 +301,18 @@ That topology is the reference design for the production parallel lane.
   an output-dominated Jacobian showed no memory reduction. Chunking therefore
   remains an explicit memory policy with recorded metadata, not a universal
   speed claim.
+- 2026-07-11: Migrated implicit linear and nonlinear IMEX time-step solves to
+  one shared SOLVAX FGMRES policy and changed new configuration defaults from
+  the implementation-specific ``"batched"`` name to ``"gmres"``. Against the
+  pre-migration commit, a five-step nonzero Cyclone implicit trajectory agrees
+  to ``2.35e-10`` relative state norm and a three-step nonlinear IMEX trajectory
+  agrees to ``8.96e-12``; field histories agree to ``1.07e-10`` and
+  ``4.27e-12`` respectively. Shift-invert was deliberately not migrated: its
+  inner Hermite-preconditioned solves stagnate near ``5e-4`` relative residual,
+  and the replacement changed the selected eigenbranch despite 0.921 vector
+  overlap. Restoring the prior shift solver gives exactly identical eigenvalue
+  and eigenvector. This remains a preconditioner/branch-continuity lane rather
+  than a tolerance relaxation or hidden behavioral change.
 - 2026-07-11: Completed the first office GPU gate for SOLVAX PR 2 on one
   RTX A4000. Complex matrix-free GMRES at ``n=1024`` converged in eight
   iterations with ``7.24e-11`` relative residual and 17.7 ms warm runtime;
