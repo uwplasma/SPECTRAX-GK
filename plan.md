@@ -288,7 +288,7 @@ That topology is the reference design for the production parallel lane.
   ``1e-3`` electron-density seed and linked-boundary damping are now explicit.
   All parameter leaves are identical; old/new states differ only by a fitted
   global complex phase and the phase-aligned RHS relative error is below
-  ``2e-6`` (``6.7e-8`` in x64). This removes 2,120 net lines and reduces the
+  ``2e-6`` (``6.7e-8`` in x64). This removes 1,977 net lines and reduces the
   benchmark facade from 5,029 to 3,549 lines. Public-export, non-slow benchmark,
   tool-entry, typing, and operator gates pass.
 - 2026-07-12: Completed the TEM execution migration and deleted the named TEM
