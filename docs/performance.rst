@@ -1093,12 +1093,12 @@ evaluation:
        initial_state, grid, geometry, parameters,
        dt=0.02, steps=400, resolved_diagnostics=False,
    )
-   time, diagnostics, final_state, fields = simulation.run()
+   final_state, diagnostics, time_step, fields = simulation.run()
 
 ``simulation.run(new_initial_state)`` reuses the compiled scan for states with
-the same shape and dtype. Method, geometry layout, and diagnostic schema are
-fixed by this prepared contract. Parameter studies may pass a matched rebuilt
-cache and parameter PyTree with
+the same shape and dtype. Method, grid layout, and diagnostic schema are fixed
+by this prepared contract. Fixed-step parameter studies may pass a matched
+rebuilt cache and parameter PyTree with
 ``simulation.run(cache=new_cache, params=new_params)``; supplying only one is
 rejected because gyroaverages, drifts, and collision arrays would be
 inconsistent.
@@ -1106,12 +1106,17 @@ inconsistent.
 For sensitivity calculations, ``simulation.run_arrays(new_initial_state)``
 returns only JAX pytrees and skips host-side diagnostic finalization. Reverse
 mode therefore differentiates through the explicit time loop with respect to
-the initial state. It also differentiates through a matched dynamic
-``(cache, params)`` pair; the cache must be rebuilt from the same traced
-parameters before the call. Grid shape, geometry sampling/layout, method, and
-output schema remain static. Changing equilibrium geometry still requires a
-new preparation until the in-memory VMEC/Boozer cache builder itself is moved
-inside this traced boundary.
+the initial state. On fixed-step runs it also differentiates through matched
+dynamic ``(geometry, cache, params)`` inputs; the cache must be rebuilt from the
+same traced geometry and parameters before the call. A physical nonzonal-mode
+gate scales curvature and grad-B profiles, propagates the changed geometry
+through cache construction and three RK2 steps, and matches a centered finite
+difference derivative. Grid shape, geometry sampling layout, method, and
+output schema remain static. The current field-solve custom VJP supports this
+reverse-mode path but not a forward-mode JVP through the full scan. Adaptive
+prepared execution remains available for ordinary state runs, while traced
+geometry/cache/parameter overrides fail closed until adaptive-controller
+derivative policy gates are implemented.
 
 On the shipped ``64x64x24`` Cyclone setup, a three-call CPU compile-log gate
 records exactly one ``jit(run_raw)`` compilation. The first two-step call takes

@@ -767,6 +767,7 @@ def test_linear_cache_tree_roundtrip():
     children, aux = cache.tree_flatten()
     cache2 = LinearCache.tree_unflatten(aux, children)
     assert jnp.allclose(cache2.Jl, cache.Jl)
+    assert cache2.kperp2_bmag is cache.kperp2_bmag
     assert jnp.allclose(cache2.omega_d, cache.omega_d)
     assert jnp.allclose(cache2.lb_lam, cache.lb_lam)
     assert jnp.allclose(cache2.hyper_ratio, cache.hyper_ratio)

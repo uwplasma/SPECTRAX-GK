@@ -207,6 +207,35 @@ def test_prepared_nonlinear_diagnostics_reuses_compiled_scan():
     np.testing.assert_allclose(np.asarray(first[2]), np.asarray(direct[2]))
 
 
+def test_prepared_nonlinear_diagnostics_preserves_adaptive_default_path():
+    """Default adaptive runs keep static CFL setup outside traced overrides."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    state = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    prepared = prepare_nonlinear_explicit_diagnostics(
+        state,
+        grid,
+        geom,
+        params,
+        dt=0.01,
+        steps=2,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        fixed_dt=False,
+        resolved_diagnostics=False,
+    )
+
+    final_state, diagnostics, _dt, _fields = prepared.run()
+    assert bool(jnp.all(jnp.isfinite(final_state)))
+    assert bool(jnp.all(jnp.isfinite(diagnostics.dt_t)))
+    with pytest.raises(ValueError, match="require fixed_dt=True"):
+        prepared.run_arrays(cache=prepared.cache, params=params)
+
+
 def test_prepared_nonlinear_arrays_support_reverse_mode_state_gradients():
     """The raw prepared scan should remain differentiable through time stepping."""
 
@@ -283,6 +312,66 @@ def test_prepared_nonlinear_arrays_accept_matched_dynamic_cache_and_params():
     )
     with pytest.raises(ValueError, match="supplied together"):
         prepared.run_arrays(params=base_params)
+
+
+def test_prepared_nonlinear_arrays_differentiate_dynamic_geometry() -> None:
+    """Curvature-profile derivatives should cross the prepared scan boundary."""
+
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    analytic_geometry = SAlphaGeometry.from_config(cfg.geometry)
+    geometry = ensure_flux_tube_geometry_data(analytic_geometry, grid.z)
+    params = LinearParams()
+    state = jnp.zeros(
+        (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64
+    )
+    profile = 1.0e-4 * (1.0 + 0.2 * jnp.cos(grid.z))
+    state = state.at[0, 0, 1, 0, :].set(profile + 0.3j * profile * jnp.sin(grid.z))
+    state = state.at[0, 1, 1, 0, :].set(0.25j * profile)
+    prepared = prepare_nonlinear_explicit_diagnostics(
+        state,
+        grid,
+        geometry,
+        params,
+        dt=0.02,
+        steps=3,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        resolved_diagnostics=False,
+    )
+
+    def final_mode_projection(curvature_scale: jnp.ndarray) -> jnp.ndarray:
+        dynamic_geometry = replace(
+            geometry,
+            cv_profile=curvature_scale * geometry.cv_profile,
+            gb_profile=curvature_scale * geometry.gb_profile,
+            cv0_profile=curvature_scale * geometry.cv0_profile,
+            gb0_profile=curvature_scale * geometry.gb0_profile,
+        )
+        cache = build_linear_cache(grid, dynamic_geometry, params, Nl=2, Nm=2)
+        final_state, _diagnostics, _fields = prepared.run_arrays(
+            geometry=dynamic_geometry,
+            cache=cache,
+            params=params,
+        )
+        return jnp.real(final_state[0, 0, 1, 0, 1]) + 0.37 * jnp.imag(
+            final_state[0, 0, 1, 0, 2]
+        )
+
+    value, gradient = jax.value_and_grad(final_mode_projection)(jnp.asarray(1.0))
+    step = jnp.asarray(1.0e-2)
+    centered_fd = (
+        final_mode_projection(1.0 + step) - final_mode_projection(1.0 - step)
+    ) / (2 * step)
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    assert float(gradient) != 0.0
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=5.0e-2, atol=1.0e-16
+    )
+    with pytest.raises(ValueError, match="dynamic geometry requires"):
+        prepared.run_arrays(geometry=geometry)
 
 
 def test_integrate_nonlinear_imex_diagnostics_shapes():

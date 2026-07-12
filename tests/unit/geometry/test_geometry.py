@@ -310,6 +310,7 @@ def test_sampled_flux_tube_geometry_tree_roundtrip():
     restored = jax.tree_util.tree_unflatten(treedef, leaves)
 
     assert restored.source_model == sampled.source_model
+    assert restored.kperp2_bmag is sampled.kperp2_bmag
     assert jnp.allclose(restored.theta, sampled.theta)
     assert jnp.allclose(restored.bmag_profile, sampled.bmag_profile)
     assert jnp.allclose(restored.cv_profile, sampled.cv_profile)

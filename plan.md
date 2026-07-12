@@ -205,9 +205,9 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
-| Differentiable API clarity | 84% | Move the in-memory geometry/cache builder inside the traced prepared boundary, then extend explicit forward/reverse policy to checkpointed and implicit objectives. |
+| Differentiable API clarity | 88% | Extend the admitted fixed-step geometry/cache/parameter VJP boundary to checkpointed and implicit objectives, then add adaptive-controller derivative policy gates. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
-| Nonlinear GPU performance | 86% | Keep the admitted dynamic cache/parameter boundary and next make in-memory geometry dynamic before profiling long-window memory and diagnostic streaming. |
+| Nonlinear GPU performance | 88% | Profile long-window memory and diagnostic streaming through the admitted prepared geometry/cache/parameter boundary on a matched CPU/GPU software stack. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
 | Performance/release claims | 88% | Repeat prepared CPU/GPU rows on a matched software stack before refreshing the panel; keep cold executable and warm Python claims separate. |
 | Docs/readme release pass | 97% | Keep README concise and refresh API ownership text when differentiability/parallel interfaces change. |
@@ -801,10 +801,12 @@ under 5 minutes.
   mode/chunk combinations fail early, and 60 differentiable-geometry tests,
   package-wide mypy, and zero-exception architecture gates pass.
 - 2026-07-12: Extended the prepared explicit nonlinear runner from a
-  state-only dynamic boundary to a matched dynamic ``(cache, params)`` PyTree
-  boundary. Physical parameter changes must rebuild and pass the corresponding
-  cache, preventing stale gyroaverage/drift/collision arrays; partial overrides
-  fail closed. A two-step ``R/L_Ti`` objective differentiates through cache
-  construction and the time scan and agrees with centered differences. The
-  complete nonlinear unit family passes; grid/geometry layout and numerical
-  method remain explicit static preparation policy.
+  state-only boundary to fixed-step matched dynamic ``(geometry, cache,
+  params)`` PyTrees. Physical changes must rebuild and pass the corresponding
+  cache, preventing stale gyroaverage/drift/collision arrays; partial and
+  adaptive model overrides fail closed. A resolved nonzonal-mode curvature
+  objective differentiates through geometry data, cache construction, and
+  three RK2 steps and agrees with centered differences. Default prepared
+  adaptive execution remains on its static CFL path. Five explicitly collected
+  prepared-run tests pass in 20 seconds; the repository integration marker is
+  overridden for this evidence rather than silently deselecting the file.
