@@ -1096,18 +1096,22 @@ evaluation:
    time, diagnostics, final_state, fields = simulation.run()
 
 ``simulation.run(new_initial_state)`` reuses the compiled scan for states with
-the same shape and dtype. Geometry, parameters, method, and diagnostic schema
-are fixed by this first prepared contract. A later dynamic-parameter contract
-is required before claiming compile-once stellarator optimization across
-changing equilibria.
+the same shape and dtype. Method, geometry layout, and diagnostic schema are
+fixed by this prepared contract. Parameter studies may pass a matched rebuilt
+cache and parameter PyTree with
+``simulation.run(cache=new_cache, params=new_params)``; supplying only one is
+rejected because gyroaverages, drifts, and collision arrays would be
+inconsistent.
 
 For sensitivity calculations, ``simulation.run_arrays(new_initial_state)``
 returns only JAX pytrees and skips host-side diagnostic finalization. Reverse
 mode therefore differentiates through the explicit time loop with respect to
-the initial state. Cache-dependent geometry and velocity parameters remain
-fixed: changing those values requires rebuilding the prepared simulation so
-that gyroaverages, drifts, linked-boundary maps, and collision arrays cannot
-become inconsistent with the supplied parameters.
+the initial state. It also differentiates through a matched dynamic
+``(cache, params)`` pair; the cache must be rebuilt from the same traced
+parameters before the call. Grid shape, geometry sampling/layout, method, and
+output schema remain static. Changing equilibrium geometry still requires a
+new preparation until the in-memory VMEC/Boozer cache builder itself is moved
+inside this traced boundary.
 
 On the shipped ``64x64x24`` Cyclone setup, a three-call CPU compile-log gate
 records exactly one ``jit(run_raw)`` compilation. The first two-step call takes

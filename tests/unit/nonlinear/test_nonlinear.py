@@ -1,5 +1,7 @@
 """Nonlinear integrator tests."""
 
+from dataclasses import replace
+
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -190,7 +192,9 @@ def test_prepared_nonlinear_diagnostics_reuses_compiled_scan():
 
     assert cache_size == 1
     assert prepared._run_raw._cache_size() == cache_size
-    for first_value, second_value in zip(first[:1] + first[2:], second[:1] + second[2:]):
+    for first_value, second_value in zip(
+        first[:1] + first[2:], second[:1] + second[2:]
+    ):
         for first_leaf, second_leaf in zip(
             jax.tree_util.tree_leaves(first_value),
             jax.tree_util.tree_leaves(second_value),
@@ -238,6 +242,47 @@ def test_prepared_nonlinear_arrays_support_reverse_mode_state_gradients():
     np.testing.assert_allclose(
         np.asarray(gradient), np.asarray(centered_fd), rtol=2.0e-2, atol=1.0e-16
     )
+
+
+def test_prepared_nonlinear_arrays_accept_matched_dynamic_cache_and_params():
+    """A prepared scan should differentiate through a rebuilt parameter cache."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    base_params = LinearParams()
+    state = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-7
+    prepared = prepare_nonlinear_explicit_diagnostics(
+        state,
+        grid,
+        geom,
+        base_params,
+        dt=0.01,
+        steps=2,
+        method="rk2",
+        terms=TermConfig(nonlinear=0.0),
+        resolved_diagnostics=False,
+    )
+
+    def final_energy(rlt: jnp.ndarray) -> jnp.ndarray:
+        params = replace(base_params, R_over_LTi=rlt)
+        cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+        final_state, _diagnostics, _fields = prepared.run_arrays(
+            cache=cache, params=params
+        )
+        return jnp.real(jnp.vdot(final_state, final_state))
+
+    value, gradient = jax.value_and_grad(final_energy)(jnp.asarray(6.9))
+    step = jnp.asarray(1.0e-2)
+    centered_fd = (final_energy(6.9 + step) - final_energy(6.9 - step)) / (2 * step)
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=5.0e-2, atol=1.0e-16
+    )
+    with pytest.raises(ValueError, match="supplied together"):
+        prepared.run_arrays(params=base_params)
 
 
 def test_integrate_nonlinear_imex_diagnostics_shapes():
