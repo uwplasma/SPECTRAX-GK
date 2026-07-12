@@ -592,10 +592,11 @@ ill-conditioned or non-converged physical observable into a valid derivative.
 
 Before replacing a local path, require real and complex dtype coverage as
 appropriate, JIT/vmap/JVP/VJP checks, transpose or Hermitian-adjoint identity,
-finite-difference agreement, and a physical observable gate. The currently
-audited SOLVAX release candidate does not yet satisfy complex Krylov and complex
-fixed-point requirements, so those migrations remain blocked while
-tridiagonal and chunked-Jacobian evaluations proceed first.
+finite-difference agreement, and a physical observable gate. SOLVAX 0.6.1
+satisfies those contracts for complex Krylov, fixed-point, tridiagonal, and
+chunked-Jacobian primitives. SPECTRAX-GK uses the admitted primitives only on
+paths whose physical trajectory and branch gates pass; shift-invert remains on
+its prior backend because its outer eigenpair gate is still open.
 
 Recommended default choices:
 

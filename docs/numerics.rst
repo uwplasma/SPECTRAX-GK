@@ -95,9 +95,9 @@ physics gates remain in SPECTRAX-GK.
 
 The admitted migration covers the Hermite-line tridiagonal solve,
 memory-chunked geometry Jacobians, and implicit linear/nonlinear time-step
-GMRES. New configurations use ``implicit_solve_method="gmres"``. The older
-``"batched"`` and ``"incremental"`` values are transitional aliases for the
-same SOLVAX FGMRES and no longer choose separate algorithms.
+GMRES. Implicit time stepping now exposes one FGMRES algorithm with explicit
+tolerance, restart, iteration-limit, and physical-preconditioner controls;
+the obsolete backend-name selector has been removed.
 
 Shift-invert remains explicitly excluded. In its current streaming test, both
 inner solvers stagnate above the requested tolerance and their small solution

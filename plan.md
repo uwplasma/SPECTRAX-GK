@@ -204,7 +204,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Tool consolidation | 70% | Fold remaining artifact builders into grouped domain commands; delete stale comparison/probe scripts; update docs command lines. |
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 90% | Add a generic parameter-scan runtime for KBM beta, and canonical TEM/kinetic-electron TOMLs with parity gates, before deleting those transitional named solvers. |
-| Structured solver ownership | 85% | Strengthen shift-invert preconditioning/branch gates, then delete only the superseded local generic time-step solver code. |
+| Structured solver ownership | 90% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
 | Differentiable API clarity | 76% | Define dynamic cache/geometry rebuild boundaries, then complete forward, reverse/checkpointed, and implicit differentiation policies. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 84% | Make geometry and parameter pytrees dynamic in the prepared runner; then profile long-window memory and diagnostic streaming. |
@@ -282,6 +282,13 @@ That topology is the reference design for the production parallel lane.
 
 ## Recent Implementation Log
 
+- 2026-07-11: Removed the obsolete implicit time-step backend selector after
+  both linear and nonlinear paths converged on the admitted SOLVAX FGMRES.
+  Tolerance, restart, iteration limit, and physical preconditioning remain
+  explicit; the independent shift-invert policy is unchanged. This deletes 84
+  net lines across configuration, runtime forwarding, solver APIs, tests, and
+  docs. Strict lint/type checks and the complete linear, solver, and runtime
+  test shards pass.
 - 2026-07-11: Released SOLVAX 0.6.1 with its PEP 561 marker after SPECTRAX-GK's
   package-wide mypy job identified the missing distribution metadata. The
   corrected floor passes strict analysis of all 227 installed source files,

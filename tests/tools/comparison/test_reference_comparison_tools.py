@@ -3682,7 +3682,6 @@ def test_compare_gx_runtime_window_writes_csv(tmp_path: Path, monkeypatch) -> No
                     collision_split=False,
                     collision_scheme="implicit",
                     implicit_restart=20,
-                    implicit_solve_method="gmres",
                     implicit_preconditioner=None,
                 ),
                 run=SimpleNamespace(ky=0.1),

@@ -74,7 +74,6 @@ def test_solve_imex_step_identity_system_returns_rhs_shape() -> None:
         implicit_tol=1.0e-8,
         implicit_maxiter=20,
         implicit_restart=5,
-        implicit_solve_method="batched",
     )
 
     np.testing.assert_allclose(np.asarray(out), np.asarray(G_rhs), rtol=1e-6)
@@ -166,7 +165,6 @@ def test_make_imex_solve_step_forwards_solver_policy() -> None:
         implicit_tol=1.0e-5,
         implicit_maxiter=7,
         implicit_restart=2,
-        implicit_solve_method="batched",
         precond_op=precond,
         solve_step_fn=solve_step_fn,
     )
@@ -187,7 +185,6 @@ def test_make_imex_solve_step_forwards_solver_policy() -> None:
     assert seen["implicit_tol"] == 1.0e-5
     assert seen["implicit_maxiter"] == 7
     assert seen["implicit_restart"] == 2
-    assert seen["implicit_solve_method"] == "batched"
 
 
 def test_imex_operator_resolution_and_state_shape_policies() -> None:

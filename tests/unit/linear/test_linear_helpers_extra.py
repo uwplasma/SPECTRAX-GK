@@ -140,8 +140,7 @@ def test_structured_tridiagonal_last_axis_matches_fused_reference_and_jvp() -> N
     )
 
 
-@pytest.mark.parametrize("method", ["gmres", "solvax", "batched", "incremental"])
-def test_shared_complex_gmres_matches_previous_batched_solution(method: str) -> None:
+def test_shared_complex_gmres_matches_reference_solution() -> None:
     dtype = jnp.complex128 if jax.config.read("jax_enable_x64") else jnp.complex64
     real_dtype = jnp.float64 if jax.config.read("jax_enable_x64") else jnp.float32
     size = 48
@@ -163,7 +162,6 @@ def test_shared_complex_gmres_matches_previous_batched_solution(method: str) -> 
             tolerance=tolerance,
             max_restarts=8,
             restart=12,
-            method=method,
         )
     )(rhs)
     previous, _ = jax.scipy.sparse.linalg.gmres(
@@ -186,22 +184,6 @@ def test_shared_complex_gmres_matches_previous_batched_solution(method: str) -> 
         rtol=comparison_tolerance,
         atol=comparison_tolerance,
     )
-
-
-def test_shared_gmres_rejects_unknown_method() -> None:
-    with pytest.raises(ValueError, match="GMRES method"):
-        solve_gmres(
-            lambda value: value,
-            jnp.ones(2),
-            x0=None,
-            preconditioner=None,
-            tolerance=1.0e-6,
-            max_restarts=2,
-            restart=2,
-            method="unknown",
-        )
-
-
 def test_linear_linked_helpers_preserve_public_exports() -> None:
     for name in linear_linked.__all__:
         assert getattr(linear_mod, name) is getattr(linear_linked, name)

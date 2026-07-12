@@ -29,11 +29,11 @@ available:
   deterministic Thomas recurrence, while accelerator execution uses the fused
   backend selected by SOLVAX.
 
-New Python/TOML configurations should use ``implicit_solve_method="gmres"``.
-The historical ``"batched"`` and ``"incremental"`` spellings are accepted as
-temporary aliases only; they invoke the same complex unitary-Givens FGMRES.
-Shift-invert eigenmode extraction is not yet migrated because its
-branch-continuity gate remains open.
+Implicit time stepping has one supported complex unitary-Givens FGMRES
+algorithm. Users configure its tolerance, restart length, iteration limit,
+and physical preconditioner rather than selecting equivalent backend aliases.
+Shift-invert eigenmode extraction is separate and is not yet migrated because
+its branch-continuity gate remains open.
 
 Optional damping
 ----------------

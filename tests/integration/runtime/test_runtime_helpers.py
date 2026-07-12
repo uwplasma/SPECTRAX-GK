@@ -847,7 +847,6 @@ def test_runtime_nonlinear_diagnostics_kwargs_policy() -> None:
             collision_split=True,
             collision_scheme="exp",
             implicit_restart=7,
-            implicit_solve_method="gmres",
             implicit_preconditioner="jacobi",
             cfl_fac=None,
         ),
@@ -886,7 +885,6 @@ def test_runtime_nonlinear_diagnostics_kwargs_policy() -> None:
     assert kwargs["collision_split"] is True
     assert kwargs["collision_scheme"] == "exp"
     assert kwargs["implicit_restart"] == 7
-    assert kwargs["implicit_solve_method"] == "gmres"
     assert kwargs["implicit_preconditioner"] == "jacobi"
     assert kwargs["fixed_mode_ky_index"] == 4
     assert kwargs["fixed_mode_kx_index"] == 5
