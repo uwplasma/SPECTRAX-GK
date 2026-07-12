@@ -67,6 +67,9 @@ The implementation leverages the following JAX primitives:
   ``solvax.linear_solve``. Its implicit-function VJP solves the transposed
   linear system instead of differentiating dynamic GMRES iterations; plain and
   checkpointed two-step trajectories agree with centered finite differences.
+  A separate gate rebuilds the gyrokinetic cache and matrix-free operator from
+  a traced :math:`R/L_{T_i}` and verifies that the VJP includes both right-hand
+  side and operator dependence.
   Shift-invert eigenmode extraction temporarily retains the prior JAX GMRES
   route because its branch-continuity gate has not passed with the replacement.
 - **Backend-aware Hermite line solve**: ``solvax.tridiagonal_solve`` uses a

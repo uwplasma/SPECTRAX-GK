@@ -174,6 +174,53 @@ def test_nonlinear_imex_state_gradient_matches_finite_difference(
     )
 
 
+def test_nonlinear_imex_parameter_gradient_rebuilds_operator() -> None:
+    """Implicit VJPs should include parameter dependence of the matrix operator."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    base_params = LinearParams()
+    initial_state = jnp.ones(
+        (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64
+    ) * jnp.asarray(1.0e-7, dtype=jnp.complex64)
+    terms = TermConfig(nonlinear=0.0)
+
+    def final_energy(rlt: jnp.ndarray) -> jnp.ndarray:
+        params = replace(base_params, R_over_LTi=rlt)
+        cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+        operator = build_nonlinear_imex_operator(
+            initial_state,
+            cache,
+            params,
+            dt=0.05,
+            terms=terms,
+            implicit_preconditioner="damping",
+        )
+        final_state, _fields = integrate_nonlinear_imex_cached(
+            initial_state,
+            cache,
+            params,
+            dt=0.05,
+            steps=2,
+            terms=terms,
+            implicit_operator=operator,
+            implicit_maxiter=20,
+        )
+        return jnp.real(jnp.vdot(final_state, final_state))
+
+    value, gradient = jax.value_and_grad(final_energy)(jnp.asarray(6.9))
+    step = jnp.asarray(0.05)
+    centered_fd = (final_energy(6.9 + step) - final_energy(6.9 - step)) / (2 * step)
+    assert bool(jnp.isfinite(value))
+    assert bool(jnp.isfinite(gradient))
+    assert float(gradient) != 0.0
+    np.testing.assert_allclose(
+        np.asarray(gradient), np.asarray(centered_fd), rtol=2.0e-2, atol=1.0e-16
+    )
+
+
 def test_integrate_nonlinear_explicit_diagnostics_shapes():
     """Nonlinear diagnostics should return time-series arrays."""
 

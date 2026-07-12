@@ -205,7 +205,7 @@ the compatibility matrix and SPECTRAX-GK physics gates above.
 | Test consolidation | 100% | Collapse large `tests/tools` families into parametrized contracts with shared fixtures while preserving gate semantics. |
 | Source consolidation | 100% | Preserve zero complexity exceptions and the 226-file no-regression baseline while feature lanes evolve. |
 | Structured solver ownership | 92% | Repair the shift-invert outer eigenpair/branch gate before changing its remaining JAX GMRES backend. |
-| Differentiable API clarity | 90% | Extend the admitted explicit and IMEX reverse paths to parameter-dependent implicit operators, then add adaptive-controller derivative policy gates. |
+| Differentiable API clarity | 92% | Add adaptive-controller derivative policy gates, then extend the implicit VJP evidence from tiny physical cases to held-out transport objectives. |
 | Advanced collision operators | 30% | Extend the shared hook into diagnostic, implicit, and decomposed solves, then add species-coupled Dougherty, Sugama, and linearized Coulomb models with invariant and literature gates. |
 | Nonlinear GPU performance | 88% | Profile long-window memory and diagnostic streaming through the admitted prepared geometry/cache/parameter boundary on a matched CPU/GPU software stack. |
 | Production parallelization | 42% | Retain the corrected identity-gated combined-ky path, then replace failed whole-state spatial sharding with species/Hermite decomposition and explicit collectives. |
@@ -818,3 +818,10 @@ under 5 minutes.
   and without scan checkpointing. Explicit geometry VJPs likewise pass in both
   checkpoint policies, while adaptive model-parameter derivatives remain
   deliberately unpromoted.
+- 2026-07-12: Extended the nonlinear IMEX gate from state-only sensitivity to
+  a parameter-dependent matrix-free operator. The test rebuilds the complete
+  cache and implicit operator from traced ``R/L_Ti``; the resulting VJP
+  includes operator dependence and agrees with a centered physical-parameter
+  finite difference to the 2% gate. This closes the tiny-case implicit model
+  derivative contract without claiming adaptive or long-window transport
+  derivatives.
