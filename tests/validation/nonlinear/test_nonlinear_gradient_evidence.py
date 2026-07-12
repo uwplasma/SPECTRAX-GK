@@ -16,7 +16,7 @@ import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_fd
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_gap
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_scoring
 import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_screening
-import spectraxgk.diagnostics.nonlinear_gradient_evidence as evidence_windows
+import spectraxgk.diagnostics.nonlinear_replicates as evidence_windows
 from spectraxgk.diagnostics.nonlinear_gradient_evidence import (
     NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
@@ -66,7 +66,6 @@ def test_nonlinear_gradient_evidence_facade_reexports_report_modules() -> None:
     assert evidence_screening._metric_margin is evidence_scoring._metric_margin
     assert evidence._bracket_sweep_row is evidence_brackets._bracket_sweep_row
     assert evidence_screening._bracket_sweep_row is evidence_brackets._bracket_sweep_row
-    assert evidence._ensemble_row is evidence_windows._ensemble_row
     assert (
         evidence.summarize_window_evidence is evidence_windows.summarize_window_evidence
     )
