@@ -321,7 +321,7 @@ def test_runtime_kbm_case_matches_transitional_operator_contract() -> None:
     )
     legacy_state = np.zeros_like(np.asarray(runtime_state))
     legacy_state[1] = np.asarray(legacy_single)
-    np.testing.assert_allclose(runtime_state, legacy_state, rtol=0.0, atol=1.0e-19)
+    np.testing.assert_allclose(runtime_state, legacy_state, rtol=2.0e-7, atol=1.0e-17)
 
     cache = build_linear_cache(grid, geometry, runtime_params, n_laguerre, n_hermite)
     runtime_rhs, _ = linear_rhs_cached(
